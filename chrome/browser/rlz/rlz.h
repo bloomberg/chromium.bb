@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,10 +49,6 @@ class RLZTracker {
   // Returns false if the rlz string could not be obtained. In some cases
   // an empty string can be returned which is not an error.
   static bool GetAccessPointRlz(rlz_lib::AccessPoint point, std::wstring* rlz);
-
-  // Clear all events reported by this product. In Chrome this will be called
-  // when it is un-installed.
-  static bool ClearAllProductEvents(rlz_lib::Product product);
 
   // Invoked during shutdown to clean up any state created by RLZTracker.
   static void CleanupRlz();

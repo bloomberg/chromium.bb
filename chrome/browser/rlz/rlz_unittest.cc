@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,18 +48,4 @@ TEST(RlzLibTest, RecordProductEvent) {
   EXPECT_EQ(ERROR_SUCCESS, key2.ReadValueDW(kEvent2, &recorded_value));
   EXPECT_EQ(1, recorded_value);
   EXPECT_TRUE(CleanValue(kKeyName, kEvent2));
-}
-
-TEST(RlzLibTest, CleanProductEvents) {
-  DWORD recorded_value = 0;
-  EXPECT_TRUE(RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-      rlz_lib::CHROME_OMNIBOX, rlz_lib::FIRST_SEARCH));
-  const wchar_t kEvent1[] = L"C1F";
-  RegKey key1;
-  EXPECT_EQ(ERROR_SUCCESS, key1.Open(HKEY_CURRENT_USER, kKeyName, KEY_READ));
-  EXPECT_EQ(ERROR_SUCCESS, key1.ReadValueDW(kEvent1, &recorded_value));
-  EXPECT_EQ(1, recorded_value);
-
-  EXPECT_TRUE(RLZTracker::ClearAllProductEvents(rlz_lib::CHROME));
-  EXPECT_FALSE(CleanValue(kKeyName, kEvent1));
 }

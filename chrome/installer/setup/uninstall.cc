@@ -25,6 +25,7 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
@@ -116,6 +117,21 @@ void ProcessQuickEnableWorkItems(
                           work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to update quick-enable-cf command.";
+}
+
+void ClearRlzProductState() {
+  const rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
+                                         rlz_lib::CHROME_HOME_PAGE,
+                                         rlz_lib::NO_ACCESS_POINT};
+
+  rlz_lib::ClearProductState(rlz_lib::CHROME, points);
+
+  // If chrome has been reactivated, clear all events for this brand as well.
+  std::wstring reactivation_brand;
+  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+    rlz_lib::ClearProductState(rlz_lib::CHROME, points);
+  }
 }
 
 }  // namespace
@@ -689,12 +705,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going
   // in case of errors.
-  if (is_chrome) {
-    const rlz_lib::AccessPoint access_points[] = {rlz_lib::CHROME_OMNIBOX,
-                                                  rlz_lib::CHROME_HOME_PAGE,
-                                                  rlz_lib::NO_ACCESS_POINT};
-    rlz_lib::ClearProductState(rlz_lib::CHROME, access_points);
-  }
+  if (is_chrome)
+    ClearRlzProductState();
 
   // First delete shortcuts from Start->Programs, Desktop & Quick Launch.
   DeleteChromeShortcuts(installer_state, product);

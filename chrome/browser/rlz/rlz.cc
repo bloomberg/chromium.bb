@@ -36,9 +36,6 @@
 
 namespace {
 
-// The maximum length of an access points RLZ in wide chars.
-const DWORD kMaxRlzLength = 64;
-
 enum {
   ACCESS_VALUES_STALE,      // Possibly new values available.
   ACCESS_VALUES_FRESH       // The cached values are current.
@@ -226,11 +223,14 @@ class DelayedInitTask : public Task {
 
     // Do the initial event recording if is the first run or if we have an
     // empty rlz which means we haven't got a chance to do it.
-    std::wstring omnibox_rlz;
-    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &omnibox_rlz);
+    char omnibox_rlz[rlz_lib::kMaxRlzLength + 1];
+    if (!rlz_lib::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, omnibox_rlz,
+                                    rlz_lib::kMaxRlzLength, NULL)) {
+      omnibox_rlz[0] = 0;
+    }
 
     // Record if google is the initial search provider.
-    if ((first_run || omnibox_rlz.empty()) && google_default_search &&
+    if ((first_run || omnibox_rlz[0] == 0) && google_default_search &&
         !already_ran) {
       rlz_lib::RecordProductEvent(rlz_lib::CHROME,
                                   rlz_lib::CHROME_OMNIBOX,
@@ -333,19 +333,6 @@ bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
   return ret;
 }
 
-bool RLZTracker::ClearAllProductEvents(rlz_lib::Product product) {
-  bool ret = rlz_lib::ClearAllProductEvents(product);
-
-  // If chrome has been reactivated, clear all events for this brand as well.
-  std::wstring reactivation_brand;
-  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
-    ret &= rlz_lib::ClearAllProductEvents(product);
-  }
-
-  return ret;
-}
-
 // We implement caching of the answer of get_access_point() if the request
 // is for CHROME_OMNIBOX. If we had a successful ping, then we update the
 // cached value.
@@ -379,7 +366,7 @@ bool RLZTracker::GetAccessPointRlz(rlz_lib::AccessPoint point,
       return false;
   }
 
-  char str_rlz[kMaxRlzLength + 1];
+  char str_rlz[rlz_lib::kMaxRlzLength + 1];
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength, NULL))
     return false;
   *rlz = ASCIIToWide(std::string(str_rlz));
