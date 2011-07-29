@@ -241,7 +241,7 @@ class NativeInputTest(ChromeDriverTest):
     q.send_keys('toukyou')
     # Now turning it off.
     q.send_keys(Keys.F7)
-    self.assertEqual(q.value, "\xe6\x9d\xb1\xe4\xba\xac")
+    self.assertEqual(q.get_attribute('value'), "\xe6\x9d\xb1\xe4\xba\xac")
 
 
 class DesiredCapabilitiesTest(ChromeDriverTest):
@@ -638,7 +638,7 @@ class FileUploadControlTest(ChromeDriverTest):
     multiple = fileupload_single.get_attribute('multiple')
     self.assertEqual('false', multiple)
     fileupload_single.send_keys(file.name)
-    path = fileupload_single.value
+    path = fileupload_single.get_attribute('value')
     self.assertTrue(path.endswith(os.path.basename(file.name)))
 
   def testSetMultipleFilePathsToFileuploadControlWithoutMultipleWillFail(self):

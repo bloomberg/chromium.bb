@@ -19,8 +19,6 @@
 # Tests beginning with '-' will be excluded.  This can be used to enforce
 # exclusions for a particular platform.
 
-# Most of these tests are disabled because they involve not yet implemented
-# features. See bug 71237.
 {
   'all': [
     'alerts_tests',
@@ -34,6 +32,8 @@
     'executing_async_javascript_test',
     'executing_javascript_test',
     'form_handling_tests',
+    # crbug.com/90994.
+    '-form_handling_tests.FormHandlingTests.testTogglingAnOptionShouldToggleOptionsInAMultiSelect',
     'frame_switching_tests',
     # Test is asserting the wrong thing.
     '-frame_switching_tests.FrameSwitchingTest.testShouldReturnFrameTitleNotWindowTitle',
