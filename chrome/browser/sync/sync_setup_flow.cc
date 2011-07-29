@@ -214,7 +214,9 @@ void SyncSetupFlow::Focus() {
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
-  if (current_state_ == SyncSetupWizard::DONE)
+  // If we've reached the end, mark it.  This could be a discrete run, in which
+  // case it's already set, but it simplifes the logic to do it this way.
+  if (current_state_ == end_state_)
     service_->SetSyncSetupCompleted();
 
   // Record the state at which the user cancelled the signon dialog.

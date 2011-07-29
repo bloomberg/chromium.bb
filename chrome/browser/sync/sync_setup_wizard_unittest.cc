@@ -515,6 +515,8 @@ TEST_F(SyncSetupWizardTest, CrosAuthSetup) {
   EXPECT_FALSE(editable);
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(service_->user_cancelled_dialog_);
+  EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSyncHasSetupCompleted));
 }
 
 TEST_F(SyncSetupWizardTest, NonFatalError) {
