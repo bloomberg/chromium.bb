@@ -37,9 +37,6 @@ net::SSLClientSocket* CreateSSLClientSocket(
     net::StreamSocket* socket, const std::string& der_cert,
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
-  // If False Start is enabled then the Connect callback will fire before
-  // the cipher has been set up, and ExportKeyingMaterial will fail.
-  ssl_config.false_start_enabled = false;
 
   // Certificate provided by the host doesn't need authority.
   net::SSLConfig::CertAndStatus cert_and_status;
@@ -147,8 +144,6 @@ bool JingleStreamConnector::EstablishSSLConnection() {
 
     // Create server SSL socket.
     net::SSLConfig ssl_config;
-    ssl_config.false_start_enabled = false;
-
     ssl_server_socket_ = net::CreateSSLServerSocket(
         socket_.release(), cert, local_private_key_, ssl_config);
     socket_.reset(ssl_server_socket_);
