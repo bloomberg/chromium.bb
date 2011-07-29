@@ -10,6 +10,8 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+struct NaClAppThread;
+
 struct NaClSyscallTableEntry {
   int32_t (*handler)(struct NaClAppThread *natp);
 };
