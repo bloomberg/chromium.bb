@@ -39,7 +39,7 @@ inherits(CaptureView, DivView);
 /**
  * Called whenever a new event is received.
  */
-CaptureView.prototype.onSourceEntryUpdated = function(sourceEntry) {
+CaptureView.prototype.onSourceEntriesUpdated = function(sourceEntries) {
   this.updateEventCounts_();
 };
 

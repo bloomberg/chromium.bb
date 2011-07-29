@@ -453,25 +453,42 @@ EventsView.prototype.InsertionSort_ = function(sourceRow) {
     sourceRow.moveAfter(sourceRowBefore);
 };
 
-EventsView.prototype.onSourceEntryUpdated = function(sourceEntry) {
-  // Lookup the row.
-  var sourceRow = this.sourceIdToRowMap_[sourceEntry.getSourceId()];
+/**
+ * Called whenever SourceEntries are updated with new log entries.  Updates
+ * the corresponding table rows, sort order, and the details view as needed.
+ */
+EventsView.prototype.onSourceEntriesUpdated = function(sourceEntries) {
+  var isUpdatedSourceSelected = false;
+  var numNewSourceEntries = 0;
 
-  if (!sourceRow) {
-    sourceRow = new SourceRow(this, sourceEntry);
-    this.sourceIdToRowMap_[sourceEntry.getSourceId()] = sourceRow;
+  for (var i = 0; i < sourceEntries.length; ++i) {
+    var sourceEntry = sourceEntries[i];
+
+    // Lookup the row.
+    var sourceRow = this.sourceIdToRowMap_[sourceEntry.getSourceId()];
+
+    if (!sourceRow) {
+      sourceRow = new SourceRow(this, sourceEntry);
+      this.sourceIdToRowMap_[sourceEntry.getSourceId()] = sourceRow;
+      ++numNewSourceEntries;
+    } else {
+      sourceRow.onSourceUpdated();
+    }
+
+    if (sourceRow.isSelected())
+      isUpdatedSourceSelected = true;
+
+    // TODO(mmenke): Fix sorting when sorting by duration.
+    //               Duration continuously increases for all entries that are
+    //               still active.  This can result in incorrect sorting, until
+    //               Sort_ is called.
+    this.InsertionSort_(sourceRow);
   }
 
-  sourceRow.onSourceUpdated();
-
-  if (sourceRow.isSelected())
+  if (isUpdatedSourceSelected)
     this.invalidateDetailsView_();
-
-  // TODO(mmenke): Fix sorting when sorting by duration.
-  //               Duration continuously increases for all entries that are
-  //               still active.  This can result in incorrect sorting, until
-  //               Sort_ is called.
-  this.InsertionSort_(sourceRow);
+  if (numNewSourceEntries)
+    this.incrementPrefilterCount(numNewSourceEntries);
 };
 
 /**

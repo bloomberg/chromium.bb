@@ -114,16 +114,24 @@ ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
   return true;
 };
 
-ProxyView.prototype.onSourceEntryUpdated = function(sourceEntry) {
-  if (sourceEntry.getSourceType() != LogSourceType.INIT_PROXY_RESOLVER ||
-      this.latestProxySourceId_ > sourceEntry.getSourceId()) {
-    return;
+/**
+ * Called whenever SourceEntries are updated with new log entries.  Updates
+ * |proxyResolverLogPre_| with the log entries of the INIT_PROXY_RESOLVER
+ * SourceEntry with the greatest id.
+ */
+ProxyView.prototype.onSourceEntriesUpdated = function(sourceEntries) {
+  for (var i = sourceEntries.length - 1; i >= 0; --i) {
+    var sourceEntry = sourceEntries[i];
+
+    if (sourceEntry.getSourceType() != LogSourceType.INIT_PROXY_RESOLVER ||
+        this.latestProxySourceId_ > sourceEntry.getSourceId()) {
+      continue;
+    }
+
+    this.latestProxySourceId_ = sourceEntry.getSourceId();
+
+    this.proxyResolverLogPre_.innerText = sourceEntry.printAsText();
   }
-
-  this.latestProxySourceId_ = sourceEntry.getSourceId();
-
-  this.proxyResolverLogPre_.innerHTML = '';
-  addTextNode(this.proxyResolverLogPre_, sourceEntry.printAsText());
 };
 
 /**

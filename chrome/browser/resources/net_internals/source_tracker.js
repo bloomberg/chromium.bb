@@ -77,7 +77,7 @@ SourceTracker.prototype.getSourceEntry = function(id) {
   return this.sourceEntries_[id];
 };
 
-SourceTracker.prototype.onReceivedPassiveLogEntries = function(entries) {
+SourceTracker.prototype.onReceivedPassiveLogEntries = function(logEntries) {
   // Due to an expected race condition, it is possible to receive actively
   // captured log entries before the passively logged entries are received.
   //
@@ -88,10 +88,11 @@ SourceTracker.prototype.onReceivedPassiveLogEntries = function(entries) {
   if (earlyActivelyCapturedEvents.length > 0)
     this.deleteAllSourceEntries();
 
-  this.numPassivelyCapturedEvents_ = entries.length;
-  for (var i = 0; i < entries.length; ++i)
-    entries[i].wasPassivelyCaptured = true;
-  this.onReceivedLogEntries(entries);
+  this.numPassivelyCapturedEvents_ = logEntries.length;
+  for (var i = 0; i < logEntries.length; ++i)
+    logEntries[i].wasPassivelyCaptured = true;
+
+  this.onReceivedLogEntries(logEntries);
 
   // Add back early actively captured events, if any.
   if (earlyActivelyCapturedEvents.length)
@@ -103,6 +104,12 @@ SourceTracker.prototype.onReceivedPassiveLogEntries = function(entries) {
  * Also assigns unique ids to log entries without a source.
  */
 SourceTracker.prototype.onReceivedLogEntries = function(logEntries) {
+  // List source entries with new log entries.  Sorted chronologically, by
+  // first new log entry.
+  var updatedSourceEntries = [];
+
+  var updatedSourceEntryIdMap = {};
+
   for (var e = 0; e < logEntries.length; ++e) {
     var logEntry = logEntries[e];
 
@@ -114,6 +121,7 @@ SourceTracker.prototype.onReceivedLogEntries = function(logEntries) {
       this.maxReceivedSourceId_ = logEntry.source.id;
     }
 
+    // Create/update SourceEntry object.
     var sourceEntry = this.sourceEntries_[logEntry.source.id];
     if (!sourceEntry) {
       sourceEntry = new SourceEntry(logEntry, this.maxReceivedSourceId_);
@@ -121,13 +129,17 @@ SourceTracker.prototype.onReceivedLogEntries = function(logEntries) {
     } else {
       sourceEntry.update(logEntry);
     }
-    this.capturedEvents_.push(logEntry);
 
-    // TODO(mmenke):  Send a list of all updated source entries instead,
-    //                eliminating duplicates, to reduce CPU usage.
-    for (var i = 0; i < this.observers_.length; ++i)
-      this.observers_[i].onSourceEntryUpdated(sourceEntry);
+    // Add to updated SourceEntry list, if not already in it.
+    if (!updatedSourceEntryIdMap[logEntry.source.id]) {
+      updatedSourceEntryIdMap[logEntry.source.id] = sourceEntry;
+      updatedSourceEntries.push(sourceEntry);
+    }
   }
+
+  this.capturedEvents_ = this.capturedEvents_.concat(logEntries);
+  for (var i = 0; i < this.observers_.length; ++i)
+    this.observers_[i].onSourceEntriesUpdated(updatedSourceEntries);
 };
 
 /**
@@ -191,7 +203,7 @@ SourceTracker.prototype.getSecurityStripping = function() {
  * data arrives, source entries are deleted, or security stripping changes
  * through:
  *
- *   observer.onSourceEntryUpdated(sourceEntry)
+ *   observer.onSourceEntriesUpdated(sourceEntries)
  *   observer.deleteSourceEntries(sourceEntryIds)
  *   ovserver.deleteAllSourceEntries()
  *   observer.onSecurityStrippingChanged()
