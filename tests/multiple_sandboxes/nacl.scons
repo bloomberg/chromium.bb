@@ -42,7 +42,10 @@ test_prog = env.ComponentProgram(
     'multidomain_test_guest', ['multidomain_test_guest.c'],
     EXTRA_LIBS=['imc_syscalls'])
 
-node = env.CommandTest('multidomain_test.out', [runner, test_prog],
+test_command = [runner, test_prog]
+if env.Bit('tests_use_irt'):
+  test_command.append(env.GetIrtNexe())
+node = env.CommandTest('multidomain_test.out', test_command,
                        stdout_golden=env.File('multidomain_test.stdout'))
 
 # This test does not work everywhere:
