@@ -688,6 +688,77 @@ class XcodeSettings(object):
     if test_key in self._Settings():
       print 'Warning: Ignoring not yet implemented key "%s".' % test_key
 
+  def _IsBundle(self):
+    return int(self.spec.get('mac_bundle', 0)) != 0
+
+  def GetFrameworkVersion(self):
+    """Returns the framework version of the current target. Only valid for
+    bundles."""
+    assert self._IsBundle()
+    return self.GetPerTargetSetting('FRAMEWORK_VERSION', default='A')
+
+  def _GetBundleExtension(self):
+    """Returns the bundle extension (.app, .framework, .plugin, etc).  Only
+    valid for bundles."""
+    assert self._IsBundle()
+    if self.spec['type'] in ('loadable_module', 'shared_library'):
+      wrapper_extension = self.GetPerTargetSetting(
+          'WRAPPER_EXTENSION', default='framework')
+      return '.' + self.spec.get('product_extension', wrapper_extension)
+    elif self.spec['type'] == 'executable':
+      return '.app'
+    else:
+      assert False, "Don't know extension for '%s', target '%s'" % (
+          self.spec['type'], self.spec['target_name'])
+
+  def GetBundleName(self):
+    """Returns the directory name of the bundle represented by this target.
+    Only valid for bundles."""
+    assert self._IsBundle()
+    return self.spec.get('product_name',
+                         self.spec['target_name']) + self._GetBundleExtension()
+
+  def GetBundleContentsFolderPath(self):
+    """Returns the qualified path to the bundle's contents folder. E.g.
+    Chromium.app/Contents or Foo.bundle/Versions/A. Only valid for bundles."""
+    assert self._IsBundle()
+    if self.spec['type'] == 'shared_library':
+      return os.path.join(
+          self.GetBundleName(), 'Versions', self.GetFrameworkVersion())
+    else:
+      # loadable_modules have a 'Contents' folder like executables.
+      return os.path.join(self.GetBundleName(), 'Contents')
+
+  def GetBundleResourceFolder(self):
+    """Returns the qualified path to the bundle's resource folder. E.g.
+    Chromium.app/Contents/Resources. Only valid for bundles."""
+    assert self._IsBundle()
+    return os.path.join(self.GetBundleContentsFolderPath(), 'Resources')
+
+  def GetBundlePlistPath(self):
+    """Returns the qualified path to the bundle's plist file. E.g.
+    Chromium.app/Contents/Info.plist. Only valid for bundles."""
+    assert self._IsBundle()
+    assert self.spec['type'] != 'loadable_modules', (
+        "Info.plist files for loadable_modules not yet supported by the "
+        "make generator (target %s)" % self.spec['target_name'])  # Not tested.
+    if self.spec['type'] == 'executable':
+      return os.path.join(self.GetBundleContentsFolderPath(), 'Info.plist')
+    else:
+      return os.path.join(self.GetBundleContentsFolderPath(),
+                          'Resources', 'Info.plist')
+
+  def GetBundleBinaryPath(self):
+    """Returns the directory name of the bundle represented by this target. E.g.
+    Chromium.app/Contents/MacOS/Chromium. Only valid for bundles."""
+    assert self._IsBundle()
+    if self.spec['type'] in ('loadable_module', 'shared_library'):
+      path = self.GetBundleContentsFolderPath()
+    elif self.spec['type'] == 'executable':
+      path = os.path.join(self.GetBundleContentsFolderPath(), 'MacOS')
+    return os.path.join(path, self.spec.get('product_name',
+                                            self.spec['target_name']))
+
   def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
     compilations."""
@@ -1381,12 +1452,9 @@ class MakefileWriter:
     """Writes Makefile code for 'mac_bundle_resources'."""
     self.WriteLn('### Generated for mac_bundle_resources')
     variable = self.target + '_mac_bundle_resources'
-    if self.type == 'shared_library':
-      dest = os.path.join(
-          self.output, 'Versions', self.GetFrameworkVersion(), 'Resources')
-    else:
-      # Suprisingly, loadable_modules have a 'Contents' folder like executables.
-      dest = os.path.join(self.output, 'Contents', 'Resources')
+    path = generator_default_variables['PRODUCT_DIR']
+    dest = os.path.join(path, self.xcode_settings.GetBundleResourceFolder())
+    dest = QuoteSpaces(dest)
     for res in resources:
       output = dest
 
@@ -1418,14 +1486,9 @@ class MakefileWriter:
     assert ' ' not in info_plist, (
       "Spaces in resource filenames not supported (%s)"  % info_plist)
     info_plist = self.Absolutify(info_plist)
-    assert self.type != 'loadable_modules', (
-        "Info.plist files for loadable_modules not yet supported by the "
-        "make generator (target %s)" % self.target)
-    if self.type == 'executable':
-      folder = 'Contents'
-    else:
-      folder = 'Versions/%s/Resources' % self.GetFrameworkVersion()
-    dest_plist = os.path.join(self.output, folder, 'Info.plist')
+    path = generator_default_variables['PRODUCT_DIR']
+    dest_plist = os.path.join(path, self.xcode_settings.GetBundlePlistPath())
+    dest_plist = QuoteSpaces(dest_plist)
     self.WriteXcodeEnv(dest_plist, spec)  # plists can contain envvars.
     self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,copy-info-plist',
                     part_of_all=True)
@@ -1606,29 +1669,13 @@ class MakefileWriter:
     """Return the 'output' (full output path) to a bundle output directory."""
     assert self.is_mac_bundle
     path = generator_default_variables['PRODUCT_DIR']
-    if self.type in ('loadable_module', 'shared_library'):
-      wrapper_extension = self.xcode_settings.GetPerTargetSetting(
-          'WRAPPER_EXTENSION', default='framework')
-      extension = spec.get('product_extension', wrapper_extension)
-      path = os.path.join(path,
-          spec.get('product_name', self.target) + '.' + extension)
-    elif self.type == 'executable':
-      path = os.path.join(path, spec.get('product_name', self.target) + '.app')
-    else:
-      print ("ERROR: Cannot bundle type", self.type, "for target", self.target)
-    return path
+    return os.path.join(path, self.xcode_settings.GetBundleName())
 
 
   def ComputeMacBundleBinaryOutput(self, spec):
     """Return the 'output' (full output path) to the binary in a bundle."""
-    assert self.is_mac_bundle
-    assert self.output, "Must be called after ComputeMacBundleOutput"
-    if self.type in ('loadable_module', 'shared_library'):
-      version = self.GetFrameworkVersion()
-      path = os.path.join(self.output, 'Versions', version)
-    elif self.type == 'executable':
-      path = os.path.join(self.output, 'Contents', 'MacOS')
-    return os.path.join(path, spec.get('product_name', self.target))
+    path = generator_default_variables['PRODUCT_DIR']
+    return os.path.join(path, self.xcode_settings.GetBundleBinaryPath())
 
 
   def ComputeDeps(self, spec):
@@ -1721,7 +1768,7 @@ class MakefileWriter:
       # postbuilds, since postbuilds depend on this.
       if self.type in ('shared_library', 'loadable_module'):
         self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
-            self.GetFrameworkVersion())
+            self.xcode_settings.GetFrameworkVersion())
 
       # Postbuild actions. Like actions, but implicitly depend on the output
       # framework.
@@ -2037,22 +2084,15 @@ class MakefileWriter:
           self._InstallableTargetInstallPath())
     if self.is_mac_bundle:
       # Overwrite this to point to the binary _in_ the bundle.
-      env['EXECUTABLE_PATH'] = StripProductDir(self.output_binary)
-      contents_folder = StripProductDir(self.output)
-      if self.type == 'shared_library':
-        contents_folder = os.path.join(
-            contents_folder, 'Versions', self.GetFrameworkVersion())
-      else:
-        # loadable_modules have a 'Contents' folder like executables.
-        contents_folder = os.path.join(contents_folder, 'Contents')
-      env['CONTENTS_FOLDER_PATH'] = contents_folder
+      env['EXECUTABLE_PATH'] = self.xcode_settings.GetBundleBinaryPath()
+      env['CONTENTS_FOLDER_PATH'] = \
+        self.xcode_settings.GetBundleContentsFolderPath()
+      env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
 
-      if self.type == 'shared_library':
-        infoplist_path = os.path.join(
-            contents_folder, 'Resources', 'Info.plist')
-      else:
-        infoplist_path = os.path.join(contents_folder, 'Info.plist')
-      env['INFOPLIST_PATH'] = infoplist_path
+      # TODO(thakis): Remove this.
+      env['EXECUTABLE_PATH'] = QuoteSpaces(env['EXECUTABLE_PATH'])
+      env['CONTENTS_FOLDER_PATH'] = QuoteSpaces(env['CONTENTS_FOLDER_PATH'])
+      env['INFOPLIST_PATH'] = QuoteSpaces(env['INFOPLIST_PATH'])
 
     return env
 
@@ -2068,14 +2108,6 @@ class MakefileWriter:
     for k in env:
       v = env[k].replace(r'\ ', ' ')
       self.WriteLn('%s: export %s := %s' % (target, k, v))
-
-
-  def GetFrameworkVersion(self):
-    """Returns the framework version of the current target. Only valid for
-    bundles."""
-    assert self.is_mac_bundle
-    return self.xcode_settings.GetPerTargetSetting(
-        'FRAMEWORK_VERSION', default='A')
 
 
   def Objectify(self, path):
