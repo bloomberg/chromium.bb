@@ -500,5 +500,11 @@ body.login-display #header {
 }
 
 body.login-display #footer {
+  margin-left: auto;
+  margin-right: auto;
+  width: 640px;  /* Same width as .step screens */
+}
+
+body.login-display #progress {
   visibility: hidden;
 }

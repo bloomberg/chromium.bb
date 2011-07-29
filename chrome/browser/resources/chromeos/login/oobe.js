@@ -422,9 +422,8 @@ cr.define('cr.ui', function() {
       Oobe.getInstance().prepareForLoginDisplay_();
     }
 
-    // Don't show header bar and in-pace signin button for OOBE.
+    // Don't show header bar for OOBE.
     $('login-header-bar').hidden = showOobe;
-    $('signin-button-in-place').hidden = showOobe;
   };
 
   /**

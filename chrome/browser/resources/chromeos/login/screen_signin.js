@@ -35,8 +35,6 @@ cr.define('login', function() {
       $('email').addEventListener('keydown', this.handleKeyDown_.bind(this));
       $('email').addEventListener('blur', this.handleEmailBlur_);
       $('password').addEventListener('keydown', this.handleKeyDown_.bind(this));
-      $('signin-button-in-place').addEventListener('click',
-          this.handleSigninClick_.bind(this));
     },
 
     /**
@@ -74,7 +72,6 @@ cr.define('login', function() {
       $('email').hidden = !enable;
       $('password').hidden = !enable;
       $('signin-button').hidden = !enable;
-      $('signin-button-in-place').hidden = !enable;
     },
 
     /**
