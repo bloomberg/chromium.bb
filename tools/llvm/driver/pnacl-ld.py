@@ -186,6 +186,7 @@ LDPatterns = [
   ( '(-M)',                       "env.append('LD_FLAGS', $0)"),
   ( '(-t)',                       "env.append('LD_FLAGS', $0)"),
   ( ('-y','(.*)'),                "env.append('LD_FLAGS', '-y', $0)"),
+  ( ('-defsym','(.*)'),           "env.append('LD_FLAGS', '-defsym', $0)"),
 
   ( '(--print-gc-sections)',      "env.append('LD_FLAGS', $0)"),
   ( '(-gc-sections)',             "env.append('LD_FLAGS', $0)"),

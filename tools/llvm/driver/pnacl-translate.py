@@ -90,6 +90,7 @@ TranslatorPatterns = [
   ( '(-L.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
   ( ('(-L)','(.*)'),   "env.append('EXTRA_LD_FLAGS', $0, $1)"),
   ( '(-l.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
+  ( '(-Wl,.*)',        "env.append('EXTRA_LD_FLAGS', $0)"),
 
   ( '(-*)',            UnrecognizedOption),
 
