@@ -10,8 +10,8 @@
  * @constructor
  */
 function LogsView() {
-  const mainBoxId = 'logsTabContent';
-  const tableId = 'logTable';
+  const mainBoxId = 'logs-view-tab-content';
+  const tableId = 'logs-view-log-table';
   const globalShowButtonId = 'logsGlobalShowBtn';
   const globalHideButtonId = 'logsGlobalHideBtn';
   const refreshLogsButtonId = 'logsRefreshBtn';
@@ -67,14 +67,14 @@ LogsView.prototype.CreateTableRow = function(logKey) {
     row.appendChild(rowCell);
   }
   // Log key cell.
-  cells[0].className = 'logCellText';
+  cells[0].className = 'logs-view-log-cell-text';
   cells[0].textContent = logKey;
   // Cell log is displayed in. Log content is in div element that is initially
   // hidden and empty.
-  cells[2].className = 'logCellText';
+  cells[2].className = 'logs-view-log-cell-text';
   var logDiv = document.createElement('div');
   logDiv.textContent = '';
-  logDiv.className = 'logCellLog';
+  logDiv.className = 'logs-view-log-cell-log';
   logDiv.id = 'logsView.logCell.' + this.rows.length;
   cells[2].appendChild(logDiv);
 
@@ -82,16 +82,16 @@ LogsView.prototype.CreateTableRow = function(logKey) {
   // not visible initially, so we initialize button accordingly.
   var expandButton = document.createElement('button');
   expandButton.textContent = 'Show...';
-  expandButton.className = 'logButton';
+  expandButton.className = 'logs-view-log-button';
   expandButton.addEventListener('click',
                                 this.onButtonClicked_.bind(this, row));
 
   // Cell that contains show/hide button.
   cells[1].appendChild(expandButton);
-  cells[1].className = 'logTableButtonColumn';
+  cells[1].className = 'logs-view-log-table-button-column';
 
   // Initially, log is not visible.
-  row.className = 'logRowCollapsed';
+  row.className = 'logs-view-log-row-collapsed';
 
   // We will need those to process row buttons' onclick events.
   row.logKey = logKey;
@@ -121,7 +121,7 @@ LogsView.prototype.PopulateTable = function(tableDiv, logList) {
  */
 LogsView.prototype.onButtonClicked_ = function(containingRow) {
   if (!containingRow.logVisible) {
-    containingRow.className = 'logRowExpanded';
+    containingRow.className = 'logs-view-log-row-expanded';
     containingRow.expandButton.textContent = 'Hide...';
     var logDiv = containingRow.logDiv;
     if (logDiv.textContent == '') {
@@ -131,7 +131,7 @@ LogsView.prototype.onButtonClicked_ = function(containingRow) {
                              containingRow.logDiv.id);
     }
   } else {
-    containingRow.className = 'logRowCollapsed';
+    containingRow.className = 'logs-view-log-row-collapsed';
     containingRow.expandButton.textContent = 'Show...';
   }
   containingRow.logVisible = !containingRow.logVisible;

@@ -17,40 +17,9 @@ body {
   font-family: sans-serif;
 }
 
-#filterBox {
-  background: #efefef;
-  padding: 5px;
-  border-bottom: 1px solid gray;
-  overflow: hidden;
-}
-
-#filterBox * {
-  white-space: nowrap;
-  font-family: sans-serif;
-  font-size: 12px;
-}
-
-#filterBox input {
-  width: 100%;
-}
-
-#actionBox {
-  background: #efefef;
-  white-space: nowrap;
-  border-top: 1px solid gray;
-  overflow: hidden;
-}
-
-#eventsBox {
-  overflow-x: hidden;
-  overflow-y: auto
-}
-
-#detailsBox {
-  overflow: auto;
-}
-
-.splitterBox {
+/* This class is used to create the splitter widget in
+   ResizbleVerticalSplitView */
+.vertical-splitter {
   background: #bfbfbf;
   border-left: 1px inset black;
   border-right: 1px solid black;
@@ -58,146 +27,6 @@ body {
   width: 8px;
   cursor: col-resize;
   user-select: none;
-}
-
-#eventsListTable {
-  cursor: pointer;
-}
-
-#eventsListTable thead td {
-  text-align: left;
-  font-weight: bold;
-  background: rgb(229, 236, 249);
-}
-
-#eventsListTable td {
-  padding: 3px;
-  border-left: 1px solid #afafaf;
-  border-bottom: 1px solid #afafaf;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-#eventsListTableBody .mouseover {
-  background: rgb(244,244,255);
-}
-
-#eventsListTableBody .selected {
-  background: #C3D9FF;
-}
-
-#eventsListTableBody .error {
-  background: #FFF5F5;
-}
-
-#eventsListTableBody .inactive {
-  background: #F5FFF5;
-}
-
-#eventsListTableBody .source_CONNECT_JOB {
-  color: blue;
-}
-
-#eventsListTableBody .source_HOST_RESOLVER_IMPL_JOB,
-#eventsListTableBody .source_HOST_RESOLVER_IMPL_REQUEST {
-  color: #206060;
-}
-
-#eventsListTableBody .source_DISK_CACHE_ENTRY,
-#eventsListTableBody .source_MEMORY_CACHE_ENTRY {
-  color: #707070;
-}
-
-#eventsListTableBody .source_SOCKET {
-  color: purple;
-}
-
-#eventsListTableBody .source_INIT_PROXY_RESOLVER {
-  color: green;
-}
-
-#eventsListTableBody .source_NONE {
-  color: red;
-}
-
-.logCellEmpty {
-  background-color: gray;
-}
-
-.logCellText, .logCellLog {
-  background-color: white;
-}
-
-.logRowCollapsed .logCellLog {
-  display: none;
-}
-
-.logRowExpanded .logCellLog {
-  display: table-cell;
-}
-
-.logTableButtonColumn {
-  text-align: center;
-}
-
-.logButton {
-  width: 85px;
-}
-
-.logsGlobalButton {
-  width: 135px;
-  float: left;
-  margin: 5px;
-  margin-top: 0;
-}
-
-#logTable td {
-  padding: 0 5px;
-  padding-top: 3px;
-  vertical-align: top;
-  line-height: 17px;
-  font-family: 'Courier New', monospace;
-  white-space: pre;
-  font-size: 12px;
-}
-
-#logTableHeaderRow th {
-  text-align: left;
-}
-
-#logsTabContent {
-  padding: 5px;
-}
-
-.tabSwitcher {
-  margin-top: 10px;
-  margin-left: 10px;
-}
-
-.tabSwitcher th {
-  background: rgb(229,236,249);
-  cursor: pointer;
-  background-clip: border-box;
-  border-top-left-radius: 5px 5px;
-  border-top-right-radius: 5px 5px;
-  padding-left: 4px;
-  padding-top: 4px;
-  padding-right: 4px;
-  font-size: 12px;
-  margin-left: 30px;
-}
-
-.tabSwitcher th.selected, .tabSwitcherLine {
-  background: rgb(195,217,255);
-}
-
-.tabSwitcherLine {
-  height: 10px;
-}
-
-#detailsTabHandles {
-  border: 1px solid white;
 }
 
 .logSourceEntry {
@@ -229,7 +58,7 @@ body {
 #hstsTabContent,
 #httpThrottlingTabContent,
 #prerenderTabContent,
-#logsTabContent {
+#logs-view-tab-content {
   overflow: auto;
   padding: 10px;
 }

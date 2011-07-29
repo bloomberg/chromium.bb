@@ -1,7 +1,7 @@
 <!-- ================= Events view =================== -->
 
 <!-- Filter Box: This the top bar which contains the search box.  -->
-<div id=filterBox>
+<div id=events-view-filter-box>
   <table width=100%>
     <tr>
       <td width=1%>Filter:</td>
@@ -11,8 +11,8 @@
   </table>
 </div>
 <!-- Events Box: This the panel on the left which lists the sources -->
-<div id=eventsBox>
-  <table id=eventsListTable cellspacing=0 cellpadding=0 width=100%>
+<div id=events-view-source-list>
+  <table id=events-view-source-list-table cellspacing=0 cellpadding=0 width=100%>
     <thead>
       <tr>
         <td><input type=checkbox id=selectAll /></td>
@@ -22,26 +22,26 @@
       </tr>
     </thead>
     <!-- Events table body: This is where request rows go into -->
-    <tbody id=eventsListTableBody></tbody>
+    <tbody id=events-view-source-list-tbody></tbody>
   </table>
 </div>
 <!-- Action Box: This is a button bar along the bottom -->
-<div id=actionBox>
+<div id=events-view-action-box>
   <input type=button value="Delete selected" id=deleteSelected />
   <input type=button value="Delete all" id=deleteAll />
 </div>
 <!-- Splitter Box: This is a handle to resize the vertical divider -->
-<div id=splitterBoxForEventDetails class=splitterBox></div>
+<div id=splitterBoxForEventDetails class=vertical-splitter></div>
 <!-- Details box: This is the panel on the right which shows information -->
-<div id=detailsTabHandles>
-  <table class=tabSwitcher cellspacing=0>
+<div id=events-view-details-tab-handles>
+  <table class=events-view-tab-switcher cellspacing=0>
     <tr>
       <th id=detailsLogTab>Log</th>
-      <td class=tabSwitcherSpacer>&nbsp;</td>
+      <td>&nbsp;</td>
       <th id=detailsTimelineTab>Timeline</th>
     </tr>
   </table>
-  <div class=tabSwitcherLine></div>
+  <div class=events-view-tab-switcher-line></div>
 </div>
 <div id=detailsLogBox></div>
 <div id=detailsTimelineBox></div>

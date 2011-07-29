@@ -26,7 +26,7 @@
  * @constructor
  */
 function EventsView() {
-  const tableBodyId = 'eventsListTableBody';
+  const tableBodyId = 'events-view-source-list-tbody';
   const filterInputId = 'filterInput';
   const filterCountId = 'filterCount';
   const deleteSelectedId = 'deleteSelected';
@@ -35,14 +35,14 @@ function EventsView() {
   const sortByIdId = 'sortById';
   const sortBySourceTypeId = 'sortBySource';
   const sortByDescriptionId = 'sortByDescription';
-  const tabHandlesContainerId = 'detailsTabHandles';
+  const tabHandlesContainerId = 'events-view-details-tab-handles';
   const logTabId = 'detailsLogTab';
   const timelineTabId = 'detailsTimelineTab';
   const detailsLogBoxId = 'detailsLogBox';
   const detailsTimelineBoxId = 'detailsTimelineBox';
-  const topbarId = 'filterBox';
-  const middleboxId = 'eventsBox';
-  const bottombarId = 'actionBox';
+  const topbarId = 'events-view-filter-box';
+  const middleboxId = 'events-view-source-list';
+  const bottombarId = 'events-view-action-box';
   const sizerId = 'splitterBoxForEventDetails';
 
   View.call(this);

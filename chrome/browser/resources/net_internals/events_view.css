@@ -1,0 +1,125 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+#events-view-filter-box {
+  background: #efefef;
+  padding: 5px;
+  border-bottom: 1px solid gray;
+  overflow: hidden;
+}
+
+#events-view-filter-box * {
+  white-space: nowrap;
+  font-family: sans-serif;
+  font-size: 12px;
+}
+
+#events-view-filter-box input {
+  width: 100%;
+}
+
+#events-view-action-box {
+  background: #efefef;
+  white-space: nowrap;
+  border-top: 1px solid gray;
+  overflow: hidden;
+}
+
+#events-view-source-list {
+  overflow-x: hidden;
+  overflow-y: auto
+}
+
+#events-view-source-list-table {
+  cursor: pointer;
+}
+
+#events-view-source-list-table thead td {
+  text-align: left;
+  font-weight: bold;
+  background: rgb(229, 236, 249);
+}
+
+#events-view-source-list-table td {
+  padding: 3px;
+  border-left: 1px solid #afafaf;
+  border-bottom: 1px solid #afafaf;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#events-view-source-list-tbody .mouseover {
+  background: rgb(244,244,255);
+}
+
+#events-view-source-list-tbody .selected {
+  background: #C3D9FF;
+}
+
+#events-view-source-list-tbody .error {
+  background: #FFF5F5;
+}
+
+#events-view-source-list-tbody .inactive {
+  background: #F5FFF5;
+}
+
+#events-view-source-list-tbody .source_CONNECT_JOB {
+  color: blue;
+}
+
+#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_JOB,
+#events-view-source-list-tbody .source_HOST_RESOLVER_IMPL_REQUEST {
+  color: #206060;
+}
+
+#events-view-source-list-tbody .source_DISK_CACHE_ENTRY,
+#events-view-source-list-tbody .source_MEMORY_CACHE_ENTRY {
+  color: #707070;
+}
+
+#events-view-source-list-tbody .source_SOCKET {
+  color: purple;
+}
+
+#events-view-source-list-tbody .source_INIT_PROXY_RESOLVER {
+  color: green;
+}
+
+#events-view-source-list-tbody .source_NONE {
+  color: red;
+}
+
+.events-view-tab-switcher {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.events-view-tab-switcher th {
+  background: rgb(229,236,249);
+  cursor: pointer;
+  background-clip: border-box;
+  border-top-left-radius: 5px 5px;
+  border-top-right-radius: 5px 5px;
+  padding-left: 4px;
+  padding-top: 4px;
+  padding-right: 4px;
+  font-size: 12px;
+  margin-left: 30px;
+}
+
+.events-view-tab-switcher th.selected, .events-view-tab-switcher-line {
+  background: rgb(195,217,255);
+}
+
+.events-view-tab-switcher-line {
+  height: 10px;
+}
+
+#events-view-details-tab-handles {
+  border: 1px solid white;
+}

@@ -1,0 +1,50 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+.logs-view-log-cell-text, .logs-view-log-cell-log {
+  background-color: white;
+}
+
+.logs-view-log-row-collapsed .logs-view-log-cell-log {
+  display: none;
+}
+
+.logs-view-log-row-expanded .logs-view-log-cell-log {
+  display: table-cell;
+}
+
+.logs-view-log-table-button-column {
+  text-align: center;
+}
+
+.logs-view-log-button {
+  width: 85px;
+}
+
+.logs-view-global-button {
+  width: 135px;
+  float: left;
+  margin: 5px;
+  margin-top: 0;
+}
+
+#logs-view-log-table td {
+  padding: 0 5px;
+  padding-top: 3px;
+  vertical-align: top;
+  line-height: 17px;
+  font-family: 'Courier New', monospace;
+  white-space: pre;
+  font-size: 12px;
+}
+
+#logs-view-log-table-header-row th {
+  text-align: left;
+}
+
+#logs-view-tab-content {
+  padding: 5px;
+}
