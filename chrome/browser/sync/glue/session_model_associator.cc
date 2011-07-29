@@ -135,7 +135,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     if (ShouldSyncWindow(*i) && (*i)->GetTabCount() &&
         (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
-      SessionID::id_type window_id = (*i)->GetSessionId().id();
+      SessionID::id_type window_id = (*i)->GetSessionId();
       VLOG(1) << "Reassociating window " << window_id << " with " <<
           (*i)->GetTabCount() << " tabs.";
       window_s.set_window_id(window_id);
@@ -155,7 +155,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
         DCHECK(tab);
         if (IsValidTab(*tab)) {
           found_tabs = true;
-          window_s.add_tab(tab->GetSessionId().id());
+          window_s.add_tab(tab->GetSessionId());
           if (reload_tabs) {
             ReassociateTab(*tab);
           }
@@ -216,7 +216,7 @@ void SessionModelAssociator::ReassociateTab(const SyncedTabDelegate& tab) {
     return;
 
   int64 sync_id;
-  SessionID::id_type id = tab.GetSessionId().id();
+  SessionID::id_type id = tab.GetSessionId();
   if (tab.IsBeingDestroyed()) {
     // This tab is closing.
     TabLinksMap::iterator tab_iter = tab_map_.find(id);
@@ -243,10 +243,10 @@ void SessionModelAssociator::ReassociateTab(const SyncedTabDelegate& tab) {
 void SessionModelAssociator::Associate(const SyncedTabDelegate* tab,
                                        int64 sync_id) {
   DCHECK(CalledOnValidThread());
-  SessionID::id_type session_id = tab->GetSessionId().id();
+  SessionID::id_type session_id = tab->GetSessionId();
   const SyncedWindowDelegate* window =
       SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-          tab->GetWindowId().id());
+          tab->GetWindowId());
   if (!window) {  // Can happen for weird things like developer console.
     tab_pool_.FreeTabNode(sync_id);
     return;
@@ -276,9 +276,9 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   session_s.set_session_tag(GetCurrentMachineTag());
   sync_pb::SessionTab* tab_s = session_s.mutable_tab();
 
-  SessionID::id_type tab_id = tab.GetSessionId().id();
+  SessionID::id_type tab_id = tab.GetSessionId();
   tab_s->set_tab_id(tab_id);
-  tab_s->set_window_id(tab.GetWindowId().id());
+  tab_s->set_window_id(tab.GetWindowId());
   const int current_index = tab.GetCurrentEntryIndex();
   const int min_index = std::max(0,
                                  current_index - max_sync_navigation_count);

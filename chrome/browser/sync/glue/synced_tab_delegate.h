@@ -21,8 +21,8 @@ class SyncedTabDelegate {
  public:
   // Method from TabContentsWrapper.
 
-  virtual const SessionID& GetWindowId() const = 0;
-  virtual const SessionID& GetSessionId() const = 0;
+  virtual SessionID::id_type GetWindowId() const = 0;
+  virtual SessionID::id_type GetSessionId() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
   virtual Profile* profile() const = 0;
 

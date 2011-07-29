@@ -35,7 +35,7 @@ class SyncedWindowDelegate {
   virtual bool HasWindow() const = 0;
 
   // see Browser::session_id
-  virtual const SessionID& GetSessionId() const = 0;
+  virtual SessionID::id_type GetSessionId() const = 0;
 
   // see Browser::tab_count
   virtual int GetTabCount() const = 0;

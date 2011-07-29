@@ -25,7 +25,7 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
 
   // SyncedWindowDelegate:
   virtual bool HasWindow() const OVERRIDE;
-  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual SessionID::id_type GetSessionId() const OVERRIDE;
   virtual int GetTabCount() const OVERRIDE;
   virtual int GetActiveIndex() const OVERRIDE;
   virtual bool IsApp() const OVERRIDE;

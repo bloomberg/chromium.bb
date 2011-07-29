@@ -20,8 +20,8 @@ class TabContentsWrapperSyncedTabDelegate
   virtual ~TabContentsWrapperSyncedTabDelegate();
 
   // Methods from SyncedTabDelegate.
-  virtual const SessionID& GetWindowId() const OVERRIDE;
-  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual SessionID::id_type GetWindowId() const OVERRIDE;
+  virtual SessionID::id_type GetSessionId() const OVERRIDE;
   virtual bool IsBeingDestroyed() const OVERRIDE;
   virtual Profile* profile() const OVERRIDE;
   virtual bool HasExtensionAppId() const OVERRIDE;

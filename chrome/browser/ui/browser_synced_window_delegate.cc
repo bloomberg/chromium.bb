@@ -60,8 +60,8 @@ bool BrowserSyncedWindowDelegate::HasWindow() const {
   return browser_->window() != NULL;
 }
 
-const SessionID& BrowserSyncedWindowDelegate::GetSessionId() const {
-  return browser_->session_id();
+SessionID::id_type BrowserSyncedWindowDelegate::GetSessionId() const {
+  return browser_->session_id().id();
 }
 
 int BrowserSyncedWindowDelegate::GetTabCount() const {

@@ -17,12 +17,12 @@ TabContentsWrapperSyncedTabDelegate::TabContentsWrapperSyncedTabDelegate(
 
 TabContentsWrapperSyncedTabDelegate::~TabContentsWrapperSyncedTabDelegate() {}
 
-const SessionID& TabContentsWrapperSyncedTabDelegate::GetWindowId() const {
-  return tab_contents_wrapper_->restore_tab_helper()->window_id();
+SessionID::id_type TabContentsWrapperSyncedTabDelegate::GetWindowId() const {
+  return tab_contents_wrapper_->restore_tab_helper()->window_id().id();
 }
 
-const SessionID& TabContentsWrapperSyncedTabDelegate::GetSessionId() const {
-  return tab_contents_wrapper_->restore_tab_helper()->session_id();
+SessionID::id_type TabContentsWrapperSyncedTabDelegate::GetSessionId() const {
+  return tab_contents_wrapper_->restore_tab_helper()->session_id().id();
 }
 
 bool TabContentsWrapperSyncedTabDelegate::IsBeingDestroyed() const {
