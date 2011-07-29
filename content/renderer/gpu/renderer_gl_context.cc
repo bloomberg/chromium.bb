@@ -134,6 +134,38 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
 #endif
 }
 
+bool RendererGLContext::MapExternalResource(
+    gpu::resource_type::ResourceType resource_type,
+    uint32 resource_source_id,
+    RendererGLContext* source_context,
+    uint32 resource_dest_id) {
+  if (!command_buffer_)
+    return false;
+
+  return command_buffer_->MapExternalResource(
+      resource_type,
+      resource_source_id,
+      source_context ? source_context->command_buffer_ : NULL,
+      resource_dest_id);
+}
+
+bool RendererGLContext::MapExternalResourceToParent(
+    gpu::resource_type::ResourceType resource_type,
+    uint32 resource_source_id,
+    uint32 resource_dest_id) {
+  if (!command_buffer_)
+    return false;
+
+  if (!parent_.get())
+    return false;
+
+  return parent_->MapExternalResource(
+      resource_type,
+      resource_source_id,
+      this,
+      resource_dest_id);
+}
+
 bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   if (parent_.get() == new_parent)
     return true;
@@ -195,45 +227,18 @@ uint32 RendererGLContext::GetParentTextureId() {
 }
 
 uint32 RendererGLContext::CreateParentTexture(const gfx::Size& size) {
-  // Allocate a texture ID with respect to the parent.
   if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return 0;
-    uint32 texture_id = parent_->gles2_implementation_->MakeTextureId();
-    parent_->gles2_implementation_->BindTexture(GL_TEXTURE_2D, texture_id);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    parent_->gles2_implementation_->TexImage2D(GL_TEXTURE_2D,
-        0,  // mip level
-        GL_RGBA,
-        size.width(),
-        size.height(),
-        0,  // border
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        NULL);
-    // Make sure that the parent texture's storage is allocated before we let
-    // the caller attempt to use it.
-    int32 token = parent_->gles2_helper_->InsertToken();
-    parent_->gles2_helper_->WaitForToken(token);
-    return texture_id;
+    // Reserve a parent texture ID on the client side.
+    uint32 parent_texture_id = 0;
+    parent_->gles2_implementation_->GenTextures(1, &parent_texture_id);
+    return parent_texture_id;
   }
   return 0;
 }
 
 void RendererGLContext::DeleteParentTexture(uint32 texture) {
-  if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return;
+  if (parent_.get())
     parent_->gles2_implementation_->DeleteTextures(1, &texture);
-  }
 }
 
 void RendererGLContext::SetSwapBuffersCallback(Callback0::Type* callback) {

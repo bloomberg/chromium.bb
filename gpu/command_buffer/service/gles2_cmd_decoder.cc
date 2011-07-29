@@ -465,6 +465,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs);
   virtual void Destroy();
+  virtual bool MapExternalResource(resource_type::ResourceType resource_type,
+                                   uint32 resource_source_id,
+                                   GLES2Decoder* source_decoder,
+                                   uint32 resource_dest_id);
   virtual bool SetParent(GLES2Decoder* parent_decoder,
                          uint32 parent_texture_id);
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
@@ -586,6 +590,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     TextureManager::TextureInfo* info =
         texture_manager()->GetTextureInfo(client_id);
     return (info && !info->IsDeleted()) ? info : NULL;
+  }
+
+  // Adds the texture info for the given texture.
+  void AddTextureInfo(GLuint client_id, TextureManager::TextureInfo* info) {
+    texture_manager()->AddTextureInfo(feature_info_, client_id, info);
   }
 
   // Deletes the texture info for the given texture.
@@ -2089,8 +2098,10 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
       if (info->IsAttachedToFramebuffer()) {
         state_dirty_ = true;
       }
-      GLuint service_id = info->service_id();
-      glDeleteTextures(1, &service_id);
+      if (info->owner() == group_->texture_manager()) {
+        GLuint service_id = info->service_id();
+        glDeleteTextures(1, &service_id);
+      }
       RemoveTextureInfo(client_ids[ii]);
     }
   }
@@ -2470,6 +2481,37 @@ void GLES2DecoderImpl::Destroy() {
   offscreen_saved_color_texture_.reset();
 }
 
+bool GLES2DecoderImpl::MapExternalResource(
+    resource_type::ResourceType resource_type,
+    uint32 resource_source_id,
+    GLES2Decoder* source_decoder,
+    uint32 resource_dest_id) {
+  GLES2DecoderImpl* source_decoder_impl = static_cast<GLES2DecoderImpl*>(
+      source_decoder);
+
+  if (resource_type != resource_type::kTexture)
+    return false;
+
+  if (!source_decoder)
+    return false;
+
+  // The client should already have created the texture in the source context
+  // group and flushed.
+  TextureManager::TextureInfo* source_info =
+      source_decoder_impl->GetTextureInfo(resource_source_id);
+  if (!source_info)
+    return false;
+
+  // Delete or unmap any existing texture with this ID.
+  DeleteTexturesHelper(1, &resource_dest_id);
+
+  // Add the source texture info to this group's manager with the
+  // requested id.
+  AddTextureInfo(resource_dest_id, source_info);
+
+  return true;
+}
+
 bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
                                  uint32 new_parent_texture_id) {
   if (!offscreen_saved_color_texture_.get())
@@ -2502,8 +2544,8 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
           feature_info_, new_parent_texture_id);
 
     TextureManager::TextureInfo* info =
-        new_parent_impl->CreateTextureInfo(new_parent_texture_id, service_id);
-    info->SetNotOwned();
+        new TextureManager::TextureInfo(service_id);
+    new_parent_impl->AddTextureInfo(new_parent_texture_id, info);
     new_parent_impl->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
 
     parent_ = new_parent_impl->AsWeakPtr();

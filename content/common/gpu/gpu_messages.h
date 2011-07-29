@@ -102,6 +102,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
+IPC_ENUM_TRAITS(gpu::resource_type::ResourceType)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -317,6 +318,28 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_Initialize,
                            base::SharedMemoryHandle /* ring_buffer */,
                            int32 /* size */,
                            bool /* result */)
+
+
+// Map a resource from an external context into this context. The source
+// context need not be in the same share group from the client's point of
+// view, allowing safe sharing between an "untrusted" context, like Pepper
+// and a compositor context.
+//
+// Currently only texture resources are supported. TODO(apatrick): generalize
+// this as appropriate.
+//
+// To unmap a previously mapped external resource, delete it in the
+// destination context group. This will not delete the underlying texture
+// object, just disassociate it with the id in the destination context group.
+//
+// The lifetime of the external resource is managed by the context group it
+// was originally created in. When the last context in that group is destroyed
+// the resource becomes invalid in all other context groups it is mapped into.
+IPC_MESSAGE_ROUTED4(GpuCommandBufferMsg_MapExternalResource,
+                    gpu::resource_type::ResourceType /* resource_type */,
+                    uint32 /* resource_source_id */,
+                    int32 /* source_route_id */,
+                    uint32 /* resource_dest_id */)
 
 // Sets the parent command buffer. This allows the parent and child to share
 // textures.

@@ -73,6 +73,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Initialize,
                                     OnInitialize);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_MapExternalResource,
+                        OnMapExternalResource);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
                                     OnSetParent);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
@@ -244,6 +246,21 @@ void GpuCommandBufferStub::OnInitialize(
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
+}
+
+void GpuCommandBufferStub::OnMapExternalResource(
+    gpu::resource_type::ResourceType resource_type,
+    uint32 resource_source_id,
+    int32 source_route_id,
+    uint32 resource_dest_id) {
+  GpuCommandBufferStub* source_stub =
+      channel_->LookupCommandBuffer(source_route_id);
+
+  scheduler_->MapExternalResource(
+      resource_type,
+      resource_source_id,
+      source_stub ? source_stub->scheduler() : NULL,
+      resource_dest_id);
 }
 
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,

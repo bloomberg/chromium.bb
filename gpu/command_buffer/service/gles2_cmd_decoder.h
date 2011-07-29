@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_old.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "ui/gfx/size.h"
 
@@ -76,6 +77,26 @@ class GLES2Decoder : public CommonDecoder {
 
   // Destroys the graphics context.
   virtual void Destroy() = 0;
+
+  // Map a resource from an external context into this context. The source
+  // context need not be in the same share group from the client's point of
+  // view, allowing safe sharing between an "untrusted" context, like Pepper
+  // and a compositor context.
+  //
+  // Currently only texture resources are supported. TODO(apatrick): generalize
+  // this as appropriate.
+  //
+  // To unmap a previously mapped external resource, delete it in the
+  // destination context group. This will not delete the underlying texture
+  // object, just disassociate it with the id in the destination context group.
+  //
+  // The lifetime of the external resource is managed by the context group it
+  // was originally created in. When the last context in that group is destroyed
+  // the resource becomes invalid in all other context groups it is mapped into.
+  virtual bool MapExternalResource(resource_type::ResourceType resource_type,
+                                   uint32 resource_source_id,
+                                   GLES2Decoder* source_decoder,
+                                   uint32 resource_dest_id) = 0;
 
   virtual bool SetParent(GLES2Decoder* parent_decoder,
                          uint32 parent_texture_id) = 0;

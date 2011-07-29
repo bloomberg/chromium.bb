@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -123,6 +124,34 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
       const char* allowed_extensions,
       const int32* attrib_list,
       const GURL& active_url);
+
+  // Map a resource from an external context into this context. The source
+  // context need not be in the same share group from the client's point of
+  // view, allowing safe sharing between an "untrusted" context, like Pepper
+  // and a compositor context.
+  //
+  // Currently only texture resources are supported. TODO(apatrick): generalize
+  // this as appropriate.
+  //
+  // To unmap a previously mapped external resource, delete it in the
+  // destination context group. This will not delete the underlying texture
+  // object, just disassociate it with the id in the destination context group.
+  //
+  // The lifetime of the external resource is managed by the context group it
+  // was originally created in. When the last context in that group is destroyed
+  // the resource becomes invalid in all other context groups it is mapped into.
+  bool MapExternalResource(gpu::resource_type::ResourceType resource_type,
+                           uint32 resource_source_id,
+                           RendererGLContext* source_context,
+                           uint32 resource_dest_id);
+
+  // TODO(apatrick): this is a workaround until the parent / child relationship
+  // between contexts is removed. MapExternalResource has no such restrictions
+  // on the relationship between contexts. Use it instead.
+  bool MapExternalResourceToParent(
+      gpu::resource_type::ResourceType resource_type,
+      uint32 resource_source_id,
+      uint32 resource_dest_id);
 
   // Sets the parent context. If any parent textures have been created for
   // another parent, it is important to delete them before changing the parent.

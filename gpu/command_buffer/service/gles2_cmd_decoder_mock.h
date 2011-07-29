@@ -37,6 +37,11 @@ class MockGLES2Decoder : public GLES2Decoder {
                     const char* allowed_extensions,
                     const std::vector<int32>& attribs));
   MOCK_METHOD0(Destroy, void());
+  MOCK_METHOD4(MapExternalResource,
+               bool(resource_type::ResourceType resource_type,
+                    uint32 resource_source_id,
+                    GLES2Decoder* source_decoder,
+                    uint32 resource_dest_id));
   MOCK_METHOD2(SetParent, bool(GLES2Decoder* parent, uint32 parent_texture_id));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, void(const gfx::Size& size));
   MOCK_METHOD0(UpdateOffscreenFrameBufferSize, bool());
