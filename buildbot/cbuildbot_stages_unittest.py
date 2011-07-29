@@ -917,34 +917,22 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['push_image'] = True
 
     self.mox.StubOutWithMock(stages.ArchiveStage, '_GetTestTarball')
-    stages.ArchiveStage._GetTestTarball().AndReturn('foo.tgz')
 
   def ConstructStage(self):
     return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
   def testArchive(self):
     """Simple did-it-run test."""
-    self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
-    self.mox.StubOutWithMock(commands, 'UploadSymbols')
-    self.mox.StubOutWithMock(commands, 'UploadTestTarball')
-    self.mox.StubOutWithMock(commands, 'UpdateIndex')
-    self.mox.StubOutWithMock(commands, 'PushImages')
     self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^/var/www'), ignore_errors=True)
 
-    commands.LegacyArchiveBuild(
-        self.build_root, self.bot_id, self._build_config,
-        mox.IgnoreArg(), 'myimage-b1234', mox.IgnoreArg(), self.options.debug)
+    self.mox.StubOutWithMock(stages, 'RunParallelSteps')
+    stages.RunParallelSteps(mox.IgnoreArg())
 
-    commands.UploadSymbols(self.build_root,
-                           board=self._build_config['board'],
-                           official=self._build_config['chromeos_official'])
-
-    commands.UploadTestTarball('foo.tgz', mox.IgnoreArg(), mox.IgnoreArg(),
-                               self.options.debug)
-
+    self.mox.StubOutWithMock(commands, 'UpdateIndex')
     commands.UpdateIndex(mox.IgnoreArg())
 
+    self.mox.StubOutWithMock(commands, 'PushImages')
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
                         branch_name='master',
@@ -955,30 +943,17 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
   def testTrybotArchive(self):
-    """Test archiving to a test directory with Trybots."""
-    self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
-    self.mox.StubOutWithMock(commands, 'UploadSymbols')
-    self.mox.StubOutWithMock(commands, 'UploadTestTarball')
-    self.mox.StubOutWithMock(commands, 'UpdateIndex')
-    self.mox.StubOutWithMock(commands, 'PushImages')
-    self.mox.StubOutWithMock(shutil, 'rmtree')
-
     self.options.buildbot = False
+    self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
-    commands.LegacyArchiveBuild(
-        self.build_root, self.bot_id, self._build_config,
-        mox.IgnoreArg(), 'myimage-b1234', mox.Regex(r'^%s' % self.build_root),
-        self.options.debug)
 
-    commands.UploadSymbols(self.build_root,
-                           board=self._build_config['board'],
-                           official=self._build_config['chromeos_official'])
+    self.mox.StubOutWithMock(stages, 'RunParallelSteps')
+    stages.RunParallelSteps(mox.IgnoreArg())
 
-    commands.UploadTestTarball('foo.tgz', mox.IgnoreArg(), mox.IgnoreArg(),
-                               self.options.debug)
-
+    self.mox.StubOutWithMock(commands, 'UpdateIndex')
     commands.UpdateIndex(mox.IgnoreArg())
 
+    self.mox.StubOutWithMock(commands, 'PushImages')
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
                         branch_name='master',

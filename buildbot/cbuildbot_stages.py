@@ -8,6 +8,7 @@ import datetime
 import math
 import multiprocessing
 import os
+import Queue
 import re
 import shutil
 import socket
@@ -30,6 +31,7 @@ _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
+_PRINT_INTERVAL = 1
 
 class BuildException(Exception):
   pass
@@ -460,6 +462,120 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
     description = traceback.format_exc()
     print >> sys.stderr, description
     return Results.FORGIVEN, None
+
+class BackgroundSteps(multiprocessing.Process):
+  """Run a list of functions in sequence in the background.
+
+  These functions may be the 'Run' functions from buildbot stages or just plain
+  functions. They will be run in the background. Output from these functions
+  is saved to a temporary file and is printed when the 'WaitForStep' function
+  is called.
+  """
+
+  def __init__(self):
+    multiprocessing.Process.__init__(self)
+    self._steps = []
+    self._queue = multiprocessing.Queue()
+
+  def AddStep(self, step):
+    """Add a step to the list of steps to run in the background."""
+    output = tempfile.NamedTemporaryFile(delete=False)
+    self._steps.append((step, output))
+
+  def WaitForStep(self):
+    """Wait for the next step to complete.
+
+    Output from the step is printed as the step runs.
+
+    If an exception occurs, return a string containing the traceback.
+    """
+    assert not self.Empty()
+    step, output = self._steps.pop(0)
+    pos = 0
+    more_output = True
+    while more_output:
+      # Check whether the process is finished.
+      try:
+        error, results = self._queue.get(True, _PRINT_INTERVAL)
+        more_output = False
+      except Queue.Empty:
+        more_output = True
+
+      # Print output so far.
+      output.seek(pos)
+      for line in output:
+        sys.stdout.write(line)
+      pos = output.tell()
+
+    # Cleanup temp file.
+    output.close()
+    os.unlink(output.name)
+
+    # Propagate any results.
+    for result in results:
+      Results.Record(*result)
+
+    # If a traceback occurred, return it.
+    return error
+
+  def Empty(self):
+    """Return True if there are any steps left to run."""
+    return len(self._steps) == 0
+
+  def run(self):
+    """Run the list of steps."""
+
+    # Be nice so that foreground processes get CPU if they need it.
+    os.nice(10)
+
+    stdout_fileno = sys.stdout.fileno()
+    stderr_fileno = sys.stderr.fileno()
+    for step, output in self._steps:
+      # Send all output to a named temporary file.
+      os.dup2(output.fileno(), stdout_fileno)
+      os.dup2(output.fileno(), stderr_fileno)
+      error = None
+      try:
+        Results.Clear()
+        step()
+      except Exception:
+        traceback.print_exc(file=output)
+        error = traceback.format_exc()
+
+      output.close()
+      results = Results.Get()
+      self._queue.put((error, results))
+
+
+def RunParallelSteps(steps):
+  """Run a list of functions in parallel.
+
+  The output from the functions is saved to a temporary file and printed as if
+  they were run in sequence.
+
+  If exceptions occur in the steps, we join together the tracebacks and print
+  them after all parallel steps have finished running.
+  """
+  # First, start all the steps.
+  bg_steps = []
+  for step in steps:
+    bg = BackgroundSteps()
+    bg.AddStep(step)
+    bg.start()
+    bg_steps.append(bg)
+
+  # Wait for each step to complete.
+  tracebacks = []
+  for bg in bg_steps:
+    while not bg.Empty():
+      error = bg.WaitForStep()
+      if error:
+        tracebacks.append(error)
+    bg.join()
+
+  # Propagate any exceptions.
+  if tracebacks:
+    raise BuildException('\n' + ''.join(tracebacks))
 
 
 class CleanUpStage(BuilderStage):
@@ -933,14 +1049,12 @@ class RemoteTestStatusStage(BuilderStage):
 
 
 class ArchiveStage(NonHaltingBuilderStage):
-  """Archives build and test artifacts for developer consumption.
+  """Archives build and test artifacts for developer consumption."""
 
-     This is intended to run in the background, in parallel with tests.
-     When the tests have completed, TestStageComplete method must be
-     called. (If no tests are run, the TestStageComplete method must be
-     called with 'None'.)
-  """
-
+  # This stage is intended to run in the background, in parallel with tests.
+  # When the tests have completed, TestStageComplete method must be
+  # called. (If no tests are run, the TestStageComplete method must be
+  # called with 'None'.)
   def __init__(self, bot_id, options, build_config):
     super(ArchiveStage, self).__init__(bot_id, options, build_config)
     if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
@@ -1011,33 +1125,57 @@ class ArchiveStage(NonHaltingBuilderStage):
       # Buildbot: Clear out any leftover build artifacts, if present.
       shutil.rmtree(full_archive_path, ignore_errors=True)
 
-    commands.LegacyArchiveBuild(
-        self._build_root, self._bot_id, self._build_config,
-        self._gsutil_archive, self._set_version, self._local_archive_path,
-        self._options.debug)
-
-    if not self._options.debug and self._build_config['upload_symbols']:
-      commands.UploadSymbols(self._build_root,
-                             board=self._build_config['board'],
-                             official=self._build_config['chromeos_official'])
-
-    # Upload test results when they are ready.
+    config = self._build_config
+    board = config['board']
+    debug = self._options.debug
     upload_url = self._GetGSUploadLocation()
-    test_results = self._GetTestTarball()
-    if test_results:
-      commands.UploadTestTarball(
-          test_results, full_archive_path, upload_url, self._options.debug)
 
-    # Update the _index.html file with the test artifacts and build artifacts
-    # uploaded above.
-    if upload_url and not self._options.debug:
-      commands.UpdateIndex(upload_url)
+    # The following three functions are run in parallel.
+    #  1. UploadTestResults: Upload results from test phase.
+    #  2. ArchiveDebugSymbols: Generate and upload debug symbols.
+    #  3. LegacyArchiveBuild: Run archive_build.sh.
 
+    def UploadTestResults():
+      # Upload test results when they are ready.
+      test_results = self._GetTestTarball()
+      if test_results:
+        commands.UploadTestTarball(
+          test_results, full_archive_path, upload_url, debug)
+
+    def ArchiveDebugSymbols():
+      if config['archive_build_debug']:
+        commands.GenerateBreakpadSymbols(self._build_root, board)
+        debug_tgz = commands.GenerateDebugTarball(
+            self._build_root, board, full_archive_path)
+        commands.UploadDebugTarball(debug_tgz, upload_url, debug)
+
+      if not debug and config['upload_symbols']:
+        commands.UploadSymbols(self._build_root,
+                               board=board,
+                               official=config['chromeos_official'])
+
+    def LegacyArchiveBuild():
+      commands.LegacyArchiveBuild(
+          self._build_root, self._bot_id, config, self._gsutil_archive,
+          self._set_version, self._local_archive_path, debug)
+
+    try:
+      RunParallelSteps([UploadTestResults,
+                        ArchiveDebugSymbols,
+                        LegacyArchiveBuild])
+    finally:
+      # Update the _index.html file with the test artifacts and build artifacts
+      # uploaded above.
+      if upload_url and not debug:
+        commands.UpdateIndex(upload_url)
+
+    # Now that all data has been generated, we can upload the final result to
+    # the image server.
     # TODO: When we support branches fully, the friendly name of the branch
     # needs to be used with PushImages
-    if not self._options.debug and  self._build_config['push_image']:
+    if not debug and config['push_image']:
       commands.PushImages(self._build_root,
-                          board=self._build_config['board'],
+                          board=board,
                           branch_name='master',
                           archive_dir=self._GetFullArchivePath())
 

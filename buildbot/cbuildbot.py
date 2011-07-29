@@ -26,7 +26,6 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
-from chromite.buildbot import cbuildbot_background_stages as bg_stages
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
 from chromite.buildbot import tee
@@ -205,7 +204,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
-  bg = bg_stages.BackgroundStages()
+  bg = stages.BackgroundSteps()
   bg_started = False
   archive_stage = None
   archive_url = None
@@ -234,12 +233,14 @@ def RunBuildStages(bot_id, options, build_config):
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
     if prebuilts:
-      bg.AddStage(stages.UploadPrebuiltsStage(bot_id, options, build_config))
+      upload_prebuilts_stage = stages.UploadPrebuiltsStage(
+          bot_id, options, build_config)
+      bg.AddStep(upload_prebuilts_stage.Run)
 
     if options.archive:
       archive_stage = stages.ArchiveStage(bot_id, options, build_config)
       archive_url = archive_stage.GetDownloadUrl()
-      bg.AddStage(archive_stage)
+      bg.AddStep(archive_stage.Run)
 
     test_stage = stages.TestStage(bot_id, options, build_config)
     try:
@@ -266,7 +267,7 @@ def RunBuildStages(bot_id, options, build_config):
 
     # Wait for prebuilts to finish uploading.
     if prebuilts:
-      build_and_test_success = not bg.WaitForStage()
+      build_and_test_success = not bg.WaitForStep()
     else:
       build_and_test_success = True
 
@@ -287,7 +288,7 @@ def RunBuildStages(bot_id, options, build_config):
   # Wait for remaining stages to finish. Ignore any errors.
   if bg_started:
     while not bg.Empty():
-      bg.WaitForStage()
+      bg.WaitForStep()
     bg.join()
 
   if (options.buildbot and build_config['master'] and build_and_test_success

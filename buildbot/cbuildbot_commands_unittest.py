@@ -250,6 +250,7 @@ class CBuildBotTest(mox.MoxTestBase):
                          '--acl', '/home/chrome-bot/slave_archive_acl',
                          '--gsutil', '/b/scripts/slave/gsutil',
                          '--factory_test_mod',
+                         '--noarchive_debug',
                          '--debug',
                          '--factory_install_mod',
                          '--useflags', 'use_a use_b'],

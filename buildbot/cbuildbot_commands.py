@@ -541,7 +541,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
   # Give the right args to archive_build.
   if buildconfig.get('chromeos_official'): cmd.append('--official_build')
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
-  if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
+  cmd.append('--noarchive_debug')
   if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
   if debug: cmd.append('--debug')
   if buildconfig.get('factory_install_mod', True):
@@ -566,6 +566,67 @@ def UpdateIndex(upload_url):
                        '--gsutil', _GSUTIL_PATH,
                        '-a', _GS_ACL,
                        upload_url])
+
+
+def GenerateBreakpadSymbols(buildroot, board):
+  """Generate breakpad symbols.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine
+  """
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  cmd = ['./cros_generate_breakpad_symbols',
+         '--board=%s' % board]
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+
+
+def GenerateDebugTarball(buildroot, board, archive_path):
+  """Generates a debug tarball in the archive_dir.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine
+    archive_dir: Directory where tarball should be stored.
+
+  Returns the path to the debug tarball.
+  """
+
+  # Generate debug tarball. This needs to run as root because some of the
+  # symbols are only readable by root.
+  board_dir = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'lib')
+  debug_tgz = os.path.join(archive_path, 'debug.tgz')
+  cmd = ['sudo', 'tar', 'czf', debug_tgz,
+         '--checkpoint=10000', '--exclude', 'debug/usr/local/autotest',
+         '--exclude', 'debug/tests', 'debug']
+  cros_lib.RunCommand(cmd, cwd=board_dir)
+
+  # Fix permissions and ownership on debug tarball.
+  cros_lib.RunCommand(['sudo', 'chown', str(os.getuid()), debug_tgz])
+  os.chmod(debug_tgz, 0644)
+
+  return debug_tgz
+
+
+def UploadDebugTarball(debug_tgz, upload_url, debug):
+  """Upload the debug tarball from the archive dir to Google Storage.
+
+  Args:
+    debug_tgz: Path to debug tarball in archive dir.
+    upload_url: Location where tarball should be uploaded.
+    debug: Whether we are in debug mode.
+  """
+
+  if upload_url and not debug:
+    debug_tgz_url = '%s/%s' % (upload_url, 'debug.tgz')
+    cros_lib.RunCommand([_GSUTIL_PATH,
+                         'cp',
+                         debug_tgz,
+                         debug_tgz_url])
+    cros_lib.RunCommand([_GSUTIL_PATH,
+                         'setacl',
+                         _GS_ACL,
+                         debug_tgz_url])
 
 
 def UploadSymbols(buildroot, board, official):
