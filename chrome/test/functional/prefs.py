@@ -48,8 +48,8 @@ class PrefsTest(pyauto.PyUITest):
   def testNavigationStateOnSessionRestore(self):
     """Verify navigation state is preserved on session restore."""
     urls = ('http://www.google.com/',
-            'http://news.google.com/',
-            'http://dev.chromium.org/',)
+            'https://encrypted.google.com/',
+            'http://www.google.com/chrome',)
     for url in urls:
       self.NavigateToURL(url)
     tab = self.GetBrowserWindow(0).GetTab(0)
