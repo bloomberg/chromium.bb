@@ -68,6 +68,7 @@ const size_t kNumNonPermissionModuleNames =
 // without asking for the module permission. In other words, functions you can
 // use with no permissions specified.
 const char* kNonPermissionFunctionNames[] = {
+  "management.getPermissionWarningsByManifest",
   "tabs.create",
   "tabs.onRemoved",
   "tabs.remove",

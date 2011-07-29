@@ -1,0 +1,10 @@
+{
+  "name": "Permission Warnings!!",
+  "version": "1.0",
+  "permissions": ["http://api.flickr.com/",
+                  "bookmarks",
+                  "geolocation",
+                  "history",
+                  "management",
+                  "tabs"]
+}

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -47,7 +48,10 @@ const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
 const char kVersionKey[] = "version";
 
-const char kNoExtensionError[] = "No extension with id *";
+const char kExtensionCreateError[] =
+    "Failed to create extension from manifest.";
+const char kManifestParseError[] = "Failed to parse manifest.";
+const char kNoExtensionError[] = "Failed to find extension with id *";
 const char kNotAnAppError[] = "Extension * is not an App";
 const char kUserCantDisableError[] = "Extension * can not be disabled by user";
 }
@@ -161,6 +165,164 @@ bool GetExtensionByIdFunction::RunImpl() {
   result_.reset(result);
 
   return true;
+}
+
+bool GetPermissionWarningsByIdFunction::RunImpl() {
+  std::string ext_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &ext_id));
+
+  const Extension* extension = service()->GetExtensionById(ext_id, true);
+  if (!extension) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoExtensionError,
+                                                       ext_id);
+    return false;
+  }
+
+  ExtensionPermissionMessages warnings = extension->GetPermissionMessages();
+  ListValue* result = new ListValue();
+  for (ExtensionPermissionMessages::const_iterator i = warnings.begin();
+       i < warnings.end(); ++i)
+    result->Append(Value::CreateStringValue(i->message()));
+  result_.reset(result);
+  return true;
+}
+
+namespace {
+
+// This class helps GetPermissionWarningsByManifestFunction manage
+// sending manifest JSON strings to the utility process for parsing.
+class SafeManifestJSONParser : public UtilityProcessHost::Client {
+ public:
+  SafeManifestJSONParser(GetPermissionWarningsByManifestFunction* client,
+                 const std::string& manifest)
+      : client_(client),
+        manifest_(manifest) {}
+
+  void Start() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        NewRunnableMethod(this, &SafeManifestJSONParser::StartWorkOnIOThread));
+  }
+
+  void StartWorkOnIOThread() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
+    utility_host_->Send(new UtilityMsg_ParseJSON(manifest_));
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(SafeManifestJSONParser, message)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Succeeded,
+                          OnJSONParseSucceeded)
+      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed, OnJSONParseFailed)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void OnJSONParseSucceeded(const ListValue& wrapper) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    Value* value = NULL;
+    CHECK(wrapper.Get(0, &value));
+    if (value->IsType(Value::TYPE_DICTIONARY))
+      parsed_manifest_.reset(static_cast<DictionaryValue*>(value)->DeepCopy());
+    else
+      error_ = kManifestParseError;
+
+    utility_host_ = NULL; // has already deleted itself
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &SafeManifestJSONParser::ReportResultFromUIThread));
+  }
+
+  void OnJSONParseFailed(const std::string& error) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    error_ = error;
+    utility_host_ = NULL; // has already deleted itself
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &SafeManifestJSONParser::ReportResultFromUIThread));
+  }
+
+  void ReportResultFromUIThread() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (error_.empty() && parsed_manifest_.get())
+      client_->OnParseSuccess(parsed_manifest_.release());
+    else
+      client_->OnParseFailure(error_);
+  }
+
+ private:
+  ~SafeManifestJSONParser() {}
+
+  // The client who we'll report results back to.
+  GetPermissionWarningsByManifestFunction* client_;
+
+  // Data to parse.
+  std::string manifest_;
+
+  // Results of parsing.
+  scoped_ptr<DictionaryValue> parsed_manifest_;
+
+  std::string error_;
+  UtilityProcessHost* utility_host_;
+};
+
+}  // namespace
+
+bool GetPermissionWarningsByManifestFunction::RunImpl() {
+  std::string manifest_str;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &manifest_str));
+
+  scoped_refptr<SafeManifestJSONParser> parser =
+      new SafeManifestJSONParser(this, manifest_str);
+  parser->Start();
+
+  // Matched with a Release() in OnParseSuccess/Failure().
+  AddRef();
+
+  // Response is sent async in OnParseSuccess/Failure().
+  return true;
+}
+
+void GetPermissionWarningsByManifestFunction::OnParseSuccess(
+    DictionaryValue* parsed_manifest) {
+  CHECK(parsed_manifest);
+
+  scoped_refptr<Extension> extension = Extension::Create(
+      FilePath(), Extension::INVALID, *parsed_manifest,
+      Extension::STRICT_ERROR_CHECKS, &error_);
+  if (!extension.get()) {
+    OnParseFailure(kExtensionCreateError);
+    return;
+  }
+
+  ExtensionPermissionMessages warnings = extension->GetPermissionMessages();
+  ListValue* result = new ListValue();
+  for (ExtensionPermissionMessages::const_iterator i = warnings.begin();
+       i < warnings.end(); ++i)
+    result->Append(Value::CreateStringValue(i->message()));
+  result_.reset(result);
+  SendResponse(true);
+
+  // Matched with AddRef() in RunImpl().
+  Release();
+}
+
+void GetPermissionWarningsByManifestFunction::OnParseFailure(
+    const std::string& error) {
+  error_ = error;
+  SendResponse(false);
+
+  // Matched with AddRef() in RunImpl().
+  Release();
 }
 
 bool LaunchAppFunction::RunImpl() {

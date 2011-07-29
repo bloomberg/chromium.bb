@@ -306,6 +306,8 @@ void FactoryRegistry::ResetFunctions() {
   // Management.
   RegisterFunction<GetAllExtensionsFunction>();
   RegisterFunction<GetExtensionByIdFunction>();
+  RegisterFunction<GetPermissionWarningsByIdFunction>();
+  RegisterFunction<GetPermissionWarningsByManifestFunction>();
   RegisterFunction<LaunchAppFunction>();
   RegisterFunction<SetEnabledFunction>();
   RegisterFunction<UninstallFunction>();

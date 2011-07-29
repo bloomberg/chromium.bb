@@ -114,6 +114,8 @@
     "chrome.idle.queryState": "idle.html#method-queryState",
     "chrome.management.get": "management.html#method-get",
     "chrome.management.getAll": "management.html#method-getAll",
+    "chrome.management.getPermissionWarningsById": "management.html#method-getPermissionWarningsById",
+    "chrome.management.getPermissionWarningsByManifest": "management.html#method-getPermissionWarningsByManifest",
     "chrome.management.launchApp": "management.html#method-launchApp",
     "chrome.management.onDisabled": "management.html#event-onDisabled",
     "chrome.management.onEnabled": "management.html#event-onEnabled",

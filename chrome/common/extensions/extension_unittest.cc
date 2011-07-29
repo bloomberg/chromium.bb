@@ -534,6 +534,9 @@ TEST(ExtensionTest, ApiPermissions) {
     { "tabs.remove",      true},
     { "tabs.update",      true},
     { "tabs.getSelected", false},
+    // Test getPermissionWarnings functions. Only one requires permissions.
+    { "management.getPermissionWarningsById", false },
+    { "management.getPermissionWarningsByManifest", true },
   };
 
   scoped_refptr<Extension> extension;
@@ -546,7 +549,22 @@ TEST(ExtensionTest, ApiPermissions) {
   }
 }
 
-TEST(ExtensionTest, GetHostPermissionMessages_ManyHosts) {
+TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("permissions", "many-apis.json");
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  ASSERT_EQ(6u, warnings.size());
+  EXPECT_EQ("Your data on api.flickr.com",
+            UTF16ToUTF8(warnings[0]));
+  EXPECT_EQ("Your bookmarks", UTF16ToUTF8(warnings[1]));
+  EXPECT_EQ("Your physical location", UTF16ToUTF8(warnings[2]));
+  EXPECT_EQ("Your browsing history", UTF16ToUTF8(warnings[3]));
+  EXPECT_EQ("Your tabs and browsing activity", UTF16ToUTF8(warnings[4]));
+  EXPECT_EQ("Your list of installed apps, extensions, and themes",
+            UTF16ToUTF8(warnings[5]));
+}
+
+TEST(ExtensionTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();

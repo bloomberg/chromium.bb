@@ -29,6 +29,24 @@ class GetExtensionByIdFunction : public ExtensionManagementFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("management.get");
 };
 
+class GetPermissionWarningsByIdFunction : public ExtensionManagementFunction {
+  virtual ~GetPermissionWarningsByIdFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("management.getPermissionWarningsById");
+};
+
+class GetPermissionWarningsByManifestFunction : public AsyncExtensionFunction {
+ public:
+  // Called when utility process finishes.
+  void OnParseSuccess(base::DictionaryValue* parsed_manifest);
+  void OnParseFailure(const std::string& error);
+ protected:
+  virtual ~GetPermissionWarningsByManifestFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "management.getPermissionWarningsByManifest");
+};
+
 class LaunchAppFunction : public ExtensionManagementFunction {
   virtual ~LaunchAppFunction() {}
   virtual bool RunImpl();

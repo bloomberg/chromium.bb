@@ -5170,6 +5170,51 @@
         ]
       },
       {
+        "name": "getPermissionWarningsById",
+        "description": "Returns a list of <a href='permission_warnings.html'>permission warnings</a> for the given extension id.",
+        "parameters": [
+          { "name": "id",
+            "type": "string",
+            "description": "The ID of an already installed extension."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "permissionWarnings",
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getPermissionWarningsByManifest",
+        "description": "Returns a list of <a href='permission_warnings.html'>permission warnings</a> for the given extension manifest string. Note: This function can be used without requesting the 'management' permission in the manifest.",
+        "parameters": [
+          {
+            "name": "manifestStr",
+            "type": "string",
+            "description": "Extension manifest JSON string."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "permissionWarnings",
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "setEnabled",
         "description": "Enable or disable an app or extension.",
         "parameters": [
