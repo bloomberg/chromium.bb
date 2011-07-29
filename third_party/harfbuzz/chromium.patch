@@ -14,8 +14,22 @@ index 51dd4ea..cb7a85b 100644
          continue;
        } else {
          *iter = prev_iter;
+diff --git a/src/harfbuzz-gpos.c b/src/harfbuzz-gpos.c
+index 356dc01..db5ea0a 100644
+--- a/src/harfbuzz-gpos.c
++++ b/src/harfbuzz-gpos.c
+@@ -2976,6 +2976,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
+     j--;
+   }
+ 
++  if ( i > buffer->in_pos )
++    return HB_Err_Not_Covered;
++
+   error = _HB_OPEN_Coverage_Index( &mmp->Mark2Coverage, IN_GLYPH( j ),
+ 			  &mark2_index );
+   if ( error )
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
-index f3ec8e1..2b0dfde 100644
+index f3ec8e1..2b52221 100644
 --- a/src/harfbuzz-shaper.cpp
 +++ b/src/harfbuzz-shaper.cpp
 @@ -433,7 +433,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
@@ -35,17 +49,16 @@ index f3ec8e1..2b0dfde 100644
  
      // first char in a run is never (treated as) a mark
      int cStart = 0;
-diff --git a/src/harfbuzz-gpos.c b/src/harfbuzz-gpos.c
-index 356dc01..db5ea0a 100644
---- a/src/harfbuzz-gpos.c
-+++ b/src/harfbuzz-gpos.c
-@@ -2976,6 +2976,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
-     j--;
-   }
+@@ -1151,10 +1150,11 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
+         return false;
+     face->tmpLogClusters = tmpLogClusters;
  
-+  if ( i > buffer->in_pos )
-+    return HB_Err_Not_Covered;
-+
-   error = _HB_OPEN_Coverage_Index( &mmp->Mark2Coverage, IN_GLYPH( j ),
-                          &mark2_index );
-   if ( error )
++    const int itemLength = item->item.length;
+     for (int i = 0; i < face->length; ++i) {
+         hb_buffer_add_glyph(face->buffer, item->glyphs[i], properties ? properties[i] : 0, i);
+         face->tmpAttributes[i] = item->attributes[i];
+-        face->tmpLogClusters[i] = item->log_clusters[i];
++        face->tmpLogClusters[i] = i < itemLength ? item->log_clusters[i] : item->log_clusters[itemLength - 1];
+     }
+ 
+ #ifdef OT_DEBUG

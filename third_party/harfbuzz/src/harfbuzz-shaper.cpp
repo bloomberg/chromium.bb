@@ -1150,10 +1150,12 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
         return false;
     face->tmpLogClusters = tmpLogClusters;
 
+    const int itemLength = item->item.length;
+    assert(itemLength > 0);
     for (int i = 0; i < face->length; ++i) {
         hb_buffer_add_glyph(face->buffer, item->glyphs[i], properties ? properties[i] : 0, i);
         face->tmpAttributes[i] = item->attributes[i];
-        face->tmpLogClusters[i] = item->log_clusters[i];
+        face->tmpLogClusters[i] = i < itemLength ? item->log_clusters[i] : item->log_clusters[itemLength - 1];
     }
 
 #ifdef OT_DEBUG
