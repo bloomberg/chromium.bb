@@ -14,10 +14,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "webkit/glue/media/web_data_source_factory.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebString;
+using WebKit::WebURLLoaderOptions;
 
 namespace webkit_glue {
 
@@ -300,8 +302,13 @@ void SimpleDataSource::StartTask() {
           WebString::fromUTF8("identity;q=1, *;q=0"));
 
       // This flag is for unittests as we don't want to reset |url_loader|
-      if (!keep_test_loader_)
-        url_loader_.reset(frame_->createAssociatedURLLoader());
+      if (!keep_test_loader_) {
+        WebURLLoaderOptions options;
+        options.allowCredentials = true;
+        options.crossOriginRequestPolicy =
+            WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+        url_loader_.reset(frame_->createAssociatedURLLoader(options));
+      }
 
       // Start the resource loading.
       url_loader_->loadAsynchronously(request, this);

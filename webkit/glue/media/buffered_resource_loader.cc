@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -20,6 +21,7 @@ using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
+using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
@@ -124,8 +126,13 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
       WebString::fromUTF8("identity;q=1, *;q=0"));
 
   // This flag is for unittests as we don't want to reset |url_loader|
-  if (!keep_test_loader_)
-    url_loader_.reset(frame->createAssociatedURLLoader());
+  if (!keep_test_loader_) {
+    WebURLLoaderOptions options;
+    options.allowCredentials = true;
+    options.crossOriginRequestPolicy =
+        WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+    url_loader_.reset(frame->createAssociatedURLLoader(options));
+  }
 
   // Start the resource loading.
   url_loader_->loadAsynchronously(request, this);

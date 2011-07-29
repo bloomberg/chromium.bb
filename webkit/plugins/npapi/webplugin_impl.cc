@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
@@ -67,6 +68,7 @@ using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;
+using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
@@ -1249,7 +1251,11 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   SetReferrer(&info.request, referrer_flag);
 
-  info.loader.reset(webframe_->createAssociatedURLLoader());
+  WebURLLoaderOptions options;
+  options.allowCredentials = true;
+  options.crossOriginRequestPolicy =
+      WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
+  info.loader.reset(webframe_->createAssociatedURLLoader(options));
   if (!info.loader.get())
     return false;
   info.loader->loadAsynchronously(info.request, this);
