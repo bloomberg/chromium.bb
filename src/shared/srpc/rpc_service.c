@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -211,40 +211,13 @@ static char* BuildSDString(const NaClSrpcMethodDesc* methods,
   return str;
 }
 
-/*
- * Create a service descriptor from an array of methods.
- */
-int NaClSrpcServiceHandlerCtor(NaClSrpcService* service,
-                               const NaClSrpcHandlerDesc* handler_desc) {
-  char*       service_str;
-  nacl_abi_size_t  str_length;
-  NaClSrpcMethodDesc* methods;
-  uint32_t method_count;
-
-  /* Add the service_discovery method to the table. */
-  methods = BuildMethods(handler_desc, &method_count);
-  if (NULL == methods) {
-    return 0;
-  }
-  service_str = BuildSDString(methods, method_count, &str_length);
-  if (NULL == service_str) {
-    /* BUG: leaks methods */
-    return 0;
-  }
-  service->service_string = service_str;
-  service->service_string_length = str_length;
-  service->rpc_descr = methods;
-  service->rpc_count = method_count;
-  return 1;
-}
-
-static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t rpc_count) {
+static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t method_count) {
   uint32_t i;
 
   if (NULL == methods) {
     return;
   }
-  for (i = 0; i < rpc_count; ++i) {
+  for (i = 0; i < method_count; ++i) {
     if (NULL == methods[i].name) {
       /* We have reached the end of the portion set by ParseOneEntry calls. */
       break;
@@ -256,6 +229,40 @@ static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t rpc_count) {
   free(methods);
 }
 
+/*
+ * Create a service descriptor from an array of methods.
+ */
+int NaClSrpcServiceHandlerCtor(NaClSrpcService* service,
+                               const NaClSrpcHandlerDesc* handler_desc) {
+  char*       service_str;
+  nacl_abi_size_t  str_length;
+  NaClSrpcMethodDesc* methods = NULL;
+  uint32_t method_count = 0;
+
+  /* Initialize the struct, so that failures can be cleaned up properly. */
+  service->service_string = NULL;
+  service->service_string_length = 0;
+  service->rpc_descr = NULL;
+  service->rpc_count = 0;
+  /* Add the service_discovery method to the table. */
+  methods = BuildMethods(handler_desc, &method_count);
+  if (NULL == methods) {
+    goto cleanup;
+  }
+  service_str = BuildSDString(methods, method_count, &str_length);
+  if (NULL == service_str) {
+    goto cleanup;
+  }
+  service->service_string = service_str;
+  service->service_string_length = str_length;
+  service->rpc_descr = methods;
+  service->rpc_count = method_count;
+  return 1;
+ cleanup:
+  FreeMethods(methods, method_count);
+  return 0;
+}
+
 int NaClSrpcServiceStringCtor(NaClSrpcService* service, const char* str) {
   NaClSrpcMethodDesc* methods = NULL;
   const char* p;
@@ -263,6 +270,11 @@ int NaClSrpcServiceStringCtor(NaClSrpcService* service, const char* str) {
   uint32_t rpc_count;
   size_t rpc_count_size_t;
 
+  /* Initialize the struct, so that failures can be cleaned up properly. */
+  service->service_string = NULL;
+  service->service_string_length = 0;
+  service->rpc_descr = NULL;
+  service->rpc_count = 0;
   /* Count the number of rpc methods */
   rpc_count = 0;
   for (p = str; *p != '\0'; ) {
