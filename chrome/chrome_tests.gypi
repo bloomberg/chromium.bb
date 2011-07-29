@@ -1314,6 +1314,7 @@
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_node_data_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
+        'browser/bookmarks/recently_used_folders_combo_model_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/browser_main_unittest.cc',

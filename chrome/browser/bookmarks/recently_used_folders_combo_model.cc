@@ -16,7 +16,8 @@ const size_t kMaxMRUFolders = 5;
 }  // namespace
 
 RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
-    BookmarkModel* model, const BookmarkNode* node)
+    BookmarkModel* model,
+    const BookmarkNode* node)
     // Use + 2 to account for bookmark bar and other node.
     : nodes_(bookmark_utils::GetMostRecentlyModifiedFolders(
           model, kMaxMRUFolders + 2)),
@@ -30,10 +31,10 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   RemoveNode(model->other_node());
   RemoveNode(node->parent());
 
-  // Make the parent the first item, unless it's the bookmark bar or other node.
-  if (!model->is_permanent_node(node)) {
+  // Make the parent the first item, unless it's a permanent node, which is
+  // added below.
+  if (!model->is_permanent_node(node->parent()))
     nodes_.insert(nodes_.begin(), node->parent());
-  }
 
   // Make sure we only have kMaxMRUFolders in the first chunk.
   if (nodes_.size() > kMaxMRUFolders)
@@ -42,9 +43,8 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // And put the bookmark bar and other nodes at the end of the list.
   nodes_.push_back(model->bookmark_bar_node());
   nodes_.push_back(model->other_node());
-  if (model->synced_node()->IsVisible()) {
+  if (model->synced_node()->IsVisible())
     nodes_.push_back(model->synced_node());
-  }
 
   std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
                                                             nodes_.end(),
