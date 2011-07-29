@@ -430,15 +430,19 @@ function onClientStateChange_(oldState) {
     setClientStateMessage('Connected to', host);
     remoting.setMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
+    var accessCode = document.getElementById('access-code-entry');
+    accessCode.value = '';
   } else if (state == remoting.ClientSession.State.CLOSED) {
-    if (oldState != remoting.ClientSession.State.CONNECTED) {
+    if (oldState == remoting.ClientSession.State.CONNECTED) {
+      remoting.session.removePlugin();
+      remoting.session = null;
+      remoting.debug.log('Connection closed by host');
+      remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
+    } else {
       // TODO(jamiewalch): This is not quite correct, as it will report
       // "Invalid access code", regardless of what actually went wrong.
       // Fix this up by having the host send a suitable error code.
       showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
-    } else {
-      remoting.debug.log('Connection closed');
-      remoting.setClientMode('unconnected');
     }
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
     remoting.debug.log('Client plugin reported connection failed');
@@ -613,8 +617,6 @@ remoting.disconnect = function() {
     remoting.session = null;
     remoting.debug.log('Disconnected.');
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
-    var accessCode = document.getElementById('access-code-entry');
-    accessCode.value = '';
   }
 }
 

@@ -151,16 +151,27 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 };
 
 /**
- * Deletes the <embed> element from the container and disconnects.
+ * Deletes the <embed> element from the container, without sending a
+ * session_terminate request.  This is to be called when the session was
+ * disconnected by the Host.
  *
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.disconnect = function() {
+remoting.ClientSession.prototype.removePlugin = function() {
   var plugin = document.getElementById(this.PLUGIN_ID);
   if (plugin) {
     plugin.parentNode.removeChild(plugin);
     plugin = null;
   }
+}
+
+/**
+ * Deletes the <embed> element from the container and disconnects.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.disconnect = function() {
+  this.removePlugin();
   var parameters = {
     'to': this.hostJid,
     'payload_xml':
