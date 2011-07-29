@@ -122,34 +122,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       const int32* attrib_list,
       const GURL& active_url);
 
-  // Map a resource from an external context into this context. The source
-  // context need not be in the same share group from the client's point of
-  // view, allowing safe sharing between an "untrusted" context, like Pepper
-  // and a compositor context.
-  //
-  // Currently only texture resources are supported. TODO(apatrick): generalize
-  // this as appropriate.
-  //
-  // To unmap a previously mapped external resource, delete it in the
-  // destination context group. This will not delete the underlying texture
-  // object, just disassociate it with the id in the destination context group.
-  //
-  // The lifetime of the external resource is managed by the context group it
-  // was originally created in. When the last context in that group is destroyed
-  // the resource becomes invalid in all other context groups it is mapped into.
-  bool MapExternalResource(::gpu::resource_type::ResourceType resource_type,
-                           uint32 resource_source_id,
-                           GLInProcessContext* source_context,
-                           uint32 resource_dest_id);
-
-  // TODO(apatrick): this is a workaround until the parent / child relationship
-  // between contexts is removed. MapExternalResource has no such restrictions
-  // on the relationship between contexts. Use it instead.
-  bool MapExternalResourceToParent(
-      ::gpu::resource_type::ResourceType resource_type,
-      uint32 resource_source_id,
-      uint32 resource_dest_id);
-
   // Resize an offscreen frame buffer. The resize occurs on the next call to
   // SwapBuffers. This is to avoid waiting until all pending GL calls have been
   // executed by the GPU process. Everything rendered up to the call to
@@ -312,38 +284,6 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
 #else
   return NULL;
 #endif
-}
-
-bool GLInProcessContext::MapExternalResource(
-    ::gpu::resource_type::ResourceType resource_type,
-    uint32 resource_source_id,
-    GLInProcessContext* source_context,
-    uint32 resource_dest_id) {
-  if (!command_buffer_.get())
-    return false;
-
-  return gpu_scheduler_->MapExternalResource(
-      resource_type,
-      resource_source_id,
-      source_context->gpu_scheduler_,
-      resource_dest_id);
-}
-
-bool GLInProcessContext::MapExternalResourceToParent(
-    ::gpu::resource_type::ResourceType resource_type,
-    uint32 resource_source_id,
-    uint32 resource_dest_id) {
-  if (!command_buffer_.get())
-    return false;
-
-  if (!parent_.get())
-    return false;
-
-  return parent_->MapExternalResource(
-      resource_type,
-      resource_source_id,
-      this,
-      resource_dest_id);
 }
 
 void GLInProcessContext::ResizeOffscreen(const gfx::Size& size) {
@@ -1657,10 +1597,8 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::copyTextureToCompositor(
     WebGLId texture, WebGLId parentTexture) {
   // TODO(gmam): See if we can comment this in.
   // ClearContext();
+  gl_->CopyTextureToParentTextureCHROMIUM(texture, parentTexture);
   gl_->Flush();
-  context_->MapExternalResourceToParent(::gpu::resource_type::kTexture,
-                                        texture,
-                                        parentTexture);
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnSwapBuffersComplete() {
