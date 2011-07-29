@@ -1448,11 +1448,12 @@ build-libgcc_eh() {
   local arch=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC}-arm"
-  spushd ${objdir}/gcc
+  spushd "${objdir}"/gcc
   StepBanner "libgcc_eh-${arch}" "cleaning"
   RunWithLog libgcc_eh.clean \
       env -i PATH=/usr/bin/:/bin \
              make clean-target-libgcc
+  rm -f "${objdir}"/gcc/libgcc_eh.a
 
   # NOTE: usually gcc/libgcc.mk is generate and invoked implicitly by
   #       gcc/Makefile.
@@ -1477,7 +1478,7 @@ build-libgcc_eh() {
 
   StepBanner "libgcc_eh-${arch}" "installing"
   mkdir -p "${PNACL_LIB_ROOT}-${arch}"
-  cp ${objdir}/gcc/libgcc_eh.a "${PNACL_LIB_ROOT}-${arch}"
+  cp "${objdir}"/gcc/libgcc_eh.a "${PNACL_LIB_ROOT}-${arch}"
 }
 
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
