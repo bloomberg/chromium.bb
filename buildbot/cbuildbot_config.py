@@ -87,11 +87,18 @@ use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
 latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
 gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
 use_sdk -- Use cros_sdk to create and manage chroot.
-
 trybot_list -- List this config when user runs cbuildbot with --list option
                without the --all flag.
 description -- The description string to print out for config when user runs
                --list.
+
+binhost_bucket -- Upload prebuilts for this build to this bucket. If it equals
+                  None the default buckets are used.
+binhost_key -- Parameter --key for prebuilt.py. If it equals None the default
+               values are used, which depend on the build type.
+binhost_base_url -- Parameter --binhost-base-url for prebuilt.py. If it equals
+                    None default value is used.
+git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
 """
 
 import constants
@@ -177,6 +184,11 @@ default = {
 
   'trybot_list' : False,
   'description' : None,
+
+  'binhost_bucket' : None,
+  'binhost_key' : None,
+  'binhost_base_url' : None,
+  'git_sync' : False,
 }
 
 arm = {
@@ -196,6 +208,7 @@ binary = {
   'test_mod' : True,
   'factory_install_mod' : True,
   'factory_test_mod' : True,
+  'git_sync' : True,
 }
 
 
@@ -214,6 +227,7 @@ full = {
   'test_mod' : True,
   'factory_install_mod' : True,
   'factory_test_mod' : True,
+  'git_sync' : True,
 }
 
 chrome_pfq = {
@@ -590,4 +604,13 @@ add_config('arm-tegra2_arthur-release', [
 add_config('arm-tegra2_kaen-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_kaen',
+}])
+add_config('x86-mario-binhost', [internal, full, official, release, {
+  'board' : 'x86-mario',
+  # TODO(arkaitzr): move these options to 'release' once they have been tested.
+  'prebuilts' : True,
+  'binhost_bucket' : 'gs://chromeos-dev-installer',
+  'binhost_key' : 'RELEASE_BINHOST',
+  'binhost_base_url' : 'http://commondatastorage.googleapis.com/chromeos-dev-installer',
+  'git_sync' : False,
 }])

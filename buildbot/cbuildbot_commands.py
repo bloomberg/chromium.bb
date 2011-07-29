@@ -470,7 +470,12 @@ def UprevPush(buildroot, board, overlays, dryrun):
 
 
 def UploadPrebuilts(buildroot, board, overlay_config, category,
-                    chrome_rev, buildnumber, extra_args=[]):
+                    chrome_rev, buildnumber,
+                    binhost_bucket=None,
+                    binhost_key=None,
+                    binhost_base_url=None,
+                    git_sync=False,
+                    extra_args=[]):
   """Upload prebuilts.
 
   Args:
@@ -483,22 +488,34 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     buildnumber:  self explanatory.
+    binhost_bucket: bucket for uploading prebuilt packages. If it equals None
+                    then the default bucket is used.
+    binhost_key: key parameter to pass onto prebuilt.py. If it equals None then
+                 chrome_rev is used to select a default key.
+    binhost_base_url: base url for prebuilt.py. If None the parameter
+                      --binhost-base-url is absent.
+    git_sync: boolean that enables --git-sync prebuilt.py parameter.
     extra_args: Extra args to send to prebuilt.py.
   """
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
          '--build-path', buildroot,
          '--prepend-version', category]
-  if overlay_config == 'public':
+
+  if binhost_base_url is not None:
+    cmd.extend(['--binhost-base-url', binhost_base_url])
+  if binhost_bucket is not None:
+    cmd.extend(['--upload', binhost_bucket])
+  elif overlay_config == 'public':
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
   else:
     assert overlay_config in ('private', 'both')
-    upload_bucket = 'chromeos-%s' % board
-    cmd.extend(['--upload', 'gs://%s/%s/%d/prebuilts/' %
-                    (upload_bucket, category, buildnumber),
-                '--private',
-                '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR
-               ])
+    bucket_board = 'chromeos-%s' % board
+    upload_bucket = 'gs://%s/%s/%d/prebuilts/' % (bucket_board, category,
+                    buildnumber)
+    cmd.extend(['--upload', upload_bucket])
+  if overlay_config in ('private', 'both'):
+    cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
 
   if category == 'chroot':
     cmd.extend(['--sync-host',
@@ -507,21 +524,25 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   else:
     cmd.extend(['--board', board])
 
-  if category == constants.CHROME_PFQ_TYPE:
+  if binhost_key is not None:
+    cmd.extend(['--key', binhost_key])
+  elif category == constants.CHROME_PFQ_TYPE:
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    cmd.extend(['--packages=chromeos-chrome',
-                '--key', key.upper()])
+    cmd.extend(['--key', key.upper()])
   elif category == constants.PFQ_TYPE:
     cmd.extend(['--key', _PREFLIGHT_BINHOST])
   else:
     assert category in (constants.BUILD_FROM_SOURCE_TYPE,
                         constants.CHROOT_BUILDER_TYPE)
-    # Commit new binhost directly to overlay.
-    cmd.extend(['--git-sync',
-                '--key', _FULL_BINHOST])
-  cmd.extend(extra_args)
+    cmd.extend(['--key', _FULL_BINHOST])
 
+  if category == constants.CHROME_PFQ_TYPE:
+    cmd.extend(['--packages=chromeos-chrome'])
+
+  if git_sync:
+    cmd.extend(['--git-sync'])
+  cmd.extend(extra_args)
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 

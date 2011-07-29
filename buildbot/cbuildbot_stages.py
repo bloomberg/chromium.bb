@@ -434,7 +434,6 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
     repository.CloneGitRepo(manifests_dir, self._GetManifestVersionsRepoUrl())
     return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
 
-
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
 
@@ -858,6 +857,10 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     overlay_config = self._build_config['overlays']
     prebuilt_type = self._prebuilt_type
     board = self._build_config['board']
+    binhost_bucket = self._build_config['binhost_bucket']
+    binhost_key = self._build_config['binhost_key']
+    binhost_base_url = self._build_config['binhost_base_url']
+    git_sync = self._build_config['git_sync']
     binhosts = []
     extra_args = []
 
@@ -885,7 +888,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
               commands.UploadPrebuilts(
                   self._build_root, builder_board, overlay_config,
                   self._prebuilt_type, self._chrome_rev,
-                  self._options.buildnumber, extra_args + ['--skip-upload'])
+                  self._options.buildnumber, binhost_bucket, binhost_key,
+                  binhost_base_url, git_sync, extra_args + ['--skip-upload'])
 
         # Master pfq should upload host preflight prebuilts.
         if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
@@ -905,7 +909,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     # Upload prebuilts.
     commands.UploadPrebuilts(
         self._build_root, board, overlay_config, prebuilt_type,
-        self._chrome_rev, self._options.buildnumber, extra_args)
+        self._chrome_rev, self._options.buildnumber,
+        binhost_bucket, binhost_key, binhost_base_url, git_sync, extra_args)
 
 
 class PublishUprevChangesStage(NonHaltingBuilderStage):
