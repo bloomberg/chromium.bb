@@ -91,16 +91,6 @@ class ContentTest(pyauto.PyUITest):
     self.assertTrue('Google Search' in html_incognito)
     self.assertTrue('Feeling Lucky' in html_incognito)
 
-  def testTopSitesContent(self):
-    """Test content in TopSites and Verify chrome is not getting blocked by
-       user-agent test by those websites."""
-    topsites_file = os.path.join(self.DataDir(), 'content', 'topsites_content')
-    topsites = self.EvalDataFrom(topsites_file)
-    for (url, name) in topsites.iteritems():
-      self.NavigateToURL(url)
-      html = self.GetTabContents()
-      self.assertTrue(name in html)
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
