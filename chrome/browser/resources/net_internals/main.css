@@ -4,6 +4,11 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
+/* TODO(eroman): Split this file up, so the styles are defined close to where
+                 they are used. For instance, the proxy tab styles should
+                 either be part of proxy_view.html, or proxy_view.css. Only
+                 common styles should be declared here */
+
 * {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -208,11 +213,14 @@ body {
   font-size: 10px;
 }
 
+/* TODO(eroman): make this a classname instead */
 #detailsLogBox,
 #detailsTimelineBox,
 #httpCacheTabContent,
 #proxyTabContent,
-#dataTabContent,
+#captureTabContent,
+#importTabContent,
+#exportTabContent,
 #dnsTabContent,
 #socketsTabContent,
 #spdyTabContent,
@@ -252,17 +260,6 @@ table.styledTable,
 
 .styledTable th.title {
   background: rgb(255,217,217);
-}
-
-/*
- * This is the box in the top right of the Data tab which shows how many
- * events have been captured so far.
- */
-.capturingBox {
-  border: 1px dashed black;
-  display: inline-block;
-  text-align: left;
-  padding: 5px;
 }
 
 /**

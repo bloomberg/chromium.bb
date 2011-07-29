@@ -77,7 +77,9 @@ onLoaded = function() {
   categoryTabSwitcher.addTab('socketsTab', new SocketsView(), false, true);
   categoryTabSwitcher.addTab('spdyTab', new SpdyView(), false, true);
   categoryTabSwitcher.addTab('httpCacheTab', new HttpCacheView(), false, true);
-  categoryTabSwitcher.addTab('dataTab', new DataView(), false, true);
+  categoryTabSwitcher.addTab('importTab', new ImportView(), false, true);
+  categoryTabSwitcher.addTab('exportTab', new ExportView(), false, true);
+  categoryTabSwitcher.addTab('captureTab', new CaptureView(), false, true);
   categoryTabSwitcher.addTab('serviceProvidersTab', new ServiceProvidersView(),
                              false, cr.isWindows);
   categoryTabSwitcher.addTab('testTab', new TestView(), false, true);
@@ -97,7 +99,7 @@ onLoaded = function() {
     anchorMap[aNode.hash] = tabIds[i];
   }
   // Default the empty hash to the data tab.
-  anchorMap['#'] = anchorMap[''] = 'dataTab';
+  anchorMap['#'] = anchorMap[''] = 'exportTab';
 
   window.onhashchange = onUrlHashChange.bind(null, anchorMap);
 

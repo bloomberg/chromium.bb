@@ -1,0 +1,25 @@
+<div id=exportTabContent>
+
+  <h2>Dump data</h2>
+  <div style="margin: 8px">
+    <p><input id=securityStrippingCheckbox type=checkbox checked=yes>
+       Strip private information (cookies and credentials).
+    </p>
+    <button id=dataViewSaveLogFile class=bigButton>Dump to file</button>
+    <pre id=dataViewSaveStatusText></pre>
+
+    <ul>
+      <li><b>IMPORTANT</b>: First reproduce the problem while in recording mode.</li>
+      <li><b>IMPORTANT</b>: Always add an explanation of what went wrong before emailing logs.</li>
+    </ul>
+    <p>
+      For more information see: 
+      <a href="chrome://net-internals/help.html" target="_blank">
+        How to get data for bug reports?
+      </a>
+    </p>
+  </div>
+
+  <iframe style="display: none" id=dataViewDownloadIframe></iframe>
+
+</div>

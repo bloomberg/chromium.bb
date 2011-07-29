@@ -5,7 +5,9 @@
 <include src="util.js"/>
 <include src="view.js"/>
 <include src="tab_switcher_view.js"/>
-<include src="data_view.js"/>
+<include src="import_view.js"/>
+<include src="capture_view.js"/>
+<include src="export_view.js"/>
 <include src="http_cache_view.js"/>
 <include src="test_view.js"/>
 <include src="hsts_view.js"/>
