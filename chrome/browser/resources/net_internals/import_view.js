@@ -39,9 +39,9 @@ inherits(ImportView, DivView);
  * loading the new ones.  Returns true to indicate the view should
  * still be visible.
  */
-ImportView.prototype.onLoadLogFinish = function(data) {
+ImportView.prototype.onLoadLogFinish = function(data, unused, userComments) {
   setNodeDisplay(this.loadedDiv_, true);
-  this.updateLoadedClientInfo();
+  this.updateLoadedClientInfo(userComments);
   return true;
 };
 
@@ -154,7 +154,7 @@ ImportView.prototype.enableLoadFileElement_ = function(enabled) {
 /**
  * Prints some basic information about the environment when the log was made.
  */
-ImportView.prototype.updateLoadedClientInfo = function() {
+ImportView.prototype.updateLoadedClientInfo = function(userComments) {
   this.loadedClientInfoText_.textContent = '';
   if (typeof(ClientInfo) != 'object')
     return;
@@ -174,6 +174,7 @@ ImportView.prototype.updateLoadedClientInfo = function() {
             ') ' + ClientInfo.version_mod);
   text.push('OS Type: ' + ClientInfo.os_type);
   text.push('Command line: ' + ClientInfo.command_line);
+  text.push('User comments: ' + userComments);
 
   this.loadedClientInfoText_.textContent = text.join('\n');
 };

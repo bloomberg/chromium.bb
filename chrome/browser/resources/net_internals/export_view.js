@@ -12,6 +12,7 @@ function ExportView() {
   const saveFileButtonId = 'export-view-save-log-file';
   const saveStatusTextId = 'export-view-save-status-text';
   const securityStrippingCheckboxId = 'export-view-security-stripping-checkbox';
+  const userCommentsTextAreaId = "export-view-user-comments";
 
   DivView.call(this, mainBoxId);
 
@@ -25,6 +26,7 @@ function ExportView() {
   this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
   this.saveStatusText_ = $(saveStatusTextId);
 
+  this.userCommentsTextArea_ = $(userCommentsTextAreaId);
 
   // Track blob for previous log dump so it can be revoked when a new dump is
   // saved.
@@ -76,6 +78,13 @@ ExportView.prototype.enableSaveFileButton_ = function(enabled) {
 ExportView.prototype.onSaveFile_ = function() {
   if (this.saveFileButton_.disabled)
     return;
+
+  // Get an explanation for the dump file (this is mandatory!)
+  var userComments = this.getNonEmptyUserComments_();
+  if (userComments == undefined) {
+    return;
+  }
+
   // Clean up previous blob, if any, to reduce resource usage.
   if (this.lastBlobURL_) {
     window.webkitURL.revokeObjectURL(this.lastBlobURL_);
@@ -83,7 +92,29 @@ ExportView.prototype.onSaveFile_ = function() {
   }
   this.setSaveFileStatus('Preparing data...', true);
 
-  createLogDumpAsync(this.onLogDumpCreated_.bind(this));
+  createLogDumpAsync(userComments, this.onLogDumpCreated_.bind(this));
+};
+
+/**
+ * Fetches the user comments for this dump. If none were entered, warns the user
+ * and returns undefined. Otherwise returns the comments text.
+ */
+ExportView.prototype.getNonEmptyUserComments_ = function() {
+  var value = this.userCommentsTextArea_.value;
+
+  // Reset the class name in case we had hilighted it earlier.
+  this.userCommentsTextArea_.className = ''
+
+  // We don't accept empty explanations. We don't care what is entered, as long
+  // as there is something (a single whitespace would work).
+  if (value == '') {
+    // Put a big obnoxious red border around the text area.
+    this.userCommentsTextArea_.className = 'export-view-explanation-warning';
+    alert('Please fill in the text field!');
+    return undefined;
+  }
+
+  return value;
 };
 
 /**

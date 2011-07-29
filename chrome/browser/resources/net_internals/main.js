@@ -251,7 +251,11 @@ convertTimeTicksToDate = function(timeTicks) {
  * formatted string.
  * Returns the new log dump as an object.  |date| may be null.
  *
+ * TODO(eroman): Use javadoc notation for these parameters.
+ *
  * Log dumps are just JSON objects containing four values:
+ *
+ *   |userComments| User-provided notes describing what this dump file is about.
  *   |constants| needed to interpret the data.  This also includes some browser
  *               state information
  *   |events| from the NetLog,
@@ -262,11 +266,13 @@ convertTimeTicksToDate = function(timeTicks) {
  * |polledData| and |tabData| may be empty objects, or may be missing data for
  * tabs not present on the OS the log is from.
  */
-function createLogDump(constants, events, polledData, tabData, date) {
+function createLogDump(userComments, constants, events, polledData, tabData,
+                       date) {
   if (g_browser.sourceTracker.getSecurityStripping())
     events = events.map(stripCookiesAndLoginInfo);
 
   var logDump = {
+    'userComments': userComments,
     'constants': constants,
     'events': events,
     'polledData': polledData,
@@ -284,7 +290,7 @@ function createLogDump(constants, events, polledData, tabData, date) {
  * Creates a full log dump using |polledData| and the return value of each tab's
  * saveState function and passes it to |callback|.
  */
-function onUpdateAllCompleted(callback, polledData) {
+function onUpdateAllCompleted(userComments, callback, polledData) {
   // Gather any tab-specific state information.
   var tabData = {};
   var tabIds = categoryTabSwitcher.getAllTabIds();
@@ -294,7 +300,8 @@ function onUpdateAllCompleted(callback, polledData) {
       tabData[tabIds[i]] = view.saveState();
   }
 
-  var logDump = createLogDump(constants,
+  var logDump = createLogDump(userComments,
+                              constants,
                               g_browser.sourceTracker.getAllCapturedEvents(),
                               polledData,
                               tabData,
@@ -302,8 +309,9 @@ function onUpdateAllCompleted(callback, polledData) {
   callback(JSON.stringify(logDump, null, ' '));
 }
 
-createLogDumpAsync = function(callback) {
-  g_browser.updateAllInfo(onUpdateAllCompleted.bind(null, callback));
+createLogDumpAsync = function(userComments, callback) {
+  g_browser.updateAllInfo(
+      onUpdateAllCompleted.bind(null, userComments, callback));
 };
 
 /**
@@ -413,7 +421,8 @@ function loadLogDump(logDump, fileName) {
     // trying to access it.
     try {
       if (view.onLoadLogFinish(logDump.polledData,
-                               logDump.tabData[tabIds[i]])) {
+                               logDump.tabData[tabIds[i]],
+                               logDump.userComments)) {
         showView = true;
       }
     } catch (error) {
