@@ -5087,6 +5087,12 @@
    fun:_ZN8NewTabUI19InitializeCSSCachesEv
 }
 {
+   bug_90521_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8NewTabUIC1EP11TabContents
+}
+{
    bug_90642
    Memcheck:Leak
    fun:_Znw*
@@ -5133,6 +5139,13 @@
    fun:_ZN7history14HistoryBackend11IterateURLsEPN14HistoryService13URLEnumeratorE
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvPN14HistoryService13URLEnumeratorEES4_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvPN14HistoryService13URLEnumeratorEE6Tuple1IS4_EE3RunEv
+}
+{
+   bug_90964
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18BrowserProcessImpl21gpu_blacklist_updaterEv
+   fun:_ZN19GpuBlacklistUpdater15SetupOnUIThreadEv
 }
 
 

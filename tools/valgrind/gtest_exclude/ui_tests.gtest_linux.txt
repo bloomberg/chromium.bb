@@ -17,3 +17,5 @@ OptionsUITest.TwoCommandsOneTab
 PPAPITest.Transport
 # Leaking memory due to flakiness. http://crbug.com/77442
 WorkerFileSystemTest.ResolveURLHttpTests
+# Leaking memory, although passing. http://crbug.com/90963
+WorkerFileSystemTest.FileEntryToURISync
