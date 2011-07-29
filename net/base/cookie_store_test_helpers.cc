@@ -141,8 +141,7 @@ void DelayedCookieMonster::DeleteCookieAsync(const GURL& url,
 }
 
 CookieMonster* DelayedCookieMonster::GetCookieMonster() {
-  ADD_FAILURE();
-  return NULL;
+  return cookie_monster_;
 }
 
 }  // namespace net

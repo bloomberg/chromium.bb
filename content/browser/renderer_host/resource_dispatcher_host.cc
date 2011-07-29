@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -1182,34 +1183,31 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
-bool ResourceDispatcherHost::CanGetCookies(net::URLRequest* request) {
+bool ResourceDispatcherHost::CanGetCookies(
+    const net::URLRequest* request,
+    const net::CookieList& cookie_list) const {
   VLOG(1) << "OnGetCookies: " << request->url().spec();
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
     return false;
 
-  const net::URLRequestContext* context = request->context();
-  net::CookieMonster* cookie_monster =
-      context->cookie_store()->GetCookieMonster();
-  net::CookieList cookie_list =
-      cookie_monster->GetAllCookiesForURL(request->url());
-  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+  const ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   return content::GetContentClient()->browser()->AllowGetCookie(
       request->url(), request->first_party_for_cookies(), cookie_list,
       *info->context(), render_process_id, render_view_id);
 }
 
-bool ResourceDispatcherHost::CanSetCookie(net::URLRequest* request,
+bool ResourceDispatcherHost::CanSetCookie(const net::URLRequest* request,
                                           const std::string& cookie_line,
-                                          net::CookieOptions* options) {
+                                          net::CookieOptions* options) const {
   VLOG(1) << "OnSetCookie: " << request->url().spec();
 
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
     return false;
 
-  ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+  const ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   return content::GetContentClient()->browser()->AllowSetCookie(
       request->url(), request->first_party_for_cookies(), cookie_line,
       *info->context(), render_process_id, render_view_id, options);

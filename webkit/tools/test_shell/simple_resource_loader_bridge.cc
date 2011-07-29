@@ -32,6 +32,7 @@
 
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -416,14 +417,14 @@ class RequestProxy : public net::URLRequest::Delegate,
 
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
-                                  bool* defer_redirect) {
+                                  bool* defer_redirect) OVERRIDE {
     DCHECK(request->status().is_success());
     ResourceResponseInfo info;
     PopulateResponseInfo(request, &info);
     OnReceivedRedirect(new_url, info, defer_redirect);
   }
 
-  virtual void OnResponseStarted(net::URLRequest* request) {
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {
     if (request->status().is_success()) {
       ResourceResponseInfo info;
       PopulateResponseInfo(request, &info);
@@ -436,12 +437,14 @@ class RequestProxy : public net::URLRequest::Delegate,
 
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      int cert_error,
-                                     net::X509Certificate* cert) {
+                                     net::X509Certificate* cert) OVERRIDE {
     // Allow all certificate errors.
     request->ContinueDespiteLastError();
   }
 
-  virtual bool CanGetCookies(net::URLRequest* request) {
+  virtual bool CanGetCookies(
+      const net::URLRequest* request,
+      const net::CookieList& cookie_list) const OVERRIDE {
     StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
@@ -452,9 +455,9 @@ class RequestProxy : public net::URLRequest::Delegate,
     return rv == net::OK;
   }
 
-  virtual bool CanSetCookie(net::URLRequest* request,
+  virtual bool CanSetCookie(const net::URLRequest* request,
                             const std::string& cookie_line,
-                            net::CookieOptions* options) {
+                            net::CookieOptions* options) const OVERRIDE {
     StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
@@ -465,7 +468,8 @@ class RequestProxy : public net::URLRequest::Delegate,
     return rv == net::OK;
   }
 
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE {
     if (request->status().is_success() && bytes_read > 0) {
       OnReceivedData(bytes_read);
     } else {

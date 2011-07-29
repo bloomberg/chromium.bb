@@ -50,6 +50,7 @@ namespace content {
 class ResourceContext;
 }
 namespace net {
+class CookieList;
 class URLRequestJobFactory;
 }  // namespace net
 
@@ -174,21 +175,24 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // net::URLRequest::Delegate
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
-                                  bool* defer_redirect);
+                                  bool* defer_redirect) OVERRIDE;
   virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info);
+                              net::AuthChallengeInfo* auth_info) OVERRIDE;
   virtual void OnCertificateRequested(
       net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info);
+      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      int cert_error,
-                                     net::X509Certificate* cert);
-  virtual bool CanGetCookies(net::URLRequest* request);
-  virtual bool CanSetCookie(net::URLRequest* request,
+                                     net::X509Certificate* cert) OVERRIDE;
+  virtual bool CanGetCookies(const net::URLRequest* request,
+                             const net::CookieList& cookie_list) const OVERRIDE;
+  virtual bool CanSetCookie(const net::URLRequest* request,
                             const std::string& cookie_line,
-                            net::CookieOptions* options);
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+                            net::CookieOptions* options) const OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
+
   void OnResponseCompleted(net::URLRequest* request);
 
   // Helper functions to get the dispatcher's request info for the request.
