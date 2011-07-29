@@ -671,7 +671,6 @@ select {
   -webkit-box-flex: 1;
   -webkit-user-select: none;
   background-color: #ccc;
-  height: 100%;
   position: relative;
 }
 
