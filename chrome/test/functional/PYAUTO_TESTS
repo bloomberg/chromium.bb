@@ -92,6 +92,8 @@
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
+      # crbug.com/91033
+      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
@@ -110,6 +112,8 @@
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/87811
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
+      # crbug.com/85307
+      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
       # crbug.com/88574
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
@@ -129,6 +133,12 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
+      # Disabled on vista in the actual test. crbug.com/89767
+      # -imports.ImportsTest.testImportFirefoxDataTwice
+      # Disabled on vista in the actual test. crbug.com/89767
+      # -imports.ImportsTest.testFirefoxImportFromPrefs
+      # Disabled on vista in the actual test. crbug.com/89767
+      # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/85598
@@ -139,6 +149,8 @@
       '-ntp.NTPTest.testLaunchAppRegularTab',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
       '-ntp.NTPTest.testUninstallApp',
+      # crbug.com/91030
+      '-omnibox.OmniboxTest.testContentHistory',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
