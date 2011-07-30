@@ -348,8 +348,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // data.
     void DoRequestClearServerData();
 
-    // Sets |deferred_cleanup_requested_| to true. See comment below.
-    void DeferCleanup();
+    // Called on the SyncBackendHost sync_thread_ to cleanup disabled
+    // types.
+    void DoRequestCleanupDisabledTypes();
 
     // Called on our SyncBackendHost's |sync_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
@@ -516,11 +517,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // modified from within the frontend_loop_ (UI thread).
     bool processing_passphrase_;
 
-    // True when a datatype has been disabled so that we nudge once sync is
-    // resumed (after configuration is finished).
-    // TODO(akalin): Remove the need for this.
-    bool deferred_cleanup_requested_;
-
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
@@ -557,7 +553,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   InitializationState initialization_state_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SyncBackendHostTest, MakePendingConfigModeState);
+  FRIEND_TEST_ALL_PREFIXES(SyncBackendHostTest, GetPendingConfigModeState);
 
   struct PendingConfigureDataTypesState {
     PendingConfigureDataTypesState();
@@ -571,23 +567,24 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // configuration cycle.
     syncable::ModelTypeSet initial_types;
 
-    // Additional details about which types were added / removed.
-    bool deleted_type;
+    // Additional details about which types were added.
     syncable::ModelTypeBitSet added_types;
     sync_api::ConfigureReason reason;
   };
 
   UIModelWorker* ui_worker();
 
-  // Helper function for ConfigureDataTypes().  Caller owns return
-  // value.  Takes ownership of |ready_task| (but not |routing_info|).
-  static PendingConfigureDataTypesState* MakePendingConfigModeState(
+  // Helper function for ConfigureDataTypes() that fills in |state|
+  // and |deleted_type|.  Does not take ownership of routing_info|.
+  static void GetPendingConfigModeState(
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       base::Callback<void(bool)> ready_task,
       ModelSafeRoutingInfo* routing_info,
       sync_api::ConfigureReason reason,
-      bool nigori_enabled);
+      bool nigori_enabled,
+      PendingConfigureDataTypesState* state,
+      bool* deleted_type);
 
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }
