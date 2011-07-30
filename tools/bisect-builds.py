@@ -14,7 +14,6 @@ it will ask you whether it is good or bad before continuing the search.
 
 # The root URL for storage.
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
-BASE_URL_RECENT = 'http://build.chromium.org/f/chromium/snapshots'
 
 # URL to the ViewVC commit page.
 BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
@@ -31,8 +30,10 @@ import os
 import pipes
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
+import threading
 import urllib
 from xml.etree import ElementTree
 import zipfile
@@ -40,13 +41,12 @@ import zipfile
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
-  def __init__(self, platform, good_revision, bad_revision, use_recent):
+  def __init__(self, platform, good_revision, bad_revision):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.platform = platform  # What's passed in to the '-a/--archive' option.
     self.good_revision = good_revision
     self.bad_revision = bad_revision
-    self.use_recent = use_recent
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -74,7 +74,7 @@ class PathContext(object):
       self._archive_extract_dir = 'chrome-win32'
       self._binary_name = 'chrome.exe'
     else:
-      raise Exception("Invalid platform")
+      raise Exception('Invalid platform: %s' % self.platform)
 
   def GetListingURL(self, marker=None):
     """Returns the URL for a directory listing, with an optional marker."""
@@ -84,19 +84,10 @@ class PathContext(object):
     return BASE_URL + '/?delimiter=/&prefix=' + self._listing_platform_dir + \
         marker_param
 
-  def GetListingURLRecent(self):
-    """Returns the URL for a directory listing of recent builds."""
-    return BASE_URL_RECENT + '/' + self._listing_platform_dir
-
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
-    if self.use_recent:
-      return "%s/%s%d/%s" % (
-          BASE_URL_RECENT, self._listing_platform_dir, revision,
-          self.archive_name)
-    else:
-      return "%s/%s%d/%s" % (
-          BASE_URL, self._listing_platform_dir, revision, self.archive_name)
+    return "%s/%s%d/%s" % (
+        BASE_URL, self._listing_platform_dir, revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
@@ -107,12 +98,82 @@ class PathContext(object):
     that is used to run the executable."""
     return os.path.join(self._archive_extract_dir, self._binary_name)
 
+  def ParseDirectoryIndex(self):
+    """Parses the Google Storage directory listing into a list of revision
+    numbers. The range starts with self.good_revision and goes until
+    self.bad_revision."""
+
+    def _FetchAndParse(url):
+      """Fetches a URL and returns a 2-Tuple of ([revisions], next-marker). If
+      next-marker is not None, then the listing is a partial listing and another
+      fetch should be performed with next-marker being the marker= GET
+      parameter."""
+      handle = urllib.urlopen(url)
+      document = ElementTree.parse(handle)
+
+      # All nodes in the tree are namespaced. Get the root's tag name to extract
+      # the namespace. Etree does namespaces as |{namespace}tag|.
+      root_tag = document.getroot().tag
+      end_ns_pos = root_tag.find('}')
+      if end_ns_pos == -1:
+        raise Exception("Could not locate end namespace for directory index")
+      namespace = root_tag[:end_ns_pos + 1]
+
+      # Find the prefix (_listing_platform_dir) and whether or not the list is
+      # truncated.
+      prefix_len = len(document.find(namespace + 'Prefix').text)
+      next_marker = None
+      is_truncated = document.find(namespace + 'IsTruncated')
+      if is_truncated is not None and is_truncated.text.lower() == 'true':
+        next_marker = document.find(namespace + 'NextMarker').text
+
+      # Get a list of all the revisions.
+      all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
+                                      namespace + 'Prefix')
+      # The <Prefix> nodes have content of the form of
+      # |_listing_platform_dir/revision/|. Strip off the platform dir and the
+      # trailing slash to just have a number.
+      revisions = []
+      for prefix in all_prefixes:
+        revnum = prefix.text[prefix_len:-1]
+        try:
+          revnum = int(revnum)
+          revisions.append(revnum)
+        except ValueError:
+          pass
+      return (revisions, next_marker)
+
+    # Fetch the first list of revisions.
+    (revisions, next_marker) = _FetchAndParse(self.GetListingURL())
+
+    # If the result list was truncated, refetch with the next marker. Do this
+    # until an entire directory listing is done.
+    while next_marker:
+      next_url = self.GetListingURL(next_marker)
+      (new_revisions, next_marker) = _FetchAndParse(next_url)
+      revisions.extend(new_revisions)
+
+    return revisions
+
+  def GetRevList(self):
+    """Gets the list of revision numbers between self.good_revision and
+    self.bad_revision."""
+    # Download the revlist and filter for just the range between good and bad.
+    minrev = self.good_revision
+    maxrev = self.bad_revision
+    revlist = map(int, self.ParseDirectoryIndex())
+    revlist = [x for x in revlist if x >= minrev and x <= maxrev]
+    revlist.sort()
+    return revlist
+
 
 def UnzipFilenameToDir(filename, dir):
   """Unzip |filename| to directory |dir|."""
+  cwd = os.getcwd()
+  if not os.path.isabs(filename):
+    filename = os.path.join(cwd, filename)
   zf = zipfile.ZipFile(filename)
   # Make base.
-  pushd = os.getcwd()
   try:
     if not os.path.isdir(dir):
       os.mkdir(dir)
@@ -132,191 +193,201 @@ def UnzipFilenameToDir(filename, dir):
         out.close()
       # Set permissions. Permission info in external_attr is shifted 16 bits.
       os.chmod(name, info.external_attr >> 16L)
-    os.chdir(pushd)
+    os.chdir(cwd)
   except Exception, e:
     print >>sys.stderr, e
     sys.exit(1)
 
 
-def ParseDirectoryIndex(context):
-  """Parses the Google Storage directory listing into a list of revision
-  numbers. The range starts with context.good_revision and goes until the latest
-  revision."""
-  def _FetchAndParse(url):
-    """Fetches a URL and returns a 2-Tuple of ([revisions], next-marker). If
-    next-marker is not None, then the listing is a partial listing and another
-    fetch should be performed with next-marker being the marker= GET
-    parameter."""
-    handle = urllib.urlopen(url)
-    document = ElementTree.parse(handle)
+def FetchRevision(context, rev, filename, quit_event=None):
+  """Downloads and unzips revision |rev|.
+  @param context A PathContext instance.
+  @param rev The Chromium revision number/tag to download.
+  @param filename The destination for the downloaded file.
+  @param quit_event A threading.Event which will be set by the master thread to
+                    indicate that the download should be aborted.
+  """
+  def ReportHook(blocknum, blocksize, totalsize):
+    if quit_event and quit_event.is_set():
+     raise RuntimeError("Aborting download of revision %d" % rev)
 
-    # All nodes in the tree are namespaced. Get the root's tag name to extract
-    # the namespace. Etree does namespaces as |{namespace}tag|.
-    root_tag = document.getroot().tag
-    end_ns_pos = root_tag.find('}')
-    if end_ns_pos == -1:
-      raise Exception("Could not locate end namespace for directory index")
-    namespace = root_tag[:end_ns_pos + 1]
-
-    # Find the prefix (_listing_platform_dir) and whether or not the list is
-    # truncated.
-    prefix_len = len(document.find(namespace + 'Prefix').text)
-    next_marker = None
-    is_truncated = document.find(namespace + 'IsTruncated')
-    if is_truncated is not None and is_truncated.text.lower() == 'true':
-      next_marker = document.find(namespace + 'NextMarker').text
-
-    # Get a list of all the revisions.
-    all_prefixes = document.findall(namespace + 'CommonPrefixes/' +
-                                    namespace + 'Prefix')
-    # The <Prefix> nodes have content of the form of
-    # |_listing_platform_dir/revision/|. Strip off the platform dir and the
-    # trailing slash to just have a number.
-    revisions = []
-    for prefix in all_prefixes:
-      revnum = prefix.text[prefix_len:-1]
-      try:
-        revnum = int(revnum)
-        revisions.append(revnum)
-      except ValueError:
-        pass
-    return (revisions, next_marker)
-
-  # Fetch the first list of revisions.
-  (revisions, next_marker) = _FetchAndParse(context.GetListingURL())
-  # If the result list was truncated, refetch with the next marker. Do this
-  # until an entire directory listing is done.
-  while next_marker:
-    (new_revisions, next_marker) = _FetchAndParse(
-        context.GetListingURL(next_marker))
-    revisions.extend(new_revisions)
-
-  return revisions
+  download_url = context.GetDownloadURL(rev)
+  try:
+    urllib.urlretrieve(download_url, filename, ReportHook)
+  except RuntimeError, e:
+    pass
 
 
-def ParseDirectoryIndexRecent(context):
-  """Parses the recent builds directory listing into a list of revision
-  numbers."""
-  handle = urllib.urlopen(context.GetListingURLRecent())
-  document = handle.read()
+def RunRevision(context, revision, zipfile, profile, args):
+  """Given a zipped revision, unzip it and run the test."""
+  print "Trying revision %d..." % revision
 
-  # Looking for: <a href="92976/">92976/</a>
-  return re.findall(r"<a href=\"(\d+)/\">\1/</a>", document)
-
-
-def FilterRevList(context, revlist):
-  """Filter revlist to the revisions between |good_revision| and
-  |bad_revision| of the |context|."""
-  # Download the revlist and filter for just the range between good and bad.
-  rev_range = range(context.good_revision, context.bad_revision)
-  revlist = filter(lambda r: r in rev_range, revlist)
-  revlist.sort()
-  return revlist
-
-
-def TryRevision(context, rev, profile, args):
-  """Downloads revision |rev|, unzips it, and opens it for the user to test.
-  |profile| is the profile to use."""
-  # Do this in a temp dir so we don't collide with user files.
+  # Create a temp directory and unzip the revision into it.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
+  UnzipFilenameToDir(zipfile, tempdir)
   os.chdir(tempdir)
 
-  # Download the file.
-  download_url = context.GetDownloadURL(rev)
-  def _ReportHook(blocknum, blocksize, totalsize):
-    size = blocknum * blocksize
-    if totalsize == -1:  # Total size not known.
-      progress = "Received %d bytes" % size
-    else:
-      size = min(totalsize, size)
-      progress = "Received %d of %d bytes, %.2f%%" % (
-          size, totalsize, 100.0 * size / totalsize)
-    # Send a \r to let all progress messages use just one line of output.
-    sys.stdout.write("\r" + progress)
-    sys.stdout.flush()
-  try:
-    print 'Fetching ' + download_url
-    urllib.urlretrieve(download_url, context.archive_name, _ReportHook)
-    print
-    # Throw an exception if the download was less than 1000 bytes.
-    if os.path.getsize(context.archive_name) < 1000: raise Exception()
-  except Exception, e:
-    print('Could not retrieve the download. Sorry.')
-    sys.exit(-1)
-
-  # Unzip the file.
-  print 'Unzipping ...'
-  UnzipFilenameToDir(context.archive_name, os.curdir)
-
-  # Tell the system to open the app.
-  args = ['--user-data-dir=%s' % profile] + args
-  flags = ' '.join(map(pipes.quote, args))
-  cmd = '%s %s' % (context.GetLaunchPath(), flags)
-  print 'Running %s' % cmd
-  os.system(cmd)
+  # Run the build.
+  testargs = [context.GetLaunchPath(), '--user-data-dir=%s' % profile] + args
+  subproc = subprocess.Popen(testargs,
+                             bufsize=-1,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+  (stdout, stderr) = subproc.communicate()
 
   os.chdir(cwd)
-  print 'Cleaning temp dir ...'
   try:
     shutil.rmtree(tempdir, True)
   except Exception, e:
     pass
 
+  return (subproc.returncode, stdout, stderr)
 
-def AskIsGoodBuild(rev):
+def AskIsGoodBuild(rev, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('\nBuild %d is [(g)ood/(b)ad]: ' % int(rev))
+    response = raw_input('\nRevision %d is [(g)ood/(b)ad/(q)uit]: ' % int(rev))
     if response and response in ('g', 'b'):
       return response == 'g'
+    if response and response == 'q':
+      raise SystemExit()
 
-
-def Bisect(revlist,
-           context,
+def Bisect(platform,
+           good_rev=0,
+           bad_rev=0,
            try_args=(),
-           profile='profile',
+           profile=None,
            predicate=AskIsGoodBuild):
-  """Tries to find the exact commit where a regression was introduced by
-  running a binary search on all archived builds in a given revision range.
+  """Given known good and known bad revisions, run a binary search on all
+  archived revisions to determine the last known good revision.
 
-  @param revlist A list of chromium revision numbers to check.
-  @param context A PathContext object.
-  @param try_args A tuple of arguments to pass to the predicate function.
-  @param profile The user profile with which to run chromium.
+  @param platform Which build to download/run ('mac', 'win', 'linux64', etc.).
+  @param good_rev Number/tag of the last known good revision.
+  @param bad_rev Number/tag of the first known bad revision.
+  @param try_args A tuple of arguments to pass to the test application.
+  @param profile The name of the user profile to run with.
   @param predicate A predicate function which returns True iff the argument
                    chromium revision is good.
+
+  Threading is used to fetch Chromium revisions in the background, speeding up
+  the user's experience. For example, suppose the bounds of the search are
+  good_rev=0, bad_rev=100. The first revision to be checked is 50. Depending on
+  whether revision 50 is good or bad, the next revision to check will be either
+  25 or 75. So, while revision 50 is being checked, the script will download
+  revisions 25 and 75 in the background. Once the good/bad verdict on rev 50 is
+  known:
+
+    - If rev 50 is good, the download of rev 25 is cancelled, and the next test
+      is run on rev 75.
+
+    - If rev 50 is bad, the download of rev 75 is cancelled, and the next test
+      is run on rev 25.
   """
 
+  if not profile:
+    profile = 'profile'
+
+  context = PathContext(platform, good_rev, bad_rev)
+  cwd = os.getcwd()
+
+  _GetDownloadPath = lambda rev: os.path.join(cwd,
+      '%d-%s' % (rev, context.archive_name))
+
+  revlist = context.GetRevList()
+
+  # Get a list of revisions to bisect across.
+  if len(revlist) < 2:  # Don't have enough builds to bisect.
+    msg = 'We don\'t have enough builds to bisect. revlist: %s' % revlist
+    raise RuntimeError(msg)
+
+  # Figure out our bookends and first pivot point; fetch the pivot revision.
   good = 0
   bad = len(revlist) - 1
-  last_known_good_rev = revlist[good]
-  first_known_bad_rev = revlist[bad]
+  pivot = bad / 2
+  rev = revlist[pivot]
+  zipfile = _GetDownloadPath(rev)
+  print "Downloading revision %d..." % rev
+  FetchRevision(context, rev, zipfile)
 
   # Binary search time!
-  while good < bad:
-    candidates = revlist[good:bad]
-    num_poss = len(candidates)
-    if num_poss > 10:
-      print('%d candidates. %d tries left.' %
-          (num_poss, round(math.log(num_poss, 2))))
-    else:
-      print('Candidates: %s' % revlist[good:bad])
+  while zipfile and bad - good > 1:
+    # Pre-fetch next two possible pivots
+    #   - down_pivot is the next revision to check if the current revision turns
+    #     out to be bad.
+    #   - up_pivot is the next revision to check if the current revision turns
+    #     out to be good.
+    down_pivot = int((pivot - good) / 2) + good
+    down_thread = None
+    if down_pivot != pivot and down_pivot != good:
+      down_rev = revlist[down_pivot]
+      down_zipfile = _GetDownloadPath(down_rev)
+      down_event = threading.Event()
+      fetchargs = (context, down_rev, down_zipfile, down_event)
+      down_thread = threading.Thread(target=FetchRevision,
+                                     name='down_fetch',
+                                     args=fetchargs)
+      down_thread.start()
 
-    # Cut the problem in half...
-    test = int((bad - good) / 2) + good
-    test_rev = revlist[test]
+    up_pivot = int((bad - pivot) / 2) + pivot
+    up_thread = None
+    if up_pivot != pivot and up_pivot != bad:
+      up_rev = revlist[up_pivot]
+      up_zipfile = _GetDownloadPath(up_rev)
+      up_event = threading.Event()
+      fetchargs = (context, up_rev, up_zipfile, up_event)
+      up_thread = threading.Thread(target=FetchRevision,
+                                   name='up_fetch',
+                                   args=fetchargs)
+      up_thread.start()
 
-    # Let the user give this rev a spin (in her own profile, if she wants).
-    TryRevision(context, test_rev, profile, try_args)
-    if predicate(test_rev):
-      last_known_good_rev = test_rev
-      good = test + 1
-    else:
-      bad = test
+    # Run test on the pivot revision.
+    (status, stdout, stderr) = RunRevision(context,
+                                           rev,
+                                           zipfile,
+                                           profile,
+                                           try_args)
+    os.unlink(zipfile)
+    zipfile = None
 
-  return (last_known_good_rev, first_known_bad_rev)
+    # Call the predicate function to see if the current revision is good or bad.
+    # On that basis, kill one of the background downloads and complete the
+    # other, as described in the comments above.
+    try:
+      if predicate(rev, status, stdout, stderr):
+        good = pivot
+        if down_thread:
+          down_event.set()  # Kill the download of older revision.
+          down_thread.join()
+          os.unlink(down_zipfile)
+        if up_thread:
+          print "Downloading revision %d..." % up_rev
+          up_thread.join()  # Wait for newer revision to finish downloading.
+          pivot = up_pivot
+          zipfile = up_zipfile
+      else:
+        bad = pivot
+        if up_thread:
+          up_event.set()  # Kill download of newer revision.
+          up_thread.join()
+          os.unlink(up_zipfile)
+        if down_thread:
+          print "Downloading revision %d..." % down_rev
+          down_thread.join()  # Wait for older revision to finish downloading.
+          pivot = down_pivot
+          zipfile = down_zipfile
+    except SystemExit:
+      for f in [down_zipfile, up_zipfile]:
+        try:
+          os.unlink(f)
+        except OSError:
+          pass
+      sys.exit(0)
+
+    rev = revlist[pivot]
+
+  return (revlist[good], revlist[bad])
 
 
 def main():
@@ -354,7 +425,7 @@ def main():
     return 1
 
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0, use_recent=False)
+  context = PathContext(opts.archive, 0, 0)
 
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
@@ -384,45 +455,8 @@ def main():
     except Exception, e:
       pass
 
-  # Set the input parameters now that they've been validated.
-  context.good_revision = good_rev
-  context.bad_revision = bad_rev
-
-  # Get recent revision list and check whether it's sufficient.
-  all_revs_recent = map(int, ParseDirectoryIndexRecent(context))
-  all_revs_recent.sort()
-  # Skipping 0 since it might be deleted off the server soon:
-  all_revs_recent = all_revs_recent[1:]
-  oldest_recent_rev = all_revs_recent[0]
-  if good_rev >= oldest_recent_rev:
-    # The range is within recent builds, so switch on use_recent.
-    context.use_recent = True
-  elif bad_rev >= oldest_recent_rev:
-    # The range spans both old and recent builds.
-    # If oldest_recent_rev is good, we bisect the recent builds.
-    context.use_recent = True
-    TryRevision(context, oldest_recent_rev, opts.profile, args)
-    if AskIsGoodBuild(oldest_recent_rev):
-      # context.use_recent is True
-      context.good_revision = oldest_recent_rev
-    else:
-      context.use_recent = False
-      context.bad_revision = oldest_recent_rev
-
-  all_revs = []
-  if context.use_recent:
-    all_revs = all_revs_recent
-  else:
-    all_revs = map(int, ParseDirectoryIndex(context))
-
-  # Filter list of revisions to bisect across.
-  revlist = FilterRevList(context, all_revs)
-  if len(revlist) < 2:  # Don't have enough builds to bisect
-    print 'We don\'t have enough builds to bisect. revlist: %s' % revlist
-    sys.exit(1)
-
   (last_known_good_rev, first_known_bad_rev) = Bisect(
-      revlist, context, args, opts.profile)
+      opts.archive, good_rev, bad_rev, args, opts.profile)
 
   # We're done. Let the user know the results in an official manner.
   print('You are probably looking for build %d.' % first_known_bad_rev)
