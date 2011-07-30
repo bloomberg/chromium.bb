@@ -99,10 +99,7 @@ IDENTIFIER(NaClSyscallSeg):
         movw    0x2c(%edx), %fs
         movw    0x2e(%edx), %gs
 
-        movw    0x20(%edx), %cx  /* ss */
-        movl    0x1c(%edx), %edx  /* esp */
-        movw    %cx, %ss  /* disable intr */
-        movl    %edx, %esp
+        lss     0x1c(%edx), %esp  /* sets %ss as well as %esp */
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*
@@ -165,10 +162,7 @@ IDENTIFIER(NaClSyscallSeg):
         movw    0x2c(%edx), %fs
         movw    0x2e(%edx), %gs
 
-        movw    0x20(%edx), %cx  /* ss */
-        movl    0x1c(%edx), %edx  /* esp */
-        movw    %cx, %ss  /* disable intr */
-        movl    %edx, %esp
+        lss     0x1c(%edx), %esp  /* sets %ss as well as %esp */
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)
         /*
