@@ -75,10 +75,6 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
 
 }  // namespace
 
-void InputFunction::Run() {
-  SendResponse(RunImpl());
-}
-
 views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
   if (views::ViewsDelegate::views_delegate) {
     views::View* view = views::ViewsDelegate::views_delegate->

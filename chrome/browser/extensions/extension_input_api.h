@@ -6,27 +6,21 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace views {
 class Widget;
 }  // namespace views
 
-// Base class for input APIs.
-class InputFunction : public AsyncExtensionFunction {
- public:
-  virtual void Run();
-  virtual bool RunImpl() = 0;
-};
-
 // Note that this experimental API is currently only available for
 // TOOLKIT_VIEWS (see chrome/chrome_browser.gypi).
 //
 // We may eventually support other platforms by adding the necessary
 // synthetic event distribution code to this Function.
-class SendKeyboardEventInputFunction : public InputFunction {
+class SendKeyboardEventInputFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendKeyboardEvent");
 
  private:
@@ -36,13 +30,13 @@ class SendKeyboardEventInputFunction : public InputFunction {
 #if defined(TOUCH_UI)
 class HideKeyboardFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.hideKeyboard");
 };
 
 class SetKeyboardHeightFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.setKeyboardHeight");
 };
 #endif
@@ -56,13 +50,13 @@ class SetKeyboardHeightFunction : public AsyncExtensionFunction {
 // of Chrome OS.
 class SendHandwritingStrokeFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendHandwritingStroke");
 };
 
 class CancelHandwritingStrokesFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.cancelHandwritingStrokes");
 };
