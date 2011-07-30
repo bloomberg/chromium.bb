@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "dbus/message.h"
+
+#include "base/basictypes.h"
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that a byte can be properly written and read. We only have this
@@ -252,7 +254,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
             dbus::MessageWriter dict_entry_writer(&message);
             dict_array_writer.OpenDictEntry(&dict_entry_writer);
             dict_entry_writer.AppendString("foo");
-            dict_entry_writer.AppendInt64(1234567890123456789);
+            dict_entry_writer.AppendInt64(GG_INT64_C(1234567890123456789));
             dict_array_writer.CloseContainer(&dict_entry_writer);
           }
           variant_writer.CloseContainer(&dict_array_writer);
@@ -322,7 +324,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
         EXPECT_EQ("foo", string_value);
         int64 int64_value = 0;
         ASSERT_TRUE(dict_entry_reader.PopInt64(&int64_value));
-        EXPECT_EQ(1234567890123456789, int64_value);
+        EXPECT_EQ(GG_INT64_C(1234567890123456789), int64_value);
       }
       ASSERT_FALSE(dict_array_reader.HasMoreData());
     }
