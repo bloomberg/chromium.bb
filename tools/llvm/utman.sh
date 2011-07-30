@@ -395,10 +395,6 @@ hg-update-non-llvm() {
   hg-update-binutils
   hg-update-compiler-rt
   hg-update-google-perftools
-  if ${UTMAN_USE_MQ}; then
-    hg-update-llvm-mq-patches
-    hg-update-llvm-gcc-mq-patches
-  fi
 }
 
 hg-assert-safe-to-update() {
