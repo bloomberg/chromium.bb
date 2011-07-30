@@ -2815,9 +2815,11 @@ sdk-verify() {
       verify-object-${platform} "$i"
     done
 
-    for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
-      verify-archive-${platform} "$i"
-    done
+    if ! ${LIBMODE_GLIBC}; then
+      for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
+        verify-archive-${platform} "$i"
+      done
+    fi
   done
 }
 
