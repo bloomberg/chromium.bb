@@ -16,7 +16,6 @@
 #include "base/process.h"
 #include "base/task.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
@@ -92,10 +91,6 @@ class GpuCommandBufferStub
   void OnInitialize(base::SharedMemoryHandle ring_buffer,
                     int32 size,
                     IPC::Message* reply_message);
-  void OnMapExternalResource(gpu::resource_type::ResourceType resource_type,
-                             uint32 resource_source_id,
-                             int32 source_route_id,
-                             uint32 resource_dest_id);
   void OnSetParent(int32 parent_route_id,
                    uint32 parent_texture_id,
                    IPC::Message* reply_message);

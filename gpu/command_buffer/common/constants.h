@@ -42,12 +42,6 @@ namespace error {
   };
 }
 
-namespace resource_type {
-  enum ResourceType {
-    kTexture
-  };
-}
-
 // Invalid shared memory Id, returned by RegisterSharedMemory in case of
 // failure.
 const int32 kInvalidSharedMemoryId = -1;

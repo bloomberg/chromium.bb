@@ -129,18 +129,6 @@ bool GpuScheduler::SetParent(GpuScheduler* parent_scheduler,
     return decoder_->SetParent(NULL, 0);
 }
 
-bool GpuScheduler::MapExternalResource(
-    resource_type::ResourceType resource_type,
-    uint32 resource_source_id,
-    GpuScheduler* source_scheduler,
-    uint32 resource_dest_id) {
-  return decoder_->MapExternalResource(
-      resource_type,
-      resource_source_id,
-      source_scheduler ? source_scheduler->decoder_.get() : NULL,
-      resource_dest_id);
-}
-
 #if defined(OS_MACOSX)
 namespace {
 const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;

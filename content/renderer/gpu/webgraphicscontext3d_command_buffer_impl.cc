@@ -333,11 +333,8 @@ void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId texture, WebGLId parentTexture) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::copyTextureToCompositor");
-
+  gl_->CopyTextureToParentTextureCHROMIUM(texture, parentTexture);
   gl_->Flush();
-  context_->MapExternalResourceToParent(gpu::resource_type::kTexture,
-                                        texture,
-                                        parentTexture);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::

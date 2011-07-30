@@ -349,27 +349,6 @@ void CommandBufferProxy::OnSwapBuffers() {
     swap_buffers_callback_->Run();
 }
 
-bool CommandBufferProxy::MapExternalResource(
-    gpu::resource_type::ResourceType resource_type,
-    uint32 resource_source_id,
-    CommandBufferProxy* source_command_buffer,
-    uint32 resource_dest_id) {
-  if (last_state_.error != gpu::error::kNoError)
-    return false;
-
-  if (!Send(new GpuCommandBufferMsg_MapExternalResource(
-      route_id_,
-      resource_type,
-      resource_source_id,
-      source_command_buffer ?
-          source_command_buffer->route_id() : MSG_ROUTING_NONE,
-      resource_dest_id))) {
-    return false;
-  }
-
-  return true;
-}
-
 bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
                                    uint32 parent_texture_id) {
   if (last_state_.error != gpu::error::kNoError)

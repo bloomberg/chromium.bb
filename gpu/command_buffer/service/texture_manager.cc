@@ -68,7 +68,7 @@ void TextureManager::Destroy(bool have_context) {
   while (!texture_infos_.empty()) {
     if (have_context) {
       TextureInfo* info = texture_infos_.begin()->second;
-      if (!info->IsDeleted() && info->owner_.get() == this) {
+      if (!info->IsDeleted() && info->owned_) {
         GLuint service_id = info->service_id();
         glDeleteTextures(1, &service_id);
         info->MarkAsDeleted();
@@ -556,10 +556,14 @@ bool TextureManager::MarkMipmapsGenerated(
 TextureManager::TextureInfo* TextureManager::CreateTextureInfo(
     const FeatureInfo* feature_info,
     GLuint client_id, GLuint service_id) {
-  TextureInfo* texture_info = new TextureInfo(service_id);
-  texture_info->owner_ = AsWeakPtr();
-  AddTextureInfo(feature_info, client_id, texture_info);
-  return texture_info;
+  TextureInfo::Ref info(new TextureInfo(service_id));
+  std::pair<TextureInfoMap::iterator, bool> result =
+      texture_infos_.insert(std::make_pair(client_id, info));
+  DCHECK(result.second);
+  if (!info->CanRender(feature_info)) {
+    ++num_unrenderable_textures_;
+  }
+  return info.get();
 }
 
 TextureManager::TextureInfo* TextureManager::GetTextureInfo(
@@ -568,26 +572,15 @@ TextureManager::TextureInfo* TextureManager::GetTextureInfo(
   return it != texture_infos_.end() ? it->second : NULL;
 }
 
-void TextureManager::AddTextureInfo(
-    const FeatureInfo* feature_info,
-    GLuint client_id, TextureInfo* texture_info) {
-  std::pair<TextureInfoMap::iterator, bool> result =
-      texture_infos_.insert(std::make_pair(client_id, texture_info));
-  DCHECK(result.second);
-  if (!texture_info->CanRender(feature_info)) {
-    ++num_unrenderable_textures_;
-  }
-}
-
 void TextureManager::RemoveTextureInfo(
     const FeatureInfo* feature_info, GLuint client_id) {
   TextureInfoMap::iterator it = texture_infos_.find(client_id);
   if (it != texture_infos_.end()) {
     TextureInfo* info = it->second;
-    if (!info->CanRender(feature_info))
+    if (!info->CanRender(feature_info)) {
       --num_unrenderable_textures_;
-    if (info->owner_.get() == this)
-      info->MarkAsDeleted();
+    }
+    info->MarkAsDeleted();
     texture_infos_.erase(it);
   }
 }

@@ -15,7 +15,6 @@
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -75,11 +74,6 @@ class GpuScheduler : public CommandBufferEngine {
 
   void Destroy();
   void DestroyCommon();
-
-  bool MapExternalResource(resource_type::ResourceType resource_type,
-                           uint32 resource_source_id,
-                           GpuScheduler* source_scheduler,
-                           uint32 resource_dest_id);
 
   bool SetParent(GpuScheduler* parent_scheduler, uint32 parent_texture_id);
 

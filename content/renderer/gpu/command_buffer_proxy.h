@@ -15,7 +15,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -64,11 +63,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetParseError(gpu::error::Error error);
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
   virtual void OnSwapBuffers();
-
-  bool MapExternalResource(gpu::resource_type::ResourceType resource_type,
-                           uint32 resource_source_id,
-                           CommandBufferProxy* source_command_buffer,
-                           uint32 resource_dest_id);
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
