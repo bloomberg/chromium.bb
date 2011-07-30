@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,22 +58,17 @@ def GetWebKitRevision(webkit_dir, version_file):
   version_file_dir = os.path.dirname(version_file)
   version_info = lastchange.FetchVersionInfo(
       default_lastchange=None,
-      directory=os.path.join(webkit_dir, version_file_dir))
+      directory=os.path.join(webkit_dir, version_file_dir),
+      directory_regex_prior_to_src_url='webkit')
 
-  if (version_info.url.startswith(version_info.root) and
-      version_info.url.endswith(version_file_dir)):
-    # Now compute the real WebKit URL by stripping off the version file
-    # directory from the URL we get out of version_info.
-    # Further, we want to strip off the "http://svn..." from the left.
-    # This is the root URL from the repository.
-    webkit_url = version_info.url[len(version_info.root):-len(version_file_dir)]
-    webkit_url = webkit_url.strip('/')
-  else:
-    # The data isn't as we expect: perhaps they're using git without svn?
-    # Just dump the output directly.
-    webkit_url = version_info.url
+  if version_info.url == None:
+    version_info.url = 'Unknown URL'
+  version_info.url = version_info.url.strip('/')
 
-  return "%s@%s" % (webkit_url, version_info.revision)
+  if version_info.revision == None:
+    version_info.revision = '0'
+
+  return "%s@%s" % (version_info.url, version_info.revision)
 
 
 def EmitVersionHeader(webkit_dir, version_file, output_dir):
@@ -107,5 +102,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-
-
