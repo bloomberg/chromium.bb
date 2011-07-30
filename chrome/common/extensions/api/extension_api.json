@@ -388,7 +388,7 @@
       {
         "name": "setAccessibilityEnabled",
         "type": "function",
-        "description": "Enable or disable the accessibility extension api. This must be set to true before event listeners or getFocusedControl will work.",
+        "description": "Enables or disables the accessibility extension api. This must be set to true before event listeners or getFocusedControl will work.",
         "parameters": [
           {
             "type": "boolean",
@@ -400,7 +400,7 @@
       {
         "name": "getFocusedControl",
         "type": "function",
-        "description": "Get information about the currently focused control.",
+        "description": "Gets information about the currently focused control.",
         "parameters": [
           {
             "type": "function",
@@ -582,7 +582,7 @@
       {
         "name": "speak",
         "type": "function",
-        "description": "Speak text using a text-to-speech engine.",
+        "description": "Speaks text using a text-to-speech engine.",
         "parameters": [
           {
             "type": "string",
@@ -680,13 +680,13 @@
       {
         "name": "stop",
         "type": "function",
-        "description": "Stop any current speech.",
+        "description": "Stops any current speech.",
         "parameters": []
       },
       {
         "name": "isSpeaking",
         "type": "function",
-        "description": "Check if the engine is currently speaking.",
+        "description": "Checks if the engine is currently speaking.",
         "parameters": [
           {
             "type": "function",
@@ -705,7 +705,7 @@
       {
         "name": "getVoices",
         "type": "function",
-        "description": "Get an array of all available voices.",
+        "description": "Gets an array of all available voices.",
         "parameters": [
           {
             "type": "function",
@@ -746,7 +746,7 @@
         "name": "sendTtsEvent",
         "nodoc": true,
         "type": "function",
-        "description": "Route a TTS event from a speech engine to a client.",
+        "description": "Routes a TTS event from a speech engine to a client.",
         "parameters": [
           {
             "type": "integer",
@@ -1607,7 +1607,7 @@
       {
         "name": "onCreated",
         "type": "function",
-        "description": "Fires when a tab is created. Note that the tab's URL may not be set at the time this event fires, but you can listen to onUpdated events to be notified when a URL is set.",
+        "description": "Fired when a tab is created. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.",
         "parameters": [
           {
             "$ref": "Tab",
@@ -1619,7 +1619,7 @@
       {
         "name": "onUpdated",
         "type": "function",
-        "description": "Fires when a tab is updated.",
+        "description": "Fired when a tab is updated.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1654,7 +1654,7 @@
       {
         "name": "onMoved",
         "type": "function",
-        "description": "Fires when a tab is moved within a window. Only one move event is fired, representing the tab the user directly moved. Move events are not fired for the other tabs that must move in response. This event is not fired when a tab is moved between windows. For that, see <a href='#event-onDetached'>onDetached</a>.",
+        "description": "Fired when a tab is moved within a window. Only one move event is fired, representing the tab the user directly moved. Move events are not fired for the other tabs that must move in response. This event is not fired when a tab is moved between windows. For that, see <a href='#event-onDetached'>onDetached</a>.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1671,7 +1671,7 @@
       {
         "name": "onSelectionChanged",
         "type": "function",
-        "description": "Fires when the selected tab in a window changes.",
+        "description": "Fired when the selected tab in a window changes.",
         "parameters": [
           {
             "type": "integer",
@@ -1727,7 +1727,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "description": "Fires when a tab is closed. Note: A listener can be registered for this event without requesting the 'tabs' permission in the manifest.",
+        "description": "Fired when a tab is closed. Note: A listener can be registered for this event without requesting the 'tabs' permission in the manifest.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -2435,7 +2435,7 @@
       {
         "name": "search",
         "type": "function",
-        "description": "Search the history for the last visit time of each page matching the query.",
+        "description": "Searches the history for the last visit time of each page matching the query.",
         "parameters": [
           {
             "name": "query",
@@ -2459,7 +2459,7 @@
       {
         "name": "getVisits",
         "type": "function",
-        "description": "Retrieve information about visits to a URL.",
+        "description": "Retrieves information about visits to a URL.",
         "parameters": [
           {
             "name": "details",
@@ -2664,7 +2664,7 @@
       {
         "name": "sendKeyboardEvent",
         "type": "function",
-        "description": "Send a keyboard event to Chrome.",
+        "description": "Sends a keyboard event to Chrome.",
         "parameters": [
           { "type": "object",
             "name": "event",
@@ -2711,7 +2711,7 @@
       {
         "name": "hideKeyboard",
         "type": "function",
-        "description": "Hide the keyboard UI.",
+        "description": "Hides the keyboard UI.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -2724,7 +2724,7 @@
       {
         "name": "setKeyboardHeight",
         "type": "function",
-        "description": "Set the height of the keyboard UI.",
+        "description": "Sets the height of the keyboard UI.",
         "parameters": [
           { "type": "integer",
             "name": "height",
@@ -2743,7 +2743,7 @@
       {
         "name": "sendHandwritingStroke",
         "type": "function",
-        "description": "Send a handwriting event to Chrome.",
+        "description": "Sends a handwriting event to Chrome.",
         "parameters": [
           {
             "name": "stroke",
@@ -2761,7 +2761,7 @@
       {
         "name": "cancelHandwritingStrokes",
         "type": "function",
-        "description": "Clear last N handwriting strokes.",
+        "description": "Clears last N handwriting strokes.",
         "parameters": [
           {
             "name": "strokeCount",
@@ -2826,7 +2826,7 @@
       {
         "name": "register",
         "type": "function",
-        "description": "Register the extension, so the extension can receive input method related events.",
+        "description": "Registers the extension, so the extension can receive input method related events.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -2839,7 +2839,7 @@
       {
         "name": "candidateClicked",
         "type": "function",
-        "description": "Notify input method engine that a candidate was clicked.",
+        "description": "Notifies input method engine that a candidate was clicked.",
         "parameters": [
           { "type": "integer",
             "name": "index"
@@ -2858,7 +2858,7 @@
       {
         "name": "cursorUp",
         "type": "function",
-        "description": "Notify input method engine cursor up button was clicked.",
+        "description": "Notifies input method engine cursor up button was clicked.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -2871,7 +2871,7 @@
       {
         "name": "cursorDown",
         "type": "function",
-        "description": "Notify input method engine cursor down button was clicked.",
+        "description": "Notifies input method engine cursor down button was clicked.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -2884,7 +2884,7 @@
       {
         "name": "pageUp",
         "type": "function",
-        "description": "Notify input method engine page up button was clicked.",
+        "description": "Notifies input method engine page up button was clicked.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -2897,7 +2897,7 @@
       {
         "name": "pageDown",
         "type": "function",
-        "description": "Notify input method engine page down button was clicked.",
+        "description": "Notifies input method engine page down button was clicked.",
         "parameters": [
           { "type": "function",
             "name": "callback",
@@ -3280,7 +3280,7 @@
       {
         "name": "onUpdated",
         "type": "function",
-        "description": "Fires each time the Task Manager updates its process statistics, providing the dictionary of updated Process objects, indexed by process ID.",
+        "description": "Fired each time the Task Manager updates its process statistics, providing the dictionary of updated Process objects, indexed by process ID.",
         "parameters": [
           {
             "name": "processes",
@@ -3433,7 +3433,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Update a previously created context menu item.",
+        "description": "Updates a previously created context menu item.",
         "parameters": [
           {
             "type": "integer",
@@ -3500,7 +3500,7 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "Remove a context menu item.",
+        "description": "Removes a context menu item.",
         "parameters": [
           {
             "type": "integer",
@@ -3519,7 +3519,7 @@
       {
         "name": "removeAll",
         "type": "function",
-        "description": "Remove all context menu items added by this extension.",
+        "description": "Removes all context menu items added by this extension.",
         "parameters": [
           {
             "type": "function",
@@ -3557,7 +3557,7 @@
       {
         "name": "getEnabled",
         "type": "function",
-        "description": "Get the user preference to send UMA and crash reports to Google.",
+        "description": "Gets the user preference to send UMA and crash reports to Google.",
         "parameters": [
           {
             "type": "function",
@@ -3571,7 +3571,7 @@
       {
         "name": "setEnabled",
         "type": "function",
-        "description": "Set the user preference to send UMA and crash reports to Google.",
+        "description": "Sets the user preference to send UMA and crash reports to Google.",
         "parameters": [
           {"name": "enabled", "type": "boolean", "description": "True for setting Chrome to actively send UMA and crash reports, false for disabling this."},
           {
@@ -3598,7 +3598,7 @@
       {
         "name": "recordPercentage",
         "type": "function",
-        "description": "Record a percentage value from 1 to 100.",
+        "description": "Records a percentage value from 1 to 100.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3607,7 +3607,7 @@
       {
         "name": "recordCount",
         "type": "function",
-        "description": "Record a value than can range from 1 to 1,000,000.",
+        "description": "Records a value than can range from 1 to 1,000,000.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3616,7 +3616,7 @@
       {
         "name": "recordSmallCount",
         "type": "function",
-        "description": "Record a value than can range from 1 to 100.",
+        "description": "Records a value than can range from 1 to 100.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3625,7 +3625,7 @@
       {
         "name": "recordMediumCount",
         "type": "function",
-        "description": "Record a value than can range from 1 to 10,000.",
+        "description": "Records a value than can range from 1 to 10,000.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3634,7 +3634,7 @@
       {
         "name": "recordTime",
         "type": "function",
-        "description": "Record an elapsed time of no more than 10 seconds.  The sample value is specified in milliseconds.",
+        "description": "Records an elapsed time of no more than 10 seconds.  The sample value is specified in milliseconds.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3643,7 +3643,7 @@
       {
         "name": "recordMediumTime",
         "type": "function",
-        "description": "Record an elapsed time of no more than 3 minutes.  The sample value is specified in milliseconds.",
+        "description": "Records an elapsed time of no more than 3 minutes.  The sample value is specified in milliseconds.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -3652,7 +3652,7 @@
       {
         "name": "recordLongTime",
         "type": "function",
-        "description": "Record an elapsed time of no more than 1 hour.  The sample value is specified in milliseconds.",
+        "description": "Records an elapsed time of no more than 1 hour.  The sample value is specified in milliseconds.",
         "parameters": [
           {"name": "metricName", "type": "string"},
           {"name": "value", "type": "integer"}
@@ -4016,7 +4016,7 @@
       {
         "name": "onBeforeNavigate",
         "type": "function",
-        "description": "Fires when a navigation is about to occur.",
+        "description": "Fired when a navigation is about to occur.",
         "parameters": [
           {
             "type": "object",
@@ -4033,7 +4033,7 @@
       {
         "name": "onCommitted",
         "type": "function",
-        "description": "Fires when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document.",
+        "description": "Fired when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document.",
         "parameters": [
           {
             "type": "object",
@@ -4052,7 +4052,7 @@
       {
         "name": "onDOMContentLoaded",
         "type": "function",
-        "description": "Fires when the page's DOM is fully constructed, but the referenced resources may not finish loading.",
+        "description": "Fired when the page's DOM is fully constructed, but the referenced resources may not finish loading.",
         "parameters": [
           {
             "type": "object",
@@ -4069,7 +4069,7 @@
       {
         "name": "onCompleted",
         "type": "function",
-        "description": "Fires when a document, including the resources it refers to, is completely loaded and initialized.",
+        "description": "Fired when a document, including the resources it refers to, is completely loaded and initialized.",
         "parameters": [
           {
             "type": "object",
@@ -4086,7 +4086,7 @@
       {
         "name": "onErrorOccurred",
         "type": "function",
-        "description": "Fires when an error occurs.",
+        "description": "Fired when an error occurs.",
         "parameters": [
           {
             "type": "object",
@@ -4104,7 +4104,7 @@
       {
         "name": "onBeforeRetarget",
         "type": "function",
-        "description": "Fires when a new window, or a new tab in an existing window, is about to be created to host a navigation.",
+        "description": "Fired when a new window, or a new tab in an existing window, is about to be created to host a navigation.",
         "parameters": [
           {
             "type": "object",
@@ -4160,7 +4160,7 @@
       {
         "id": "BlockingResponse",
         "type": "object",
-        "description": "Return value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
+        "description": "Returns value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
         "properties": {
           "cancel": {
             "type": "boolean",
@@ -4229,7 +4229,7 @@
       {
         "name": "onBeforeRequest",
         "type": "function",
-        "description": "Fires when a request is about to occur.",
+        "description": "Fired when a request is about to occur.",
         "parameters": [
           {
             "type": "object",
@@ -4272,7 +4272,7 @@
       {
         "name": "onBeforeSendHeaders",
         "type": "function",
-        "description": "Fires before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. ",
+        "description": "Fired before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. ",
         "parameters": [
           {
             "type": "object",
@@ -4312,7 +4312,7 @@
       {
         "name": "onSendHeaders",
         "type": "function",
-        "description": "Fires just before a request is going to be sent to the server (modifications of prvious onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).",
+        "description": "Fired just before a request is going to be sent to the server (modifications of prvious onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).",
         "parameters": [
           {
             "type": "object",
@@ -4347,7 +4347,7 @@
       {
         "name": "onResponseStarted",
         "type": "function",
-        "description": "Fires when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",
+        "description": "Fired when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",
         "parameters": [
           {
             "type": "object",
@@ -4386,7 +4386,7 @@
       {
         "name": "onBeforeRedirect",
         "type": "function",
-        "description": "Fires when a server initiated redirect is about to occur.",
+        "description": "Fired when a server initiated redirect is about to occur.",
         "parameters": [
           {
             "type": "object",
@@ -4426,7 +4426,7 @@
       {
         "name": "onCompleted",
         "type": "function",
-        "description": "Fires when a request is completed.",
+        "description": "Fired when a request is completed.",
         "parameters": [
           {
             "type": "object",
@@ -4465,7 +4465,7 @@
       {
         "name": "onErrorOccurred",
         "type": "function",
-        "description": "Fires when an error occurs.",
+        "description": "Fired when an error occurs.",
         "parameters": [
           {
             "type": "object",
@@ -4529,7 +4529,7 @@
       {
         "name": "notifyFail",
         "type": "function",
-        "description": "Notify the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
+        "description": "Notifies the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
         "parameters": [
           {"type": "string", "name": "message"}
         ]
@@ -4537,7 +4537,7 @@
       {
         "name": "notifyPass",
         "type": "function",
-        "description": "Notify the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
+        "description": "Notifies the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
         "parameters": [
           {"type": "string", "name": "message", "optional": true}
         ]
@@ -4545,7 +4545,7 @@
       {
         "name": "resetQuota",
         "type": "function",
-        "description": "Reset all accumulated quota state for all extensions.  This is only used for internal unit testing.",
+        "description": "Resets all accumulated quota state for all extensions.  This is only used for internal unit testing.",
         "parameters": []
       },
       {
@@ -5149,7 +5149,7 @@
       },
       {
         "name": "get",
-        "description": "Return information about the installed extension or app that has the given ID.",
+        "description": "Returns information about the installed extension or app that has the given ID.",
         "parameters": [
           {
             "name": "id",
@@ -5216,7 +5216,7 @@
       },
       {
         "name": "setEnabled",
-        "description": "Enable or disable an app or extension.",
+        "description": "Enables or disables an app or extension.",
         "parameters": [
           {
             "name": "id",
@@ -5238,7 +5238,7 @@
       },
       {
         "name": "uninstall",
-        "description": "Uninstall a currently installed app or extension.",
+        "description": "Uninstalls a currently installed app or extension.",
         "parameters": [
           {
             "name": "id",
@@ -5537,7 +5537,7 @@
       {
         "name": "cancelDialog",
         "type": "function",
-        "description": "Cancel file selection.",
+        "description": "Cancels file selection.",
         "parameters": []
       },
       {
@@ -5598,7 +5598,7 @@
       {
         "name": "getStrings",
         "type": "function",
-        "description": "Get Strings.",
+        "description": "Gets Strings.",
         "parameters": [
           {
             "type": "function",
@@ -5683,7 +5683,7 @@
       {
         "name": "selectFiles",
         "type": "function",
-        "description": "Select multiple files.",
+        "description": "Selects multiple files.",
         "parameters": [
           {
             "type": "array",
@@ -5695,7 +5695,7 @@
       {
         "name": "selectFile",
         "type": "function",
-        "description": "Select a file.",
+        "description": "Selects a file.",
         "parameters": [
           {
             "type": "string",
@@ -5710,7 +5710,7 @@
       {
         "name": "viewFiles",
         "type": "function",
-        "description": "View multiple files.",
+        "description": "Views multiple files.",
         "parameters": [
           {
             "name": "fileUrls",
@@ -6090,7 +6090,7 @@
       },
       {
         "name": "setStoreLogin",
-        "description": "Set a preference value with the store login.",
+        "description": "Sets a preference value with the store login.",
         "parameters": [
           { "name": "login", "type": "string" },
           { "name": "callback", "type": "function", "optional": "true" }
@@ -6174,7 +6174,7 @@
           {
             "name": "get",
             "type": "function",
-            "description": "Get the value of a setting.",
+            "description": "Gets the value of a setting.",
             "parameters": [
               {
                 "name": "details",
@@ -6220,7 +6220,7 @@
           {
             "name": "set",
             "type": "function",
-            "description": "Set the value of a setting.",
+            "description": "Sets the value of a setting.",
             "parameters": [
               {
                 "name": "details",
@@ -6358,7 +6358,7 @@
           {
             "name": "get",
             "type": "function",
-            "description": "Get the current content setting for a given pair of URLs.",
+            "description": "Gets the current content setting for a given pair of URLs.",
             "parameters": [
               {
                 "name": "details",
@@ -6406,7 +6406,7 @@
           {
             "name": "set",
             "type": "function",
-            "description": "Apply a new content setting rule.",
+            "description": "Applies a new content setting rule.",
             "parameters": [
               {
                 "name": "details",
@@ -6586,7 +6586,7 @@
       {
         "name": "sendRequest",
         "type": "function",
-        "description": "Send given request to the debugger.",
+        "description": "Sends given request to the debugger.",
         "parameters": [
           {
             "type": "integer",
