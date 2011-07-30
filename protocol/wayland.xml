@@ -42,16 +42,7 @@
          The key argument can be used to correlate between multiple
          sync invocations. -->
     <request name="sync">
-      <arg name="key" type="uint"/>
-    </request>
-
-    <!-- Request notification when the next frame is displayed.
-         Useful for throttling redrawing operations, and driving
-         animations.  The notification will only be posted for one
-         frame unless requested again. -->
-    <request name="frame">
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="key" type="uint"/>
+      <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
 
     <!-- A fatal error has occurred. -->
@@ -92,18 +83,13 @@
     <event name="range">
       <arg name="base" type="uint"/>
     </event>
+  </interface>
 
-    <!-- A reply to the frame or sync request.  The key is the one
-         used in the request.  time is in millisecond units, and
-         denotes the time when the frame was posted on the
-         display. time can be used to estimate frame rate, determine
-         how much to advance animations and compensate for jitter. -->
-    <event name="key">
-      <arg name="key" type="uint"/>
+  <interface name="wl_callback" version="1">
+    <event name="done">
       <arg name="time" type="uint"/>
     </event>
   </interface>
-
 
   <!-- A compositor. This object is a global.  The compositor is in
        charge of combining the contents of multiple surfaces into one
@@ -423,6 +409,15 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>
+
+    <!-- Request notification when the next frame is displayed.
+         Useful for throttling redrawing operations, and driving
+         animations.  The notification will only be posted for one
+         frame unless requested again. -->
+    <request name="frame">
+      <arg name="callback" type="new_id" interface="wl_callback"/>
+    </request>
+
   </interface>
 
 

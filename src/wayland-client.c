@@ -51,21 +51,6 @@ struct wl_proxy {
 	void *user_data;
 };
 
-struct wl_sync_handler {
-	wl_display_sync_func_t func;
-	uint32_t key;
-	void *data;
-	struct wl_list link;
-};
-
-struct wl_frame_handler {
-	wl_display_frame_func_t func;
-	uint32_t key;
-	void *data;
-	struct wl_surface *surface;
-	struct wl_list link;
-};
-
 struct wl_global {
 	uint32_t id;
 	char *interface;
@@ -88,9 +73,6 @@ struct wl_display {
 
 	wl_display_global_func_t global_handler;
 	void *global_handler_data;
-
-	struct wl_list sync_list, frame_list;
-	uint32_t key;
 };
 
 static int wl_debug = 0;
@@ -278,42 +260,11 @@ display_handle_range(void *data,
 	display->next_range = range;
 }
 
-static void
-display_handle_key(void *data,
-		   struct wl_display *display, uint32_t key, uint32_t time)
-{
-	struct wl_sync_handler *sync_handler;
-	struct wl_frame_handler *frame_handler;
-
-	sync_handler = container_of(display->sync_list.next,
-				    struct wl_sync_handler, link);
-	if (!wl_list_empty(&display->sync_list) && sync_handler->key == key) {
-		wl_list_remove(&sync_handler->link);
-		sync_handler->func(sync_handler->data);
-		free(sync_handler);
-		return;
-	}
-
-	frame_handler = container_of(display->frame_list. next,
-				     struct wl_frame_handler, link);
-	if (!wl_list_empty(&display->frame_list) &&
-	    frame_handler->key == key) {
-		wl_list_remove(&frame_handler->link);
-		frame_handler->func(frame_handler->surface,
-				    frame_handler->data, time);
-		free(frame_handler);
-		return;
-	}
-
-	fprintf(stderr, "unsolicited sync event, client gone?\n");
-}
-
 static const struct wl_display_listener display_listener = {
 	display_handle_error,
 	display_handle_global,
 	display_handle_global_remove,
 	display_handle_range,
-	display_handle_key
 };
 
 static int
@@ -402,9 +353,6 @@ wl_display_connect(const char *name)
 	display->proxy.object.id = 1;
 	display->proxy.display = display;
 
-	wl_list_init(&display->sync_list);
-	wl_list_init(&display->frame_list);
-
 	display->proxy.object.implementation =
 		(void(**)(void)) &display_listener;
 	display->proxy.user_data = display;
@@ -455,46 +403,31 @@ wl_display_get_fd(struct wl_display *display,
 	return display->fd;
 }
 
-WL_EXPORT int
-wl_display_sync_callback(struct wl_display *display,
-			 wl_display_sync_func_t func, void *data)
+static void
+sync_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
-	struct wl_sync_handler *handler;
+   int *done = data;
 
-	handler = malloc(sizeof *handler);
-	if (handler == NULL)
-		return -1;
-
-	handler->func = func;
-	handler->key = display->key++;
-	handler->data = data;
-
-	wl_list_insert(display->sync_list.prev, &handler->link);
-	wl_display_sync(display, handler->key);
-
-	return 0;
+   *done = 1;
+   wl_callback_destroy(callback);
 }
 
-WL_EXPORT int
-wl_display_frame_callback(struct wl_display *display,
-			  struct wl_surface *surface,
-			  wl_display_frame_func_t func, void *data)
+static const struct wl_callback_listener sync_listener = {
+	sync_callback
+};
+
+WL_EXPORT void
+wl_display_roundtrip(struct wl_display *display)
 {
-	struct wl_frame_handler *handler;
+	struct wl_callback *callback;
+	int done;
 
-	handler = malloc(sizeof *handler);
-	if (handler == NULL)
-		return -1;
-
-	handler->func = func;
-	handler->key = display->key++;
-	handler->data = data;
-	handler->surface = surface;
-
-	wl_list_insert(display->frame_list.prev, &handler->link);
-	wl_display_frame(display, handler->surface, handler->key);
-
-	return 0;
+	done = 0;
+	callback = wl_display_sync(display);
+	wl_callback_add_listener(callback, &sync_listener, &done);
+	wl_display_flush(display);
+	while (!done)
+		wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
 static void

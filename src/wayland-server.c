@@ -69,21 +69,13 @@ struct wl_display {
 	struct wl_hash_table *objects;
 	int run;
 
-	struct wl_list frame_list;
+	struct wl_list callback_list;
 	uint32_t client_id_range;
 	uint32_t id;
 
 	struct wl_list global_list;
 	struct wl_list socket_list;
 	struct wl_list client_list;
-};
-
-struct wl_frame_listener {
-	struct wl_resource resource;
-	struct wl_client *client;
-	uint32_t key;
-	struct wl_surface *surface;
-	struct wl_list link;
 };
 
 struct wl_global {
@@ -531,51 +523,19 @@ display_bind(struct wl_client *client,
 
 static void
 display_sync(struct wl_client *client,
-	       struct wl_display *display, uint32_t key)
+	     struct wl_display *display, uint32_t id)
 {
-	wl_client_post_event(client, &display->object, WL_DISPLAY_KEY, key, 0);
-}
+	struct wl_object object;
 
-static void
-destroy_frame_listener(struct wl_resource *resource, struct wl_client *client)
-{
-	struct wl_frame_listener *listener =
-		container_of(resource, struct wl_frame_listener, resource);
+	object.interface = &wl_callback_interface;
+	object.id = id;
 
-	wl_list_remove(&listener->link);
-	free(listener);
-}
-
-static void
-display_frame(struct wl_client *client,
-	      struct wl_display *display,
-	      struct wl_surface *surface,
-	      uint32_t key)
-{
-	struct wl_frame_listener *listener;
-
-	listener = malloc(sizeof *listener);
-	if (listener == NULL) {
-		wl_client_post_no_memory(client);
-		return;
-	}
-
-	/* The listener is a resource so we destroy it when the client
-	 * goes away. */
-	listener->resource.destroy = destroy_frame_listener;
-	listener->resource.object.id = 0;
-	listener->client = client;
-	listener->key = key;
-	listener->surface = surface;
-	wl_list_init(&listener->resource.destroy_listener_list);
-	wl_list_insert(client->resource_list.prev, &listener->resource.link);
-	wl_list_insert(display->frame_list.prev, &listener->link);
+	wl_client_post_event(client, &object, WL_CALLBACK_DONE, 0);
 }
 
 struct wl_display_interface display_interface = {
 	display_bind,
 	display_sync,
-	display_frame
 };
 
 
@@ -606,7 +566,7 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	wl_list_init(&display->frame_list);
+	wl_list_init(&display->callback_list);
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
 	wl_list_init(&display->client_list);
@@ -696,21 +656,6 @@ wl_display_remove_global(struct wl_display *display,
 	free(global);
 
 	return 0;
-}
-
-WL_EXPORT void
-wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,
-		      uint32_t time)
-{
-	struct wl_frame_listener *listener, *next;
-
-	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
-		if (listener->surface != surface)
-			continue;
-		wl_client_post_event(listener->client, &display->object,
-				     WL_DISPLAY_KEY, listener->key, time);
-		wl_resource_destroy(&listener->resource, listener->client, 0);
-	}
 }
 
 WL_EXPORT struct wl_event_loop *
