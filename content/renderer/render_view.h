@@ -171,7 +171,7 @@ class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
-                   public webkit::npapi::WebPluginPageDelegate,                   
+                   public webkit::npapi::WebPluginPageDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
@@ -309,6 +309,9 @@ class RenderView : public RenderWidget,
 
   // Informs the render view that a PPAPI plugin has gained or lost focus.
   void PpapiPluginFocusChanged();
+
+  // Request updated policy regarding firewall NAT traversal being enabled.
+  void RequestRemoteAccessClientFirewallTraversal();
 
 #if defined(OS_MACOSX)
   // Informs the render view that the given plugin has gained or lost focus.
@@ -837,6 +840,8 @@ class RenderView : public RenderWidget,
   void OnUndo();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
+  void OnUpdateRemoteAccessClientFirewallTraversal(const std::string& policy);
+
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);

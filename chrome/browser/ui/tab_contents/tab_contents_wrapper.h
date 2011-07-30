@@ -39,6 +39,7 @@ class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
+class FirewallTraversalTabHelper;
 class InfoBarDelegate;
 class HistoryTabHelper;
 class NavigationController;
@@ -300,6 +301,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
+  scoped_ptr<FirewallTraversalTabHelper> firewall_traversal_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
   scoped_ptr<RestoreTabHelper> restore_tab_helper_;
 

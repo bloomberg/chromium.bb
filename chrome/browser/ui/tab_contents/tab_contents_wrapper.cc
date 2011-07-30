@@ -30,6 +30,7 @@
 #include "chrome/browser/prerender/prerender_observer.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/remoting/firewall_traversal_tab_helper.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -127,6 +128,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
+  firewall_traversal_tab_helper_.reset(
+      new FirewallTraversalTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
   restore_tab_helper_.reset(new RestoreTabHelper(this));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));

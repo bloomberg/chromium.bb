@@ -698,7 +698,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
 #endif
-
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
+                        OnUpdateRemoteAccessClientFirewallTraversal)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
@@ -3484,6 +3485,11 @@ void RenderView::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_.Apply(webview());
 }
 
+void RenderView::OnUpdateRemoteAccessClientFirewallTraversal(
+    const std::string& policy) {
+  pepper_delegate_.PublishPolicy(policy);
+}
+
 void RenderView::OnSetAltErrorPageURL(const GURL& url) {
   alternate_error_page_url_ = url;
 }
@@ -4096,6 +4102,10 @@ void RenderView::OnSetFocus(bool enable) {
 
 void RenderView::PpapiPluginFocusChanged() {
   UpdateInputMethod();
+}
+
+void RenderView::RequestRemoteAccessClientFirewallTraversal() {
+  Send(new ViewHostMsg_RequestRemoteAccessClientFirewallTraversal(routing_id_));
 }
 
 void RenderView::OnImeSetComposition(

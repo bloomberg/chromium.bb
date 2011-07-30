@@ -1813,6 +1813,8 @@
         'browser/profiles/profile_manager.cc',
         'browser/profiles/profile_manager.h',
         'browser/remove_rows_table_model.h',
+        'browser/remoting/firewall_traversal_tab_helper.cc',
+        'browser/remoting/firewall_traversal_tab_helper.h',
         'browser/renderer_host/accelerated_plugin_view_mac.h',
         'browser/renderer_host/accelerated_plugin_view_mac.mm',
         'browser/renderer_host/accelerated_surface_container_touch.cc',
