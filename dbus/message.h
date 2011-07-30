@@ -1,0 +1,333 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef DBUS_MESSAGE_H_
+#define DBUS_MESSAGE_H_
+#pragma once
+
+#include <string>
+#include <vector>
+#include <dbus/dbus.h>
+
+#include "base/basictypes.h"
+
+namespace dbus {
+
+class MessageWriter;
+class MessageReader;
+
+// Message is the base class of D-Bus message types. Client code should
+// usually use sub classes such as MethodCall and Response instead.
+//
+// The class name Message is very generic, but there should be no problem
+// as the class is inside 'dbus' namespace. We chose to name this way, as
+// libdbus defines lots of types starting with DBus, such as
+// DBusMessage. We should avoid confusion and conflict with these types.
+class Message {
+ public:
+  // The message type used in D-Bus.  Redefined here so client code
+  // doesn't need to use raw D-Bus macros. DBUS_MESSAGE_TYPE_INVALID
+  // etc. are #define macros. Having an enum type here makes code a bit
+  // more type-safe.
+  enum MessageType {
+    MESSAGE_INVALID = DBUS_MESSAGE_TYPE_INVALID,
+    MESSAGE_METHOD_CALL = DBUS_MESSAGE_TYPE_METHOD_CALL,
+    MESSAGE_METHOD_RETURN = DBUS_MESSAGE_TYPE_METHOD_RETURN,
+    MESSAGE_SIGNAL = DBUS_MESSAGE_TYPE_SIGNAL,
+    MESSAGE_ERROR = DBUS_MESSAGE_TYPE_ERROR,
+ };
+
+  // The data type used in the D-Bus type system.  See the comment at
+  // MessageType for why we are redefining data types here.
+  enum DataType {
+    INVALID_DATA = DBUS_TYPE_INVALID,
+    BYTE = DBUS_TYPE_BYTE,
+    BOOL = DBUS_TYPE_BOOLEAN,
+    INT16 = DBUS_TYPE_INT16,
+    UINT16 = DBUS_TYPE_UINT16,
+    INT32 = DBUS_TYPE_INT32,
+    UINT32 = DBUS_TYPE_UINT32,
+    INT64 = DBUS_TYPE_INT64,
+    UINT64 = DBUS_TYPE_UINT64,
+    DOUBLE = DBUS_TYPE_DOUBLE,
+    STRING = DBUS_TYPE_STRING,
+    OBJECT_PATH = DBUS_TYPE_OBJECT_PATH,
+    ARRAY = DBUS_TYPE_ARRAY,
+    STRUCT = DBUS_TYPE_STRUCT,
+    DICT_ENTRY = DBUS_TYPE_DICT_ENTRY,
+    VARIANT = DBUS_TYPE_VARIANT,
+  };
+
+  // Creates a Message. The internal raw message is NULL until it's set
+  // from outside by reset_raw_message().
+  Message();
+  virtual ~Message();
+
+  // Returns the type of the message. Returns MESSAGE_INVALID if
+  // raw_message_ is NULL.
+  MessageType GetMessageType();
+
+  DBusMessage* raw_message() { return raw_message_; }
+
+  // Resets raw_message_ with the given raw message. Takes the ownership
+  // of raw_message. raw_message_ will be unref'ed in the destructor.
+  void reset_raw_message(DBusMessage* raw_message);
+
+  // Returns the string representation of this message. Useful for
+  // debugging.
+  std::string ToString();
+
+ private:
+  // Helper function used in ToString().
+  std::string ToStringInternal(const std::string& indent,
+                               MessageReader* reader);
+
+  DBusMessage* raw_message_;
+  DISALLOW_COPY_AND_ASSIGN(Message);
+};
+
+// MessageCall is a type of message used for calling a method via D-Bus.
+class MethodCall : public Message {
+ public:
+  // Creates a method call message for the specified interface name and
+  // the method name.
+  //
+  // For instance, to call "Get" method of DBUS_INTERFACE_INTROSPECTABLE
+  // interface ("org.freedesktop.DBus.Introspectable"), create a method
+  // call like this:
+  //
+  //   MethodCall method_call(DBUS_INTERFACE_INTROSPECTABLE, "Get");
+  //
+  // The constructor creates the internal raw_message_, so the client
+  // doesn't need to set this with reset_raw_message().
+  MethodCall(const std::string& interface_name,
+             const std::string& method_name);
+
+  const std::string& interface_name() { return interface_name_; }
+  const std::string& method_name() { return method_name_; }
+
+  // Sets the service name. This will be handled by the object proxy.
+  void SetServiceName(const std::string& service_name);
+  // Sets the object path. This will be handled by the object proxy.
+  void SetObjectPath(const std::string& object_path);
+
+  std::string interface_name_;
+  std::string method_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(MethodCall);
+};
+
+// Response is a type of message used for receiving a response from a
+// method via D-Bus.
+class Response : public Message {
+ public:
+  // Creates a Response message. The internal raw message is NULL.
+  // Classes that implment method calls need to set the raw message once a
+  // response is received from the server. See object_proxy.h.
+  Response();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Response);
+};
+
+// MessageWriter is used to write outgoing messages for calling methods
+// and sending signals.
+//
+// The main design goal of MessageReader and MessageWriter classes is to
+// provide a type safe API. In the past, there was a Chrome OS blocker
+// bug, that took days to fix, that would have been prevented if the API
+// was type-safe.
+//
+// For instance, instead of doing something like:
+//
+//   // We shouldn't add '&' to str here, but it compiles with '&' added.
+//   dbus_g_proxy_call(..., G_TYPE_STRING, str, G_TYPE_INVALID, ...)
+//
+// We want to do something like:
+//
+//   writer.AppendString(str);
+//
+class MessageWriter {
+ public:
+  // Data added with Append* will be written to |message|.
+  MessageWriter(Message* message);
+  ~MessageWriter();
+
+  // Appends a byte to the message.
+  void AppendByte(uint8 value);
+  void AppendBool(bool value);
+  void AppendInt16(int16 value);
+  void AppendUint16(uint16 value);
+  void AppendInt32(int32 value);
+  void AppendUint32(uint32 value);
+  void AppendInt64(int64 value);
+  void AppendUint64(uint64 value);
+  void AppendDouble(double value);
+  void AppendString(const std::string& value);
+  void AppendObjectPath(const std::string& value);
+
+  // Opens an array. The array contents can be added to the array with
+  // |sub_writer|. The client code must close the array with
+  // CloseContainer(), once all contents are added.
+  //
+  // |signature| parameter is used to supply the D-Bus type signature of
+  // the array contents. For instance, if you want an array of strings,
+  // then you pass "s" as the signature.
+  //
+  // See the spec for details about the type signatures.
+  // http://dbus.freedesktop.org/doc/dbus-specification.html
+  // #message-protocol-signatures
+  //
+  void OpenArray(const std::string& signature, MessageWriter* sub_writer);
+  // Do the same for a variant.
+  void OpenVariant(const std::string& signature, MessageWriter* sub_writer);
+  // Do the same for Struct and dict entry. They don't need the signature.
+  void OpenStruct(MessageWriter* sub_writer);
+  void OpenDictEntry(MessageWriter* sub_writer);
+
+  // Close the container for a array/variant/struct/dict entry.
+  void CloseContainer(MessageWriter* sub_writer);
+
+  // Appends the array of bytes. Arrays of bytes are often used for
+  // exchanging binary blobs hence it's worth having a specialized
+  // function.
+  void AppendArrayOfBytes(const uint8* values, size_t length);
+
+  // Appends the byte wrapped in a variant data container. Variants are
+  // widely used in D-Bus services so it's worth having a specialized
+  // function. For instance, The third parameter of
+  // "org.freedesktop.DBus.Properties.Set" is a variant.
+  void AppendVariantOfByte(uint8 value);
+  void AppendVariantOfBool(bool value);
+  void AppendVariantOfInt16(int16 value);
+  void AppendVariantOfUint16(uint16 value);
+  void AppendVariantOfInt32(int32 value);
+  void AppendVariantOfUint32(uint32 value);
+  void AppendVariantOfInt64(int64 value);
+  void AppendVariantOfUint64(uint64 value);
+  void AppendVariantOfDouble(double value);
+  void AppendVariantOfString(const std::string& value);
+  void AppendVariantOfObjectPath(const std::string& value);
+
+ private:
+  // Helper function used to implement AppendByte etc.
+  void AppendBasic(int dbus_type, const void* value);
+
+  // Helper function used to implement AppendVariantOfByte() etc.
+  void AppendVariantOfBasic(int dbus_type, const void* value);
+
+  Message* message_;
+  DBusMessageIter raw_message_iter_;
+  bool container_is_open_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageWriter);
+};
+
+// MessageReader is used to read incoming messages such as responses for
+// method calls.
+//
+// MessageReader manages an internal iterator to read data. All functions
+// starting with Pop advance the iterator on success.
+class MessageReader {
+ public:
+  // The data will be read from the given message.
+  MessageReader(Message* message);
+  ~MessageReader();
+
+  // Returns true if the reader has more data to read. The function is
+  // used to iterate contents in a container like:
+  //
+  //   while (reader.HasMoreData())
+  //     reader.PopString(&value);
+  bool HasMoreData();
+
+  // Gets the byte at the current iterator position.
+  // Returns true and advances the iterator on success.
+  // Returns false if the data type is not a byte.
+  bool PopByte(uint8* value);
+  bool PopBool(bool* value);
+  bool PopInt16(int16* value);
+  bool PopUint16(uint16* value);
+  bool PopInt32(int32* value);
+  bool PopUint32(uint32* value);
+  bool PopInt64(int64* value);
+  bool PopUint64(uint64* value);
+  bool PopDouble(double* value);
+  bool PopString(std::string* value);
+  bool PopObjectPath(std::string* value);
+
+  // Sets up the given message reader to read an array at the current
+  // iterator position.
+  // Returns true and advances the iterator on success.
+  // Returns false if the data type is not an array
+  bool PopArray(MessageReader* sub_reader);
+  bool PopStruct(MessageReader* sub_reader);
+  bool PopDictEntry(MessageReader* sub_reader);
+  bool PopVariant(MessageReader* sub_reader);
+
+  // Gets the array of bytes at the current iterator position.
+  // Returns true and advances the iterator on success.
+  //
+  // Arrays of bytes are often used for exchanging binary blobs hence it's
+  // worth having a specialized function.
+  //
+  // |bytes| must be copied if the contents will be referenced after the
+  // |MessageReader is destroyed.
+  bool PopArrayOfBytes(uint8** bytes, size_t* length);
+
+  // Gets the array of object paths at the current iterator position.
+  // Returns true and advances the iterator on success.
+  //
+  // Arrays of object paths are often used to communicate with D-Bus
+  // services like NetworkManager, hence it's worth having a specialized
+  // function.
+  bool PopArrayOfObjectPaths(std::vector<std::string>* object_paths);
+
+  // Gets the byte from the variant data container at the current iterator
+  // position.
+  // Returns true and advances the iterator on success.
+  //
+  // Variants are widely used in D-Bus services so it's worth having a
+  // specialized function. For instance, The return value type of
+  // "org.freedesktop.DBus.Properties.Get" is a variant.
+  bool PopVariantOfByte(uint8* value);
+  bool PopVariantOfBool(bool* value);
+  bool PopVariantOfInt16(int16* value);
+  bool PopVariantOfUint16(uint16* value);
+  bool PopVariantOfInt32(int32* value);
+  bool PopVariantOfUint32(uint32* value);
+  bool PopVariantOfInt64(int64* value);
+  bool PopVariantOfUint64(uint64* value);
+  bool PopVariantOfDouble(double* value);
+  bool PopVariantOfString(std::string* value);
+  bool PopVariantOfObjectPath(std::string* value);
+
+  // Get the data type of the value at the current iterator
+  // position. INVALID_DATA will be returned if the iterator points to the
+  // end of the message.
+  Message::DataType GetDataType();
+
+ private:
+  // Returns true if the data type at the current iterator position
+  // matches the given D-Bus type, such as DBUS_TYPE_BYTE.
+  bool CheckDataType(int dbus_type);
+
+  // Helper function used to implement PopByte() etc.
+  bool PopBasic(int dbus_type, void *value);
+
+  // Helper function used to implement PopArray() etc.
+  bool PopContainer(int dbus_type, MessageReader* sub_reader);
+
+  // Helper function used to implement PopVariantOfByte() etc.
+  bool PopVariantOfBasic(int dbus_type, void* value);
+
+  Message* message_;
+  DBusMessageIter raw_message_iter_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageReader);
+};
+
+}  // namespace dbus
+
+#endif  // DBUS_MESSAGE_H_
