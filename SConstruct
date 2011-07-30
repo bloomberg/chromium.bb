@@ -2605,7 +2605,6 @@ nacl_env.Append(
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
-    'src/untrusted/ehsupport/nacl.scons',
     'src/untrusted/irt_stub/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/nacl_ppapi_util/nacl.scons',
@@ -2927,7 +2926,7 @@ def AddImplicitLibs(env):
     if GetPlatform('targetplatform') == 'x86-32':
       implicit_libs.append(os.path.join('32', 'crt1.o'))
     if env.Bit('bitcode'):
-      implicit_libs += ['nacl_startup.bc','libehsupport.a']
+      implicit_libs += ['nacl_startup.bc']
     else:
       implicit_libs += ['crti.o', 'crtn.o']
     env['IMPLICIT_LIBS'] = [env.File(os.path.join('${LIB_DIR}', file))
@@ -2945,7 +2944,6 @@ nacl_irt_env.Append(
         'src/shared/platform/nacl.scons',
         'src/shared/ppapi_proxy/nacl.scons',
         'src/shared/srpc/nacl.scons',
-        'src/untrusted/ehsupport/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/pthread/nacl.scons',

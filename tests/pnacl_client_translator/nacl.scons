@@ -88,7 +88,7 @@ def LayoutTranslatorBinariesOnServer():
     toolchain_binaries = [toolchain_bin + 'llc', toolchain_bin + 'ld']
     toolchain_lib_dir = '%s/lib-%s/' % (toolchain_dir, arch)
     toolchain_native_libs = [(toolchain_lib_dir + x)
-                             for x in ['libgcc.a', 'libehsupport.a']]
+                             for x in ['libgcc.a','libgcc_eh.a']]
 
     toolchain_local_files = toolchain_native_libs + toolchain_binaries
     ReplicateAndMap(toolchain_local_files,

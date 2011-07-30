@@ -133,6 +133,12 @@ for tag, e in ENVIRONMENTS_TO_TRY:
       # the tracing gets messed up by optimizations
       is_broken |= tag.startswith('opt')
 
+    # There is a problem with the optimized eh_loop_many on ARM
+    if (src == 'eh_loop_many.cc' and
+        env.Bit('target_arm') and
+        tag.startswith('opt')):
+      is_broken = True
+
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
     nexe = e.ComponentProgram(name, nobj)

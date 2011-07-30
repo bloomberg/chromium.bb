@@ -414,8 +414,8 @@ string_vector LinkResources(const nacl::string& sandbox_isa,
     results.push_back(kGeneratedObjectFileName);
   }
   results.push_back(base_dir + "/libcrt_platform.a");
-  results.push_back(base_dir + "/libehsupport.a");
   results.push_back(base_dir + "/libgcc.a");
+  results.push_back(base_dir + "/libgcc_eh.a");
   return results;
 }
 
