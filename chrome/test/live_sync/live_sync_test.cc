@@ -515,6 +515,14 @@ void LiveSyncTest::TriggerMigrationDoneError(
             browser()->GetSelectedTabContents()->GetTitle());
 }
 
+void LiveSyncTest::TriggerBirthdayError() {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/birthdayerror";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ(ASCIIToUTF16("Birthday error"),
+            browser()->GetSelectedTabContents()->GetTitle());
+}
+
 void LiveSyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
                                   const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);

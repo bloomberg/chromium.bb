@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,8 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 
   std::string local_birthday = dir->store_birthday();
 
-  if (response->error_code() == ClientToServerResponse::CLEAR_PENDING) {
+  if (response->error_code() == ClientToServerResponse::CLEAR_PENDING ||
+      response->error_code() == ClientToServerResponse::NOT_MY_BIRTHDAY) {
     // Birthday verification failures result in stopping sync and deleting
     // local sync data.
     return false;

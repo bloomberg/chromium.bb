@@ -407,8 +407,7 @@ class SyncDataModel(object):
     # SyncEntity protocol buffer.
     self._entries = {}
 
-    # TODO(nick): uuid.uuid1() is better, but python 2.5 only.
-    self.store_birthday = '%0.30f' % random.random()
+    self.ResetStoreBirthday()
 
     self.migration_history = MigrationHistory()
 
@@ -559,6 +558,15 @@ class SyncDataModel(object):
     for spec in self._PERMANENT_ITEM_SPECS:
       if spec.sync_type in requested_types:
         self._CreatePermanentItem(spec)
+
+  def ResetStoreBirthday(self):
+    """Resets the store birthday to a random value."""
+    # TODO(nick): uuid.uuid1() is better, but python 2.5 only.
+    self.store_birthday = '%0.30f' % random.random()
+
+  def StoreBirthday(self):
+    """Gets the store birthday."""
+    return self.store_birthday
 
   def GetChanges(self, sieve):
     """Get entries which have changed, oldest first.
@@ -884,7 +892,7 @@ class TestServer(object):
     """Raises StoreBirthdayError if the request's birthday is a mismatch."""
     if not request.HasField('store_birthday'):
       return
-    if self.account.store_birthday != request.store_birthday:
+    if self.account.StoreBirthday() != request.store_birthday:
       raise StoreBirthdayError
 
   def HandleMigrate(self, path):
@@ -908,6 +916,12 @@ class TestServer(object):
       self.account_lock.release()
     return (code, '<html><title>Migration: %d</title><H1>%d %s</H1></html>' %
                 (code, code, response))
+
+  def HandleCreateBirthdayError(self):
+    self.account.ResetStoreBirthday()
+    return (
+        200,
+        '<html><title>Birthday error</title><H1>Birthday error</H1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

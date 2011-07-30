@@ -419,7 +419,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 28];
+  optional int32 protocol_version = 2 [default = 29];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;

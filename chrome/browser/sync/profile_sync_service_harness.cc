@@ -319,6 +319,14 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       }
       break;
     }
+    case WAITING_FOR_SYNC_DISABLED: {
+      VLOG(1) << GetClientInfoString("WAITING_FOR_SYNC_DISABLED");
+      if (service()->HasSyncSetupCompleted() == false) {
+        // Sync has been disabled.
+        SignalStateCompleteWithNextState(SYNC_DISABLED);
+      }
+      break;
+    }
     case SERVER_UNREACHABLE: {
       VLOG(1) << GetClientInfoString("SERVER_UNREACHABLE");
       if (GetStatus().server_reachable) {
@@ -459,6 +467,14 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     LOG(ERROR) << "Invalid wait state: " << wait_state_;
     return false;
   }
+}
+
+bool ProfileSyncServiceHarness::AwaitSyncDisabled(const std::string& reason) {
+  DCHECK(service()->HasSyncSetupCompleted());
+  DCHECK_NE(wait_state_, SYNC_DISABLED);
+  wait_state_ = WAITING_FOR_SYNC_DISABLED;
+  AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+  return wait_state_ == SYNC_DISABLED;
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(

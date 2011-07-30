@@ -3538,6 +3538,7 @@
         'test/live_sync/single_client_preferences_sync_test.cc',
         'test/live_sync/sync_datatype_helper.cc',
         'test/live_sync/sync_datatype_helper.h',
+        'test/live_sync/sync_errors_test.cc',
         'test/live_sync/two_client_bookmarks_sync_test.cc',
         'test/live_sync/two_client_live_apps_sync_test.cc',
         'test/live_sync/two_client_live_autofill_sync_test.cc',

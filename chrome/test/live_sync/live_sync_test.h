@@ -138,6 +138,10 @@ class LiveSyncTest : public InProcessBrowserTest {
   // only if ServerSupportsErrorTriggering() returned true.
   void TriggerMigrationDoneError(const syncable::ModelTypeSet& model_types);
 
+  // Triggers the server to set its birthday to a random value thereby
+  // the server would return a birthday error on next sync.
+  void TriggerBirthdayError();
+
  protected:
   // InProcessBrowserTest override. Destroys all the sync clients and sync
   // profiles created by a test.

@@ -72,6 +72,10 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitSyncCycleCompletion(const std::string& reason);
 
+  // Blocks the caller until the sync has been disabled for this client. Returns
+  // true if sync is disabled.
+  bool AwaitSyncDisabled(const std::string& reason);
+
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
   bool WaitUntilTimestampMatches(
@@ -182,6 +186,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
     // for sync to be fully initialized. Used after a browser restart, where a
     // full sync cycle is not expected to occur.
     WAITING_FOR_SYNC_CONFIGURATION,
+
+    // The sync client is waiting for the sync to be disabled for this client.
+    WAITING_FOR_SYNC_DISABLED,
 
     // The sync client needs a passphrase in order to decrypt data.
     SET_PASSPHRASE_FAILED,
