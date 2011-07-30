@@ -764,19 +764,6 @@ UNADDRESSABLE ACCESS
 *!base::win::ObjectWatcher::WillDestroyCurrentMessageLoop
 *!MessageLoop::~MessageLoop
 
-# http://crbug.com/89785
-UNINITIALIZED READ
-*!_output_s_l
-...
-*!cricket::Port::ToString
-*!cricket::Port::Port
-*!cricket::UDPPort::UDPPort
-*!cricket::UDPPort::Create
-*!cricket::AllocationSequence::CreateUDPPorts
-*!cricket::AllocationSequence::OnMessage
-*!cricket::AllocationSequence::AllocationSequence
-*!cricket::BasicPortAllocatorSession::DoAllocate
-
 # http://crbug.com/90654
 UNINITIALIZED READ
 *!_output_s_l
