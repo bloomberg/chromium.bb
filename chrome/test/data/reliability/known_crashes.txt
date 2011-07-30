@@ -123,9 +123,6 @@ PREFIX : resourcemessagefilter::ongotplugininfo
 # 63659
 PREFIX : hungwindowdetector::checkchildwindow___hungwindowdetector::childwndenumproc___hungwindowdetector::ontick___workerthreadticker::timertask::run
 
-# 72796
-PREFIX : webcore::timerbase::timerbase___webcore::suspendabletimer::suspendabletimer___webcore::domtimer::domtimer___webcore::domtimer::install___webcore::windowsettimeoutimpl___webcore::v8domwindow::settimeoutcallback___v8::internal::handleapicallhelper<0>___v8::internal::builtin_handleapicall___v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::v8proxy::callfunction___webcore::scheduledaction::execute___webcore::scheduledaction::execute___webcore::domtimer::fired___webcore::threadtimers::sharedtimerfiredinternal___messageloop::runtask___messageloop::dowork___base::messagepumpdefault::run___messageloop::runinternal___messageloop::run___renderermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
-
 # 72832
 PREFIX : webcore::renderblock::marginbeforeforchild___webcore::renderblock::addoverflowfromfloats___webcore::renderblock::computeoverflow___webcore::renderblock::layoutblock___webcore::renderblock::layout___webcore::renderblock::layoutpositionedobjects___webcore::renderblock::layoutblock___webcore::renderblock::layout___webcore::renderblock::layoutblockchild___webcore::renderblock::layoutblockchildren___webcore::renderblock::layoutblock___webcore::renderblock::layout___webcore::frameview::layout___webcore::document::updatelayout___webcore::document::updatelayoutignorependingstylesheets___webcore::element::offsetwidth___webcore::elementinternal::offsetwidthattrgetter
 
@@ -167,15 +164,6 @@ PREFIX: webcore::implicitanimation::~implicitanimation___webcore::implicitanimat
 
 # 21054
 REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
-
-# 83657
-PREFIX: base::internal::lockimpl::lock___extensioncontentsettingsstore::geteffectivecontentsetting___content_settings::extensionprovider::getcontentsetting
-
-# 83674
-PREFIX: webcore::cssstyleselector::loadpendingimages___webcore::cssstyleselector::styleforelement___webcore::node::styleforrenderer
-
-# 83676
-PREFIX: webcore::renderstyle::haspseudostyle___webcore::cssstyleselector::styleforelement___webcore::node::styleforrenderer
 
 # 84178
 PREFIX: `anonymous namespace'::establishchannelcallback::send___`anonymous namespace'::establishchannelcallback::runwithparams___gpuprocesshost::sendoutstandingreplies
