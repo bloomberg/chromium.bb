@@ -671,14 +671,13 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
                                                           const GURL& new_url) {
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
   // If the URL is still empty, this is a window.open navigation. Check the
-  // opener's URL. In all cases we use the top frame's URL (as opposed to our
-  // frame's) since that's what determines the type of process.
+  // opener's URL.
   // TODO(abarth): This code is super sketchy! Are you sure looking at the
   // opener is correct here?  This appears to let me steal my opener's
   // privileges if I can make my URL be "empty."
-  GURL old_url(frame->top()->document().url());
+  GURL old_url(frame->document().url());
   if (old_url.is_empty() && frame->opener())
-    old_url = frame->top()->opener()->top()->document().url();
+    old_url = frame->opener()->document().url();
 
   // If this is a reload, check whether it has the wrong process type.  We
   // should send it to the browser if it's an extension URL (e.g., hosted app)

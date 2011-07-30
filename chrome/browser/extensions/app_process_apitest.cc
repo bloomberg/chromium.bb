@@ -16,18 +16,6 @@
 #include "net/base/mock_host_resolver.h"
 
 class AppApiTest : public ExtensionApiTest {
- protected:
-  // Gets the base URL for files for a specific test, making sure that it uses
-  // "localhost" as the hostname, since that is what the extent is declared
-  // as in the test apps manifests.
-  GURL GetTestBaseURL(std::string test_directory) {
-    GURL::Replacements replace_host;
-    std::string host_str("localhost");  // must stay in scope with replace_host
-    replace_host.SetHostStr(host_str);
-    GURL base_url = test_server()->GetURL(
-        "files/extensions/api_test/" + test_directory + "/");
-    return base_url.ReplaceComponents(replace_host);
-  }
 };
 
 // Simulates a page calling window.open on an URL, and waits for the navigation.
@@ -91,7 +79,15 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
   // Open two tabs in the app, one outside it.
-  GURL base_url = GetTestBaseURL("app_process");
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
 
   // Test both opening a URL in a new tab, and opening a tab and then navigating
   // it.  Either way, app tabs should be considered extension processes, but
@@ -180,7 +176,15 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
       test_data_dir_.AppendASCII("app_process_instances")));
 
   // Open two tabs in the app, one outside it.
-  GURL base_url = GetTestBaseURL("app_process_instances");
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process_instances/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
 
   // Test both opening a URL in a new tab, and opening a tab and then navigating
   // it.  Either way, app tabs should be considered extension processes, but
@@ -230,7 +234,15 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
   // Open two tabs in the app.
-  GURL base_url = GetTestBaseURL("app_process");
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
 
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
@@ -261,7 +273,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = GetTestBaseURL("app_process");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+  base_url = base_url.ReplaceComponents(replace_host);
 
   // Load an app URL before loading the app.
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
@@ -293,48 +310,4 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
                                                L"", L"location.reload();"));
   ui_test_utils::WaitForNavigation(&contents->controller());
   EXPECT_FALSE(contents->render_view_host()->process()->is_extension_process());
-}
-
-
-// Tests that if we have a non-app process (path3/container.html) that has an
-// iframe with  a URL in the app's extent (path1/iframe.html), then opening a
-// link from that iframe to a new window to a URL in the app's extent (path1/
-// empty.html) results in the new window being in an app process. See
-// http://crbug.com/89272 for more details.
-IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
-
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL base_url = GetTestBaseURL("app_process");
-
-  // Load app and start URL (not in the app).
-  const Extension* app =
-      LoadExtension(test_data_dir_.AppendASCII("app_process"));
-  ASSERT_TRUE(app);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      base_url.Resolve("path3/container.html"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  EXPECT_FALSE(browser()->GetTabContentsAt(0)->render_view_host()->process()->
-      is_extension_process());
-
-  // Wait for popup window to appear.
-  GURL app_url = base_url.Resolve("path1/empty.html");
-  Browser* last_active_browser = BrowserList::GetLastActive();
-  EXPECT_TRUE(last_active_browser);
-  ASSERT_NE(browser(), last_active_browser);
-  TabContents* newtab = last_active_browser->GetSelectedTabContents();
-  EXPECT_TRUE(newtab);
-  if (!newtab->controller().GetLastCommittedEntry() ||
-      newtab->controller().GetLastCommittedEntry()->url() != app_url)
-    ui_test_utils::WaitForNavigation(&newtab->controller());
-
-  // Popup window should be in the app's process.
-  EXPECT_TRUE(last_active_browser->GetTabContentsAt(0)->render_view_host()->
-      process()->is_extension_process());
 }
