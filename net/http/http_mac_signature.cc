@@ -95,28 +95,38 @@ bool HttpMacSignature::AddHttpInfo(const std::string& method,
   return true;
 }
 
-std::string HttpMacSignature::GenerateAuthorizationHeader() {
-  DCHECK(!id_.empty()) << "Call AddStateInfo first.";
-  DCHECK(!method_.empty()) << "Call AddHttpInfo first.";
+bool HttpMacSignature::GenerateAuthorizationHeader(std::string* header) {
+  if (id_.empty()) {
+    NOTREACHED() << "Call AddStateInfo first.";
+    return false;
+  }
+  if (method_.empty()) {
+    NOTREACHED() << "Call AddHttpInfo first.";
+    return false;
+  }
 
   std::string age = base::Int64ToString(
       (base::Time::Now() - creation_date_).InSeconds());
   std::string nonce = GenerateNonce();
 
-  return GenerateHeaderString(age, nonce);
+  return GenerateHeaderString(age, nonce, header);
 }
 
-std::string HttpMacSignature::GenerateHeaderString(const std::string& age,
-                                                   const std::string& nonce) {
-  std::string mac = GenerateMAC(age, nonce);
+bool HttpMacSignature::GenerateHeaderString(const std::string& age,
+                                            const std::string& nonce,
+                                            std::string* header) {
+  std::string mac;
+  if (!GenerateMAC(age, nonce, &mac))
+    return false;
 
   DCHECK(IsPlainString(age));
   DCHECK(IsPlainString(nonce));
   DCHECK(IsPlainString(mac));
 
-  return "MAC id=\"" + id_ +
+  *header = "MAC id=\"" + id_ +
       "\", nonce=\"" + age + ":" + nonce +
       "\", mac=\"" + mac + "\"";
+  return true;
 }
 
 std::string HttpMacSignature::GenerateNormalizedRequest(
@@ -135,25 +145,34 @@ std::string HttpMacSignature::GenerateNormalizedRequest(
   return normalized_request;
 }
 
-std::string HttpMacSignature::GenerateMAC(const std::string& age,
-                                          const std::string& nonce) {
+bool HttpMacSignature::GenerateMAC(const std::string& age,
+                                   const std::string& nonce,
+                                   std::string* mac) {
   std::string request = GenerateNormalizedRequest(age, nonce);
 
   crypto::HMAC hmac(mac_algorithm_);
-  hmac.Init(mac_key_);
+  if (!hmac.Init(mac_key_)) {
+    NOTREACHED();
+    return false;
+  }
 
   std::string signature;
   size_t length = hmac.DigestLength();
   char* buffer = WriteInto(&signature, length);
-  bool result = hmac.Sign(request,
-                          reinterpret_cast<unsigned char*>(buffer),
-                          length);
-  DCHECK(result);
+  if (!hmac.Sign(request, reinterpret_cast<unsigned char*>(buffer),
+                 length)) {
+    NOTREACHED();
+    return false;
+  }
 
   std::string encoded_signature;
-  result = base::Base64Encode(signature, &encoded_signature);
-  DCHECK(result);
-  return encoded_signature;
+  if (!base::Base64Encode(signature, &encoded_signature)) {
+    NOTREACHED();
+    return false;
+  }
+
+  mac->swap(encoded_signature);
+  return true;
 }
 
 }  // namespace net

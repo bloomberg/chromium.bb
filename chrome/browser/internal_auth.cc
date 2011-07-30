@@ -251,8 +251,11 @@ class InternalAuthVerificationService {
 
     if (key.size() != kKeySizeInBytes)
       return;
-    engine_.reset(new crypto::HMAC(crypto::HMAC::SHA256));
-    engine_->Init(key);
+    scoped_ptr<crypto::HMAC> new_engine(
+        new crypto::HMAC(crypto::HMAC::SHA256));
+    if (!new_engine->Init(key))
+      return;
+    engine_.swap(new_engine);
     key_ = key;
     key_change_tick_ = GetCurrentTick();
   }
@@ -347,9 +350,12 @@ class InternalAuthGenerationService : public base::ThreadChecker {
           &InternalAuthGenerationService::GenerateNewKey);
     }
 
-    engine_.reset(new crypto::HMAC(crypto::HMAC::SHA256));
+    scoped_ptr<crypto::HMAC> new_engine(
+        new crypto::HMAC(crypto::HMAC::SHA256));
     std::string key = base::RandBytesAsString(kKeySizeInBytes);
-    engine_->Init(key);
+    if (!new_engine->Init(key))
+      return;
+    engine_.swap(new_engine);
     key_regeneration_tick_ = GetCurrentTick();
     g_verification_service.Get().ChangeKey(key);
     std::fill(key.begin(), key.end(), 0);

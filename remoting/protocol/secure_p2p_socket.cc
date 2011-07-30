@@ -91,8 +91,9 @@ SecureP2PSocket::SecureP2PSocket(Socket* socket, const std::string& ice_key)
       reinterpret_cast<const unsigned char*>(ice_key.data()), kKeySize);
   DCHECK(ret) << "Initialize HMAC-SHA1 for mask failed.";
   scoped_array<uint8> mask_digest(new uint8[mask_hasher.DigestLength()]);
-  mask_hasher.Sign(kMaskSaltStr, mask_digest.get(),
-                   mask_hasher.DigestLength());
+  ret = mask_hasher.Sign(kMaskSaltStr, mask_digest.get(),
+                         mask_hasher.DigestLength());
+  DCHECK(ret) << "Sign with HMAC-SHA1 for mask failed.";
   mask_key_.reset(crypto::SymmetricKey::Import(
       crypto::SymmetricKey::AES,
       std::string(mask_digest.get(), mask_digest.get() + kKeySize)));
@@ -107,8 +108,9 @@ SecureP2PSocket::SecureP2PSocket(Socket* socket, const std::string& ice_key)
       reinterpret_cast<const unsigned char*>(ice_key.data()), kKeySize);
   DCHECK(ret) << "Initialize HMAC-SHA1 for hash failed.";
   scoped_array<uint8> hash_key(new uint8[hash_hasher.DigestLength()]);
-  hash_hasher.Sign(kHashSaltStr, hash_key.get(), hash_hasher.DigestLength());
-
+  ret = hash_hasher.Sign(kHashSaltStr, hash_key.get(),
+                         hash_hasher.DigestLength());
+  DCHECK(ret) << "Sign with HMAC-SHA1 for hash failed.";
   // Create a hasher for message.
   ret = msg_hasher_.Init(hash_key.get(), kKeySize);
   DCHECK(ret) << "Initialize HMAC-SHA1 for message failed.";
@@ -164,10 +166,10 @@ int SecureP2PSocket::Write(IOBuffer* buf, int buf_len,
 
   // 10. Create hash from masked message with nonce.
   scoped_array<uint8> msg_digest(new uint8[msg_hasher_.DigestLength()]);
-  msg_hasher_.Sign(
+  CHECK(msg_hasher_.Sign(
       base::StringPiece(encrypted_buf->data() + kNoncePosition,
                         kRawMessageSize + kKeySize),
-      msg_digest.get(), msg_hasher_.DigestLength());
+      msg_digest.get(), msg_hasher_.DigestLength()));
   memcpy(encrypted_buf->data() + kHashPosition, msg_digest.get(), kKeySize);
 
   // Write to the socket.
@@ -255,19 +257,17 @@ int SecureP2PSocket::DecryptBuffer(int size) {
 
   // See the spec for the steps taken in this method:
   // http://www.whatwg.org/specs/web-apps/current-work/complete/video-conferencing-and-peer-to-peer-communication.html#peer-to-peer-connections
-  // 5. Compute hash of the message.
-  scoped_array<uint8> msg_digest(new uint8[msg_hasher_.DigestLength()]);
-  msg_hasher_.Sign(
+  // 4-7: Verify that the HMAC-SHA1 of all but the first 16 bytes of the
+  // masked message with nonce equals the first 16 bytes of the masked message
+  // with nonce.
+  if (!msg_hasher_.VerifyTruncated(
       base::StringPiece(read_buf_->data() + kNoncePosition,
                         size - kNoncePosition),
-      msg_digest.get(), msg_hasher_.DigestLength());
-
-  // 6. Compare the hash values.
-  int ret = memcmp(read_buf_->data(), msg_digest.get(), kKeySize);
-  if (ret)
+      base::StringPiece(read_buf_->data(), kKeySize))) {
     return net::ERR_INVALID_RESPONSE;
+  }
 
-  // 7. Decrypt the message.
+  // 8-11. Decrypt the message.
   std::string nonce = std::string(
       read_buf_->data() + kNoncePosition, kKeySize);
   CHECK(encryptor_.SetCounter(nonce));
@@ -294,10 +294,10 @@ int SecureP2PSocket::DecryptBuffer(int size) {
   // 15. Parse the frame type.
   if (raw_message_size < kSeqNumberSize + kFrameTypeSize)
     return net::ERR_INVALID_RESPONSE;
-  ret = memcmp(raw_message.data() + kSeqNumberSize, kFrameType,
-               kFrameTypeSize);
-  if (ret)
+  if (memcmp(raw_message.data() + kSeqNumberSize, kFrameType,
+             kFrameTypeSize) != 0) {
     return net::ERR_INVALID_RESPONSE;
+  }
 
   // 16. Read the message.
   const int kMessageSize = raw_message_size - kSeqNumberSize - kFrameTypeSize;

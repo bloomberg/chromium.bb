@@ -204,8 +204,8 @@ bool SignHmacSha1(const std::string& text,
   crypto::HMAC hmac(crypto::HMAC::SHA1);
   DCHECK(hmac.DigestLength() == kHmacDigestLength);
   unsigned char digest[kHmacDigestLength];
-  hmac.Init(key);
-  bool result = hmac.Sign(text, digest, kHmacDigestLength) &&
+  bool result = hmac.Init(key) &&
+      hmac.Sign(text, digest, kHmacDigestLength) &&
       base::Base64Encode(std::string(reinterpret_cast<const char*>(digest),
                                      kHmacDigestLength),
                          signature_return);

@@ -71,12 +71,15 @@ bool GetChannelKey(const std::string& channel_name,
                    const std::string& master_key,
                    std::string* channel_key) {
   crypto::HMAC hmac(crypto::HMAC::SHA256);
-  hmac.Init(channel_name);
+  if (!hmac.Init(channel_name)) {
+    channel_key->clear();
+    return false;
+  }
   channel_key->resize(kChannelKeyLength);
   if (!hmac.Sign(master_key,
                  reinterpret_cast<unsigned char*>(&(*channel_key)[0]),
                  channel_key->size())) {
-    *channel_key = "";
+    channel_key->clear();
     return false;
   }
   return true;

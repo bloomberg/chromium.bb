@@ -55,10 +55,12 @@ TEST(HttpMacSignatureTest, GenerateHeaderString) {
   std::string age = "239034";
   std::string nonce = "mn4302j0n+32r2/f3r=";
 
+  std::string header_string;
+  EXPECT_TRUE(signature.GenerateHeaderString(age, nonce, &header_string));
   EXPECT_EQ("MAC id=\"dfoi30j0qnf\", "
             "nonce=\"239034:mn4302j0n+32r2/f3r=\", "
             "mac=\"GrkHtPKzB1m1dCHfa7OCWOw6EQ==\"",
-            signature.GenerateHeaderString(age, nonce));
+            header_string);
 }
 
 
@@ -100,7 +102,8 @@ TEST(HttpMacSignatureTest, GenerateMAC) {
   std::string age = "239034";
   std::string nonce = "mn4302j0n+32r2/f3r=";
 
-  EXPECT_EQ("GrkHtPKzB1m1dCHfa7OCWOw6EQ==",
-            signature.GenerateMAC(age, nonce));
+  std::string mac;
+  EXPECT_TRUE(signature.GenerateMAC(age, nonce, &mac));
+  EXPECT_EQ("GrkHtPKzB1m1dCHfa7OCWOw6EQ==", mac);
 }
 }
