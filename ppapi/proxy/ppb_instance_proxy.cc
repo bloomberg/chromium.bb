@@ -259,6 +259,11 @@ void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
+void PPB_Instance_Proxy::SubscribeToPolicyUpdates(PP_Instance instance) {
+  // Not proxied yet.
+  NOTIMPLEMENTED();
+}
+
 void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
                                      PP_Var message) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PostMessage(

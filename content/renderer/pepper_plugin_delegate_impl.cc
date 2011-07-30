@@ -7,6 +7,7 @@
 #include <cmath>
 #include <queue>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -755,6 +756,7 @@ void PepperPluginDelegateImpl::PluginFocusChanged(bool focused) {
 
 void PepperPluginDelegateImpl::PluginCrashed(
     webkit::ppapi::PluginInstance* instance) {
+  subscribed_to_policy_updates_.erase(instance);
   render_view_->PluginCrashed(instance->module()->path());
 }
 
@@ -769,6 +771,7 @@ void PepperPluginDelegateImpl::InstanceCreated(
 void PepperPluginDelegateImpl::InstanceDeleted(
     webkit::ppapi::PluginInstance* instance) {
   active_instances_.erase(instance);
+  subscribed_to_policy_updates_.erase(instance);
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
@@ -995,6 +998,13 @@ bool PepperPluginDelegateImpl::ReadDirectory(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
+}
+
+void PepperPluginDelegateImpl::PublishPolicy(const std::string& policy_json) {
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
+           subscribed_to_policy_updates_.begin();
+       i != subscribed_to_policy_updates_.end(); ++i)
+    (*i)->HandlePolicyUpdate(policy_json);
 }
 
 class AsyncOpenFileSystemURLCallbackTranslator
@@ -1276,6 +1286,22 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
 }
 
+void PepperPluginDelegateImpl::SubscribeToPolicyUpdates(
+    webkit::ppapi::PluginInstance* instance) {
+  subscribed_to_policy_updates_.insert(instance);
+
+  // Call by the PPP interface via continuation to avoid reentry issues
+  // with being in the call chain that includes SubscribeToPolicyUpdates().
+  //
+  // TODO(ajwong): Hook this up into something that gets a real policy.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PepperPluginDelegateImpl::PublishInitialPolicy,
+                 AsWeakPtr(),
+                 make_scoped_refptr(instance),
+                 "{\"test_policy\": \"i like bananas\"}"));
+}
+
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
   int net_error;
   std::string proxy_result;
@@ -1350,4 +1376,10 @@ base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
 
 ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
   return ppapi::Preferences(render_view_->webkit_preferences());
+}
+
+void PepperPluginDelegateImpl::PublishInitialPolicy(
+    scoped_refptr<webkit::ppapi::PluginInstance> instance,
+    const std::string& policy) {
+  instance->HandlePolicyUpdate(policy);
 }

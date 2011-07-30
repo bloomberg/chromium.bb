@@ -325,6 +325,12 @@ class PluginDelegate {
       const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
 
+  // Takes a UTF-8 string representing the enterprise policy, and pushes it to
+  // every plugin instance that has called SubscribeToPolicyUpdates().
+  //
+  // This should be called when the enterprise policy is updated.
+  virtual void PublishPolicy(const std::string& policy_json) = 0;
+
   virtual base::PlatformFileError OpenFile(const PepperFilePath& path,
                                            int flags,
                                            base::PlatformFile* file) = 0;
@@ -373,6 +379,10 @@ class PluginDelegate {
   // Sets the mininum and maximium zoom factors.
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) = 0;
+
+  // Subscribes the instances to notifications that the policy has been
+  // updated.
+  virtual void SubscribeToPolicyUpdates(PluginInstance* instance) = 0;
 
   // Retrieves the proxy information for the given URL in PAC format. On error,
   // this will return an empty string.

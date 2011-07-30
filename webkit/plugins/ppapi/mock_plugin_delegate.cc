@@ -171,6 +171,9 @@ base::PlatformFileError MockPluginDelegate::GetDirContents(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
+void MockPluginDelegate::PublishPolicy(const std::string& policy_json) {
+}
+
 scoped_refptr<base::MessageLoopProxy>
 MockPluginDelegate::GetFileThreadMessageLoopProxy() {
   return scoped_refptr<base::MessageLoopProxy>();
@@ -211,6 +214,9 @@ std::string MockPluginDelegate::GetDefaultEncoding() {
 
 void MockPluginDelegate::ZoomLimitsChanged(double minimum_factor,
                                            double maximum_factor) {
+}
+
+void MockPluginDelegate::SubscribeToPolicyUpdates(PluginInstance* instance) {
 }
 
 std::string MockPluginDelegate::ResolveProxy(const GURL& url) {

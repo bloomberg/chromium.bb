@@ -209,6 +209,9 @@ TEST_PPAPI_IN_PROCESS(PostMessage)
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
 
+TEST_PPAPI_IN_PROCESS(QueryPolicy)
+//TEST_PPAPI_OUT_OF_PROCESS(QueryPolicy)
+
 // http://crbug.com/90039 and http://crbug.com/83443 (Mac)
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");

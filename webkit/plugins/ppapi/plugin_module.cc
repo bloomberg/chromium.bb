@@ -29,6 +29,7 @@
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -306,6 +307,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
+  if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)
+    return ::ppapi::thunk::GetPPB_QueryPolicy_Thunk();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
     return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_3) == 0)

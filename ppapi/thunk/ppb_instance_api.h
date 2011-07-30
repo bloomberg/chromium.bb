@@ -44,11 +44,14 @@ class PPB_Instance_FunctionAPI {
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;
 
-  // Zoom
+  // Zoom.
   virtual void ZoomChanged(PP_Instance instance, double factor) = 0;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
                                  double maximium_factor) = 0;
+
+  // QueryPolicy.
+  virtual void SubscribeToPolicyUpdates(PP_Instance instance) = 0;
 
   static const ::pp::proxy::InterfaceID interface_id =
       ::pp::proxy::INTERFACE_ID_PPB_INSTANCE;

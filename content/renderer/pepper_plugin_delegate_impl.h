@@ -193,56 +193,65 @@ class PepperPluginDelegateImpl
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback);
-  virtual bool AsyncOpenFileSystemURL(const GURL& path,
-                                      int flags,
-                                      AsyncOpenFileCallback* callback);
+  virtual bool AsyncOpenFileSystemURL(
+      const GURL& path,
+      int flags,
+      AsyncOpenFileCallback* callback) OVERRIDE;
   virtual bool OpenFileSystem(
       const GURL& url,
       fileapi::FileSystemType type,
       long long size,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool MakeDirectory(const GURL& path,
-                             bool recursive,
-                             fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Query(const GURL& path,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Touch(const GURL& path,
-                     const base::Time& last_access_time,
-                     const base::Time& last_modified_time,
-                     fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Delete(const GURL& path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool Rename(const GURL& file_path,
-                      const GURL& new_file_path,
-                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual bool ReadDirectory(const GURL& directory_path,
-                             fileapi::FileSystemCallbackDispatcher* dispatcher);
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool MakeDirectory(
+      const GURL& path,
+      bool recursive,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool Query(
+      const GURL& path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool Touch(
+      const GURL& path,
+      const base::Time& last_access_time,
+      const base::Time& last_modified_time,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool Delete(
+      const GURL& path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool Rename(
+      const GURL& file_path,
+      const GURL& new_file_path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool ReadDirectory(
+      const GURL& directory_path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual void PublishPolicy(const std::string& policy_json) OVERRIDE;
   virtual base::PlatformFileError OpenFile(
       const webkit::ppapi::PepperFilePath& path,
       int flags,
-      base::PlatformFile* file);
+      base::PlatformFile* file) OVERRIDE;
   virtual base::PlatformFileError RenameFile(
       const webkit::ppapi::PepperFilePath& from_path,
-      const webkit::ppapi::PepperFilePath& to_path);
+      const webkit::ppapi::PepperFilePath& to_path) OVERRIDE;
   virtual base::PlatformFileError DeleteFileOrDir(
       const webkit::ppapi::PepperFilePath& path,
-      bool recursive);
+      bool recursive) OVERRIDE;
   virtual base::PlatformFileError CreateDir(
-      const webkit::ppapi::PepperFilePath& path);
+      const webkit::ppapi::PepperFilePath& path) OVERRIDE;
   virtual base::PlatformFileError QueryFile(
       const webkit::ppapi::PepperFilePath& path,
-      base::PlatformFileInfo* info);
+      base::PlatformFileInfo* info) OVERRIDE;
   virtual base::PlatformFileError GetDirContents(
       const webkit::ppapi::PepperFilePath& path,
-      webkit::ppapi::DirContents* contents);
-  virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
+      webkit::ppapi::DirContents* contents) OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy>
+      GetFileThreadMessageLoopProxy() OVERRIDE;
   virtual int32_t ConnectTcp(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
       const char* host,
-      uint16_t port);
+      uint16_t port) OVERRIDE;
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
-      const struct PP_Flash_NetAddress* addr);
+      const struct PP_Flash_NetAddress* addr) OVERRIDE;
   // This is the completion for both |ConnectTcp()| and |ConnectTcpAddress()|.
   void OnConnectTcpACK(
       int request_id,
@@ -252,7 +261,7 @@ class PepperPluginDelegateImpl
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
-      const gfx::Point& position);
+      const gfx::Point& position) OVERRIDE;
   void OnContextMenuClosed(
       const webkit_glue::CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(
@@ -263,24 +272,32 @@ class PepperPluginDelegateImpl
                                unsigned action);
   virtual webkit::ppapi::FullscreenContainer*
       CreateFullscreenContainer(
-          webkit::ppapi::PluginInstance* instance);
-  virtual gfx::Size GetScreenSize();
-  virtual std::string GetDefaultEncoding();
-  virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor);
-  virtual std::string ResolveProxy(const GURL& url);
-  virtual void DidStartLoading();
-  virtual void DidStopLoading();
-  virtual void SetContentRestriction(int restrictions);
-  virtual void HasUnsupportedFeature();
-  virtual void SaveURLAs(const GURL& url);
-  virtual P2PSocketDispatcher* GetP2PSocketDispatcher();
-  virtual webkit_glue::P2PTransport* CreateP2PTransport();
-  virtual double GetLocalTimeZoneOffset(base::Time t);
-  virtual std::string GetFlashCommandLineArgs();
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
-  virtual ::ppapi::Preferences GetPreferences();
+          webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual gfx::Size GetScreenSize() OVERRIDE;
+  virtual std::string GetDefaultEncoding() OVERRIDE;
+  virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)
+      OVERRIDE;
+  virtual void SubscribeToPolicyUpdates(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual std::string ResolveProxy(const GURL& url) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void SetContentRestriction(int restrictions) OVERRIDE;
+  virtual void HasUnsupportedFeature() OVERRIDE;
+  virtual void SaveURLAs(const GURL& url) OVERRIDE;
+  virtual P2PSocketDispatcher* GetP2PSocketDispatcher() OVERRIDE;
+  virtual webkit_glue::P2PTransport* CreateP2PTransport() OVERRIDE;
+  virtual double GetLocalTimeZoneOffset(base::Time t) OVERRIDE;
+  virtual std::string GetFlashCommandLineArgs() OVERRIDE;
+  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
+      OVERRIDE;
+  virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
 
  private:
+  void PublishInitialPolicy(
+      scoped_refptr<webkit::ppapi::PluginInstance> instance,
+      const std::string& policy);
+
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PpapiBrokerImpl> CreatePpapiBroker(
       webkit::ppapi::PluginModule* plugin_module);
@@ -310,6 +327,10 @@ class PepperPluginDelegateImpl
 
   // Whether or not the focus is on a PPAPI plugin
   bool is_pepper_plugin_focused_;
+
+  // Set of instances to receive a notification when the enterprise policy has
+  // been updated.
+  std::set<webkit::ppapi::PluginInstance*> subscribed_to_policy_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

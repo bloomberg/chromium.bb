@@ -102,6 +102,8 @@
         'tests/test_paint_aggregator.h',
         'tests/test_post_message.cc',
         'tests/test_post_message.h',
+        'tests/test_query_policy.cc',
+        'tests/test_query_policy.h',
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
         'tests/test_struct_sizes.c',
