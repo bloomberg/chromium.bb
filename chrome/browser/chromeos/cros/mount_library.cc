@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/mount_library.h"
 
 #include <set>
+#include <vector>
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -144,6 +145,62 @@ class MountLibraryImpl : public MountLibrary {
     UnmountMountPoint(path, &MountLibraryImpl::UnmountMountPointCallback, this);
   }
 
+  virtual void FormatUnmountedDevice(const char* file_path) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!CrosLibrary::Get()->EnsureLoaded()) {
+      OnFormatDevice(file_path,
+                     false,
+                     MOUNT_METHOD_ERROR_LOCAL,
+                     kLibraryNotLoaded);
+      return;
+    }
+    for (MountLibrary::DiskMap::iterator it = disks_.begin();
+        it != disks_.end(); ++it) {
+      if (it->second->file_path().compare(file_path) == 0 &&
+          !it->second->mount_path().empty()) {
+        OnFormatDevice(file_path,
+                       false,
+                       MOUNT_METHOD_ERROR_LOCAL,
+                       "Device is still mounted.");
+        return;
+      }
+    }
+    FormatDevice(file_path,
+                 "vfat",      // currently format in vfat by default
+                 &MountLibraryImpl::FormatDeviceCallback,
+                 this);
+  }
+
+  virtual void FormatMountedDevice(const char* mount_path) OVERRIDE {
+    DCHECK(mount_path);
+    std::string device_path, file_path;
+    for (MountLibrary::DiskMap::iterator it = disks_.begin();
+        it != disks_.end(); ++it) {
+      if (it->second->mount_path().compare(mount_path) == 0) {
+        device_path = it->second->device_path();
+        file_path = it->second->file_path();
+        break;
+      }
+    }
+    if (device_path.empty()) {
+      OnFormatDevice(device_path.c_str(),
+                     false,
+                     MOUNT_METHOD_ERROR_LOCAL,
+                     "Device with this mount path not found.");
+      return;
+    }
+    if (formatting_pending_.find(device_path) != formatting_pending_.end()) {
+      OnFormatDevice(device_path.c_str(),
+                     false,
+                     MOUNT_METHOD_ERROR_LOCAL,
+                     "Formatting is already pending.");
+      return;
+    }
+    // Formatting process continues, after unmounting.
+    formatting_pending_[device_path] = file_path;
+    UnmountPath(device_path.c_str());
+  }
+
   virtual void UnmountDeviceRecursive(const char* device_path,
       UnmountDeviceRecursiveCallbackType callback, void* user_data)
       OVERRIDE {
@@ -231,6 +288,17 @@ class MountLibraryImpl : public MountLibrary {
     self->OnUnmountPath(device_path, error, error_message);
   }
 
+  // Callback for FormatRemovableDevice method.
+  static void FormatDeviceCallback(void* object,
+                                   const char* device_path,
+                                   bool success,
+                                   MountMethodErrorType error,
+                                   const char* error_message) {
+    DCHECK(object);
+    MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    self->OnFormatDevice(device_path, success, error, error_message);
+  }
+
   // Callback for UnmountDeviceRecursive.
   static void UnmountDeviceRecursiveCallback(void* object,
                                              const char* device_path,
@@ -248,7 +316,7 @@ class MountLibraryImpl : public MountLibrary {
       cb_data->success = false;
     } else if (error == MOUNT_METHOD_ERROR_NONE) {
       LOG(WARNING) << device_path <<  " unmounted.";
-   }
+    }
 
     // This is safe as long as all callbacks are called on the same thread as
     // UnmountDeviceRecursive.
@@ -358,12 +426,37 @@ class MountLibraryImpl : public MountLibrary {
       DCHECK(disk);
       disk->clear_mount_path();
       FireDiskStatusUpdate(MOUNT_DISK_UNMOUNTED, disk);
+      // Check if there is a formatting scheduled
+      PathMap::iterator it = formatting_pending_.find(source_path);
+      if (it != formatting_pending_.end()) {
+        const std::string file_path = it->second;
+        formatting_pending_.erase(it);
+        FormatUnmountedDevice(file_path.c_str());
+      }
     } else {
       LOG(WARNING) << "Unmount request failed for device "
                    << source_path << ", with error: "
                    << (error_message ? error_message : "Unknown");
     }
   }
+
+  void OnFormatDevice(const char* device_path,
+                      bool success,
+                      MountMethodErrorType error,
+                      const char* error_message) {
+    DCHECK(device_path);
+
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path && success) {
+      FireDeviceStatusUpdate(MOUNT_FORMATTING_STARTED, device_path);
+    } else {
+      FireDeviceStatusUpdate(MOUNT_FORMATTING_STARTED,
+                             std::string("!") + device_path);
+      LOG(WARNING) << "Format request failed for device "
+                   << device_path << ", with error: "
+                   << (error_message ? error_message : "Unknown");
+    }
+  }
+
 
   void OnGetDiskProperties(const char* device_path,
                            const DiskInfo* disk1,
@@ -520,6 +613,10 @@ class MountLibraryImpl : public MountLibrary {
         type = MOUNT_DEVICE_SCANNED;
         break;
       }
+      case FORMATTING_FINISHED: {
+        type = MOUNT_FORMATTING_FINISHED;
+        break;
+      }
       default: {
         return;
       }
@@ -571,6 +668,10 @@ class MountLibraryImpl : public MountLibrary {
   MountLibrary::DiskMap disks_;
 
   MountLibrary::MountPointMap mount_points_;
+  // Set of devices that are supposed to be formated, but are currently waiting
+  // to be unmounted. When device is in this map, the formatting process HAVEN'T
+  // started yet.
+  PathMap formatting_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(MountLibraryImpl);
 };
@@ -591,6 +692,8 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void MountPath(const char* source_path, MountType type,
                          const MountPathOptions& options) OVERRIDE {}
   virtual void UnmountPath(const char* path) OVERRIDE {}
+  virtual void FormatUnmountedDevice(const char* device_path) OVERRIDE {}
+  virtual void FormatMountedDevice(const char* mount_path) OVERRIDE {}
   virtual void UnmountDeviceRecursive(const char* device_path,
       UnmountDeviceRecursiveCallbackType callback, void* user_data)
       OVERRIDE {}

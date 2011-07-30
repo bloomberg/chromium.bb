@@ -24,7 +24,9 @@ typedef enum MountLibraryEventType {
   MOUNT_DISK_UNMOUNTED,
   MOUNT_DEVICE_ADDED,
   MOUNT_DEVICE_REMOVED,
-  MOUNT_DEVICE_SCANNED
+  MOUNT_DEVICE_SCANNED,
+  MOUNT_FORMATTING_STARTED,
+  MOUNT_FORMATTING_FINISHED
 } MountLibraryEventType;
 
 // This class handles the interaction with the ChromeOS mount library APIs.
@@ -100,6 +102,7 @@ class MountLibrary {
     bool on_boot_device_;
   };
   typedef std::map<std::string, Disk*> DiskMap;
+  typedef std::map<std::string, std::string> PathMap;
 
   // MountPointInfo: {mount_path, mount_type}.
   struct MountPointInfo {
@@ -144,6 +147,14 @@ class MountLibrary {
                          const MountPathOptions& options) = 0;
   // |path| may be source od mount path.
   virtual void UnmountPath(const char* path) = 0;
+
+  // Formats device given its file path.
+  // Example: file_path: /dev/sdb1
+  virtual void FormatUnmountedDevice(const char* file_path) = 0;
+
+  // Formats Device given its mount path. Unmount's the device
+  // Example: mount_path: /media/VOLUME_LABEL
+  virtual void FormatMountedDevice(const char* mount_path) = 0;
 
   // Unmounts device_poath and all of its known children.
   virtual void UnmountDeviceRecursive(const char* device_path,

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -22,24 +25,38 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
-const char kDiskAddedEventType[] = "added";
-const char kDiskRemovedEventType[] = "removed";
+namespace {
+  const char kDiskAddedEventType[] = "added";
+  const char kDiskRemovedEventType[] = "removed";
 
-const char kPathChanged[] = "changed";
-const char kPathWatchError[] = "error";
+  const char kPathChanged[] = "changed";
+  const char kPathWatchError[] = "error";
 
-const char* DeviceTypeToString(chromeos::DeviceType type) {
-  switch (type) {
-    case chromeos::FLASH:
-      return "flash";
-    case chromeos::HDD:
-      return "hdd";
-    case chromeos::OPTICAL:
-      return "optical";
-    default:
-      break;
+  const char* DeviceTypeToString(chromeos::DeviceType type) {
+    switch (type) {
+      case chromeos::FLASH:
+        return "flash";
+      case chromeos::HDD:
+        return "hdd";
+      case chromeos::OPTICAL:
+        return "optical";
+      default:
+        break;
+    }
+    return "undefined";
   }
-  return "undefined";
+
+  DictionaryValue* DiskToDictionaryValue(
+      const chromeos::MountLibrary::Disk* disk) {
+    DictionaryValue* result = new DictionaryValue();
+    result->SetString("mountPath", disk->mount_path());
+    result->SetString("devicePath", disk->device_path());
+    result->SetString("label", disk->device_label());
+    result->SetString("deviceType", DeviceTypeToString(disk->device_type()));
+    result->SetInteger("totalSizeKB", disk->total_size() / 1024);
+    result->SetBoolean("readOnly", disk->is_read_only());
+    return result;
+  }
 }
 
 const char* MountErrorToString(chromeos::MountError error) {
@@ -64,16 +81,9 @@ const char* MountErrorToString(chromeos::MountError error) {
   return "";
 }
 
-DictionaryValue* DiskToDictionaryValue(
-    const chromeos::MountLibrary::Disk* disk) {
-  DictionaryValue* result = new DictionaryValue();
-  result->SetString("mountPath", disk->mount_path());
-  result->SetString("devicePath", disk->device_path());
-  result->SetString("label", disk->device_label());
-  result->SetString("deviceType", DeviceTypeToString(disk->device_type()));
-  result->SetInteger("totalSizeKB", disk->total_size() / 1024);
-  result->SetBoolean("readOnly", disk->is_read_only());
-  return result;
+void HideFileBrowserNotificationExternally(const std::string& category,
+    const std::string& system_path, ExtensionFileBrowserEventRouter* that) {
+  that->HideFileBrowserNotification(category, system_path);
 }
 
 ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
@@ -172,6 +182,10 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
     OnDeviceRemoved(device_path);
   } else if (event == chromeos::MOUNT_DEVICE_SCANNED) {
     OnDeviceScanned(device_path);
+  } else if (event == chromeos::MOUNT_FORMATTING_STARTED) {
+    OnFormattingStarted(device_path);
+  } else if (event == chromeos::MOUNT_FORMATTING_FINISHED) {
+    OnFormattingFinished(device_path);
   }
 }
 void ExtensionFileBrowserEventRouter::MountCompleted(
@@ -307,7 +321,7 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
   }
   if (disk->is_parent()) {
     if (!disk->has_media()) {
-      HideDeviceNotification(disk->system_path());
+      HideFileBrowserNotification("MOUNT", disk->system_path());
       return;
     }
   }
@@ -321,12 +335,13 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
                    chromeos::MOUNT_TYPE_DEVICE,
                    chromeos::MountPathOptions());  // Unused.
   }
+  DispatchMountEvent(disk, true);
 }
 
 void ExtensionFileBrowserEventRouter::OnDiskRemoved(
     const chromeos::MountLibrary::Disk* disk) {
   VLOG(1) << "Disk removed: " << disk->device_path();
-  HideDeviceNotification(disk->system_path());
+  HideFileBrowserNotification("MOUNT", disk->system_path());
   MountPointMap::iterator iter = mounted_devices_.find(disk->device_path());
   if (iter == mounted_devices_.end())
     return;
@@ -336,7 +351,6 @@ void ExtensionFileBrowserEventRouter::OnDiskRemoved(
   // TODO(zelidrag): This for some reason does not work as advertized.
   // we might need to clean up mount directory on FILE thread here as well.
   lib->UnmountPath(disk->device_path().c_str());
-
   DispatchMountEvent(disk, false);
   mounted_devices_.erase(iter);
 }
@@ -345,14 +359,14 @@ void ExtensionFileBrowserEventRouter::OnDiskChanged(
     const chromeos::MountLibrary::Disk* disk) {
   VLOG(1) << "Disk changed : " << disk->device_path();
   if (!disk->mount_path().empty()) {
-    HideDeviceNotification(disk->system_path());
+    HideFileBrowserNotification("MOUNT", disk->system_path());
     // Remember this mount point.
     if (mounted_devices_.find(disk->device_path()) == mounted_devices_.end()) {
       mounted_devices_.insert(
           std::pair<std::string, std::string>(disk->device_path(),
                                               disk->mount_path()));
       DispatchMountEvent(disk, true);
-      HideDeviceNotification(disk->system_path());
+      HideFileBrowserNotification("MOUNT", disk->system_path());
       FileManagerUtil::ShowFullTabUrl(profile_, FilePath(disk->mount_path()));
     }
   }
@@ -362,14 +376,14 @@ void ExtensionFileBrowserEventRouter::OnDeviceAdded(
     const std::string& device_path) {
   VLOG(1) << "Device added : " << device_path;
   // TODO(zelidrag): Find better icon here.
-  ShowDeviceNotification(device_path, IDR_PAGEINFO_INFO,
+  ShowFileBrowserNotification("MOUNT", device_path, IDR_PAGEINFO_INFO,
+      l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE),
       l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE));
-
 }
 
 void ExtensionFileBrowserEventRouter::OnDeviceRemoved(
     const std::string& system_path) {
-  HideDeviceNotification(system_path);
+  HideFileBrowserNotification("MOUNT", system_path);
 }
 
 void ExtensionFileBrowserEventRouter::OnDeviceScanned(
@@ -377,33 +391,74 @@ void ExtensionFileBrowserEventRouter::OnDeviceScanned(
   VLOG(1) << "Device scanned : " << device_path;
 }
 
-void ExtensionFileBrowserEventRouter::ShowDeviceNotification(
-    const std::string& system_path, int icon_resource_id,
-    const string16& message) {
-  NotificationMap::iterator iter = FindNotificationForPath(system_path);
-  std::string mount_path;
-  if (iter != notifications_.end()) {
-    iter->second->Show(message, false, false);
+void ExtensionFileBrowserEventRouter::OnFormattingStarted(
+    const std::string& device_path) {
+  if (device_path[0] == '!') {
+    ShowFileBrowserNotification("FORMAT_FINISHED", device_path.substr(1),
+        IDR_PAGEINFO_WARNING_MAJOR,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_STARTED_FAILURE_MESSAGE));
   } else {
-    if (!profile_) {
-      NOTREACHED();
-      return;
-    }
-    chromeos::SystemNotification* notification =
-        new chromeos::SystemNotification(
-            profile_,
-            system_path,
-            icon_resource_id,
-            l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE));
-    notifications_.insert(NotificationMap::value_type(system_path,
-        linked_ptr<chromeos::SystemNotification>(notification)));
-    notification->Show(message, false, false);
+    ShowFileBrowserNotification("FORMAT", device_path, IDR_PAGEINFO_INFO,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_PENDING_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE));
   }
 }
 
-void ExtensionFileBrowserEventRouter::HideDeviceNotification(
-    const std::string& system_path) {
-  NotificationMap::iterator iter = FindNotificationForPath(system_path);
+void ExtensionFileBrowserEventRouter::OnFormattingFinished(
+    const std::string& device_path) {
+  if (device_path[0] == '!') {
+    HideFileBrowserNotification("FORMAT", device_path.substr(1));
+    ShowFileBrowserNotification("FORMAT_FINISHED", device_path.substr(1),
+        IDR_PAGEINFO_WARNING_MAJOR,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_FINISHED_FAILURE_MESSAGE));
+  } else {
+    HideFileBrowserNotification("FORMAT", device_path);
+    ShowFileBrowserNotification("FORMAT_FINISHED", device_path,
+        IDR_PAGEINFO_INFO,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE));
+    // Hide it after a couple of seconds
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&HideFileBrowserNotificationExternally, "FORMAT_FINISHED",
+        device_path, this),
+        4000);
+    chromeos::MountLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+    lib->MountPath(device_path.c_str(),
+               chromeos::MOUNT_TYPE_DEVICE,
+               chromeos::MountPathOptions());
+  }
+}
+
+void ExtensionFileBrowserEventRouter::ShowFileBrowserNotification(
+        const std::string& category, const std::string& system_path,
+        int icon_resource_id, const string16& title, const string16& message) {
+  std::string notification_id = category + system_path;
+  // New notification always created because, it might have been closed by now.
+  NotificationMap::iterator iter = FindNotificationForId(notification_id);
+  if (iter != notifications_.end())
+    notifications_.erase(iter);
+  if (!profile_) {
+    NOTREACHED();
+    return;
+  }
+  chromeos::SystemNotification* notification =
+      new chromeos::SystemNotification(
+          profile_,
+          notification_id,
+          icon_resource_id,
+          title);
+  notifications_.insert(NotificationMap::value_type(notification_id,
+      linked_ptr<chromeos::SystemNotification>(notification)));
+  notification->Show(message, false, false);
+}
+
+void ExtensionFileBrowserEventRouter::HideFileBrowserNotification(
+    const std::string& category, const std::string& system_path) {
+  NotificationMap::iterator iter = FindNotificationForId(
+      category + system_path);
   if (iter != notifications_.end()) {
     iter->second->Hide();
     notifications_.erase(iter);
@@ -411,15 +466,15 @@ void ExtensionFileBrowserEventRouter::HideDeviceNotification(
 }
 
 ExtensionFileBrowserEventRouter::NotificationMap::iterator
-    ExtensionFileBrowserEventRouter::FindNotificationForPath(
-        const std::string& system_path) {
+    ExtensionFileBrowserEventRouter::FindNotificationForId(
+        const std::string& notification_id) {
   for (NotificationMap::iterator iter = notifications_.begin();
        iter != notifications_.end();
        ++iter) {
     const std::string& notification_device_path = iter->first;
     // Doing a sub string match so that we find if this new one is a subdevice
     // of another already inserted device.
-    if (StartsWithASCII(system_path, notification_device_path, true)) {
+    if (StartsWithASCII(notification_id, notification_device_path, true)) {
       return iter;
     }
   }
