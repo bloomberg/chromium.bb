@@ -57,20 +57,20 @@ MessageLoop* ChromotingHostContext::desktop_message_loop() {
   return desktop_thread_.message_loop();
 }
 
-void ChromotingHostContext::SetUITaskPostFunction(const base::Callback<void(
-    const tracked_objects::Location& from_here, Task* task)>& poster) {
+void ChromotingHostContext::SetUITaskPostFunction(
+    const UIThreadPostTaskFunction& poster) {
   ui_poster_ = poster;
   ui_main_thread_id_ = base::PlatformThread::CurrentId();
 }
 
 void ChromotingHostContext::PostTaskToUIThread(
-    const tracked_objects::Location& from_here, Task* task) {
+    const tracked_objects::Location& from_here, const base::Closure& task) {
   ui_poster_.Run(from_here, task);
 }
 
 void ChromotingHostContext::PostDelayedTaskToUIThread(
     const tracked_objects::Location& from_here,
-    Task* task,
+    const base::Closure& task,
     int delay_ms) {
   // Post delayed task on the main thread that will post task on UI
   // thread. It is safe to use base::Unretained() here because

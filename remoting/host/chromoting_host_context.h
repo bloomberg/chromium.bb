@@ -25,6 +25,10 @@ namespace remoting {
 // process.  This class is virtual only for testing purposes (see below).
 class ChromotingHostContext {
  public:
+  typedef base::Callback<void(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task)> UIThreadPostTaskFunction;
+
   // Create a context.
   ChromotingHostContext();
   virtual ~ChromotingHostContext();
@@ -44,13 +48,12 @@ class ChromotingHostContext {
   virtual MessageLoop* desktop_message_loop();
 
   // Must be called from the main GUI thread.
-  void SetUITaskPostFunction(const base::Callback<void(
-      const tracked_objects::Location& from_here, Task* task)>& poster);
+  void SetUITaskPostFunction(const UIThreadPostTaskFunction& poster);
 
   void PostTaskToUIThread(const tracked_objects::Location& from_here,
-                          Task* task);
+                          const base::Closure& task);
   void PostDelayedTaskToUIThread(const tracked_objects::Location& from_here,
-                                 Task* task,
+                                 const base::Closure& task,
                                  int delay_ms);
   bool IsUIThread() const;
 
@@ -70,8 +73,7 @@ class ChromotingHostContext {
   // This is NOT a Chrome-style UI thread.
   base::Thread desktop_thread_;
 
-  base::Callback<void(const tracked_objects::Location& from_here, Task* task)>
-      ui_poster_;
+  UIThreadPostTaskFunction ui_poster_;
   // This IS the main Chrome GUI thread that |ui_poster_| will post to.
   base::PlatformThreadId ui_main_thread_id_;
 

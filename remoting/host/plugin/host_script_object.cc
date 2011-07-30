@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/threading/platform_thread.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
@@ -347,9 +346,9 @@ void HostNPScriptObject::ConnectInternal(
     const std::string& auth_service) {
   if (MessageLoop::current() != host_context_.main_message_loop()) {
     host_context_.main_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &HostNPScriptObject::ConnectInternal,
-                          uid, auth_token, auth_service));
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::ConnectInternal, base::Unretained(this),
+            uid, auth_token, auth_service));
     return;
   }
   // Store the supplied user ID and token to the Host configuration.
@@ -420,8 +419,8 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
 void HostNPScriptObject::DisconnectInternal() {
   if (MessageLoop::current() != host_context_.main_message_loop()) {
     host_context_.main_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &HostNPScriptObject::DisconnectInternal));
+        FROM_HERE, base::Bind(&HostNPScriptObject::DisconnectInternal,
+                              base::Unretained(this)));
     return;
   }
 
@@ -477,8 +476,8 @@ void HostNPScriptObject::OnStateChanged(State state) {
 
   if (!host_context_.IsUIThread()) {
     host_context_.PostTaskToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &HostNPScriptObject::OnStateChanged, state));
+        FROM_HERE, base::Bind(&HostNPScriptObject::OnStateChanged,
+                              base::Unretained(this), state));
     return;
   }
   state_ = state;
@@ -495,8 +494,8 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
 
   if (!host_context_.IsUIThread()) {
     host_context_.PostTaskToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &HostNPScriptObject::LogDebugInfo, message));
+        FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
+                              base::Unretained(this), message));
     return;
   }
   if (log_debug_info_func_) {
@@ -525,18 +524,22 @@ bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
 }
 
 void HostNPScriptObject::PostTaskToNPThread(
-    const tracked_objects::Location& from_here, Task* task) {
+    const tracked_objects::Location& from_here, const base::Closure& task) {
   // The NPAPI functions cannot make use of |from_here|, but this method is
   // passed as a callback to ChromotingHostContext, so it needs to have the
   // appropriate signature.
 
+  // Copy task to the heap so that we can pass it to NPTaskSpringboard().
+  base::Closure* task_in_heap = new base::Closure(task);
+
   // Can be called from any thread.
-  g_npnetscape_funcs->pluginthreadasynccall(plugin_, &NPTaskSpringboard, task);
+  g_npnetscape_funcs->pluginthreadasynccall(plugin_, &NPTaskSpringboard,
+                                            task_in_heap);
 }
 
 // static
 void HostNPScriptObject::NPTaskSpringboard(void* task) {
-  Task* real_task = reinterpret_cast<Task*>(task);
+  base::Closure* real_task = reinterpret_cast<base::Closure*>(task);
   real_task->Run();
   delete real_task;
 }

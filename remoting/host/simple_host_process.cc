@@ -123,7 +123,8 @@ class SimpleHost {
     // static_cast needed to resolve overloaded PostTask member-function.
     context.SetUITaskPostFunction(base::Bind(
         static_cast<void(MessageLoop::*)(
-            const tracked_objects::Location&, Task*)>(&MessageLoop::PostTask),
+            const tracked_objects::Location&,
+            const base::Closure&)>(&MessageLoop::PostTask),
         base::Unretained(&message_loop)));
     context.Start();
 

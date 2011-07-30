@@ -22,8 +22,6 @@
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-class Task;
-
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
@@ -117,8 +115,8 @@ class HostNPScriptObject : public HostStatusObserver {
                              uint32_t argCount);
 
   // Posts a task on the main NP thread.
-  void PostTaskToNPThread(const tracked_objects::Location& from_here,
-                          Task* task);
+  void PostTaskToNPThread(
+      const tracked_objects::Location& from_here, const base::Closure& task);
 
   // Utility function for PostTaskToNPThread.
   static void NPTaskSpringboard(void* task);

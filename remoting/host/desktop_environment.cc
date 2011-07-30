@@ -37,8 +37,8 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
   void CallOnUIThread(const tracked_objects::Location& from_here,
                       const base::Closure& closure) {
     if (context_) {
-      context_->PostTaskToUIThread(from_here, NewRunnableMethod(
-          this, &UIThreadProxy::CallClosure, closure));
+      context_->PostTaskToUIThread(from_here, base::Bind(
+          &UIThreadProxy::CallClosure, this, closure));
     }
   }
 
@@ -46,8 +46,8 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
                              const base::Closure& closure,
                              int delay_ms) {
     if (context_) {
-      context_->PostDelayedTaskToUIThread(from_here, NewRunnableMethod(
-          this, &UIThreadProxy::CallClosure, closure), delay_ms);
+      context_->PostDelayedTaskToUIThread(from_here, base::Bind(
+          &UIThreadProxy::CallClosure, this, closure), delay_ms);
     }
   }
 

@@ -68,7 +68,7 @@ class ChromotingHostTest : public testing::Test {
   ChromotingHostTest() {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     config_ = new InMemoryHostConfig();
     ON_CALL(context_, main_message_loop())
         .WillByDefault(Return(&message_loop_));
@@ -91,7 +91,8 @@ class ChromotingHostTest : public testing::Test {
 
     context_.SetUITaskPostFunction(base::Bind(
         static_cast<void(MessageLoop::*)(
-            const tracked_objects::Location&, Task*)>(&MessageLoop::PostTask),
+            const tracked_objects::Location&,
+            const base::Closure&)>(&MessageLoop::PostTask),
         base::Unretained(&message_loop_)));
 
     Capturer* capturer = new CapturerFake();
@@ -159,6 +160,10 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
     EXPECT_CALL(*session2_.get(), config())
         .Times(AnyNumber());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    message_loop_.RunAllPending();
   }
 
   // Helper method to pretend a client is connected to ChromotingHost.
