@@ -71,8 +71,7 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
       return;
     }
 
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
+    FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
   }
 

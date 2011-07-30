@@ -17,11 +17,13 @@ namespace chromeos {
 
 class ScreenLockLibraryImpl : public ScreenLockLibrary {
  public:
-  ScreenLockLibraryImpl() {}
+  ScreenLockLibraryImpl() : screen_lock_connection_(NULL) {}
 
   virtual ~ScreenLockLibraryImpl() {
-    if (screen_lock_connection_)
+    if (screen_lock_connection_) {
       chromeos::DisconnectScreenLock(screen_lock_connection_);
+      screen_lock_connection_ = NULL;
+    }
   }
 
   // Begin ScreenLockLibrary implementation.
@@ -109,10 +111,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreenFailed(this));
   }
 
-  ObserverList<Observer> observers_;
-
-  // A reference to the screen lock API.
   chromeos::ScreenLockConnection screen_lock_connection_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockLibraryImpl);
 };
