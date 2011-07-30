@@ -49,6 +49,8 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
   void SetAckDelay(int delay_ms);
   void SetNoDelay(bool no_delay);
+  void SetReceiveBufferSize(int32 size);
+  void SetSendBufferSize(int32 size);
 
  private:
   // These are invoked by the underlying Socket, and may trigger callbacks.
@@ -281,6 +283,14 @@ void PseudoTcpAdapter::Core::SetNoDelay(bool no_delay) {
   pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_NODELAY, no_delay ? 1 : 0);
 }
 
+void PseudoTcpAdapter::Core::SetReceiveBufferSize(int32 size) {
+  pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_RCVBUF, size);
+}
+
+void PseudoTcpAdapter::Core::SetSendBufferSize(int32 size) {
+  pseudo_tcp_.SetOption(cricket::PseudoTcp::OPT_SNDBUF, size);
+}
+
 cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
     PseudoTcp* tcp,
     const char* buffer,
@@ -396,15 +406,15 @@ int PseudoTcpAdapter::Write(net::IOBuffer* buffer, int buffer_size,
 
 bool PseudoTcpAdapter::SetReceiveBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  // TODO(sergeyu): Implement support for adjustable buffer size and
-  // used it here.
+
+  core_->SetReceiveBufferSize(size);
   return false;
 }
 
 bool PseudoTcpAdapter::SetSendBufferSize(int32 size) {
   DCHECK(CalledOnValidThread());
-  // TODO(sergeyu): Implement support for adjustable buffer size and
-  // used it here.
+
+  core_->SetSendBufferSize(size);
   return false;
 }
 

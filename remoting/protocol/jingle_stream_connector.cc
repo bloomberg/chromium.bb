@@ -32,6 +32,11 @@ const char kClientSslExporterLabel[] = "EXPORTER-remoting-channel-auth-client";
 // load due to ACK traffic.
 const int kTcpAckDelayMilliseconds = 10;
 
+// Values for the TCP send and receive buffer size. This should be tuned to
+// accomodate high latency network but not backlog the decoding pipeline.
+const int kTcpReceiveBufferSize = 256 * 1024;
+const int kTcpSendBufferSize = kTcpReceiveBufferSize + 30 * 1024;
+
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
     net::StreamSocket* socket, const std::string& der_cert,
@@ -107,6 +112,8 @@ bool JingleStreamConnector::EstablishTCPConnection(net::Socket* socket) {
       new jingle_glue::PseudoTcpAdapter(socket);
   adapter->SetAckDelay(kTcpAckDelayMilliseconds);
   adapter->SetNoDelay(true);
+  adapter->SetReceiveBufferSize(kTcpReceiveBufferSize);
+  adapter->SetSendBufferSize(kTcpSendBufferSize);
 
   socket_.reset(adapter);
   int result = socket_->Connect(&tcp_connect_callback_);
