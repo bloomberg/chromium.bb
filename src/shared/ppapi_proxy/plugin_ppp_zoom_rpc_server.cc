@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
@@ -15,19 +16,7 @@
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
-
-namespace {
-
-const PPP_Zoom_Dev* PPPZoom() {
-  static const PPP_Zoom_Dev* ppp_zoom = NULL;
-  if (ppp_zoom == NULL) {
-    ppp_zoom = reinterpret_cast<const PPP_Zoom_Dev*>(
-        ::PPP_GetInterface(PPP_ZOOM_DEV_INTERFACE));
-  }
-  return ppp_zoom;
-}
-
-} // namespace
+using ppapi_proxy::PPPZoomInterface;
 
 void PppZoomRpcServer::PPP_Zoom_Zoom(
     NaClSrpcRpc* rpc,
@@ -39,12 +28,8 @@ void PppZoomRpcServer::PPP_Zoom_Zoom(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Zoom_Dev* ppp_zoom = PPPZoom();
-  if (ppp_zoom == NULL || ppp_zoom->Zoom == NULL)
-    return;
-  ppp_zoom->Zoom(instance, factor, text_only ? PP_TRUE : PP_FALSE);
+  PPPZoomInterface()->Zoom(instance, factor, text_only ? PP_TRUE : PP_FALSE);
 
   DebugPrintf("PPP_Zoom::Zoom");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

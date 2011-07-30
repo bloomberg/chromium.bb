@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
@@ -15,19 +16,7 @@
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
-
-namespace {
-
-const PPP_Find_Dev* PPPFind() {
-  static const PPP_Find_Dev* ppp_find = NULL;
-  if (ppp_find == NULL) {
-    ppp_find = reinterpret_cast<const PPP_Find_Dev*>(
-        ::PPP_GetInterface(PPP_FIND_DEV_INTERFACE));
-  }
-  return ppp_find;
-}
-
-} // namespace
+using ppapi_proxy::PPPFindInterface;
 
 void PppFindRpcServer::PPP_Find_StartFind(
     NaClSrpcRpc* rpc,
@@ -40,16 +29,13 @@ void PppFindRpcServer::PPP_Find_StartFind(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Find_Dev* ppp_find = PPPFind();
-  if (ppp_find == NULL || ppp_find->StartFind == NULL)
-    return;
-  PP_Bool pp_supports_find = ppp_find->StartFind(
+  PP_Bool pp_supports_find = PPPFindInterface()->StartFind(
       instance,
       text,
       case_sensitive ? PP_TRUE : PP_FALSE);
   *supports_find = pp_supports_find == PP_TRUE;
 
-  DebugPrintf("PPP_Find::StartFind");
+  DebugPrintf("PPP_Find::StartFind: pp_supports_find=%d\n", pp_supports_find);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -62,12 +48,8 @@ void PppFindRpcServer::PPP_Find_SelectFindResult(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Find_Dev* ppp_find = PPPFind();
-  if (ppp_find == NULL || ppp_find->SelectFindResult == NULL)
-    return;
-  ppp_find->SelectFindResult(instance, forward ? PP_TRUE : PP_FALSE);
-
-  DebugPrintf("PPP_Find::SelectFindResult");
+  PPPFindInterface()->SelectFindResult(instance, forward ? PP_TRUE : PP_FALSE);
+  DebugPrintf("PPP_Find::SelectFindResult\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -79,12 +61,7 @@ void PppFindRpcServer::PPP_Find_StopFind(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Find_Dev* ppp_find = PPPFind();
-  if (ppp_find == NULL || ppp_find->StopFind == NULL)
-    return;
-  ppp_find->StopFind(instance);
-
-  DebugPrintf("PPP_Find::StopFind");
+  PPPFindInterface()->StopFind(instance);
+  DebugPrintf("PPP_Find::StopFind\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

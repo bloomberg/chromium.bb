@@ -22,11 +22,10 @@ void PppMessagingRpcServer::PPP_Messaging_HandleMessage(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Messaging* ppp_messaging = PPPMessagingInterface();
   PP_Var message;
   if (!DeserializeTo(rpc->channel, message_bytes, message_size, 1, &message))
     return;
-  ppp_messaging->HandleMessage(instance, message);
+  PPPMessagingInterface()->HandleMessage(instance, message);
   DebugPrintf("PPP_Instance::HandleMessage\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }

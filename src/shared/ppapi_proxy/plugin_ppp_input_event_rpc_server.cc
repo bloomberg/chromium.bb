@@ -47,15 +47,6 @@ void PppInputEventRpcServer::PPP_InputEvent_HandleInputEvent(
   NaClSrpcClosureRunner runner(done);
   *handled = static_cast<int32_t>(PP_FALSE);
 
-  const PPP_InputEvent* input_event_interface = PPPInputEventInterface();
-  if (!input_event_interface || !(input_event_interface->HandleInputEvent)) {
-    DebugPrintf("PppInstanceRpcServer::PPP_InputEvent_HandleInputEvent: "
-                "No PPP_InputEvent interface registered, or it has an invalid "
-                "HandleInputEvent function.\n");
-    DCHECK(false);
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    return;
-  }
   // The browser will immediately release this resource when we return, hence
   // we use a browser count of 0. If the NaCl instance calls AddRefResource,
   // the ResourceTracker will inform the browser synchronously, so the resource
@@ -78,7 +69,7 @@ void PppInputEventRpcServer::PPP_InputEvent_HandleInputEvent(
   input_event->Init(data, character_text_var);
 
   *handled = static_cast<int32_t>(
-      input_event_interface->HandleInputEvent(instance, browser_resource));
+      PPPInputEventInterface()->HandleInputEvent(instance, browser_resource));
   DebugPrintf("PPP_InputEvent::HandleInputEvent: handled=%d\n", handled);
   // Now release the input, to match the behavior of the browser. If the NaCl
   // instance wants to retain the input event for any reason (e.g. to share it
@@ -91,4 +82,3 @@ void PppInputEventRpcServer::PPP_InputEvent_HandleInputEvent(
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

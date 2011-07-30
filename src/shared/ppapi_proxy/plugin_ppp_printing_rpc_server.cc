@@ -9,6 +9,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_printing_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
@@ -16,6 +17,7 @@
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::PPPPrintingInterface;
 
 namespace {
 
@@ -25,15 +27,6 @@ const nacl_abi_size_t kPPPrintSettingsBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_PrintSettings_Dev));
 const nacl_abi_size_t kPPPrintPageNumberRangeBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_PrintPageNumberRange_Dev));
-
-const PPP_Printing_Dev* PPPPrinting() {
-  static const PPP_Printing_Dev* ppp_printing = NULL;
-  if (ppp_printing == NULL) {
-    ppp_printing = reinterpret_cast<const PPP_Printing_Dev*>(
-        ::PPP_GetInterface(PPP_PRINTING_DEV_INTERFACE));
-  }
-  return ppp_printing;
-}
 
 }  // namespace
 
@@ -48,11 +41,8 @@ void PppPrintingRpcServer::PPP_Printing_QuerySupportedFormats(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Printing_Dev* ppp_printing = PPPPrinting();
-  if (ppp_printing == NULL || ppp_printing->QuerySupportedFormats == NULL)
-    return;
   PP_PrintOutputFormat_Dev* pp_formats =
-      ppp_printing->QuerySupportedFormats(
+      PPPPrintingInterface()->QuerySupportedFormats(
           instance,
           reinterpret_cast<uint32_t*>(format_count));
   if (pp_formats != NULL) {
@@ -83,14 +73,11 @@ void PppPrintingRpcServer::PPP_Printing_Begin(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Printing_Dev* ppp_printing = PPPPrinting();
-  if (ppp_printing == NULL || ppp_printing->Begin == NULL)
-    return;
   if (print_settings_bytes != sizeof(struct PP_PrintSettings_Dev))
     return;
   struct PP_PrintSettings_Dev* pp_print_settings =
       reinterpret_cast<struct PP_PrintSettings_Dev*>(print_settings);
-  *pages_required = ppp_printing->Begin(instance, pp_print_settings);
+  *pages_required = PPPPrintingInterface()->Begin(instance, pp_print_settings);
 
   DebugPrintf("PPP_Printing::Begin: pages_required=%"NACL_PRId32"\n",
               *pages_required);
@@ -109,16 +96,13 @@ void PppPrintingRpcServer::PPP_Printing_PrintPages(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Printing_Dev* ppp_printing = PPPPrinting();
-  if (ppp_printing == NULL || ppp_printing->PrintPages == NULL)
-    return;
   if (page_ranges_bytes < kPPPrintPageNumberRangeBytes * page_range_count)
     return;
   struct PP_PrintPageNumberRange_Dev* pp_page_ranges =
       reinterpret_cast<struct PP_PrintPageNumberRange_Dev*>(page_ranges);
-  *image_data = ppp_printing->PrintPages(instance,
-                                         pp_page_ranges,
-                                         page_range_count);
+  *image_data = PPPPrintingInterface()->PrintPages(instance,
+                                                   pp_page_ranges,
+                                                   page_range_count);
 
   DebugPrintf("PPP_Printing::PrintPages: image_data=%"NACL_PRIu32"\n",
               *image_data);
@@ -133,12 +117,8 @@ void PppPrintingRpcServer::PPP_Printing_End(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  const PPP_Printing_Dev* ppp_printing = PPPPrinting();
-  if (ppp_printing == NULL || ppp_printing->End == NULL)
-    return;
-  ppp_printing->End(instance);
+  PPPPrintingInterface()->End(instance);
 
   DebugPrintf("PPP_Printing::End\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

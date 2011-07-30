@@ -24,7 +24,7 @@ NaClSrpcChannel* upcall_srpc_channel;
 PP_Module module_id_for_plugin;
 struct PP_ThreadFunctions thread_funcs;
 
-}  // namespace;
+}  // namespace
 
 namespace ppapi_proxy {
 
@@ -59,11 +59,17 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   return module_id_for_plugin;
 }
 
+const struct PP_ThreadFunctions* GetThreadCreator() {
+  return &thread_funcs;
+}
+
+// Browser interface helpers
+
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
   const void* ppb_interface = GetBrowserInterface(interface_name);
   if (ppb_interface == NULL)
     DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
-  CHECK(ppb_interface);
+  CHECK(ppb_interface != NULL);
   return ppb_interface;
 }
 
@@ -82,28 +88,65 @@ const PPB_Var* PPBVarInterface() {
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
 }
 
+// Plugin interface helpers
+
+const void* GetPluginInterface(const char* interface_name) {
+  return ::PPP_GetInterface(interface_name);
+}
+
+const void* GetPluginInterfaceSafe(const char* interface_name) {
+  const void* ppp_interface = GetPluginInterface(interface_name);
+  if (ppp_interface == NULL)
+    DebugPrintf("PPP_GetInterface: %s not found\n", interface_name);
+  CHECK(ppp_interface != NULL);
+  return ppp_interface;
+}
+
+const PPP_Find_Dev* PPPFindInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_FIND_DEV_INTERFACE);
+  return static_cast<const PPP_Find_Dev*>(ppp);
+}
+
 const PPP_InputEvent* PPPInputEventInterface() {
-  static const PPP_InputEvent* ppp_input_event =
-      static_cast<const PPP_InputEvent*>(
-          ::PPP_GetInterface(PPP_INPUT_EVENT_INTERFACE));
-  // This helper is only used from interface function proxies; a NULL return
-  // means something is wrong with the proxy.
-  CHECK(ppp_input_event != NULL);
-  return ppp_input_event;
+  static const void* ppp = GetPluginInterfaceSafe(PPP_INPUT_EVENT_INTERFACE);
+  return static_cast<const PPP_InputEvent*>(ppp);
+}
+
+const PPP_Instance* PPPInstanceInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_INSTANCE_INTERFACE);
+  return static_cast<const PPP_Instance*>(ppp);
 }
 
 const PPP_Messaging* PPPMessagingInterface() {
-  static const PPP_Messaging* ppp_messaging = static_cast<const PPP_Messaging*>(
-      ::PPP_GetInterface(PPP_MESSAGING_INTERFACE));
-  // This helper is only used from interface function proxies; a NULL return
-  // means something is wrong with the proxy.
-  CHECK(ppp_messaging != NULL);
-  return ppp_messaging;
+  static const void* ppp = GetPluginInterfaceSafe(PPP_MESSAGING_INTERFACE);
+  return static_cast<const PPP_Messaging*>(ppp);
 }
 
-const struct PP_ThreadFunctions* GetThreadCreator() {
-  return &thread_funcs;
+const PPP_Printing_Dev* PPPPrintingInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_PRINTING_DEV_INTERFACE);
+  return static_cast<const PPP_Printing_Dev*>(ppp);
 }
+
+const PPP_Scrollbar_Dev* PPPScrollbarInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_SCROLLBAR_DEV_INTERFACE);
+  return static_cast<const PPP_Scrollbar_Dev*>(ppp);
+}
+
+const PPP_Selection_Dev* PPPSelectionInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_SELECTION_DEV_INTERFACE);
+  return static_cast<const PPP_Selection_Dev*>(ppp);
+}
+
+const PPP_Widget_Dev* PPPWidgetInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_WIDGET_DEV_INTERFACE);
+  return static_cast<const PPP_Widget_Dev*>(ppp);
+}
+
+const PPP_Zoom_Dev* PPPZoomInterface() {
+  static const void* ppp = GetPluginInterfaceSafe(PPP_ZOOM_DEV_INTERFACE);
+  return static_cast<const PPP_Zoom_Dev*>(ppp);
+}
+
 
 }  // namespace ppapi_proxy
 

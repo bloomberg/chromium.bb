@@ -11,6 +11,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/third_party/ppapi/c/ppp.h"
@@ -18,8 +19,9 @@
 #include "native_client/src/third_party/ppapi/c/pp_var.h"
 #include "native_client/src/third_party/ppapi/c/ppp_instance.h"
 
-using ppapi_proxy::DebugPrintf;
 using nacl::scoped_ptr;
+using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::PPPInstanceInterface;
 
 namespace {
 
@@ -28,15 +30,6 @@ namespace {
 // TODO(sehr): fix SRPC's bool type.
 const int32_t kMethodSuccess = 1;
 const int32_t kMethodFailure = 0;
-
-const PPP_Instance* GetInstanceInterface() {
-  static const PPP_Instance* instance_interface = NULL;
-  if (instance_interface == NULL) {
-    instance_interface = reinterpret_cast<const PPP_Instance*>(
-        ::PPP_GetInterface(PPP_INSTANCE_INTERFACE));
-  }
-  return instance_interface;
-}
 
 // Build vector of "count" char pointers from a string of NUL-separated tokens.
 // Returns NULL on out of memory or parsing error.
@@ -84,10 +77,6 @@ void PppInstanceRpcServer::PPP_Instance_DidCreate(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = kMethodFailure;
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL || instance_interface->DidCreate == NULL) {
-    return;
-  }
   // Deserialize the argv and argn strutures.
   scoped_ptr<const char*> argn_copy(GetCharpArray(argc, argn, argn_bytes));
   if (argn_copy.get() == NULL) {
@@ -97,10 +86,10 @@ void PppInstanceRpcServer::PPP_Instance_DidCreate(
   if (argv_copy.get() == NULL) {
     return;
   }
-  bool created = instance_interface->DidCreate(instance,
-                                               argc,
-                                               argn_copy.get(),
-                                               argv_copy.get());
+  bool created = PPPInstanceInterface()->DidCreate(instance,
+                                                   argc,
+                                                   argn_copy.get(),
+                                                   argv_copy.get());
   DebugPrintf("PPP_Instance::DidCreate: created=%d\n", created);
   *success = created ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -115,12 +104,7 @@ void PppInstanceRpcServer::PPP_Instance_DidDestroy(
 
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL || instance_interface->DidDestroy == NULL) {
-    rpc->result = NACL_SRPC_RESULT_OK;
-    return;
-  }
-  instance_interface->DidDestroy(instance);
+  PPPInstanceInterface()->DidDestroy(instance);
   DebugPrintf("PPP_Instance::DidDestroy\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -142,16 +126,12 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
                                                  clip_rect);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL ||
-      instance_interface->DidChangeView == NULL) {
-    return;
-  }
   if (position_count != 4 || clip_count != 4) {
     return;
   }
 
-  instance_interface->DidChangeView(instance_id, &position_rect, &clip_rect);
+  PPPInstanceInterface()->DidChangeView(
+      instance_id, &position_rect, &clip_rect);
   DebugPrintf("PPP_Instance::DidChangeView\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -164,14 +144,8 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
     bool has_focus) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
-  // FocusChanged() has a void return, so it always succeeds at this interface
-  // level.
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface != NULL &&
-      instance_interface->DidChangeFocus != NULL) {
-    instance_interface->DidChangeFocus(instance,
-        static_cast<PP_Bool>(has_focus));
-  }
+  PPPInstanceInterface()->DidChangeFocus(instance,
+                                         static_cast<PP_Bool>(has_focus));
   DebugPrintf("PPP_Instance::DidChangeFocus\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -187,12 +161,8 @@ void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
   *success = kMethodFailure;
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL ||
-      instance_interface->HandleDocumentLoad == NULL) {
-    return;
-  }
-  bool handled = instance_interface->HandleDocumentLoad(instance, url_loader);
+  bool handled =
+      PPPInstanceInterface()->HandleDocumentLoad(instance, url_loader);
   DebugPrintf("PPP_Instance::HandleDocumentLoad: handled=%d\n", handled);
   *success = handled ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;

@@ -40,12 +40,6 @@ PP_Bool DidCreate(PP_Instance /*instance*/,
 void DidDestroy(PP_Instance /*instance*/) {
 }
 
-void DidChangeView(PP_Instance /*instance*/,
-                   const struct PP_Rect* /*position*/,
-                   const struct PP_Rect* /*clip*/) {
-  CHECK(false);  // Crash!
-}
-
 void DidChangeFocus(PP_Instance /*instance*/, PP_Bool /*has_focus*/) {
 }
 
@@ -56,7 +50,7 @@ PP_Bool HandleDocumentLoad(PP_Instance /*instance*/, PP_Resource /*loader*/) {
 const struct PPP_Instance instance_interface = {
   DidCreate,
   DidDestroy,
-  DidChangeView,
+  NULL,  // Calling DidChangeView will cause a crash!
   DidChangeFocus,
   HandleDocumentLoad
 };

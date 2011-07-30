@@ -5,15 +5,21 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
-#include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_find_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_printing_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_selection_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_widget_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/ppb.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
 #include "native_client/src/third_party/ppapi/c/ppb_var.h"
 #include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/ppp_instance.h"
 #include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
+#include "native_client/src/untrusted/irt/irt_ppapi.h"
 
 struct NaClSrpcChannel;
 
@@ -45,8 +51,22 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
+
+// Support for getting PPP_ plugin interfaces.
+// Safe version CHECK's for NULL.
+// Since no PppRpcServer function will be called if the interface is NULL,
+// safe version is used to define interface getters below.
+const void* GetPluginInterface(const char* interface_name);
+const void* GetPluginInterfaceSafe(const char* interface_name);
+const PPP_Find_Dev* PPPFindInterface();
 const PPP_InputEvent* PPPInputEventInterface();
+const PPP_Instance* PPPInstanceInterface();
 const PPP_Messaging* PPPMessagingInterface();
+const PPP_Printing_Dev* PPPPrintingInterface();
+const PPP_Scrollbar_Dev* PPPScrollbarInterface();
+const PPP_Selection_Dev* PPPSelectionInterface();
+const PPP_Widget_Dev* PPPWidgetInterface();
+const PPP_Zoom_Dev* PPPZoomInterface();
 
 // Get thread creation/join functions.
 const struct PP_ThreadFunctions* GetThreadCreator();
