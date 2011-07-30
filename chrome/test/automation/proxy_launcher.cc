@@ -25,7 +25,6 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
-#include "content/common/result_codes.h"
 #include "sql/connection.h"
 
 namespace {
@@ -86,14 +85,11 @@ ProxyLauncher::ProxyLauncher()
 ProxyLauncher::~ProxyLauncher() {}
 
 bool ProxyLauncher::WaitForBrowserLaunch(bool wait_for_initial_loads) {
-  if (automation_proxy_->WaitForAppLaunch() != AUTOMATION_SUCCESS) {
-    LOG(ERROR) << "Error while awaiting automation ping from browser process. "
-               << "Killing the browser.";
-    DisconnectFromRunningBrowser();
-    TerminateAllChromeProcesses(process_id_);
-    CloseBrowserProcessHandles();
+  AutomationLaunchResult app_launched = automation_proxy_->WaitForAppLaunch();
+  EXPECT_EQ(AUTOMATION_SUCCESS, app_launched)
+      << "Error while awaiting automation ping from browser process";
+  if (app_launched != AUTOMATION_SUCCESS)
     return false;
-  }
 
   if (wait_for_initial_loads) {
     if (!automation_proxy_->WaitForInitialLoads()) {
@@ -154,7 +150,7 @@ void ProxyLauncher::CloseBrowserAndServer() {
 }
 
 void ProxyLauncher::DisconnectFromRunningBrowser() {
-  automation_proxy_.reset();
+  automation_proxy_.reset();  // Shut down IPC testing interface.
 }
 
 bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
@@ -263,7 +259,8 @@ void ProxyLauncher::QuitBrowser() {
 
   // Now, drop the automation IPC channel so that the automation provider in
   // the browser notices and drops its reference to the browser process.
-  DisconnectFromRunningBrowser();
+  if (automation_proxy_.get())
+    automation_proxy_->Disconnect();
 
   // Wait for the browser process to quit. It should quit once all tabs have
   // been closed.
@@ -292,7 +289,8 @@ void ProxyLauncher::TerminateBrowser() {
 
   // Now, drop the automation IPC channel so that the automation provider in
   // the browser notices and drops its reference to the browser process.
-  DisconnectFromRunningBrowser();
+  if (automation_proxy_.get())
+    automation_proxy_->Disconnect();
 
 #if defined(OS_POSIX)
   EXPECT_EQ(kill(process_, SIGTERM), 0);
@@ -330,7 +328,10 @@ bool ProxyLauncher::WaitForBrowserProcessToQuit(int timeout, int* exit_code) {
   if (!success)
     TerminateAllChromeProcesses(process_id_);
 
-  CloseBrowserProcessHandles();
+  base::CloseProcessHandle(process_);
+  process_ = base::kNullProcessHandle;
+  process_id_ = -1;
+
   return success;
 }
 
@@ -456,6 +457,7 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
 
   base::LaunchOptions options;
   options.wait = wait;
+
 #if defined(OS_WIN)
   options.start_hidden = !state.show_window;
 #elif defined(OS_POSIX)
@@ -466,12 +468,6 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
 #endif
 
   return base::LaunchProcess(command_line, options, process);
-}
-
-void ProxyLauncher::CloseBrowserProcessHandles() {
-  base::CloseProcessHandle(process_);
-  process_ = base::kNullProcessHandle;
-  process_id_ = -1;
 }
 
 AutomationProxy* ProxyLauncher::automation() const {
@@ -518,7 +514,7 @@ AutomationProxy* NamedProxyLauncher::CreateAutomationProxy(
   return proxy;
 }
 
-bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
+void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
                                               bool wait_for_initial_loads) {
   FilePath testing_channel_path;
 #if defined(OS_WIN)
@@ -530,15 +526,10 @@ bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
   if (launch_browser_) {
     // Because we are waiting on the existence of the testing file below,
     // make sure there isn't one already there before browser launch.
-    if (!file_util::Delete(testing_channel_path, false)) {
-      LOG(ERROR) << "Failed to delete " << testing_channel_path.value();
-      return false;
-    }
+    EXPECT_TRUE(file_util::Delete(testing_channel_path, false));
 
-    if (!LaunchBrowser(state)) {
-      LOG(ERROR) << "Failed to LaunchBrowser";
-      return false;
-    }
+    // Set up IPC testing interface as a client.
+    ASSERT_TRUE(LaunchBrowser(state));
   }
 
   // Wait for browser to be ready for connections.
@@ -551,17 +542,9 @@ bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
       break;
     base::PlatformThread::Sleep(automation::kSleepTime);
   }
-  if (!testing_channel_exists) {
-    LOG(ERROR) << "Failed to wait for testing channel presence.";
-    return false;
-  }
+  EXPECT_TRUE(testing_channel_exists);
 
-  if (!ConnectToRunningBrowser(wait_for_initial_loads)) {
-    LOG(ERROR) << "Failed to ConnectToRunningBrowser";
-    return false;
-  }
-
-  return true;
+  ASSERT_TRUE(ConnectToRunningBrowser(wait_for_initial_loads));
 }
 
 void NamedProxyLauncher::TerminateConnection() {
@@ -592,9 +575,9 @@ AutomationProxy* AnonymousProxyLauncher::CreateAutomationProxy(
   return proxy;
 }
 
-bool AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
+void AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
                                                   bool wait_for_initial_loads) {
-  return LaunchBrowserAndServer(state, wait_for_initial_loads);
+  ASSERT_TRUE(LaunchBrowserAndServer(state, wait_for_initial_loads));
 }
 
 void AnonymousProxyLauncher::TerminateConnection() {

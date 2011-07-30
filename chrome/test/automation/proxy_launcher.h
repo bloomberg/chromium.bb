@@ -65,10 +65,8 @@ class ProxyLauncher {
   virtual ~ProxyLauncher();
 
   // Launches the browser if needed and establishes a connection with it.
-  // Returns true on success.
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) WARN_UNUSED_RESULT = 0;
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads) = 0;
 
   // Shuts down the browser if needed and destroys any
   // connections established by InitalizeConnection.
@@ -224,8 +222,6 @@ class ProxyLauncher {
                            bool wait,
                            base::ProcessHandle* process) WARN_UNUSED_RESULT;
 
-  void CloseBrowserProcessHandles();
-
   scoped_ptr<AutomationProxy> automation_proxy_;
 
   // We use a temporary directory for profile to avoid issues with being
@@ -289,16 +285,13 @@ class NamedProxyLauncher : public ProxyLauncher {
   // If launch_browser is true, launches Chrome with named interface enabled.
   // Otherwise, there should be an existing instance the proxy can connect to.
   NamedProxyLauncher(const std::string& channel_id,
-                     bool launch_browser,
-                     bool disconnect_on_failure) OVERRIDE;
+                     bool launch_browser, bool disconnect_on_failure);
 
-  virtual AutomationProxy* CreateAutomationProxy(
-      int execution_timeout) OVERRIDE;
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;
-  virtual void TerminateConnection() OVERRIDE;
-  virtual std::string PrefixedChannelID() const OVERRIDE;
+  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads);
+  virtual void TerminateConnection();
+  virtual std::string PrefixedChannelID() const;
 
  protected:
   std::string channel_id_;      // Channel id of automation proxy.
@@ -312,14 +305,12 @@ class NamedProxyLauncher : public ProxyLauncher {
 // Uses an automation proxy that communicates over an anonymous socket.
 class AnonymousProxyLauncher : public ProxyLauncher {
  public:
-  explicit AnonymousProxyLauncher(bool disconnect_on_failure) OVERRIDE;
-  virtual AutomationProxy* CreateAutomationProxy(
-      int execution_timeout) OVERRIDE;
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;
-  virtual void TerminateConnection() OVERRIDE;
-  virtual std::string PrefixedChannelID() const OVERRIDE;
+  explicit AnonymousProxyLauncher(bool disconnect_on_failure);
+  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads);
+  virtual void TerminateConnection();
+  virtual std::string PrefixedChannelID() const;
 
  protected:
   std::string channel_id_;      // Channel id of automation proxy.
