@@ -219,8 +219,6 @@
       '-omnibox.OmniboxTest.testSuggestPref',
       # System password manager obstructs password automation.
       '-passwords',
-      # crbug.com/88218
-      '-plugins.PluginsTest.testBlockPluginException',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
