@@ -215,6 +215,7 @@
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
       # crbug.com/85310
+      '-omnibox.OmniboxTest.testAutoCompleteForSearch',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
@@ -396,6 +397,7 @@
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
       'instant',
+      'omnibox.OmniboxTest.testAutoCompleteForSearch',
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
