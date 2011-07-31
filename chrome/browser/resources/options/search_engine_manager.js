@@ -84,7 +84,8 @@ cr.define('options', function() {
       var othersModel = new ArrayDataModel(otherEngines);
       // Add a "new engine" row.
       othersModel.push({
-        'modelIndex': '-1'
+        'modelIndex': '-1',
+        'canBeEdited': true
       });
       this.othersList_.dataModel = othersModel;
 
