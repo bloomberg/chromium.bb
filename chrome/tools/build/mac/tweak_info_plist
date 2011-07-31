@@ -31,6 +31,9 @@ import tempfile
 
 TOP = os.path.join(env['SRCROOT'], '..')
 
+sys.path.insert(0, os.path.join(TOP, "build/util"))
+import lastchange
+
 
 def _GetOutput(args):
   """Runs a subprocess and waits for termination. Returns (stdout, returncode)
@@ -98,63 +101,13 @@ def _AddVersionKeys(plist):
   return True
 
 
-def _GetSCMInfo():
-  """Returns a 2-Tuple of (scm_path, scm_revision) for the SVN information."""
-  # Attempt to get both the SVN revision number and the branch (or trunk).
-  scm_revision = None
-  scm_path = None
-
-  # First attempt to get the SVN revision number and path.
-  (stdout, retval) = _GetOutputNoError(['svn', 'info', TOP])
-  if not retval:
-    match = re.search('^Revision: ([0-9]+)$', stdout, re.MULTILINE)
-    if match:
-      scm_revision = match.group(1)
-
-    match = re.search('^Repository Root: (.+)$', stdout, re.MULTILINE)
-    if match:
-      svn_repo_root = match.group(1)
-
-    match = re.search('^URL: (.+)$', stdout, re.MULTILINE)
-    if match:
-      svn_url = match.group(1)
-
-    # If there's both a repo root and a URL, find the branch path.
-    if svn_repo_root and svn_url and svn_url.startswith(svn_repo_root):
-      # Grab the path to the source root in the Subversion repository by taking
-      # the URL to the source root directory and the repository root, and
-      # removing the latter from the former.  This ensures that scm_path will
-      # contain a useful path regardless of the Subversion server, mirror, and
-      # authentication scheme in use.
-      scm_path = svn_url[len(svn_repo_root):]
-
-  # If the desired information was found via SVN, return it now.
-  if scm_revision != None and scm_path != None:
-    return (scm_path, scm_revision)
-
-  # If a SVN revision number couldn't be found, try getting it through git.
-  (stdout, retval) = _GetOutputNoError(['git', 'log', '-1',
-                                        '--grep=git-svn-id', '--format=%b'])
-  # Extract both the last changed SVN revision and the branch path (see block
-  # comment above).
-  # git-svn-id: svn://svn.chromium.org/chrome/trunk/src@85528 0039d316-1c4b...
-  if not retval:
-    match = re.search(r'git-svn-id: .*/(chrome|svn)(/.*)@([0-9]+)', stdout,
-                      re.MULTILINE)
-    if match:
-      scm_path = match.group(2)
-      scm_revision = match.group(3)
-
-  # Finally, return the results (which could be None on error).
-  return (scm_path, scm_revision)
-
-
 def _DoSVNKeys(plist, add_keys):
   """Adds the SVN information, visible in about:version, to property list. If
   |add_keys| is True, it will insert the keys, otherwise it will remove them."""
-  (scm_path, scm_revision) = None, None
+  scm_path, scm_revision = None, None
   if add_keys:
-    (scm_path, scm_revision) = _GetSCMInfo()
+    version_info = lastchange.FetchVersionInfo(default_lastchange=None)
+    scm_path, scm_revision = version_info.url, version_info.revision
 
   # See if the operation failed.
   _RemoveKeys(plist, 'SVNRevision')
