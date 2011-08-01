@@ -11,9 +11,13 @@
   <body>
     <h1>Nexe Crash Test</h1>
 
-    <embed type="application/x-nacl" id="crash_on_check"
+    <embed type="application/x-nacl" id="crash_via_check_failure"
            name="nacl_module"
-           src="ppapi_crash_on_check.nmf"
+           src="ppapi_crash_via_check_failure.nmf"
+           width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_via_exit_call"
+           name="nacl_module"
+           src="ppapi_crash_via_exit_call.nmf"
            width="0" height="0" />
     <embed type="application/x-nacl" id="crash_in_callback"
            name="nacl_module"
@@ -42,7 +46,10 @@
         tester.waitFor(plugin);
       }
 
-      AddTest($('crash_on_check'), 'CrashOnCheck', 'crash', 'error');
+      AddTest($('crash_via_check_failure'),
+              'CrashViaCheckFailure', 'crash', 'error');
+      AddTest($('crash_via_exit_call'),
+              'CrashViaExitCall', 'crash', 'error');
       AddTest($('crash_in_callback'), 'CrashInCallback', 'crash', 'error');
 
       // Manual test for now: look for stdout/stderr output

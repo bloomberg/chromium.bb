@@ -8,15 +8,15 @@
 namespace {
 
 // This will crash a PPP_Messaging function.
-void CrashOnCheck() {
-  printf("--- CrashOnCheck\n");
+void CrashViaCheckFailure() {
+  printf("--- CrashViaCheckFailure\n");
   CHECK(false);
 }
 
 }  // namespace
 
 void SetupTests() {
-  RegisterTest("CrashOnCheck", CrashOnCheck);
+  RegisterTest("CrashViaCheckFailure", CrashViaCheckFailure);
 }
 
 void SetupPluginInterfaces() {

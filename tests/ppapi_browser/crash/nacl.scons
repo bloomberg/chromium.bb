@@ -12,7 +12,10 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-crash_types = ['on_check', 'in_callback', 'on_shutdown']
+crash_types = ['via_check_failure',
+               'via_exit_call',
+               'in_callback',
+               'on_shutdown']
 published_files = []
 
 for crash_type in crash_types:

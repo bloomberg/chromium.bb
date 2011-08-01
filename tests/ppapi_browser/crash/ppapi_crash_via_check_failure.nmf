@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "ppapi_crash_via_check_failure_x86-32.nexe"},
+    "x86-64": {"url": "ppapi_crash_via_check_failure_x86-64.nexe"},
+    "arm": {"url": "ppapi_crash_via_check_failure_arm.nexe"}
+  }
+}
