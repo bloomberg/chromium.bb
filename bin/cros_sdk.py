@@ -95,7 +95,11 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
          '--chroot', chroot_path]
   if replace:
     cmd.append('--replace')
-  cros_build_lib.RunCommand(cmd)
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    print 'Running %r failed!' % cmd
+    sys.exit(1)
 
 
 def DeleteChroot(chroot_path):
@@ -103,7 +107,11 @@ def DeleteChroot(chroot_path):
   cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/make_chroot'),
          '--chroot', chroot_path,
          '--delete']
-  cros_build_lib.RunCommand(cmd)
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    print 'Running %r failed!' % cmd
+    sys.exit(1)
 
 
 def EnterChroot(chroot_path, chrome_root, additional_args):
@@ -117,7 +125,11 @@ def EnterChroot(chroot_path, chrome_root, additional_args):
   if len(additional_args) > 0:
     cmd.append('--')
     cmd.extend(additional_args)
-  cros_build_lib.RunCommand(cmd)
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    print 'Running %r failed!' % cmd
+    sys.exit(1)
 
 
 def RefreshSudoCredentials():
@@ -192,6 +204,7 @@ To replace, use --replace."""
 
   if options.enter:
     EnterChroot(chroot_path, options.chrome_root, remaining_arguments)
+
 
 if __name__ == '__main__':
   main()
