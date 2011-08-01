@@ -244,6 +244,7 @@ cr.define('options', function() {
       // Don't allow the user to tweak the settings once we send the
       // configuration to the backend.
       this.setInputElementsDisabledState_(true);
+      this.animateDisableLink_($('use-default-link'), true, null);
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
@@ -283,10 +284,6 @@ cr.define('options', function() {
       var self = this;
       this.animateDisableLink_($('customize-link'), disabled, function() {
         self.showCustomizePage_(null, true);
-      });
-
-      this.animateDisableLink_($('use-default-link'), disabled, function() {
-        self.showSyncEverythingPage_();
       });
     },
 
@@ -466,6 +463,9 @@ cr.define('options', function() {
      * @private
      */
     showPassphraseContainer_: function(args) {
+      // Once we require a passphrase, we prevent the user from returning to
+      // the Sync Everything pane.
+      $('use-default-link').hidden = true;
       $('sync-custom-passphrase-container').hidden = true;
       $('sync-existing-passphrase-container').hidden = false;
 
@@ -500,8 +500,16 @@ cr.define('options', function() {
       // set focus before that logic.
       $('choose-datatypes-ok').focus();
 
-      if (args && args['show_passphrase'])
+      if (args && args['show_passphrase']) {
         this.showPassphraseContainer_(args);
+      } else {
+        // We only show the "Use Default" link if we're not prompting for an
+        // existing passphrase.
+        var self = this;
+        this.animateDisableLink_($('use-default-link'), false, function() {
+          self.showSyncEverythingPage_();
+        });
+      }
     },
 
     attach_: function() {
