@@ -270,6 +270,7 @@ void MemoryDetails::UpdateHistograms() {
   int chrome_count = 0;
   int extension_count = 0;
   int plugin_count = 0;
+  int pepper_plugin_count = 0;
   int renderer_count = 0;
   int other_count = 0;
   int worker_count = 0;
@@ -336,8 +337,13 @@ void MemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         other_count++;
         break;
+      case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
+        pepper_plugin_count++;
+        break;
       default:
         NOTREACHED();
+        break;
     }
   }
   UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
@@ -349,6 +355,8 @@ void MemoryDetails::UpdateHistograms() {
   UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.OtherProcessCount", other_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.PluginProcessCount", plugin_count);
+  UMA_HISTOGRAM_COUNTS_100("Memory.PepperPluginProcessCount",
+      pepper_plugin_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.WorkerProcessCount", worker_count);
   // TODO(viettrungluu): Do we want separate counts for the other
