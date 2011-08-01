@@ -78,7 +78,7 @@
 #define NACL_SYSCALL_START_ADDR       (16 << NACL_PAGESHIFT)
 /* Macro for the start address of a specific trampoline.  */
 #define NACL_SYSCALL_ADDR(syscall_number) \
-    (NACL_SYSCALL_START_ADDR + (syscall_number << NACL_INSTR_BLOCK_SHIFT))
+    (NACL_SYSCALL_START_ADDR + (syscall_number << NACL_SYSCALL_BLOCK_SHIFT))
 
 /*
  * Syscall trampoline code have a block size that may differ from the
@@ -200,10 +200,6 @@
 # define NACL_STACK_ALIGN_MASK    (0x7)
 # define NACL_STACK_GETS_ARG      (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
-
-/* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
-/* 16 byte bundles */
-# define  NACL_ARM_BUNDLE_SIZE_LOG 4
 
 /*
  * NOTE: Used by various assembler files, needs to be

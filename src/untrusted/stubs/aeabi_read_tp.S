@@ -11,12 +11,12 @@
 /* NOTE: this code can only clobber r0 and hence is hand coded */
 /* Access to tls. We also have an unused trampoline version of this */
 /* ====================================================================== */
-    .align NACL_ARM_BUNDLE_SIZE_LOG
+    .align NACL_BLOCK_SHIFT
     .global __aeabi_read_tp
 
 __aeabi_read_tp:
     mov r0, r9
 
-    .align NACL_ARM_BUNDLE_SIZE_LOG
+    .align NACL_BLOCK_SHIFT
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr

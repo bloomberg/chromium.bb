@@ -834,6 +834,13 @@ def MakeArchSpecificEnv():
     # This has always been a silent default on ARM.
     env.SetBits('bitcode')
 
+  if TARGET_NAME == 'arm':
+    bundle_bits = 4
+  else:
+    bundle_bits = 5
+  env.Replace(NACL_BLOCK_SHIFT='%u' % bundle_bits,
+              NACL_BLOCK_SIZE='%u' % (1 << bundle_bits))
+
   # Determine where the object files go
   if BUILD_NAME == TARGET_NAME:
     BUILD_TARGET_NAME = TARGET_NAME
@@ -1860,8 +1867,8 @@ pre_base_env.AddMethod(GetAbsDirArg)
 # ----------------------------------------------------------
 pre_base_env.Append(
     CPPDEFINES = [
-        ['NACL_BLOCK_SHIFT', '5'],
-        ['NACL_BLOCK_SIZE', '32'],
+        ['NACL_BLOCK_SHIFT', '${NACL_BLOCK_SHIFT}'],
+        ['NACL_BLOCK_SIZE', '${NACL_BLOCK_SIZE}'],
         ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
         ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
         ],
@@ -2783,8 +2790,8 @@ def RawSyscallObjects(env, sources):
   raw_syscall_env.Append(
     CPPDEFINES = [
       ['USE_RAW_SYSCALLS', '1'],
-      ['NACL_BLOCK_SHIFT', '5'],
-      ['NACL_BLOCK_SIZE', '32'],
+      ['NACL_BLOCK_SHIFT', '${NACL_BLOCK_SHIFT}'],
+      ['NACL_BLOCK_SIZE', '${NACL_BLOCK_SIZE}'],
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
       ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],

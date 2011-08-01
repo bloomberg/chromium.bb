@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -16,7 +16,7 @@
  */
 
     .text
-    .align NACL_ARM_BUNDLE_SIZE_LOG
+    .align NACL_BLOCK_SHIFT
     .globl setjmp
 
 /* int setjmp(jmp_buf env) */
@@ -32,7 +32,7 @@ setjmp:
 
 
     .text
-    .align NACL_ARM_BUNDLE_SIZE_LOG
+    .align NACL_BLOCK_SHIFT
     .globl longjmp
 
 /* void longjmp(jmp_buf env, int val) */
