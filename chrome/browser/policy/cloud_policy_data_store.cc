@@ -30,6 +30,7 @@ const char kMachineInfoSystemHwqual[] = "hardware_class";
 const char* kMachineInfoSerialNumberKeys[] = {
   "sn",            // ZGB
   "Product_S/N",   // Alex
+  "Product_SN",    // Mario
   "serial_number"  // VPD v2+ devices
 };
 #endif
