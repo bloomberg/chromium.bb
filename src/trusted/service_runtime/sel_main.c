@@ -174,7 +174,6 @@ int main(int  argc,
   char                          *blob_library_file = NULL;
   int                           rpc_supplies_nexe = 0;
   int                           export_addr_to = -2;
-  enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 
   struct NaClApp                *nap;
 
@@ -329,9 +328,6 @@ int main(int  argc,
         entry->u.handle = (NaClHandle) strtol(rest+1, (char **) 0, 0);
         *redir_qend = entry;
         redir_qend = &entry->next;
-        break;
-      case 'I':
-        check_abi = NACL_ABI_CHECK_OPTION_SKIP;
         break;
       case 'l':
         log_file = optarg;
@@ -578,7 +574,7 @@ int main(int  argc,
 
     if (LOAD_OK == errcode) {
       NaClLog(2, "Loading nacl file %s (non-RPC)\n", nacl_file);
-      errcode = NaClAppLoadFile((struct Gio *) &main_file, nap, check_abi);
+      errcode = NaClAppLoadFile((struct Gio *) &main_file, nap);
       if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
                 nacl_file,

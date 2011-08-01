@@ -102,32 +102,14 @@ static int nc_load(ncfile *ncf, int fd) {
     ncf->error_fn("nc_load(%s): bad magic number", ncf->fname);
     return -1;
   }
-  if (h.e_ident[EI_OSABI] != ELFOSABI_NACL) {
-    ncf->error_fn("nc_load(%s): bad OS ABI %x\n",
-                  ncf->fname, h.e_ident[EI_OSABI]);
-    /* return -1; */
-  }
-  if (h.e_ident[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
-    ncf->error_fn("nc_load(%s): bad ABI version %d\n", ncf->fname,
-                  h.e_ident[EI_ABIVERSION]);
-    /* return -1; */
-  }
 
   if (h.e_ident[EI_CLASS] != NACL_ELF_CLASS) {
     ncf->error_fn("nc_load(%s): bad EI CLASS %d %s\n", ncf->fname,
                   h.e_ident[EI_CLASS], GetEiClassName(h.e_ident[EI_CLASS]));
   }
 
-  if ((h.e_flags & EF_NACL_ALIGN_MASK) == EF_NACL_ALIGN_16) {
-    ncf->ncalign = 16;
-  } else if ((h.e_flags & EF_NACL_ALIGN_MASK) == EF_NACL_ALIGN_32) {
-    ncf->ncalign = 32;
-  } else {
-    ncf->error_fn("nc_load(%s): bad align mask %x\n", ncf->fname,
-                  (uint32_t)(h.e_flags & EF_NACL_ALIGN_MASK));
-    ncf->ncalign = 16;
-    /* return -1; */
-  }
+  /* We now support only 32-byte bundle alignment.  */
+  ncf->ncalign = 32;
 
   /* Read the program header table */
   if (h.e_phnum <= 0 || h.e_phnum > kMaxPhnum) {

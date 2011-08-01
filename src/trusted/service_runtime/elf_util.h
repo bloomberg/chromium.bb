@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ELF_UTIL_H__
@@ -15,8 +15,6 @@ struct NaClElfImage;
 struct Gio;
 
 uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
-
-int NaClElfImageGetBundleSize(struct NaClElfImage *image);
 
 struct NaClElfImage *NaClElfImageNew(struct Gio *gp, NaClErrorCode *err_code);
 
@@ -47,9 +45,6 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
                                           struct NaClApp      *nap,
                                           struct Gio          *gfile);
-
-
-NaClErrorCode NaClElfImageValidateAbi(struct NaClElfImage *image);
 
 void NaClElfImageDelete(struct NaClElfImage *image);
 

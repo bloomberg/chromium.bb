@@ -68,8 +68,7 @@ int main(int argc, char **argv) {
     app[i].addr_bits = 29; /* 512MB per process */
 #endif
 
-    if (NaClAppLoadFile((struct Gio *) &gio_file, &app[i],
-                        /* check_abi= */ 0) != LOAD_OK)
+    if (NaClAppLoadFile((struct Gio *) &gio_file, &app[i]) != LOAD_OK)
       NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
 
     if (argc == 3) {

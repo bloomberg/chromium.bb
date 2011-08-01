@@ -7,7 +7,7 @@
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 
 #include "native_client/src/include/checked_cast.h"
-#include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/api_defines.h"

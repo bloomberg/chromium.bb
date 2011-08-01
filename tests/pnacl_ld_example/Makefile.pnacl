@@ -9,7 +9,6 @@
 PNACL_ROOT=../../toolchain/pnacl_linux_x86_64_newlib
 PNACL_CC=$(PNACL_ROOT)/bin/pnacl-gcc
 PNACL_LD=$(PNACL_ROOT)/bin/pnacl-ld
-ELF_PATCHER=../../tools/elf_patcher.py
 
 ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
 QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
@@ -60,14 +59,12 @@ libsimple1.x86-32.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
 	# TODO(robertm): enable this once ncval has been fixed
 	#	$(NCVAL_X86_32) $@
-	$(ELF_PATCHER) -l $@	
 
 # mostly sandboxed
 libsimple2.x86-32.so: hello2.bc fortytwo2.bc
 	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(X86_FLAGS) -o $@ $^
 	# TODO(robertm): enable this once ncval has been fixed
 	# $(NCVAL_X86_32) $@
-	$(ELF_PATCHER) -l $@	
 
 # *not* sanboxed
 main.x86-32: main.c libsimple1.x86-32.so
@@ -93,7 +90,6 @@ ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 libsimple1.arm.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@ $^
 	$(NCVAL_ARM) --zero-masks $@
-	$(ELF_PATCHER) -l $@
 
 # mostly sandboxed
 libsimple2.arm.so: hello2.bc fortytwo2.bc
@@ -101,7 +97,6 @@ libsimple2.arm.so: hello2.bc fortytwo2.bc
 	# plt does not validate yet
 	# http://code.google.com/p/nativeclient/issues/detail?id=1816
 	#$(NCVAL_ARM) --zero-masks $@
-	$(ELF_PATCHER) -l $@
 
 # *not* sanboxed
 main.arm: main.c libsimple1.arm.so
@@ -122,4 +117,3 @@ run2.arm: main2.arm
 
 clean:
 	rm -f *.bc *.o *.ll *.so main
-

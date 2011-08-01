@@ -18,7 +18,7 @@
 #define NACL_LOG_MODULE_NAME  "elf_util"
 
 #include "native_client/src/include/elf_constants.h"
-#include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_platform.h"
 
@@ -144,40 +144,6 @@ static void NaClDumpElfProgramHeader(int     loglevel,
   DUMP(p_align, NACL_PRIxElf_Xword);
 #undef  DUMP
   NaClLog(loglevel, "\n");
-}
-
-
-NaClErrorCode NaClElfImageValidateAbi(struct NaClElfImage *image) {
-  const Elf_Ehdr *hdr = &image->ehdr;
-
-  if (ELFOSABI_NACL != hdr->e_ident[EI_OSABI]) {
-    NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
-            ELFOSABI_NACL,
-            hdr->e_ident[EI_OSABI]);
-    return LOAD_BAD_ABI;
-  }
-
-  /*
-   * TODO(bsy,khim): e_ident[EI_ABIVERSION] for nacl64 should match nacl32.
-   */
-#if NACL_TARGET_SUBARCH == 64
-  if (EF_NACL_ABIVERSION != hdr->e_ident[EI_ABIVERSION]
-      && 0 != hdr->e_ident[EI_ABIVERSION]) {
-    NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
-            EF_NACL_ABIVERSION,
-            hdr->e_ident[EI_ABIVERSION]);
-      return LOAD_BAD_ABI;
-  }
-#else
-  if (EF_NACL_ABIVERSION != hdr->e_ident[EI_ABIVERSION]) {
-    NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
-            EF_NACL_ABIVERSION,
-            hdr->e_ident[EI_ABIVERSION]);
-      return LOAD_BAD_ABI;
-  }
-#endif
-
-  return LOAD_OK;
 }
 
 
@@ -692,19 +658,4 @@ void NaClElfImageDelete(struct NaClElfImage *image) {
 
 uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image) {
   return image->ehdr.e_entry;
-}
-
-
-int NaClElfImageGetBundleSize(struct NaClElfImage *image) {
-  switch (image->ehdr.e_flags & EF_NACL_ALIGN_MASK) {
-   case  EF_NACL_ALIGN_16:
-    return 16;
-   case EF_NACL_ALIGN_32:
-    return 32;
-   default:
-#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-    NaClLog(LOG_FATAL, "strange alignment");
-#endif
-    return 0;
-  }
 }

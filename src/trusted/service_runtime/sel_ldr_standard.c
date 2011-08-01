@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include "native_client/src/include/elf_constants.h"
-#include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/win/mman.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -110,8 +110,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
 }
 
 NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
-                              struct NaClApp   *nap,
-                              enum NaClAbiCheckOption check_abi) {
+                              struct NaClApp   *nap) {
   NaClErrorCode       ret = LOAD_INTERNAL;
   NaClErrorCode       subret;
   uintptr_t           rodata_end;
@@ -135,18 +134,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   if (NULL == image) {
     ret = subret;
     goto done;
-  }
-
-#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-  check_abi = NACL_ABI_CHECK_OPTION_CHECK;
-#endif
-
-  if (NACL_ABI_CHECK_OPTION_CHECK == check_abi) {
-    subret = NaClElfImageValidateAbi(image);
-    if (subret != LOAD_OK) {
-      ret = subret;
-      goto done;
-    }
   }
 
   subret = NaClElfImageValidateElfHeader(image);
@@ -204,16 +191,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   NaClLog(4, "data_end     = 0x%08"NACL_PRIxPTR"\n", data_end);
   NaClLog(4, "max_vaddr    = 0x%08"NACL_PRIxPTR"\n", max_vaddr);
 
-#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-  nap->bundle_size = NaClElfImageGetBundleSize(image);
-  if (nap->bundle_size == 0) {
-    ret = LOAD_BAD_ABI;
-    goto done;
-  }
-#else
-  /* pick some reasonable default for an un-sandboxed nexe */
-  nap->bundle_size = 32;
-#endif
+  /* We now support only one bundle size.  */
+  nap->bundle_size = NACL_INSTR_BLOCK_SIZE;
+
   nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,

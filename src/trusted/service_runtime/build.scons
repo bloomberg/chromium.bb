@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import platform
+import os
 
 Import('env')
 
@@ -738,14 +739,22 @@ def AddDeathTest(test, skip):
     print 'SKIPPING test ', test
     return;
 
+  # Use an arch-specific golden file if there is one.
+  # We can't use the SCons File .exists() method because that will
+  # look for the file in a scons-out directory.
+  stderr_file = env.File(os.path.join(arch_testdata_dir, test + '.stderr'))
+  if not os.path.exists(str(stderr_file)):
+    stderr_file = env.File(os.path.join('testdata', test + '.stderr'))
+
   node = env.CommandSelLdrTestNacl(
       test  + '.out',
       env.File(arch_testdata_dir + '/' + test + '.nexe'),
-      stderr_golden = env.File('testdata/' + test + '.stderr'),
+      stderr_golden = stderr_file,
       filter_regex = ERROR_WHILE_LOADING,
       filter_group_only = 'true',
       exit_status = '1')
-  env.AddNodeToTestSuite(node, ['medium_tests'])
+  env.AddNodeToTestSuite(node, ['medium_tests'],
+                         'run_' + test + '_death_test')
 
 
 if env.Bit('target_x86'):

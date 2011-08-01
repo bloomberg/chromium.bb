@@ -76,8 +76,7 @@ int main(int argc, char **argv) {
     NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
   }
 
-  if (NaClAppLoadFile((struct Gio *) &gio_file, &app,
-                      /* check_abi= */ 0) != LOAD_OK) {
+  if (NaClAppLoadFile((struct Gio *) &gio_file, &app) != LOAD_OK) {
     NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
   }
 

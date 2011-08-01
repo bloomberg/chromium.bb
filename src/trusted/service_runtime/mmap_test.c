@@ -107,8 +107,7 @@ int main(int argc, char **argv) {
   errcode = NaClAppCtor(&state);
   ASSERT_NE(errcode, 0);
   errcode = NaClAppLoadFile((struct Gio *) &gf,
-                            &state,
-                            NACL_ABI_CHECK_OPTION_CHECK);
+                            &state);
   ASSERT_EQ(errcode, 0);
 
   InitThread(&state, natp);

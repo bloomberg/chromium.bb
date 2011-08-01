@@ -346,14 +346,8 @@ int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
  * self-modifying code / data writes and automatically invalidate the
  * cache lines.
  */
-enum NaClAbiCheckOption {
-  NACL_ABI_CHECK_OPTION_SKIP,
-  NACL_ABI_CHECK_OPTION_CHECK
-};
-
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
-                              struct NaClApp  *nap,
-                              enum NaClAbiCheckOption check_abi) NACL_WUR;
+                              struct NaClApp  *nap) NACL_WUR;
 
 NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
                                          struct Gio     *gio_file) NACL_WUR;

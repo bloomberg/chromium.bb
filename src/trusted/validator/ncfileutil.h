@@ -11,7 +11,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCFILEUTIL_H_
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/elf.h"
 #include "native_client/src/trusted/validator/types_memory_model.h"
 
 EXTERN_C_BEGIN

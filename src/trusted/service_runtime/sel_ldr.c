@@ -949,7 +949,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   free(nap->aux_info);
   nap->aux_info = aux;
 
-  suberr = NaClAppLoadFile(load_src, nap, NACL_ABI_CHECK_OPTION_CHECK);
+  suberr = NaClAppLoadFile(load_src, nap);
   (*NACL_VTBL(Gio, load_src)->Close)(load_src);
   (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
 
