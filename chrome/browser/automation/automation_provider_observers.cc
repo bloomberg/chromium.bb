@@ -1372,10 +1372,12 @@ void TabLanguageDeterminedObserver::Observe(
     type_to_string[TranslateInfoBarDelegate::TRANSLATION_ERROR] =
         "TRANSLATION_ERROR";
 
-    bar_info->SetBoolean("always_translate_lang_button_showing",
-                         translate_bar_->ShouldShowAlwaysTranslateButton());
-    bar_info->SetBoolean("never_translate_lang_button_showing",
-                         translate_bar_->ShouldShowNeverTranslateButton());
+    if (translate_bar_->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE) {
+      bar_info->SetBoolean("always_translate_lang_button_showing",
+                           translate_bar_->ShouldShowAlwaysTranslateButton());
+      bar_info->SetBoolean("never_translate_lang_button_showing",
+                           translate_bar_->ShouldShowNeverTranslateButton());
+    }
     bar_info->SetString("bar_state", type_to_string[translate_bar_->type()]);
     bar_info->SetString("target_lang_code",
                         translate_bar_->GetTargetLanguageCode());
