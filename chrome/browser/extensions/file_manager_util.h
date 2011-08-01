@@ -36,7 +36,7 @@ class FileManagerUtil {
   static GURL GetFileBrowserUrlWithParams(
       SelectFileDialog::Type type,
       const string16& title,
-      const FilePath& default_path,
+      const FilePath& default_virtual_path,
       const SelectFileDialog::FileTypeInfo* file_types,
       int file_type_index,
       const FilePath::StringType& default_extension);

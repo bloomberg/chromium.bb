@@ -98,13 +98,6 @@ function FileManager(dialogDom, rootEntries, params) {
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList;
 
-  var ary = this.defaultPath_.match(/^\/home\/[^\/]+\/user\/Downloads(\/.*)?$/);
-  if (ary) {
-    // Chrome will probably suggest the full path to Downloads, but
-    // we're working with 'virtual paths', so we have to translate.
-    this.defaultPath_ = '/Downloads' + (ary[1] || '');
-  }
-
   this.showCheckboxes_ =
       (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
@@ -1094,8 +1087,12 @@ FileManager.prototype = {
       self.changeDirectory('/', CD_NO_HISTORY);
     }
 
-    this.filesystem_.root.getDirectory(
-        baseName, {create: false}, onBaseFound, onBaseError);
+    if (baseName) {
+      this.filesystem_.root.getDirectory(
+          baseName, {create: false}, onBaseFound, onBaseError);
+    } else {
+      onBaseFound(this.filesystem_.root);
+    }
   };
 
   /**

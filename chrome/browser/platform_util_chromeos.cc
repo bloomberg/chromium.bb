@@ -24,14 +24,23 @@ static const std::string kGmailComposeUrl =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
 
 // Opens file browser on UI thread.
+static
 void OpenFileBrowserOnUIThread(const FilePath& dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
+
+  FilePath virtual_path;
+  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(browser->profile(),
+                                                            dir,
+                                                            &virtual_path)) {
+    return;
+  }
+
   GURL url = FileManagerUtil::GetFileBrowserUrlWithParams(
-     SelectFileDialog::SELECT_NONE, string16(), dir, NULL, 0,
+     SelectFileDialog::SELECT_NONE, string16(), virtual_path, NULL, 0,
      FilePath::StringType());
   browser->ShowSingletonTab(url);
 }

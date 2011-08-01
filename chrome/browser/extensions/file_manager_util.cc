@@ -125,12 +125,13 @@ bool FileManagerUtil::ConvertFileToRelativeFileSystemPath(
 GURL FileManagerUtil::GetFileBrowserUrlWithParams(
     SelectFileDialog::Type type,
     const string16& title,
-    const FilePath& default_path,
+    const FilePath& default_virtual_path,
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension) {
-  std::string json = GetArgumentsJson(type, title, default_path, file_types,
-                                      file_type_index, default_extension);
+  std::string json = GetArgumentsJson(type, title, default_virtual_path,
+                                      file_types, file_type_index,
+                                      default_extension);
   return GURL(FileManagerUtil::GetFileBrowserUrl().spec() + "?" +
               EscapeUrlEncodedData(json, false));
 
@@ -199,7 +200,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
 std::string FileManagerUtil::GetArgumentsJson(
     SelectFileDialog::Type type,
     const string16& title,
-    const FilePath& default_path,
+    const FilePath& default_virtual_path,
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension) {
@@ -207,7 +208,7 @@ std::string FileManagerUtil::GetArgumentsJson(
   arg_value.SetString("type", GetDialogTypeAsString(type));
   arg_value.SetString("title", title);
   // TODO(zelidrag): Convert local system path into virtual path for File API.
-  arg_value.SetString("defaultPath", default_path.value());
+  arg_value.SetString("defaultPath", default_virtual_path.value());
   arg_value.SetString("defaultExtension", default_extension);
 
 

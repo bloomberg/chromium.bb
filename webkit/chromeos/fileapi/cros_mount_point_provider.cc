@@ -191,6 +191,10 @@ bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,
     *virtual_path = FilePath(iter->first);
     if (mount_prefix.AppendRelativePath(filesystem_path, virtual_path)) {
       return true;
+    } else if (mount_prefix == filesystem_path) {
+      FilePath root = FilePath(FILE_PATH_LITERAL("/"));
+      *virtual_path = root.Append(iter->first);
+      return true;
     }
   }
   return false;

@@ -176,8 +176,14 @@ void FileManagerDialog::SelectFileImpl(
     return;
   }
 
+  FilePath virtual_path;
+  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(
+          owner_browser->profile(), default_path, &virtual_path)) {
+    virtual_path = FilePath();
+  }
+
   GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
-      type, title, default_path, file_types, file_type_index,
+      type, title, virtual_path, file_types, file_type_index,
       default_extension);
   extension_dialog_ = ExtensionDialog::Show(file_browser_url,
       owner_browser, kFileManagerWidth, kFileManagerHeight,
