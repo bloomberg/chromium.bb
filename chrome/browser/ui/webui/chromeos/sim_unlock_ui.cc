@@ -93,16 +93,16 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void Init(TabContents* contents);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // NetworkLibrary::NetworkDeviceObserver implementation.
   virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
-                                      const NetworkDevice* device);
+                                      const NetworkDevice* device) OVERRIDE;
 
   // NetworkLibrary::PinOperationObserver implementation.
   virtual void OnPinOperationCompleted(NetworkLibrary* cros,
-                                       PinOperationError error);
+                                       PinOperationError error) OVERRIDE;
 
  private:
   // Should keep this state enum in sync with similar one in JS code.

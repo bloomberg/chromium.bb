@@ -26,7 +26,7 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   virtual ~FaviconWebUIHandler();
 
   // WebUIMessageHandler
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   void HandleGetFaviconDominantColor(const base::ListValue* args);
 

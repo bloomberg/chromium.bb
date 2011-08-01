@@ -41,12 +41,12 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
   virtual void Uninitialize() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() {}
+  virtual void RegisterMessages() OVERRIDE {}
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {}
+                       const NotificationDetails& details) OVERRIDE {}
 
   void UserMetricsRecordAction(const UserMetricsAction& action);
 

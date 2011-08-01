@@ -36,14 +36,16 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   virtual ~PrintPreviewHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   // PrintViewManagerObserver implementation.
-  virtual void OnPrintDialogShown();
+  virtual void OnPrintDialogShown() OVERRIDE;
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const FilePath& default_path);

@@ -22,8 +22,8 @@ class MediaInternalsMessageHandler : public WebUIMessageHandler {
   virtual ~MediaInternalsMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // Javascript message handlers.
   void OnGetEverything(const base::ListValue* list);

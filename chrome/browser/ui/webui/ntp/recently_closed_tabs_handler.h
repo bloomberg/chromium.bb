@@ -19,7 +19,7 @@ class RecentlyClosedTabsHandler : public WebUIMessageHandler,
   virtual ~RecentlyClosedTabsHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "reopenTab" message. Rewrites the history of the
   // currently displayed tab to be the one in TabRestoreService with a
@@ -32,11 +32,11 @@ class RecentlyClosedTabsHandler : public WebUIMessageHandler,
   // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service);
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
 
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
   // Converts a list of TabRestoreService entries to the JSON format required
   // by the NTP and adds them to the given list value.

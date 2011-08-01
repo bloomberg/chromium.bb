@@ -70,11 +70,11 @@ class ChooseMobileNetworkHandler
   virtual ~ChooseMobileNetworkHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // NetworkDeviceObserver implementation.
-  virtual void OnNetworkDeviceFoundNetworks(NetworkLibrary* cros,
-                                            const NetworkDevice* device);
+  virtual void OnNetworkDeviceFoundNetworks(
+      NetworkLibrary* cros, const NetworkDevice* device) OVERRIDE;
 
  private:
   // Handlers for JS WebUI messages.

@@ -19,15 +19,15 @@ class NTPLoginHandler : public WebUIMessageHandler,
   NTPLoginHandler();
   virtual ~NTPLoginHandler();
 
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
 
   // WebUIMessageHandler interface
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // NotificationObserver interface
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // Called from JS when the NTP is loaded.

@@ -30,8 +30,8 @@ class NewTabUI : public ChromeWebUI,
 
   // Override WebUI methods so we can hook up the paint timer to the render
   // view host.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual void RenderViewReused(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
 
   static void RegisterUserPrefs(PrefService* prefs);
   static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
@@ -58,9 +58,9 @@ class NewTabUI : public ChromeWebUI,
     // the path we registered.
     virtual void StartDataRequest(const std::string& path,
                                   bool is_incognito,
-                                  int request_id);
+                                  int request_id) OVERRIDE;
 
-    virtual std::string GetMimeType(const std::string&) const;
+    virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
     virtual bool ShouldReplaceExistingSource() const;
 

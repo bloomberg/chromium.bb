@@ -56,7 +56,7 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
   virtual ~ExtensionsDOMHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Extension Detail JSON Struct for page. (static for ease of testing).
   // Note: service can be NULL in unit tests.
@@ -69,13 +69,13 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
 
   // ExtensionPackJob::Client
   virtual void OnPackSuccess(const FilePath& crx_file,
-                             const FilePath& key_file);
+                             const FilePath& key_file) OVERRIDE;
 
-  virtual void OnPackFailure(const std::string& error);
+  virtual void OnPackFailure(const std::string& error) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted();
-  virtual void ExtensionDialogCanceled();
+  virtual void ExtensionDialogAccepted() OVERRIDE;
+  virtual void ExtensionDialogCanceled() OVERRIDE;
 
  private:
   // Callback for "requestExtensionsData" message.
@@ -134,15 +134,15 @@ class ExtensionsDOMHandler : public WebUIMessageHandler,
 
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,
-                            int index, void* params);
+                            int index, void* params) OVERRIDE;
   virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params);
-  virtual void FileSelectionCanceled(void* params) {}
+      const std::vector<FilePath>& files, void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
 
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Helper that lists the current active html pages for an extension.
   std::vector<ExtensionPage> GetActivePagesForExtension(

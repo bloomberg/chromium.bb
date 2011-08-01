@@ -101,8 +101,8 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   virtual ~PluginsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "requestPluginsData" message.
   void HandleRequestPluginsData(const ListValue* args);
@@ -117,9 +117,9 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   void HandleGetShowDetails(const ListValue* args);
 
   // NotificationObserver method overrides
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // This extra wrapper is used to ensure we don't leak the ListValue* pointer

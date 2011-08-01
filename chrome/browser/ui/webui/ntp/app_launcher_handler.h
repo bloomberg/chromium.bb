@@ -50,13 +50,13 @@ class AppLauncherHandler : public WebUIMessageHandler,
   static bool HandlePing(Profile* profile, const std::string& path);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
                       const NotificationSource& source,
-                      const NotificationDetails& details);
+                      const NotificationDetails& details) OVERRIDE;
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
@@ -125,12 +125,12 @@ class AppLauncherHandler : public WebUIMessageHandler,
   void PromptToEnableApp(const std::string& extension_id);
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionDialogAccepted();
-  virtual void ExtensionDialogCanceled();
+  virtual void ExtensionDialogAccepted() OVERRIDE;
+  virtual void ExtensionDialogCanceled() OVERRIDE;
 
   // ExtensionInstallUI::Delegate:
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort(bool user_initiated);
+  virtual void InstallUIProceed() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.

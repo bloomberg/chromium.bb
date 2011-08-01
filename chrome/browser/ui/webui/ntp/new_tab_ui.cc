@@ -85,7 +85,7 @@ class MetricsHandler : public WebUIMessageHandler {
   virtual ~MetricsHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback which records a user action.
   void HandleRecordAction(const ListValue* args);

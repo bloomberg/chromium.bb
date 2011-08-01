@@ -29,14 +29,14 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   void Init();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // DownloadItem::Observer interface
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download) { }
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE { }
 
   // DownloadManager::Observer interface
-  virtual void ModelChanged();
+  virtual void ModelChanged() OVERRIDE;
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);

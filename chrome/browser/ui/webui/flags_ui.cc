@@ -87,7 +87,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   virtual ~FlagsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "requestFlagsExperiments" message.
   void HandleRequestFlagsExperiments(const ListValue* args);

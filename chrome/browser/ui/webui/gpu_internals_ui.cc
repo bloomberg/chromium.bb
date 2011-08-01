@@ -73,10 +73,10 @@ class GpuMessageHandler
   virtual ~GpuMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
-  // Mesages
+  // Messages
   void OnBeginTracing(const ListValue* list);
   void OnEndTracingAsync(const ListValue* list);
   void OnBrowserBridgeInitialized(const ListValue* list);
@@ -90,8 +90,10 @@ class GpuMessageHandler
   Value* OnRequestLogMessages(const ListValue* list);
 
   // SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   // Callbacks.
   void OnGpuInfoUpdate();
@@ -99,9 +101,9 @@ class GpuMessageHandler
   void SaveTraceFileComplete();
 
   // TraceSubscriber implementation.
-  virtual void OnEndTracingComplete();
-  virtual void OnTraceDataCollected(const std::string& json_events);
-  virtual void OnTraceBufferPercentFullReply(float percent_full);
+  virtual void OnEndTracingComplete() OVERRIDE;
+  virtual void OnTraceDataCollected(const std::string& json_events) OVERRIDE;
+  virtual void OnTraceBufferPercentFullReply(float percent_full) OVERRIDE;
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.

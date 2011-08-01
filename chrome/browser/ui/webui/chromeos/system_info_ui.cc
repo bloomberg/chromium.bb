@@ -68,8 +68,8 @@ class SystemInfoHandler : public WebUIMessageHandler,
   virtual ~SystemInfoHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);

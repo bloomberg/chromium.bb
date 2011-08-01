@@ -20,11 +20,11 @@ class CloudPrintSetupMessageHandler : public WebUIMessageHandler {
   virtual ~CloudPrintSetupMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
 
  protected:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callbacks from the page.
   void HandleSubmitAuth(const ListValue* args);

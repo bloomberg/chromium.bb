@@ -124,7 +124,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
     explicit FileBrowseDelegateHandler(FileBrowseDelegate* delegate);
 
     // WebUIMessageHandler implementation.
-    virtual void RegisterMessages();
+    virtual void RegisterMessages() OVERRIDE;
 
     // Callback for the "setDialogTitle" message.
     void HandleSetDialogTitle(const ListValue* args);

@@ -17,7 +17,7 @@ class DevToolsUI : public ChromeWebUI {
   explicit DevToolsUI(TabContents* contents);
 
   // WebUI
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsUI);

@@ -165,14 +165,14 @@ class MobileSetupHandler
   void Init(TabContents* contents);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;
   // NetworkLibrary::NetworkObserver implementation.
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* obj,
-                                const chromeos::Network* network);
+                                const chromeos::Network* network) OVERRIDE;
 
  private:
   typedef enum PlanActivationState {

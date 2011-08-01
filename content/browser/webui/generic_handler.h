@@ -19,7 +19,7 @@ class GenericHandler : public WebUIMessageHandler {
   virtual ~GenericHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
   virtual bool IsLoading() const OVERRIDE;
 
  private:

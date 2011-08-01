@@ -26,8 +26,8 @@ class KeyboardUI : public ChromeWebUI {
     // Overrides from DataSource
     virtual void StartDataRequest(const std::string& path,
                                   bool is_incognito,
-                                  int request_id);
-    virtual std::string GetMimeType(const std::string&) const;
+                                  int request_id) OVERRIDE;
+    virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
    private:
     virtual ~KeyboardHTMLSource() {}

@@ -36,7 +36,7 @@ class ConstrainedHtmlUI : public ChromeWebUI {
   explicit ConstrainedHtmlUI(TabContents* contents);
   virtual ~ConstrainedHtmlUI();
 
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // Create a constrained HTML dialog. The actual object that gets created
   // is a ConstrainedHtmlUIDelegate, which later triggers construction of a

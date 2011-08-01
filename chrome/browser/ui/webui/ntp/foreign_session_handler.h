@@ -32,7 +32,7 @@ class ForeignSessionHandler : public WebUIMessageHandler,
   // Determines how ForeignSessionHandler will interact with the new tab page.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Returns a pointer to the current session model associator or NULL.
   SessionModelAssociator* GetModelAssociator();

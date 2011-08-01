@@ -17,12 +17,12 @@ class BookmarksHandler : public WebUIMessageHandler,
   virtual ~BookmarksHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);

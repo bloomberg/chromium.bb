@@ -107,7 +107,7 @@ class HtmlDialogUI : public ChromeWebUI {
 
  private:
   // WebUI
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // JS message handler.
   void OnDialogClosed(const base::ListValue* args);

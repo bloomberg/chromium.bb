@@ -111,7 +111,7 @@ class WorkersDOMHandler : public WebUIMessageHandler {
 
  private:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for "openDevTools" message.
   void HandleOpenDevTools(const ListValue* args);

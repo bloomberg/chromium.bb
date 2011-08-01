@@ -207,8 +207,8 @@ class KeyboardOverlayHandler
   virtual ~KeyboardOverlayHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   // Called when the page requires the input method ID corresponding to the

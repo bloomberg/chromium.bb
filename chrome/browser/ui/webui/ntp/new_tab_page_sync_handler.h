@@ -25,8 +25,8 @@ class NewTabPageSyncHandler : public WebUIMessageHandler,
   virtual ~NewTabPageSyncHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for "GetSyncMessage".
   void HandleGetSyncMessage(const base::ListValue* args);
@@ -34,7 +34,7 @@ class NewTabPageSyncHandler : public WebUIMessageHandler,
   void HandleSyncLinkClicked(const base::ListValue* args);
 
   // ProfileSyncServiceObserver
-  virtual void OnStateChanged();
+  virtual void OnStateChanged() OVERRIDE;
 
  private:
   enum MessageType {

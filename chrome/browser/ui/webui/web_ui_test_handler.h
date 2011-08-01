@@ -21,7 +21,7 @@ class WebUITestHandler : public WebUIMessageHandler,
  private:
   // WebUIMessageHandler overrides.
   // Add test handlers to the current WebUI object.
-  virtual void RegisterMessages() {}
+  virtual void RegisterMessages() OVERRIDE {}
 
   // From NotificationObserver.
   virtual void Observe(int type,

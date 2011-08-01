@@ -31,15 +31,16 @@ class OobeUI : public OobeDisplay,
   explicit OobeUI(TabContents* contents);
 
   // OobeDisplay implementation:
-  virtual void ShowScreen(WizardScreen* screen);
-  virtual void HideScreen(WizardScreen* screen);
-  virtual UpdateScreenActor* GetUpdateScreenActor();
-  virtual NetworkScreenActor* GetNetworkScreenActor();
-  virtual EulaScreenActor* GetEulaScreenActor();
-  virtual EnterpriseEnrollmentScreenActor* GetEnterpriseEnrollmentScreenActor();
-  virtual UserImageScreenActor* GetUserImageScreenActor();
-  virtual ViewScreenDelegate* GetRegistrationScreenActor();
-  virtual ViewScreenDelegate* GetHTMLPageScreenActor();
+  virtual void ShowScreen(WizardScreen* screen) OVERRIDE;
+  virtual void HideScreen(WizardScreen* screen) OVERRIDE;
+  virtual UpdateScreenActor* GetUpdateScreenActor() OVERRIDE;
+  virtual NetworkScreenActor* GetNetworkScreenActor() OVERRIDE;
+  virtual EulaScreenActor* GetEulaScreenActor() OVERRIDE;
+  virtual EnterpriseEnrollmentScreenActor* GetEnterpriseEnrollmentScreenActor()
+      OVERRIDE;
+  virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
+  virtual ViewScreenDelegate* GetRegistrationScreenActor() OVERRIDE;
+  virtual ViewScreenDelegate* GetHTMLPageScreenActor() OVERRIDE;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);

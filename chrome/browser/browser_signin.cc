@@ -79,37 +79,38 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   virtual ~BrowserSigninHtml() {}
 
   // HtmlDialogUIDelegate implementation
-  virtual bool IsDialogModal() const {
+  virtual bool IsDialogModal() const OVERRIDE {
     return false;
   };
-  virtual std::wstring GetDialogTitle() const {
+  virtual std::wstring GetDialogTitle() const OVERRIDE {
     return L"";
   }
-  virtual GURL GetDialogContentURL() const {
+  virtual GURL GetDialogContentURL() const OVERRIDE {
     return GURL("chrome://dialog/signin");
   }
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const {
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE {
     const WebUIMessageHandler* handler = this;
     handlers->push_back(const_cast<WebUIMessageHandler*>(handler));
   }
-  virtual void GetDialogSize(gfx::Size* size) const {
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
     size->set_width(600);
     size->set_height(300);
   }
-  virtual std::string GetDialogArgs() const {
+  virtual std::string GetDialogArgs() const OVERRIDE {
     return UTF16ToASCII(login_message_);
   }
-  virtual void OnDialogClosed(const std::string& json_retval) {
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE {
     closed_ = true;
     signin_->Cancel();
   }
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
+  virtual void OnCloseContents(TabContents* source,
+                               bool* out_close_dialog) OVERRIDE {
   }
-  virtual bool ShouldShowDialogTitle() const { return true; }
+  virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Refreshes the UI, such as after an authentication error.
   void ReloadUI();

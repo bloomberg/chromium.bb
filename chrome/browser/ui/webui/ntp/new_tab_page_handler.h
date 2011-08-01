@@ -19,7 +19,7 @@ class NewTabPageHandler : public WebUIMessageHandler {
   virtual ~NewTabPageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for "closePromo".
   void HandleClosePromo(const ListValue* args);

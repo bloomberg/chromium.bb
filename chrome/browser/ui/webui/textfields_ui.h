@@ -49,7 +49,7 @@ class TextfieldsDOMHandler : public WebUIMessageHandler {
   virtual void HandleTextfieldValue(const base::ListValue* args);
 
  protected:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldsDOMHandler);

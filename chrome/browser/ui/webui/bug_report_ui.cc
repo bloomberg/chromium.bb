@@ -197,8 +197,8 @@ class BugReportHandler : public WebUIMessageHandler,
   base::StringPiece Init();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   void HandleGetDialogDefaults(const ListValue* args);

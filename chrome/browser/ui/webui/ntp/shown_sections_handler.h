@@ -50,12 +50,12 @@ class ShownSectionsHandler : public WebUIMessageHandler,
   static void SetShownSection(PrefService* prefs, Section section);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Callback for "setShownSections" message.
   void HandleSetShownSections(const base::ListValue* args);

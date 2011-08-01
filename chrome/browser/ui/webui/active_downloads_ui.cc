@@ -156,15 +156,15 @@ class ActiveDownloadsHandler
   void Init();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-  virtual void RegisterMessages();
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* item);
-  virtual void OnDownloadOpened(DownloadItem* item) { }
+  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE { }
 
   // DownloadManager::Observer interface.
-  virtual void ModelChanged();
+  virtual void ModelChanged() OVERRIDE;
 
   // WebUI Callbacks.
   void HandleGetDownloads(const ListValue* args);

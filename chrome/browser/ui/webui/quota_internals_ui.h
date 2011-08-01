@@ -29,7 +29,7 @@ class QuotaInternalsHTMLSource : public ChromeWebUIDataSource {
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const;
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
  private:
   virtual ~QuotaInternalsHTMLSource() {}

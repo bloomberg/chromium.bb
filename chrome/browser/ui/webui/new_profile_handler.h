@@ -20,7 +20,7 @@ class NewProfileHandler : public WebUIMessageHandler {
   NewProfileHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "create" message - finishes creating a profile.
   void HandleCreate(const base::ListValue* args);
