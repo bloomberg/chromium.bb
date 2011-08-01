@@ -1,5 +1,58 @@
 [
   {
+    "namespace": "experimental.devtools.inspectedWindow",
+    "properties": {
+      "tabId": {
+        "description": "The ID of the tab being inspected. This ID may be used with chrome.tabs.* API.",
+        "type": "integer"
+      }
+    },
+    "functions": [
+      {
+        "name": "eval",
+        "type": "function",
+        "description": "Evaluates a JavaScript expression in the context of the main frame of the inspected page. The expression must evaluate to a JSON-compliant object, otherwise an exception is thrown.",
+        "parameters": [
+          {
+            "name": "expression",
+            "type": "string",
+            "description": "An expression to evaluate."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "A function called when evaluation completes.",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "description": "The result of evaluation."
+              },
+              {
+                "name": "isException",
+                "type": "boolean",
+                "description": "Set if an exception was caught while evaluating the expression"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "reload",
+        "type": "function",
+        "description": "Reloads the inspected page, optionally setting override for the user agent string.",
+        "parameters": [
+          {
+            "name": "userAgent",
+            "type": "string",
+            "optional": true,
+            "description": "A user agent override string."
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "experimental.devtools.panels",
     "types": [
       {
@@ -248,9 +301,9 @@
         ]
       },
       {
-        "name": "onNavigation",
+        "name": "onNavigated",
         "type": "function",
-        "description": "Fired when an inspected window navigates to a new URL.",
+        "description": "Fired when the inspected window navigates to a new page.",
         "parameters": [
           {
             "name": "url",
@@ -442,4 +495,3 @@
     ]
   }
 ]
-

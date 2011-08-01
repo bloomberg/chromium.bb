@@ -1,0 +1,80 @@
+<div id="pageData-name" class="pageData"
+>chrome.experimental.devtools.inspectedWindow.* APIs</div>
+
+<p>
+Use <code>chrome.experimental.devtools.inspectedWindow</code> to interact with
+the inspected window: obtain tab ID for the inspected page, evaluate the code
+in the context of inspected window, reload the page.
+</p><p>
+See <a href="experimental.devtools.html">DevTools APIs summary</a> for
+general introduction to using Developer Tools APIs.
+</p>
+
+<h2>Notes</h2>
+<p>
+The <a href="#property-tabId"><code>tabId</code></a> property 
+provides tab identifier that may be used with the <a href="tabs.html">
+<code>chrome.tabs.*</code></a> API calls.
+However, please note that <code>chrome.tabs.*</code> API is not
+exposed to the Developer Tools extension pages due to security considerations
+&mdash; you will need to pass the tab ID to the background page and invoke
+the <code>chrome.tabs.*</code> API functions from there.
+</p></p>
+The <code>eval()</code> provides the ability for extensions to execute
+JavaScript code in the context of the main frame of the inspected page.
+This function is different from 
+<code>chrome.tabs.executeScript()</code> in the following aspects:
+</p><ul>
+<li>The <code>eval()</code> does not
+use an isolated world for the code being evaluated, so the JavaScript state
+of the inspected window is accessible to the code.
+</li><li>
+The evaluated code may return a value that is passed to the extension callback.
+The returned value has to be a valid JSON object (i.e. may contain only
+primitive JavaScript types and acyclic references to other JSON
+objects). 
+
+<em>Please observe extra care while processing the data received from the
+inspected page &mdash; the execution context is essentially controlled by the
+inspected page; a malicious page may affect the data being returned to the
+extension.</em>
+</li><li>
+The execution context of the code being evaluated includes the 
+<a href="http://code.google.com/chrome/devtools/docs/console.html">Developer
+Tools console API</a> (e.g. <code>inspect()</code>, <code>$0</code> etc).
+</li>
+</ul>
+<p class="caution">
+<strong>Important:</strong> 
+Due to the security considerations explained above,
+<a href="tabs.html#method-executeScript"><code
+>chrome.tabs.executeScript()</code></a> is the preferred way for an extension
+to access DOM data of the inspected page in cases where the access to
+JavaScript state of the inspected page is not required.</em>
+</p><p>
+The <code>reload()</code> may be used to reload the inspected page.
+Additionally, a user agent string may be specifcied, which will cause Chrome
+to use the given string in the User-Agent HTTP header while fetching the page
+and its resources, and return it to the scripts running in that page.
+</p>
+
+<h2 id="overview-examples">Examples</h2>
+<p>The following code checks for the version of jQuery used by the inspected
+page:
+
+<pre>
+chrome.experimental.devtools.inspectedWindow.eval(
+    "jQuery.fn.jquery",
+     function(result, isException) {
+       if (isException)
+         console.log("the page is not using jQuery");
+       else
+         console.log("The page is using jQuery v" + result);
+     }
+);
+</pre>
+
+<p>
+You can find more examples that use Developer Tools APIs in
+<a href="samples.html#devtools">Samples</a>.
+</p>
