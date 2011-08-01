@@ -340,8 +340,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
 // Testing for recovery from an incorrect password for the case where
 // there are multiple authenticated resources.
-// Test enabled but has been historically flaky.  See http://crbug.com/69266
-// TODO(asanka): Remove logging when timeout issues are resolved.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_page = test_server()->GetURL(kSingleRealmTestPage);
@@ -355,13 +353,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
 
   observer.Register(Source<NavigationController>(controller));
 
-  LOG(INFO) <<
-      "Begin test run "
-      "(tracing for potential hang. crbug.com/69266)";
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
-    LOG(INFO) << "Waiting for initial AUTH_NEEDED";
     auth_needed_waiter.Wait();
   }
 
@@ -375,13 +369,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
     ASSERT_TRUE(handler);
     handler->SetAuth(WideToUTF16Hack(bad_username_),
                      WideToUTF16Hack(bad_password_));
-    LOG(INFO) << "Waiting for initial AUTH_SUPPLIED";
     auth_supplied_waiter.Wait();
 
     // The request should be retried after the incorrect password is
     // supplied.  This should result in a new AUTH_NEEDED notification
     // for the same realm.
-    LOG(INFO) << "Waiting for secondary AUTH_NEEDED";
     auth_needed_waiter.Wait();
   }
 
@@ -397,14 +389,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
       ASSERT_TRUE(handler);
       n_handlers++;
       SetAuthFor(handler);
-      LOG(INFO) << "Waiting for secondary AUTH_SUPPLIED";
       auth_supplied_waiter.Wait();
     }
 
-    if (n_handlers < 1) {
-      LOG(INFO) << "Waiting for additional AUTH_NEEDED";
+    if (n_handlers < 1)
       auth_needed_waiter.Wait();
-    }
   }
 
   // The single realm test has only one realm, and thus only one login
@@ -414,7 +403,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
   EXPECT_EQ(0, observer.auth_cancelled_count_);
   EXPECT_EQ(observer.auth_needed_count_, observer.auth_supplied_count_);
   EXPECT_TRUE(test_server()->Stop());
-  LOG(INFO) << "Done with test";
 }
 
 // If the favicon is an authenticated resource, we shouldn't prompt
