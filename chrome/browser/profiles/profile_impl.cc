@@ -678,12 +678,6 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  if (clear_local_state_on_exit_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&BrowsingDataRemover::ClearGearsData, path_));
-  }
-
   if (db_tracker_) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,

@@ -11,14 +11,15 @@
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/appcache/appcache_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/quota/mock_quota_manager.h"
+#include "webkit/quota/quota_manager.h"
+#include "webkit/quota/quota_types.h"
 
 namespace {
 
@@ -29,9 +30,6 @@ const char kTestkOrigin3[] = "http://host3:1/";
 const GURL kOrigin1(kTestkOrigin1);
 const GURL kOrigin2(kTestkOrigin2);
 const GURL kOrigin3(kTestkOrigin3);
-
-const GURL kProtectedManifest("http://www.protected.com/cache.manifest");
-const GURL kNormalManifest("http://www.normal.com/cache.manifest");
 
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  public:
@@ -55,6 +53,8 @@ class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTester);
 };
+
+// Testers -------------------------------------------------------------------
 
 class RemoveHistoryTester : public BrowsingDataRemoverTester {
  public:
@@ -101,68 +101,54 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };
 
-class RemoveFileSystemTester : public BrowsingDataRemoverTester {
+class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
  public:
-  explicit RemoveFileSystemTester() {}
+  RemoveQuotaManagedDataTester() {}
+  virtual ~RemoveQuotaManagedDataTester() {}
 
-  void FindFileSystemPathCallback(bool success,
-                                  const FilePath& path,
-                                  const std::string& name) {
-    found_file_system_ = success;
-    Notify();
+  void PopulateTestQuotaManagedData(quota::MockQuotaManager* manager) {
+    // Set up kOrigin1 with a temporary quota, kOrigin2 with a persistent
+    // quota, and kOrigin3 with both. kOrigin1 is modified now, kOrigin2
+    // is modified at the beginning of time, and kOrigin3 is modified one day
+    // ago.
+    PopulateTestQuotaManagedPersistentData(manager);
+    PopulateTestQuotaManagedTemporaryData(manager);
   }
 
-  bool FileSystemContainsOriginAndType(const GURL& origin,
-                                       fileapi::FileSystemType type) {
-    sandbox_->ValidateFileSystemRootAndGetURL(
-        origin, type, false, NewCallback(this,
-            &RemoveFileSystemTester::FindFileSystemPathCallback));
-    BlockUntilNotified();
-    return found_file_system_;
+  void PopulateTestQuotaManagedPersistentData(
+      quota::MockQuotaManager* manager) {
+    manager->AddOrigin(kOrigin2, quota::kStorageTypePersistent,
+        base::Time());
+    manager->AddOrigin(kOrigin3, quota::kStorageTypePersistent,
+        base::Time::Now() - base::TimeDelta::FromDays(1));
+
+    EXPECT_FALSE(manager->OriginHasData(kOrigin1,
+        quota::kStorageTypePersistent));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin2,
+        quota::kStorageTypePersistent));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin3,
+        quota::kStorageTypePersistent));
   }
 
-  virtual void PopulateTestFileSystemData(TestingProfile* profile) {
-    // Set up kOrigin1 with a temporary file system, kOrigin2 with a persistent
-    // file system, and kOrigin3 with both.
-    sandbox_ = profile->GetFileSystemContext()->path_manager()->
-        sandbox_provider();
+  void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
+    manager->AddOrigin(kOrigin1, quota::kStorageTypeTemporary,
+        base::Time::Now());
+    manager->AddOrigin(kOrigin3, quota::kStorageTypeTemporary,
+        base::Time::Now() - base::TimeDelta::FromDays(1));
 
-    CreateDirectoryForOriginAndType(kOrigin1,
-        fileapi::kFileSystemTypeTemporary);
-    CreateDirectoryForOriginAndType(kOrigin2,
-        fileapi::kFileSystemTypePersistent);
-    CreateDirectoryForOriginAndType(kOrigin3,
-        fileapi::kFileSystemTypeTemporary);
-    CreateDirectoryForOriginAndType(kOrigin3,
-        fileapi::kFileSystemTypePersistent);
-
-    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin1,
-        fileapi::kFileSystemTypePersistent));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin1,
-        fileapi::kFileSystemTypeTemporary));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin2,
-        fileapi::kFileSystemTypePersistent));
-    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin2,
-        fileapi::kFileSystemTypeTemporary));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3,
-        fileapi::kFileSystemTypePersistent));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3,
-        fileapi::kFileSystemTypeTemporary));
-  }
-
-  void CreateDirectoryForOriginAndType(const GURL& origin,
-                                       fileapi::FileSystemType type) {
-    FilePath target = sandbox_->ValidateFileSystemRootAndGetPathOnFileThread(
-        origin, type, FilePath(), true);
-    EXPECT_TRUE(file_util::DirectoryExists(target));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin1,
+        quota::kStorageTypeTemporary));
+    EXPECT_FALSE(manager->OriginHasData(kOrigin2,
+        quota::kStorageTypeTemporary));
+    EXPECT_TRUE(manager->OriginHasData(kOrigin3,
+        quota::kStorageTypeTemporary));
   }
 
  private:
-  fileapi::SandboxMountPointProvider* sandbox_;
-  bool found_file_system_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveFileSystemTester);
+  DISALLOW_COPY_AND_ASSIGN(RemoveQuotaManagedDataTester);
 };
+
+// Test Class ----------------------------------------------------------------
 
 class BrowsingDataRemoverTest : public testing::Test {
  public:
@@ -205,6 +191,18 @@ class BrowsingDataRemoverTest : public testing::Test {
     return profile_.get();
   }
 
+  quota::MockQuotaManager* GetMockManager() {
+    if (profile_->GetQuotaManager() == NULL) {
+      profile_->SetQuotaManager(new quota::MockQuotaManager(
+        profile_->IsOffTheRecord(),
+        profile_->GetPath(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        profile_->GetExtensionSpecialStoragePolicy()));
+    }
+    return (quota::MockQuotaManager*) profile_->GetQuotaManager();
+  }
+
  private:
   // message_loop_, as well as all the threads associated with it must be
   // defined before profile_ to prevent explosions. Oh how I love C++.
@@ -218,6 +216,8 @@ class BrowsingDataRemoverTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTest);
 };
+
+// Tests ---------------------------------------------------------------------
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
   scoped_ptr<RemoveHistoryTester> tester(
@@ -250,76 +250,164 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
 }
 
-TEST_F(BrowsingDataRemoverTest, RemoveFileSystemsForever) {
-  scoped_ptr<RemoveFileSystemTester> tester(new RemoveFileSystemTester());
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
 
-  tester->PopulateTestFileSystemData(GetProfile());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+
+  tester->PopulateTestQuotaManagedTemporaryData(GetMockManager());
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+
+  tester->PopulateTestQuotaManagedPersistentData(GetMockManager());
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+
+  GetMockManager();  // Creates the QuotaManager instance.
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_WEEK,
+      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
+
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
+  // Protect kOrigin1.
+  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
+          new MockExtensionSpecialStoragePolicy;
+  mock_policy->AddProtected(kOrigin1.GetOrigin());
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+
+  scoped_ptr<RemoveQuotaManagedDataTester> tester(
+      new RemoveQuotaManagedDataTester());
+  tester->PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
 
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin1,
-      fileapi::kFileSystemTypePersistent));
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin1,
-      fileapi::kFileSystemTypeTemporary));
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin2,
-      fileapi::kFileSystemTypePersistent));
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin2,
-      fileapi::kFileSystemTypeTemporary));
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin3,
-      fileapi::kFileSystemTypePersistent));
-  EXPECT_FALSE(tester->FileSystemContainsOriginAndType(kOrigin3,
-      fileapi::kFileSystemTypeTemporary));
-}
-
-TEST_F(BrowsingDataRemoverTest, RemoveAppCacheForever) {
-  // Set up ChromeAppCacheService.
-  scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService(NULL);
-  const content::ResourceContext* resource_context = NULL;
-  scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
-      new MockExtensionSpecialStoragePolicy;
-  mock_policy->AddProtected(kProtectedManifest.GetOrigin());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(appcache_service.get(),
-                        &ChromeAppCacheService::InitializeOnIOThread,
-                        FilePath(),
-                        resource_context,
-                        mock_policy));
-  MessageLoop::current()->RunAllPending();
-  TestingProfile* profile = GetProfile();
-  profile->SetAppCacheService(appcache_service);
-  profile->SetExtensionSpecialStoragePolicy(mock_policy);
-
-  // Add data into the AppCacheStorage.
-  appcache::AppCacheTestHelper appcache_helper;
-  appcache_helper.AddGroupAndCache(appcache_service, kNormalManifest);
-  appcache_helper.AddGroupAndCache(appcache_service, kProtectedManifest);
-
-  // Verify that adding the data succeeded.
-  std::set<GURL> origins;
-  appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
-  EXPECT_EQ(2UL, origins.size());
-  EXPECT_TRUE(origins.find(kProtectedManifest.GetOrigin()) != origins.end());
-  EXPECT_TRUE(origins.find(kNormalManifest.GetOrigin()) != origins.end());
-
-  // Set up the object to be tested.
-  scoped_ptr<BrowsingDataRemoverTester> tester(new BrowsingDataRemoverTester());
-  BrowsingDataRemover* remover = new BrowsingDataRemover(
-      profile, BrowsingDataRemover::EVERYTHING, base::Time::Now());
-  remover->AddObserver(tester.get());
-
-  // Remove the appcaches and wait for it to complete. BrowsingDataRemover
-  // deletes itself when it completes.
-  remover->Remove(BrowsingDataRemover::REMOVE_COOKIES);
-  tester->BlockUntilNotified();
-
-  // Results: appcaches for the normal origin got deleted, appcaches for the
-  // protected origin didn't.
-  appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
-  EXPECT_EQ(1UL, origins.size());
-  EXPECT_TRUE(origins.find(kProtectedManifest.GetOrigin()) != origins.end());
+  EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypeTemporary));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2,
+      quota::kStorageTypePersistent));
+  EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin3,
+      quota::kStorageTypePersistent));
 }
 
 }  // namespace

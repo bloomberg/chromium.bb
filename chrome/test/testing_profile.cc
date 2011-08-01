@@ -59,6 +59,7 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/quota/quota_manager.h"
+#include "webkit/quota/mock_quota_manager.h"
 
 using base::Time;
 using testing::NiceMock;
@@ -543,8 +544,12 @@ fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
   return file_system_context_.get();
 }
 
+void TestingProfile::SetQuotaManager(quota::QuotaManager* manager) {
+  quota_manager_ = manager;
+}
+
 quota::QuotaManager* TestingProfile::GetQuotaManager() {
-  return NULL;
+  return quota_manager_.get();
 }
 
 BrowserSignin* TestingProfile::GetBrowserSignin() {

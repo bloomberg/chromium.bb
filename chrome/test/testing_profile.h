@@ -182,6 +182,7 @@ class TestingProfile : public Profile {
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual fileapi::FileSystemContext* GetFileSystemContext();
+  virtual void SetQuotaManager(quota::QuotaManager* manager);
   virtual quota::QuotaManager* GetQuotaManager();
   virtual BrowserSignin* GetBrowserSignin();
   virtual bool HasCreatedDownloadManager() const;
@@ -390,6 +391,9 @@ class TestingProfile : public Profile {
   ProfileDependencyManager* profile_dependency_manager_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+
+  // The QuotaManager, only available if set explicitly via SetQuotaManager.
+  scoped_refptr<quota::QuotaManager> quota_manager_;
 };
 
 #endif  // CHROME_TEST_TESTING_PROFILE_H_

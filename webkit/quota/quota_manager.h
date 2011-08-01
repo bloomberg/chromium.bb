@@ -25,10 +25,11 @@
 #include "webkit/quota/quota_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
+class FilePath;
+
 namespace base {
 class MessageLoopProxy;
 }
-class FilePath;
 
 namespace quota_internals {
 class QuotaInternalsProxy;
@@ -42,6 +43,7 @@ class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
 class UsageTracker;
+class MockQuotaManager;
 
 // An interface called by QuotaTemporaryStorageEvictor.
 class QuotaEvictionHandler {
@@ -126,9 +128,9 @@ class QuotaManager : public QuotaTaskObserver,
   }
 
   // Called by UI.
-  void DeleteOriginData(const GURL& origin,
-                        StorageType type,
-                        StatusCallback* callback);
+  virtual void DeleteOriginData(const GURL& origin,
+                                StorageType type,
+                                StatusCallback* callback);
 
   // Called by UI and internal modules.
   void GetAvailableSpace(AvailableSpaceCallback* callback);
@@ -150,10 +152,9 @@ class QuotaManager : public QuotaTaskObserver,
            special_storage_policy_->IsStorageUnlimited(origin);
   }
 
-  void GetOriginsModifiedSince(
-      StorageType type,
-      base::Time modified_since,
-      GetOriginsCallback* callback);
+  virtual void GetOriginsModifiedSince(StorageType type,
+                                       base::Time modified_since,
+                                       GetOriginsCallback* callback);
 
   bool ResetUsageTracker(StorageType type);
 
@@ -235,6 +236,7 @@ class QuotaManager : public QuotaTaskObserver,
   friend class QuotaManagerProxy;
   friend class QuotaManagerTest;
   friend class QuotaTemporaryStorageEvictor;
+  friend class MockQuotaManager;
 
   // This initialization method is lazily called on the IO thread
   // when the first quota manager API is called.
