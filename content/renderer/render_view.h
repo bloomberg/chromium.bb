@@ -434,6 +434,10 @@ class RenderView : public RenderWidget,
                                        const WebKit::WebString& base_url,
                                        const WebKit::WebString& url,
                                        const WebKit::WebString& title);
+  virtual void registerIntentHandler(const WebKit::WebString& action,
+                                     const WebKit::WebString& type,
+                                     const WebKit::WebString& href,
+                                     const WebKit::WebString& title);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
 
   // WebKit::WebFrameClient implementation -------------------------------------

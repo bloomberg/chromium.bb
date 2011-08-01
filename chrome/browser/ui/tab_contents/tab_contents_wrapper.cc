@@ -21,6 +21,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_tab_helper.h"
+#include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
@@ -407,6 +408,8 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
+                        OnRegisterIntentHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
@@ -579,6 +582,19 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
                                                           registry,
                                                           handler));
   }
+}
+
+void TabContentsWrapper::OnRegisterIntentHandler(const string16& action,
+                                                 const string16& type,
+                                                 const string16& href,
+                                                 const string16& title) {
+  if (profile()->IsOffTheRecord())
+    return;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
+  AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab_contents()));
 }
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {

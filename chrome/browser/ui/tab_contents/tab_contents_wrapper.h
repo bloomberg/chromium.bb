@@ -243,6 +243,10 @@ class TabContentsWrapper : public TabContentsObserver,
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
                                  const string16& title);
+  void OnRegisterIntentHandler(const string16& action,
+                               const string16& type,
+                               const string16& href,
+                               const string16& title);
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
   void OnDidBlockDisplayingInsecureContent();

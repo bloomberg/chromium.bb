@@ -4325,6 +4325,18 @@ void RenderView::registerProtocolHandler(const WebString& scheme,
                                               title));
 }
 
+void RenderView::registerIntentHandler(const WebString& action,
+                                       const WebString& type,
+                                       const WebString& href,
+                                       const WebString& title) {
+  RenderThread::current()->Send(
+      new ViewHostMsg_RegisterIntentHandler(routing_id_,
+                                            action,
+                                            type,
+                                            href,
+                                            title));
+}
+
 WebKit::WebPageVisibilityState RenderView::visibilityState() const {
   WebKit::WebPageVisibilityState current_state = is_hidden() ?
       WebKit::WebPageVisibilityStateHidden :

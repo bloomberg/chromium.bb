@@ -1981,6 +1981,13 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
                     GURL /* url */,
                     string16 /* title */)
 
+// Register a new handler for Intents with the given action and type filter.
+IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterIntentHandler,
+                    string16 /* action */,
+                    string16 /* type */,
+                    string16 /* href */,
+                    string16 /* title */)
+
 // Stores new inspector setting in the profile.
 // TODO(jam): this should be in the chrome module
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
