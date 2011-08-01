@@ -19,3 +19,5 @@ PPAPITest.Transport
 WorkerFileSystemTest.ResolveURLHttpTests
 # Leaking memory, although passing. http://crbug.com/90963
 WorkerFileSystemTest.FileEntryToURISync
+# Leaking memory due to flakiness. http://crbug.com/31739
+SessionHistoryTest.BasicBackForward
