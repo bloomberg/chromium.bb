@@ -4,192 +4,212 @@
 
 /**
  * This view displays options for importing data from a log file.
- *  @constructor
  */
-function ImportView() {
-  const mainBoxId = 'import-view-tab-content';
-  const loadedDivId = 'import-view-loaded-div';
-  const loadLogFileDropTargetId = 'import-view-drop-target';
-  const loadLogFileId = 'import-view-load-log-file';
-  const loadStatusTextId = 'import-view-load-status-text';
-  const reloadLinkId = 'import-view-reloaded-link';
 
-  const loadedInfoExportDateId = 'import-view-export-date';
-  const loadedInfoBuildNameId = 'import-view-build-name';
-  const loadedInfoOsTypeId = 'import-view-os-type';
-  const loadedInfoCommandLineId = 'import-view-command-line';
-  const loadedInfoUserCommentsId = 'import-view-user-comments';
+var ImportView = (function() {
+  // IDs for special HTML elements in import_view.html
+  const MAIN_BOX_ID = 'import-view-tab-content';
+  const LOADED_DIV_ID = 'import-view-loaded-div';
+  const LOAD_LOG_FILE_ID = 'import-view-load-log-file';
+  const LOAD_STATUS_TEXT_ID = 'import-view-load-status-text';
+  const RELOAD_LINK_ID = 'import-view-reloaded-link';
+  const LOADED_INFO_EXPORT_DATE_ID = 'import-view-export-date';
+  const LOADED_INFO_BUILD_NAME_ID = 'import-view-build-name';
+  const LOADED_INFO_OS_TYPE_ID = 'import-view-os-type';
+  const LOADED_INFO_COMMAND_LINE_ID = 'import-view-command-line';
+  const LOADED_INFO_USER_COMMENTS_ID = 'import-view-user-comments';
 
-  DivView.call(this, mainBoxId);
+  // This is defined in index.html, but for all intents and purposes is part
+  // of this view.
+  const LOAD_LOG_FILE_DROP_TARGET_ID = 'import-view-drop-target';
 
-  this.loadedDiv_ = $(loadedDivId);
+  // We inherit from DivView.
+  var superClass = DivView;
 
-  this.loadFileElement_ = $(loadLogFileId);
-  this.loadFileElement_.onchange = this.logFileChanged.bind(this);
-  this.loadStatusText_ = $(loadStatusTextId);
+  /**
+   * @constructor
+   */
+  function ImportView() {
+    // Call superclass's constructor.
+    superClass.call(this, MAIN_BOX_ID);
 
-  var dropTarget = $(loadLogFileDropTargetId);
-  dropTarget.ondragenter = this.onDrag.bind(this);
-  dropTarget.ondragover = this.onDrag.bind(this);
-  dropTarget.ondrop = this.onDrop.bind(this);
+    this.loadedDiv_ = $(LOADED_DIV_ID);
 
-  $(reloadLinkId).onclick = this.clickedReload_.bind(this);
+    this.loadFileElement_ = $(LOAD_LOG_FILE_ID);
+    this.loadFileElement_.onchange = this.logFileChanged.bind(this);
+    this.loadStatusText_ = $(LOAD_STATUS_TEXT_ID);
 
-  this.loadedInfoBuildName_ = $(loadedInfoBuildNameId);
-  this.loadedInfoExportDate_ = $(loadedInfoExportDateId);
-  this.loadedInfoOsType_ = $(loadedInfoOsTypeId);
-  this.loadedInfoCommandLine_ = $(loadedInfoCommandLineId);
-  this.loadedInfoUserComments_ = $(loadedInfoUserCommentsId);
-}
+    var dropTarget = $(LOAD_LOG_FILE_DROP_TARGET_ID);
+    dropTarget.ondragenter = this.onDrag.bind(this);
+    dropTarget.ondragover = this.onDrag.bind(this);
+    dropTarget.ondrop = this.onDrop.bind(this);
 
-inherits(ImportView, DivView);
+    $(RELOAD_LINK_ID).onclick = this.clickedReload_.bind(this);
 
-/**
- * Called when a log file is loaded, after clearing the old log entries and
- * loading the new ones.  Returns true to indicate the view should
- * still be visible.
- */
-ImportView.prototype.onLoadLogFinish = function(data, unused, userComments) {
-  setNodeDisplay(this.loadedDiv_, true);
-  this.updateLoadedClientInfo(userComments);
-  return true;
-};
-
-/**
- * Called when the user clicks the "reloaded" link.
- */
-ImportView.prototype.clickedReload_ = function() {
-  window.location.reload();
-  return false;
-};
-
-/**
- * Called when something is dragged over the drop target.
- *
- * Returns false to cancel default browser behavior when a single file is being
- * dragged.  When this happens, we may not receive a list of files for security
- * reasons, which is why we allow the |files| array to be empty.
- */
-ImportView.prototype.onDrag = function(event) {
-  return event.dataTransfer.types.indexOf('Files') == -1 ||
-         event.dataTransfer.files.length > 1;
-};
-
-/**
- * Called when something is dropped onto the drop target.  If it's a single
- * file, tries to load it as a log file.
- */
-ImportView.prototype.onDrop = function(event) {
-  if (event.dataTransfer.types.indexOf('Files') == -1 ||
-      event.dataTransfer.files.length != 1) {
-    return;
+    this.loadedInfoBuildName_ = $(LOADED_INFO_BUILD_NAME_ID);
+    this.loadedInfoExportDate_ = $(LOADED_INFO_EXPORT_DATE_ID);
+    this.loadedInfoOsType_ = $(LOADED_INFO_OS_TYPE_ID);
+    this.loadedInfoCommandLine_ = $(LOADED_INFO_COMMAND_LINE_ID);
+    this.loadedInfoUserComments_ = $(LOADED_INFO_USER_COMMENTS_ID);
   }
-  event.preventDefault();
 
-  // Loading a log file may hide the currently active tab.  Switch to the import
-  // tab to prevent this.
-  document.location.hash = 'import';
+  cr.addSingletonGetter(ImportView);
 
-  this.loadLogFile(event.dataTransfer.files[0]);
-};
+  ImportView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
 
-/**
- * Called when a log file is selected.
- *
- * Gets the log file from the input element and tries to read from it.
- */
-ImportView.prototype.logFileChanged = function() {
-  this.loadLogFile(this.loadFileElement_.files[0]);
-};
+    /**
+     * Called when a log file is loaded, after clearing the old log entries and
+     * loading the new ones.  Returns true to indicate the view should
+     * still be visible.
+     */
+    onLoadLogFinish: function(data, unused, userComments) {
+      setNodeDisplay(this.loadedDiv_, true);
+      this.updateLoadedClientInfo(userComments);
+      return true;
+    },
 
-/**
- * Attempts to read from the File |logFile|.
- */
-ImportView.prototype.loadLogFile = function(logFile) {
-  if (logFile) {
-    this.setLoadFileStatus('Loading log...', true);
-    var fileReader = new FileReader();
+    /**
+     * Called when the user clicks the "reloaded" link.
+     */
+    clickedReload_: function() {
+      window.location.reload();
+      return false;
+    },
 
-    fileReader.onload = this.onLoadLogFile.bind(this, logFile);
-    fileReader.onerror = this.onLoadLogFileError.bind(this);
+    /**
+     * Called when something is dragged over the drop target.
+     *
+     * Returns false to cancel default browser behavior when a single file is
+     * being dragged.  When this happens, we may not receive a list of files for
+     * security reasons, which is why we allow the |files| array to be empty.
+     */
+    onDrag: function(event) {
+      return event.dataTransfer.types.indexOf('Files') == -1 ||
+             event.dataTransfer.files.length > 1;
+    },
 
-    fileReader.readAsText(logFile);
-  }
-};
+    /**
+     * Called when something is dropped onto the drop target.  If it's a single
+     * file, tries to load it as a log file.
+     */
+    onDrop: function(event) {
+      if (event.dataTransfer.types.indexOf('Files') == -1 ||
+          event.dataTransfer.files.length != 1) {
+        return;
+      }
+      event.preventDefault();
 
-/**
- * Displays an error message when unable to read the selected log file.
- * Also clears the file input control, so the same file can be reloaded.
- */
-ImportView.prototype.onLoadLogFileError = function(event) {
-  this.loadFileElement_.value = null;
-  this.setLoadFileStatus(
-      'Error ' + getKeyWithValue(FileError, event.target.error.code) +
-          '.  Unable to read file.',
-      false);
-};
+      // Loading a log file may hide the currently active tab.  Switch to the
+      // import tab to prevent this.
+      document.location.hash = 'import';
 
-ImportView.prototype.onLoadLogFile = function(logFile, event) {
-  var result = loadLogFile(event.target.result, logFile.fileName);
-  this.setLoadFileStatus(result, false);
-};
+      this.loadLogFile(event.dataTransfer.files[0]);
+    },
 
-/**
- * Sets the load from file status text, displayed below the load file button,
- * to |text|.  Also enables or disables the load buttons based on the value
- * of |isLoading|, which must be true if the load process is still ongoing, and
- * false when the operation has stopped, regardless of success of failure.
- * Also, when loading is done, replaces the load button so the same file can be
- * loaded again.
- */
-ImportView.prototype.setLoadFileStatus = function(text, isLoading) {
-  this.enableLoadFileElement_(!isLoading);
-  this.loadStatusText_.textContent = text;
+    /**
+     * Called when a log file is selected.
+     *
+     * Gets the log file from the input element and tries to read from it.
+     */
+    logFileChanged: function() {
+      this.loadLogFile(this.loadFileElement_.files[0]);
+    },
 
-  if (!isLoading) {
-    // Clear the button, so the same file can be reloaded.  Recreating the
-    // element seems to be the only way to do this.
-    var loadFileElementId = this.loadFileElement_.id;
-    var loadFileElementOnChange = this.loadFileElement_.onchange;
-    this.loadFileElement_.outerHTML = this.loadFileElement_.outerHTML;
-    this.loadFileElement_ = $(loadFileElementId);
-    this.loadFileElement_.onchange = loadFileElementOnChange;
-  }
-};
+    /**
+     * Attempts to read from the File |logFile|.
+     */
+    loadLogFile: function(logFile) {
+      if (logFile) {
+        this.setLoadFileStatus('Loading log...', true);
+        var fileReader = new FileReader();
 
-ImportView.prototype.enableLoadFileElement_ = function(enabled) {
-  this.loadFileElement_.disabled = !enabled;
-};
+        fileReader.onload = this.onLoadLogFile.bind(this, logFile);
+        fileReader.onerror = this.onLoadLogFileError.bind(this);
 
-/**
- * Prints some basic information about the environment when the log was made.
- */
-ImportView.prototype.updateLoadedClientInfo = function(userComments) {
-  // Reset all the fields (in case we early-return).
-  this.loadedInfoExportDate_.innerText = '';
-  this.loadedInfoBuildName_.innerText = '';
-  this.loadedInfoOsType_.innerText = '';
-  this.loadedInfoCommandLine_.innerText = '';
-  this.loadedInfoUserComments_.innerText = '';
+        fileReader.readAsText(logFile);
+      }
+    },
 
-  if (typeof(ClientInfo) != 'object')
-    return;
+    /**
+     * Displays an error message when unable to read the selected log file.
+     * Also clears the file input control, so the same file can be reloaded.
+     */
+    onLoadLogFileError: function(event) {
+      this.loadFileElement_.value = null;
+      this.setLoadFileStatus(
+          'Error ' + getKeyWithValue(FileError, event.target.error.code) +
+              '.  Unable to read file.',
+          false);
+    },
 
-  // Dumps made with the command line option don't have a date.
-  this.loadedInfoExportDate_.innerText = ClientInfo.date || '';
+    onLoadLogFile: function(logFile, event) {
+      var result = loadLogFile(event.target.result, logFile.fileName);
+      this.setLoadFileStatus(result, false);
+    },
 
-  var buildName =
-      ClientInfo.name +
-      ' ' + ClientInfo.version +
-      ' (' + ClientInfo.official +
-      ' ' + ClientInfo.cl +
-      ') ' + ClientInfo.version_mod;
+    /**
+     * Sets the load from file status text, displayed below the load file
+     * button, to |text|.  Also enables or disables the load buttons based on
+     * the value of |isLoading|, which must be true if the load process is still
+     * ongoing, and false when the operation has stopped, regardless of success
+     * of failure.  Also, when loading is done, replaces the load button so the
+     * same file can be loaded again.
+     */
+    setLoadFileStatus: function(text, isLoading) {
+      this.enableLoadFileElement_(!isLoading);
+      this.loadStatusText_.textContent = text;
 
-  this.loadedInfoBuildName_.innerText = buildName;
+      if (!isLoading) {
+        // Clear the button, so the same file can be reloaded.  Recreating the
+        // element seems to be the only way to do this.
+        var loadFileElementId = this.loadFileElement_.id;
+        var loadFileElementOnChange = this.loadFileElement_.onchange;
+        this.loadFileElement_.outerHTML = this.loadFileElement_.outerHTML;
+        this.loadFileElement_ = $(loadFileElementId);
+        this.loadFileElement_.onchange = loadFileElementOnChange;
+      }
+    },
 
-  this.loadedInfoOsType_.innerText = ClientInfo.os_type;
-  this.loadedInfoCommandLine_.innerText = ClientInfo.command_line;
+    enableLoadFileElement_: function(enabled) {
+      this.loadFileElement_.disabled = !enabled;
+    },
 
-  // User comments will not be available when dumped from command line.
-  this.loadedInfoUserComments_.innerText = userComments || '';
-};
+    /**
+     * Prints some basic information about the environment when the log was
+     * made.
+     */
+    updateLoadedClientInfo: function(userComments) {
+      // Reset all the fields (in case we early-return).
+      this.loadedInfoExportDate_.innerText = '';
+      this.loadedInfoBuildName_.innerText = '';
+      this.loadedInfoOsType_.innerText = '';
+      this.loadedInfoCommandLine_.innerText = '';
+      this.loadedInfoUserComments_.innerText = '';
+
+      if (typeof(ClientInfo) != 'object')
+        return;
+
+      // Dumps made with the command line option don't have a date.
+      this.loadedInfoExportDate_.innerText = ClientInfo.date || '';
+
+      var buildName =
+          ClientInfo.name +
+          ' ' + ClientInfo.version +
+          ' (' + ClientInfo.official +
+          ' ' + ClientInfo.cl +
+          ') ' + ClientInfo.version_mod;
+
+      this.loadedInfoBuildName_.innerText = buildName;
+
+      this.loadedInfoOsType_.innerText = ClientInfo.os_type;
+      this.loadedInfoCommandLine_.innerText = ClientInfo.command_line;
+
+      // User comments will not be available when dumped from command line.
+      this.loadedInfoUserComments_.innerText = userComments || '';
+    }
+  };
+
+  return ImportView;
+})();
