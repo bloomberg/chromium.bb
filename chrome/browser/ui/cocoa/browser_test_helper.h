@@ -7,7 +7,12 @@
 #pragma once
 
 #include "chrome/browser/ui/browser.h"
+<<<<<<< HEAD
 #include "chrome/test/base/testing_profile.h"
+=======
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_profile.h"
+>>>>>>> wip
 #include "content/browser/browser_thread.h"
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to
@@ -41,6 +46,8 @@ class BrowserTestHelper {
   void CloseBrowserWindow();
 
  private:
+  ScopedTestingBrowserProcess browser_process_;
+
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
