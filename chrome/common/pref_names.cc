@@ -503,6 +503,11 @@ const char kLastUsedFileBrowserHandlers[] =
 // A boolean pref that uses shared proxies.
 const char kUseSharedProxies[] = "settings.use_shared_proxies";
 
+// A string prefs for OAuth1 token.
+const char kOAuth1Token[] = "settings.account.oauth1_token";
+
+// A string prefs for OAuth1 secret.
+const char kOAuth1Secret[] = "settings.account.oauth1_secret";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

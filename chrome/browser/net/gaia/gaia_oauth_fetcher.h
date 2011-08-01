@@ -72,6 +72,12 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // retrieval.
   void StartGetOAuthTokenRequest();
 
+  // Performs account login based on OAuth1 access token and its secret.
+  void StartOAuthLogin(const char* source,
+                       const char* service,
+                       const std::string& oauth1_access_token,
+                       const std::string& oauth1_access_token_secret);
+
   // Obtains an OAuth1 access token and secret
   //
   // oauth1_request_token is from GetOAuthToken's result.
@@ -136,6 +142,11 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
                                          const net::URLRequestStatus& status,
                                          int response_code);
 
+  // Process the results of a OAuthLogin fetch.
+  virtual void OnOAuthLoginFetched(const std::string& data,
+                                   const net::URLRequestStatus& status,
+                                   int response_code);
+
   // Process the results of a OAuthGetAccessToken fetch.
   virtual void OnOAuthGetAccessTokenFetched(const std::string& data,
                                             const net::URLRequestStatus& status,
@@ -154,6 +165,12 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // Tokenize the results of a GetOAuthToken fetch.
   static void ParseGetOAuthTokenResponse(const std::string& data,
                                          std::string* token);
+
+  // Tokenize the results of a OAuthLogin fetch.
+  static void ParseOAuthLoginResponse(const std::string& data,
+                                      std::string* sid,
+                                      std::string* lsid,
+                                      std::string* auth);
 
   // Tokenize the results of a OAuthGetAccessToken fetch.
   static void ParseOAuthGetAccessTokenResponse(const std::string& data,
@@ -181,6 +198,13 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // Given parameters, create a OAuthGetAccessToken request body.
   static std::string MakeOAuthGetAccessTokenBody(
       const std::string& oauth1_request_token);
+
+  // Given parameters, create a OAuthLogin request body.
+  static std::string MakeOAuthLoginBody(
+      const char* source,
+      const char* service,
+      const std::string& oauth1_access_token,
+      const std::string& oauth1_access_token_secret);
 
   // Given parameters, create a OAuthWrapBridge request body.
   static std::string MakeOAuthWrapBridgeBody(

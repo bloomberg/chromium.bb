@@ -163,7 +163,7 @@ class ParallelAuthenticatorTest : public ::testing::Test {
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
-    ON_CALL(consumer_, OnLoginSuccess(_, _, _, _))
+    ON_CALL(consumer_, OnLoginSuccess(_, _, _, _, _))
         .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
   }
 
@@ -184,7 +184,8 @@ class ParallelAuthenticatorTest : public ::testing::Test {
                           const std::string& password,
                           const GaiaAuthConsumer::ClientLoginResult& result,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(username, password, result, pending))
+    EXPECT_CALL(consumer_, OnLoginSuccess(username, password, result, pending,
+                                          false))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
   }
@@ -273,7 +274,8 @@ TEST_F(ParallelAuthenticatorTest, ReadNoLocalaccount) {
 }
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(username_, password_, result_, false))
+  EXPECT_CALL(consumer_, OnLoginSuccess(username_, password_, result_, false,
+                                        false))
       .Times(1)
       .RetiresOnSaturation();
 

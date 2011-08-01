@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,8 @@ class LoginStatusConsumer {
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests) = 0;
+      bool pending_requests,
+      bool using_oauth) = 0;
   // The current guest login attempt has succeeded.
   virtual void OnOffTheRecordLoginSuccess() {}
   // The same password didn't work both online and offline.

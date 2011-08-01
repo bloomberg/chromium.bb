@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
@@ -55,7 +57,9 @@ const int kPassHashLen = 32;
 ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       already_reported_success_(false),
-      checked_for_localaccount_(false) {
+      checked_for_localaccount_(false),
+      using_oauth_(CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kWebUIGaiaLogin)) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   // If not already owned, this is a no-op.  If it is, this loads the owner's
   // public key off of disk.
@@ -71,7 +75,7 @@ bool ParallelAuthenticator::AuthenticateToLogin(
     const std::string& login_token,
     const std::string& login_captcha) {
   std::string canonicalized = Authenticator::Canonicalize(username);
-  auth_profile_ = profile;
+  authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(canonicalized,
                            password,
@@ -82,12 +86,21 @@ bool ParallelAuthenticator::AuthenticateToLogin(
   mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
                                               this,
                                               false /* don't create */);
-  current_online_ = new OnlineAttempt(current_state_.get(), this);
   // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
-  current_online_->Initiate(profile);
+
+  // ClientLogin authentication check should happen immediately here.
+  // We should not try OAuthLogin check until the profile loads.
+  if (!using_oauth_) {
+    // Initiate ClientLogin-based post authentication.
+    current_online_ = new OnlineAttempt(using_oauth_,
+                                        current_state_.get(),
+                                        this);
+    current_online_->Initiate(profile);
+  }
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
@@ -100,9 +113,10 @@ bool ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const std::string& username,
                                           const std::string& password) {
   std::string canonicalized = Authenticator::Canonicalize(username);
-  auth_profile_ = profile;
+  authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(canonicalized,
+                           password,
                            HashPassword(password),
                            !UserManager::Get()->IsKnownUser(canonicalized)));
   mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
@@ -174,7 +188,8 @@ void ParallelAuthenticator::OnLoginSuccess(
   consumer_->OnLoginSuccess(current_state_->username,
                             current_state_->password,
                             credentials,
-                            request_pending);
+                            request_pending,
+                            using_oauth_);
 }
 
 void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
@@ -243,6 +258,15 @@ void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
   consumer_->OnLoginFailure(error);
 }
 
+void ParallelAuthenticator::RecordOAuthCheckFailure(
+    const std::string& user_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(using_oauth_);
+  // Mark this account's OAuth token state as invalid in the local state.
+  UserManager::Get()->SaveUserOAuthStatus(user_name,
+        UserManager::OAUTH_TOKEN_STATUS_INVALID);
+}
+
 void ParallelAuthenticator::RecoverEncryptedData(
     const std::string& old_password,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
@@ -289,9 +313,23 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                            login_token,
                            login_captcha,
                            false /* not a new user */));
-  current_online_ = new OnlineAttempt(reauth_state_.get(), this);
+  current_online_ = new OnlineAttempt(using_oauth_, reauth_state_.get(),
+                                      this);
   current_online_->Initiate(profile);
 }
+
+
+void ParallelAuthenticator::VerifyOAuth1AccessToken(
+    const std::string& oauth1_access_token, const std::string& oauth1_secret) {
+  DCHECK(using_oauth_);
+  current_state_->SetOAuth1Token(oauth1_access_token, oauth1_secret);
+  // Initiate ClientLogin-based post authentication.
+  current_online_ = new OnlineAttempt(using_oauth_,
+                                      current_state_.get(),
+                                      this);
+  current_online_->Initiate(authentication_profile());
+}
+
 
 void ParallelAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -358,29 +396,42 @@ void ParallelAuthenticator::Resolve() {
       // for now.
       // TODO(cmasone): optimize this so that we don't send the user through
       // the 'changed password' path when we know doing so won't succeed.
-    case NEED_NEW_PW:
-      {
-        base::AutoLock for_this_block(success_lock_);
-        if (!already_reported_success_) {
-          // This allows us to present the same behavior for "online:
-          // fail, offline: ok", regardless of the order in which we
-          // receive the results.  There will be cases in which we get
-          // the online failure some time after the offline success,
-          // so we just force all cases in this category to present like this:
-          // OnLoginSuccess(..., ..., true) -> OnLoginFailure().
+    case NEED_NEW_PW: {
+        {
+          base::AutoLock for_this_block(success_lock_);
+          if (!already_reported_success_) {
+            // This allows us to present the same behavior for "online:
+            // fail, offline: ok", regardless of the order in which we
+            // receive the results.  There will be cases in which we get
+            // the online failure some time after the offline success,
+            // so we just force all cases in this category to present like this:
+            // OnLoginSuccess(..., ..., true) -> OnLoginFailure().
+            BrowserThread::PostTask(
+                BrowserThread::UI, FROM_HERE,
+                NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
+                                  current_state_->credentials(), true));
+          }
+        }
+        const LoginFailure& login_failure =
+            reauth_state_.get() ? reauth_state_->online_outcome() :
+                                  current_state_->online_outcome();
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
+                              login_failure));
+        // Check if we couldn't verify OAuth token here.
+        if (using_oauth_ &&
+            login_failure.reason() == LoginFailure::NETWORK_AUTH_FAILED) {
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
-                                current_state_->credentials(), true));
+              NewRunnableMethod(this,
+                                &ParallelAuthenticator::RecordOAuthCheckFailure,
+                                (reauth_state_.get() ?
+                                 reauth_state_->username :
+                                 current_state_->username)));
         }
-      }
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
-                            (reauth_state_.get() ?
-                             reauth_state_->online_outcome() :
-                             current_state_->online_outcome())));
-      break;
+        break;
+    }
     case HAVE_NEW_PW:
       key_migrator_ =
           CryptohomeOp::CreateMigrateAttempt(reauth_state_.get(),

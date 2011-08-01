@@ -746,7 +746,8 @@ class LoginObserver : public chromeos::LoginStatusConsumer,
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
+      bool pending_requests,
+      bool using_oauth);
 
   virtual void Observe(int type,
                const NotificationSource& source,
@@ -803,7 +804,8 @@ class ScreenUnlockObserver : public ScreenLockUnlockObserver,
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests) {}
+      bool pending_requests,
+      bool using_oauth) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenUnlockObserver);

@@ -45,12 +45,26 @@ namespace {
 const char kLoggedInUsers[] = "LoggedInUsers";
 // A dictionary that maps usernames to file paths to their images.
 const char kUserImages[] = "UserImages";
+// A dictionary that maps usernames to OAuth token presence flag.
+const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";
 
 base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
+
+// Stores path to the image in local state. Runs on UI thread.
+void SaveOAuthTokenStatusToLocalState(const std::string& username,
+    UserManager::OAuthTokenStatus oauth_token_status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate oauth_status_update(local_state, kUserOAuthTokenStatus);
+  oauth_status_update->SetWithoutPathExpansion(username,
+      new FundamentalValue(static_cast<int>(oauth_token_status)));
+  DVLOG(1) << "Saving user OAuth token status in Local State.";
+  local_state->SavePersistentPrefs();
+}
 
 // Stores path to the image in local state. Runs on UI thread.
 void SavePathToLocalState(const std::string& username,
@@ -200,7 +214,8 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
 
 }  // namespace
 
-UserManager::User::User() : is_displayname_unique_(false) {
+UserManager::User::User() : oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
+                            is_displayname_unique_(false) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }
@@ -246,6 +261,8 @@ void UserManager::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserImages,
                                       PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
+                                      PrefService::UNSYNCABLE_PREF);
 }
 
 std::vector<UserManager::User> UserManager::GetUsers() const {
@@ -256,6 +273,8 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
   PrefService* local_state = g_browser_process->local_state();
   const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
   const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
+  const DictionaryValue* prefs_oauth_status =
+      local_state->GetDictionary(kUserOAuthTokenStatus);
 
   if (prefs_users) {
     std::map<std::string, size_t> display_name_count;
@@ -270,6 +289,15 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         UserImages::const_iterator image_it = user_images_.find(email);
         std::string image_path;
         if (image_it == user_images_.end()) {
+          // Get OAuth token status.
+          int oauth_token_status;
+          if (prefs_oauth_status &&
+              prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
+                  &oauth_token_status)) {
+            user.set_oauth_token_status(
+                static_cast<OAuthTokenStatus>(oauth_token_status));
+          }
+          // Get account image path.
           if (prefs_images &&
               prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
             int default_image_id = kDefaultImagesCount;
@@ -402,6 +430,11 @@ void UserManager::RemoveUserFromList(const std::string& email) {
   prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
   prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
 
+  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
+  int oauth_status;
+  prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
+  prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
+
   prefs->SavePersistentPrefs();
 
   int default_image_id = kDefaultImagesCount;
@@ -454,6 +487,12 @@ void UserManager::SaveUserImage(const std::string& username,
       FROM_HERE,
       NewRunnableFunction(&SaveImageToFile,
                           image, image_path, username));
+}
+
+void UserManager::SaveUserOAuthStatus(const std::string& username,
+                                      OAuthTokenStatus oauth_token_status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SaveOAuthTokenStatusToLocalState(username, oauth_token_status);
 }
 
 void UserManager::SaveUserImagePath(const std::string& username,

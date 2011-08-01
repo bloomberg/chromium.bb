@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class LoginStatusConsumer;
 const char Authenticator::kSpecialCaseDomain[] = "gmail.com";
 
 Authenticator::Authenticator(LoginStatusConsumer* consumer)
-    : consumer_(consumer), auth_profile_(NULL) {
+    : consumer_(consumer), authentication_profile_(NULL) {
 }
 
 Authenticator::~Authenticator() {}

@@ -103,7 +103,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
+      bool pending_requests,
+      bool using_oauth);
   virtual void OnOffTheRecordLoginSuccess();
   virtual void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);

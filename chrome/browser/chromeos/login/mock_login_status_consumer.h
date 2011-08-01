@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,12 @@ class MockConsumer : public LoginStatusConsumer {
   virtual ~MockConsumer();
 
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
-  MOCK_METHOD4(OnLoginSuccess, void(
+  MOCK_METHOD5(OnLoginSuccess, void(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& result,
-      bool pending_requests));
+      bool pending_requests,
+      bool using_oauth));
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
   MOCK_METHOD1(OnPasswordChangeDetected,
       void(const GaiaAuthConsumer::ClientLoginResult& result));
@@ -37,12 +38,14 @@ class MockConsumer : public LoginStatusConsumer {
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
+      bool pending_requests,
+      bool using_oauth);
   static void OnSuccessQuitAndFail(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
+      bool pending_requests,
+      bool using_oauth);
 
   // Compatible with LoginStatusConsumer::OnLoginFailure()
   static void OnFailQuit(const LoginFailure& error);

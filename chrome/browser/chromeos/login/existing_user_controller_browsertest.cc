@@ -83,7 +83,7 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
   void OnLoginSuccess(const std::string&,
                       const std::string&,
                       const GaiaAuthConsumer::ClientLoginResult&,
-                      bool) {
+                      bool, bool) {
     LoginPerformer* login_performer = controller_->login_performer_.release();
     login_performer = NULL;
     controller_->ActivateWizard(WizardController::kUserImageScreenName);

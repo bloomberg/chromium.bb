@@ -49,7 +49,8 @@ void MockAuthenticator::OnLoginSuccess(
   consumer_->OnLoginSuccess(expected_username_,
                             expected_password_,
                             credentials,
-                            request_pending);
+                            request_pending,
+                            false);
 }
 
 void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
@@ -79,6 +80,7 @@ void MockLoginUtils::PrepareProfile(
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& res,
     bool pending_requests,
+    bool using_oauth,
     Delegate* delegate) {
   DCHECK_EQ(expected_username_, username);
   DCHECK_EQ(expected_password_, password);

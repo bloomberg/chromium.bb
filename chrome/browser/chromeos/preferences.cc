@@ -193,6 +193,14 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUseSharedProxies,
                              false,
                              PrefService::SYNCABLE_PREF);
+
+  // OAuth1 all access token and secret pair.
+  prefs->RegisterStringPref(prefs::kOAuth1Token,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kOAuth1Secret,
+                            "",
+                            PrefService::UNSYNCABLE_PREF);
 }
 
 void Preferences::Init(PrefService* prefs) {

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -48,7 +49,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // Returns true if the attempt gets sent successfully and false if not.
   virtual bool CompleteLogin(Profile* profile,
                              const std::string& username,
-                             const std::string& password);
+                             const std::string& password) OVERRIDE;
 
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers.  The ultimate result is either a callback to
@@ -67,18 +68,18 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
-                                   const std::string& login_captcha);
+                                   const std::string& login_captcha) OVERRIDE;
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to the cached credentials. This will never contact
   // the server even if it's online. The auth result is sent to
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
   virtual bool AuthenticateToUnlock(const std::string& username,
-                                    const std::string& password);
+                                    const std::string& password) OVERRIDE;
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginOffTheRecord();
+  virtual void LoginOffTheRecord() OVERRIDE;
 
   // Public for testing.
   void set_system_salt(const chromeos::CryptohomeBlob& new_salt) {
@@ -98,8 +99,8 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // and also call back to the login UI.
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool request_pending);
-  virtual void OnLoginFailure(const LoginFailure& error);
+      bool request_pending) OVERRIDE;
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
 
   void CheckOffline(const LoginFailure& error);
   void CheckLocalaccount(const LoginFailure& error);
@@ -107,20 +108,22 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // Call these methods on the UI thread.
   virtual void RecoverEncryptedData(
       const std::string& old_password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void ResyncEncryptedData(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void RetryAuth(Profile* profile,
                          const std::string& username,
                          const std::string& password,
                          const std::string& login_token,
-                         const std::string& login_captcha);
+                         const std::string& login_captcha) OVERRIDE;
+  virtual void VerifyOAuth1AccessToken(const std::string& auth1_token,
+      const std::string& oauth1_secret) OVERRIDE;
 
   // Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error);
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnClientLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
 
  private:
 

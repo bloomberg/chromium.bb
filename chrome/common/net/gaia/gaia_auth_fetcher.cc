@@ -57,15 +57,21 @@ const char GaiaAuthFetcher::kTokenAuthFormat[] =
 
 // static
 const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
+const char GaiaAuthFetcher::kAccountDeletedErrorCode[] = "adel";
 // static
 const char GaiaAuthFetcher::kAccountDisabledError[] = "AccountDisabled";
+const char GaiaAuthFetcher::kAccountDisabledErrorCode[] = "adis";
 // static
 const char GaiaAuthFetcher::kBadAuthenticationError[] = "BadAuthentication";
+const char GaiaAuthFetcher::kBadAuthenticationErrorCode[] = "badauth";
 // static
 const char GaiaAuthFetcher::kCaptchaError[] = "CaptchaRequired";
+const char GaiaAuthFetcher::kCaptchaErrorCode[] = "cr";
 // static
 const char GaiaAuthFetcher::kServiceUnavailableError[] =
     "ServiceUnavailable";
+const char GaiaAuthFetcher::kServiceUnavailableErrorCode[] =
+    "ire";
 // static
 const char GaiaAuthFetcher::kErrorParam[] = "Error";
 // static
@@ -376,6 +382,59 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
     }
     if (error == kServiceUnavailableError) {
+      return GoogleServiceAuthError(
+          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+    }
+
+    LOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+  }
+
+  NOTREACHED();
+  return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
+// static
+GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
+    const std::string& data,
+    const net::URLRequestStatus& status) {
+  if (!status.is_success()) {
+    if (status.status() == net::URLRequestStatus::CANCELED) {
+      return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
+    } else {
+      LOG(WARNING) << "Could not reach Google Accounts servers: errno "
+          << status.os_error();
+      return GoogleServiceAuthError::FromConnectionError(status.os_error());
+    }
+  } else {
+    if (IsSecondFactorSuccess(data)) {
+      return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
+    }
+
+    std::string error;
+    std::string url;
+    std::string captcha_url;
+    std::string captcha_token;
+    ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
+    LOG(WARNING) << "OAuthLogin failed with " << error;
+
+    if (error == kCaptchaErrorCode) {
+      GURL image_url(
+          GaiaUrls::GetInstance()->captcha_url_prefix() + captcha_url);
+      GURL unlock_url(url);
+      return GoogleServiceAuthError::FromCaptchaChallenge(
+          captcha_token, image_url, unlock_url);
+    }
+    if (error == kAccountDeletedErrorCode)
+      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
+    if (error == kAccountDisabledErrorCode)
+      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
+    if (error == kBadAuthenticationErrorCode) {
+      return GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+    }
+    if (error == kServiceUnavailableErrorCode) {
       return GoogleServiceAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }

@@ -67,6 +67,9 @@ class MockAuthenticator : public Authenticator {
                          const std::string& login_token,
                          const std::string& login_captcha) {}
 
+  virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
+                                       const std::string& oauth1_secret) {}
+
  private:
   std::string expected_username_;
   std::string expected_password_;
@@ -86,6 +89,7 @@ class MockLoginUtils : public LoginUtils {
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
+                              bool using_oauth,
                               Delegate* delegate);
 
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {}
@@ -100,7 +104,7 @@ class MockLoginUtils : public LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
-  virtual void FetchTokens(
+  virtual void StartSync(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 

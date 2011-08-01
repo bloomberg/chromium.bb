@@ -30,7 +30,8 @@ void MockConsumer::OnSuccessQuit(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   MessageLoop::current()->Quit();
 }
 
@@ -39,7 +40,8 @@ void MockConsumer::OnSuccessQuitAndFail(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
   MessageLoop::current()->Quit();
 }

@@ -72,7 +72,8 @@ class ScreenLocker : public LoginStatusConsumer,
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& result,
-                              bool pending_requests);
+                              bool pending_requests,
+                              bool using_oauth);
 
   // Overridden from views::BubbleDelegate.
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);

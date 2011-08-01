@@ -79,7 +79,8 @@ class LoginPerformer : public LoginStatusConsumer,
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests) OVERRIDE;
+      bool pending_requests,
+      bool using_oauth) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
@@ -207,6 +208,9 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Authorization mode type.
   AuthorizationMode auth_mode_;
+
+  // True if we use OAuth during authorization process.
+  bool using_oauth_;
 
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 

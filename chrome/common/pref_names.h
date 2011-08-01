@@ -172,6 +172,8 @@ extern const char kShowPlanNotifications[];
 extern const char kShow3gPromoNotification[];
 extern const char kLastUsedFileBrowserHandlers[];
 extern const char kUseSharedProxies[];
+extern const char kOAuth1Token[];
+extern const char kOAuth1Secret[];
 #endif
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

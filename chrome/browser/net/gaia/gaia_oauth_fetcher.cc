@@ -16,6 +16,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -116,6 +117,30 @@ GURL GaiaOAuthFetcher::MakeGetOAuthTokenUrl(
 }
 
 // static
+std::string GaiaOAuthFetcher::MakeOAuthLoginBody(
+    const char* source,
+    const char* service,
+    const std::string& oauth1_access_token,
+    const std::string& oauth1_access_token_secret) {
+  OAuthRequestSigner::Parameters parameters;
+  parameters["service"] = service;
+  parameters["source"] = source;
+  std::string signed_request;
+  bool is_signed = OAuthRequestSigner::Sign(
+      GURL(kOAuth1LoginScope),
+      parameters,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::POST_METHOD,
+      "anonymous",  // oauth_consumer_key
+      "anonymous",  // consumer secret
+      oauth1_access_token,  // oauth_token
+      oauth1_access_token_secret,  // token secret
+      &signed_request);
+  DCHECK(is_signed);
+  return signed_request;
+}
+
+// static
 std::string GaiaOAuthFetcher::MakeOAuthGetAccessTokenBody(
     const std::string& oauth1_request_token) {
   OAuthRequestSigner::Parameters empty_parameters;
@@ -175,6 +200,29 @@ void GaiaOAuthFetcher::ParseGetOAuthTokenResponse(
       std::string decoded;
       if (OAuthRequestSigner::Decode(i->second, &decoded))
         token->assign(decoded);
+    }
+  }
+}
+// Helper method that extracts tokens from a successful reply.
+// static
+void GaiaOAuthFetcher::ParseOAuthLoginResponse(
+    const std::string& data,
+    std::string* sid,
+    std::string* lsid,
+    std::string* auth) {
+  using std::vector;
+  using std::pair;
+  using std::string;
+  vector<pair<string, string> > tokens;
+  base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
+  for (vector<pair<string, string> >::iterator i = tokens.begin();
+      i != tokens.end(); ++i) {
+    if (i->first == "SID") {
+      *sid = i->second;
+    } else if (i->first == "LSID") {
+      *lsid = i->second;
+    } else if (i->first == "Auth") {
+      *auth = i->second;
     }
   }
 }
@@ -296,6 +344,27 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,
                  Source<Browser>(popup_));
+}
+
+void GaiaOAuthFetcher::StartOAuthLogin(
+    const char* source,
+    const char* service,
+    const std::string& oauth1_access_token,
+    const std::string& oauth1_access_token_secret) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  // Must outlive fetcher_.
+  request_body_ = MakeOAuthLoginBody(source, service, oauth1_access_token,
+                                     oauth1_access_token_secret);
+  request_headers_ = "";
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   GURL(kOAuth1LoginScope),
+                                   request_body_,
+                                   request_headers_,
+                                   false,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
 }
 
 void GaiaOAuthFetcher::StartGetOAuthTokenRequest() {
@@ -489,6 +558,25 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
   }
 }
 
+void GaiaOAuthFetcher::OnOAuthLoginFetched(
+    const std::string& data,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  if (status.is_success() && response_code == RC_REQUEST_OK) {
+    std::string sid;
+    std::string lsid;
+    std::string auth;
+    ParseOAuthLoginResponse(data, &sid, &lsid, &auth);
+    consumer_->OnOAuthLoginSuccess(sid, lsid, auth);
+  } else {
+    // OAuthLogin returns error messages that are identical to ClientLogin,
+    // so we use GaiaAuthFetcher::GenerateAuthError to parse the response
+    // instead.
+    consumer_->OnOAuthLoginFailure(
+        GaiaAuthFetcher::GenerateOAuthLoginError(data, status));
+  }
+}
+
 void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
@@ -548,6 +636,8 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
   fetch_pending_ = false;
   if (StartsWithASCII(url.spec(), kGetOAuthTokenUrl, true)) {
     OnGetOAuthTokenUrlFetched(cookies, status, response_code);
+  } else if (url.spec() == kOAuth1LoginScope) {
+    OnOAuthLoginFetched(data, status, response_code);
   } else if (url.spec() == kOAuthGetAccessTokenUrl) {
     OnOAuthGetAccessTokenFetched(data, status, response_code);
   } else if (url.spec() == kOAuthWrapBridgeUrl) {

@@ -52,7 +52,7 @@ class OnlineAttemptTest : public ::testing::Test {
     // Passes ownership of |loader| to CrosLibrary.
     test_api->SetLibraryLoader(loader, true);
 
-    attempt_ = new OnlineAttempt(&state_, resolver_.get());
+    attempt_ = new OnlineAttempt(false, &state_, resolver_.get());
 
     io_thread_.Start();
   }
@@ -186,7 +186,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   MockFactory<HostedFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
-  attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -210,7 +210,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   MockFactory<SuccessFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
-  attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

@@ -33,6 +33,13 @@ class RemoveUserDelegate;
 class UserManager : public UserImageLoader::Delegate,
                     public NotificationObserver {
  public:
+  // User OAuth token status according to the last check.
+  typedef enum {
+    OAUTH_TOKEN_STATUS_UNKNOWN = 0,
+    OAUTH_TOKEN_STATUS_INVALID = 1,
+    OAUTH_TOKEN_STATUS_VALID   = 2,
+  } OAuthTokenStatus;
+
   // A class representing information about a previously logged in user.
   class User {
    public:
@@ -57,11 +64,18 @@ class UserManager : public UserImageLoader::Delegate,
     void set_image(const SkBitmap& image) { image_ = image; }
     const SkBitmap& image() const { return image_; }
 
+    // OAuth token status for this user.
+    OAuthTokenStatus oauth_token_status() { return oauth_token_status_; }
+    void set_oauth_token_status(OAuthTokenStatus status) {
+      oauth_token_status_ = status;
+    }
+
    private:
     friend class UserManager;
 
     std::string email_;
     SkBitmap image_;
+    OAuthTokenStatus oauth_token_status_;
 
     // Cached flag of whether any users has same display name.
     bool is_displayname_unique_;
@@ -111,6 +125,10 @@ class UserManager : public UserImageLoader::Delegate,
   // Saves image to file and saves image path in local state preferences.
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);
+
+  // Saves user's oauth token status in local state preferences.
+  void SaveUserOAuthStatus(const std::string& username,
+                           OAuthTokenStatus oauth_token_status);
 
   // Saves user image path for the user. Can be used to set default images.
   void SaveUserImagePath(const std::string& username,

@@ -650,6 +650,7 @@ class InputEventObserver : public MessageLoopForUI::Observer {
       screen_locker_->OnLoginSuccess(not_used_string,
                                      not_used_string,
                                      not_used,
+                                     false,
                                      false);
     }
   }
@@ -857,7 +858,8 @@ void ScreenLocker::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& unused,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
   if (authentication_start_time_.is_null()) {
     if (!username.empty())
@@ -882,7 +884,8 @@ void ScreenLocker::OnLoginSuccess(
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess(username, password,
-                                           unused, pending_requests);
+                                           unused, pending_requests,
+                                           using_oauth);
 }
 
 void ScreenLocker::BubbleClosing(Bubble* bubble, bool closed_by_escape) {

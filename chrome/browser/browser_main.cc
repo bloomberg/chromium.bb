@@ -1126,12 +1126,14 @@ class StubLogin : public chromeos::LoginStatusConsumer,
   void OnLoginSuccess(const std::string& username,
                       const std::string& password,
                       const GaiaAuthConsumer::ClientLoginResult& credentials,
-                      bool pending_requests) {
+                      bool pending_requests,
+                      bool using_oauth) {
     // Will call OnProfilePrepared in the end.
     chromeos::LoginUtils::Get()->PrepareProfile(username,
                                                 password,
                                                 credentials,
                                                 pending_requests,
+                                                using_oauth,
                                                 this);
   }
 

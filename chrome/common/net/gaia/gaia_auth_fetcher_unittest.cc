@@ -374,7 +374,39 @@ TEST_F(GaiaAuthFetcherTest,ServiceUnavailableError) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=ServiceUnavailable\n";
   GoogleServiceAuthError error =
-      GaiaAuthFetcher::GenerateAuthError(data, status);
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthAccountDeletedError) {
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=adel\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DELETED);
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthAccountDisabledError) {
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=adis\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DISABLED);
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthBadAuthenticationError) {
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=badauth\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthServiceUnavailableError) {
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  std::string data = "Error=ire\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status);
   EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 

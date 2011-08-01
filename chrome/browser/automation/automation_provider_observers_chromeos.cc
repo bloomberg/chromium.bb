@@ -72,7 +72,8 @@ void LoginObserver::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   controller_->set_login_status_consumer(NULL);
 }
 

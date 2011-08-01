@@ -145,6 +145,8 @@ class ParallelAuthenticator : public Authenticator,
                          const std::string& password,
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE;
+  virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
+      const std::string& oauth1_secret) OVERRIDE;
 
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
@@ -222,6 +224,9 @@ class ParallelAuthenticator : public Authenticator,
 
   void SetLocalaccount(const std::string& new_name);
 
+  // Records OAuth1 access token verification failure for |user_account|.
+  void RecordOAuthCheckFailure(const std::string& user_account);
+
   // Stores a hash of |password|, salted with the ascii of |system_salt_|.
   std::string HashPassword(const std::string& password);
 
@@ -278,6 +283,9 @@ class ParallelAuthenticator : public Authenticator,
   std::string localaccount_;
   bool checked_for_localaccount_;  // Needed because empty localaccount_ is ok.
   base::Lock localaccount_lock_;  // A lock around checked_for_localaccount_.
+
+  // True if we use OAuth-based authentication flow.
+  bool using_oauth_;
 
   friend class ResolveChecker;
   friend class ParallelAuthenticatorTest;

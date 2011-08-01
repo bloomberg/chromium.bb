@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
@@ -48,6 +50,8 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
+      using_oauth_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebUIGaiaLogin)),
       method_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
@@ -116,7 +120,8 @@ void LoginPerformer::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   UserMetrics::RecordAction(UserMetricsAction("Login_Success"));
   // 0 - Login success offline and online. It's a new user. or it's an
   //     existing user and offline auth took longer than online auth.
@@ -138,7 +143,8 @@ void LoginPerformer::OnLoginSuccess(
     delegate_->OnLoginSuccess(username,
                               password,
                               credentials,
-                              pending_requests);
+                              pending_requests,
+                              using_oauth);
     return;
   } else {
     // Online login has succeeded.
@@ -164,15 +170,14 @@ void LoginPerformer::OnProfileCreated(Profile* profile, Status status) {
       return;
   }
 
-  if (auth_mode_ == AUTH_MODE_INTERNAL) {
-    // Fetch cookies, tokens for the loaded profile.
+  if (!using_oauth_) {
+    // Fetch cookies, tokens for the loaded profile only if authentication
+    // was performed via ClientLogin. We don't need this in the case when
+    // we use extension + OAuth1 access token check flow.
     LoginUtils::Get()->FetchCookies(profile, credentials_);
-    LoginUtils::Get()->FetchTokens(profile, credentials_);
-    credentials_ = GaiaAuthConsumer::ClientLoginResult();
-  } else {
-    Profile* default_profile = authenticator_->AuthenticationProfile();
-    LoginUtils::Get()->TransferDefaultCookies(default_profile, profile);
   }
+  LoginUtils::Get()->StartSync(profile, credentials_);
+  credentials_ = GaiaAuthConsumer::ClientLoginResult();
 
   // Don't unlock screen if it was locked while we're waiting
   // for initial online auth.

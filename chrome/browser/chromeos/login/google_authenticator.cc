@@ -121,7 +121,7 @@ bool GoogleAuthenticator::CompleteLogin(Profile* profile,
                                         const std::string& username,
                                         const std::string& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  auth_profile_ = profile;
+  authentication_profile_ = profile;
   username_.assign(Canonicalize(username));
   ascii_hash_.assign(HashPassword(password));
 
@@ -140,7 +140,7 @@ bool GoogleAuthenticator::AuthenticateToLogin(
     const std::string& login_token,
     const std::string& login_captcha) {
   unlock_ = false;
-  auth_profile_ = profile;
+  authentication_profile_ = profile;
 
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.
@@ -305,7 +305,8 @@ void GoogleAuthenticator::OnLoginSuccess(
     consumer_->OnLoginSuccess(username_,
                               password_,
                               credentials,
-                              request_pending);
+                              request_pending,
+                              false);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
     consumer_->OnPasswordChangeDetected(credentials);
@@ -351,6 +352,7 @@ void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
       consumer_->OnLoginSuccess(username_,
                                 std::string(),
                                 GaiaAuthConsumer::ClientLoginResult(),
+                                false,
                                 false);
     } else {
       LOG(ERROR) << "Could not mount tmpfs for local account: " << mount_error;
@@ -402,6 +404,11 @@ void GoogleAuthenticator::RetryAuth(Profile* profile,
                                     const std::string& password,
                                     const std::string& login_token,
                                     const std::string& login_captcha) {
+  NOTIMPLEMENTED();
+}
+
+void GoogleAuthenticator::VerifyOAuth1AccessToken(
+    const std::string& auth1_token, const std::string& oauth1_secret) {
   NOTIMPLEMENTED();
 }
 

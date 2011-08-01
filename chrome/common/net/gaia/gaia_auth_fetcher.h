@@ -85,6 +85,13 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   // Stop any URL fetches in progress.
   void CancelRequest();
 
+  // From a URLFetcher result, generate an appropriate error.
+  // From the API documentation, both IssueAuthToken and ClientLogin have
+  // the same error returns.
+  static GoogleServiceAuthError GenerateOAuthLoginError(
+      const std::string& data,
+      const net::URLRequestStatus& status);
+
  private:
   // ClientLogin body constants that don't change
   static const char kCookiePersistence[];
@@ -104,10 +111,15 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
 
   // Constants for parsing ClientLogin errors.
   static const char kAccountDeletedError[];
+  static const char kAccountDeletedErrorCode[];
   static const char kAccountDisabledError[];
+  static const char kAccountDisabledErrorCode[];
   static const char kBadAuthenticationError[];
+  static const char kBadAuthenticationErrorCode[];
   static const char kCaptchaError[];
+  static const char kCaptchaErrorCode[];
   static const char kServiceUnavailableError[];
+  static const char kServiceUnavailableErrorCode[];
   static const char kErrorParam[];
   static const char kErrorUrlParam[];
   static const char kCaptchaUrlParam[];
@@ -142,13 +154,6 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
                                       std::string* captcha_url,
                                       std::string* captcha_token);
 
-  // From a URLFetcher result, generate an appropriate error.
-  // From the API documentation, both IssueAuthToken and ClientLogin have
-  // the same error returns.
-  static GoogleServiceAuthError GenerateAuthError(
-      const std::string& data,
-      const net::URLRequestStatus& status);
-
   // Is this a special case Gaia error for TwoFactor auth?
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
 
@@ -181,6 +186,12 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
                                        const GURL& gaia_gurl_,
                                        URLFetcher::Delegate* delegate);
 
+  // From a URLFetcher result, generate an appropriate error.
+  // From the API documentation, both IssueAuthToken and ClientLogin have
+  // the same error returns.
+  static GoogleServiceAuthError GenerateAuthError(
+      const std::string& data,
+      const net::URLRequestStatus& status);
 
   // These fields are common to GaiaAuthFetcher, same every request
   GaiaAuthConsumer* const consumer_;

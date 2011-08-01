@@ -334,7 +334,8 @@ void ExistingUserController::OnLoginSuccess(
     const std::string& username,
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
-    bool pending_requests) {
+    bool pending_requests,
+    bool using_oauth) {
   bool known_user = UserManager::Get()->IsKnownUser(username);
   bool login_only =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -357,12 +358,14 @@ void ExistingUserController::OnLoginSuccess(
                                     password,
                                     credentials,
                                     pending_requests,
+                                    using_oauth,
                                     this);
 
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess(username, password,
-                                           credentials, pending_requests);
+                                           credentials, pending_requests,
+                                           using_oauth);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {

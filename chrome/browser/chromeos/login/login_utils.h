@@ -56,6 +56,7 @@ class LoginUtils {
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
+      bool using_oauth,
       Delegate* delegate) = 0;
 
   // Invoked after the tmpfs is successfully mounted.
@@ -81,7 +82,7 @@ class LoginUtils {
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
   // Supply credentials for sync and others to use.
-  virtual void FetchTokens(
+  virtual void StartSync(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 

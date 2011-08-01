@@ -30,6 +30,11 @@ class GaiaOAuthConsumer {
 
   virtual void OnUserInfoSuccess(const std::string& email) {}
   virtual void OnUserInfoFailure(const GoogleServiceAuthError& error) {}
+
+  virtual void OnOAuthLoginSuccess(const std::string& sid,
+                                   const std::string& lsid,
+                                   const std::string& auth) {}
+  virtual void OnOAuthLoginFailure(const GoogleServiceAuthError& error) {}
 };
 
 #endif  // CHROME_BROWSER_NET_GAIA_GAIA_OAUTH_CONSUMER_H_
