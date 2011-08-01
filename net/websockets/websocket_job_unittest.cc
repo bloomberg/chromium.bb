@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/cookie_store.h"
+#include "net/base/cookie_store_test_helpers.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
@@ -191,22 +192,23 @@ class MockCookieStore : public net::CookieStore {
                                   const net::CookieOptions& options,
                                   std::string* cookie_line,
                                   std::vector<CookieInfo>* cookie_infos) {
-    NOTREACHED();
+    ADD_FAILURE();
   }
   virtual void GetCookiesWithInfoAsync(
       const GURL& url,
       const net::CookieOptions& options,
       const GetCookieInfoCallback& callback) {
-    NOTREACHED();
+    ADD_FAILURE();
   }
   virtual void DeleteCookie(const GURL& url,
-                            const std::string& cookie_name) {}
-
+                            const std::string& cookie_name) {
+    ADD_FAILURE();
+  }
   virtual void DeleteCookieAsync(const GURL& url,
                                  const std::string& cookie_name,
                                  const base::Closure& callback) {
-    NOTREACHED();
-}
+    ADD_FAILURE();
+  }
 
   virtual net::CookieMonster* GetCookieMonster() { return NULL; }
 
@@ -615,6 +617,46 @@ void WebSocketJobTest::TestSlowHandshake() {
   websocket_->OnReceivedData(socket_.get(), "8jKS'y:G*Co,Wxa-", 16);
   EXPECT_EQ(kHandshakeResponseWithoutCookie, delegate.received_data());
   EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
+  CloseWebSocketJob();
+}
+
+TEST_F(WebSocketJobTest, DelayedCookies) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  GURL url("ws://example.com/demo");
+  GURL cookieUrl("http://example.com/demo");
+  CookieOptions cookie_options;
+  scoped_refptr<DelayedCookieMonster> cookie_store = new DelayedCookieMonster();
+  context_->set_cookie_store(cookie_store);
+  cookie_store->SetCookieWithOptionsAsync(
+      cookieUrl, "CR-test=1", cookie_options,
+      net::CookieMonster::SetCookiesCallback());
+  cookie_options.set_include_httponly();
+  cookie_store->SetCookieWithOptionsAsync(
+      cookieUrl, "CR-test-httponly=1", cookie_options,
+      net::CookieMonster::SetCookiesCallback());
+
+  MockSocketStreamDelegate delegate;
+  InitWebSocketJob(url, &delegate, STREAM_MOCK_SOCKET);
+  SkipToConnecting();
+
+  bool sent = websocket_->SendData(kHandshakeRequestWithCookie,
+                                   kHandshakeRequestWithCookieLength);
+  EXPECT_TRUE(sent);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kHandshakeRequestWithFilteredCookie, sent_data());
+  EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
+  websocket_->OnSentData(socket_,
+                         kHandshakeRequestWithFilteredCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithCookieLength,
+            delegate.amount_sent());
+
+  websocket_->OnReceivedData(socket_.get(),
+                             kHandshakeResponseWithCookie,
+                             kHandshakeResponseWithCookieLength);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kHandshakeResponseWithoutCookie, delegate.received_data());
+  EXPECT_EQ(WebSocketJob::OPEN, GetWebSocketJobState());
+
   CloseWebSocketJob();
 }
 
