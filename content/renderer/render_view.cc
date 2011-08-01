@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -1180,30 +1179,15 @@ void RenderView::UpdateURL(WebFrame* frame) {
 }
 
 // Tell the embedding application that the title of the active page has changed
-void RenderView::UpdateTitle(WebFrame* frame, const string16& title,
-                             WebTextDirection title_direction) {
-  // Ignore all but top level navigations.
-  if (frame->parent())
-    return;
-
-  string16 fixed_title = title.substr(0, content::kMaxTitleChars);
-
-  // Wrap with extra Unicode formatting to make the title strongly directional.
-  if (!fixed_title.empty()) {
-    if (title_direction == WebKit::WebTextDirectionLeftToRight) {
-      // To avoid needing to complicate tests that only use ASCII characters,
-      // special-case out some known strongly directional characters.
-      char16 ch = fixed_title[0];
-      bool first_char_is_already_strongly_ltr =
-          (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
-      if (!first_char_is_already_strongly_ltr)
-        base::i18n::WrapStringWithLTRFormatting(&fixed_title);
-    } else {
-      base::i18n::WrapStringWithRTLFormatting(&fixed_title);
-    }
+void RenderView::UpdateTitle(WebFrame* frame, const string16& title) {
+  // Ignore all but top level navigations...
+  if (!frame->parent()) {
+    Send(new ViewHostMsg_UpdateTitle(
+        routing_id_,
+        page_id_,
+        title.length() > content::kMaxTitleChars ?
+            title.substr(0, content::kMaxTitleChars) : title));
   }
-
-  Send(new ViewHostMsg_UpdateTitle(routing_id_, page_id_, fixed_title));
 }
 
 void RenderView::UpdateEncoding(WebFrame* frame,
@@ -2557,7 +2541,9 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
 
 void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title,
                                  WebTextDirection direction) {
-  UpdateTitle(frame, title, direction);
+  // TODO: pass direction through various APIs.
+  // http://code.google.com/p/chromium/issues/detail?id=79903
+  UpdateTitle(frame, title);
 
   // Also check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -2622,11 +2608,7 @@ void RenderView::didNavigateWithinPage(
 
   didCommitProvisionalLoad(frame, is_new_navigation);
 
-  // TODO(evan): update this to use ->pageTitleDirection() once we pull in new
-  // WebKit.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle(),
-              WebKit::WebTextDirectionLeftToRight);
+  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle());
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {

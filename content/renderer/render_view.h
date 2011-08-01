@@ -696,8 +696,7 @@ class RenderView : public RenderWidget,
   virtual ~RenderView();
 
   void UpdateURL(WebKit::WebFrame* frame);
-  void UpdateTitle(WebKit::WebFrame* frame, const string16& title,
-                   WebKit::WebTextDirection title_direction);
+  void UpdateTitle(WebKit::WebFrame* frame, const string16& title);
   void UpdateSessionHistory(WebKit::WebFrame* frame);
 
   // Update current main frame's encoding and send it to browser window.
