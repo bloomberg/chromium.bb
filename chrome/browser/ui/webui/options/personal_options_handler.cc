@@ -355,7 +355,8 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 void PersonalOptionsHandler::Initialize() {
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(ThemeServiceFactory::GetForProfile(
+                     web_ui_->GetProfile())));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();

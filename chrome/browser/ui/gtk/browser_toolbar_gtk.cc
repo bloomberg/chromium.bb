@@ -97,9 +97,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
                  chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
 }
@@ -121,6 +118,10 @@ void BrowserToolbarGtk::Init(Profile* profile,
   SetProfile(profile);
 
   theme_service_ = GtkThemeService::GetFrom(profile);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 Source<ThemeService>(theme_service_));
+
   offscreen_entry_.Own(gtk_entry_new());
 
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);

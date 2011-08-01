@@ -406,7 +406,7 @@ void OmniboxViewGtk::Init() {
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 #else
   // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe

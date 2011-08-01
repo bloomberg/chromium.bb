@@ -313,7 +313,7 @@ OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 
   // TODO(erg): There appears to be a bug somewhere in something which shows

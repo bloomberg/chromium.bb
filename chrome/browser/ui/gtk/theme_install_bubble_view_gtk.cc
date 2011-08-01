@@ -50,6 +50,10 @@ ThemeInstallBubbleViewGtk::ThemeInstallBubbleViewGtk(GtkWidget* parent)
   InitWidgets();
 
   // Close when theme has been installed.
+  //
+  // TODO(erg): At least for version 1 of multiprofiles, we're still going to
+  // listen to AllSources(). Installing a theme blocks the entire UI thread so
+  // we won't have another profile trying to install a theme.
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,

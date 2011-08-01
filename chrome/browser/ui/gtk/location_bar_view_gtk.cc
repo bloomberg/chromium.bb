@@ -333,7 +333,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(theme_service_));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
 

@@ -43,6 +43,8 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -173,7 +175,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
                  NotificationService::AllSources());
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
+                 Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile())));
 #endif
 
   // Register for notifications about all interested prefs change.
