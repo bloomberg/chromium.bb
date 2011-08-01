@@ -6,6 +6,7 @@
 
 import datetime
 import math
+import multiprocessing
 import os
 import re
 import shutil
@@ -808,11 +809,9 @@ class BuildTargetStage(BuilderStage):
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
-  def __init__(self, bot_id, options, build_config, upload_url,
-               local_archive_path):
+  def __init__(self, bot_id, options, build_config):
     super(TestStage, self).__init__(bot_id, options, build_config)
-    self._upload_url = upload_url
-    self._local_archive_path = local_archive_path
+    self._test_tarball = None
 
   def _CreateTestRoot(self):
     """Returns a temporary directory for test results in chroot.
@@ -854,9 +853,8 @@ class TestStage(BuilderStage):
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
       finally:
-        commands.ArchiveTestResults(
-            self._build_root, test_results_dir, self._upload_url,
-            self._local_archive_path, self._options.debug)
+        self._test_tarball = commands.ArchiveTestResults(self._build_root,
+                                                         test_results_dir)
 
 
 class TestHWStage(NonHaltingBuilderStage):
@@ -915,7 +913,14 @@ class RemoteTestStatusStage(BuilderStage):
 
 
 class ArchiveStage(NonHaltingBuilderStage):
-  """Archives build and test artifacts for developer consumption."""
+  """Archives build and test artifacts for developer consumption.
+
+     This is intended to run in the background, in parallel with tests.
+     When the tests have completed, TestStageComplete method must be
+     called. (If no tests are run, the TestStageComplete method must be
+     called with 'None'.)
+  """
+
   def __init__(self, bot_id, options, build_config):
     super(ArchiveStage, self).__init__(bot_id, options, build_config)
     if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
@@ -931,17 +936,21 @@ class ArchiveStage(NonHaltingBuilderStage):
       self._local_archive_path = os.path.join(self._build_root,
                                               'trybot_archive')
 
-  def GetGSUploadLocation(self):
-    """Get the Google Storage location where we should upload artifacts."""
-    if self._gsutil_archive:
-      return '%s/%s' % (self._gsutil_archive, self._set_version)
-    else:
-      return None
+    self._test_results_queue = multiprocessing.Queue()
+
+  def TestStageComplete(self, test_results):
+    """Tell Archive Stage that the test stage has completed.
+
+       Args:
+         test_results: The test results tarball from the tests. If no tests
+                       results are available, this should be set to None.
+    """
+    self._test_results_queue.put(test_results)
 
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
     if self._gsutil_archive:
-      upload_location = self.GetGSUploadLocation()
+      upload_location = self._GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
       url = '%s/_index.html' % upload_location
       return url.replace('gs://', url_prefix)
@@ -950,19 +959,35 @@ class ArchiveStage(NonHaltingBuilderStage):
       return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
                                           self._set_version)
 
-  def GetLocalArchivePath(self):
+  def _GetGSUploadLocation(self):
+    """Get the Google Storage location where we should upload artifacts."""
+    if self._gsutil_archive:
+      return '%s/%s' % (self._gsutil_archive, self._set_version)
+    else:
+      return None
+
+  def _GetFullArchivePath(self):
     return os.path.join(self._local_archive_path, self._bot_id,
                         self._set_version)
 
-  def UpdateIndex(self):
-    upload_url = self.GetGSUploadLocation()
-    if upload_url and not self._options.debug:
-      commands.UpdateIndex(upload_url)
+  def _GetTestTarball(self):
+    """Get the path to the test tarball."""
+    cros_lib.Info('Waiting for test results dir...')
+    test_tarball = self._test_results_queue.get()
+    if test_tarball:
+      cros_lib.Info('Found test results tarball at %s...' % test_tarball)
+    else:
+      cros_lib.Info('No test results.')
+    return test_tarball
 
   def _PerformStage(self):
+    full_archive_path = self._GetFullArchivePath()
     if not self._options.buildbot:
-      # Trybot: Clear artifacts from previous run.
+      # Trybot: Clear artifacts from all previous runs.
       shutil.rmtree(self._local_archive_path, ignore_errors=True)
+    else:
+      # Buildbot: Clear out any leftover build artifacts, if present.
+      shutil.rmtree(full_archive_path)
 
     commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
@@ -974,13 +999,25 @@ class ArchiveStage(NonHaltingBuilderStage):
                              board=self._build_config['board'],
                              official=self._build_config['chromeos_official'])
 
+    # Upload test results when they are ready.
+    upload_url = self._GetGSUploadLocation()
+    test_results = self._GetTestTarball()
+    if test_results:
+      commands.UploadTestTarball(
+          test_results, full_archive_path, upload_url, self._options.debug)
+
+    # Update the _index.html file with the test artifacts and build artifacts
+    # uploaded above.
+    if upload_url and not self._options.debug:
+      commands.UpdateIndex(upload_url)
+
     # TODO: When we support branches fully, the friendly name of the branch
     # needs to be used with PushImages
     if not self._options.debug and  self._build_config['push_image']:
       commands.PushImages(self._build_root,
                           board=self._build_config['board'],
                           branch_name='master',
-                          archive_dir=self.GetLocalArchivePath())
+                          archive_dir=self._GetFullArchivePath())
 
 
 class UploadPrebuiltsStage(NonHaltingBuilderStage):

@@ -70,7 +70,7 @@ class CBuildBotTest(mox.MoxTestBase):
                             '.'])
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
-    commands.ArchiveTestResults(buildroot, test_results_dir, None, False)
+    commands.ArchiveTestResults(buildroot, test_results_dir)
     self.mox.VerifyAll()
 
   def testUprevAllPackages(self):

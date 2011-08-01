@@ -354,17 +354,15 @@ def RemoteRunPyAuto(buildroot, board, remote_ip, internal_test):
                          print_cmd=True)
 
 
-def ArchiveTestResults(buildroot, test_results_dir, upload_url,
-                       local_archive_path, debug):
-  """Archives the test results into a tarball and uploads it.
+def ArchiveTestResults(buildroot, test_results_dir):
+  """Archives the test results into a tarball.
 
   Arguments:
     buildroot: Root directory where build occurs
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
-    upload_url: Google Storage location for test tarball.
-    local_archive_path: Local path to archive tarball.
-    debug: Whether we're in debug mode.
+
+  Returns the path to the tarball.
   """
   try:
     test_results_dir = test_results_dir.lstrip('/')
@@ -381,30 +379,42 @@ def ArchiveTestResults(buildroot, test_results_dir, upload_url,
                             '.'])
     shutil.rmtree(results_path)
 
-    if local_archive_path:
-      try:
-        # Files created in our archive dir should be publically accessible.
-        old_umask = os.umask(022)
-        shutil.copy(archive_tarball, local_archive_path)
-      finally:
-        os.umask(old_umask)
-
-    if upload_url and not debug:
-      tarball_url = '%s/%s' % (upload_url, 'test_results.tgz')
-      cros_lib.OldRunCommand([_GSUTIL_PATH,
-                              'cp',
-                              archive_tarball,
-                              tarball_url])
-      cros_lib.OldRunCommand([_GSUTIL_PATH,
-                              'setacl',
-                              _GS_ACL,
-                              tarball_url])
+    return archive_tarball
 
   except Exception, e:
     cros_lib.Warning('========================================================')
     cros_lib.Warning('------>  We failed to archive test results. <-----------')
     cros_lib.Warning(str(e))
     cros_lib.Warning('========================================================')
+
+
+def UploadTestTarball(archive_tarball, local_archive_path, upload_url, debug):
+  """Uploads the test results tarball.
+
+  Arguments:
+    archive_tarball: Path to test tarball.
+    upload_url: Google Storage location for test tarball.
+    local_archive_path: Local path to archive tarball.
+    debug: Whether we're in debug mode.
+  """
+  if local_archive_path:
+    try:
+      # Files created in our archive dir should be publicly accessible.
+      old_umask = os.umask(022)
+      shutil.copy(archive_tarball, local_archive_path)
+    finally:
+      os.umask(old_umask)
+
+  if upload_url and not debug:
+    tarball_url = '%s/%s' % (upload_url, 'test_results.tgz')
+    cros_lib.OldRunCommand([_GSUTIL_PATH,
+                            'cp',
+                            archive_tarball,
+                            tarball_url])
+    cros_lib.OldRunCommand([_GSUTIL_PATH,
+                            'setacl',
+                            _GS_ACL,
+                            tarball_url])
 
 
 def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
@@ -551,7 +561,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
   if useflags: cmd.extend(['--useflags', ' '.join(useflags)])
 
   try:
-    # Files created in our archive dir should be publically accessible.
+    # Files created in our archive dir should be publicly accessible.
     old_umask = os.umask(022)
     cros_lib.RunCommand(cmd, cwd=cwd)
   finally:

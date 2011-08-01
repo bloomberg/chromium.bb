@@ -209,8 +209,6 @@ def RunBuildStages(bot_id, options, build_config):
   bg_started = False
   archive_stage = None
   archive_url = None
-  upload_url = None
-  local_archive_path = None
 
   try:
     if options.sync:
@@ -241,24 +239,24 @@ def RunBuildStages(bot_id, options, build_config):
     if options.archive:
       archive_stage = stages.ArchiveStage(bot_id, options, build_config)
       archive_url = archive_stage.GetDownloadUrl()
-      upload_url = archive_stage.GetGSUploadLocation()
-      local_archive_path = archive_stage.GetLocalArchivePath()
-      if not os.path.exists(local_archive_path):
-        try:
-          # Files created in our archive dir should be publically accessible.
-          old_umask = os.umask(022)
-          os.makedirs(local_archive_path)
-        finally:
-          os.umask(old_umask)
       bg.AddStage(archive_stage)
 
-    if not bg.Empty():
-      bg.start()
-      bg_started = True
+    test_stage = stages.TestStage(bot_id, options, build_config)
+    try:
+      # Kick off the background stages. The archive_stage won't finish
+      # until it receives notification that the test results tarball is
+      # ready, so the 'finally' clause below is important.
+      if not bg.Empty():
+        bg.start()
+        bg_started = True
 
-    if options.tests:
-      stages.TestStage(bot_id, options, build_config, upload_url,
-                       local_archive_path).Run()
+      if options.tests:
+        test_stage.Run()
+    finally:
+      if archive_stage:
+        # Notify the Archive stage that tests have completed.
+        # (If tests didn't run, test_stage.GetTestTarball() returns None.)
+        archive_stage.TestStageComplete(test_stage.GetTestTarball())
 
     if options.hw_tests:
       stages.TestHWStage(bot_id, options, build_config).Run()
@@ -303,11 +301,6 @@ def RunBuildStages(bot_id, options, build_config):
 
   # Tell the buildbot to break out the report as a final step
   print '\n\n\n@@@BUILD_STEP Report@@@\n'
-
-  # Update the _index.html file with the test artifacts and build artifacts
-  # uploaded by the Test and Archive stages.
-  if archive_stage:
-    archive_stage.UpdateIndex()
 
   stages.Results.Report(sys.stdout, archive_url)
 

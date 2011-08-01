@@ -460,7 +460,7 @@ class TestStageTest(AbstractStageTest):
     self.fake_results_dir = '/tmp/fake_results_dir'
 
   def ConstructStage(self):
-    return stages.TestStage(self.bot_id, self.options, self.build_config, None)
+    return stages.TestStage(self.bot_id, self.options, self.build_config)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -486,8 +486,7 @@ class TestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           full=True)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir, None,
-                                False)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -515,8 +514,7 @@ class TestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           full=False)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir, None,
-                                False)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -834,6 +832,9 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['upload_symbols'] = True
     self._build_config['push_image'] = True
 
+    self.mox.StubOutWithMock(stages.ArchiveStage, '_GetTestTarball')
+    stages.ArchiveStage._GetTestTarball().AndReturn('foo.tgz')
+
   def ConstructStage(self):
     return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
@@ -841,7 +842,11 @@ class ArchiveStageTest(AbstractStageTest):
     """Simple did-it-run test."""
     self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
     self.mox.StubOutWithMock(commands, 'UploadSymbols')
+    self.mox.StubOutWithMock(commands, 'UploadTestTarball')
+    self.mox.StubOutWithMock(commands, 'UpdateIndex')
     self.mox.StubOutWithMock(commands, 'PushImages')
+    self.mox.StubOutWithMock(shutil, 'rmtree')
+    shutil.rmtree(mox.Regex(r'^/var/www'))
 
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,
@@ -850,6 +855,11 @@ class ArchiveStageTest(AbstractStageTest):
     commands.UploadSymbols(self.build_root,
                            board=self._build_config['board'],
                            official=self._build_config['chromeos_official'])
+
+    commands.UploadTestTarball('foo.tgz', mox.IgnoreArg(), mox.IgnoreArg(),
+                               self.options.debug)
+
+    commands.UpdateIndex(mox.IgnoreArg())
 
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
@@ -864,6 +874,8 @@ class ArchiveStageTest(AbstractStageTest):
     """Test archiving to a test directory with Trybots."""
     self.mox.StubOutWithMock(commands, 'LegacyArchiveBuild')
     self.mox.StubOutWithMock(commands, 'UploadSymbols')
+    self.mox.StubOutWithMock(commands, 'UploadTestTarball')
+    self.mox.StubOutWithMock(commands, 'UpdateIndex')
     self.mox.StubOutWithMock(commands, 'PushImages')
     self.mox.StubOutWithMock(shutil, 'rmtree')
 
@@ -877,6 +889,11 @@ class ArchiveStageTest(AbstractStageTest):
     commands.UploadSymbols(self.build_root,
                            board=self._build_config['board'],
                            official=self._build_config['chromeos_official'])
+
+    commands.UploadTestTarball('foo.tgz', mox.IgnoreArg(), mox.IgnoreArg(),
+                               self.options.debug)
+
+    commands.UpdateIndex(mox.IgnoreArg())
 
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
