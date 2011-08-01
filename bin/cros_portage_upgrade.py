@@ -141,7 +141,6 @@ class Upgrader(object):
 
   def _CheckStableRepoOnBranch(self):
     """Raise exception if |self._stable_repo| is not on a branch now."""
-    # TODO(mtennant): Create the branch as needed instead.
     result = self._RunGit(self._stable_repo, 'branch', redirect_stdout=True)
     if result.returncode == 0:
       for line in result.output.split('\n'):
@@ -574,29 +573,15 @@ class Upgrader(object):
 
       if info['upgraded_cpv']:
         # Verify that upgraded package can be emerged and save results.
-        # Prefer stable if possible, otherwise remember that a keyword
-        # change will be needed.
-        # TODO(mtennant): Can trim to one emerge by determining whether
-        # upstream_cpv is stable or not (compare to latest/stable columns).
-        (em_ok_stable,
-         em_cmd_stable,
-         em_out_stable) = self._IsEmergeable(upstream_cpv, True)
-        (em_ok_all,
-         em_cmd_all,
-         em_out_all) = self._IsEmergeable(upstream_cpv, False)
-        if em_ok_stable or not em_ok_all:
-          info['emerge_ok'] = em_ok_stable
-          info['emerge_cmd'] = em_cmd_stable
-          info['emerge_output'] = em_out_stable
-          info['emerge_stable'] = True
-        else:
-          info['emerge_ok'] = em_ok_all
-          info['emerge_cmd'] = em_cmd_all
-          info['emerge_output'] = em_out_all
-          info['emerge_stable'] = False
-        if info['emerge_ok']:
-          self._VerifyEbuildOverlay(upstream_cpv, self.STABLE_OVERLAY_NAME,
-                                    info['emerge_stable'])
+        upgraded_stable = info['upgraded_cpv'] == info['stable_upstream_cpv']
+        (em_ok, em_cmd, em_out) = self._IsEmergeable(info['upgraded_cpv'],
+                                                     upgraded_stable)
+        info['emerge_ok'] = em_ok
+        info['emerge_cmd'] = em_cmd
+        info['emerge_output'] = em_out
+
+        self._VerifyEbuildOverlay(upstream_cpv, self.STABLE_OVERLAY_NAME,
+                                  upgraded_stable)
 
     info['state'] = self._GetPackageUpgradeState(info, cpv_cmp_upstream)
 
