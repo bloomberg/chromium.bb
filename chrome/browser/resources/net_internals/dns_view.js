@@ -10,99 +10,117 @@
  *   - Shows the current host cache contents.
  *   - Has a button to clear the host cache.
  *   - Shows the parameters used to construct the host cache (capacity, ttl).
- *
- *  @constructor
  */
-function DnsView() {
-  const mainBoxId = 'dns-view-tab-content';
-  const cacheTbodyId = 'dns-view-cache-tbody';
-  const clearCacheButtonId = 'dns-view-clear-cache';
-  const defaultFamilySpanId = 'dns-view-default-family';
-  const ipv6DisabledSpanId = 'dns-view-ipv6-disabled';
-  const enableIPv6ButtonId = 'dns-view-enable-ipv6';
-  const capacitySpanId = 'dns-view-cache-capacity';
-  const ttlSuccessSpanId = 'dns-view-cache-ttl-success';
-  const ttlFailureSpanId = 'dns-view-cache-ttl-failure';
 
-  DivView.call(this, mainBoxId);
+var DnsView = (function() {
+  // IDs for special HTML elements in dns_view.html
+  const MAIN_BOX_ID = 'dns-view-tab-content';
+  const CACHE_TBODY_ID = 'dns-view-cache-tbody';
+  const CLEAR_CACHE_BUTTON_ID = 'dns-view-clear-cache';
+  const DEFAULT_FAMILY_SPAN_ID = 'dns-view-default-family';
+  const IPV6_DISABLED_SPAN_ID = 'dns-view-ipv6-disabled';
+  const ENABLE_IPV6_BUTTON_ID = 'dns-view-enable-ipv6';
+  const CAPACITY_SPAN_ID = 'dns-view-cache-capacity';
+  const TTL_SUCCESS_SPAN_ID = 'dns-view-cache-ttl-success';
+  const TTL_FAILURE_SPAN_ID = 'dns-view-cache-ttl-failure';
 
-  // Hook up the UI components.
-  this.cacheTbody_ = $(cacheTbodyId);
-  this.defaultFamilySpan_ = $(defaultFamilySpanId);
-  this.ipv6DisabledSpan_ = $(ipv6DisabledSpanId);
+  // We inherit from DivView.
+  var superClass = DivView;
 
-  $(enableIPv6ButtonId).onclick = g_browser.enableIPv6.bind(g_browser);
+  /**
+   *  @constructor
+   */
+  function DnsView() {
+    // Call superclass's constructor.
+    superClass.call(this, MAIN_BOX_ID);
 
-  this.capacitySpan_ = $(capacitySpanId);
-  this.ttlSuccessSpan_ = $(ttlSuccessSpanId);
-  this.ttlFailureSpan_ = $(ttlFailureSpanId);
+    // Hook up the UI components.
+    this.cacheTbody_ = $(CACHE_TBODY_ID);
+    this.defaultFamilySpan_ = $(DEFAULT_FAMILY_SPAN_ID);
+    this.ipv6DisabledSpan_ = $(IPV6_DISABLED_SPAN_ID);
 
-  var clearCacheButton = $(clearCacheButtonId);
-  clearCacheButton.onclick =
-      g_browser.sendClearHostResolverCache.bind(g_browser);
+    $(ENABLE_IPV6_BUTTON_ID).onclick = g_browser.enableIPv6.bind(g_browser);
 
-  // Register to receive changes to the host resolver info.
-  g_browser.addHostResolverInfoObserver(this);
-}
+    this.capacitySpan_ = $(CAPACITY_SPAN_ID);
+    this.ttlSuccessSpan_ = $(TTL_SUCCESS_SPAN_ID);
+    this.ttlFailureSpan_ = $(TTL_FAILURE_SPAN_ID);
 
-inherits(DnsView, DivView);
+    var clearCacheButton = $(CLEAR_CACHE_BUTTON_ID);
+    clearCacheButton.onclick =
+        g_browser.sendClearHostResolverCache.bind(g_browser);
 
-DnsView.prototype.onLoadLogFinish = function(data) {
-  return this.onHostResolverInfoChanged(data.hostResolverInfo);
-};
-
-DnsView.prototype.onHostResolverInfoChanged = function(hostResolverInfo) {
-  // Clear the existing values.
-  this.defaultFamilySpan_.innerHTML = '';
-  this.capacitySpan_.innerHTML = '';
-  this.ttlSuccessSpan_.innerHTML = '';
-  this.ttlFailureSpan_.innerHTML = '';
-  this.cacheTbody_.innerHTML = '';
-
-  // No info.
-  if (!hostResolverInfo || !hostResolverInfo.cache)
-    return false;
-
-  var family = hostResolverInfo.default_address_family;
-  addTextNode(this.defaultFamilySpan_, getKeyWithValue(AddressFamily, family));
-
-  var ipv6Disabled = (family == AddressFamily.ADDRESS_FAMILY_IPV4);
-  setNodeDisplay(this.ipv6DisabledSpan_, ipv6Disabled);
-
-  // Fill in the basic cache information.
-  var hostResolverCache = hostResolverInfo.cache;
-  addTextNode(this.capacitySpan_, hostResolverCache.capacity);
-  addTextNode(this.ttlSuccessSpan_, hostResolverCache.ttl_success_ms);
-  addTextNode(this.ttlFailureSpan_, hostResolverCache.ttl_failure_ms);
-
-  // Fill in the cache contents table.
-  for (var i = 0; i < hostResolverCache.entries.length; ++i) {
-    var e = hostResolverCache.entries[i];
-    var tr = addNode(this.cacheTbody_, 'tr');
-
-    var hostnameCell = addNode(tr, 'td');
-    addTextNode(hostnameCell, e.hostname);
-
-    var familyCell = addNode(tr, 'td');
-    addTextNode(familyCell, getKeyWithValue(AddressFamily, e.address_family));
-
-    var addressesCell = addNode(tr, 'td');
-
-    if (e.error != undefined) {
-      addTextNode(addressesCell, 'error: ' + e.error);
-    } else {
-      for (var j = 0; j < e.addresses.length; ++j) {
-        var address = e.addresses[j];
-        if (j != 0)
-          addNode(addressesCell, 'br');
-        addTextNode(addressesCell, address);
-      }
-    }
-
-    var expiresDate = convertTimeTicksToDate(e.expiration);
-    var expiresCell = addNode(tr, 'td');
-    addTextNode(expiresCell, expiresDate.toLocaleString());
+    // Register to receive changes to the host resolver info.
+    g_browser.addHostResolverInfoObserver(this);
   }
 
-  return true;
-};
+  cr.addSingletonGetter(DnsView);
+
+  DnsView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
+
+    onLoadLogFinish: function(data) {
+      return this.onHostResolverInfoChanged(data.hostResolverInfo);
+    },
+
+    onHostResolverInfoChanged: function(hostResolverInfo) {
+      // Clear the existing values.
+      this.defaultFamilySpan_.innerHTML = '';
+      this.capacitySpan_.innerHTML = '';
+      this.ttlSuccessSpan_.innerHTML = '';
+      this.ttlFailureSpan_.innerHTML = '';
+      this.cacheTbody_.innerHTML = '';
+
+      // No info.
+      if (!hostResolverInfo || !hostResolverInfo.cache)
+        return false;
+
+      var family = hostResolverInfo.default_address_family;
+      addTextNode(this.defaultFamilySpan_,
+                  getKeyWithValue(AddressFamily, family));
+
+      var ipv6Disabled = (family == AddressFamily.ADDRESS_FAMILY_IPV4);
+      setNodeDisplay(this.ipv6DisabledSpan_, ipv6Disabled);
+
+      // Fill in the basic cache information.
+      var hostResolverCache = hostResolverInfo.cache;
+      addTextNode(this.capacitySpan_, hostResolverCache.capacity);
+      addTextNode(this.ttlSuccessSpan_, hostResolverCache.ttl_success_ms);
+      addTextNode(this.ttlFailureSpan_, hostResolverCache.ttl_failure_ms);
+
+      // Fill in the cache contents table.
+      for (var i = 0; i < hostResolverCache.entries.length; ++i) {
+        var e = hostResolverCache.entries[i];
+        var tr = addNode(this.cacheTbody_, 'tr');
+
+        var hostnameCell = addNode(tr, 'td');
+        addTextNode(hostnameCell, e.hostname);
+
+        var familyCell = addNode(tr, 'td');
+        addTextNode(familyCell,
+                    getKeyWithValue(AddressFamily, e.address_family));
+
+        var addressesCell = addNode(tr, 'td');
+
+        if (e.error != undefined) {
+          addTextNode(addressesCell, 'error: ' + e.error);
+        } else {
+          for (var j = 0; j < e.addresses.length; ++j) {
+            var address = e.addresses[j];
+            if (j != 0)
+              addNode(addressesCell, 'br');
+            addTextNode(addressesCell, address);
+          }
+        }
+
+        var expiresDate = convertTimeTicksToDate(e.expiration);
+        var expiresCell = addNode(tr, 'td');
+        addTextNode(expiresCell, expiresDate.toLocaleString());
+      }
+
+      return true;
+    }
+  };
+
+  return DnsView;
+})();
