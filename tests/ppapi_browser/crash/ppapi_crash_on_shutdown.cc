@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -23,9 +24,7 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
 
 PP_EXPORT void PPP_ShutdownModule() {
   printf("--- PPP_ShutdownModule\n");
-  // Crash in a way that won't get optimized out by LLVM.
-  *(volatile int *) 0 = 0;
-  NACL_NOTREACHED();
+  CRASH;
 }
 
 namespace {

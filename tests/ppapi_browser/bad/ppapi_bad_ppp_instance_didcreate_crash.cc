@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -34,7 +35,7 @@ PP_Bool DidCreate(PP_Instance /*instance*/,
                   uint32_t /*argc*/,
                   const char* /*argn*/[],
                   const char* /*argv*/[]) {
-  CHECK(false);  // Crash!
+  CRASH;
   return PP_FALSE;
 }
 

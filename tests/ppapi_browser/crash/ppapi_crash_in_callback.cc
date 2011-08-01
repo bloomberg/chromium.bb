@@ -13,11 +13,7 @@ namespace {
 
 void CrashingCallback(void* /*user_data*/, int32_t /*result*/) {
   printf("--- CrashingCallback\n");
-  // Dereferencing the NULL pointer usually crashes the nexe.
-  void** ptr = NULL;
-  printf("%s", static_cast<char*>(*ptr));
-  // However PNaCl consideres this undefined behavior and ingores it.
-  CHECK(false);  // Crash under bitcode=1.
+  CRASH;
 }
 
 void CrashInCallback() {

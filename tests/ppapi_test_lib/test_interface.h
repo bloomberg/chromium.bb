@@ -144,6 +144,10 @@ template<typename T> nacl::string toString(T v) {
 // it will not interfere with output used for correctness checking.
 #define LOG_TO_BROWSER(message) PostTestMessage("@", message)
 
+// Cause a crash in a way that is guaranteed not to get optimized out by LLVM.
+#define CRASH *(volatile int *) 0 = 0;
+
+
 // Use this constant for stress testing
 // (i.e. creating and using a large number of resources).
 const int kManyResources = 1000;

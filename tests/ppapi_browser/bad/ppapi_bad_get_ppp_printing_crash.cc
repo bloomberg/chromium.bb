@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -67,6 +68,6 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   if (0 == std::strcmp(interface_name, PPP_INSTANCE_INTERFACE))  // Required.
     return reinterpret_cast<const void*>(&instance_interface);
   if (0 == std::strcmp(interface_name, PPP_PRINTING_DEV_INTERFACE))
-    CHECK(false);  // Crash!
+    CRASH;
   return NULL;
 }
