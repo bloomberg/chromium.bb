@@ -138,6 +138,8 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
+      # crbug.com/91225
+      '-find_in_page.FindMatchTests.testSearchInPDF',
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxDataTwice
       # Disabled on vista in the actual test. crbug.com/89767
@@ -154,6 +156,8 @@
       '-ntp.NTPTest.testLaunchAppRegularTab',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
       '-ntp.NTPTest.testUninstallApp',
+      # crbug.com/91222
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
@@ -231,6 +235,10 @@
       # ==================================================
       # crbug.com/90882
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
+      # crbug.com/91225
+      '-find_in_page.FindMatchTests.testSearchInPDF',
+      # crbug.com/91226
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/85310
       '-instant',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
