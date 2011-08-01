@@ -25,15 +25,13 @@ irt_support_sources = [
     'irt_malloc.c',
     'irt_sbrk.c',
     'irt_elf_utils.c',
+    'irt_tls.c',
     ]
 
-# The bitcode build does not yet use -mtls-use-call and so it improperly
-# pollutes user TLS with IRT-private TLS.  But until that's fixed,
-# overriding the entry points with the irt_tls.c versions would cause a
-# mismatch where library code using (what should be reserved for) user TLS
-# will crash because it hasn't been initialized.
-if not env.Bit('bitcode'):
-  irt_support_sources.append('irt_tls.c')
+# The bitcode build must use -mtls-use-call to separate user TLS
+# from IRT-private TLS.
+if env.Bit('bitcode'):
+  blob_env.Append(LINKFLAGS='-Wl,--add-translate-option=-mtls-use-call')
 
 # TODO(mcgrathr): most of these live in ../nacl/irt_*.c now because
 # of the dismal kludge state of building everything.  Eventually

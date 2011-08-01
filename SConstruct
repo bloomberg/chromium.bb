@@ -2816,7 +2816,13 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
-if not nacl_irt_env.Bit('target_arm'):
+# For ARM: Can only build arm IRT w/ bitcode=1.
+# For x86-64: there are calling convention differences between pnacl and gcc.
+# http://code.google.com/p/nativeclient/issues/detail?id=1902
+# We can try building a pnacl-specific x86-64 IRT for now, but that means
+# that we aren't testing the same x86-64 IRT that comes with chrome.
+if not (nacl_irt_env.Bit('target_arm')
+        or nacl_irt_env.Bit('target_x86_64')):
   nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.Tool('naclsdk')
 FixWindowsAssembler(nacl_irt_env)
@@ -2830,6 +2836,7 @@ if nacl_irt_env.Bit('bitcode'):
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
 # IRT-private TLS from user TLS.
+# For bitcode, this option is added to the final translate command instead.
 if not nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
 
