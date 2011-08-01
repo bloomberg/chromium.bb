@@ -5150,18 +5150,6 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base15MessagePumpGlib14HandleDispatchEv
-   fun:_ZN12_GLOBAL__N_118WorkSourceDispatchEP8_GSourcePFiPvES2_
-   fun:g_main_context_dispatch
-   fun:g_main_context_iterate
-   fun:g_main_context_iteration
-   fun:_ZN4base14MessagePumpGtk7RunOnceEP13_GMainContextb
-   fun:_ZN4base15MessagePumpGlib17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS_21MessagePumpDispatcherE
-   fun:_ZN4base15MessagePumpGlib3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN11MessageLoop13RunAllPendingEv
-   fun:_ZN38DownloadManagerTest_StartDownload_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
