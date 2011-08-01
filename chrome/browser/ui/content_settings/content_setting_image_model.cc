@@ -111,12 +111,12 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   const int* explanatory_string_ids = kBlockedExplanatoryTextIDs;
   // If a content type is blocked by default and was accessed, display the
   // accessed icon.
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-          content_settings();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
-        (tab_contents->profile()->GetHostContentSettingsMap()->
+        (wrapper->profile()->GetHostContentSettingsMap()->
             GetDefaultContentSetting(get_content_settings_type()) !=
                 CONTENT_SETTING_BLOCK))
       return;

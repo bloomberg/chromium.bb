@@ -190,15 +190,14 @@ RenderViewContextMenu::RenderViewContextMenu(
     const ContextMenuParams& params)
     : params_(params),
       source_tab_contents_(tab_contents),
-      profile_(tab_contents->profile()),
+      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(spellcheck_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
-      protocol_handler_registry_(
-          tab_contents->profile()->GetProtocolHandlerRegistry()) {
+      protocol_handler_registry_(profile_->GetProtocolHandlerRegistry()) {
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -1798,9 +1797,11 @@ void RenderViewContextMenu::OpenURL(
     details.source_frame_id = frame_id;
     details.target_url = url;
     details.target_tab_contents = new_contents;
+    Profile* profile =
+        Profile::FromBrowserContext(source_tab_contents_->browser_context());
     NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
-        Source<Profile>(source_tab_contents_->profile()),
+        Source<Profile>(profile),
         Details<content::RetargetingDetails>(&details));
   }
 }

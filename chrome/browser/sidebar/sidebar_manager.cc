@@ -87,16 +87,22 @@ void SidebarManager::NotifyStateChanges(
           FindSidebarContainerFor(active_sidebar_contents);
 
   if (was_active_host != NULL) {
+    Profile* profile = Profile::FromBrowserContext(
+        was_active_sidebar_contents->browser_context());
     ExtensionSidebarEventRouter::OnStateChanged(
-        was_active_sidebar_contents->profile(),
-        was_active_host->tab_contents(), was_active_host->content_id(),
+        profile,
+        was_active_host->tab_contents(),
+        was_active_host->content_id(),
         extension_sidebar_constants::kShownState);
   }
 
   if (active_host != NULL) {
+    Profile* profile = Profile::FromBrowserContext(
+        active_sidebar_contents->browser_context());
     ExtensionSidebarEventRouter::OnStateChanged(
-        active_sidebar_contents->profile(),
-        active_host->tab_contents(), active_host->content_id(),
+        profile,
+        active_host->tab_contents(),
+        active_host->content_id(),
         extension_sidebar_constants::kActiveState);
   }
 }
@@ -115,8 +121,9 @@ void SidebarManager::ShowSidebar(TabContents* tab,
 
   host->Show();
 
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
   ExtensionSidebarEventRouter::OnStateChanged(
-      tab->profile(), tab, content_id,
+      profile, tab, content_id,
       extension_sidebar_constants::kShownState);
 }
 
@@ -172,8 +179,9 @@ void SidebarManager::HideSidebar(TabContents* tab,
 
   UnregisterSidebarContainerFor(tab, content_id);
 
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
   ExtensionSidebarEventRouter::OnStateChanged(
-      tab->profile(), tab, content_id,
+      profile, tab, content_id,
       extension_sidebar_constants::kHiddenState);
 }
 

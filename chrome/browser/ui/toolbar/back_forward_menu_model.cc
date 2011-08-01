@@ -85,9 +85,10 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // Return the entry title, escaping any '&' characters and eliding it if it's
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
+  Profile* profile =
+      Profile::FromBrowserContext(GetTabContents()->browser_context());
   string16 menu_text(entry->GetTitleForDisplay(
-      GetTabContents()->profile()->GetPrefs()->
-          GetString(prefs::kAcceptLanguages)));
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
   menu_text = ui::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
 
 #if !defined(OS_MACOSX)

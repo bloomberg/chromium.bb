@@ -251,7 +251,8 @@ SessionsUI::SessionsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new SessionsDOMHandler())->Attach(this));
 
   // Set up the chrome://sessions/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(
       CreateSessionsUIHTMLSource());
 }
 

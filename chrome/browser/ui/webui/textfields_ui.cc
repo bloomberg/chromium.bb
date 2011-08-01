@@ -66,5 +66,6 @@ TextfieldsUI::TextfieldsUI(TabContents* contents) : ChromeWebUI(contents) {
   TextfieldsUIHTMLSource* html_source = new TextfieldsUIHTMLSource();
 
   // Set up the chrome://textfields/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

@@ -77,6 +77,7 @@ MediaInternalsUI::MediaInternalsUI(TabContents* contents)
     : ChromeWebUI(contents) {
   AddMessageHandler((new MediaInternalsMessageHandler())->Attach(this));
 
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(
       new MediaInternalsHTMLSource());
 }

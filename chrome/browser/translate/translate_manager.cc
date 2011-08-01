@@ -438,7 +438,8 @@ TranslateManager::TranslateManager()
 
 void TranslateManager::InitiateTranslation(TabContents* tab,
                                            const std::string& page_lang) {
-  PrefService* prefs = tab->profile()->GetOriginalProfile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
     return;
 
@@ -483,7 +484,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   std::string auto_target_lang;
-  if (!tab->profile()->IsOffTheRecord() &&
+  if (!tab->browser_context()->IsOffTheRecord() &&
       TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
           &auto_target_lang)) {
     TranslatePage(tab, language_code, auto_target_lang);
@@ -593,8 +594,9 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   report_error_url +=
       GetLanguageCode(g_browser_process->GetApplicationLocale());
   // Open that URL in a new tab so that the user can tell us more.
-  Browser* browser = BrowserList::GetLastActiveWithProfile(
-      tab_contents->profile());
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     NOTREACHED();
     return;
@@ -656,7 +658,8 @@ void TranslateManager::PageTranslated(TabContents* tab,
 
 bool TranslateManager::IsAcceptLanguage(TabContents* tab,
                                         const std::string& language) {
-  PrefService* pref_service = tab->profile()->GetOriginalProfile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  PrefService* pref_service = profile->GetOriginalProfile()->GetPrefs();
   PrefServiceLanguagesMap::const_iterator iter =
       accept_languages_.find(pref_service);
   if (iter == accept_languages_.end()) {
@@ -664,7 +667,7 @@ bool TranslateManager::IsAcceptLanguage(TabContents* tab,
     // Listen for this profile going away, in which case we would need to clear
     // the accepted languages for the profile.
     notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                Source<Profile>(tab->profile()));
+                                Source<Profile>(profile));
     // Also start listening for changes in the accept languages.
     pref_change_registrar_.Add(prefs::kAcceptLanguages, this);
 

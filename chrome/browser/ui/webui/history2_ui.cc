@@ -394,7 +394,8 @@ HistoryUI2::HistoryUI2(TabContents* contents) : ChromeWebUI(contents) {
   HistoryUIHTMLSource2* html_source = new HistoryUIHTMLSource2();
 
   // Set up the chrome://history2/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 // static

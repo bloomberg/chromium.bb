@@ -331,8 +331,8 @@ FlashUI::FlashUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new FlashDOMHandler())->Attach(this));
 
   // Set up the about:flash source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      CreateFlashUIHTMLSource());
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(CreateFlashUIHTMLSource());
 }
 
 // static

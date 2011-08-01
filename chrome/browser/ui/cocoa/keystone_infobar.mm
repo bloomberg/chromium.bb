@@ -69,7 +69,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
     TabContents* tab_contents)
     : ConfirmInfoBarDelegate(tab_contents),
-      profile_(tab_contents->profile()),
+      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
       can_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   const int kCanExpireOnNavigationAfterMilliseconds = 8 * 1000;

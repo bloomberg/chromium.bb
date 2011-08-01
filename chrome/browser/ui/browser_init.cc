@@ -168,7 +168,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
     TabContents* contents)
     : ConfirmInfoBarDelegate(contents),
-      profile_(contents->profile()),
+      profile_(Profile::FromBrowserContext(contents->browser_context())),
       action_taken_(false),
       should_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
@@ -318,7 +318,7 @@ SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     TabContents* contents)
     : ConfirmInfoBarDelegate(contents),
       browser_(browser),
-      profile_(contents->profile()) {
+      profile_(Profile::FromBrowserContext(contents->browser_context())) {
 }
 
 SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {

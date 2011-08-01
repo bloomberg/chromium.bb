@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -15,9 +16,9 @@ ChromeInterstitialPage::ChromeInterstitialPage(TabContents* tab,
                                                bool new_navigation,
                                                const GURL& url)
     : InterstitialPage(tab, new_navigation, url) {
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
   RendererPreferences prefs;
-  renderer_preferences_util::UpdateFromSystemSettings(
-      &prefs, tab->profile());
+  renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile);
   set_renderer_preferences(prefs);
 }
 

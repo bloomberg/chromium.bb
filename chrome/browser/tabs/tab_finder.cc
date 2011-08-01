@@ -182,12 +182,14 @@ void TabFinder::TabDestroyed(TabContentsObserverImpl* observer) {
 }
 
 void TabFinder::CancelRequestsFor(TabContents* tab_contents) {
-  if (tab_contents->profile()->IsOffTheRecord())
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  if (profile->IsOffTheRecord())
     return;
 
   tab_contents_to_url_.erase(tab_contents);
 
-  HistoryService* history = tab_contents->profile()->GetHistoryService(
+  HistoryService* history = profile->GetHistoryService(
       Profile::EXPLICIT_ACCESS);
   if (history) {
     CancelableRequestProvider::Handle request_handle;
@@ -199,14 +201,15 @@ void TabFinder::CancelRequestsFor(TabContents* tab_contents) {
 }
 
 void TabFinder::FetchRedirectStart(TabContents* tab) {
-  if (tab->profile()->IsOffTheRecord())
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  if (profile->IsOffTheRecord())
     return;
 
   NavigationEntry* committed_entry = tab->controller().GetLastCommittedEntry();
   if (!committed_entry || committed_entry->url().is_empty())
     return;
 
-  HistoryService* history =tab->profile()->GetHistoryService(
+  HistoryService* history = profile->GetHistoryService(
       Profile::EXPLICIT_ACCESS);
   if (history) {
     CancelableRequestProvider::Handle request_handle =

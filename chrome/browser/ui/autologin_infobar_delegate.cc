@@ -76,8 +76,7 @@ AutoLoginRedirector::AutoLoginRedirector(
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  NotificationService::AllSources());
-  tab_contents_wrapper_->tab_contents()->profile()->GetTokenService()->
-      StartFetchingTokens();
+  tab_contents_wrapper_->profile()->GetTokenService()->StartFetchingTokens();
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {
@@ -190,26 +189,25 @@ void AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded(const std::string& account,
   if (!tab_contents)
     return;
 
-  // If auto-login is turned off, then simply return.
-  if (!tab_contents->profile()->GetPrefs()->GetBoolean(
-      prefs::kAutologinEnabled))
-    return;
-
   TabContentsWrapper* tab_contents_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
   // tab_contents_wrapper is NULL for TabContents hosted in HTMLDialog.
   if (!tab_contents_wrapper)
     return;
 
+  // If auto-login is turned off, then simply return.
+  if (!tab_contents_wrapper->profile()->GetPrefs()->GetBoolean(
+      prefs::kAutologinEnabled))
+    return;
+
   // Make sure that the account specified matches the logged in user.
   // However, account is usually empty.  In an incognito window, there may
   // not be a profile sync service and/or signin manager.
-  if (!tab_contents_wrapper->tab_contents()->profile()->HasProfileSyncService())
+  if (!tab_contents_wrapper->profile()->HasProfileSyncService())
     return;
 
   SigninManager* signin_manager =
-      tab_contents_wrapper->tab_contents()->profile()->
-          GetProfileSyncService()->signin();
+      tab_contents_wrapper->profile()->GetProfileSyncService()->signin();
   if (!signin_manager)
     return;
 
@@ -219,7 +217,7 @@ void AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded(const std::string& account,
 
   // Make sure there are credentials in the token manager, otherwise there is
   // no way to craft the TokenAuth URL.
-  if (!tab_contents_wrapper->tab_contents()->profile()->GetTokenService()->
+  if (!tab_contents_wrapper->profile()->GetTokenService()->
       AreCredentialsValid()) {
     return;
   }
@@ -297,8 +295,7 @@ bool AutoLoginInfoBarDelegate::Accept() {
 }
 
 bool AutoLoginInfoBarDelegate::Cancel() {
-  PrefService* user_prefs = tab_contents_wrapper_->tab_contents()->profile()->
-      GetPrefs();
+  PrefService* user_prefs = tab_contents_wrapper_->profile()->GetPrefs();
   user_prefs->SetBoolean(prefs::kAutologinEnabled, false);
   user_prefs->ScheduleSavePersistentPrefs();
   return true;

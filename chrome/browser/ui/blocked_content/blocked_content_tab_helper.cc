@@ -83,9 +83,11 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
   // because it returns the active entry.
   NavigationEntry* entry = tab_contents()->controller().GetLastCommittedEntry();
   GURL creator = entry ? entry->virtual_url() : GURL::EmptyGURL();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
 
   if (creator.is_valid() &&
-      tab_contents()->profile()->GetHostContentSettingsMap()->GetContentSetting(
+      profile->GetHostContentSettingsMap()->GetContentSetting(
           creator,
           creator,
           CONTENT_SETTINGS_TYPE_POPUPS,

@@ -440,9 +440,11 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     TabContents* tab_contents) {
   const GURL& url = tab_contents->GetURL();
-  history::TopSites* top_sites = tab_contents->profile()->GetTopSites();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  history::TopSites* top_sites = profile->GetTopSites();
   // Skip if we don't need to update the thumbnail.
-  if (!ShouldUpdateThumbnail(tab_contents->profile(), top_sites, url))
+  if (!ShouldUpdateThumbnail(profile, top_sites, url))
     return;
 
   const int options = ThumbnailGenerator::kClippedThumbnail;

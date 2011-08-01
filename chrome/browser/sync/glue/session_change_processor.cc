@@ -150,7 +150,7 @@ void SessionChangeProcessor::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
           Source<ExtensionTabHelper>(source).ptr();
-      if (extension_tab_helper->tab_contents()->profile() != profile_) {
+      if (extension_tab_helper->tab_contents()->browser_context() != profile_) {
         return;
       }
       if (extension_tab_helper->extension_app()) {

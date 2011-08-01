@@ -23,7 +23,8 @@ PrintPreviewUI::PrintPreviewUI(TabContents* contents)
   AddMessageHandler(handler_->Attach(this));
 
   // Set up the chrome://print/ data source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(
       new PrintPreviewDataSource());
 
   // Store the PrintPreviewUIAddress as a string.

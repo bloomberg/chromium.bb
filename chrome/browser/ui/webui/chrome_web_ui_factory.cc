@@ -91,7 +91,8 @@ template<>
 ChromeWebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   // Don't use a WebUI for incognito tabs because we require extensions to run
   // within a single process.
-  ExtensionService* service = contents->profile()->GetExtensionService();
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   if (service && service->ExtensionBindingsAllowed(url))
     return new ExtensionWebUI(contents, url);
   return NULL;

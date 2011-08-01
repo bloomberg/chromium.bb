@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 TestChromeWebUIFactory::WebUIProvider::~WebUIProvider() {

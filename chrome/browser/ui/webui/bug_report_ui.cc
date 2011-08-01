@@ -461,8 +461,8 @@ void BugReportHandler::ClobberScreenshotsSource() {
   // Re-create our screenshots data source (this clobbers the last source)
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
-  tab_->profile()->GetChromeURLDataManager()->AddDataSource(
-      new ScreenshotSource(NULL));
+  Profile* profile = Profile::FromBrowserContext(tab_->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(new ScreenshotSource(NULL));
 
   // clobber last screenshot
   if (browser::last_screenshot_png)
@@ -472,11 +472,11 @@ void BugReportHandler::ClobberScreenshotsSource() {
 void BugReportHandler::SetupScreenshotsSource() {
   // If we don't already have a screenshot source object created, create one.
   if (!screenshot_source_)
-    screenshot_source_ = new ScreenshotSource(
-        browser::last_screenshot_png);
+    screenshot_source_ = new ScreenshotSource(browser::last_screenshot_png);
 
   // Add the source to the data manager.
-  tab_->profile()->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
+  Profile* profile = Profile::FromBrowserContext(tab_->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
 }
 
 WebUIMessageHandler* BugReportHandler::Attach(WebUI* web_ui) {
@@ -753,5 +753,6 @@ BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
   BugReportUIHTMLSource* html_source =
       new BugReportUIHTMLSource(handler->Init());
   // Set up the chrome://bugreport/ source.
-  tab->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

@@ -42,7 +42,7 @@ SiteInstance* GetSiteInstanceForNewTab(TabContents* source_contents,
 
   // Don't use this logic when "--process-per-tab" is specified.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab) &&
-      SiteInstance::IsSameWebSite(source_contents->profile(),
+      SiteInstance::IsSameWebSite(source_contents->browser_context(),
                                   source_contents->GetURL(),
                                   url)) {
     return source_contents->GetSiteInstance();

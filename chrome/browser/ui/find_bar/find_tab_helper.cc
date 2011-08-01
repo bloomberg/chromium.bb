@@ -38,8 +38,10 @@ void FindTabHelper::StartFinding(string16 search_string,
   // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents()->browser_context());
     string16 last_search_prepopulate_text =
-        FindBarState::GetLastPrepopulateText(tab_contents()->profile());
+        FindBarState::GetLastPrepopulateText(profile);
 
     // Try the last thing we searched for on this tab, then the last thing
     // searched for on any tab.
@@ -73,7 +75,9 @@ void FindTabHelper::StartFinding(string16 search_string,
   find_op_aborted_ = false;
 
   // Keep track of what the last search was across the tabs.
-  FindBarState* find_bar_state = tab_contents()->profile()->GetFindBarState();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  FindBarState* find_bar_state = profile->GetFindBarState();
   find_bar_state->set_last_prepopulate_text(find_text_);
 
   WebFindOptions options;

@@ -184,8 +184,9 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   [infoBar_ setStrokeColor:bannerStrokeColor];
 
   // Change the label of the blocked cookies part if necessary.
-  if (tabContents_->profile()->GetHostContentSettingsMap()->
-      BlockThirdPartyCookies()) {
+  Profile* profile =
+      Profile::FromBrowserContext(tabContents_->browser_context());
+  if (profile->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
     [blockedCookiesText_ setStringValue:l10n_util::GetNSString(
         IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED)];
     CGFloat textDeltaY = [GTMUILocalizerAndLayoutTweaker
@@ -241,11 +242,12 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
       continue;
     }
+    Profile* profile =
+        Profile::FromBrowserContext(tabContents_->browser_context());
     CookieTreeOriginNode* origin_node =
         static_cast<CookieTreeOriginNode*>(cookie);
-    origin_node->CreateContentException(
-        tabContents_->profile()->GetHostContentSettingsMap(),
-        setting);
+    origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
+                                        setting);
     if (!lastDomain.empty())
       multipleDomainsChanged = YES;
     lastDomain = origin_node->GetTitle();
