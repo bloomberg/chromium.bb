@@ -25,6 +25,8 @@ typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
 
 using std::max;
 using std::min;
+using std::string;
+using std::vector;
 
 namespace chromeos {
 
@@ -33,8 +35,13 @@ namespace {
 // Name of the ALSA card to which we connect.
 const char kCardName[] = "default";
 
-// Mixer element names.
-const char kMasterElementName[] = "Master";
+// Mixer element names.  We keep an array of possible master element names and
+// will control all that exist.
+const char* const kMasterElementNames[] = {
+  "Master",
+  "Headphone",
+  "Speaker",
+};
 const char kPCMElementName[] = "PCM";
 
 // Default minimum and maximum volume (before we've loaded the actual range from
@@ -61,8 +68,7 @@ AudioMixerAlsa::AudioMixerAlsa()
       is_muted_(false),
       apply_is_pending_(true),
       alsa_mixer_(NULL),
-      element_master_(NULL),
-      element_pcm_(NULL),
+      pcm_element_(NULL),
       prefs_(NULL),
       disconnected_event_(true, false) {
 }
@@ -220,33 +226,39 @@ bool AudioMixerAlsa::ConnectInternal() {
   double min_volume_db = kDefaultMinVolumeDb;
   double max_volume_db = kDefaultMaxVolumeDb;
 
-  element_master_ = FindElementWithName(handle, kMasterElementName);
-  if (element_master_) {
-    alsa_long_t long_low = static_cast<alsa_long_t>(kDefaultMinVolumeDb * 100);
-    alsa_long_t long_high = static_cast<alsa_long_t>(kDefaultMaxVolumeDb * 100);
-    err = snd_mixer_selem_get_playback_dB_range(
-        element_master_, &long_low, &long_high);
-    if (err != 0) {
-      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed "
-                   << "for " << kMasterElementName << ": " << snd_strerror(err);
-      snd_mixer_close(handle);
-      return false;
-    }
-    min_volume_db = static_cast<double>(long_low) / 100.0;
-    max_volume_db = static_cast<double>(long_high) / 100.0;
-  } else {
-    LOG(WARNING) << "Cannot find " << kMasterElementName
-                 << " ALSA mixer element on " << kCardName;
+  vector<snd_mixer_elem_t*> master_elements;
+  for (size_t i = 0; i < arraysize(kMasterElementNames); ++i) {
+    snd_mixer_elem_t* element =
+        FindElementWithName(handle, kMasterElementNames[i]);
+    if (element)
+      master_elements.push_back(element);
+  }
+
+  if (master_elements.empty()) {
+    LOG(WARNING) << "Unable to find any ALSA mixer elements on " << kCardName;
     snd_mixer_close(handle);
     return false;
   }
 
-  element_pcm_ = FindElementWithName(handle, kPCMElementName);
-  if (element_pcm_) {
+  alsa_long_t long_low = static_cast<alsa_long_t>(kDefaultMinVolumeDb * 100);
+  alsa_long_t long_high = static_cast<alsa_long_t>(kDefaultMaxVolumeDb * 100);
+  err = snd_mixer_selem_get_playback_dB_range(
+      master_elements.at(0), &long_low, &long_high);
+  if (err != 0) {
+    LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed:"
+                 << snd_strerror(err);
+    snd_mixer_close(handle);
+    return false;
+  }
+  min_volume_db = static_cast<double>(long_low) / 100.0;
+  max_volume_db = static_cast<double>(long_high) / 100.0;
+
+  snd_mixer_elem_t* pcm_element = FindElementWithName(handle, kPCMElementName);
+  if (pcm_element) {
     alsa_long_t long_low = static_cast<alsa_long_t>(kDefaultMinVolumeDb * 100);
     alsa_long_t long_high = static_cast<alsa_long_t>(kDefaultMaxVolumeDb * 100);
     err = snd_mixer_selem_get_playback_dB_range(
-        element_pcm_, &long_low, &long_high);
+        pcm_element, &long_low, &long_high);
     if (err != 0) {
       LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for "
                    << kPCMElementName << ": " << snd_strerror(err);
@@ -262,6 +274,8 @@ bool AudioMixerAlsa::ConnectInternal() {
   {
     base::AutoLock lock(lock_);
     alsa_mixer_ = handle;
+    master_elements_.swap(master_elements);
+    pcm_element_ = pcm_element;
     min_volume_db_ = min_volume_db;
     max_volume_db_ = max_volume_db;
     volume_db_ = min(max(volume_db_, min_volume_db_), max_volume_db_);
@@ -294,26 +308,32 @@ void AudioMixerAlsa::ApplyState() {
     apply_is_pending_ = false;
   }
 
-  if (element_pcm_) {
+  if (pcm_element_) {
     // If a PCM volume slider exists, then first set the Master volume to the
     // nearest volume >= requested volume, then adjust PCM volume down to get
     // closer to the requested volume.
-    SetElementVolume(element_master_, new_volume_db, 0.9999f);
+    for (vector<snd_mixer_elem_t*>::iterator it = master_elements_.begin();
+         it != master_elements_.end(); ++it)
+      SetElementVolume(*it, new_volume_db, 0.9999f);
 
     double pcm_volume_db = 0.0;
     double master_volume_db = 0.0;
-    if (GetElementVolume(element_master_, &master_volume_db))
+    if (GetElementVolume(master_elements_.at(0), &master_volume_db))
       pcm_volume_db = new_volume_db - master_volume_db;
-    SetElementVolume(element_pcm_, pcm_volume_db, 0.5f);
+    SetElementVolume(pcm_element_, pcm_volume_db, 0.5f);
   } else {
-    SetElementVolume(element_master_, new_volume_db, 0.5f);
+    for (vector<snd_mixer_elem_t*>::iterator it = master_elements_.begin();
+         it != master_elements_.end(); ++it)
+      SetElementVolume(*it, new_volume_db, 0.5f);
   }
 
-  SetElementMuted(element_master_, should_mute);
+  for (vector<snd_mixer_elem_t*>::iterator it = master_elements_.begin();
+       it != master_elements_.end(); ++it)
+    SetElementMuted(*it, should_mute);
 }
 
 snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
-    snd_mixer_t* handle, const char* element_name) const {
+    snd_mixer_t* handle, const string& element_name) const {
   DCHECK(MessageLoop::current() == thread_->message_loop());
   snd_mixer_selem_id_t* sid = NULL;
 
@@ -323,7 +343,7 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
     return NULL;
 
   snd_mixer_selem_id_set_index(sid, 0);
-  snd_mixer_selem_id_set_name(sid, element_name);
+  snd_mixer_selem_id_set_name(sid, element_name.c_str());
   snd_mixer_elem_t* element = snd_mixer_find_selem(handle, sid);
   if (!element) {
     LOG(WARNING) << "ALSA unable to find simple control "

@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,7 +64,7 @@ class AudioMixerAlsa : public AudioMixer {
 
   // Finds the element named |element_name|.  Returns NULL on failure.
   _snd_mixer_elem* FindElementWithName(_snd_mixer* handle,
-                                       const char* element_name) const;
+                                       const std::string& element_name) const;
 
   // Queries |element|'s current volume, copying it to |new_volume_db|.
   // Returns true on success.
@@ -96,10 +99,15 @@ class AudioMixerAlsa : public AudioMixer {
   // Is there already a pending call to ApplyState() scheduled on |thread_|?
   bool apply_is_pending_;
 
-  // Cached context for use in ALSA calls.  NULL if not connected.
+  // Connection to ALSA.  NULL if not connected.
   _snd_mixer* alsa_mixer_;
-  _snd_mixer_elem* element_master_;
-  _snd_mixer_elem* element_pcm_;
+
+  // Master mixers (some hardware has e.g. separate headphone and speaker
+  // elements).
+  std::vector<_snd_mixer_elem*> master_elements_;
+
+  // PCM mixer.  May be NULL if the driver doesn't expose one.
+  _snd_mixer_elem* pcm_element_;
 
   PrefService* prefs_;
 
