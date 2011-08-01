@@ -280,3 +280,6 @@ PPAPITest.CursorControl
 
 # Flakiness leading to leak reports. http://crbug.com/31739
 SessionHistoryTest.BasicBackForward
+
+# http://crbug.com/91163
+AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
