@@ -8,6 +8,7 @@ import copy
 import email
 import logging
 import os
+import platform
 import smtplib
 import subprocess
 import types
@@ -236,6 +237,7 @@ def CallFunctionWithNewTimeout(self, new_timeout, function):
   function()
   del timeout_changer
 
+
 def GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
     """Fetch omnibox matches with the given attributes for the given query.
 
@@ -255,6 +257,7 @@ def GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
       matches = self.GetOmniboxInfo(windex=windex).MatchesWithAttributes(
           attr_dict=attr_dict)
     return matches
+
 
 def GetMemoryUsageOfProcess(pid):
   """Queries the system for the current memory usage of a specified process.
@@ -276,3 +279,27 @@ def GetMemoryUsageOfProcess(pid):
     return float(stdout.strip()) / 1024
   else:
     return 0
+
+
+def GetCredsKey():
+  """Get the credential key associated with a bot on the waterfall.
+
+  The key is associated with the proper credentials in the text data file stored
+  in the private directory. The key determines a bot's OS and machine name. Each
+  key credential is associated with its own user/password value. This allows
+  sync integration tests to run in parallel on all bots.
+
+  Returns:
+    A String of the credentials key for the specified bot. Otherwise None.
+  """
+  if pyauto.PyUITest.IsWin():
+    system_name = 'win'
+  elif pyauto.PyUITest.IsLinux():
+    system_name = 'linux'
+  elif pyauto.PyUITest.IsMac():
+    system_name = 'mac'
+  else:
+    return None
+  node = platform.uname()[1].split('.')[0]
+  creds_key = 'test_google_acct_%s_%s' % (system_name, node)
+  return creds_key
