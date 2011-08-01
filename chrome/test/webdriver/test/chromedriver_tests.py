@@ -305,7 +305,7 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     self.assertEqual(cookie_dict['value'], 'chrome profile')
     driver.quit()
 
-  def testInstallExtensions(self):
+  def DISABLED_testInstallExtensions(self):
     """Test starting web driver with multiple extensions."""
     extensions = ['ext_test_1.crx', 'ext_test_2.crx']
     base64_extensions = []
