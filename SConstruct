@@ -2713,6 +2713,7 @@ nonvariant_tests = [
     'tests/ppapi_browser/ppb_memory/nacl.scons',
     'tests/ppapi_browser/ppb_pdf/nacl.scons',
     'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
+    'tests/ppapi_browser/ppb_url_loader/nacl.scons',
     'tests/ppapi_browser/ppb_url_request_info/nacl.scons',
     'tests/ppapi_browser/ppb_var/nacl.scons',
     'tests/ppapi_browser/ppp_input_event/nacl.scons',
