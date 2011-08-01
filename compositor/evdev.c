@@ -40,6 +40,7 @@ struct evdev_input_device {
 	int base_x, base_y;
 	int fd;
 	int min_x, max_x, min_y, max_y;
+	int is_touchpad, old_x_value, old_y_value, reset_x_value, reset_y_value;
 };
 
 static int
@@ -55,6 +56,9 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	/* FIXME: Obviously we need to not hardcode these here, but
 	 * instead get the values from the output it's associated with. */
 	const int screen_width = 1024, screen_height = 600;
+	
+	/* FIXME: Make this configurable somehow. */
+	const int touchpad_speed = 700;
 
 	ec = (struct wlsc_compositor *)
 		device->master->base.input_device.compositor;
@@ -94,17 +98,43 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 			break;
 
 		case EV_ABS:
-			switch (e->code) {
-			case ABS_X:
-				absolute_event = device->tool;
-				x = (value - device->min_x) * screen_width /
-					(device->max_x - device->min_x);
-				break;
-			case ABS_Y:
-				absolute_event = device->tool;
-				y = (value - device->min_y) * screen_height /
-					(device->max_y - device->min_y);
-				break;
+			if (device->is_touchpad) {
+				switch (e->code) {
+				case ABS_X:
+					value -= device->min_x;
+					if (device->reset_x_value)
+						device->reset_x_value = 0;
+					else {
+						dx = (value - device->old_x_value) * touchpad_speed /
+							(device->max_x - device->min_x);
+					}
+					device->old_x_value = value;
+					break;
+				case ABS_Y:
+					value -= device->min_y;
+					if (device->reset_y_value)
+						device->reset_y_value = 0;
+					else {
+						dy = (value - device->old_y_value) * touchpad_speed /
+							/* maybe use x size here to have the same scale? */
+							(device->max_y - device->min_y);
+					}
+					device->old_y_value = value;
+					break;
+				}
+			} else {
+				switch (e->code) {
+				case ABS_X:
+					absolute_event = device->tool;
+					x = (value - device->min_x) * screen_width /
+						(device->max_x - device->min_x);
+					break;
+				case ABS_Y:
+					absolute_event = device->tool;
+					y = (value - device->min_y) * screen_height /
+						(device->max_y - device->min_y);
+					break;
+				}
 			}
 			break;
 
@@ -123,6 +153,11 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_TOOL_MOUSE:
 			case BTN_TOOL_LENS:
 				device->tool = value ? e->code : 0;
+				if (device->is_touchpad)
+				{
+					device->reset_x_value = 1;
+					device->reset_y_value = 1;
+				}
 				break;
 
 			case BTN_LEFT:
@@ -154,7 +189,16 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
-#define TEST_BIT(b, i) (b[(i) / 32] & (1 << (i & 31)))
+
+/* copied from udev/extras/input_id/input_id.c */
+/* we must use this kernel-compatible implementation */
+#define BITS_PER_LONG (sizeof(unsigned long) * 8)
+#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
+#define OFF(x)  ((x)%BITS_PER_LONG)
+#define BIT(x)  (1UL<<OFF(x))
+#define LONG(x) ((x)/BITS_PER_LONG)
+#define TEST_BIT(array, bit)    ((array[LONG(bit)] >> OFF(bit)) & 1)
+/* end copied */
 
 static struct evdev_input_device *
 evdev_input_device_create(struct evdev_input *master,
@@ -163,8 +207,9 @@ evdev_input_device_create(struct evdev_input *master,
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
 	struct input_absinfo absinfo;
-	uint32_t ev_bits[EV_MAX];
-	uint32_t key_bits[KEY_MAX];
+	unsigned long ev_bits[NBITS(EV_MAX)];
+	unsigned long abs_bits[NBITS(ABS_MAX)];
+	unsigned long key_bits[NBITS(KEY_MAX)];
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -174,6 +219,7 @@ evdev_input_device_create(struct evdev_input *master,
 	device->new_x = 1;
 	device->new_y = 1;
 	device->master = master;
+	device->is_touchpad = 0;
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0) {
@@ -182,19 +228,24 @@ evdev_input_device_create(struct evdev_input *master,
 		return NULL;
 	}
 
-	ioctl(device->fd, EVIOCGBIT(0, EV_MAX), ev_bits);
+	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
-		ioctl(device->fd, EVIOCGBIT(EV_ABS, EV_MAX), key_bits);
-		if (TEST_BIT(key_bits, ABS_X)) {
+		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits);
+		if (TEST_BIT(abs_bits, ABS_X)) {
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
 			device->min_x = absinfo.minimum;
 			device->max_x = absinfo.maximum;
 		}
-		if (TEST_BIT(key_bits, ABS_Y)) {
+		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
 			device->min_y = absinfo.minimum;
 			device->max_y = absinfo.maximum;
 		}
+	}
+	if (TEST_BIT(ev_bits, EV_KEY)) {
+		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)), key_bits);
+		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) && !TEST_BIT(key_bits, BTN_TOOL_PEN))
+			device->is_touchpad = 1;
 	}
 
 	loop = wl_display_get_event_loop(display);
