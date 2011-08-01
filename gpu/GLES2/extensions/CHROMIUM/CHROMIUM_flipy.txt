@@ -1,0 +1,45 @@
+Name
+
+    CHROMIUM_flipy
+
+Name Strings
+
+    GL_CHROMIUM_flipy
+
+Version
+
+    Last Modifed Date: July 22, 2011
+
+Dependencies
+
+    OpenGL ES 2.0 is required.
+
+Overview
+
+    This extension adds the ability to vertically flip texture image data when
+    calling TexImage2D and TexSubImage2D.
+
+Issues
+
+
+New Tokens
+
+    Accepted by the <param> parameter of PixelStorei:
+
+        UNPACK_FLIP_Y_CHROMIUM              0x9240
+
+New Procedures and Functions
+
+    None.
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+Revision History
+
+    7/22/2011    Documented the extension
