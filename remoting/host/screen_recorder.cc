@@ -365,9 +365,14 @@ void ScreenRecorder::DoEncode(
 
   // Early out if there's nothing to encode.
   if (!capture_data || !capture_data->dirty_rects().size()) {
-    capture_loop_->PostTask(
+    // Send an empty video packet to keep network active.
+    VideoPacket* packet = new VideoPacket();
+    packet->set_flags(VideoPacket::LAST_PARTITION);
+    network_loop_->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ScreenRecorder::DoFinishOneRecording));
+        NewTracedMethod(this,
+                        &ScreenRecorder::DoSendVideoPacket,
+                        packet));
     return;
   }
 
