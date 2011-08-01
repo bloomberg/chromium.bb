@@ -140,7 +140,7 @@ env.update(EXTRA_ENV)
 
 LDPatterns = [
   ( '--pnacl-native-hack', "env.set('NATIVE_HACK', '1')"),
-  ( ('--add-translate-option', '(.+)'),
+  ( ('--add-translate-option=(.+)'),
                        "env.append('PNACL_TRANSLATE_FLAGS', $0)"),
   # todo(dschuff): get rid of this when we get closer to tip and fix bug 1941
   ( ('--add-opt-option=(.+)'),

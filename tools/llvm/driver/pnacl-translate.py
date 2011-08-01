@@ -83,6 +83,7 @@ TranslatorPatterns = [
   # Expose a very limited set of llc flags. Used primarily for
   # the shared lib ad-hoc tests, c.f. tests/pnacl_ld_example
   ( '(-sfi-.+)',       "env.append('LLC_FLAGS', $0)"),
+  ( '(-mtls-use-call)',  "env.append('LLC_FLAGS', $0)"),
 
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-fPIC',           "env.set('PIC', '1')"),
