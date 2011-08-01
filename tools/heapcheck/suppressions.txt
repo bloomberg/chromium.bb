@@ -1662,8 +1662,11 @@
    fun:net::HostResolverImpl::Job::DoLookup
    fun:void DispatchToMethod
 }
-
-
+{
+   bug_91174
+   Heapcheck:Leak
+   fun:DownloadManager::OnPathExistenceAvailable
+}
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
 {

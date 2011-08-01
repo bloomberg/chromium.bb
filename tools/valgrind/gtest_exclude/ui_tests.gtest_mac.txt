@@ -99,9 +99,12 @@ AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
 AutomationProxyTest.ActivateTab
 AutomationProxyTest.BlockedPopupTest
+AutomationProxyTest.Cookies
 AutomationProxyTest.GetActiveTabIndex
+AutomationProxyTest.GetBrowserWindow
 AutomationProxyTest.GetBrowserWindowCount
 AutomationProxyTest.GetCurrentURL
+AutomationProxyTest.GoBackForward
 AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest2.GetTabTitle
 AutomationProxyTest4.NumberValueIsEchoedByDomAutomationController
@@ -122,6 +125,7 @@ OutOfProcessPPAPITest.Memory
 OutOfProcessPPAPITest.PaintAggregator
 OutOfProcessPPAPITest.URLUtil
 PPAPITest.Buffer
+PPAPITest.CharSet
 PPAPITest.FileIO
 PPAPITest.FileRef
 PPAPITest.FileSystem
@@ -143,12 +147,15 @@ ResourceDispatcherTest.ContentDispositionInline
 ResourceDispatcherTest.SyncXMLHttpRequest
 ResourceDispatcherTest.SniffNoContentTypeNoData
 SearchProviderTest.TestIsSearchProviderInstalledWithException
+SecurityTest.DisallowFileUrlUniversalAccessTest
 SessionHistoryTest.BasicBackForward
 SessionHistoryTest.LocationChangeInSubframe
 ShowModalDialogTest.BasicTest
 V8BenchmarkTest.Perf
 ViewSourceTest.DoesBrowserConsumeViewSourcePrefix
 WorkerFileSystemTest.FileEntryToURISync
+WorkerFileSystemTest.FileFromFileEntry
+WorkerFileSystemTest.FileWriterSyncTruncateExtend
 
 # Valgrind dies on bszB assertion, see http://crbug.com/58145
 AutomatedUITestBase.Home

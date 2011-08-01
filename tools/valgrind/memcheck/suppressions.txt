@@ -5143,6 +5143,11 @@
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
 }
+{
+   bug_91179
+   Memcheck:Addr1
+   fun:_ZN8chromeos21ParallelAuthenticator7ResolveEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
