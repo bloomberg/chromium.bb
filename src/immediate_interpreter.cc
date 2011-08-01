@@ -187,6 +187,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   FillResultGesture(*hwstate, gs_fingers);
   UpdateButtons(*hwstate);
   SetPrevState(*hwstate);
+  prev_gs_fingers_ = gs_fingers;
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 

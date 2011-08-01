@@ -119,6 +119,7 @@ class ImmediateInterpreter : public Interpreter {
                          const set<short, kMaxGesturingFingers>& fingers);
 
   HardwareState prev_state_;
+  set<short, kMaxGesturingFingers> prev_gs_fingers_;
   HardwareProperties hw_props_;
   Gesture result_;
 
