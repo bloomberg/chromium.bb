@@ -8,64 +8,80 @@
  *   - Shows a summary of the state of each socket pool at the top.
  *   - For each pool with allocated sockets or connect jobs, shows all its
  *     groups with any allocated sockets.
- *
- *  @constructor
  */
-function SocketsView() {
-  const mainBoxId = 'sockets-view-tab-content';
-  const socketPoolDivId = 'sockets-view-pool-div';
-  const socketPoolGroupsDivId = 'sockets-view-pool-groups-div';
-  const closeIdleSocketsButtonId = 'sockets-view-close-idle-button';
-  const socketPoolFlushButtonId = 'sockets-view-flush-button';
 
-  DivView.call(this, mainBoxId);
+var SocketsView = (function() {
+  // IDs for special HTML elements in sockets_view.html
+  const MAIN_BOX_ID = 'sockets-view-tab-content';
+  const SOCKET_POOL_DIV_ID = 'sockets-view-pool-div';
+  const SOCKET_POOL_GROUPS_DIV_ID = 'sockets-view-pool-groups-div';
+  const CLOSE_IDLE_SOCKETS_BUTTON_ID = 'sockets-view-close-idle-button';
+  const SOCKET_POOL_FLUSH_BUTTON_ID = 'sockets-view-flush-button';
 
-  g_browser.addSocketPoolInfoObserver(this);
-  this.socketPoolDiv_ = $(socketPoolDivId);
-  this.socketPoolGroupsDiv_ = $(socketPoolGroupsDivId);
+  // We inherit from DivView.
+  var superClass = DivView;
 
-  var closeIdleButton = $(closeIdleSocketsButtonId);
-  closeIdleButton.onclick = this.closeIdleSockets.bind(this);
+  /**
+   * @constructor
+   */
+  function SocketsView() {
+    // Call superclass's constructor.
+    superClass.call(this, MAIN_BOX_ID);
 
-  var flushSocketsButton = $(socketPoolFlushButtonId);
-  flushSocketsButton.onclick = this.flushSocketPools.bind(this);
-}
+    g_browser.addSocketPoolInfoObserver(this);
+    this.socketPoolDiv_ = $(SOCKET_POOL_DIV_ID);
+    this.socketPoolGroupsDiv_ = $(SOCKET_POOL_GROUPS_DIV_ID);
 
-inherits(SocketsView, DivView);
+    var closeIdleButton = $(CLOSE_IDLE_SOCKETS_BUTTON_ID);
+    closeIdleButton.onclick = this.closeIdleSockets.bind(this);
 
-SocketsView.prototype.onLoadLogFinish = function(data) {
-  return this.onSocketPoolInfoChanged(data.socketPoolInfo);
-};
-
-SocketsView.prototype.onSocketPoolInfoChanged = function(socketPoolInfo) {
-  this.socketPoolDiv_.innerHTML = '';
-  this.socketPoolGroupsDiv_.innerHTML = '';
-
-  if (!socketPoolInfo)
-    return false;
-
-  var socketPools = SocketPoolWrapper.createArrayFrom(socketPoolInfo);
-  var tablePrinter = SocketPoolWrapper.createTablePrinter(socketPools);
-  tablePrinter.toHTML(this.socketPoolDiv_, 'styledTable');
-
-  // Add table for each socket pool with information on each of its groups.
-  for (var i = 0; i < socketPools.length; ++i) {
-    if (socketPools[i].origPool.groups != undefined) {
-      var p = addNode(this.socketPoolGroupsDiv_, 'p');
-      var br = addNode(p, 'br');
-      var groupTablePrinter = socketPools[i].createGroupTablePrinter();
-      groupTablePrinter.toHTML(p, 'styledTable');
-    }
+    var flushSocketsButton = $(SOCKET_POOL_FLUSH_BUTTON_ID);
+    flushSocketsButton.onclick = this.flushSocketPools.bind(this);
   }
-  return true;
-};
 
-SocketsView.prototype.closeIdleSockets = function() {
-  g_browser.sendCloseIdleSockets();
-  g_browser.checkForUpdatedInfo(false);
-}
+  cr.addSingletonGetter(SocketsView);
 
-SocketsView.prototype.flushSocketPools = function() {
-  g_browser.sendFlushSocketPools();
-  g_browser.checkForUpdatedInfo(false);
-}
+  SocketsView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
+
+    onLoadLogFinish: function(data) {
+      return this.onSocketPoolInfoChanged(data.socketPoolInfo);
+    },
+
+    onSocketPoolInfoChanged: function(socketPoolInfo) {
+      this.socketPoolDiv_.innerHTML = '';
+      this.socketPoolGroupsDiv_.innerHTML = '';
+
+      if (!socketPoolInfo)
+        return false;
+
+      var socketPools = SocketPoolWrapper.createArrayFrom(socketPoolInfo);
+      var tablePrinter = SocketPoolWrapper.createTablePrinter(socketPools);
+      tablePrinter.toHTML(this.socketPoolDiv_, 'styledTable');
+
+      // Add table for each socket pool with information on each of its groups.
+      for (var i = 0; i < socketPools.length; ++i) {
+        if (socketPools[i].origPool.groups != undefined) {
+          var p = addNode(this.socketPoolGroupsDiv_, 'p');
+          var br = addNode(p, 'br');
+          var groupTablePrinter = socketPools[i].createGroupTablePrinter();
+          groupTablePrinter.toHTML(p, 'styledTable');
+        }
+      }
+      return true;
+    },
+
+    closeIdleSockets: function() {
+      g_browser.sendCloseIdleSockets();
+      g_browser.checkForUpdatedInfo(false);
+    },
+
+    flushSocketPools: function() {
+      g_browser.sendFlushSocketPools();
+      g_browser.checkForUpdatedInfo(false);
+    }
+  };
+
+  return SocketsView;
+})();
