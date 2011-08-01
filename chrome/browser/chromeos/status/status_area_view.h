@@ -15,7 +15,6 @@ namespace chromeos {
 class CapsLockMenuButton;
 class ClockMenuButton;
 class InputMethodMenuButton;
-class MemoryMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
 class StatusAreaHost;
@@ -48,7 +47,6 @@ class StatusAreaView : public AccessiblePaneView {
   CapsLockMenuButton* caps_lock_view_;
   ClockMenuButton* clock_view_;
   InputMethodMenuButton* input_method_view_;
-  MemoryMenuButton* memory_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;
 
