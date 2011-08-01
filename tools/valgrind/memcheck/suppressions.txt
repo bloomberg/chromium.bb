@@ -3537,7 +3537,7 @@
    fun:_ZN13PluginService11GetInstanceEv
 }
 {
-   bug_70327
+   bug_70327_a
    Memcheck:Leak
    ...
    fun:FcCharSetFindLeafCreate
@@ -3560,6 +3560,20 @@
    fun:_ZN5views14TextButtonBase14UpdateTextSizeEv
    fun:_ZN5views14TextButtonBase7SetTextERKSbIwSt11char_traitsIwESaIwEE
    fun:_ZN5views14TextButtonBaseC2EPNS_14ButtonListenerERKSbIwSt11char_traitsIwESaIwEE
+}
+{
+   bug_70327_b
+   Memcheck:Leak
+   ...
+   fun:shaper_font_cache_insert
+   fun:get_shaper_and_font
+   fun:itemize_state_process_run
+   fun:pango_itemize_with_base_dir
+   fun:pango_layout_check_lines
+   fun:pango_layout_get_extents_internal
+   fun:pango_layout_get_pixel_extents
+   fun:pango_layout_get_pixel_size
+   fun:_ZN3gfx10CanvasSkia13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
 }
 {
    bug_70599
@@ -5010,7 +5024,6 @@
    bug_90496d
    Memcheck:Leak
    ...
-   fun:_ZN20AsyncResourceHandler17OnResponseStartedEiP16ResourceResponse
    fun:_ZN24CrossSiteResourceHandler14ResumeResponseEv
    fun:_ZN22ResourceDispatcherHost12OnSwapOutACKERK22ViewMsg_SwapOut_Params
    fun:_ZN18RenderWidgetHelper21OnCrossSiteSwapOutACKERK22ViewMsg_SwapOut_Params

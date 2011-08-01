@@ -97,6 +97,7 @@ AutomatedUITestBase.Navigate
 AutomatedUITestBase.ShowDownloads
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
+utomationProxyTest.AcceleratorHistory
 AutomationProxyTest.ActivateTab
 AutomationProxyTest.BlockedPopupTest
 AutomationProxyTest.Cookies
@@ -114,11 +115,13 @@ AutomationProxyTest5.TestLifetimeOfDomAutomationController
 DOMStorageTest.EventLayoutTests
 ErrorPageTest.IFrameDNSError_Basic
 ExtensionProxyUITest.EnableDisable
+HistoryTester.ConsiderSlowRedirectAsUserInitiated
 IFrameTest.Crash
 LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
 OutOfProcessPPAPITest.Broker
+OutOfProcessPPAPITest.Buffer
 OutOfProcessPPAPITest.CharSet
 OutOfProcessPPAPITest.Core
 OutOfProcessPPAPITest.Memory
