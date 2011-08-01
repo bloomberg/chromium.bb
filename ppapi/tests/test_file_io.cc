@@ -11,6 +11,7 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -119,6 +120,7 @@ void TestFileIO::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(ParallelReads);
   RUN_TEST_FORCEASYNC_AND_NOT(ParallelWrites);
   RUN_TEST_FORCEASYNC_AND_NOT(NotAllowMixedReadWrite);
+  RUN_TEST_FORCEASYNC_AND_NOT(WillWriteWillSetLength);
 
   // TODO(viettrungluu): add tests:
   //  - that PP_ERROR_PENDING is correctly returned
@@ -895,6 +897,92 @@ std::string TestFileIO::TestNotAllowMixedReadWrite() {
     return ReportError("FileIO::Read", rv_2);
 
   callback_1.WaitForResult();
+
+  PASS();
+}
+
+std::string TestFileIO::TestWillWriteWillSetLength() {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef file_ref(file_system, "/file_will_write");
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  pp::FileIO file_io(instance_);
+  rv = file_io.Open(file_ref,
+                    PP_FILEOPENFLAG_CREATE |
+                    PP_FILEOPENFLAG_TRUNCATE |
+                    PP_FILEOPENFLAG_READ |
+                    PP_FILEOPENFLAG_WRITE,
+                    callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::Open", rv);
+
+  const PPB_FileIOTrusted* trusted = static_cast<const PPB_FileIOTrusted*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
+  if (!trusted)
+    return ReportError("FileIOTrusted", PP_ERROR_FAILED);
+
+  // Get file descriptor.
+  int32_t fd = trusted->GetOSFileDescriptor(file_io.pp_resource());
+  if (fd < 0)
+    return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
+
+  // Calling WillWrite.
+  rv = trusted->WillWrite(
+      file_io.pp_resource(), 0, 9,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != 9)
+    return ReportError("WillWrite", rv);
+
+  // Writing the actual data.
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, "test_test");
+  if (rv != PP_OK)
+    return ReportError("FileIO::Write", rv);
+
+  std::string read_buffer;
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
+  if (rv != PP_OK)
+    return ReportError("FileIO::Read", rv);
+  if (read_buffer != "test_test")
+    return ReportMismatch("FileIO::Read", read_buffer, "test_test");
+
+  // Calling WillSetLength.
+  rv = trusted->WillSetLength(
+      file_io.pp_resource(), 4,
+      static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("WillSetLength", rv);
+
+  // Calling actual SetLength.
+  rv = file_io.SetLength(4, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::SetLength force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::SetLength", rv);
+
+  read_buffer.clear();
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
+  if (rv != PP_OK)
+    return ReportError("FileIO::Read", rv);
+  if (read_buffer != "test")
+    return ReportMismatch("FileIO::Read", read_buffer, "test");
 
   PASS();
 }

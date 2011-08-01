@@ -306,6 +306,8 @@
         '../plugins/ppapi/ppb_video_layer_software.h',
         '../plugins/ppapi/ppb_widget_impl.cc',
         '../plugins/ppapi/ppb_widget_impl.h',
+        '../plugins/ppapi/quota_file_io.cc',
+        '../plugins/ppapi/quota_file_io.h',
         '../plugins/ppapi/resource.cc',
         '../plugins/ppapi/resource.h',
         '../plugins/ppapi/resource_creation_impl.cc',

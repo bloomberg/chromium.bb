@@ -38,6 +38,9 @@ class PpapiUnittest : public testing::Test,
   // Deletes the instance and module to simulate module shutdown.
   void ShutdownModule();
 
+ protected:
+  virtual MockPluginDelegate* NewPluginDelegate();
+
  private:
   scoped_ptr<MockPluginDelegate> delegate_;
 
@@ -54,4 +57,4 @@ class PpapiUnittest : public testing::Test,
 }  // namespace ppapi
 }  // namespace webkit
 
-#endif  // WEBKIT_GLUE_PPAPI_PLUGINS_PPAPI_UNITTEST_H_
+#endif  // WEBKIT_PLUGINS_PPAPI_PPAPI_UNITTEST_H_

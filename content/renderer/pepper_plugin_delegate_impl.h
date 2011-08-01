@@ -225,6 +225,11 @@ class PepperPluginDelegateImpl
       const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
   virtual void PublishPolicy(const std::string& policy_json) OVERRIDE;
+  virtual void QueryAvailableSpace(const GURL& origin,
+                                   quota::StorageType type,
+                                   AvailableSpaceCallback* callback) OVERRIDE;
+  virtual void WillUpdateFile(const GURL& file_path) OVERRIDE;
+  virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
   virtual base::PlatformFileError OpenFile(
       const webkit::ppapi::PepperFilePath& path,
       int flags,

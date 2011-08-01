@@ -29,6 +29,7 @@ namespace ppapi {
 
 class PluginModule;
 class PPB_FileRef_Impl;
+class QuotaFileIO;
 
 class PPB_FileIO_Impl : public Resource,
                         public ::ppapi::thunk::PPB_FileIO_API {
@@ -74,6 +75,7 @@ class PPB_FileIO_Impl : public Resource,
     ~CallbackEntry();
 
     scoped_refptr<TrackedCompletionCallback> callback;
+
     // Pointer back to the caller's read buffer; only used by |Read()|.
     // Not owned.
     char* read_buffer;
@@ -109,8 +111,7 @@ class PPB_FileIO_Impl : public Resource,
   // |read_buffer| is only used by read operations.
   void RegisterCallback(OperationType op,
                         PP_CompletionCallback callback,
-                        char* rend_buffer);
-
+                        char* read_buffer);
   void RunAndRemoveFirstPendingCallback(int32_t result);
 
   void StatusCallback(base::PlatformFileError error_code);
@@ -121,11 +122,15 @@ class PPB_FileIO_Impl : public Resource,
   void ReadCallback(base::PlatformFileError error_code,
                     const char* data, int bytes_read);
   void WriteCallback(base::PlatformFileError error_code, int bytes_written);
+  void WillWriteCallback(base::PlatformFileError error_code, int bytes_written);
 
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
 
   base::PlatformFile file_;
   PP_FileSystemType file_system_type_;
+
+  // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
+  GURL file_system_url_;
 
   std::queue<CallbackEntry> callbacks_;
   OperationType pending_op_;
@@ -133,6 +138,10 @@ class PPB_FileIO_Impl : public Resource,
   // Output buffer pointer for |Query()|; only non-null when a callback is
   // pending for it.
   PP_FileInfo* info_;
+
+  // Pointer to a QuotaFileIO instance, which is valid only while a file
+  // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.
+  scoped_ptr<QuotaFileIO> quota_file_io_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Impl);
 };

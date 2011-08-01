@@ -43,6 +43,7 @@ class TestFileIO : public TestCase {
   std::string TestParallelReads();
   std::string TestParallelWrites();
   std::string TestNotAllowMixedReadWrite();
+  std::string TestWillWriteWillSetLength();
 
   // Helper method used by TestOpen().
   // |expectations| is a combination of OpenExpectation values. The followings

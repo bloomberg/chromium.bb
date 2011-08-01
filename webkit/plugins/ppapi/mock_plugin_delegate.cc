@@ -135,6 +135,17 @@ bool MockPluginDelegate::ReadDirectory(
   return false;
 }
 
+void MockPluginDelegate::QueryAvailableSpace(
+    const GURL& origin, quota::StorageType type,
+    AvailableSpaceCallback* callback) {
+}
+
+void MockPluginDelegate::WillUpdateFile(const GURL& file_path) {
+}
+
+void MockPluginDelegate::DidUpdateFile(const GURL& file_path, int64_t delta) {
+}
+
 base::PlatformFileError MockPluginDelegate::OpenFile(
     const PepperFilePath& path,
     int flags,

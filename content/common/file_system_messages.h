@@ -132,3 +132,11 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
                      int /* request id */,
                      GURL /* file path */,
                      int /* file flags */)
+
+// Pre- and post-update notifications for ppapi implementation.
+IPC_MESSAGE_CONTROL1(FileSystemHostMsg_WillUpdate,
+                     GURL /* file_path */)
+
+IPC_MESSAGE_CONTROL2(FileSystemHostMsg_DidUpdate,
+                     GURL /* file_path */,
+                     int64 /* delta */)

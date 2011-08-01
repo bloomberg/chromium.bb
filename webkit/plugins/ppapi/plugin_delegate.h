@@ -24,6 +24,7 @@
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
+#include "webkit/quota/quota_types.h"
 
 class AudioMessageFilter;
 class GURL;
@@ -330,6 +331,14 @@ class PluginDelegate {
   //
   // This should be called when the enterprise policy is updated.
   virtual void PublishPolicy(const std::string& policy_json) = 0;
+
+  // For quota handlings for FileIO API.
+  typedef Callback1<int64>::Type AvailableSpaceCallback;
+  virtual void QueryAvailableSpace(const GURL& origin,
+                                   quota::StorageType type,
+                                   AvailableSpaceCallback* callback) = 0;
+  virtual void WillUpdateFile(const GURL& file_path) = 0;
+  virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
 
   virtual base::PlatformFileError OpenFile(const PepperFilePath& path,
                                            int flags,

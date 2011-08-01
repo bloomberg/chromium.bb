@@ -23,10 +23,12 @@
 #include "content/common/child_thread.h"
 #include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
+#include "content/common/file_system_messages.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/pepper_file_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/pepper_messages.h"
+#include "content/common/quota_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
@@ -355,6 +357,23 @@ class DispatcherWrapper
 
  private:
   scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
+};
+
+class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
+ public:
+  typedef webkit::ppapi::PluginDelegate::AvailableSpaceCallback PluginCallback;
+  explicit QuotaCallbackTranslator(PluginCallback* cb) : callback_(cb) {}
+  virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
+    callback_->Run(std::max(static_cast<int64>(0), quota - usage));
+  }
+  virtual void DidGrantStorageQuota(int64 granted_quota) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
+    callback_->Run(0);
+  }
+ private:
+  scoped_ptr<PluginCallback> callback_;
 };
 
 }  // namespace
@@ -1005,6 +1024,21 @@ void PepperPluginDelegateImpl::PublishPolicy(const std::string& policy_json) {
            subscribed_to_policy_updates_.begin();
        i != subscribed_to_policy_updates_.end(); ++i)
     (*i)->HandlePolicyUpdate(policy_json);
+}
+
+void PepperPluginDelegateImpl::QueryAvailableSpace(
+    const GURL& origin, quota::StorageType type,
+    AvailableSpaceCallback* callback) {
+  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
+      origin, type, new QuotaCallbackTranslator(callback));
+}
+
+void PepperPluginDelegateImpl::WillUpdateFile(const GURL& path) {
+  ChildThread::current()->Send(new FileSystemHostMsg_WillUpdate(path));
+}
+
+void PepperPluginDelegateImpl::DidUpdateFile(const GURL& path, int64_t delta) {
+  ChildThread::current()->Send(new FileSystemHostMsg_DidUpdate(path, delta));
 }
 
 class AsyncOpenFileSystemURLCallbackTranslator

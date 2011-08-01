@@ -83,6 +83,8 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
   void OnOpenFile(int request_id, const GURL& path, int file_flags);
+  void OnWillUpdate(const GURL& path);
+  void OnDidUpdate(const GURL& path, int64 delta);
 
   // Creates a new FileSystemOperation.
   fileapi::FileSystemOperation* GetNewOperation(int request_id);

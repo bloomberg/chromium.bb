@@ -22,6 +22,8 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
+#include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/file_system_util.h"
 
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemOperation;
@@ -143,6 +145,8 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_WillUpdate, OnWillUpdate)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidUpdate, OnDidUpdate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -240,6 +244,30 @@ void FileSystemDispatcherHost::OnCancel(
 void FileSystemDispatcherHost::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
   GetNewOperation(request_id)->OpenFile(path, file_flags, peer_handle());
+}
+
+void FileSystemDispatcherHost::OnWillUpdate(const GURL& path) {
+  GURL origin_url;
+  fileapi::FileSystemType type;
+  if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
+    return;
+  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(type);
+  if (!quota_util)
+    return;
+  quota_util->proxy()->StartUpdateOrigin(origin_url, type);
+}
+
+void FileSystemDispatcherHost::OnDidUpdate(const GURL& path, int64 delta) {
+  GURL origin_url;
+  fileapi::FileSystemType type;
+  if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
+    return;
+  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(type);
+  if (!quota_util)
+    return;
+  quota_util->proxy()->UpdateOriginUsage(
+      context_->quota_manager_proxy(), origin_url, type, delta);
+  quota_util->proxy()->EndUpdateOrigin(origin_url, type);
 }
 
 FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(

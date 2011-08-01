@@ -65,6 +65,11 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool ReadDirectory(
       const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual void QueryAvailableSpace(const GURL& origin,
+                                   quota::StorageType type,
+                                   AvailableSpaceCallback* callback);
+  virtual void WillUpdateFile(const GURL& file_path);
+  virtual void DidUpdateFile(const GURL& file_path, int64_t delta);
   virtual base::PlatformFileError OpenFile(const PepperFilePath& path,
                                            int flags,
                                            base::PlatformFile* file);

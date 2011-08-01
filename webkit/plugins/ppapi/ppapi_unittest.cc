@@ -74,7 +74,7 @@ PpapiUnittest::~PpapiUnittest() {
 }
 
 void PpapiUnittest::SetUp() {
-  delegate_.reset(new MockPluginDelegate);
+  delegate_.reset(NewPluginDelegate());
 
   // Initialize the mock module.
   module_ = new PluginModule("Mock plugin", FilePath(), this);
@@ -94,6 +94,10 @@ void PpapiUnittest::SetUp() {
 void PpapiUnittest::TearDown() {
   instance_ = NULL;
   module_ = NULL;
+}
+
+MockPluginDelegate* PpapiUnittest::NewPluginDelegate() {
+  return new MockPluginDelegate;
 }
 
 const void* PpapiUnittest::GetMockInterface(const char* interface_name) const {
