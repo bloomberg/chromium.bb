@@ -554,6 +554,7 @@ void ProfileSyncService::OnBackendInitialized(bool success) {
   if (!success) {
     // If backend initialization failed, abort.  We only want to blow away
     // state (DBs, etc) if this was a first-time scenario that failed.
+    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
     Shutdown(!HasSyncSetupCompleted());
     return;
   }
