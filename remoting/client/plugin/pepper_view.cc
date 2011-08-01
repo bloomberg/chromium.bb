@@ -23,6 +23,7 @@ namespace remoting {
 PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
   : instance_(instance),
     context_(context),
+    pending_flush_(false),
     is_static_fill_(false),
     static_fill_color_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
@@ -69,9 +70,7 @@ void PepperView::Paint() {
     // For ReplaceContents, make sure the image size matches the device context
     // size!  Otherwise, this will just silently do nothing.
     graphics2d_.ReplaceContents(&image);
-    graphics2d_.Flush(TaskToCompletionCallback(
-        task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
-                                        base::Time::Now())));
+    FlushGraphics(base::Time::Now());
   } else {
     // TODO(ajwong): We need to keep a backing store image of the host screen
     // that has the data here which can be redrawn.
@@ -112,11 +111,8 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   for (size_t i = 0; i < rects->size(); ++i)
     changes_made |= PaintRect(frame, (*rects)[i]);
 
-  if (changes_made) {
-    graphics2d_.Flush(TaskToCompletionCallback(
-        task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
-                                        start_time)));
-  }
+  if (changes_made)
+    FlushGraphics(start_time);
 
   TraceContext::tracer()->PrintString("End Paint Frame.");
 }
@@ -165,6 +161,23 @@ void PepperView::BlankRect(pp::ImageData& image_data, const pp::Rect& rect) {
         (y * image_data.stride()) + (rect.x() * kBytesPerPixel);
     memset(to, 0xff, rect.width() * kBytesPerPixel);
   }
+}
+
+void PepperView::FlushGraphics(base::Time paint_start) {
+  int error = graphics2d_.Flush(
+      TaskToCompletionCallback(
+          task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
+                                          paint_start)));
+
+  // There is already a flush in progress so set this flag to true so that we
+  // can flush again later.
+  // |paint_start| is then discarded but this is fine because we're not aiming
+  // for precise measurement of timing, otherwise we need to keep a list of
+  // queued start time(s).
+  if (error == PP_ERROR_INPROGRESS)
+    pending_flush_ = true;
+  else
+    pending_flush_ = false;
 }
 
 void PepperView::SetSolidFill(uint32 color) {
@@ -310,6 +323,11 @@ void PepperView::OnPaintDone(base::Time paint_start) {
   TraceContext::tracer()->PrintString("Paint flushed");
   instance_->GetStats()->video_paint_ms()->Record(
       (base::Time::Now() - paint_start).InMilliseconds());
+
+  // If the last flush failed because there was already another one in progress
+  // then we perform the flush now.
+  if (pending_flush_)
+    FlushGraphics(base::Time::Now());
   return;
 }
 
