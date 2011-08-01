@@ -63,6 +63,7 @@ PluginReverseInterface::PluginReverseInterface(
 }
 
 PluginReverseInterface::~PluginReverseInterface() {
+  NaClCondVarDtor(&cv_);
   NaClMutexDtor(&mu_);
 }
 
