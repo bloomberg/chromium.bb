@@ -426,7 +426,11 @@ void OmxVideoDecodeAccelerator::Destroy() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (current_state_change_ == ERRORING)
     return;
-  DCHECK_EQ(current_state_change_, NO_TRANSITION);
+
+  DCHECK(current_state_change_ == NO_TRANSITION ||
+         current_state_change_ == FLUSHING ||
+         current_state_change_ == RESETTING) << current_state_change_;
+
   // If we were never initializeed there's no teardown to do.
   if (client_state_ == OMX_StateMax)
     return;
@@ -831,6 +835,14 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
       }
     case DESTROYING:
       switch (reached) {
+        case OMX_StatePause:
+        case OMX_StateExecuting:
+          // Because Destroy() can interrupt an in-progress Reset() or Flush(),
+          // we might arrive at these states after current_state_change_ was
+          // overwritten with DESTROYING.  That's fine though - we already have
+          // the state transition for Destroy() queued up at the component, so
+          // we treat this as a no-op.
+          return;
         case OMX_StateIdle:
           OnReachedIdleInDestroying();
           return;
@@ -913,6 +925,9 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       return;
     case OMX_EventBufferFlag:
       if (data1 == output_port_) {
+        // In case of Destroy() interrupting Flush().
+        if (current_state_change_ == DESTROYING)
+          return;
         DCHECK_EQ(current_state_change_, FLUSHING);
         OnReachedEOSInFlushing();
       } else {

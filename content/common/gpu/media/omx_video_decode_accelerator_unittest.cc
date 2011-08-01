@@ -390,8 +390,10 @@ enum ClientState {
   CS_CREATED,
   CS_DECODER_SET,
   CS_INITIALIZED,
+  CS_FLUSHING,
   CS_FLUSHED,
   CS_DONE,
+  CS_RESETTING,
   CS_RESET,
   CS_ERROR,
   CS_DESTROYED,
@@ -657,6 +659,7 @@ void EglRenderingVDAClient::NotifyFlushDone() {
   if (decoder_deleted())
     return;
   decoder_->Reset();
+  SetState(CS_RESETTING);
 }
 
 void EglRenderingVDAClient::NotifyResetDone() {
@@ -728,6 +731,7 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
     return;
   if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
     decoder_->Flush();
+    SetState(CS_FLUSHING);
     return;
   }
   size_t start_pos = encoded_data_next_pos_to_decode_;
@@ -871,8 +875,12 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     // InitializeDone kicks off decoding inside the client, so we just need to
     // wait for Flush.
     ASSERT_NO_FATAL_FAILURE(
+        AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHING));
+    ASSERT_NO_FATAL_FAILURE(
         AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHED));
     // FlushDone requests Reset().
+    ASSERT_NO_FATAL_FAILURE(
+        AssertWaitForStateOrDeleted(note, clients[i], CS_RESETTING));
     ASSERT_NO_FATAL_FAILURE(
         AssertWaitForStateOrDeleted(note, clients[i], CS_RESET));
     // ResetDone requests Destroy().
@@ -932,7 +940,9 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         MakeTuple(1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
         MakeTuple(1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
+        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_FLUSHING),
         MakeTuple(1, 1, END_OF_STREAM_RESET, CS_FLUSHED),
+        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_RESETTING),
         MakeTuple(1, 1, END_OF_STREAM_RESET, CS_RESET),
         MakeTuple(1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-1)),
         MakeTuple(1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-10)),

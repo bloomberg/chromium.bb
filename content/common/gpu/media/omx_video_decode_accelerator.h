@@ -59,7 +59,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Because OMX state-transitions are described solely by the "state reached"
   // (3.1.2.9.1, table 3-7 of the spec), we track what transition was requested
   // using this enum.  Note that it is an error to request a transition while
-  // |*this| is in any state other than NO_TRANSITION.
+  // |*this| is in any state other than NO_TRANSITION, unless requesting
+  // DESTROYING or ERRORING.
   enum CurrentStateChange {
     NO_TRANSITION,  // Not in the middle of a transition.
     INITIALIZING,
