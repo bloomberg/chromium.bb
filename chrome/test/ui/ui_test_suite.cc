@@ -6,19 +6,15 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/environment.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
-
-// Parameters to run test in parallel.  UI tests only.
-const char UITestSuite::kBatchCount[] = "batch-count";
-const char UITestSuite::kBatchIndex[] = "batch-index";
-const char UITestSuite::kGTestTotalShards[] = "GTEST_TOTAL_SHARDS=";
-const char UITestSuite::kGTestShardIndex[] = "GTEST_SHARD_INDEX=";
-
+#include "chrome/test/automation/proxy_launcher.h"
 
 UITestSuite::UITestSuite(int argc, char** argv)
     : ChromeTestSuite(argc, argv) {
@@ -46,33 +42,6 @@ void UITestSuite::Initialize() {
   ProxyLauncher::set_disable_breakpad(
       parsed_command_line.HasSwitch(switches::kDisableBreakpad));
 
-#if defined(OS_WIN)
-  int batch_count = 0;
-  int batch_index = 0;
-  std::string batch_count_str =
-      parsed_command_line.GetSwitchValueASCII(UITestSuite::kBatchCount);
-  if (!batch_count_str.empty()) {
-    base::StringToInt(batch_count_str, &batch_count);
-  }
-  std::string batch_index_str =
-      parsed_command_line.GetSwitchValueASCII(UITestSuite::kBatchIndex);
-  if (!batch_index_str.empty()) {
-    base::StringToInt(batch_index_str, &batch_index);
-  }
-  if (batch_count > 0 && batch_index >= 0 && batch_index < batch_count) {
-    // Running UI test in parallel. Gtest supports running tests in shards,
-    // and every UI test instance is running with different user data dir.
-    // Thus all we need to do is to set up environment variables for gtest.
-    // See http://code.google.com/p/googletest/wiki/GoogleTestAdvancedGuide.
-    std::string batch_count_env(UITestSuite::kGTestTotalShards);
-    batch_count_env.append(batch_count_str);
-    std::string batch_index_env(UITestSuite::kGTestShardIndex);
-    batch_index_env.append(batch_index_str);
-    _putenv(batch_count_env.c_str());
-    _putenv(batch_index_env.c_str());
-  }
-#endif
-
   std::string js_flags =
     parsed_command_line.GetSwitchValueASCII(switches::kJavaScriptFlags);
   if (!js_flags.empty())
@@ -96,11 +65,6 @@ void UITestSuite::Shutdown() {
   ChromeTestSuite::Shutdown();
 }
 
-void UITestSuite::SuppressErrorDialogs() {
-  TestSuite::SuppressErrorDialogs();
-  ProxyLauncher::set_show_error_dialogs(false);
-}
-
 #if defined(OS_WIN)
 void UITestSuite::LoadCrashService() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -112,18 +76,17 @@ void UITestSuite::LoadCrashService() {
 
   FilePath exe_dir;
   if (!PathService::Get(base::DIR_EXE, &exe_dir)) {
-    DCHECK(false);
+    LOG(ERROR) << "Failed to get path to DIR_EXE, "
+               << "not starting crash_service.exe!";
     return;
   }
 
   FilePath crash_service = exe_dir.Append(L"crash_service.exe");
   if (!base::LaunchProcess(crash_service.value(), base::LaunchOptions(),
                            &crash_service_)) {
-    printf("Couldn't start crash_service.exe, so this ui_test run won't tell " \
-           "you if any test crashes!\n");
+    LOG(ERROR) << "Couldn't start crash_service.exe, so this ui_tests run "
+               << "won't tell you if any test crashes!";
     return;
   }
-
-  printf("Started crash_service.exe so you know if a test crashes!\n");
 }
 #endif
