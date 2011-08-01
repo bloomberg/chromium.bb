@@ -9,16 +9,20 @@
 function ImportView() {
   const mainBoxId = 'import-view-tab-content';
   const loadedDivId = 'import-view-loaded-div';
-  const loadedClientInfoTextId = 'import-view-loaded-client-info-text';
   const loadLogFileDropTargetId = 'import-view-drop-target';
   const loadLogFileId = 'import-view-load-log-file';
   const loadStatusTextId = 'import-view-load-status-text';
   const reloadLinkId = 'import-view-reloaded-link';
 
+  const loadedInfoExportDateId = 'import-view-export-date';
+  const loadedInfoBuildNameId = 'import-view-build-name';
+  const loadedInfoOsTypeId = 'import-view-os-type';
+  const loadedInfoCommandLineId = 'import-view-command-line';
+  const loadedInfoUserCommentsId = 'import-view-user-comments';
+
   DivView.call(this, mainBoxId);
 
   this.loadedDiv_ = $(loadedDivId);
-  this.loadedClientInfoText_ = $(loadedClientInfoTextId);
 
   this.loadFileElement_ = $(loadLogFileId);
   this.loadFileElement_.onchange = this.logFileChanged.bind(this);
@@ -30,6 +34,12 @@ function ImportView() {
   dropTarget.ondrop = this.onDrop.bind(this);
 
   $(reloadLinkId).onclick = this.clickedReload_.bind(this);
+
+  this.loadedInfoBuildName_ = $(loadedInfoBuildNameId);
+  this.loadedInfoExportDate_ = $(loadedInfoExportDateId);
+  this.loadedInfoOsType_ = $(loadedInfoOsTypeId);
+  this.loadedInfoCommandLine_ = $(loadedInfoCommandLineId);
+  this.loadedInfoUserComments_ = $(loadedInfoUserCommentsId);
 }
 
 inherits(ImportView, DivView);
@@ -155,26 +165,31 @@ ImportView.prototype.enableLoadFileElement_ = function(enabled) {
  * Prints some basic information about the environment when the log was made.
  */
 ImportView.prototype.updateLoadedClientInfo = function(userComments) {
-  this.loadedClientInfoText_.textContent = '';
+  // Reset all the fields (in case we early-return).
+  this.loadedInfoExportDate_.innerText = '';
+  this.loadedInfoBuildName_.innerText = '';
+  this.loadedInfoOsType_.innerText = '';
+  this.loadedInfoCommandLine_.innerText = '';
+  this.loadedInfoUserComments_.innerText = '';
+
   if (typeof(ClientInfo) != 'object')
     return;
 
-  var text = [];
-
   // Dumps made with the command line option don't have a date.
-  if (ClientInfo.date) {
-    text.push('Data exported on: ' + ClientInfo.date);
-    text.push('');
-  }
+  this.loadedInfoExportDate_.innerText = ClientInfo.date || '';
 
-  text.push(ClientInfo.name +
-            ' ' + ClientInfo.version +
-            ' (' + ClientInfo.official +
-            ' ' + ClientInfo.cl +
-            ') ' + ClientInfo.version_mod);
-  text.push('OS Type: ' + ClientInfo.os_type);
-  text.push('Command line: ' + ClientInfo.command_line);
-  text.push('User comments: ' + userComments);
+  var buildName =
+      ClientInfo.name +
+      ' ' + ClientInfo.version +
+      ' (' + ClientInfo.official +
+      ' ' + ClientInfo.cl +
+      ') ' + ClientInfo.version_mod;
 
-  this.loadedClientInfoText_.textContent = text.join('\n');
+  this.loadedInfoBuildName_.innerText = buildName;
+
+  this.loadedInfoOsType_.innerText = ClientInfo.os_type;
+  this.loadedInfoCommandLine_.innerText = ClientInfo.command_line;
+
+  // User comments will not be available when dumped from command line.
+  this.loadedInfoUserComments_.innerText = userComments || '';
 };

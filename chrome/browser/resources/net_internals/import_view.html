@@ -1,5 +1,6 @@
 <style>
-#import-view-loaded-client-info-text {
+#import-view-command-line,
+#import-view-user-comments {
   /* Wrap long lines inside of PREs */
   white-space: pre-wrap;
 }
@@ -9,7 +10,28 @@
 
   <div id=import-view-loaded-div style="display: none">
     <h2>Data Loaded</h2>
-    <pre id=import-view-loaded-client-info-text></pre>
+    <table class=styledTable>
+    <tr>
+      <th>Export date</th>
+      <td id=import-view-export-date></td>
+    </tr>
+    <tr>
+      <th>Build</th>
+      <td id=import-view-build-name></td>
+    </tr>
+    <tr>
+      <th>OS type</th>
+      <td id=import-view-os-type></td>
+    </tr>
+    <tr>
+      <th>Command line</th>
+      <td><pre id=import-view-command-line></pre></td>
+    </tr>
+    <tr>
+      <th>User comments</th>
+      <td><pre id=import-view-user-comments></pre></td>
+    </tr>
+    </table>
   </div>
   <div>
     <h2>Load data</h2>
@@ -26,5 +48,4 @@
       <li><b>TIP</b>: Drag-and-drop of log files into this window works too!</li>
     </ul>
   </div>
-
 </div>
