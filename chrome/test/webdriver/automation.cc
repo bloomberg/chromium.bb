@@ -29,6 +29,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/webdriver_error.h"
@@ -567,6 +568,11 @@ void Automation::WaitForAllTabsToStopLoading(Error** error) {
   std::string error_msg;
   if (!SendWaitForAllTabsToStopLoadingJSONRequest(automation(), &error_msg))
     *error = new Error(kUnknownError, error_msg);
+}
+
+void Automation::InstallExtension(const FilePath& path, Error** error) {
+  if (!launcher_->automation()->InstallExtension(path, false).get())
+    *error = new Error(kUnknownError, "Failed to install extension");
 }
 
 AutomationProxy* Automation::automation() const {

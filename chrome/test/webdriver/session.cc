@@ -1004,6 +1004,16 @@ Error* Session::WaitForAllTabsToStopLoading() {
   return error;
 }
 
+Error* Session::InstallExtension(const FilePath& path) {
+  Error* error = NULL;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::InstallExtension,
+      path,
+      &error));
+  return error;
+}
+
 const std::string& Session::id() const {
   return id_;
 }

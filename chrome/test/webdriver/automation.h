@@ -150,6 +150,9 @@ class Automation {
   // Waits for all tabs to stop loading.
   void WaitForAllTabsToStopLoading(Error** error);
 
+  // Install packed extension.
+  void InstallExtension(const FilePath& path, Error** error);
+
  private:
   AutomationProxy* automation() const;
   Error* GetIndicesForTab(int tab_id, int* browser_index, int* tab_index);

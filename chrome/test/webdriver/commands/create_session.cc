@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -23,6 +24,25 @@
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+
+namespace {
+
+bool WriteBase64DataToFile(const FilePath& filename,
+                           const std::string& base64data,
+                           std::string* error_msg) {
+  std::string data;
+  if (!base::Base64Decode(base64data, &data)) {
+    *error_msg = "Invalid base64 encoded data.";
+    return false;
+  }
+  if (!file_util::WriteFile(filename, data.c_str(), data.length())) {
+    *error_msg = "Could not write data to file.";
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
 
 namespace webdriver {
 
@@ -94,38 +114,65 @@ void CreateSession::ExecutePost(Response* const response) {
   if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
     browser_exe = FilePath(path);
 
-  ScopedTempDir temp_dir;
+  ScopedTempDir temp_profile_dir;
   FilePath temp_user_data_dir;
 
   std::string base64_profile;
   if (capabilities->GetStringWithoutPathExpansion("chrome.profile",
                                                   &base64_profile)) {
-    if (!temp_dir.CreateUniqueTempDir()) {
+    if (!temp_profile_dir.CreateUniqueTempDir()) {
       response->SetError(new Error(
-          kUnknownError, "Could not create temporary directory."));
+          kBadRequest, "Could not create temporary profile directory."));
+      return;
+    }
+    FilePath temp_profile_zip(
+        temp_profile_dir.path().AppendASCII("profile.zip"));
+    std::string message;
+    if (!WriteBase64DataToFile(temp_profile_zip, base64_profile, &message)) {
+      response->SetError(new Error(kBadRequest, message));
       return;
     }
 
-    std::string data;
-    if (!base::Base64Decode(base64_profile, &data)) {
-      response->SetError(new Error(
-          kBadRequest, "Invalid base64 encoded user profile"));
-      return;
-    }
-
-    FilePath temp_profile_zip = temp_dir.path().AppendASCII("profile.zip");
-    if (!file_util::WriteFile(temp_profile_zip, data.c_str(), data.length())) {
-      response->SetError(new Error(
-          kUnknownError, "Could not write temporary profile zip file."));
-      return;
-    }
-
-    temp_user_data_dir = temp_dir.path().AppendASCII("user_data_dir");
+    temp_user_data_dir = temp_profile_dir.path().AppendASCII("user_data_dir");
     if (!Unzip(temp_profile_zip, temp_user_data_dir)) {
       response->SetError(new Error(
           kBadRequest, "Could not unarchive provided user profile"));
       return;
     }
+  }
+
+  const char* kExtensions = "chrome.extensions";
+  ScopedTempDir extensions_dir;
+  ListValue* extensions_list = NULL;
+  std::vector<FilePath> extensions;
+  if (capabilities->GetListWithoutPathExpansion(kExtensions,
+                                                &extensions_list)) {
+    if (!extensions_dir.CreateUniqueTempDir()) {
+      response->SetError(new Error(
+          kBadRequest, "Could create temporary extensions directory."));
+      return;
+    }
+    for (size_t i = 0; i < extensions_list->GetSize(); ++i) {
+      std::string base64_extension;
+      if (!extensions_list->GetString(i, &base64_extension)) {
+        response->SetError(new Error(
+            kBadRequest, "Extension must be a base64 encoded string."));
+        return;
+      }
+      FilePath extension_file(
+          extensions_dir.path().AppendASCII("extension" +
+                                            base::IntToString(i)));
+      std::string message;
+      if (!WriteBase64DataToFile(extension_file, base64_extension, &message)) {
+        response->SetError(new Error(kBadRequest, message));
+        return;
+      }
+      extensions.push_back(extension_file);
+    }
+  } else if (capabilities->HasKey(kExtensions)) {
+    response->SetError(new Error(
+        kBadRequest, "Extensions must be a list of base64 encoded strings"));
+    return;
   }
 
   // Session manages its own liftime, so do not call delete.
@@ -136,6 +183,15 @@ void CreateSession::ExecutePost(Response* const response) {
   if (error) {
     response->SetError(error);
     return;
+  }
+
+  // Install extensions.
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    Error* error = session->InstallExtension(extensions[i]);
+    if (error) {
+      response->SetError(error);
+      return;
+    }
   }
 
   bool native_events_required = false;

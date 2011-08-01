@@ -66,4 +66,16 @@ def _DefaultExeLocations():
   return [os.getcwd()] + bin_dirs.get(sys.platform, [])
 
 
+def DataDir():
+  """Returns the path to the data dir chrome/test/data."""
+  return os.path.normpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "data"))
+
+
+def TestDir():
+  """Returns the path to the test dir chrome/test/webdriver/test."""
+  return os.path.normpath(
+    os.path.join(os.path.dirname(__file__)))
+
+
 _SetupPaths()

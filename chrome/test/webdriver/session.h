@@ -271,6 +271,9 @@ class Session {
   // Waits for all tabs to stop loading. Returns true on success.
   Error* WaitForAllTabsToStopLoading();
 
+  // Install packed extension at |path|.
+  Error* InstallExtension(const FilePath& path);
+
   const std::string& id() const;
 
   const FrameId& current_target() const;

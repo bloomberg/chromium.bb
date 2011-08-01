@@ -43,12 +43,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
-def DataDir():
-  """Returns the path to the data dir chrome/test/data."""
-  return os.path.normpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "data"))
-
-
 def GetFileURLForPath(path):
   """Get file:// url for the given path.
   Also quotes the url using urllib.quote().
@@ -311,6 +305,22 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     self.assertEqual(cookie_dict['value'], 'chrome profile')
     driver.quit()
 
+  def testInstallExtensions(self):
+    """Test starting web driver with multiple extensions."""
+    extensions = ['ext_test_1.crx', 'ext_test_2.crx']
+    base64_extensions = []
+    for ext in extensions:
+      f = open(os.path.join(test_paths.TestDir(), ext), 'r')
+      base64_ext = (binascii.b2a_base64(f.read()).strip())
+      base64_extensions.append(base64_ext)
+      f.close()
+    capabilities = {'chrome.extensions': base64_extensions}
+    driver = self.GetNewDriver(capabilities)
+    # Assert the extensions are installed.
+    driver.get('chrome://extensions/')
+    self.assertNotEqual(-1, driver.page_source.find('ExtTest1'))
+    self.assertNotEqual(-1, driver.page_source.find('ExtTest2'))
+    driver.quit()
 
 class CookieTest(ChromeDriverTest):
   """Cookie test for the json webdriver protocol"""
@@ -352,7 +362,7 @@ class ScreenshotTest(ChromeDriverTest):
       return
 
     # Create a red square of 2000x2000 pixels.
-    url = GetFileURLForPath(os.path.join(DataDir(),
+    url = GetFileURLForPath(os.path.join(test_paths.DataDir(),
                                          self.REDBOX))
     url += "?2000,2000"
     self._driver.get(url)
