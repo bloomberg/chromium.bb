@@ -92,7 +92,7 @@ onLoaded = function() {
   categoryTabSwitcher.addTab('tab-handle-hsts', new HSTSView(), false, true);
   categoryTabSwitcher.addTab('tab-handle-http-throttling',
                              new HttpThrottlingView(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-hsts', new LogsView(), false,
+  categoryTabSwitcher.addTab('tab-handle-logs', new LogsView(), false,
                              cr.isChromeOS);
   categoryTabSwitcher.addTab('tab-handle-prerender', new PrerenderView(),
                              false, true);
