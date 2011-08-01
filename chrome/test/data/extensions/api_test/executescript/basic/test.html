@@ -29,7 +29,7 @@ chrome.test.getConfig(function(config) {
         script_file.code = "document.title = 'executeScript';";
         chrome.tabs.executeScript(tabId, script_file, function() {
           chrome.tabs.get(tabId, pass(function(tab) {
-            assertEq(tab.title, 'executeScript');
+            assertEq('executeScript', tab.title);
           }));
         });
       },
@@ -39,7 +39,7 @@ chrome.test.getConfig(function(config) {
         script_file.file = 'script1.js';
         chrome.tabs.executeScript(tabId, script_file, function() {
           chrome.tabs.get(tabId, pass(function(tab) {
-            assertEq(tab.title, 'executeScript1');
+            assertEq('executeScript1', tab.title);
           }));
         });
       },
@@ -52,7 +52,7 @@ chrome.test.getConfig(function(config) {
           script_file.file = 'script3.js';
           chrome.tabs.executeScript(tabId, script_file, function() {
             chrome.tabs.get(tabId, pass(function(tab) {
-              assertEq(tab.title, 'none');
+              assertEq('none', tab.title);
             }));
           });
         });
@@ -66,7 +66,7 @@ chrome.test.getConfig(function(config) {
           script_file.file = 'script2.js';
           chrome.tabs.executeScript(tabId, script_file, function() {
             chrome.tabs.get(tabId, pass(function(tab) {
-              assertEq(tab.title, 'block');
+              assertEq('block', tab.title);
             }));
           });
         });
@@ -79,7 +79,7 @@ chrome.test.getConfig(function(config) {
               {code: 'document.title = document.styleSheets.length'},
               function() {
                 chrome.tabs.get(tabId, pass(function(tab) {
-                  assertEq(tab.title, '0');
+                  assertEq('0', tab.title);
                 }));
              });
         });
