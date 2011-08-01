@@ -73,29 +73,34 @@ onLoaded = function() {
   // OSes.
   categoryTabSwitcher.addTab('tab-handle-events', EventsView.getInstance(),
                              false, true);
-  categoryTabSwitcher.addTab('tab-handle-proxy', new ProxyView(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-dns', new DnsView(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-sockets', new SocketsView(),
+  categoryTabSwitcher.addTab('tab-handle-proxy', ProxyView.getInstance(),
                              false, true);
-  categoryTabSwitcher.addTab('tab-handle-spdy', new SpdyView(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-http-cache', new HttpCacheView(),
+  categoryTabSwitcher.addTab('tab-handle-dns', DnsView.getInstance(),
                              false, true);
-  categoryTabSwitcher.addTab('tab-handle-import', new ImportView(),
+  categoryTabSwitcher.addTab('tab-handle-sockets', SocketsView.getInstance(),
                              false, true);
-  categoryTabSwitcher.addTab('tab-handle-export', new ExportView(),
+  categoryTabSwitcher.addTab('tab-handle-spdy', SpdyView.getInstance(),
                              false, true);
-  categoryTabSwitcher.addTab('tab-handle-capture', new CaptureView(),
+  categoryTabSwitcher.addTab('tab-handle-http-cache',
+                             HttpCacheView.getInstance(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-import', ImportView.getInstance(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-export', ExportView.getInstance(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-capture', CaptureView.getInstance(),
                              false, true);
   categoryTabSwitcher.addTab('tab-handle-service-providers',
-                             new ServiceProvidersView(), false, cr.isWindows);
+                             ServiceProvidersView.getInstance(),
+                             false, cr.isWindows);
   categoryTabSwitcher.addTab('tab-handle-tests', new TestView(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-hsts', new HSTSView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-hsts', HSTSView.getInstance(),
+                             false, true);
   categoryTabSwitcher.addTab('tab-handle-http-throttling',
-                             new HttpThrottlingView(), false, true);
+                             HttpThrottlingView.getInstance(), false, true);
   categoryTabSwitcher.addTab('tab-handle-logs', new LogsView(), false,
                              cr.isChromeOS);
-  categoryTabSwitcher.addTab('tab-handle-prerender', new PrerenderView(),
-                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-prerender',
+                             PrerenderView.getInstance(), false, true);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
