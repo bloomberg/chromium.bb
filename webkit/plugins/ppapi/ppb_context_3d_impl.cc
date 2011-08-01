@@ -293,10 +293,22 @@ bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
     Destroy();
     return false;
   }
-  if (!platform_context_->Init()) {
+
+  static const int32 kAttribs[] = {
+    PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
+    PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
+    PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
+    PP_GRAPHICS3DATTRIB_SAMPLES, 0,
+    PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, 0,
+    PP_GRAPHICS3DATTRIB_HEIGHT, 1,
+    PP_GRAPHICS3DATTRIB_WIDTH, 1,
+    PP_GRAPHICS3DATTRIBVALUE_NONE,
+  };
+  if (!platform_context_->Init(kAttribs)) {
     Destroy();
     return false;
   }
+
   platform_context_->SetContextLostCallback(
       callback_factory_.NewCallback(&PPB_Context3D_Impl::OnContextLost));
   return true;

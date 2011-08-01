@@ -31,8 +31,8 @@
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_5 "PPB_Graphics3D(Dev);0.5"
-#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_5
+#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_6 "PPB_Graphics3D(Dev);0.6"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_6
 
 struct PPB_Graphics3D_Dev {
   // TODO(alokp): Do these functions need module argument?
@@ -195,6 +195,18 @@ struct PPB_Graphics3D_Dev {
   //   a PP_GRAPHICS3DERROR_BAD_MATCH error is returned.
   int32_t (*SetAttribs)(PP_Resource context,
                         int32_t* attrib_list);
+
+  // Resizes the backing surface for context.
+  //
+  // On failure the following error codes may be returned:
+  // - PP_ERROR_BADRESOURCE if context is invalid.
+  // - PP_ERROR_BADARGUMENT if the value specified for width or height
+  //   is less than zero.
+  //
+  // If the surface could not be resized due to insufficient resources,
+  // PP_ERROR_NOMEMORY error is returned on the next SwapBuffers callback.
+  int32_t (*ResizeBuffers)(PP_Resource context,
+                           int32_t width, int32_t height);
 
   // Makes the contents of the color buffer available for compositing.
   // This function has no effect on off-screen surfaces - ones not bound

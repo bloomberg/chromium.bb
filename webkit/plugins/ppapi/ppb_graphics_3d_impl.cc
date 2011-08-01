@@ -141,12 +141,6 @@ PP_Graphics3DTrustedState PPB_Graphics3D_Impl::FlushSyncFast(
 
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
   bound_to_instance_ = bind;
-  if (bind && gles2_impl()) {
-    // Resize the backing texture to the size of the instance when it is bound.
-    // TODO(alokp): This should be the responsibility of plugins.
-    const gfx::Size& size = instance()->position().size();
-    gles2_impl()->ResizeCHROMIUM(size.width(), size.height());
-  }
   return true;
 }
 
@@ -203,7 +197,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PP_Config3D_Dev config,
   if (!platform_context_.get())
     return false;
 
-  if (!platform_context_->Init())
+  if (!platform_context_->Init(attrib_list))
     return false;
 
   platform_context_->SetContextLostCallback(

@@ -25,6 +25,7 @@ class Graphics3DImpl : public thunk::PPB_Graphics3D_API {
   // PPB_Graphics3D_API implementation.
   virtual int32_t GetAttribs(int32_t* attrib_list) OVERRIDE;
   virtual int32_t SetAttribs(int32_t* attrib_list) OVERRIDE;
+  virtual int32_t ResizeBuffers(int32_t width, int32_t height) OVERRIDE;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) OVERRIDE;
 
   gpu::gles2::GLES2Implementation* gles2_impl() {

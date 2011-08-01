@@ -18,6 +18,7 @@ class PPB_Graphics3D_API {
   // Graphics3D API.
   virtual int32_t GetAttribs(int32_t* attrib_list) = 0;
   virtual int32_t SetAttribs(int32_t* attrib_list) = 0;
+  virtual int32_t ResizeBuffers(int32_t width, int32_t height) = 0;
   virtual int32_t SwapBuffers(PP_CompletionCallback callback) = 0;
 
   // Graphics3DTrusted API.

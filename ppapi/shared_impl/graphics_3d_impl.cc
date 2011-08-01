@@ -33,6 +33,15 @@ int32_t Graphics3DImpl::SetAttribs(int32_t* attrib_list) {
   return PP_ERROR_FAILED;
 }
 
+int32_t Graphics3DImpl::ResizeBuffers(int32_t width, int32_t height) {
+  if ((width < 0) || (height < 0))
+    return PP_ERROR_BADARGUMENT;
+
+  gles2_impl()->ResizeCHROMIUM(width, height);
+  // TODO(alokp): Check if resize succeeded and return appropriate error code.
+  return PP_OK;
+}
+
 int32_t Graphics3DImpl::SwapBuffers(PP_CompletionCallback callback) {
   if (!callback.func) {
     // Blocking SwapBuffers isn't supported (since we have to be on the main

@@ -159,7 +159,7 @@ class PluginDelegate {
     virtual ~PlatformContext3D() {}
 
     // Initialize the context.
-    virtual bool Init() = 0;
+    virtual bool Init(const int32* attrib_list) = 0;
 
     // Set an optional callback that will be invoked when the side effects of
     // a SwapBuffers call become visible to the compositor. Takes ownership

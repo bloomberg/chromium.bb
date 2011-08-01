@@ -64,6 +64,13 @@ int32_t SetAttribs(PP_Resource graphics_3d, int32_t* attrib_list) {
   return enter.object()->SetAttribs(attrib_list);
 }
 
+int32_t ResizeBuffers(PP_Resource graphics_3d, int32_t width, int32_t height) {
+  EnterGraphics3D enter(graphics_3d, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.object()->ResizeBuffers(width, height);
+}
+
 int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
   EnterGraphics3D enter(graphics_3d, true);
   if (enter.failed())
@@ -80,6 +87,7 @@ const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
   &IsGraphics3D,
   &GetAttribs,
   &SetAttribs,
+  &ResizeBuffers,
   &SwapBuffers
 };
 

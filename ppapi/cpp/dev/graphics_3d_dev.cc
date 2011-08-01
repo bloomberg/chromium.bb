@@ -87,6 +87,14 @@ int32_t Graphics3D_Dev::SetAttribs(int32_t* attrib_list) {
       attrib_list);
 }
 
+int32_t Graphics3D_Dev::ResizeBuffers(int32_t width, int32_t height) {
+  if (!has_interface<PPB_Graphics3D_Dev>())
+    return PP_ERROR_NOINTERFACE;
+
+  return get_interface<PPB_Graphics3D_Dev>()->ResizeBuffers(
+      pp_resource(), width, height);
+}
+
 int32_t Graphics3D_Dev::SwapBuffers(const CompletionCallback& cc) {
   if (!has_interface<PPB_Graphics3D_Dev>())
     return PP_ERROR_NOINTERFACE;

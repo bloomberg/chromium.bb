@@ -53,6 +53,8 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
     STENCIL_SIZE   = 0x3026,
     SAMPLES        = 0x3031,
     SAMPLE_BUFFERS = 0x3032,
+    HEIGHT         = 0x3056,
+    WIDTH          = 0x3057,
     NONE           = 0x3038  // Attrib list = terminator
   };
 

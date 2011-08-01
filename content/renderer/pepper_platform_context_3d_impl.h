@@ -28,7 +28,7 @@ class PlatformContext3DImpl
   explicit PlatformContext3DImpl(RendererGLContext* parent_context);
   virtual ~PlatformContext3DImpl();
 
-  virtual bool Init();
+  virtual bool Init(const int32* attrib_list);
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
   virtual unsigned GetBackingTextureId();
   virtual gpu::CommandBuffer* GetCommandBuffer();

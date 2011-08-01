@@ -38,6 +38,8 @@ class Graphics3D_Dev : public Resource {
   int32_t GetAttribs(int32_t* attrib_list) const;
   int32_t SetAttribs(int32_t* attrib_list);
 
+  int32_t ResizeBuffers(int32_t width, int32_t height);
+
   int32_t SwapBuffers(const CompletionCallback& cc);
 };
 
