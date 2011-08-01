@@ -2697,6 +2697,7 @@ nonvariant_tests = [
     'tests/imc_shm_mmap/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
+    'tests/minnacl/nacl.scons',
     'tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
