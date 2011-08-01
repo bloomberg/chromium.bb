@@ -76,7 +76,8 @@ ImmediateInterpreter::~ImmediateInterpreter() {
   }
 }
 
-Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
+Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
+                                             stime_t* timeout) {
   if (!prev_state_.fingers) {
     Log("Must call SetHardwareProperties() before Push().");
     return 0;
@@ -96,6 +97,10 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
   UpdateButtons(*hwstate);
   SetPrevState(*hwstate);
   return result_.type != kGestureTypeNull ? &result_ : NULL;
+}
+
+Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
+  return NULL;
 }
 
 // For now, require fingers to be in the same slots

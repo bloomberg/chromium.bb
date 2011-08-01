@@ -24,7 +24,21 @@ class Interpreter {
 
   // Called to interpret the current state and optionally produce 1
   // resulting gesture. The passed |hwstate| may be modified.
-  virtual Gesture* SyncInterpret(HardwareState* hwstate) = 0;
+  // If *timeout is set to >0.0, a timer will be setup to call
+  // HandleTimer after *timeout time passes. An interpreter can only
+  // have up to 1 outstanding timer, so if a timeout is requested by
+  // setting *timeout and one already exists, the old one will be cancelled
+  // and reused for this timeout.
+  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+                                 stime_t* timeout) = 0;
+
+  // Called to handle a timeout and optionally produce 1 resulting gesture.
+  // If *timeout is set to >0.0, a timer will be setup to call
+  // HandleTimer after *timeout time passes. An interpreter can only
+  // have up to 1 outstanding timer, so if a timeout is requested by
+  // setting *timeout and one already exists, the old one will be cancelled
+  // and reused for this timeout.
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) = 0;
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops) {}
 };

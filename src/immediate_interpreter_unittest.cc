@@ -44,13 +44,13 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   };
 
   // Should fail w/o hardware props set
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(0, gs->details.move.dx);
@@ -58,7 +58,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   EXPECT_EQ(200000, gs->start_time);
   EXPECT_EQ(210000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2]);
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
   EXPECT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeMove, gs->type);
   EXPECT_EQ(10, gs->details.move.dx);
@@ -67,9 +67,9 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
   EXPECT_EQ(220000, gs->end_time);
 
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[3]));
+            ii.SyncInterpret(&hardware_states[3], NULL));
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
-            ii.SyncInterpret(&hardware_states[4]));
+            ii.SyncInterpret(&hardware_states[4], NULL));
 }
 
 TEST(ImmediateInterpreterTest, ScrollUpTest) {
@@ -109,9 +109,9 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
 
   ii.SetHardwareProperties(hwprops);
 
-  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
 
-  Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -119,7 +119,7 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
   EXPECT_DOUBLE_EQ(0.200000, gs->start_time);
   EXPECT_DOUBLE_EQ(0.250000, gs->end_time);
 
-  gs = ii.SyncInterpret(&hardware_states[2]);
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.move.dx);
@@ -161,7 +161,7 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     200000, 0, 5, &finger_states[0]
   };
   // This used to cause a crash:
-  Gesture* gs = ii.SyncInterpret(&hardware_state);
+  Gesture* gs = ii.SyncInterpret(&hardware_state, NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 }
 

@@ -31,7 +31,10 @@ class ImmediateInterpreter : public Interpreter {
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate);
+  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+                                 stime_t* timeout);
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   void SetHardwareProperties(const HardwareProperties& hw_props);
 

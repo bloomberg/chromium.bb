@@ -113,8 +113,32 @@ GestureInterpreter::~GestureInterpreter() {
   SetTimerProvider(NULL, NULL);
 }
 
+namespace {
+stime_t InternalTimerCallback(stime_t now, void* callback_data) {
+  Log("TimerCallback called");
+  GestureInterpreter* gi = reinterpret_cast<GestureInterpreter*>(callback_data);
+  stime_t next = -1.0;
+  gi->TimerCallback(now, &next);
+  return next;
+}
+}
+
 void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
-  Gesture* gs = interpreter_->SyncInterpret(hwstate);
+  stime_t timeout = -1.0;
+  Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
+  if (timer_provider_ && interpret_timer_) {
+    timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
+    if (timeout > 0.0) {
+      timer_provider_->set_fn(timer_provider_data_,
+                              interpret_timer_,
+                              timeout,
+                              InternalTimerCallback,
+                              this);
+      Log("Setting timer for %f s out.", timeout);
+    }
+  } else {
+    Log("No timer!");
+  }
   if (gs && callback_) {
     (*callback_)(callback_data_, gs);
   }
@@ -123,6 +147,12 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
 void GestureInterpreter::SetHardwareProperties(
     const HardwareProperties& hwprops) {
   interpreter_->SetHardwareProperties(hwprops);
+}
+
+void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
+  Gesture* gs = interpreter_->HandleTimer(now, timeout);
+  if (gs && callback_)
+    (*callback_)(callback_data_, gs);
 }
 
 void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,

@@ -27,7 +27,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   ScalingFilterInterpreterTestInterpreter()
       : set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate) {
+  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (!expected_coordinates_.empty()) {
       vector<pair<float, float> >& expected = expected_coordinates_.front();
       for (unsigned short i = 0; i < hwstate->finger_cnt; i++) {
@@ -45,6 +45,11 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
     if (return_value_.type == kGestureTypeNull)
       return NULL;
     return &return_value_;
+  }
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+    EXPECT_TRUE(false);
+    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
@@ -127,14 +132,14 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
                                                      4.1,  // dx
                                                      -10.3));  // dy
 
-  Gesture* out = interpreter.SyncInterpret(&hs[0]);
+  Gesture* out = interpreter.SyncInterpret(&hs[0], NULL);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  out = interpreter.SyncInterpret(&hs[1]);
+  out = interpreter.SyncInterpret(&hs[1], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeMove, out->type);
   EXPECT_FLOAT_EQ(-4.0 * 133.0 / 25.4, out->details.move.dx);
   EXPECT_FLOAT_EQ(2.8 * 133.0 / 25.4, out->details.move.dy);
-  out = interpreter.SyncInterpret(&hs[2]);
+  out = interpreter.SyncInterpret(&hs[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_FLOAT_EQ(4.1 * 133.0 / 25.4, out->details.scroll.dx);

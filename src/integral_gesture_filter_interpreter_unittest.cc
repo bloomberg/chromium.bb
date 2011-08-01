@@ -27,7 +27,7 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
   IntegralGestureFilterInterpreterTestInterpreter()
       : set_hwprops_called_(false) {}
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate) {
+  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())
       return NULL;
     return_value_ = return_values_.front();
@@ -35,6 +35,11 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
     if (return_value_.type == kGestureTypeNull)
       return NULL;
     return &return_value_;
+  }
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+    EXPECT_TRUE(false);
+    return NULL;
   }
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops) {
@@ -95,7 +100,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   ASSERT_EQ(arraysize(expected_types), arraysize(expected_y));
 
   for (size_t i = 0; i < arraysize(expected_x); i++) {
-    Gesture* out = interpreter.SyncInterpret(&hs);
+    Gesture* out = interpreter.SyncInterpret(&hs, NULL);
     ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out) << "i = " << i;
     EXPECT_EQ(expected_types[i], out->type) << "i = " << i;
     if (out->type == kGestureTypeMove) {

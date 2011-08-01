@@ -24,12 +24,20 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(Interpreter* next)
 
 ScalingFilterInterpreter::~ScalingFilterInterpreter() {}
 
-Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate) {
+Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
+                                                 stime_t* timeout) {
   ScaleHardwareState(hwstate);
-  Gesture* fg = next_->SyncInterpret(hwstate);
+  Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   if (fg)
     ScaleGesture(fg);
   return fg;
+}
+
+Gesture* ScalingFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
+  Gesture* gs = next_->HandleTimer(now, timeout);
+  if (gs)
+    ScaleGesture(gs);
+  return gs;
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {

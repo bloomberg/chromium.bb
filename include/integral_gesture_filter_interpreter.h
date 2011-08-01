@@ -24,7 +24,10 @@ class IntegralGestureFilterInterpreter : public Interpreter {
   explicit IntegralGestureFilterInterpreter(Interpreter* next);
   virtual ~IntegralGestureFilterInterpreter();
 
-  virtual Gesture* SyncInterpret(HardwareState* hwstate);
+  virtual Gesture* SyncInterpret(HardwareState* hwstate,
+                                 stime_t* timeout);
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 

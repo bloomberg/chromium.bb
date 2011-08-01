@@ -24,11 +24,19 @@ IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
 IntegralGestureFilterInterpreter::~IntegralGestureFilterInterpreter() {}
 
 Gesture* IntegralGestureFilterInterpreter::SyncInterpret(
-    HardwareState* hwstate) {
-  Gesture* fg = next_->SyncInterpret(hwstate);
+    HardwareState* hwstate, stime_t* timeout) {
+  Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   if (fg)
     HandleGesture(fg);
   return fg;
+}
+
+Gesture* IntegralGestureFilterInterpreter::HandleTimer(stime_t now,
+                                                       stime_t* timeout) {
+  Gesture* gs = next_->HandleTimer(now, timeout);
+  if (gs)
+    HandleGesture(gs);
+  return gs;
 }
 
 namespace {

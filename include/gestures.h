@@ -174,6 +174,8 @@ struct GestureInterpreter {
 
   void SetHardwareProperties(const HardwareProperties& hwprops);
 
+  void TimerCallback(stime_t now, stime_t* timeout);
+
   void set_callback(GestureReadyFunction callback,
                     void* client_data) {
     callback_ = callback;
