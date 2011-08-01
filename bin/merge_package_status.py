@@ -233,9 +233,6 @@ def main():
   """Main function."""
   usage = 'Usage: %prog --out=merged_csv_file input_csv_files...'
   parser = optparse.OptionParser(usage=usage)
-  parser.add_option('--finalize-for-upload', dest='finalize',
-                    action='store_true', default=False,
-                    help="Some processing of output for upload purposes.")
   parser.add_option('--out', dest='outpath', type='string',
                     action='store', default=None,
                     help="File to write merged results to")
@@ -251,10 +248,6 @@ def main():
     oper.Die("At least one input_csv_file is required.")
 
   csv_table = LoadAndMergeTables(args)
-
-  # TODO(mtennant): Remove this option and let upload script handle it.
-  if options.finalize:
-    FinalizeTable(csv_table)
 
   WriteTable(csv_table, options.outpath)
 
