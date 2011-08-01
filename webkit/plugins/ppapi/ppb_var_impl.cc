@@ -12,13 +12,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
 #include "v8/include/v8.h"
 
+using ppapi::NPObjectVar;
+using ppapi::StringVar;
+using ppapi::Var;
 using WebKit::WebBindings;
 
 namespace webkit {
@@ -75,7 +78,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
       break;
     }
     case PP_VARTYPE_OBJECT: {
-      scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
+      scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
       if (!object) {
         VOID_TO_NPVARIANT(*result);
         return false;
@@ -106,7 +109,7 @@ class ObjectAccessorTryCatch : public TryCatch {
  public:
   ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
       : TryCatch(0, exception),
-        object_(ObjectVar::FromPPVar(object)) {
+        object_(NPObjectVar::FromPPVar(object)) {
     if (!object_) {
       // No object or an invalid object was given. This means we have no module
       // to associated with the exception text, so use the magic invalid object
@@ -118,14 +121,14 @@ class ObjectAccessorTryCatch : public TryCatch {
     }
   }
 
-  ObjectVar* object() { return object_.get(); }
+  NPObjectVar* object() { return object_.get(); }
 
   PluginInstance* GetPluginInstance() {
     return ResourceTracker::Get()->GetInstance(object()->pp_instance());
   }
 
  protected:
-  scoped_refptr<ObjectVar> object_;
+  scoped_refptr<NPObjectVar> object_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectAccessorTryCatch);
 };
@@ -385,7 +388,7 @@ PP_Var Construct(PP_Var var,
 bool IsInstanceOfDeprecated(PP_Var var,
                             const PPP_Class_Deprecated* ppp_class,
                             void** ppp_class_data) {
-  scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
+  scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
   if (!object)
     return false;  // Not an object at all.
 

@@ -15,14 +15,16 @@
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/string.h"
-#include "webkit/plugins/ppapi/var.h"
 
+using ppapi::StringVar;
+using ppapi::Var;
 using WebKit::WebBindings;
 
 namespace webkit {

@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
@@ -30,9 +31,9 @@
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
-#include "webkit/plugins/ppapi/var.h"
 
 using ppapi::InputEventData;
+using ppapi::StringVar;
 
 namespace webkit {
 namespace ppapi {

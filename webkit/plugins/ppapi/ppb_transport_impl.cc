@@ -12,11 +12,12 @@
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/var.h"
 
+using ppapi::StringVar;
 using ppapi::thunk::PPB_Transport_API;
 using webkit_glue::P2PTransport;
 

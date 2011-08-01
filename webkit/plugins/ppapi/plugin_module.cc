@@ -105,7 +105,6 @@
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
 using ppapi::TimeTicksToPPTimeTicks;

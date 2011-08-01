@@ -58,6 +58,8 @@
         'shared_impl/tracker_base.h',
         'shared_impl/url_util_impl.cc',
         'shared_impl/url_util_impl.h',
+        'shared_impl/var.cc',
+        'shared_impl/var.h',
         'shared_impl/webkit_forwarding.cc',
         'shared_impl/webkit_forwarding.h',
 

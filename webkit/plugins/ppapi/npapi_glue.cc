@@ -7,15 +7,18 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
+using ppapi::NPObjectVar;
+using ppapi::StringVar;
+using ppapi::Var;
 using WebKit::WebBindings;
 
 namespace webkit {
@@ -59,7 +62,7 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
       break;
     }
     case PP_VARTYPE_OBJECT: {
-      scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
+      scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
       if (!object) {
         VOID_TO_NPVARIANT(*result);
         return false;
@@ -128,12 +131,12 @@ PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id) {
 
 PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   DCHECK(object);
-  scoped_refptr<ObjectVar> object_var(
-      ResourceTracker::Get()->ObjectVarForNPObject(instance->pp_instance(),
-                                                   object));
+  scoped_refptr<NPObjectVar> object_var(
+      ResourceTracker::Get()->NPObjectVarForNPObject(instance->pp_instance(),
+                                                     object));
   if (!object_var) {  // No object for this module yet, make a new one.
-    object_var = new ObjectVar(instance->module()->pp_module(),
-                               instance->pp_instance(), object);
+    object_var = new NPObjectVar(instance->module()->pp_module(),
+                                 instance->pp_instance(), object);
   }
   return object_var->GetPPVar();
 }
@@ -156,7 +159,7 @@ PPResultAndExceptionToNPResult::~PPResultAndExceptionToNPResult() {
   // been lost.
   DCHECK(checked_exception_);
 
-  ObjectVar::PluginReleasePPVar(exception_);
+  NPObjectVar::PluginReleasePPVar(exception_);
 }
 
 // Call this with the return value of the PPAPI function. It will convert
@@ -181,7 +184,7 @@ bool PPResultAndExceptionToNPResult::SetResult(PP_Var result) {
   // No matter what happened, we need to release the reference to the
   // value passed in. On success, a reference to this value will be in
   // the np_result_.
-  Var::PluginReleasePPVar(result);
+  ::ppapi::Var::PluginReleasePPVar(result);
   return success_;
 }
 
@@ -235,7 +238,7 @@ PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
 
 PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
   for (size_t i = 0; i < size_; i++)
-    Var::PluginReleasePPVar(array_[i]);
+    ::ppapi::Var::PluginReleasePPVar(array_[i]);
 }
 
 // PPVarFromNPObject -----------------------------------------------------------
@@ -245,7 +248,7 @@ PPVarFromNPObject::PPVarFromNPObject(PluginInstance* instance, NPObject* object)
 }
 
 PPVarFromNPObject::~PPVarFromNPObject() {
-  Var::PluginReleasePPVar(var_);
+  ::ppapi::Var::PluginReleasePPVar(var_);
 }
 
 // NPObjectAccessorWithIdentifier ----------------------------------------------
@@ -265,7 +268,51 @@ NPObjectAccessorWithIdentifier::NPObjectAccessorWithIdentifier(
 }
 
 NPObjectAccessorWithIdentifier::~NPObjectAccessorWithIdentifier() {
-  Var::PluginReleasePPVar(identifier_);
+  ::ppapi::Var::PluginReleasePPVar(identifier_);
+}
+
+// TryCatch --------------------------------------------------------------------
+
+TryCatch::TryCatch(PP_Module module, PP_Var* exception)
+    : pp_module_(module),
+      has_exception_(exception && exception->type != PP_VARTYPE_UNDEFINED),
+      exception_(exception) {
+  WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
+}
+
+TryCatch::~TryCatch() {
+  WebBindings::popExceptionHandler();
+}
+
+void TryCatch::SetException(const char* message) {
+  if (!pp_module_) {
+    // Don't have a module to make the string.
+    SetInvalidObjectException();
+    return;
+  }
+
+  if (!has_exception()) {
+    has_exception_ = true;
+    if (exception_) {
+      *exception_ = ::ppapi::StringVar::StringToPPVar(pp_module_,
+                                                      message, strlen(message));
+    }
+  }
+}
+
+void TryCatch::SetInvalidObjectException() {
+  if (!has_exception()) {
+    has_exception_ = true;
+    // TODO(brettw) bug 54504: Have a global singleton string that can hold
+    // a generic error message.
+    if (exception_)
+      *exception_ = PP_MakeInt32(1);
+  }
+}
+
+// static
+void TryCatch::Catch(void* self, const char* message) {
+  static_cast<TryCatch*>(self)->SetException(message);
 }
 
 }  // namespace ppapi

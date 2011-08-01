@@ -11,6 +11,7 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/shared_impl/time_conversion.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -18,9 +19,9 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
 
 using ppapi::PPTimeToTime;
+using ppapi::StringVar;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_URLRequestInfo_API;
 

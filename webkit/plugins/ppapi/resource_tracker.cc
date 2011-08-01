@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
@@ -21,7 +22,9 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
-#include "webkit/plugins/ppapi/var.h"
+
+using ppapi::NPObjectVar;
+using ppapi::Var;
 
 enum PPIdType {
   PP_ID_TYPE_MODULE,
@@ -34,6 +37,9 @@ enum PPIdType {
 static const unsigned int kPPIdTypeBits = 2;
 COMPILE_ASSERT(PP_ID_TYPE_COUNT <= (1<<kPPIdTypeBits),
                kPPIdTypeBits_is_too_small_for_all_id_types);
+
+static const int32 kMaxPPIdType =
+    std::numeric_limits<int32>::max() >> kPPIdTypeBits;
 
 template <typename T> static inline T MakeTypedId(T value, PPIdType type) {
   return (value << kPPIdTypeBits) | static_cast<T>(type);
@@ -58,7 +64,7 @@ namespace {
 
 }  // namespace
 
-typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;
+typedef std::map<NPObject*, NPObjectVar*> NPObjectToNPObjectVarMap;
 
 struct ResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
@@ -71,10 +77,11 @@ struct ResourceTracker::InstanceData {
   ResourceSet ref_resources;
   std::set<Resource*> assoc_resources;
 
-  // Tracks all live ObjectVars used by this module so we can map NPObjects to
-  // the corresponding object, and also release these properly if the instance
-  // goes away when there are still refs. These are non-owning references.
-  NPObjectToObjectVarMap np_object_to_object_var;
+  // Tracks all live NPObjectVars used by this module so we can map NPObjects
+  // to the corresponding object, and also release these properly if the
+  // instance goes away when there are still refs. These are non-owning
+  // references.
+  NPObjectToNPObjectVarMap np_object_to_object_var;
 
   // Lazily allocated function proxies for the different interfaces.
   scoped_ptr< ::ppapi::FunctionGroupBase >
@@ -152,22 +159,6 @@ PP_Resource ResourceTracker::AddResource(Resource* resource) {
   return new_id;
 }
 
-int32 ResourceTracker::AddVar(Var* var) {
-  // If the plugin manages to create 1B strings...
-  if (last_var_id_ == std::numeric_limits<int32>::max() >> kPPIdTypeBits)
-    return 0;
-
-  // Validate the module.
-  if (!GetModule(var->pp_module()))
-    return 0;
-
-  // Add the resource with plugin use-count 1.
-  int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
-  live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));
-
-  return new_id;
-}
-
 bool ResourceTracker::AddRefResource(PP_Resource res) {
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
@@ -241,11 +232,11 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
   // Force delete all var references. Need to make a copy so we can iterate over
   // the map while deleting stuff from it.
-  NPObjectToObjectVarMap np_object_map_copy = data.np_object_to_object_var;
-  NPObjectToObjectVarMap::iterator cur_var =
+  NPObjectToNPObjectVarMap np_object_map_copy = data.np_object_to_object_var;
+  NPObjectToNPObjectVarMap::iterator cur_var =
       np_object_map_copy.begin();
   while (cur_var != np_object_map_copy.end()) {
-    NPObjectToObjectVarMap::iterator current = cur_var++;
+    NPObjectToNPObjectVarMap::iterator current = cur_var++;
 
     // Clear the object from the var mapping and the live instance object list.
     int32 var_id = current->second->GetExistingVarID();
@@ -336,6 +327,22 @@ PP_Instance ResourceTracker::GetInstanceForResource(PP_Resource pp_resource) {
   return resource->instance()->pp_instance();
 }
 
+int32 ResourceTracker::AddVar(Var* var) {
+  // If the plugin manages to create 1B strings...
+  if (last_var_id_ == kMaxPPIdType)
+    return 0;
+
+  // Validate the module.
+  if (!GetModule(var->pp_module()))
+    return 0;
+
+  // Add the resource with plugin use-count 1.
+  int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
+  live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));
+
+  return new_id;
+}
+
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
@@ -371,38 +378,38 @@ bool ResourceTracker::UnrefVar(int32 var_id) {
   return false;
 }
 
-void ResourceTracker::AddNPObjectVar(ObjectVar* object_var) {
+void ResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
   DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
   InstanceData& data = *instance_map_[object_var->pp_instance()].get();
 
   DCHECK(data.np_object_to_object_var.find(object_var->np_object()) ==
-         data.np_object_to_object_var.end()) << "ObjectVar already in map";
+         data.np_object_to_object_var.end()) << "NPObjectVar already in map";
   data.np_object_to_object_var[object_var->np_object()] = object_var;
 }
 
-void ResourceTracker::RemoveNPObjectVar(ObjectVar* object_var) {
+void ResourceTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
   DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
   InstanceData& data = *instance_map_[object_var->pp_instance()].get();
 
-  NPObjectToObjectVarMap::iterator found =
+  NPObjectToNPObjectVarMap::iterator found =
       data.np_object_to_object_var.find(object_var->np_object());
   if (found == data.np_object_to_object_var.end()) {
-    NOTREACHED() << "ObjectVar not registered.";
+    NOTREACHED() << "NPObjectVar not registered.";
     return;
   }
   if (found->second != object_var) {
-    NOTREACHED() << "ObjectVar doesn't match.";
+    NOTREACHED() << "NPObjectVar doesn't match.";
     return;
   }
   data.np_object_to_object_var.erase(found);
 }
 
-ObjectVar* ResourceTracker::ObjectVarForNPObject(PP_Instance instance,
-                                                 NPObject* np_object) {
+NPObjectVar* ResourceTracker::NPObjectVarForNPObject(PP_Instance instance,
+                                                     NPObject* np_object) {
   DCHECK(instance_map_.find(instance) != instance_map_.end());
   InstanceData& data = *instance_map_[instance].get();
 
-  NPObjectToObjectVarMap::iterator found =
+  NPObjectToNPObjectVarMap::iterator found =
       data.np_object_to_object_var.find(np_object);
   if (found == data.np_object_to_object_var.end())
     return NULL;

@@ -13,6 +13,7 @@
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/shared_impl/var.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,7 +24,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/var.h"
 
 namespace chrome {
 
@@ -128,8 +128,7 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
     NOTREACHED();
   }
 
-  return webkit::ppapi::StringVar::StringToPPVar(
-      instance->module()->pp_module(), rv);
+  return ppapi::StringVar::StringToPPVar(instance->module()->pp_module(), rv);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,
@@ -181,8 +180,8 @@ PP_Resource GetFontFileWithFallback(
   if (!instance)
     return 0;
 
-  scoped_refptr<webkit::ppapi::StringVar>
-      face_name(webkit::ppapi::StringVar::FromPPVar(description->face));
+  scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
+      description->face));
   if (!face_name)
     return 0;
 
@@ -302,11 +301,12 @@ void HistogramPDFPageCount(int count) {
 }
 
 void UserMetricsRecordAction(PP_Var action) {
-  scoped_refptr<webkit::ppapi::StringVar>
-      action_str(webkit::ppapi::StringVar::FromPPVar(action));
-  if (action_str)
+  scoped_refptr<ppapi::StringVar> action_str(
+      ppapi::StringVar::FromPPVar(action));
+  if (action_str) {
     RenderThread::current()->Send(
         new ViewHostMsg_UserMetricsRecordAction(action_str->value()));
+  }
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {

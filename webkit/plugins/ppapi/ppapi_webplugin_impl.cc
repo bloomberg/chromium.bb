@@ -15,11 +15,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/plugins/ppapi/message_channel.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/var.h"
 
+using ppapi::NPObjectVar;
 using WebKit::WebCanvas;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
@@ -94,8 +95,8 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
-  scoped_refptr<ObjectVar> object(
-      ObjectVar::FromPPVar(instance_->GetInstanceObject()));
+  scoped_refptr<NPObjectVar> object(
+      NPObjectVar::FromPPVar(instance_->GetInstanceObject()));
   // GetInstanceObject talked to the plugin which may have removed the instance
   // from the DOM, in which case instance_ would be NULL now.
   if (!instance_)

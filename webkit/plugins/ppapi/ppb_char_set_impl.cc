@@ -7,13 +7,14 @@
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/shared_impl/char_set_impl.h"
+#include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
 
-using ::ppapi::thunk::PPB_CharSet_FunctionAPI;
+using ppapi::StringVar;
+using ppapi::thunk::PPB_CharSet_FunctionAPI;
 
 namespace webkit {
 namespace ppapi {

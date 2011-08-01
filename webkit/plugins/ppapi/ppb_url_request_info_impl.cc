@@ -10,6 +10,7 @@
 #include "googleurl/src/url_util.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
@@ -22,9 +23,9 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/string.h"
-#include "webkit/plugins/ppapi/var.h"
 #include "webkit/glue/webkit_glue.h"
 
+using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;

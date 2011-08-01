@@ -220,6 +220,61 @@ class NPObjectAccessorWithIdentifier {
   DISALLOW_COPY_AND_ASSIGN(NPObjectAccessorWithIdentifier);
 };
 
+// TryCatch --------------------------------------------------------------------
+
+// Instantiate this object on the stack to catch V8 exceptions and pass them
+// to an optional out parameter supplied by the plugin.
+class TryCatch {
+ public:
+  // The given exception may be NULL if the consumer isn't interested in
+  // catching exceptions. If non-NULL, the given var will be updated if any
+  // exception is thrown (so it must outlive the TryCatch object).
+  //
+  // The module associated with the exception is passed so we know which module
+  // to associate any exception string with. It may be NULL if you don't know
+  // the module at construction time, in which case you should set it later
+  // by calling set_module().
+  //
+  // If an exception is thrown when the module is NULL, setting *any* exception
+  // will result in using the InvalidObjectException.
+  TryCatch(PP_Module module, PP_Var* exception);
+  ~TryCatch();
+
+  // Get and set the module. This may be NULL (see the constructor).
+  PP_Module pp_module() { return pp_module_; }
+  void set_pp_module(PP_Module module) { pp_module_ = module; }
+
+  // Returns true is an exception has been thrown. This can be true immediately
+  // after construction if the var passed to the constructor is non-void.
+  bool has_exception() const { return has_exception_; }
+
+  // Sets the given exception. If no module has been set yet, the message will
+  // be ignored (since we have no module to associate the string with) and the
+  // SetInvalidObjectException() will be used instead.
+  //
+  // If an exception has been previously set, this function will do nothing
+  // (normally you want only the first exception).
+  void SetException(const char* message);
+
+  // Sets the exception to be a generic message contained in a magic string
+  // not associated with any module.
+  void SetInvalidObjectException();
+
+ private:
+  static void Catch(void* self, const char* message);
+
+  PP_Module pp_module_;
+
+  // True if an exception has been thrown. Since the exception itself may be
+  // NULL if the plugin isn't interested in getting the exception, this will
+  // always indicate if SetException has been called, regardless of whether
+  // the exception itself has been stored.
+  bool has_exception_;
+
+  // May be null if the consumer isn't interesting in catching exceptions.
+  PP_Var* exception_;
+};
+
 }  // namespace ppapi
 }  // namespace webkit
 

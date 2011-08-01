@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/shared_impl/url_util_impl.h"
+#include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -21,12 +22,12 @@
 #include "webkit/plugins/ppapi/ppb_var_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
-#include "webkit/plugins/ppapi/var.h"
+
+using ppapi::StringVar;
+using ppapi::URLUtilImpl;
 
 namespace webkit {
 namespace ppapi {
-
-using ::ppapi::URLUtilImpl;
 
 namespace {
 

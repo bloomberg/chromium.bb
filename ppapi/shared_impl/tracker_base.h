@@ -5,6 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_TRACKER_BASE_H_
 #define PPAPI_SHARED_IMPL_TRACKER_BASE_H_
 
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_id.h"
@@ -13,6 +15,7 @@ namespace ppapi {
 
 class FunctionGroupBase;
 class ResourceObjectBase;
+class Var;
 
 // Tracks resource and function APIs, providing a mapping between ID and
 // object.
@@ -44,6 +47,17 @@ class TrackerBase {
   // Returns the instance corresponding to the given resource, or 0 if the
   // resource is invalid.
   virtual PP_Instance GetInstanceForResource(PP_Resource resource) = 0;
+
+  // PP_Vars -------------------------------------------------------------------
+
+  // Adds a new var to the tracker, returning the new Var ID.
+  virtual int32 AddVar(Var* var) = 0;
+
+  // Retrieves a var from the tracker, returning an empty scoped ptr on failure.
+  virtual scoped_refptr<Var> GetVar(int32 var_id) const = 0;
+
+  virtual bool AddRefVar(int32 var_id) = 0;
+  virtual bool UnrefVar(int32 var_id) = 0;
 };
 
 }  // namespace ppapi

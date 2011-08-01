@@ -11,9 +11,11 @@
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
+#include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
-#include "webkit/plugins/ppapi/var.h"
+
+using ppapi::NPObjectVar;
 
 namespace webkit {
 namespace ppapi {
@@ -207,7 +209,7 @@ TEST_F(ResourceTrackerTest, ReuseVar) {
   // This ObjectVar must be released before we do NPObjectToPPVar again
   // below so it gets freed and we get a new identifier.
   {
-    scoped_refptr<ObjectVar> check_object(ObjectVar::FromPPVar(pp_object1));
+    scoped_refptr<NPObjectVar> check_object(NPObjectVar::FromPPVar(pp_object1));
     ASSERT_TRUE(check_object.get());
     EXPECT_EQ(instance()->pp_instance(), check_object->pp_instance());
     EXPECT_EQ(npobject.get(), check_object->np_object());

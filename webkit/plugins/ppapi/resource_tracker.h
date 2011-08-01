@@ -24,15 +24,18 @@
 
 typedef struct NPObject NPObject;
 
+namespace ppapi {
+class NPObjectVar;
+class Var;
+}
+
 namespace webkit {
 namespace ppapi {
 
-class ObjectVar;
 class PluginInstance;
 class PluginModule;
 class Resource;
 class ResourceTrackerTest;
-class Var;
 
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
@@ -70,22 +73,24 @@ class ResourceTracker : public ::ppapi::TrackerBase {
 
   // PP_Vars -------------------------------------------------------------------
 
-  scoped_refptr<Var> GetVar(int32 var_id) const;
+  // TrackerBase implementation.
+  virtual int32 AddVar(::ppapi::Var* var) OVERRIDE;
+  virtual scoped_refptr< ::ppapi::Var > GetVar(int32 var_id) const OVERRIDE;
+  virtual bool AddRefVar(int32 var_id) OVERRIDE;
+  virtual bool UnrefVar(int32 var_id) OVERRIDE;
 
-  bool AddRefVar(int32 var_id);
-  bool UnrefVar(int32 var_id);
-
-  // Tracks all live ObjectVar. This is so we can map between instance +
-  // NPObject and get the ObjectVar corresponding to it. This Add/Remove
-  // function is called by the ObjectVar when it is created and
+  // Tracks all live NPObjectVar. This is so we can map between instance +
+  // NPObject and get the NPObjectVar corresponding to it. This Add/Remove
+  // function is called by the NPObjectVar when it is created and
   // destroyed.
-  void AddNPObjectVar(ObjectVar* object_var);
-  void RemoveNPObjectVar(ObjectVar* object_var);
+  void AddNPObjectVar(::ppapi::NPObjectVar* object_var);
+  void RemoveNPObjectVar(::ppapi::NPObjectVar* object_var);
 
-  // Looks up a previously registered ObjectVar for the given NPObject and
-  // instance. Returns NULL if there is no ObjectVar corresponding to the given
-  // NPObject for the given instance. See AddNPObjectVar above.
-  ObjectVar* ObjectVarForNPObject(PP_Instance instance, NPObject* np_object);
+  // Looks up a previously registered NPObjectVar for the given NPObject and
+  // instance. Returns NULL if there is no NPObjectVar corresponding to the
+  // given NPObject for the given instance. See AddNPObjectVar above.
+  ::ppapi::NPObjectVar* NPObjectVarForNPObject(PP_Instance instance,
+                                               NPObject* np_object);
 
   // PP_Modules ----------------------------------------------------------------
 
@@ -121,7 +126,6 @@ class ResourceTracker : public ::ppapi::TrackerBase {
  private:
   friend class Resource;
   friend class ResourceTrackerTest;
-  friend class Var;
 
   typedef std::set<PP_Resource> ResourceSet;
 
@@ -143,9 +147,6 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   // refcount of 1. The assigned resource ID will be returned. Used only by the
   // Resource class.
   PP_Resource AddResource(Resource* resource);
-
-  // The same as AddResource but for Var, and returns the new Var ID.
-  int32 AddVar(Var* var);
 
   // Force frees all vars and resources associated with the given instance.
   // If delete_instance is true, the instance tracking information will also
@@ -197,7 +198,7 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   ResourceMap live_resources_;
 
   // Like ResourceAndRefCount but for vars, which are associated with modules.
-  typedef std::pair<scoped_refptr<Var>, size_t> VarAndRefCount;
+  typedef std::pair<scoped_refptr< ::ppapi::Var>, size_t> VarAndRefCount;
   typedef base::hash_map<int32, VarAndRefCount> VarMap;
   VarMap live_vars_;
 

@@ -11,6 +11,7 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace pp {
 namespace proxy {
@@ -145,6 +146,34 @@ PP_Instance PluginResourceTracker::GetInstanceForResource(
   if (found == resource_map_.end())
     return 0;
   return found->second.resource->instance();
+}
+
+int32 PluginResourceTracker::AddVar(ppapi::Var* var) {
+  // TODO(brettw) implement this when the proxy uses the Var object in the
+  // plugin process.
+  NOTREACHED();
+  return 0;
+}
+
+scoped_refptr<ppapi::Var> PluginResourceTracker::GetVar(int32 var_id) const {
+  // TODO(brettw) implement this when the proxy uses the Var object in the
+  // plugin process.
+  NOTREACHED();
+  return scoped_refptr<ppapi::Var>();
+}
+
+bool PluginResourceTracker::AddRefVar(int32 var_id) {
+  // TODO(brettw) implement this when the proxy uses the Var object in the
+  // plugin process.
+  NOTREACHED();
+  return false;
+}
+
+bool PluginResourceTracker::UnrefVar(int32 var_id) {
+  // TODO(brettw) implement this when the proxy uses the Var object in the
+  // plugin process.
+  NOTREACHED();
+  return false;
 }
 
 void PluginResourceTracker::ReleasePluginResourceRef(

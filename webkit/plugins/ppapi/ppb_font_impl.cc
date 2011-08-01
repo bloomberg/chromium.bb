@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -14,8 +15,8 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/string.h"
-#include "webkit/plugins/ppapi/var.h"
 
+using ppapi::StringVar;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::WebKitForwarding;

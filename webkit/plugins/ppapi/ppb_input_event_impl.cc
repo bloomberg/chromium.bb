@@ -4,12 +4,13 @@
 
 #include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 
+#include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/var.h"
 
 using ppapi::InputEventData;
 using ppapi::InputEventImpl;
+using ppapi::StringVar;
 using ppapi::thunk::PPB_InputEvent_API;
 
 namespace webkit {

@@ -20,6 +20,10 @@
 
 template<typename T> struct DefaultSingletonTraits;
 
+namespace ppapi {
+class Var;
+}
+
 namespace pp {
 namespace proxy {
 
@@ -62,6 +66,10 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
       PP_Instance inst,
       pp::proxy::InterfaceID id) OVERRIDE;
   virtual PP_Instance GetInstanceForResource(PP_Resource resource) OVERRIDE;
+  virtual int32 AddVar(ppapi::Var* var);
+  virtual scoped_refptr< ::ppapi::Var > GetVar(int32 var_id) const;
+  virtual bool AddRefVar(int32 var_id);
+  virtual bool UnrefVar(int32 var_id);
 
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;

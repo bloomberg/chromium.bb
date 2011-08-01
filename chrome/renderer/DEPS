@@ -5,6 +5,7 @@ include_rules = [
   "+media/base",  # For initializing media library and media switches.
   "+ppapi/c",
   "+ppapi/proxy",
+  "+ppapi/shared_impl",
   "+sandbox/src",
   "+skia",
   "+webkit/extensions",
