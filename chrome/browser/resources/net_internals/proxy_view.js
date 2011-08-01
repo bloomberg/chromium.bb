@@ -35,17 +35,9 @@ var ProxyView = (function() {
     this.latestProxySourceId_ = 0;
 
     // Hook up the UI components.
-    this.originalSettingsDiv_ = $(ORIGINAL_SETTINGS_DIV_ID);
-    this.effectiveSettingsDiv_ = $(EFFECTIVE_SETTINGS_DIV_ID);
-    this.proxyResolverLogPre_ = $(PROXY_RESOLVER_LOG_PRE_ID);
-    this.badProxiesTbody_ = $(BAD_PROXIES_TBODY_ID);
-
-    var reloadSettingsButton = $(RELOAD_SETTINGS_BUTTON_ID);
-    var clearBadProxiesButton = $(CLEAR_BAD_PROXIES_BUTTON_ID);
-
-    reloadSettingsButton.onclick =
+    $(RELOAD_SETTINGS_BUTTON_ID).onclick =
         g_browser.sendReloadProxySettings.bind(g_browser);
-    clearBadProxiesButton.onclick =
+    $(CLEAR_BAD_PROXIES_BUTTON_ID).onclick =
         g_browser.sendClearBadProxies.bind(g_browser);
 
     // Register to receive proxy information as it changes.
@@ -89,8 +81,8 @@ var ProxyView = (function() {
     onProxySettingsChanged: function(proxySettings) {
       // Both |original| and |effective| are dictionaries describing the
       // settings.
-      this.originalSettingsDiv_.innerHTML = '';
-      this.effectiveSettingsDiv_.innerHTML = '';
+      $(ORIGINAL_SETTINGS_DIV_ID).innerHTML = '';
+      $(EFFECTIVE_SETTINGS_DIV_ID).innerHTML = '';
 
       if (!proxySettings)
         return false;
@@ -101,13 +93,13 @@ var ProxyView = (function() {
       if (!original || !effective)
         return false;
 
-      addTextNode(this.originalSettingsDiv_, proxySettingsToString(original));
-      addTextNode(this.effectiveSettingsDiv_, proxySettingsToString(effective));
+      $(ORIGINAL_SETTINGS_DIV_ID).innerText = proxySettingsToString(original);
+      $(EFFECTIVE_SETTINGS_DIV_ID).innerText = proxySettingsToString(effective);
       return true;
     },
 
     onBadProxiesChanged: function(badProxies) {
-      this.badProxiesTbody_.innerHTML = '';
+      $(BAD_PROXIES_TBODY_ID).innerHTML = '';
 
       if (!badProxies)
         return false;
@@ -117,7 +109,7 @@ var ProxyView = (function() {
         var entry = badProxies[i];
         var badUntilDate = convertTimeTicksToDate(entry.bad_until);
 
-        var tr = addNode(this.badProxiesTbody_, 'tr');
+        var tr = addNode($(BAD_PROXIES_TBODY_ID), 'tr');
 
         var nameCell = addNode(tr, 'td');
         var badUntilCell = addNode(tr, 'td');
@@ -144,7 +136,7 @@ var ProxyView = (function() {
 
         this.latestProxySourceId_ = sourceEntry.getSourceId();
 
-        this.proxyResolverLogPre_.innerText = sourceEntry.printAsText();
+        $(PROXY_RESOLVER_LOG_PRE_ID).innerText = sourceEntry.printAsText();
       }
     },
 
@@ -155,8 +147,8 @@ var ProxyView = (function() {
       // Prevents display of partial logs.
       ++this.latestProxySourceId_;
 
-      this.proxyResolverLogPre_.innerHTML = '';
-      addTextNode(this.proxyResolverLogPre_, 'Deleted.');
+      $(PROXY_RESOLVER_LOG_PRE_ID).innerHTML = '';
+      $(PROXY_RESOLVER_LOG_PRE_ID).innerText = 'Deleted.';
     },
 
     onSourceEntriesDeleted: function(sourceIds) {

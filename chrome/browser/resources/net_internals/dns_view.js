@@ -34,19 +34,8 @@ var DnsView = (function() {
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 
-    // Hook up the UI components.
-    this.cacheTbody_ = $(CACHE_TBODY_ID);
-    this.defaultFamilySpan_ = $(DEFAULT_FAMILY_SPAN_ID);
-    this.ipv6DisabledSpan_ = $(IPV6_DISABLED_SPAN_ID);
-
     $(ENABLE_IPV6_BUTTON_ID).onclick = g_browser.enableIPv6.bind(g_browser);
-
-    this.capacitySpan_ = $(CAPACITY_SPAN_ID);
-    this.ttlSuccessSpan_ = $(TTL_SUCCESS_SPAN_ID);
-    this.ttlFailureSpan_ = $(TTL_FAILURE_SPAN_ID);
-
-    var clearCacheButton = $(CLEAR_CACHE_BUTTON_ID);
-    clearCacheButton.onclick =
+    $(CLEAR_CACHE_BUTTON_ID).onclick =
         g_browser.sendClearHostResolverCache.bind(g_browser);
 
     // Register to receive changes to the host resolver info.
@@ -65,33 +54,33 @@ var DnsView = (function() {
 
     onHostResolverInfoChanged: function(hostResolverInfo) {
       // Clear the existing values.
-      this.defaultFamilySpan_.innerHTML = '';
-      this.capacitySpan_.innerHTML = '';
-      this.ttlSuccessSpan_.innerHTML = '';
-      this.ttlFailureSpan_.innerHTML = '';
-      this.cacheTbody_.innerHTML = '';
+      $(DEFAULT_FAMILY_SPAN_ID).innerHTML = '';
+      $(CAPACITY_SPAN_ID).innerHTML = '';
+      $(TTL_SUCCESS_SPAN_ID).innerHTML = '';
+      $(TTL_FAILURE_SPAN_ID).innerHTML = '';
+      $(CACHE_TBODY_ID).innerHTML = '';
 
       // No info.
       if (!hostResolverInfo || !hostResolverInfo.cache)
         return false;
 
       var family = hostResolverInfo.default_address_family;
-      addTextNode(this.defaultFamilySpan_,
+      addTextNode($(DEFAULT_FAMILY_SPAN_ID),
                   getKeyWithValue(AddressFamily, family));
 
       var ipv6Disabled = (family == AddressFamily.ADDRESS_FAMILY_IPV4);
-      setNodeDisplay(this.ipv6DisabledSpan_, ipv6Disabled);
+      setNodeDisplay($(IPV6_DISABLED_SPAN_ID), ipv6Disabled);
 
       // Fill in the basic cache information.
       var hostResolverCache = hostResolverInfo.cache;
-      addTextNode(this.capacitySpan_, hostResolverCache.capacity);
-      addTextNode(this.ttlSuccessSpan_, hostResolverCache.ttl_success_ms);
-      addTextNode(this.ttlFailureSpan_, hostResolverCache.ttl_failure_ms);
+      $(CAPACITY_SPAN_ID).innerText = hostResolverCache.capacity;
+      $(TTL_SUCCESS_SPAN_ID).innerText = hostResolverCache.ttl_success_ms;
+      $(TTL_FAILURE_SPAN_ID).innerText = hostResolverCache.ttl_failure_ms;
 
       // Fill in the cache contents table.
       for (var i = 0; i < hostResolverCache.entries.length; ++i) {
         var e = hostResolverCache.entries[i];
-        var tr = addNode(this.cacheTbody_, 'tr');
+        var tr = addNode($(CACHE_TBODY_ID), 'tr');
 
         var hostnameCell = addNode(tr, 'td');
         addTextNode(hostnameCell, e.hostname);
