@@ -71,7 +71,7 @@ onLoaded = function() {
   // Populate the main tabs.  Even tabs that don't contain information for the
   // running OS should be created, so they can load log dumps from other
   // OSes.
-  categoryTabSwitcher.addTab('tab-handle-events', new EventsView(),
+  categoryTabSwitcher.addTab('tab-handle-events', EventsView.getInstance(),
                              false, true);
   categoryTabSwitcher.addTab('tab-handle-proxy', new ProxyView(), false, true);
   categoryTabSwitcher.addTab('tab-handle-dns', new DnsView(), false, true);
