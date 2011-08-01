@@ -225,7 +225,6 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
   }
 
   NotificationObserverMock pref_observer_;
-  ScopedTestingBrowserProcess testing_browser_process_;
 
  private:
   NotificationRegistrar notification_registrar_;
