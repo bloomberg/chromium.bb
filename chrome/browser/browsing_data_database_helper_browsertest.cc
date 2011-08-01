@@ -7,8 +7,8 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 
 namespace {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TESTING_PROFILE_H_
-#define CHROME_TEST_TESTING_PROFILE_H_
+#ifndef CHROME_TEST_BASE_TESTING_PROFILE_H_
+#define CHROME_TEST_BASE_TESTING_PROFILE_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -396,4 +396,4 @@ class TestingProfile : public Profile {
   scoped_refptr<quota::QuotaManager> quota_manager_;
 };
 
-#endif  // CHROME_TEST_TESTING_PROFILE_H_
+#endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

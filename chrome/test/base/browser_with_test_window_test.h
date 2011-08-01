@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BROWSER_WITH_TEST_WINDOW_TEST_H_
-#define CHROME_TEST_BROWSER_WITH_TEST_WINDOW_TEST_H_
+#ifndef CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
+#define CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #pragma once
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/testing_browser_process_test.h"
-#include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,4 +110,4 @@ class BrowserWithTestWindowTest : public TestingBrowserProcessTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserWithTestWindowTest);
 };
 
-#endif  // CHROME_TEST_BROWSER_WITH_TEST_WINDOW_TEST_H_
+#endif  // CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_

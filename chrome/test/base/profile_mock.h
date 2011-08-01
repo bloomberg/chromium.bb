@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_PROFILE_MOCK_H_
 #pragma once
 
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -5,8 +5,8 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 
 #include "base/file_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/testing_browser_process_test.h"
-#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"

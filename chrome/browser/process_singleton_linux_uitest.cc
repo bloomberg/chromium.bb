@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/chrome_process_util.h"
+#include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

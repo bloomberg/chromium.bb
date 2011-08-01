@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_CHROME_PROCESS_UTIL_H_
-#define CHROME_TEST_CHROME_PROCESS_UTIL_H_
+#ifndef CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
+#define CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
 #pragma once
 
 #include <vector>
@@ -93,4 +93,4 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
 
 #endif  // defined(OS_MACOSX)
 
-#endif  // CHROME_TEST_CHROME_PROCESS_UTIL_H_
+#endif  // CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_

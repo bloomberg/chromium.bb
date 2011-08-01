@@ -31,7 +31,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/test/chrome_process_util.h"
+#include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"

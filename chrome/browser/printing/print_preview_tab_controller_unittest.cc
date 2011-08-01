@@ -5,8 +5,8 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/test/browser_with_test_window_test.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 typedef BrowserWithTestWindowTest PrintPreviewTabControllerTest;

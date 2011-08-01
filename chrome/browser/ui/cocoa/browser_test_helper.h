@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to

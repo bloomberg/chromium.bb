@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"

@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/browser_with_test_window_test.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "printing/print_job_constants.h"
 

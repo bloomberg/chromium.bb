@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/browser_with_test_window_test.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 

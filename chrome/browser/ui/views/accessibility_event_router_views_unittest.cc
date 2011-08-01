@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -10,8 +10,8 @@
 #include "chrome/browser/tabs/pinned_tab_test_utils.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/browser_with_test_window_test.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PinnedTabServiceTest : public BrowserWithTestWindowTest {

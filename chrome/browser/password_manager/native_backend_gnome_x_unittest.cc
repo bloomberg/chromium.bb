@@ -12,7 +12,7 @@
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::PasswordForm;

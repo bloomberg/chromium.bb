@@ -43,7 +43,7 @@
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/chrome_process_util.h"
+#include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/test_switches.h"
 #include "content/common/debug_flags.h"
 #include "content/common/json_value_serializer.h"

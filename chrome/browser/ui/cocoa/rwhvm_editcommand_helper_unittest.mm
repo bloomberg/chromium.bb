@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/message_loop.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/view_messages.h"

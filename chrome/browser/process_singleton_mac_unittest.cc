@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/platform_test.h"
 
 namespace {

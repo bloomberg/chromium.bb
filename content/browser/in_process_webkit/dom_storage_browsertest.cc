@@ -7,7 +7,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"

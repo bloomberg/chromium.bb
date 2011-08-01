@@ -13,7 +13,7 @@
 #include "chrome/browser/mock_browsing_data_file_system_helper.h"
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "net/url_request/url_request_context.h"

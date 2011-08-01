@@ -14,7 +14,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/test_notification_tracker.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"

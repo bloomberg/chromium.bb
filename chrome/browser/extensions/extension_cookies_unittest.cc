@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 
 namespace keys = extension_cookies_api_constants;
