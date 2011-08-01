@@ -106,7 +106,8 @@ def _DoSVNKeys(plist, add_keys):
   |add_keys| is True, it will insert the keys, otherwise it will remove them."""
   scm_path, scm_revision = None, None
   if add_keys:
-    version_info = lastchange.FetchVersionInfo(default_lastchange=None)
+    version_info = lastchange.FetchVersionInfo(
+        default_lastchange=None, directory=TOP)
     scm_path, scm_revision = version_info.url, version_info.revision
 
   # See if the operation failed.
