@@ -65,8 +65,8 @@ CertificateViewerUI::CertificateViewerUI(TabContents* contents)
       IDR_CERTIFICATE_VIEWER_CSS);
   html_source->set_default_resource(IDR_CERTIFICATE_VIEWER_HTML);
 
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 CertificateViewerUI::~CertificateViewerUI() {
