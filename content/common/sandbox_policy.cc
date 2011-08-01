@@ -316,7 +316,6 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   }
 
   AddDllEvictionPolicy(policy);
-  AddBaseHandleClosePolicy(policy);
 }
 
 // The Pepper process as locked-down as a renderer execpt that it can
@@ -452,6 +451,12 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       return 0;
   } else {
     AddPolicyForRenderer(policy);
+    // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
+    // Just have to figure out what needs to be warmed up first.
+    if (type == ChildProcessInfo::RENDER_PROCESS ||
+        type == ChildProcessInfo::WORKER_PROCESS) {
+      AddBaseHandleClosePolicy(policy);
+    }
 
     if (type_str != switches::kRendererProcess) {
       // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
