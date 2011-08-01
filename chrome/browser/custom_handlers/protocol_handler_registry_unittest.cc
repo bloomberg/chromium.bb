@@ -584,7 +584,8 @@ static void MakeRequest(const GURL& url, ProtocolHandlerRegistry* registry) {
   net::URLRequest request(url, NULL);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           new MessageLoop::QuitTask());
-  ASSERT_TRUE(registry->MaybeCreateJob(&request) != NULL);
+  scoped_refptr<net::URLRequestJob> job(registry->MaybeCreateJob(&request));
+  ASSERT_TRUE(job.get() != NULL);
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
