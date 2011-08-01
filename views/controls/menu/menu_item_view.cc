@@ -119,10 +119,9 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     return false;
 
   MenuController* controller = GetMenuController();
-  CHECK(controller);
-  if (controller->exit_type() != MenuController::EXIT_NONE) {
-    // The menu is in the process of closing. Don't attempt to query the
-    // delegate as it may no longer be valid.
+  if (!controller || controller->exit_type() != MenuController::EXIT_NONE) {
+    // Either the menu has been closed or we're in the process of closing the
+    // menu. Don't attempt to query the delegate as it may no longer be valid.
     return false;
   }
 
