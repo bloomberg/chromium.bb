@@ -47,9 +47,6 @@ class PlatformDevice : public SkDevice {
   // Sets the opacity of each pixel in the specified region to be opaque.
   virtual void MakeOpaque(int x, int y, int width, int height) { }
 
-  // Returns if native platform APIs are allowed to render text to this device.
-  virtual bool IsNativeFontRenderingAllowed();
-
   virtual PlatformSurface BeginPlatformPaint();
   virtual void EndPlatformPaint();
 

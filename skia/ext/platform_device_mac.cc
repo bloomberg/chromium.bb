@@ -27,10 +27,6 @@ PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
   SetPlatformDevice(this, this);
 }
 
-bool PlatformDevice::IsNativeFontRenderingAllowed() {
-    return true;
-}
-
 CGContextRef PlatformDevice::BeginPlatformPaint() {
   return GetBitmapContext();
 }

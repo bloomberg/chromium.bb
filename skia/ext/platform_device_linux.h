@@ -16,9 +16,6 @@ class PlatformDevice : public SkDevice {
  public:
   typedef cairo_t* PlatformSurface;
 
-  // Returns if native platform APIs are allowed to render text to this device.
-  virtual bool IsNativeFontRenderingAllowed();
-
   virtual PlatformSurface BeginPlatformPaint() = 0;
   virtual void EndPlatformPaint();
 
