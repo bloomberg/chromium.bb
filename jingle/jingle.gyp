@@ -23,6 +23,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../net/net.gyp:net',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',

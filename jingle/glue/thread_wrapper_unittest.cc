@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/threading/thread.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::DoAll;
 using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
+using ::testing::Mock;
 
 namespace jingle_glue {
 
@@ -25,25 +30,6 @@ class MockMessageHandler : public talk_base::MessageHandler {
   MOCK_METHOD1(OnMessage, void(talk_base::Message* msg));
 };
 
-class ThreadWrapperTest : public testing::Test {
- protected:
-  ThreadWrapperTest() {
-  }
-
-  talk_base::Thread* thread() {
-    return talk_base::Thread::Current();
-  }
-
-  virtual void SetUp() OVERRIDE {
-    JingleThreadWrapper::EnsureForCurrentThread();
-  }
-
-  // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
-  MessageLoop message_loop_;
-  MockMessageHandler handler1_;
-  MockMessageHandler handler2_;
-};
-
 MATCHER_P3(MatchMessage, handler, message_id, data, "") {
   return arg->phandler == handler &&
       arg->message_id == message_id &&
@@ -54,59 +40,90 @@ ACTION(DeleteMessageData) {
   delete arg0->pdata;
 }
 
-TEST_F(ThreadWrapperTest, Post) {
-  talk_base::MessageData* data1_ = new talk_base::MessageData();
-  talk_base::MessageData* data2_ = new talk_base::MessageData();
-  talk_base::MessageData* data3_ = new talk_base::MessageData();
-  talk_base::MessageData* data4_ = new talk_base::MessageData();
+class ThreadWrapperTest : public testing::Test {
+ public:
+  // This method is used by the SendDuringSend test. It sends message to the
+  // main thread synchronously using Send().
+  void PingMainThread() {
+    talk_base::MessageData* data = new talk_base::MessageData();
+    MockMessageHandler handler;
 
-  thread()->Post(&handler1_, kTestMessage1, data1_);
-  thread()->Post(&handler1_, kTestMessage2, data2_);
-  thread()->Post(&handler2_, kTestMessage1, data3_);
-  thread()->Post(&handler2_, kTestMessage1, data4_);
+    EXPECT_CALL(handler, OnMessage(
+        MatchMessage(&handler, kTestMessage2, data)))
+        .WillOnce(DeleteMessageData());
+    thread_->Send(&handler, kTestMessage2, data);
+  }
+
+ protected:
+  ThreadWrapperTest()
+      : thread_(NULL) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    JingleThreadWrapper::EnsureForCurrentThread();
+    thread_ = talk_base::Thread::Current();
+  }
+
+  // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
+  MessageLoop message_loop_;
+  talk_base::Thread* thread_;
+  MockMessageHandler handler1_;
+  MockMessageHandler handler2_;
+};
+
+TEST_F(ThreadWrapperTest, Post) {
+  talk_base::MessageData* data1 = new talk_base::MessageData();
+  talk_base::MessageData* data2 = new talk_base::MessageData();
+  talk_base::MessageData* data3 = new talk_base::MessageData();
+  talk_base::MessageData* data4 = new talk_base::MessageData();
+
+  thread_->Post(&handler1_, kTestMessage1, data1);
+  thread_->Post(&handler1_, kTestMessage2, data2);
+  thread_->Post(&handler2_, kTestMessage1, data3);
+  thread_->Post(&handler2_, kTestMessage1, data4);
 
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, data1_)))
+      MatchMessage(&handler1_, kTestMessage1, data1)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage2, data2_)))
+      MatchMessage(&handler1_, kTestMessage2, data2)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data3_)))
+      MatchMessage(&handler2_, kTestMessage1, data3)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data4_)))
+      MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
   message_loop_.RunAllPending();
 }
 
 TEST_F(ThreadWrapperTest, PostDelayed) {
-  talk_base::MessageData* data1_ = new talk_base::MessageData();
-  talk_base::MessageData* data2_ = new talk_base::MessageData();
-  talk_base::MessageData* data3_ = new talk_base::MessageData();
-  talk_base::MessageData* data4_ = new talk_base::MessageData();
+  talk_base::MessageData* data1 = new talk_base::MessageData();
+  talk_base::MessageData* data2 = new talk_base::MessageData();
+  talk_base::MessageData* data3 = new talk_base::MessageData();
+  talk_base::MessageData* data4 = new talk_base::MessageData();
 
-  thread()->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, data1_);
-  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, data2_);
-  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, data3_);
-  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, data4_);
+  thread_->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, data1);
+  thread_->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, data2);
+  thread_->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, data3);
+  thread_->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, data4);
 
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage1, data1_)))
+      MatchMessage(&handler1_, kTestMessage1, data1)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessage(&handler1_, kTestMessage2, data2_)))
+      MatchMessage(&handler1_, kTestMessage2, data2)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data3_)))
+      MatchMessage(&handler2_, kTestMessage1, data3)))
       .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessage(&handler2_, kTestMessage1, data4_)))
+      MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
@@ -115,12 +132,12 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
 }
 
 TEST_F(ThreadWrapperTest, Clear) {
-  thread()->Post(&handler1_, kTestMessage1, NULL);
-  thread()->Post(&handler1_, kTestMessage2, NULL);
-  thread()->Post(&handler2_, kTestMessage1, NULL);
-  thread()->Post(&handler2_, kTestMessage2, NULL);
+  thread_->Post(&handler1_, kTestMessage1, NULL);
+  thread_->Post(&handler1_, kTestMessage2, NULL);
+  thread_->Post(&handler2_, kTestMessage1, NULL);
+  thread_->Post(&handler2_, kTestMessage2, NULL);
 
-  thread()->Clear(&handler1_, kTestMessage2);
+  thread_->Clear(&handler1_, kTestMessage2);
 
   InSequence in_seq;
 
@@ -139,12 +156,12 @@ TEST_F(ThreadWrapperTest, Clear) {
 }
 
 TEST_F(ThreadWrapperTest, ClearDelayed) {
-  thread()->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, NULL);
-  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, NULL);
-  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, NULL);
-  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, NULL);
+  thread_->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, NULL);
+  thread_->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, NULL);
+  thread_->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, NULL);
+  thread_->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, NULL);
 
-  thread()->Clear(&handler1_, kTestMessage2);
+  thread_->Clear(&handler1_, kTestMessage2);
 
   InSequence in_seq;
 
@@ -170,11 +187,89 @@ TEST_F(ThreadWrapperTest, ClearDestoroyed) {
   {
     MockMessageHandler handler;
     handler_ptr = &handler;
-    thread()->Post(&handler, kTestMessage1, NULL);
+    thread_->Post(&handler, kTestMessage1, NULL);
   }
   talk_base::MessageList removed;
-  thread()->Clear(handler_ptr, talk_base::MQID_ANY, &removed);
+  thread_->Clear(handler_ptr, talk_base::MQID_ANY, &removed);
   DCHECK_EQ(0U, removed.size());
+}
+
+// Verify that Send() calls handler synchronously when called on the
+// same thread.
+TEST_F(ThreadWrapperTest, SendSameThread) {
+  talk_base::MessageData* data = new talk_base::MessageData();
+
+  EXPECT_CALL(handler1_, OnMessage(
+      MatchMessage(&handler1_, kTestMessage1, data)))
+      .WillOnce(DeleteMessageData());
+  thread_->Send(&handler1_, kTestMessage1, data);
+}
+
+void InitializeWrapperForNewThread(talk_base::Thread** thread,
+                                   base::WaitableEvent* done_event) {
+  JingleThreadWrapper::EnsureForCurrentThread();
+  JingleThreadWrapper::current()->set_send_allowed(true);
+  *thread = JingleThreadWrapper::current();
+  done_event->Signal();
+}
+
+// Verify that Send() calls handler synchronously when called for a
+// different thread.
+TEST_F(ThreadWrapperTest, SendToOtherThread) {
+  JingleThreadWrapper::current()->set_send_allowed(true);
+
+  base::Thread second_thread("JingleThreadWrapperTest");
+  second_thread.Start();
+
+  base::WaitableEvent initialized_event(true, false);
+  talk_base::Thread* target;
+  second_thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&InitializeWrapperForNewThread,
+                            &target, &initialized_event));
+  initialized_event.Wait();
+
+  ASSERT_TRUE(target != NULL);
+
+  talk_base::MessageData* data = new talk_base::MessageData();
+
+  EXPECT_CALL(handler1_, OnMessage(
+      MatchMessage(&handler1_, kTestMessage1, data)))
+      .WillOnce(DeleteMessageData());
+  target->Send(&handler1_, kTestMessage1, data);
+
+  Mock::VerifyAndClearExpectations(&handler1_);
+}
+
+// Verify that thread handles Send() while another Send() is
+// pending. The test creates second thread and Send()s kTestMessage1
+// to that thread. kTestMessage1 handler calls PingMainThread() which
+// tries to Send() kTestMessage2 to the main thread.
+TEST_F(ThreadWrapperTest, SendDuringSend) {
+  JingleThreadWrapper::current()->set_send_allowed(true);
+
+  base::Thread second_thread("JingleThreadWrapperTest");
+  second_thread.Start();
+
+  base::WaitableEvent initialized_event(true, false);
+  talk_base::Thread* target;
+  second_thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&InitializeWrapperForNewThread,
+                            &target, &initialized_event));
+  initialized_event.Wait();
+
+  ASSERT_TRUE(target != NULL);
+
+  talk_base::MessageData* data = new talk_base::MessageData();
+
+  EXPECT_CALL(handler1_, OnMessage(
+      MatchMessage(&handler1_, kTestMessage1, data)))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(
+              this, &ThreadWrapperTest::PingMainThread),
+          DeleteMessageData()));
+  target->Send(&handler1_, kTestMessage1, data);
+
+  Mock::VerifyAndClearExpectations(&handler1_);
 }
 
 }  // namespace jingle_glue
