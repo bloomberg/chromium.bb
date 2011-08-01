@@ -964,7 +964,9 @@ class ArchiveStage(NonHaltingBuilderStage):
 
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
-    if self._gsutil_archive:
+    if not self._options.buildbot:
+      return self._GetFullArchivePath()
+    elif self._gsutil_archive:
       upload_location = self._GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
       url = '%s/_index.html' % upload_location
