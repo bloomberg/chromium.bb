@@ -48,6 +48,20 @@ struct FingerState {
   float position_x;
   float position_y;
   short tracking_id;
+#ifdef __cplusplus
+  bool operator==(const FingerState& that) const {
+    return touch_major == that.touch_major &&
+        touch_minor == that.touch_minor &&
+        width_major == that.width_major &&
+        width_minor == that.width_minor &&
+        pressure == that.pressure &&
+        orientation == that.orientation &&
+        position_x == that.position_x &&
+        position_y == that.position_y &&
+        tracking_id == that.tracking_id;
+  }
+  bool operator!=(const FingerState& that) const { return !(*this == that); }
+#endif
 };
 
 #define GESTURES_BUTTON_LEFT 1

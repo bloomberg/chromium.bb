@@ -5,13 +5,17 @@
 #include "gestures/include/immediate_interpreter.h"
 
 #include <algorithm>
+#include <functional>
 #include <math.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
 
+using std::bind1st;
+using std::for_each;
 using std::make_pair;
 using std::max;
+using std::mem_fun;
 using std::min;
 
 namespace gestures {
@@ -49,6 +53,9 @@ const float kBottomZoneSize = 10;
 // Time to evaluate left vs right click, 30ms
 const stime_t kButtonEvaluationTimeout = 0.03;
 
+// A finger that taps can move up to this distance during the tap
+const float kTapMoveDist = 1.0;  // mm
+
 float MaxMag(float a, float b) {
   if (fabsf(a) > fabsf(b))
     return a;
@@ -61,6 +68,91 @@ float MinMag(float a, float b) {
 }
 
 }  // namespace {}
+
+void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
+  if (&fs == NULL) {
+    Log("Error! Bad FingerState!");
+    return;
+  }
+  touched_[the_id] = fs;
+}
+
+void TapRecord::NoteRelease(short the_id) {
+  if (touched_.find(the_id) == touched_.end())
+    Log("Release of non-touched finger!");
+  else
+    released_.insert(the_id);
+}
+
+void TapRecord::Remove(short the_id) {
+  touched_.erase(the_id);
+  released_.erase(the_id);
+}
+
+void TapRecord::Update(const HardwareState& hwstate,
+                       const set<short, kMaxTapFingers>& added,
+                       const set<short, kMaxTapFingers>& removed,
+                       const set<short, kMaxFingers>& dead) {
+  Log("Updating TapRecord.");
+  for (set<short, kMaxTapFingers>::const_iterator it = added.begin(),
+           e = added.end(); it != e; ++it)
+    Log("Added: %d", *it);
+  for (set<short, kMaxTapFingers>::const_iterator it = removed.begin(),
+           e = removed.end(); it != e; ++it)
+    Log("Removed: %d", *it);
+  for (set<short, kMaxFingers>::const_iterator it = dead.begin(),
+           e = dead.end(); it != e; ++it)
+    Log("Dead: %d", *it);
+  for_each(dead.begin(), dead.end(),
+           bind1st(mem_fun(&TapRecord::Remove), this));
+  for (set<short, kMaxTapFingers>::const_iterator it = added.begin(),
+           e = added.end(); it != e; ++it)
+    NoteTouch(*it, *hwstate.GetFingerState(*it));
+  for_each(removed.begin(), removed.end(),
+           bind1st(mem_fun(&TapRecord::NoteRelease), this));
+  Log("Done Updating TapRecord.");
+}
+
+void TapRecord::Clear() {
+  touched_.clear();
+  released_.clear();
+}
+
+bool TapRecord::Moving(const HardwareState& hwstate) const {
+  for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
+           touched_.begin(), e = touched_.end(); it != e; ++it) {
+    const FingerState* fs = hwstate.GetFingerState((*it).first);
+    if (!fs)
+      continue;
+    // Compute distance moved
+    float dist_x = fs->position_x - (*it).second.position_x;
+    float dist_y = fs->position_y - (*it).second.position_y;
+    bool moving =
+        dist_x * dist_x + dist_y * dist_y > kTapMoveDist * kTapMoveDist;
+    Log("Moving? x %f y %f (%s)", dist_x, dist_y, moving ? "Yes" : "No");
+    if (moving)
+      return true;
+  }
+  return false;
+}
+
+bool TapRecord::IsTap() const {
+  Log("called IsTap()");
+  for (map<short, FingerState, kMaxTapFingers>::const_iterator
+           it = touched_.begin(), e = touched_.end(); it != e; ++it)
+    Log("touched_: %d", (*it).first);
+  for (set<short, kMaxTapFingers>::const_iterator it = released_.begin(),
+           e = released_.end(); it != e; ++it)
+    Log("released_: %d", *it);
+  bool ret = !touched_.empty() && (touched_.size() == released_.size());
+  Log("IsTap() returning %d", ret);
+  return ret;
+}
+
+int TapRecord::TapType() const {
+  // TODO(adlr): use better logic here
+  return touched_.size() > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+}
 
 ImmediateInterpreter::ImmediateInterpreter()
   : button_type_(0),

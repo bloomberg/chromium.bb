@@ -357,4 +357,77 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   EXPECT_TRUE(ids.end() != ids.find(93));
 }
 
+namespace {
+set<short, kMaxFingers> MkSet() { return set<short, kMaxFingers>(); }
+set<short, kMaxFingers> MkSet(short the_id) {
+  set<short, kMaxFingers> ret;
+  ret.insert(the_id);
+  return ret;
+}
+set<short, kMaxFingers> MkSet(short id1, short id2) {
+  set<short, kMaxFingers> ret;
+  ret.insert(id1);
+  ret.insert(id2);
+  return ret;
+}
+}  // namespace{}
+
+TEST(ImmediateInterpreter, TapRecordTest) {
+  TapRecord tr;
+  EXPECT_FALSE(tr.IsTap());
+  // two finger IDs:
+  const short kF1 = 91;
+  const short kF2 = 92;
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 50, 0, 4, 4, kF1},
+    {0, 0, 0, 0, 75, 0, 4, 9, kF2},
+    {0, 0, 0, 0, 50, 0, 7, 4, kF1}
+  };
+  HardwareState hw[] = {
+    // time, buttons, finger count, finger states pointer
+    { 0.0, 0, 1, &fs[0] },
+    { 0.1, 0, 2, &fs[0] },
+    { 0.2, 0, 1, &fs[1] },
+    { 0.3, 0, 2, &fs[0] },
+    { 0.4, 0, 1, &fs[1] },
+    { 0.5, 0, 1, &fs[2] }
+  };
+
+  tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
+  EXPECT_FALSE(tr.Moving(hw[0]));
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[1], MkSet(), MkSet(), MkSet());
+  EXPECT_FALSE(tr.Moving(hw[1]));
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
+  EXPECT_FALSE(tr.Moving(hw[2]));
+  EXPECT_TRUE(tr.IsTap());
+  EXPECT_EQ(GESTURES_BUTTON_LEFT, tr.TapType());
+
+  tr.Clear();
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[2], MkSet(kF2), MkSet(), MkSet());
+  EXPECT_FALSE(tr.Moving(hw[2]));
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[3], MkSet(kF1), MkSet(), MkSet(kF2));
+  EXPECT_FALSE(tr.Moving(hw[3]));
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[4], MkSet(), MkSet(kF1), MkSet());
+  EXPECT_FALSE(tr.Moving(hw[4]));
+  EXPECT_TRUE(tr.IsTap());
+
+  tr.Clear();
+  EXPECT_FALSE(tr.IsTap());
+  tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
+  tr.Update(hw[5], MkSet(), MkSet(), MkSet());
+  EXPECT_TRUE(tr.Moving(hw[5]));
+  EXPECT_FALSE(tr.IsTap());
+
+  // This should log an error
+  tr.Clear();
+  tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
+}
+
 }  // namespace gestures

@@ -22,6 +22,28 @@ namespace gestures {
 
 static const int kMaxFingers = 5;
 static const int kMaxGesturingFingers = 5;
+static const int kMaxTapFingers = 5;
+
+class TapRecord {
+ public:
+  void Update(const HardwareState& hwstate,
+              const set<short, kMaxTapFingers>& added,
+              const set<short, kMaxTapFingers>& removed,
+              const set<short, kMaxFingers>& dead);
+  void Clear();
+
+  // if any gesturing fingers are moving
+  bool Moving(const HardwareState& hwstate) const;
+  bool IsTap() const;  // is a completed tap
+  int TapType() const;  // return GESTURES_BUTTON_* value
+ private:
+  void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
+  void NoteRelease(short the_id);  // Adds to released_
+  void Remove(short the_id);  // Removes from touched_ and released_
+
+  map<short, FingerState, kMaxTapFingers> touched_;
+  set<short, kMaxTapFingers> released_;
+};
 
 class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
