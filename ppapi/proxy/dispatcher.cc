@@ -65,6 +65,7 @@
 #include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
+#include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_input_event_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
@@ -137,6 +138,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_TCPSocket_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
+  AddPPB(PPB_Graphics3D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
   AddPPB(PPB_InputEvent_Proxy::GetInputEventInfo());
   AddPPB(PPB_InputEvent_Proxy::GetKeyboardInputEventInfo());

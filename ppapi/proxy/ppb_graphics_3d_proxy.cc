@@ -336,6 +336,8 @@ bool Graphics3D::Init() {
     return false;
 
   command_buffer_.reset(new CommandBuffer(host_resource(), dispatcher));
+  if (!command_buffer_->Initialize(kCommandBufferSize))
+    return false;
 
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);
 }
@@ -395,7 +397,8 @@ int32 Graphics3D::DoSwapBuffers() {
 
 PPB_Graphics3D_Proxy::PPB_Graphics3D_Proxy(Dispatcher* dispatcher,
                                            const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+    : InterfaceProxy(dispatcher, target_interface),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics3D_Proxy::~PPB_Graphics3D_Proxy() {
@@ -431,12 +434,13 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   std::vector<int32_t> attribs;
   if (attrib_list) {
     for (const int32_t* attr = attrib_list;
-         *attr != PP_GRAPHICS3DATTRIB_NONE;
-         ++attr) {
-      attribs.push_back(*attr);
+         attr[0] != PP_GRAPHICS3DATTRIB_NONE;
+         attr += 2) {
+      attribs.push_back(attr[0]);
+      attribs.push_back(attr[1]);
     }
-    attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
+  attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(
@@ -486,7 +490,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
                                        PP_Config3D_Dev config,
                                        const std::vector<int32_t>& attribs,
                                        HostResource* result) {
-  if (attribs.empty() || attribs.back() != 0)
+  if (attribs.empty() || attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
     return;  // Bad message.
 
   EnterFunctionNoLock<ResourceCreationAPI> enter(instance, true);
