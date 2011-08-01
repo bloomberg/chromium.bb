@@ -1151,6 +1151,7 @@ class TestingAutomationProvider : public AutomationProvider,
                            IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
+  // Login.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void ShowCreateAccountUI(base::DictionaryValue* args,
@@ -1160,6 +1161,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void Login(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Screen locker.
   void LockScreen(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void UnlockScreen(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1167,8 +1169,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void SignoutInScreenLocker(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
+  // Battery.
   void GetBatteryInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Network.
   void GetNetworkInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void NetworkScan(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1190,7 +1194,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
-  // VPN automation.
+  // VPN.
   void AddPrivateNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
   void GetPrivateNetworkInfo(base::DictionaryValue* args,
@@ -1202,7 +1206,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisconnectFromPrivateNetwork(base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
-  // Enterprise policy automation.
+  // Enterprise policy.
   void IsEnterpriseDevice(DictionaryValue* args, IPC::Message* reply_message);
 
   void FetchEnterprisePolicy(DictionaryValue* args,
@@ -1214,7 +1218,15 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetEnterprisePolicyInfo(DictionaryValue* args,
                                IPC::Message* reply_message);
 
+  // Time.
+  void GetTimeInfo(Browser* browser, base::DictionaryValue* args,
+                   IPC::Message* reply_message);
 
+  void GetTimeInfo(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  void SetTimezone(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Update.
   void GetUpdateInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void UpdateCheck(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1222,6 +1234,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void SetReleaseTrack(base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
+  // Volume.
   void GetVolumeInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void SetVolume(base::DictionaryValue* args, IPC::Message* reply_message);

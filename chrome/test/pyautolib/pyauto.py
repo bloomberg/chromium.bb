@@ -3490,11 +3490,50 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the fetch fails.
     """
-    cmd_dict = {
-        'command': 'FetchEnterprisePolicy',
-    }
+    cmd_dict = { 'command': 'FetchEnterprisePolicy' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     return self.GetEnterprisePolicyInfo()
+
+  def GetTimeInfo(self, windex=0):
+    """Gets info about the ChromeOS status bar clock.
+
+    Set the 24-hour clock by using:
+      self.SetPrefs('settings.clock.use_24hour_clock', True)
+
+    Returns:
+      a dictionary.
+      Sample:
+      {u'display_date': u'Tuesday, July 26, 2011',
+       u'display_time': u'4:30',
+       u'timezone': u'America/Los_Angeles'}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'GetTimeInfo' }
+    if self.GetLoginInfo()['is_logged_in']:
+      return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    else:
+      return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetTimezone(self, timezone):
+    """Sets the timezone on ChromeOS. A user must be logged in.
+
+    The timezone is the relative path to the timezone file in
+    /usr/share/zoneinfo. For example, /usr/share/zoneinfo/America/Los_Angeles
+    is 'America/Los_Angeles'.
+
+    This method does not return indication of success or failure.
+    If the timezone is invalid, it falls back to UTC/GMT.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'SetTimezone',
+        'timezone': timezone,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def EnrollEnterpriseDevice(self, user, password):
     """Enrolls an unenrolled device as an enterprise device.

@@ -2260,6 +2260,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["EnrollEnterpriseDevice"] =
       &TestingAutomationProvider::EnrollEnterpriseDevice;
 
+  handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
+  handler_map["SetTimezone"] = &TestingAutomationProvider::SetTimezone;
+
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
   handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;
@@ -2430,18 +2433,30 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["LaunchApp"] = &TestingAutomationProvider::LaunchApp;
   browser_handler_map["SetAppLaunchType"] =
       &TestingAutomationProvider::SetAppLaunchType;
+#if defined(OS_CHROMEOS)
+  browser_handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
+#endif  // defined(OS_CHROMEOS)
 
-  if (handler_map.find(std::string(command)) != handler_map.end()) {
-    (this->*handler_map[command])(dict_value, reply_message);
-  } else if (browser_handler_map.find(std::string(command)) !=
+  // Look for command in handlers that take a Browser handle.
+  if (browser_handler_map.find(std::string(command)) !=
              browser_handler_map.end()) {
     Browser* browser = NULL;
+    // Get Browser object associated with handle.
     if (!browser_tracker_->ContainsHandle(handle) ||
         !(browser = browser_tracker_->GetResource(handle))) {
-      AutomationJSONReply(this, reply_message).SendError("No browser object.");
-      return;
+      // Browser not found; attempt to fallback to non-Browser handlers.
+      if (handler_map.find(std::string(command)) != handler_map.end())
+        (this->*handler_map[command])(dict_value, reply_message);
+      else
+        AutomationJSONReply(this, reply_message).SendError(
+            "No browser object.");
+    } else {
+      (this->*browser_handler_map[command])(browser, dict_value, reply_message);
     }
-    (this->*browser_handler_map[command])(browser, dict_value, reply_message);
+  // Look for command in handlers that don't take a Browser handle.
+  } else if (handler_map.find(std::string(command)) != handler_map.end()) {
+    (this->*handler_map[command])(dict_value, reply_message);
+  // Command has no handlers for it.
   } else {
     std::string error_string = "Unknown command. Options: ";
     for (std::map<std::string, JsonHandler>::const_iterator it =

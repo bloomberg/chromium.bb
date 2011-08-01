@@ -4,8 +4,9 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
-#include "base/values.h"
+#include "base/time.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/browser_process.h"
@@ -23,11 +24,14 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 
 using chromeos::CrosLibrary;
@@ -925,6 +929,49 @@ void TestingAutomationProvider::GetEnterprisePolicyInfo(
       CreateDictionaryWithPolicies(user_cloud_policy,
           policy::CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
   reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::GetTimeInfo(Browser* browser,
+                                            DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  base::Time time(base::Time::Now());
+  bool use_24hour_clock = browser && browser->profile()->GetPrefs()->GetBoolean(
+      prefs::kUse24HourClock);
+  base::HourClockType hour_clock_type =
+      use_24hour_clock ? base::k24HourClock : base::k12HourClock;
+  string16 display_time = base::TimeFormatTimeOfDayWithHourClockType(
+      time, hour_clock_type, base::kDropAmPm);
+  icu::UnicodeString unicode;
+  chromeos::system::TimezoneSettings::GetInstance()->GetTimezone().getID(
+      unicode);
+  std::string timezone;
+  UTF16ToUTF8(unicode.getBuffer(), unicode.length(), &timezone);
+  return_value->SetString("display_time", display_time);
+  return_value->SetString("display_date", base::TimeFormatFriendlyDate(time));
+  return_value->SetString("timezone", timezone);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::GetTimeInfo(DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  GetTimeInfo(NULL, args, reply_message);
+}
+
+void TestingAutomationProvider::SetTimezone(DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  std::string timezone_id;
+  if (!args->GetString("timezone", &timezone_id)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing args.");
+    return;
+  }
+
+  icu::TimeZone* timezone =
+      icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(timezone_id));
+  chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
+  delete timezone;
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
