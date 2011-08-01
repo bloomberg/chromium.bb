@@ -134,6 +134,12 @@ inline bool operator!=(const set<Elt, kLeftMaxSize>& left,
   return !(left == right);
 }
 
+template<typename Set, typename Elt>
+inline bool SetContainsValue(const Set& the_set,
+                             const Elt& elt) {
+  return the_set.find(elt) != the_set.end();
+}
+
 }  // namespace gestures
 
 #endif  // GESTURES_SET_H__

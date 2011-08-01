@@ -238,39 +238,54 @@ TEST(ImmediateInterpreterTest, PalmTest) {
     {0, 0, 0, 0, kBig, 0, 500, 500, 2},
 
     {0, 0, 0, 0, kSml, 0, 600, 500, 1},
-    {0, 0, 0, 0, kSml, 0, 500, 500, 2}
+    {0, 0, 0, 0, kSml, 0, 500, 500, 2},
+
+    {0, 0, 0, 0, kSml, 0, 600, 500, 3},
+    {0, 0, 0, 0, kBig, 0, 500, 500, 4},
+
+    {0, 0, 0, 0, kSml, 0, 600, 500, 3},
+    {0, 0, 0, 0, kSml, 0, 500, 500, 4}
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, finger states pointer
     { 200000, 0, 2, &finger_states[0] },
     { 200001, 0, 2, &finger_states[2] },
     { 200002, 0, 2, &finger_states[4] },
+    { 200003, 0, 2, &finger_states[6] },
+    { 200004, 0, 2, &finger_states[8] },
   };
 
-
-  ii.UpdatePalmState(hardware_state[0]);
-  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
-  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
-  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(2));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
-  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(2));
-
-  ii.UpdatePalmState(hardware_state[1]);
-  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
-  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
-  EXPECT_TRUE(ii.pointing_.end() == ii.pointing_.find(2));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
-  EXPECT_TRUE(ii.palm_.end() != ii.palm_.find(2));
-
-  ii.UpdatePalmState(hardware_state[2]);
-  EXPECT_TRUE(ii.pointing_.end() != ii.pointing_.find(1));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(1));
-  EXPECT_TRUE(ii.palm_.end() == ii.palm_.find(1));
-  EXPECT_TRUE(ii.pointing_.end() == ii.pointing_.find(2));
-  EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
-  EXPECT_TRUE(ii.palm_.end() != ii.palm_.find(2));
+  for (size_t i = 0; i < 5; ++i) {
+    ii.SyncInterpret(&hardware_state[i], NULL);
+    switch (i) {
+      case 0:
+        EXPECT_TRUE(SetContainsValue(ii.pointing_, 1));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 1));
+        EXPECT_FALSE(SetContainsValue(ii.palm_, 1));
+        EXPECT_TRUE(SetContainsValue(ii.pointing_, 2));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 2));
+        EXPECT_FALSE(SetContainsValue(ii.palm_, 2));
+        break;
+      case 1:  // fallthrough
+      case 2:
+        EXPECT_TRUE(SetContainsValue(ii.pointing_, 1));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 1));
+        EXPECT_FALSE(SetContainsValue(ii.palm_, 1));
+        EXPECT_FALSE(SetContainsValue(ii.pointing_, 2));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 2));
+        EXPECT_TRUE(SetContainsValue(ii.palm_, 2));
+        break;
+      case 3:  // fallthrough
+      case 4:
+        EXPECT_TRUE(SetContainsValue(ii.pointing_, 3));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 3));
+        EXPECT_FALSE(SetContainsValue(ii.palm_, 3));
+        EXPECT_FALSE(SetContainsValue(ii.pointing_, 4));
+        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 4));
+        EXPECT_TRUE(SetContainsValue(ii.palm_, 4));
+        break;
+    }
+  }
 
   ii.ResetSameFingersState(0);
   EXPECT_TRUE(ii.pointing_.empty());

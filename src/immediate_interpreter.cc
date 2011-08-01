@@ -155,9 +155,9 @@ int TapRecord::TapType() const {
 }
 
 ImmediateInterpreter::ImmediateInterpreter()
-  : button_type_(0),
-    sent_button_down_(false),
-    button_down_timeout_(0.0) {
+    : button_type_(0),
+      sent_button_down_(false),
+      button_down_timeout_(0.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -180,12 +180,11 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
-  } else {
-    UpdatePalmState(*hwstate);
-    set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
-    UpdateCurrentGestureType(*hwstate, gs_fingers);
-    FillResultGesture(*hwstate, gs_fingers);
   }
+  UpdatePalmState(*hwstate);
+  set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
+  UpdateCurrentGestureType(*hwstate, gs_fingers);
+  FillResultGesture(*hwstate, gs_fingers);
   UpdateButtons(*hwstate);
   SetPrevState(*hwstate);
   return result_.type != kGestureTypeNull ? &result_ : NULL;
