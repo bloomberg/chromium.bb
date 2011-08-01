@@ -500,15 +500,10 @@ bool NavigationController::RendererDidNavigate(
     details->previous_entry_index = -1;
   }
 
-  // The pending_entry has no SiteInstance when we are restoring an entry.  We
-  // must fill it in here so we can find the entry later by calling
-  // GetEntryIndexWithPageID.  In all other cases, the SiteInstance should be
-  // assigned already and we shouldn't change it.
-  if (pending_entry_index_ >= 0 && !pending_entry_->site_instance()) {
-    DCHECK(pending_entry_->restore_type() != NavigationEntry::RESTORE_NONE);
-    pending_entry_->set_site_instance(tab_contents_->GetSiteInstance());
-    pending_entry_->set_restore_type(NavigationEntry::RESTORE_NONE);
-  }
+  // If we have a pending entry at this point, it should have a SiteInstance.
+  // Restored entries start out with a null SiteInstance, but we should have
+  // assigned one in NavigateToPendingEntry.
+  DCHECK(pending_entry_index_ == -1 || pending_entry_->site_instance());
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = IsURLInPageNavigation(params.url);
@@ -1056,6 +1051,16 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 
   if (!tab_contents_->NavigateToPendingEntry(reload_type))
     DiscardNonCommittedEntries();
+
+  // If the entry is being restored and doesn't have a SiteInstance yet, fill
+  // it in now that we know. This allows us to find the entry when it commits.
+  // This works for browser-initiated navigations. We handle renderer-initiated
+  // navigations to restored entries in TabContents::OnGoToEntryAtOffset.
+  if (pending_entry_ && !pending_entry_->site_instance() &&
+      pending_entry_->restore_type() != NavigationEntry::RESTORE_NONE) {
+    pending_entry_->set_site_instance(tab_contents_->GetPendingSiteInstance());
+    pending_entry_->set_restore_type(NavigationEntry::RESTORE_NONE);
+  }
 }
 
 void NavigationController::NotifyNavigationEntryCommitted(

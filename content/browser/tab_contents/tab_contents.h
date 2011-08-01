@@ -159,6 +159,10 @@ class TabContents : public PageNavigator,
   // access to its site instance.
   virtual SiteInstance* GetSiteInstance() const;
 
+  // Returns the SiteInstance for the pending navigation, if any.  Otherwise
+  // returns the current SiteInstance.
+  SiteInstance* GetPendingSiteInstance() const;
+
   // Defines whether this tab's URL should be displayed in the browser's URL
   // bar. Normally this is true so you can see the URL. This is set to false
   // for the new tab page and related pages so that the URL bar is empty and

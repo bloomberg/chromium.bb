@@ -371,6 +371,13 @@ SiteInstance* TabContents::GetSiteInstance() const {
   return render_manager_.current_host()->site_instance();
 }
 
+SiteInstance* TabContents::GetPendingSiteInstance() const {
+  RenderViewHost* dest_rvh = render_manager_.pending_render_view_host() ?
+      render_manager_.pending_render_view_host() :
+      render_manager_.current_host();
+  return dest_rvh->site_instance();
+}
+
 bool TabContents::ShouldDisplayURL() {
   // Don't hide the url in view source mode and with interstitials.
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -1036,10 +1043,7 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     // it in now that we know. This allows us to find the entry when it commits.
     if (!entry->site_instance() &&
         entry->restore_type() != NavigationEntry::RESTORE_NONE) {
-      RenderViewHost* dest_rvh = render_manager_.pending_render_view_host() ?
-          render_manager_.pending_render_view_host() :
-          render_manager_.current_host();
-      entry->set_site_instance(dest_rvh->site_instance());
+      entry->set_site_instance(GetPendingSiteInstance());
     }
   }
 }

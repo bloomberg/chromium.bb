@@ -1447,15 +1447,23 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   NavigationController& our_controller = our_contents.controller();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
-  our_controller.GoToIndex(0);
 
-  // We should now have one entry, and it should be "pending".
+  // Before navigating to the restored entry, it should have a restore_type
+  // and no SiteInstance.
+  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION,
+            our_controller.GetEntryAtIndex(0)->restore_type());
+  EXPECT_FALSE(our_controller.GetEntryAtIndex(0)->site_instance());
+
+  // After navigating, we should have one entry, and it should be "pending".
+  // It should now have a SiteInstance and no restore_type.
+  our_controller.GoToIndex(0);
   EXPECT_EQ(1, our_controller.entry_count());
   EXPECT_EQ(our_controller.GetEntryAtIndex(0),
             our_controller.pending_entry());
   EXPECT_EQ(0, our_controller.GetEntryAtIndex(0)->page_id());
-  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION,
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE,
             our_controller.GetEntryAtIndex(0)->restore_type());
+  EXPECT_TRUE(our_controller.GetEntryAtIndex(0)->site_instance());
 
   // Say we navigated to that entry.
   ViewHostMsg_FrameNavigate_Params params;
@@ -1472,6 +1480,74 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   // There should be no longer any pending entry and one committed one. This
   // means that we were able to locate the entry, assign its site instance, and
   // commit it properly.
+  EXPECT_EQ(1, our_controller.entry_count());
+  EXPECT_EQ(0, our_controller.last_committed_entry_index());
+  EXPECT_FALSE(our_controller.pending_entry());
+  EXPECT_EQ(url,
+            our_controller.GetLastCommittedEntry()->site_instance()->site());
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE,
+            our_controller.GetEntryAtIndex(0)->restore_type());
+}
+
+// Tests that we can still navigate to a restored entry after a different
+// navigation fails and clears the pending entry.  http://crbug.com/90085
+TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
+  // Create a NavigationController with a restored set of tabs.
+  GURL url("http://foo");
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationController::CreateNavigationEntry(
+      url, GURL(), PageTransition::RELOAD, profile());
+  entry->set_page_id(0);
+  entry->set_title(ASCIIToUTF16("Title"));
+  entry->set_content_state("state");
+  entries.push_back(entry);
+  TabContents our_contents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  NavigationController& our_controller = our_contents.controller();
+  our_controller.Restore(0, true, &entries);
+  ASSERT_EQ(0u, entries.size());
+
+  // Before navigating to the restored entry, it should have a restore_type
+  // and no SiteInstance.
+  EXPECT_EQ(NavigationEntry::RESTORE_LAST_SESSION,
+            our_controller.GetEntryAtIndex(0)->restore_type());
+  EXPECT_FALSE(our_controller.GetEntryAtIndex(0)->site_instance());
+
+  // After navigating, we should have one entry, and it should be "pending".
+  // It should now have a SiteInstance and no restore_type.
+  our_controller.GoToIndex(0);
+  EXPECT_EQ(1, our_controller.entry_count());
+  EXPECT_EQ(our_controller.GetEntryAtIndex(0),
+            our_controller.pending_entry());
+  EXPECT_EQ(0, our_controller.GetEntryAtIndex(0)->page_id());
+  EXPECT_EQ(NavigationEntry::RESTORE_NONE,
+            our_controller.GetEntryAtIndex(0)->restore_type());
+  EXPECT_TRUE(our_controller.GetEntryAtIndex(0)->site_instance());
+
+  // This pending navigation may have caused a different navigation to fail,
+  // which causes the pending entry to be cleared.
+  TestRenderViewHost* rvh =
+      static_cast<TestRenderViewHost*>(our_contents.render_view_host());
+  rvh->TestOnMessageReceived(
+      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                  1,  // frame_id
+                                                  true,  // is_main_frame
+                                                  net::ERR_ABORTED,  // error
+                                                  url,  // url
+                                                  false));  // repost
+
+  // Now the pending restored entry commits.
+  ViewHostMsg_FrameNavigate_Params params;
+  params.page_id = 0;
+  params.url = url;
+  params.transition = PageTransition::LINK;
+  params.should_update_history = false;
+  params.gesture = NavigationGestureUser;
+  params.is_post = false;
+  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  content::LoadCommittedDetails details;
+  our_controller.RendererDidNavigate(params, &details);
+
+  // There should be no pending entry and one committed one.
   EXPECT_EQ(1, our_controller.entry_count());
   EXPECT_EQ(0, our_controller.last_committed_entry_index());
   EXPECT_FALSE(our_controller.pending_entry());
