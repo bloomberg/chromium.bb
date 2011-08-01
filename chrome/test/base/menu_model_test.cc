@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/menu_model_test.h"
+#include "chrome/test/base/menu_model_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Recursively checks the enabled state and executes a command on every item

@@ -17,7 +17,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 
 class NewTabUITest : public UITest {
  public:

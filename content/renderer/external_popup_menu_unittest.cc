@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"

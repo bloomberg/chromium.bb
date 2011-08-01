@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"

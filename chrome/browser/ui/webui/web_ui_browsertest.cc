@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/test_tab_strip_model_observer.h"
+#include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"

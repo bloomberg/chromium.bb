@@ -8,7 +8,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ShownSectionsHandlerTest : public testing::Test {

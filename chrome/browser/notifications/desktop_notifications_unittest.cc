@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/common/desktop_notification_messages.h"
 
 // static

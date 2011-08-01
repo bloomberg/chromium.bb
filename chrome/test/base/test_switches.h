@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_SWITCHES_H_
-#define CHROME_TEST_TEST_SWITCHES_H_
+#ifndef CHROME_TEST_BASE_TEST_SWITCHES_H_
+#define CHROME_TEST_BASE_TEST_SWITCHES_H_
 
 namespace switches {
 
@@ -17,4 +17,4 @@ extern const char kTestingChannel[];
 
 }  // namespace switches
 
-#endif  // CHROME_TEST_TEST_SWITCHES_H_
+#endif  // CHROME_TEST_BASE_TEST_SWITCHES_H_

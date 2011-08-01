@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/test_switches.h"
+#include "chrome/test/base/test_switches.h"
 
 // Extra flags that the test should pass to launched browser process.
 const char switches::kExtraChromeFlags[] = "extra-chrome-flags";

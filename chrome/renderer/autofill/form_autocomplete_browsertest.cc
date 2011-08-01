@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/autofill_messages.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"

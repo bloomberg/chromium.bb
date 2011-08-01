@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

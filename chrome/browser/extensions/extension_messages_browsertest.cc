@@ -8,7 +8,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

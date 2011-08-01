@@ -8,7 +8,7 @@
 #include <vector>
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/common/main_function_params.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "net/socket/client_socket_pool_base.h"

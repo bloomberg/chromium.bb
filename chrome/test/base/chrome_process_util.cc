@@ -11,7 +11,7 @@
 #include "base/process_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/test/test_switches.h"
+#include "chrome/test/base/test_switches.h"
 #include "content/common/result_codes.h"
 
 using base::TimeDelta;

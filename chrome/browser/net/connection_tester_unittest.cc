@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/connection_tester.h"
 
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"

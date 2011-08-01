@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
-#include "chrome/test/menu_model_test.h"
+#include "chrome/test/base/menu_model_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

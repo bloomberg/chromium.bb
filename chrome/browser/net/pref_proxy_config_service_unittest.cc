@@ -12,7 +12,7 @@
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"

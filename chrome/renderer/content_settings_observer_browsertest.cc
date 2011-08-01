@@ -5,7 +5,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"

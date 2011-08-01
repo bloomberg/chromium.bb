@@ -21,7 +21,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/base/test_launcher_utils.h"
-#include "chrome/test/test_switches.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"

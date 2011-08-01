@@ -7,7 +7,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_errors.h"

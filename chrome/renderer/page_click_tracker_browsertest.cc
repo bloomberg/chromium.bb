@@ -7,7 +7,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/page_click_tracker.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"

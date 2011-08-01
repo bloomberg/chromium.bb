@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 
 namespace gfx {
 class Size;

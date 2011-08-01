@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_process_util.h"
-#include "chrome/test/test_switches.h"
+#include "chrome/test/base/test_switches.h"
 
 void UIPerfTest::SetLaunchSwitches() {
   UITestBase::SetLaunchSwitches();

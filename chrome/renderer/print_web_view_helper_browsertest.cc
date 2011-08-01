@@ -5,7 +5,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
 #include "chrome/renderer/print_web_view_helper.h"
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

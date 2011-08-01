@@ -8,7 +8,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

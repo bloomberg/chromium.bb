@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"

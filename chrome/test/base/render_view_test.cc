@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/render_view_test.h"
+#include "chrome/test/base/render_view_test.h"
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/extensions/extension.h"

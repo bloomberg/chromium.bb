@@ -7,7 +7,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
-#include "chrome/test/test_switches.h"
+#include "chrome/test/base/test_switches.h"
 
 // The named testing interface enables the use of a named socket for controlling
 // the browser. This eliminates the dependency that the browser must be forked

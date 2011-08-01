@@ -18,8 +18,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/test_switches.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
 

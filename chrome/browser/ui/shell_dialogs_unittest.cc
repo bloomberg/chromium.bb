@@ -10,8 +10,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/testing_browser_process_test.h"
-#include "chrome/test/testing_pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
