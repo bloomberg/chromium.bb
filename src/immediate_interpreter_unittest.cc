@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
+#include <base/logging.h>
+#include <base/string_util.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/immediate_interpreter.h"
 
 namespace gestures {
+
+using std::string;
+using std::vector;
 
 class ImmediateInterpreterTest : public ::testing::Test {};
 
@@ -389,7 +396,7 @@ set<short, kMaxFingers> MkSet(short id1, short id2) {
 
 TEST(ImmediateInterpreter, TapRecordTest) {
   TapRecord tr;
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   // two finger IDs:
   const short kF1 = 91;
   const short kF2 = 92;
@@ -412,37 +419,304 @@ TEST(ImmediateInterpreter, TapRecordTest) {
 
   tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[0]));
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[1], MkSet(), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[1]));
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
   EXPECT_FALSE(tr.Moving(hw[2]));
-  EXPECT_TRUE(tr.IsTap());
+  EXPECT_TRUE(tr.TapComplete());
   EXPECT_EQ(GESTURES_BUTTON_LEFT, tr.TapType());
 
   tr.Clear();
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[2], MkSet(kF2), MkSet(), MkSet());
   EXPECT_FALSE(tr.Moving(hw[2]));
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[3], MkSet(kF1), MkSet(), MkSet(kF2));
   EXPECT_FALSE(tr.Moving(hw[3]));
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[4], MkSet(), MkSet(kF1), MkSet());
   EXPECT_FALSE(tr.Moving(hw[4]));
-  EXPECT_TRUE(tr.IsTap());
+  EXPECT_TRUE(tr.TapComplete());
 
   tr.Clear();
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
   tr.Update(hw[5], MkSet(), MkSet(), MkSet());
   EXPECT_TRUE(tr.Moving(hw[5]));
-  EXPECT_FALSE(tr.IsTap());
+  EXPECT_FALSE(tr.TapComplete());
 
   // This should log an error
   tr.Clear();
   tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
+}
+
+struct HWStateGs {
+  HardwareState hws;
+  stime_t callback_now;
+  set<short, kMaxGesturingFingers> gs;
+  unsigned expected_down;
+  unsigned expected_up;
+  ImmediateInterpreter::TapToClickState expected_state;
+  bool timeout;
+};
+
+TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    200,  // right edge
+    200,  // bottom edge
+    1.0,  // pixels/TP width
+    1.0,  // pixels/TP height
+    1.0,  // screen DPI x
+    1.0,  // screen DPI y
+    5,  // max fingers
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  // Shorter names so that HWStateGs defs take only 1 line each
+  typedef ImmediateInterpreter::TapToClickState TapState;
+  const TapState kIdl = ImmediateInterpreter::kTtcIdle;
+  const TapState kFTB = ImmediateInterpreter::kTtcFirstTapBegan;
+  const TapState kTpC = ImmediateInterpreter::kTtcTapComplete;
+  const TapState kSTB = ImmediateInterpreter::kTtcSubsequentTapBegan;
+  const TapState kDrg = ImmediateInterpreter::kTtcDrag;
+  const TapState kDRl = ImmediateInterpreter::kTtcDragRelease;
+  const TapState kDRt = ImmediateInterpreter::kTtcDragRetouch;
+  const unsigned kBL = GESTURES_BUTTON_LEFT;
+  const unsigned kBR = GESTURES_BUTTON_RIGHT;
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 50, 0, 4, 4, 91},
+    {0, 0, 0, 0, 75, 0, 4, 9, 92},
+    {0, 0, 0, 0, 50, 0, 4, 4, 93},
+    {0, 0, 0, 0, 50, 0, 4, 4, 94},
+    {0, 0, 0, 0, 50, 0, 4, 4, 95},
+    {0, 0, 0, 0, 50, 0, 6, 4, 95},
+    {0, 0, 0, 0, 50, 0, 8, 4, 95},
+    {0, 0, 0, 0, 50, 0, 4, 4, 96},
+    {0, 0, 0, 0, 50, 0, 6, 4, 96},
+    {0, 0, 0, 0, 50, 0, 8, 4, 96},
+
+    {0, 0, 0, 0, 50, 0, 4, 1, 97},
+    {0, 0, 0, 0, 50, 0, 9, 1, 98},
+    {0, 0, 0, 0, 50, 0, 4, 5, 97},
+    {0, 0, 0, 0, 50, 0, 9, 5, 98},
+    {0, 0, 0, 0, 50, 0, 4, 9, 97},
+    {0, 0, 0, 0, 50, 0, 9, 9, 98},
+
+    {0, 0, 0, 0, 80, 0, 5, 9, 70},  // thumb
+  };
+  HWStateGs hwsgs[] = {
+    // Simple 1-finger tap
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.07, 0, 0, NULL   }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    // 1-finger tap with click
+    {{ 0.00, kBL, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kIdl, false },  // 3
+    {{ 0.01,   0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
+    {{ 0.07,   0, 0, NULL   }, .07, MkSet(),     0,   0, kIdl, false },
+    // 1-finger swipe
+    {{ 0.00, 0, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kFTB, false },  // 6
+    {{ 0.01, 0, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kIdl, false },
+    {{ 0.02, 0, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kIdl, false },
+    {{ 0.03, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
+    // Double 1-finger tap
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 10
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {{ 0.09, 0, 0, NULL   }, .09, MkSet(),   kBL, kBL, kIdl, false },
+    // Triple 1-finger tap
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 15
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {{ 0.04, 0, 1, &fs[3] }, -1,  MkSet(94), kBL,   0, kSTB, false },
+    {{ 0.05, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {{ 0.11, 0, 0, NULL   }, .11, MkSet(),   kBL, kBL, kIdl, false },
+    // 1-finger tap + move
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 22
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {{ 0.04, 0, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {{ 0.05, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.11, 0, 0, NULL   }, .11, MkSet(),     0, kBL, kIdl, false },
+    // 1-finger tap, move, release, move again (drag lock)
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 29
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {{ 0.04, 0, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {{ 0.05, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.06, 0, 1, &fs[7] }, -1,  MkSet(96),   0,   0, kDRt, false },
+    {{ 0.07, 0, 1, &fs[8] }, -1,  MkSet(96),   0,   0, kDrg, false },
+    {{ 0.08, 0, 1, &fs[9] }, -1,  MkSet(96),   0,   0, kDrg, false },
+    {{ 0.09, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.15, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
+    // 1-finger long press
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 40
+    {{ 0.02, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {{ 0.04, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {{ 0.06, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kIdl, false },
+    {{ 0.07, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
+    // 1-finger tap then long press
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 45
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {{ 0.04, 0, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
+    {{ 0.06, 0, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
+    {{ 0.08, 0, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {{ 0.09, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.15, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
+    // 2-finger tap (right click)
+    {{ 0.00, 0, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false }, // 53
+    {{ 0.01, 0, 0, NULL    }, -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.07, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
+    // 2-finger scroll
+    {{ 0.00, 0, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false }, // 56
+    {{ 0.01, 0, 2, &fs[12] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {{ 0.02, 0, 2, &fs[14] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {{ 0.03, 0, 0, NULL    }, -1,  MkSet(),         0,   0, kIdl, false },
+    // left tap, right tap
+    {{ 0.00, 0, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false }, // 60
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {{ 0.02, 0, 2, &fs[10] }, -1,  MkSet(97, 98), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 0, NULL   },  -1,  MkSet(),         0, kBL, kTpC, true },
+    {{ 0.09, 0, 0, NULL    }, .09, MkSet(),       kBR, kBR, kIdl, false },
+    // left tap, multi-frame right tap
+    {{ 0.00, 0, 1, &fs[0] },  -1,  MkSet(91),   0,   0, kFTB, false },  // 65
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[10] }, -1,  MkSet(97), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, &fs[11] }, -1,  MkSet(98),   0,   0, kSTB, false },
+    {{ 0.04, 0, 0, NULL   },  -1,  MkSet(),     0, kBL, kTpC, true },
+    {{ 0.10, 0, 0, NULL    }, .10, MkSet(),   kBR, kBR, kIdl, false },
+    // right tap, left tap
+    {{ 0.00, 0, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false }, // 71
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.02, 0, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
+    {{ 0.03, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {{ 0.09, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
+    // right double-tap
+    {{ 0.00, 0, 2, &fs[6] },  -1,  MkSet(95, 96),   0,   0, kFTB, false }, // 76
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.02, 0, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
+    {{ 0.03, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.09, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
+    // left tap, right-drag
+    {{ 0.00, 0, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false }, // 81
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {{ 0.02, 0, 2, &fs[10] }, -1,  MkSet(97, 98), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 2, &fs[12] }, -1,  MkSet(97, 98),   0, kBL, kIdl, false },
+    {{ 0.04, 0, 2, &fs[14] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {{ 0.05, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
+    // left tap, right multi-frame join + drag
+    {{ 0.00, 0, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false }, // 87
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[10] }, -1,  MkSet(97),     kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, &fs[12] }, -1,  MkSet(97),       0,   0, kDrg, false },
+    {{ 0.04, 0, 2, &fs[14] }, -1,  MkSet(97, 98),   0, kBL, kIdl, false },
+    {{ 0.05, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
+    // right tap, left-drag
+    {{ 0.00, 0, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kFTB, false },  // 93
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.02, 0, 1, &fs[4] }, -1,  MkSet(95),       0,   0, kFTB, false },
+    {{ 0.03, 0, 1, &fs[5] }, -1,  MkSet(95),       0,   0, kIdl, false },
+    {{ 0.04, 0, 1, &fs[6] }, -1,  MkSet(95),       0,   0, kIdl, false },
+    {{ 0.05, 0, 0, NULL   }, -1,  MkSet(),         0,   0, kIdl, false },
+    // right tap, right-drag
+    {{ 0.00, 0, 2, &fs[6] },  -1,  MkSet(95, 96),   0,   0, kFTB, false }, // 99
+    {{ 0.01, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {{ 0.02, 0, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
+    {{ 0.03, 0, 2, &fs[12] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {{ 0.04, 0, 2, &fs[14] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {{ 0.05, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
+    // drag then right-tap
+    {{ 0.00, 0, 1, &fs[0] }, -1,  MkSet(91),       0,   0, kFTB, false }, // 105
+    {{ 0.01, 0, 0, NULL   }, -1,  MkSet(),         0,   0, kTpC, true },
+    {{ 0.02, 0, 1, &fs[4] }, -1,  MkSet(95),     kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, &fs[5] }, -1,  MkSet(95),       0,   0, kDrg, false },
+    {{ 0.04, 0, 1, &fs[6] }, -1,  MkSet(95),       0,   0, kDrg, false },
+    {{ 0.05, 0, 0, NULL   }, -1,  MkSet(),         0,   0, kDRl, true },
+    {{ 0.06, 0, 2, &fs[10] }, -1, MkSet(97, 98),   0,   0, kDRt, false },
+    {{ 0.07, 0, 0, NULL   }, -1,  MkSet(),         0, kBL, kTpC, true },
+    {{ 0.13, 0, 0, NULL   }, .13, MkSet(),       kBR, kBR, kIdl, false },
+  };
+
+  // Algorithmically add a resting thumb to a copy of all above cases
+  HWStateGs hwsgs_full[arraysize(hwsgs) * 2];
+  std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full);
+  std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full + arraysize(hwsgs));
+
+  vector<vector<FingerState> > thumb_fs(arraysize(hwsgs));
+  const FingerState& fs_thumb = fs[arraysize(fs) - 1];
+  for (size_t i = 0; i < arraysize(hwsgs); ++i) {
+    HardwareState* hs = &hwsgs_full[i + arraysize(hwsgs)].hws;
+    vector<FingerState>& newfs = thumb_fs[i];
+    newfs.resize(hs->finger_cnt + 1);
+    newfs[0] = fs_thumb;
+    for (size_t j = 0; j < hs->finger_cnt; ++j)
+      newfs[j + 1] = hs->fingers[j];
+    set<short, kMaxGesturingFingers>& gs = hwsgs_full[i + arraysize(hwsgs)].gs;
+    if (gs.empty())
+      gs.insert(fs_thumb.tracking_id);
+    hs->fingers = &thumb_fs[i][0];
+    hs->finger_cnt++;
+  }
+
+  for (size_t i = 0; i < arraysize(hwsgs_full); ++i) {
+    string desc;
+    if (i < arraysize(hwsgs))
+      desc = StringPrintf("State %lu", i);
+    else
+      desc = StringPrintf("State %lu (resting thumb)", i - arraysize(hwsgs));
+
+    unsigned bdown = 0;
+    unsigned bup = 0;
+    stime_t tm = -1.0;
+    bool same_fingers = false;
+    HardwareState* hwstate = &hwsgs_full[i].hws;
+    stime_t now = hwsgs_full[i].callback_now;
+    if (hwsgs_full[i].callback_now >= 0.0) {
+      hwstate = NULL;
+    } else {
+      now = hwsgs_full[i].hws.timestamp;
+    }
+
+    if (hwstate && hwstate->timestamp == 0.0) {
+      // Reset imm interpreter
+      LOG(INFO) << "Resetting imm interpreter, i = " << i;
+      ii.reset(new ImmediateInterpreter);
+      ii->SetHardwareProperties(hwprops);
+      ii->set_tap_timeout(0.05);
+      ii->set_tap_drag_timeout(0.05);
+      EXPECT_EQ(kIdl, ii->tap_to_click_state_);
+    } else {
+      same_fingers = ii->SameFingers(hwsgs_full[i].hws);
+    }
+
+    ii->UpdateTapState(
+        hwstate, hwsgs_full[i].gs, same_fingers, now, &bdown, &bup, &tm);
+    ii->prev_gs_fingers_ = hwsgs_full[i].gs;
+    if (hwstate)
+      ii->SetPrevState(*hwstate);
+    EXPECT_EQ(hwsgs_full[i].expected_down, bdown) << desc;
+    EXPECT_EQ(hwsgs_full[i].expected_up, bup) << desc;
+    if (hwsgs_full[i].timeout)
+      EXPECT_GT(tm, 0.0) << desc;
+    else
+      EXPECT_DOUBLE_EQ(-1.0, tm) << desc;
+    EXPECT_EQ(hwsgs_full[i].expected_state, ii->tap_to_click_state_)
+        << desc;
+  }
 }
 
 }  // namespace gestures

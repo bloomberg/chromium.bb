@@ -34,7 +34,7 @@ class TapRecord {
 
   // if any gesturing fingers are moving
   bool Moving(const HardwareState& hwstate) const;
-  bool IsTap() const;  // is a completed tap
+  bool TapComplete() const;  // is a completed tap
   int TapType() const;  // return GESTURES_BUTTON_* value
  private:
   void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
@@ -49,7 +49,18 @@ class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
  public:
+  enum TapToClickState {
+    kTtcIdle,
+    kTtcFirstTapBegan,
+    kTtcTapComplete,
+    kTtcSubsequentTapBegan,
+    kTtcDrag,
+    kTtcDragRelease,
+    kTtcDragRetouch
+  };
+
   ImmediateInterpreter();
   virtual ~ImmediateInterpreter();
 
@@ -59,6 +70,12 @@ class ImmediateInterpreter : public Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   void SetHardwareProperties(const HardwareProperties& hw_props);
+
+  TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
+
+  // TODO(adlr): replace these with proper properties when they're available.
+  void set_tap_timeout(stime_t timeout) { tap_timeout_ = timeout; }
+  void set_tap_drag_timeout(stime_t timeout) { tap_drag_timeout_ = timeout; }
 
  private:
   // Returns true iff the fingers in hwstate are the same ones in prev_state_
@@ -95,6 +112,27 @@ class ImmediateInterpreter : public Interpreter {
   // unknown.
   GestureType GetTwoFingerGestureType(const FingerState& finger1,
                                       const FingerState& finger2);
+
+  const char* TapToClickStateName(TapToClickState state);
+
+  stime_t TimeoutForTtcState(TapToClickState state);
+
+  void SetTapToClickState(TapToClickState state,
+                          stime_t now);
+
+  void UpdateTapGesture(const HardwareState* hwstate,
+                        const set<short, kMaxGesturingFingers>& gs_fingers,
+                        const bool same_fingers,
+                        stime_t now,
+                        stime_t* timeout);
+
+  void UpdateTapState(const HardwareState* hwstate,
+                      const set<short, kMaxGesturingFingers>& gs_fingers,
+                      const bool same_fingers,
+                      stime_t now,
+                      unsigned* buttons_down,
+                      unsigned* buttons_up,
+                      stime_t* timeout);
 
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
@@ -146,6 +184,21 @@ class ImmediateInterpreter : public Interpreter {
   set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
   // tracking ids of known non-palms
   set<short, kMaxGesturingFingers> pointing_;
+
+  // Tap-to-click
+  // The current state:
+  TapToClickState tap_to_click_state_;
+
+  // When we entered the state:
+  stime_t tap_to_click_state_entered_;
+
+  TapRecord tap_record_;
+
+  // General time limit for tap gestures
+  stime_t tap_timeout_;
+
+  // How long it takes to stop dragging when you let go of the touchpad.
+  stime_t tap_drag_timeout_;
 
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;

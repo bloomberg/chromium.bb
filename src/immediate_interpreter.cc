@@ -136,8 +136,8 @@ bool TapRecord::Moving(const HardwareState& hwstate) const {
   return false;
 }
 
-bool TapRecord::IsTap() const {
-  Log("called IsTap()");
+bool TapRecord::TapComplete() const {
+  Log("called TapComplete()");
   for (map<short, FingerState, kMaxTapFingers>::const_iterator
            it = touched_.begin(), e = touched_.end(); it != e; ++it)
     Log("touched_: %d", (*it).first);
@@ -145,7 +145,7 @@ bool TapRecord::IsTap() const {
            e = released_.end(); it != e; ++it)
     Log("released_: %d", *it);
   bool ret = !touched_.empty() && (touched_.size() == released_.size());
-  Log("IsTap() returning %d", ret);
+  Log("TapComplete() returning %d", ret);
   return ret;
 }
 
@@ -157,7 +157,10 @@ int TapRecord::TapType() const {
 ImmediateInterpreter::ImmediateInterpreter()
     : button_type_(0),
       sent_button_down_(false),
-      button_down_timeout_(0.0) {
+      button_down_timeout_(0.0),
+      tap_to_click_state_(kTtcIdle),
+      tap_timeout_(0.2),
+      tap_drag_timeout_(0.7) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -176,23 +179,39 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
   }
 
   result_.type = kGestureTypeNull;
-  if (!SameFingers(*hwstate)) {
+  const bool same_fingers = SameFingers(*hwstate);
+  if (!same_fingers) {
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
   }
   UpdatePalmState(*hwstate);
   set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
-  UpdateCurrentGestureType(*hwstate, gs_fingers);
-  FillResultGesture(*hwstate, gs_fingers);
+
   UpdateButtons(*hwstate);
+  UpdateTapGesture(hwstate,
+                   gs_fingers,
+                   same_fingers,
+                   hwstate->timestamp,
+                   timeout);
+
+  UpdateCurrentGestureType(*hwstate, gs_fingers);
+  if (result_.type == kGestureTypeNull)
+    FillResultGesture(*hwstate, gs_fingers);
+
   SetPrevState(*hwstate);
   prev_gs_fingers_ = gs_fingers;
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
 Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  return NULL;
+  result_.type = kGestureTypeNull;
+  UpdateTapGesture(NULL,
+                   set<short, kMaxGesturingFingers>(),
+                   false,
+                   now,
+                   timeout);
+  return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
 // For now, require fingers to be in the same slots
@@ -275,7 +294,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     current_gesture_type_ = kGestureTypeNull;
     return;
   }
-  if (sent_button_down_) {
+  if (sent_button_down_ || tap_to_click_state_ == kTtcDrag) {
     current_gesture_type_ = kGestureTypeMove;
     return;
   }
@@ -375,6 +394,301 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
       small_dy = 0.0;
     return ((large_dy * small_dy) >= 0.0) ?  // same direction
         kGestureTypeScroll : kGestureTypeNull;
+  }
+}
+
+const char* ImmediateInterpreter::TapToClickStateName(TapToClickState state) {
+  switch (state) {
+    case kTtcIdle: return "Idle";
+    case kTtcFirstTapBegan: return "FirstTapBegan";
+    case kTtcTapComplete: return "TapComplete";
+    case kTtcSubsequentTapBegan: return "SubsequentTapBegan";
+    case kTtcDrag: return "Drag";
+    case kTtcDragRelease: return "DragRelease";
+    case kTtcDragRetouch: return "DragRetouch";
+    default: return "<unknown>";
+  }
+}
+
+stime_t ImmediateInterpreter::TimeoutForTtcState(TapToClickState state) {
+  switch (state) {
+    case kTtcIdle: return tap_timeout_;
+    case kTtcFirstTapBegan: return tap_timeout_;
+    case kTtcTapComplete: return tap_timeout_;
+    case kTtcSubsequentTapBegan: return tap_timeout_;
+    case kTtcDrag: return tap_timeout_;
+    case kTtcDragRelease: return tap_drag_timeout_;
+    case kTtcDragRetouch: return tap_timeout_;
+    default:
+      Log("Unknown state!");
+      return 0.0;
+  }
+}
+
+void ImmediateInterpreter::SetTapToClickState(TapToClickState state,
+                                              stime_t now) {
+  if (tap_to_click_state_ != state) {
+    tap_to_click_state_ = state;
+    tap_to_click_state_entered_ = now;
+  }
+}
+
+void ImmediateInterpreter::UpdateTapGesture(
+    const HardwareState* hwstate,
+    const set<short, kMaxGesturingFingers>& gs_fingers,
+    const bool same_fingers,
+    stime_t now,
+    stime_t* timeout) {
+  unsigned down = 0;
+  unsigned up = 0;
+  UpdateTapState(hwstate, gs_fingers, same_fingers, now, &down, &up, timeout);
+  if (down == 0 && up == 0) {
+    Log("No tap gesture");
+    return;
+  }
+  Log("Yes tap gesture");
+  result_ = Gesture(kGestureButtonsChange,
+                    prev_state_.timestamp,
+                    now,
+                    down,
+                    up);
+}
+
+void ImmediateInterpreter::UpdateTapState(
+    const HardwareState* hwstate,
+    const set<short, kMaxGesturingFingers>& gs_fingers,
+    const bool same_fingers,
+    stime_t now,
+    unsigned* buttons_down,
+    unsigned* buttons_up,
+    stime_t* timeout) {
+  Log("Entering UpdateTapState");
+  if (hwstate)
+    for (int i = 0; i < hwstate->finger_cnt; ++i)
+      Log("HWSTATE: %d", hwstate->fingers[i].tracking_id);
+  for (set<short, kMaxGesturingFingers>::const_iterator it =
+           gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it)
+    Log("GS: %d", *it);
+  set<short, kMaxTapFingers> added_fingers;
+
+  // Fingers removed from the pad entirely
+  set<short, kMaxTapFingers> removed_fingers;
+
+  // Fingers that were gesturing, but now aren't
+  set<short, kMaxFingers> dead_fingers;
+
+  const bool phys_button_down = hwstate && hwstate->buttons_down != 0;
+
+  bool is_timeout = (now - tap_to_click_state_entered_ >
+                     TimeoutForTtcState(tap_to_click_state_));
+
+  if (hwstate && (!same_fingers || prev_gs_fingers_ != gs_fingers)) {
+    // See if fingers were added
+    for (set<short, kMaxGesturingFingers>::const_iterator it =
+             gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it)
+      if (!prev_state_.GetFingerState(*it)) {
+        // Gesturing finger wasn't in prev state. It's new.
+        added_fingers.insert(*it);
+        Log("TTC: Added %d", *it);
+      }
+
+    // See if fingers were removed or are now non-gesturing (dead)
+    for (set<short, kMaxGesturingFingers>::const_iterator it =
+             prev_gs_fingers_.begin(), e = prev_gs_fingers_.end();
+         it != e; ++it) {
+      if (gs_fingers.find(*it) != gs_fingers.end())
+        // still gesturing; neither removed nor dead
+        continue;
+      if (!hwstate->GetFingerState(*it)) {
+        // Previously gesturing finger isn't in current state. It's gone.
+        removed_fingers.insert(*it);
+        Log("TTC: Removed %d", *it);
+      } else {
+        // Previously gesturing finger is in current state. It's dead.
+        dead_fingers.insert(*it);
+        Log("TTC: Dead %d", *it);
+      }
+    }
+  }
+
+  // The state machine:
+
+  // If you are updating the code, keep this diagram correct.
+  // We have a TapRecord which stores current tap state.
+  // Also, if the physical button is down, we go to (or stay in) Idle state.
+
+  //     Start
+  //       ↓
+  //    [Idle**] <----------------------------------------------------------,
+  //       ↓ added finger(s)                                                |
+  //    [FirstTapBegan] -<right click: send right click, timeout/movement>->|
+  //       ↓ released all fingers                                           |
+  // ,->[TapComplete*] --<timeout: send click>----------------------------->|
+  // |     ↓ add finger(s): send button down                                |
+  // |  [SubsequentTapBegan] --<timeout/move(non-drag): send btn up>------->|
+  // |     | | released all fingers: send button up                         |
+  // |<----+-'                                                              |
+  // |     ↓ timeout/movement (that looks like drag)                        |
+  // | ,->[Drag] --<detect 2 finger gesture: send button up>--------------->|
+  // | |   ↓ release all fingers                                            |
+  // | |  [DragRelease*]  --<timeout: send button up>---------------------->|
+  // | |   ↓ add finger(s)                                                  |
+  // | |  [DragRetouch]  --<remove fingers (left tap): send button up>----->|
+  // | |   | | timeout/movement
+  // | '---+-'
+  // |     |  remove all fingers (non-left tap): send button up
+  // '-----'
+  //
+  // * When entering TapComplete or DragRelease, we set a timer, since
+  //   we will have no fingers on the pad and want to run possibly before
+  //   fingers are put on the pad. Note that we use different timeouts
+  //   based on which state we're in (tap_timeout_ or tap_drag_timeout_).
+  // ** When entering idle, we reset the TapRecord.
+
+  Log("TTC State: %s", TapToClickStateName(tap_to_click_state_));
+  if (!hwstate)
+    Log("This is a timer callback");
+  if (phys_button_down) {
+    Log("Physical button down. Going to Idle state");
+    SetTapToClickState(kTtcIdle, now);
+    return;
+  }
+
+  switch (tap_to_click_state_) {
+    case kTtcIdle:
+      if (!added_fingers.empty()) {
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+        SetTapToClickState(kTtcFirstTapBegan, now);
+      }
+      break;
+    case kTtcFirstTapBegan:
+      if (is_timeout) {
+        SetTapToClickState(kTtcIdle, now);
+        break;
+      }
+      if (!hwstate) {
+        Log("hwstate NULL but no timeout?!");
+        break;
+      }
+      tap_record_.Update(
+          *hwstate, added_fingers, removed_fingers, dead_fingers);
+      Log("Is tap? %d Is moving? %d",
+          tap_record_.TapComplete(),
+          tap_record_.Moving(*hwstate));
+      if (tap_record_.TapComplete()) {
+        if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
+          SetTapToClickState(kTtcTapComplete, now);
+        } else {
+          *buttons_down = *buttons_up = tap_record_.TapType();
+          SetTapToClickState(kTtcIdle, now);
+        }
+      } else if (tap_record_.Moving(*hwstate)) {
+        SetTapToClickState(kTtcIdle, now);
+      }
+      break;
+    case kTtcTapComplete:
+      if (!added_fingers.empty()) {
+        // Generate a button event for the tap type that got us into
+        // kTtcTapComplete state, after which we'll repurpose
+        // tap_record_ to record the next tap.
+        *buttons_down = tap_record_.TapType();
+        tap_record_.Clear();
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+        SetTapToClickState(kTtcSubsequentTapBegan, now);
+      } else if (is_timeout) {
+        *buttons_down = *buttons_up = tap_record_.TapType();
+        SetTapToClickState(kTtcIdle, now);
+      }
+      break;
+    case kTtcSubsequentTapBegan:
+      if (!is_timeout && !hwstate) {
+        Log("hwstate NULL but not a timeout?!");
+        break;
+      }
+      if (hwstate)
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+      if (is_timeout || tap_record_.Moving(*hwstate)) {
+        if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
+          SetTapToClickState(kTtcDrag, now);
+        } else {
+          *buttons_up = GESTURES_BUTTON_LEFT;
+          SetTapToClickState(kTtcIdle, now);
+        }
+        break;
+      }
+      if (tap_record_.TapComplete()) {
+        *buttons_up = GESTURES_BUTTON_LEFT;
+        SetTapToClickState(kTtcTapComplete, now);
+        Log("Subsequent left tap complete");
+      }
+      break;
+    case kTtcDrag:
+      if (hwstate)
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+      if (tap_record_.TapComplete()) {
+        tap_record_.Clear();
+        SetTapToClickState(kTtcDragRelease, now);
+      }
+      if (tap_record_.TapType() != GESTURES_BUTTON_LEFT &&
+          now - tap_to_click_state_entered_ <= kGestureEvaluationTimeout) {
+        // We thought we were dragging, but actually we're doing a
+        // non-tap-to-click multitouch gesture.
+        *buttons_up = GESTURES_BUTTON_LEFT;
+        SetTapToClickState(kTtcIdle, now);
+      }
+      break;
+    case kTtcDragRelease:
+      if (!added_fingers.empty()) {
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+        SetTapToClickState(kTtcDragRetouch, now);
+      } else if (is_timeout) {
+        *buttons_up = GESTURES_BUTTON_LEFT;
+        SetTapToClickState(kTtcIdle, now);
+      }
+      break;
+    case kTtcDragRetouch:
+      if (hwstate)
+        tap_record_.Update(
+            *hwstate, added_fingers, removed_fingers, dead_fingers);
+      if (tap_record_.TapComplete()) {
+        *buttons_up = GESTURES_BUTTON_LEFT;
+        if (tap_record_.TapType() == GESTURES_BUTTON_LEFT)
+          SetTapToClickState(kTtcIdle, now);
+        else
+          SetTapToClickState(kTtcTapComplete, now);
+        break;
+      }
+      if (is_timeout) {
+        SetTapToClickState(kTtcDrag, now);
+        break;
+      }
+      if (!hwstate) {
+        Log("not timeout but hwstate is NULL?!");
+        break;
+      }
+      if (tap_record_.Moving(*hwstate))
+        SetTapToClickState(kTtcDrag, now);
+      break;
+  }
+  Log("TTC: New state: %s", TapToClickStateName(tap_to_click_state_));
+  // Take action based on new state:
+  switch (tap_to_click_state_) {
+    case kTtcIdle:
+      tap_record_.Clear();
+      break;
+    case kTtcTapComplete:
+      *timeout = TimeoutForTtcState(tap_to_click_state_);
+      break;
+    case kTtcDragRelease:
+      *timeout = TimeoutForTtcState(tap_to_click_state_);
+      break;
+    default:  // so gcc doesn't complain about missing enums
+      break;
   }
 }
 
