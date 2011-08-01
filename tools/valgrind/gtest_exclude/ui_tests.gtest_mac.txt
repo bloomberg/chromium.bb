@@ -97,7 +97,7 @@ AutomatedUITestBase.Navigate
 AutomatedUITestBase.ShowDownloads
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
-utomationProxyTest.AcceleratorHistory
+AutomationProxyTest.AcceleratorHistory
 AutomationProxyTest.ActivateTab
 AutomationProxyTest.BlockedPopupTest
 AutomationProxyTest.Cookies
