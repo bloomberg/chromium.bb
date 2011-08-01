@@ -56,6 +56,14 @@ gfx::Rect ScaleRect(const gfx::Rect& rect,
                     double horizontal_ratio,
                     double vertical_ratio);
 
+// Copy pixels in the rectangle from source to destination.
+void CopyRect(const uint8* src_plane,
+              int src_plane_stride,
+              uint8* dest_plane,
+              int dest_plane_stride,
+              int bytes_per_pixel,
+              const gfx::Rect& rect);
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_UTIL_H_

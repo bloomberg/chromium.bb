@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
 
 namespace remoting {
@@ -141,7 +142,7 @@ class CapturerMac : public Capturer {
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
-  void GlBlitFast(const VideoFrameBuffer& buffer);
+  void GlBlitFast(const VideoFrameBuffer& buffer, const InvalidRects& rects);
   void GlBlitSlow(const VideoFrameBuffer& buffer);
   void CgBlit(const VideoFrameBuffer& buffer, const InvalidRects& rects);
   void CaptureRects(const InvalidRects& rects,
@@ -178,6 +179,9 @@ class CapturerMac : public Capturer {
   // The last buffer into which we captured, or NULL for the first capture for
   // a particular screen resolution.
   uint8* last_buffer_;
+
+  // Contains a list of invalid rectangles in the last capture.
+  InvalidRects last_invalid_rects_;
 
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
@@ -303,7 +307,7 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
     bool flip = true;  // GL capturers need flipping.
     if (cgl_context_) {
       if (pixel_buffer_object_.get() != 0) {
-        GlBlitFast(current_buffer);
+        GlBlitFast(current_buffer, rects);
       } else {
         // See comment in scoped_pixel_buffer_object::Init about why the slow
         // path is always used on 10.5.
@@ -335,7 +339,33 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   delete callback;
 }
 
-void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer) {
+void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
+           const InvalidRects& rects) {
+  if (last_buffer_) {
+    // We are doing double buffer for the capture data so we just need to copy
+    // invalid rects in the last capture in the current buffer.
+    // TODO(hclam): |last_invalid_rects_| and |rects| can overlap and this
+    // causes extra copies on the overlapped region. Subtract |rects| from
+    // |last_invalid_rects_| to do a minimal amount of copy when we have proper
+    // region algorithms implemented.
+
+    // Since the image obtained from OpenGL is upside-down, need to do some
+    // magic here to copy the correct rectangle.
+    const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
+    for (InvalidRects::iterator i = last_invalid_rects_.begin();
+         i != last_invalid_rects_.end();
+         ++i) {
+      CopyRect(last_buffer_ + y_offset,
+               -buffer.bytes_per_row(),
+               buffer.ptr() + y_offset,
+               -buffer.bytes_per_row(),
+               4,  // Bytes for pixel for RGBA.
+               *i);
+    }
+  }
+  last_buffer_ = buffer.ptr();
+  last_invalid_rects_ = rects;
+
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
   glReadPixels(0, 0, buffer.size().width(), buffer.size().height(),
@@ -347,7 +377,17 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer) {
     // release it.
     pixel_buffer_object_.Release();
   } else {
-    memcpy(buffer.ptr(), ptr, buffer.size().height() * buffer.bytes_per_row());
+    // Copy only from the dirty rects. Since the image obtained from OpenGL is
+    // upside-down we need to do some magic here to copy the correct rectangle.
+    const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
+    for (InvalidRects::iterator i = rects.begin(); i != rects.end(); ++i) {
+      CopyRect(ptr + y_offset,
+         -buffer.bytes_per_row(),
+         buffer.ptr() + y_offset,
+         -buffer.bytes_per_row(),
+         4,  // Bytes for pixel for RGBA.
+         *i);
+    }
   }
   if (!glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB)) {
     // If glUnmapBuffer returns false, then the contents of the data store are
@@ -386,15 +426,12 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
   int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
   int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
   for (InvalidRects::iterator i = rects.begin(); i != rects.end(); ++i) {
-    int src_row_offset =  i->x() * src_bytes_per_pixel;
-    int dst_row_offset = i->x() * sizeof(uint32_t);
-    int rect_width_in_bytes = i->width() * src_bytes_per_pixel;
-    int ymax = i->height() + i->y();
-    for (int y = i->y(); y < ymax; ++y) {
-      memcpy(buffer.ptr() + y * buffer.bytes_per_row() + dst_row_offset,
-             display_base_address + y * src_bytes_per_row + src_row_offset,
-             rect_width_in_bytes);
-    }
+    CopyRect(display_base_address,
+             src_bytes_per_row,
+             buffer.ptr(),
+             buffer.bytes_per_row(),
+             src_bytes_per_pixel,
+             *i);
   }
 }
 

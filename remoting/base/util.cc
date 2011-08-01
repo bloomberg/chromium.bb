@@ -146,4 +146,27 @@ gfx::Rect ScaleRect(const gfx::Rect& rect,
   return scaled_rect;
 }
 
+void CopyRect(const uint8* src_plane,
+              int src_plane_stride,
+              uint8* dest_plane,
+              int dest_plane_stride,
+              int bytes_per_pixel,
+              const gfx::Rect& rect) {
+ // Get the address of the starting point.
+  const int src_y_offset = src_plane_stride * rect.y();
+  const int dest_y_offset = dest_plane_stride * rect.y();
+  const int x_offset = bytes_per_pixel * rect.x();
+  src_plane += src_y_offset + x_offset;
+  dest_plane += dest_y_offset + x_offset;
+
+  // Copy pixels in the rectangle line by line.
+  const int bytes_per_line = bytes_per_pixel * rect.width();
+  const int height = rect.height();
+  for (int i = 0 ; i < height; ++i) {
+    memcpy(dest_plane, src_plane, bytes_per_line);
+    src_plane += src_plane_stride;
+    dest_plane += dest_plane_stride;
+  }
+}
+
 }  // namespace remoting
