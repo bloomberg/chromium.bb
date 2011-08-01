@@ -4,34 +4,47 @@
 
 /**
  * This view displays information related to HTTP throttling.
- * @constructor
  */
-function HttpThrottlingView() {
-  const mainBoxId = 'http-throttling-view-tab-content';
-  const enableCheckboxId = 'http-throttling-view-enable-checkbox';
 
-  DivView.call(this, mainBoxId);
+var HttpThrottlingView = (function() {
+  // IDs for special HTML elements in http_throttling_view.html
+  const MAIN_BOX_ID = 'http-throttling-view-tab-content';
+  const ENABLE_CHECKBOX_ID = 'http-throttling-view-enable-checkbox';
 
-  this.enableCheckbox_ = $(enableCheckboxId);
-  this.enableCheckbox_.onclick = this.onEnableCheckboxClicked_.bind(this);
+  // We inherit from DivView.
+  var superClass = DivView;
 
-  g_browser.addHttpThrottlingObserver(this);
-}
+  function HttpThrottlingView() {
+    // Call superclass's constructor.
+    superClass.call(this, MAIN_BOX_ID);
 
-inherits(HttpThrottlingView, DivView);
+    this.enableCheckbox_ = $(ENABLE_CHECKBOX_ID);
+    this.enableCheckbox_.onclick = this.onEnableCheckboxClicked_.bind(this);
 
-/**
- * Gets informed that HTTP throttling has been enabled/disabled.
- * @param {boolean} enabled HTTP throttling has been enabled.
- */
-HttpThrottlingView.prototype.onHttpThrottlingEnabledPrefChanged = function(
-    enabled) {
-  this.enableCheckbox_.checked = enabled;
-};
+    g_browser.addHttpThrottlingObserver(this);
+  }
 
-/**
- * Handler for the onclick event of the checkbox.
- */
-HttpThrottlingView.prototype.onEnableCheckboxClicked_ = function() {
-  g_browser.enableHttpThrottling(this.enableCheckbox_.checked);
-};
+  cr.addSingletonGetter(HttpThrottlingView);
+
+  HttpThrottlingView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
+
+    /**
+     * Gets informed that HTTP throttling has been enabled/disabled.
+     * @param {boolean} enabled HTTP throttling has been enabled.
+     */
+    onHttpThrottlingEnabledPrefChanged: function(enabled) {
+      this.enableCheckbox_.checked = enabled;
+    },
+
+    /**
+     * Handler for the onclick event of the checkbox.
+     */
+    onEnableCheckboxClicked_: function() {
+      g_browser.enableHttpThrottling(this.enableCheckbox_.checked);
+    }
+  };
+
+  return HttpThrottlingView;
+})();
