@@ -197,7 +197,8 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     dict->SetString("canBeDefault", "1");
   if (is_default)
     dict->SetString("default", "1");
-  dict->SetString("canBeEdited", "1");
+  if (list_controller_->CanEdit(template_url))
+    dict->SetString("canBeEdited", "1");
 
   return dict;
 }
