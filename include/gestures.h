@@ -132,6 +132,33 @@ struct Gesture {
 typedef void (*GestureReadyFunction)(void* client_data,
                                      const struct Gesture* gesture);
 
+struct GesturesTimer;
+typedef struct GesturesTimer GesturesTimer;
+
+// If this returns < 0, the timer should be freed. If it returns >= 0.0, it
+// should be called again after that amount of delay.
+typedef stime_t (*GesturesTimerCallback)(stime_t now,
+                                         void* callback_data);
+// Allocate and return a new timer, or NULL if error.
+typedef GesturesTimer* (*GesturesTimerCreate)(void* data);
+// Set a timer:
+typedef void (*GesturesTimerSet)(void* data,
+                                 GesturesTimer* timer,
+                                 stime_t delay,
+                                 GesturesTimerCallback callback,
+                                 void* callback_data);
+// Cancel a set timer:
+typedef void (*GesturesTimerCancel)(void* data, GesturesTimer* timer);
+// Free the timer. Will not be called from within a timer callback.
+typedef void (*GesturesTimerFree)(void* data, GesturesTimer* timer);
+
+typedef struct {
+  GesturesTimerCreate create_fn;
+  GesturesTimerSet set_fn;
+  GesturesTimerCancel cancel_fn;
+  GesturesTimerFree free_fn;
+} GesturesTimerProvider;
+
 #ifdef __cplusplus
 // C++ API:
 
@@ -152,6 +179,7 @@ struct GestureInterpreter {
     callback_ = callback;
     callback_data_ = client_data;
   }
+  void SetTimerProvider(GesturesTimerProvider* tp, void* data);
   void set_tap_to_click(bool tap_to_click) { tap_to_click_ = tap_to_click; }
   void set_move_speed(int speed) { move_speed_ = speed; }
   void set_scroll_speed(int speed) { scroll_speed_ = speed; }
@@ -160,6 +188,10 @@ struct GestureInterpreter {
   void* callback_data_;
 
   scoped_ptr<Interpreter> interpreter_;
+
+  GesturesTimerProvider* timer_provider_;
+  void* timer_provider_data_;
+  GesturesTimer* interpret_timer_;
 
   // Settings
   bool tap_to_click_;
@@ -194,6 +226,12 @@ void GestureInterpreterPushHardwareState(GestureInterpreter*,
 void GestureInterpreterSetCallback(GestureInterpreter*,
                                    GestureReadyFunction,
                                    void*);
+
+// Gestures will hold a reference to passed provider. Pass NULL to tell
+// Gestures to stop holding a reference.
+void GestureInterpreterSetTimerProvider(GestureInterpreter*,
+                                        GesturesTimerProvider*,
+                                        void* data);
 
 void GestureInterpreterSetTapToClickEnabled(GestureInterpreter*,
                                             int);  // 0 (disabled) or 1

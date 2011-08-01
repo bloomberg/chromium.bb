@@ -73,6 +73,12 @@ void GestureInterpreterSetCallback(GestureInterpreter* obj,
   obj->set_callback(fn, user_data);
 }
 
+void GestureInterpreterSetTimerProvider(GestureInterpreter* obj,
+                                        GesturesTimerProvider* tp,
+                                        void* data) {
+  obj->SetTimerProvider(tp, data);
+}
+
 void GestureInterpreterSetTapToClickEnabled(GestureInterpreter* obj,
                                             int enabled) {
   obj->set_tap_to_click(enabled != 0);
@@ -93,6 +99,9 @@ void GestureInterpreterSetScrollSpeed(GestureInterpreter* obj,
 GestureInterpreter::GestureInterpreter(int version)
     : callback_(NULL),
       callback_data_(NULL),
+      timer_provider_(NULL),
+      timer_provider_data_(NULL),
+      interpret_timer_(NULL),
       tap_to_click_(false),
       move_speed_(50),
       scroll_speed_(50) {
@@ -100,7 +109,9 @@ GestureInterpreter::GestureInterpreter(int version)
       new ScalingFilterInterpreter(new ImmediateInterpreter)));
 }
 
-GestureInterpreter::~GestureInterpreter() {}
+GestureInterpreter::~GestureInterpreter() {
+  SetTimerProvider(NULL, NULL);
+}
 
 void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
   Gesture* gs = interpreter_->SyncInterpret(hwstate);
@@ -112,4 +123,19 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
 void GestureInterpreter::SetHardwareProperties(
     const HardwareProperties& hwprops) {
   interpreter_->SetHardwareProperties(hwprops);
+}
+
+void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
+                                          void* data) {
+  if (timer_provider_ == tp && timer_provider_data_ == data)
+    return;
+  if (timer_provider_ && interpret_timer_)
+    timer_provider_->free_fn(timer_provider_data_, interpret_timer_);
+  if (interpret_timer_)
+    Log("How was interpret_timer_ not NULL?!");
+  interpret_timer_ = NULL;
+  timer_provider_ = tp;
+  timer_provider_data_ = data;
+  if (timer_provider_)
+    interpret_timer_ = timer_provider_->create_fn(timer_provider_data_);
 }
