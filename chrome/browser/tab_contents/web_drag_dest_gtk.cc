@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -221,12 +222,14 @@ void WebDragDestGtk::OnDragDataReceived(
   // GTK and Views, hence we can share the same logic here.
   if (data->target == GetBookmarkTargetAtom()) {
     if (data->data && data->length > 0) {
+      Profile* profile =
+          Profile::FromBrowserContext(tab_contents_->browser_context());
       bookmark_drag_data_.ReadFromVector(
           bookmark_utils::GetNodesFromSelection(
               NULL, data,
               ui::CHROME_BOOKMARK_ITEM,
-              tab_contents_->profile(), NULL, NULL));
-      bookmark_drag_data_.SetOriginatingProfile(tab_contents_->profile());
+              profile, NULL, NULL));
+      bookmark_drag_data_.SetOriginatingProfile(profile);
     } else {
       bookmark_drag_data_.ReadFromTuple(drop_data_->url,
                                         drop_data_->url_title);

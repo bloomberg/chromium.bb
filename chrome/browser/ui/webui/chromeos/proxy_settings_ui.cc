@@ -80,7 +80,8 @@ ProxySettingsUI::ProxySettingsUI(TabContents* contents)
 
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(source);
 }
 
 ProxySettingsUI::~ProxySettingsUI() {

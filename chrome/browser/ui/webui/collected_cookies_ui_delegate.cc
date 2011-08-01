@@ -133,7 +133,9 @@ void CollectedCookiesSource::StartDataRequest(const std::string& path,
 void CollectedCookiesUIDelegate::Show(TabContents* tab_contents) {
   CollectedCookiesUIDelegate* delegate =
       new CollectedCookiesUIDelegate(tab_contents);
-  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(tab_contents->profile(),
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile,
                                                  delegate,
                                                  tab_contents);
 }
@@ -142,11 +144,11 @@ CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(
     TabContents* tab_contents)
     : tab_contents_(tab_contents),
       closed_(false) {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-          content_settings();
+  TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
   HostContentSettingsMap* host_content_settings_map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
+      wrapper->profile()->GetHostContentSettingsMap();
 
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
@@ -158,7 +160,7 @@ CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(
 
   CollectedCookiesSource* source = new CollectedCookiesSource(
       host_content_settings_map->BlockThirdPartyCookies());
-  tab_contents->profile()->GetChromeURLDataManager()->AddDataSource(source);
+  wrapper->profile()->GetChromeURLDataManager()->AddDataSource(source);
 }
 
 CollectedCookiesUIDelegate::~CollectedCookiesUIDelegate() {
@@ -227,8 +229,10 @@ void CollectedCookiesUIDelegate::SetInfobarLabel(const std::string& text) {
 void CollectedCookiesUIDelegate::AddContentException(
     CookieTreeOriginNode* origin_node, ContentSetting setting) {
   if (origin_node->CanCreateContentException()) {
-    origin_node->CreateContentException(
-        tab_contents_->profile()->GetHostContentSettingsMap(), setting);
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents_->browser_context());
+    origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
+                                        setting);
 
     SetInfobarLabel(GetInfobarLabel(setting, origin_node->GetTitle()));
   }

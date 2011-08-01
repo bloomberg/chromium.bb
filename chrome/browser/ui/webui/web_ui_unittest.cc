@@ -158,8 +158,9 @@ TEST_F(WebUITest, StandardToWebUI) {
 
 class TabContentsForFocusTest : public TestTabContents {
  public:
-  TabContentsForFocusTest(Profile* profile, SiteInstance* instance)
-      : TestTabContents(profile, instance), focus_called_(0) {
+  TabContentsForFocusTest(content::BrowserContext* browser_context,
+                          SiteInstance* instance)
+      : TestTabContents(browser_context, instance), focus_called_(0) {
   }
 
   virtual void SetFocusToLocationBar(bool select_all) { ++focus_called_; }
@@ -172,8 +173,8 @@ class TabContentsForFocusTest : public TestTabContents {
 TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |tc| will be used to track when we try to focus the location bar.
   TabContentsForFocusTest* tc = new TabContentsForFocusTest(
-      contents()->profile(),
-      SiteInstance::CreateSiteInstance(contents()->profile()));
+      contents()->browser_context(),
+      SiteInstance::CreateSiteInstance(contents()->browser_context()));
   tc->controller().CopyStateFrom(controller());
   SetContents(tc);
   int page_id = 200;

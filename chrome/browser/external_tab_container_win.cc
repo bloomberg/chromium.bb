@@ -464,7 +464,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
   // an unwrapped Profile.
   scoped_ptr<TabContentsWrapper> wrapper(new TabContentsWrapper(new_contents));
   bool result = new_container->Init(
-      new_contents->profile()->GetOriginalProfile(),
+      wrapper->profile()->GetOriginalProfile(),
       NULL,
       initial_pos,
       WS_CHILD,
@@ -477,6 +477,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
       route_all_top_level_navigations_);
 
   if (result) {
+    Profile* profile = wrapper->profile();
     wrapper.release();  // Ownership has been transferred.
     if (route_all_top_level_navigations_) {
       return;
@@ -491,7 +492,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     attach_params_.user_gesture = user_gesture;
     attach_params_.disposition = disposition;
     attach_params_.profile_name = WideToUTF8(
-        tab_contents()->profile()->GetPath().DirName().BaseName().value());
+        profile->GetPath().DirName().BaseName().value());
     automation_->Send(new AutomationMsg_AttachExternalTab(
         tab_handle_, attach_params_));
   } else {

@@ -260,18 +260,18 @@ OptionsUI::OptionsUI(TabContents* contents)
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://theme/ source.
-  ThemeSource* theme = new ThemeSource(contents->profile());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
   chromeos::UserImageSource* user_image_source =
       new chromeos::UserImageSource();
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      user_image_source);
+  profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
 #endif
 }
 

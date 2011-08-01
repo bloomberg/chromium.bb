@@ -9,15 +9,14 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "webkit/glue/webpreferences.h"
 
-class Profile;
 class TestRenderViewHost;
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts and does
 // not do anything involving views.
 class TestTabContents : public TabContents {
  public:
-  // The render view host factory will be passed on to the
-  TestTabContents(Profile* profile, SiteInstance* instance);
+  TestTabContents(content::BrowserContext* browser_context,
+                  SiteInstance* instance);
 
   TestRenderViewHost* pending_rvh() const;
 

@@ -103,7 +103,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
   strings.SetString("url", failed_url);
 
   // The offline page for app has icons and slightly different message.
-  Profile* profile = tab()->profile();
+  Profile* profile = Profile::FromBrowserContext(tab()->browser_context());
   DCHECK(profile);
   const Extension* extension = NULL;
   ExtensionService* extensions_service = profile->GetExtensionService();

@@ -96,8 +96,9 @@ NewProfileUI::NewProfileUI(TabContents* contents) : ChromeWebUI(contents) {
   handler->Attach(this);
 
   // Set up the chrome://theme/ source.
-  ThemeSource* theme = new ThemeSource(contents->profile());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the new profile source.
   NewProfileUIHTMLSource* html_source =
@@ -105,5 +106,5 @@ NewProfileUI::NewProfileUI(TabContents* contents) : ChromeWebUI(contents) {
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kNewProfileJsFile, IDR_NEW_PROFILE_JS);
   html_source->set_default_resource(IDR_NEW_PROFILE_HTML);
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

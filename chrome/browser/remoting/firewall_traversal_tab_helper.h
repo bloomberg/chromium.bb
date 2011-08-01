@@ -11,8 +11,6 @@
 #include "content/common/notification_observer.h"
 #include "ipc/ipc_channel.h"
 
-class Profile;
-
 // Per-tab class to manage the firewall traversal policies for
 // the remoting plugin.
 // TODO(dmaclach): Replace this with a more generic mechanism for
@@ -34,8 +32,6 @@ class FirewallTraversalTabHelper : public NotificationObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  Profile* profile() const { return tab_contents()->profile(); }
-
   void UpdateFirewallTraversalState();
 
   // Registers and unregisters us for notifications.

@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -106,12 +105,6 @@ class TabContents : public PageNavigator,
   // NavigationController).
   content::BrowserContext* browser_context() const {
     return controller_.browser_context();
-  }
-
-  // Returns the profile.
-  // TEMPORARY; http://crbug.com/76788
-  Profile* profile() const {
-    return Profile::FromBrowserContext(browser_context());
   }
 
   // Returns the SavePackage which manages the page saving job. May be NULL.

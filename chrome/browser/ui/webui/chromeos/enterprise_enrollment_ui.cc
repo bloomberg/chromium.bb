@@ -167,7 +167,9 @@ void EnterpriseEnrollmentUI::RenderViewCreated(
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(
       localized_strings.get());
   // Set up the data source, so the enrollment page can be loaded.
-  tab_contents()->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(
       new EnterpriseEnrollmentDataSource(localized_strings.release()));
 }
 

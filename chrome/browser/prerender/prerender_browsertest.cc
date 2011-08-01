@@ -505,7 +505,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   PrerenderManager* prerender_manager() const {
-    Profile* profile = browser()->GetSelectedTabContents()->profile();
+    Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
     return prerender_manager;
   }

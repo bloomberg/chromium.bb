@@ -20,7 +20,9 @@ FirewallTraversalTabHelper::FirewallTraversalTabHelper(
     TabContents* tab_contents)
     : TabContentsObserver(tab_contents) {
   // Register for notifications about all interested prefs change.
-  PrefService* prefs = profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
     pref_change_registrar_.Add(prefs::kRemoteAccessClientFirewallTraversal,
@@ -51,7 +53,9 @@ void FirewallTraversalTabHelper::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = Details<std::string>(details).ptr();
-      DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
+      Profile* profile =
+          Profile::FromBrowserContext(tab_contents()->browser_context());
+      DCHECK(Source<PrefService>(source).ptr() == profile->GetPrefs());
       if (*pref_name_in == prefs::kRemoteAccessClientFirewallTraversal) {
         UpdateFirewallTraversalState();
       } else {
@@ -66,7 +70,9 @@ void FirewallTraversalTabHelper::Observe(int type,
 
 void FirewallTraversalTabHelper::UpdateFirewallTraversalState() {
   const char* pref_name = prefs::kRemoteAccessClientFirewallTraversal;
-  bool enabled = profile()->GetPrefs()->GetBoolean(pref_name);
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  bool enabled = profile->GetPrefs()->GetBoolean(pref_name);
 
   DictionaryValue value;
   value.SetBoolean(pref_name, enabled);

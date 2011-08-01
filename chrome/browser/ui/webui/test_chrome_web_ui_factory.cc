@@ -37,7 +37,9 @@ WebUI::TypeID TestChromeWebUIFactory::GetWebUIType(
 
 WebUI* TestChromeWebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
                                                  const GURL& url) const {
-  WebUIProvider* provider = GetWebUIProvider(tab_contents->profile(), url);
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  WebUIProvider* provider = GetWebUIProvider(profile, url);
   return provider ? provider->NewWebUI(tab_contents, url) :
       ChromeWebUIFactory::CreateWebUIForURL(tab_contents, url);
 }

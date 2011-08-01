@@ -74,20 +74,20 @@ LoginUI::LoginUI(TabContents* contents)
   AddMessageHandler(signin_screen_handler->Attach(this));
   signin_screen_handler->GetLocalizedStrings(localized_strings.get());
 
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   LoginUIHTMLSource* html_source =
       new LoginUIHTMLSource(localized_strings.release());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Load the theme URLs.
-  ThemeSource* theme = new ThemeSource(contents->profile());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Load the user-image URLs
   // Set up the chrome://userimage/ source.
   chromeos::UserImageSource* user_image_source =
       new chromeos::UserImageSource();
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      user_image_source);
+  profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
 }
 
 }  // namespace chromeos

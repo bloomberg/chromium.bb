@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"

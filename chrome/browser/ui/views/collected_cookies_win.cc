@@ -286,12 +286,12 @@ views::View* CollectedCookiesWin::CreateAllowedPane() {
 }
 
 views::View* CollectedCookiesWin::CreateBlockedPane() {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-          content_settings();
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
 
   HostContentSettingsMap* host_content_settings_map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
+      wrapper->profile()->GetHostContentSettingsMap();
 
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
@@ -483,8 +483,10 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
                                               ContentSetting setting) {
   CookieTreeOriginNode* origin_node =
       static_cast<CookieTreeOriginNode*>(tree_view->GetSelectedNode());
-  origin_node->CreateContentException(
-      tab_contents_->profile()->GetHostContentSettingsMap(), setting);
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents_->browser_context());
+  origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
+                                      setting);
   infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
   gfx::Rect bounds = GetWidget()->GetClientAreaScreenBounds();
   // NativeWidgetWin::GetBounds returns the bounds relative to the parent

@@ -252,7 +252,8 @@ ChooseMobileNetworkUI::ChooseMobileNetworkUI(TabContents* contents)
   ChooseMobileNetworkHTMLSource* html_source =
       new ChooseMobileNetworkHTMLSource();
   // Set up the "chrome://choose-mobile-network" source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 }  // namespace chromeos

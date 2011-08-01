@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/dom_view.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "views/focus/focus_manager.h"

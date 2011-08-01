@@ -433,7 +433,7 @@ void WebUIHandler::OnConfigFileFetched(const ConfigFile&
   }
 
   if (!download_manager_) {
-    download_manager_ = tab_contents_->profile()->GetDownloadManager();
+    download_manager_ = tab_contents_->browser_context()->GetDownloadManager();
     download_manager_->AddObserver(this);
   }
   if (!state_machine_->download_started()) {
@@ -668,5 +668,6 @@ ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
   AddMessageHandler((handler)->Attach(this));
   imageburner::UIHTMLSource* html_source = new imageburner::UIHTMLSource();
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

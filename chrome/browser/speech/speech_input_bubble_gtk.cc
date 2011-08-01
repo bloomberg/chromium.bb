@@ -5,6 +5,7 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -161,8 +162,9 @@ void SpeechInputBubbleGtk::Show() {
       kBubbleControlHorizontalSpacing, kBubbleControlHorizontalSpacing);
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
-      tab_contents()->profile());
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   GtkWidget* reference_widget = tab_contents()->GetNativeView();
   gfx::Rect container_rect;
   tab_contents()->GetContainerBounds(&container_rect);
@@ -174,7 +176,7 @@ void SpeechInputBubbleGtk::Show() {
       target_rect.y() > container_rect.height()) {
     // Target is not in screen view, so point to wrench.
     Browser* browser =
-        Browser::GetOrCreateTabbedBrowser(tab_contents()->profile());
+        Browser::GetOrCreateTabbedBrowser(profile);
     BrowserWindowGtk* browser_window =
         BrowserWindowGtk::GetBrowserWindowForNativeWindow(
             browser->window()->GetNativeHandle());

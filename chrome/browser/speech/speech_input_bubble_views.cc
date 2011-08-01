@@ -347,8 +347,9 @@ void SpeechInputBubbleImpl::Show() {
     gfx::Rect target_rect = GetInfoBubbleTarget(element_rect_);
     if (!container_rect.Contains(target_rect.x(), target_rect.y())) {
       // Target is not in screen view, so point to page icon in omnibox.
-      Browser* browser =
-          Browser::GetOrCreateTabbedBrowser(tab_contents()->profile());
+      Profile* profile =
+          Profile::FromBrowserContext(tab_contents()->browser_context());
+      Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
       BrowserView* browser_view =
           BrowserView::GetBrowserViewForNativeWindow(
               browser->window()->GetNativeHandle());

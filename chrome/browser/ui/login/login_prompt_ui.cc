@@ -239,10 +239,12 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
   LOG(INFO) << "BuildViewForPasswordManager";
 
   TabContents* tab_contents = GetTabContentsForLogin();
-  LoginHandlerSource::RegisterDataSource(tab_contents->profile());
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  LoginHandlerSource::RegisterDataSource(profile);
   delegate_ = new LoginHandlerHtmlDelegate(this, tab_contents, explanation);
   ConstrainedWindow* dialog = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-      tab_contents->profile(), delegate_, tab_contents);
+      profile, delegate_, tab_contents);
 
   SetModel(manager);
   SetDialog(dialog);

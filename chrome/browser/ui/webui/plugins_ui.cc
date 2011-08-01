@@ -305,11 +305,11 @@ PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
 
   // Set up the chrome://plugins/ source.
   bool enable_controls = true;
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
 #if !defined(OS_CHROMEOS)
-  enable_controls = contents->profile()->GetOriginalProfile()->
-      first_launched();
+  enable_controls = profile->GetOriginalProfile()->first_launched();
 #endif
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+  profile->GetChromeURLDataManager()->AddDataSource(
       CreatePluginsUIHTMLSource(enable_controls));
 }
 

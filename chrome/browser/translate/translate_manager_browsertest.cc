@@ -556,8 +556,9 @@ TEST_F(TranslateManagerTest, FetchLanguagesFromTranslateServer) {
   // To make sure we got the defaults and don't confuse them with the mocks.
   ASSERT_NE(default_supported_languages.size(), server_languages.size());
 
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(
-      contents()->profile()->GetPrefs());
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
+  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
 
   // Check that we still get the defaults until the URLFetch has completed.
   std::vector<std::string> current_supported_languages;
@@ -571,8 +572,7 @@ TEST_F(TranslateManagerTest, FetchLanguagesFromTranslateServer) {
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Now check that we got the appropriate set of languages from the server.
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(
-      contents()->profile()->GetPrefs());
+  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
   SimulateSupportedLanguagesURLFetch(true, server_languages);
   current_supported_languages.clear();
   TranslateManager::GetSupportedLanguages(&current_supported_languages);
@@ -586,8 +586,7 @@ TEST_F(TranslateManagerTest, FetchLanguagesFromTranslateServer) {
   }
 
   // Reset to original state.
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(
-      contents()->profile()->GetPrefs());
+  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
   SimulateSupportedLanguagesURLFetch(true, default_supported_languages);
 }
 
@@ -874,7 +873,8 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   browser_process->SetApplicationLocale("qbz");
 
   // Make sure that the accept language list only contains unsupported languages
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   prefs->SetString(prefs::kAcceptLanguages, "qbz");
 
   // Simulate navigating to a page in a language supported by the translate
@@ -895,7 +895,8 @@ TEST_F(TranslateManagerTest, TranslateAcceptLanguage) {
   browser_process->SetApplicationLocale("qbz");
 
   // Set Qbz and French as the only accepted languages
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   prefs->SetString(prefs::kAcceptLanguages, "qbz,fr");
 
   // Go to a German page
@@ -908,7 +909,8 @@ TEST_F(TranslateManagerTest, TranslateAcceptLanguage) {
 // Tests that the translate enabled preference is honored.
 TEST_F(TranslateManagerTest, TranslateEnabledPref) {
   // Make sure the pref allows translate.
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kEnableTranslate, true);
 
   // Simulate navigating to a page and getting its language.
@@ -944,7 +946,8 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 
   // Select never translate this language.
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist,
@@ -990,7 +993,8 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 
   // Select never translate this site.
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist,
@@ -1028,7 +1032,8 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
 // Tests the "Always translate this language" pref.
 TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   // Select always translate French to English.
-  PrefService* prefs = contents()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
   registrar.Add(TranslatePrefs::kPrefTranslateWhitelists,
@@ -1064,7 +1069,7 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   // Let's switch to incognito mode, it should not be autotranslated in that
   // case either.
   TestingProfile* test_profile =
-      static_cast<TestingProfile*>(contents()->profile());
+      static_cast<TestingProfile*>(contents()->browser_context());
   test_profile->set_incognito(true);
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
@@ -1087,7 +1092,8 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
 TEST_F(TranslateManagerTest, ContextMenu) {
   // Blacklist www.google.fr and French for translation.
   GURL url("http://www.google.fr");
-  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  TranslatePrefs translate_prefs(profile->GetPrefs());
   translate_prefs.BlacklistLanguage("fr");
   translate_prefs.BlacklistSite(url.host());
   EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
@@ -1194,7 +1200,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
 // translate" infobar when the translation is accepted/declined 3 times,
 // only when not in incognito mode.
 TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
-  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
+  TranslatePrefs translate_prefs(profile->GetPrefs());
   translate_prefs.ResetTranslationAcceptedCount("fr");
   translate_prefs.ResetTranslationDeniedCount("fr");
   translate_prefs.ResetTranslationAcceptedCount("de");
@@ -1204,7 +1211,7 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   // shown in that case, then 4 times in normal mode.
   TranslateInfoBarDelegate* infobar;
   TestingProfile* test_profile =
-      static_cast<TestingProfile*>(contents()->profile());
+      static_cast<TestingProfile*>(contents()->browser_context());
   test_profile->set_incognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<

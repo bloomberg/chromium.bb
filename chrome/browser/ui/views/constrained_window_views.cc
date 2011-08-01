@@ -204,7 +204,7 @@ class ConstrainedWindowFrameView
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
   SkColor GetTitleColor() const {
-    return container_->owner()->profile()->IsOffTheRecord()
+    return container_->owner()->browser_context()->IsOffTheRecord()
 #if defined(OS_WIN)
             || !views::NativeWidgetWin::IsAeroGlassEnabled()
 #endif

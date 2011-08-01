@@ -224,22 +224,21 @@ OobeUI::OobeUI(TabContents* contents)
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
 
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   // Set up the chrome://theme/ source, for Chrome logo.
-  ThemeSource* theme = new ThemeSource(contents->profile());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the chrome://terms/ data source, for EULA content.
-  InitializeAboutDataSource(chrome::kChromeUITermsHost, contents->profile());
+  InitializeAboutDataSource(chrome::kChromeUITermsHost, profile);
 
   // Set up the chrome://oobe/ source.
-  OobeUIHTMLSource* html_source =
-      new OobeUIHTMLSource(localized_strings);
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  OobeUIHTMLSource* html_source = new OobeUIHTMLSource(localized_strings);
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://userimage/ source.
   UserImageSource* user_image_source = new UserImageSource();
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      user_image_source);
+  profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
 }
 
 void OobeUI::ShowScreen(WizardScreen* screen) {

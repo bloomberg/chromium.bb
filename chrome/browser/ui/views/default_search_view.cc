@@ -187,7 +187,9 @@ DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
       proposed_provider_button_(NULL),
       proposed_turl_(proposed_default_turl),
       template_url_service_(template_url_service) {
-  PrefService* prefs = tab_contents->profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   SetupControls(prefs);
 
   // Show the dialog.

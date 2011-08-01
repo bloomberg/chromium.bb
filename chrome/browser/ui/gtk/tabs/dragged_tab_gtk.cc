@@ -52,7 +52,7 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
                              bool mini)
     : data_source_(datasource),
       renderer_(new TabRendererGtk(ThemeServiceFactory::GetForProfile(
-          datasource->profile()))),
+          Profile::FromBrowserContext(datasource->browser_context())))),
       attached_(false),
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),

@@ -305,7 +305,7 @@ void BurnManager::FetchConfigFile(TabContents* tab_contents,
   config_file_requested_ = true;
 
   config_file_path_ = GetImageDir().Append(kConfigFileName);
-  download_manager_ = tab_contents->profile()->GetDownloadManager();
+  download_manager_ = tab_contents->browser_context()->GetDownloadManager();
   download_manager_->AddObserver(this);
   downloader()->AddListener(this, config_file_url_);
   downloader()->DownloadFile(config_file_url_, config_file_path_, tab_contents);
@@ -429,7 +429,7 @@ void Downloader::OnFileStreamCreatedOnUIThread(const GURL& url,
 
   if (created_file_stream) {
     DownloadManager* download_manager =
-        tab_contents->profile()->GetDownloadManager();
+        tab_contents->browser_context()->GetDownloadManager();
     DownloadSaveInfo save_info;
     save_info.file_path = file_path;
     save_info.file_stream = linked_ptr<net::FileStream>(created_file_stream);

@@ -439,7 +439,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->url = contents->GetURL();
   data->loading = contents->IsLoading();
   data->crashed_status = contents->crashed_status();
-  data->incognito = contents->profile()->IsOffTheRecord();
+  data->incognito = contents->browser_context()->IsOffTheRecord();
   data->show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);

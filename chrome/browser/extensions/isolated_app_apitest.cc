@@ -31,7 +31,8 @@ class IsolatedAppApiTest : public ExtensionApiTest {
 
   const Extension* GetInstalledApp(TabContents* contents) {
     const Extension* installed_app = NULL;
-    ExtensionService* service = contents->profile()->GetExtensionService();
+    Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+    ExtensionService* service = profile->GetExtensionService();
     if (service) {
       installed_app = service->GetInstalledAppForRenderer(
           contents->render_view_host()->process()->id());

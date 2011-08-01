@@ -317,11 +317,12 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
 
 KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
     : HtmlDialogUI(contents) {
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   KeyboardOverlayHandler* handler =
-      new KeyboardOverlayHandler(contents->profile());
+      new KeyboardOverlayHandler(profile);
   AddMessageHandler((handler)->Attach(this));
   KeyboardOverlayUIHTMLSource* html_source = new KeyboardOverlayUIHTMLSource();
 
   // Set up the chrome://keyboardoverlay/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }

@@ -238,8 +238,10 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
 }
 
 GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
   HostContentSettingsMap* host_content_settings_map =
-      tab_contents_->profile()->GetHostContentSettingsMap();
+      wrapper->profile()->GetHostContentSettingsMap();
 
   GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
@@ -262,9 +264,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
                                       GTK_SHADOW_ETCHED_IN);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-          content_settings();
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
 
   blocked_cookies_tree_model_.reset(
       content_settings->GetBlockedCookiesTreeModel());
@@ -459,8 +459,10 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
       if (!last_domain_name.empty())
         multiple_domains_added = true;
       last_domain_name = origin_node->GetTitle();
+      Profile* profile =
+          Profile::FromBrowserContext(tab_contents_->browser_context());
       origin_node->CreateContentException(
-          tab_contents_->profile()->GetHostContentSettingsMap(), setting);
+          profile->GetHostContentSettingsMap(), setting);
     }
   }
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);

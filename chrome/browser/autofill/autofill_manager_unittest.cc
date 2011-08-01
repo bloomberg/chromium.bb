@@ -500,8 +500,6 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
                                                     test_personal_data_.get()));
   }
 
-  Profile* profile() { return contents()->profile(); }
-
   void GetAutofillSuggestions(int query_id,
                               const webkit_glue::FormData& form,
                               const webkit_glue::FormField& field) {
