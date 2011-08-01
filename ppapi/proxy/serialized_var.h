@@ -103,6 +103,11 @@ class SerializedVar {
     const std::string& GetString() const;
     std::string* GetStringPtr();
 
+    // For the SerializedVarTestConstructor, this writes the Var value as if
+    // it was just received off the wire, without any serialization rules.
+    void ForceSetVarValueForTest(PP_Var value);
+    void ForceSetStringValueForTest(const std::string& str);
+
     void WriteToMessage(IPC::Message* m) const;
     bool ReadFromMessage(const IPC::Message* m, void** iter);
 
@@ -425,7 +430,8 @@ class SerializedVarVectorOutParam {
 };
 
 // For tests that just want to construct a SerializedVar for giving it to one
-// of the other classes.
+// of the other classes. This emulates a SerializedVar just received over the
+// wire from another process.
 class SerializedVarTestConstructor : public SerializedVar {
  public:
   // For POD-types and objects.
