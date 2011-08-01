@@ -405,6 +405,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
     web_prefs.force_compositing_mode =
         command_line.HasSwitch(switches::kForceCompositingMode);
+    web_prefs.allow_webui_compositing =
+        command_line.HasSwitch(switches::kAllowWebUICompositing);
     web_prefs.accelerated_2d_canvas_enabled =
         GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);

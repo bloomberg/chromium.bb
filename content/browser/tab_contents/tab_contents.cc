@@ -1706,10 +1706,11 @@ WebPreferences TabContents::GetWebkitPrefs() {
           render_view_host()->process()->browser_context(), false);
 
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
-  // chrome-devtools: pages.
-  if (GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
+  // chrome-devtools: pages (unless it's specifically allowed).
+  if ((GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
       GetURL().SchemeIs(chrome::kChromeUIScheme) ||
-      GetURL().SchemeIs(chrome::kAboutScheme)) {
+      GetURL().SchemeIs(chrome::kAboutScheme)) &&
+      !web_prefs.allow_webui_compositing) {
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
   }

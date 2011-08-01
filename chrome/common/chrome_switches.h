@@ -29,6 +29,7 @@ extern const char kAllowOutdatedPlugins[];
 extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowScriptingGallery[];
 extern const char kAllowWebSocketProxy[];
+extern const char kAllowWebUICompositing[];
 extern const char kAllowWebUIOobe[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAlwaysEnableDevTools[];

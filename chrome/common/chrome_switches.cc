@@ -37,6 +37,9 @@ const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 // websocket proxy.
 const char kAllowWebSocketProxy[]           = "allow-websocket-proxy";
 
+// Allow compositing on chrome:// pages.
+const char kAllowWebUICompositing[]         = "allow-webui-compositing";
+
 // Allows WebUI based OOBE. Note, WebUI will be used iff kWebUILogin is also
 // true.
 const char kAllowWebUIOobe[]                = "allow-webui-oobe";
