@@ -17,11 +17,11 @@ if [ "x${OSTYPE}" = "xcygwin" ]; then
   export PATH=${PATH//:\/usr*([^:])/}
   export PATH=${PATH/#*([^:])cygwin*([^:])/}
   export PATH=${PATH//:*([^:])cygwin*([^:])/}
-  "${SCRIPT_DIR_ABS}/scons.bat" $*
+  "${SCRIPT_DIR_ABS}/scons.bat" "$@"
   exit
 fi
 
 readonly BASE_SCRIPT="${SCRIPT_DIR_ABS}/scons.py"
 
-python "${BASE_SCRIPT}" $*
+python "${BASE_SCRIPT}" "$@"
 
