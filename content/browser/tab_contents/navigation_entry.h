@@ -324,7 +324,7 @@ class NavigationEntry {
   // the page if it is available or the URL. |languages| is the list of
   // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
   // URL formatting isn't needed (e.g., unit tests).
-  const string16& GetTitleForDisplay(const std::string& languages);
+  const string16& GetTitleForDisplay(const std::string& languages) const;
 
   // Returns true if the current tab is in view source mode. This will be false
   // if there is no navigation.
@@ -421,7 +421,7 @@ class NavigationEntry {
   // us from having to do URL formatting on the URL evey time the title is
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
-  string16 cached_display_title_;
+  mutable string16 cached_display_title_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

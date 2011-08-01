@@ -72,7 +72,7 @@ void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
 }
 
 const string16& NavigationEntry::GetTitleForDisplay(
-    const std::string& languages) {
+    const std::string& languages) const {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
   if (!title_.empty())

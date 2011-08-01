@@ -36,7 +36,7 @@ void HistoryTabHelper::UpdateHistoryForNavigation(
 void HistoryTabHelper::UpdateHistoryPageTitle(const NavigationEntry& entry) {
   HistoryService* hs = GetHistoryService();
   if (hs)
-    hs->SetPageTitle(entry.virtual_url(), entry.title());
+    hs->SetPageTitle(entry.virtual_url(), entry.GetTitleForDisplay(""));
 }
 
 scoped_refptr<history::HistoryAddPageArgs>
