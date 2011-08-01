@@ -56,12 +56,25 @@ using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 using WebKit::WebMediaPlayerAction;
-using WebKit::WebTextDirection;
 
 namespace {
 
 // Delay to wait on closing the tab for a beforeunload/unload handler to fire.
 const int kUnloadTimeoutMS = 1000;
+
+// Translate a WebKit text direction into a base::i18n one.
+base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
+    WebKit::WebTextDirection dir) {
+  switch (dir) {
+    case WebKit::WebTextDirectionLeftToRight:
+      return base::i18n::LEFT_TO_RIGHT;
+    case WebKit::WebTextDirectionRightToLeft:
+      return base::i18n::LEFT_TO_RIGHT;
+    default:
+      NOTREACHED();
+      return base::i18n::UNKNOWN_DIRECTION;
+  }
+}
 
 }  // namespace
 
@@ -882,13 +895,18 @@ void RenderViewHost::OnMsgUpdateState(int32 page_id,
   delegate_->UpdateState(this, page_id, state);
 }
 
-void RenderViewHost::OnMsgUpdateTitle(int32 page_id,
-                                      const string16& title) {
+void RenderViewHost::OnMsgUpdateTitle(
+    int32 page_id,
+    const string16& title,
+    WebKit::WebTextDirection title_direction) {
   if (title.length() > content::kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;
   }
-  delegate_->UpdateTitle(this, page_id, title);
+
+  delegate_->UpdateTitle(this, page_id, title,
+                         WebTextDirectionToChromeTextDirection(
+                             title_direction));
 }
 
 void RenderViewHost::OnMsgUpdateEncoding(const std::string& encoding_name) {

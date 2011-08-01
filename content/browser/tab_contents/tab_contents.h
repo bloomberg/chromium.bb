@@ -644,7 +644,8 @@ class TabContents : public PageNavigator,
                            const std::string& state) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title) OVERRIDE;
+                           const string16& title,
+                           base::i18n::TextDirection title_direction) OVERRIDE;
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
                               const std::string& encoding) OVERRIDE;
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;

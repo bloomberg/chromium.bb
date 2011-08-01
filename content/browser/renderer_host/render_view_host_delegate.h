@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/string16.h"
@@ -238,7 +239,8 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title) {}
+                           const string16& title,
+                           base::i18n::TextDirection title_direction) {}
 
   // The page's encoding was changed and should be updated.
   virtual void UpdateEncoding(RenderViewHost* render_view_host,

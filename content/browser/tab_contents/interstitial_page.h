@@ -126,7 +126,8 @@ class InterstitialPage : public NotificationObserver,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title) OVERRIDE;
+                           const string16& title,
+                           base::i18n::TextDirection title_direction) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
 

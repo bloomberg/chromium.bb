@@ -375,7 +375,8 @@ void InterstitialPage::DidNavigate(
 
 void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
                                    int32 page_id,
-                                   const string16& title) {
+                                   const string16& title,
+                                   base::i18n::TextDirection title_direction) {
   DCHECK(render_view_host == render_view_host_);
   NavigationEntry* entry = tab_->controller().GetActiveEntry();
   if (!entry) {
@@ -397,6 +398,8 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
     original_tab_title_ = entry->title();
     should_revert_tab_title_ = true;
   }
+  // TODO(evan): make use of title_direction.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
   entry->set_title(title);
   tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }

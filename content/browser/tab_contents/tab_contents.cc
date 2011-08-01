@@ -1494,7 +1494,8 @@ void TabContents::UpdateState(RenderViewHost* rvh,
 
 void TabContents::UpdateTitle(RenderViewHost* rvh,
                               int32 page_id,
-                              const string16& title) {
+                              const string16& title,
+                              base::i18n::TextDirection title_direction) {
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
   SetNotWaitingForResponse();
@@ -1503,6 +1504,8 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   NavigationEntry* entry = controller_.GetEntryWithPageID(rvh->site_instance(),
                                                           page_id);
 
+  // TODO(evan): make use of title_direction.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
   if (!UpdateTitleForEntry(entry, title))
     return;
 
