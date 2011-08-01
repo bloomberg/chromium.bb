@@ -93,6 +93,21 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                                                           keyword,
                                                           value)
 
+  def do_POST(self):
+    # Backwards compatible - treat result as tuple without named fields.
+    _, _, path, _, query, _ = urlparse.urlparse(self.path)
+
+    self.server.listener.Log('POST %s (%s)' % (self.path, path))
+    if path == '/echo':
+      self.send_response(200)
+      self.end_headers()
+      data = self.rfile.read(int(self.headers.getheader('content-length')))
+      self.wfile.write(data)
+    else:
+      self.send_error(404, 'File not found')
+
+    self.server.ResetTimeout()
+
   def do_GET(self):
     # Backwards compatible - treat result as tuple without named fields.
     _, _, path, _, query, _ = urlparse.urlparse(self.path)

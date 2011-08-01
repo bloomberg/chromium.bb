@@ -14,6 +14,7 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
 #include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_ref.h"
 #include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_graphics_2d.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
@@ -45,6 +46,11 @@ const PPB_Core* PPBCore() {
 const PPB_FileIO* PPBFileIO() {
   return reinterpret_cast<const PPB_FileIO*>(
       GetBrowserInterface(PPB_FILEIO_INTERFACE));
+}
+
+const PPB_FileRef* PPBFileRef() {
+  return reinterpret_cast<const PPB_FileRef*>(
+      GetBrowserInterface(PPB_FILEREF_INTERFACE));
 }
 
 const PPB_FileSystem* PPBFileSystem() {

@@ -5,13 +5,7 @@
 function setupTests(tester, plugin) {
   function addTest(test_name) {
     tester.addAsyncTest('PPB_URLRequestInfo::' + test_name, function(test) {
-      var messageListener = test.wrap(function(message) {
-        plugin.removeEventListener('message', messageListener, false);
-        test.assertEqual(message.data, test_name + ':PASSED');
-        test.pass();
-      });
-
-      plugin.addEventListener('message', messageListener, false);
+      test.expectMessageSequence(plugin, [test_name + ':PASSED']);
       plugin.postMessage(test_name);
     });
   }
@@ -19,5 +13,8 @@ function setupTests(tester, plugin) {
   addTest("TestCreate");
   addTest("TestIsURLRequestInfo");
   addTest("TestSetProperty");
+  addTest("TestAppendDataToBody");
+  // TODO(elijahtaylor): enable when crbug.com/90878 is fixed.
+  //addTest("TestAppendFileToBody");
   addTest("TestStress");
 }

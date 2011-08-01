@@ -16,6 +16,7 @@
 struct PPB_Context3D_Dev;
 struct PPB_Core;
 struct PPB_FileIO;
+struct PPB_FileRef;
 struct PPB_FileSystem;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
@@ -44,6 +45,9 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 //
 
 const PPB_Core* PPBCore();
+const PPB_FileIO* PPBFileIO();
+const PPB_FileRef* PPBFileRef();
+const PPB_FileSystem* PPBFileSystem();
 const PPB_Graphics2D* PPBGraphics2D();
 const PPB_ImageData* PPBImageData();
 const PPB_InputEvent* PPBInputEvent();
@@ -63,8 +67,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 //
 
 const PPB_Context3D_Dev* PPBContext3DDev();
-const PPB_FileIO* PPBFileIO();
-const PPB_FileSystem* PPBFileSystem();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Surface3D_Dev* PPBSurface3DDev();
