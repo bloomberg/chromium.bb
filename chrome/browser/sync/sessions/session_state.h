@@ -241,6 +241,7 @@ class UpdateProgress {
   int VerifiedUpdatesSize() const { return verified_updates_.size(); }
   bool HasVerifiedUpdates() const { return !verified_updates_.empty(); }
   bool HasAppliedUpdates() const { return !applied_updates_.empty(); }
+  void ClearVerifiedUpdates() { verified_updates_.clear(); }
 
   // Count the number of successful update applications that have happend this
   // cycle. Note that if an item is successfully applied twice, it will be
