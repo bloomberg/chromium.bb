@@ -207,7 +207,7 @@ function returnExtensionsData(extensionsData){
 /**
  * Tell the C++ ExtensionDOMHandler to inspect the page detailed in |viewData|.
  */
-function handleInspectMessage() {
+function handleInspectMessage(event) {
   // TODO(aa): This is ghetto, but WebUIBindings doesn't support sending
   // anything other than arrays of strings, and this is all going to get
   // replaced with V8 extensions soon anyway.
@@ -215,32 +215,32 @@ function handleInspectMessage() {
     String(this.extensionView.renderProcessId),
     String(this.extensionView.renderViewId)
   ]);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles a 'reload' link getting clicked.
  */
-function handleReloadExtension() {
+function handleReloadExtension(event) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
   chrome.send('reload', [this.extensionId]);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles a 'disable' link getting clicked.
  */
-function handleDisableExtension() {
+function handleDisableExtension(event) {
   sendEnableExtension(this, false);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles an 'enable' link getting clicked.
  */
-function handleEnableExtension() {
+function handleEnableExtension(event) {
   sendEnableExtension(this, true);
-  return false;
+  event.preventDefault();
 }
 
 /**
@@ -255,7 +255,7 @@ function sendEnableExtension(node, enable) {
 /**
  * Handles the 'enableIncognito' checkbox getting changed.
  */
-function handleToggleExtensionIncognito() {
+function handleToggleExtensionIncognito(event) {
   var warning = this;
 
   while (warning.className != "extension")
@@ -277,39 +277,39 @@ function handleToggleExtensionIncognito() {
   }
 
   chrome.send('enableIncognito', [this.extensionId, String(this.checked)]);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles the 'allowFileAccess' checkbox getting changed.
  */
-function handleToggleAllowFileAccess() {
+function handleToggleAllowFileAccess(event) {
   chrome.send('allowFileAccess', [this.extensionId, String(this.checked)]);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles an 'uninstall' link getting clicked.
  */
-function handleUninstallExtension() {
+function handleUninstallExtension(event) {
   chrome.send('uninstall', [this.extensionId]);
-  return false;
+  event.preventDefault();
 }
 
 /**
  * Handles an 'options' link getting clicked.
  */
-function handleOptions() {
+function handleOptions(event) {
   chrome.send('options', [this.extensionId]);
-  return false;
+  event.preventDefault();
 }
 
 /**
 * Handles a 'show button' link getting clicked.
 */
-function handleShowButton() {
+function handleShowButton(event) {
   chrome.send('showButton', [this.extensionId]);
-  return false;
+  event.preventDefault();
 }
 
 /**
