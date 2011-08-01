@@ -370,16 +370,16 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
                            print_cmd=False)
 
-    archive_tarball = os.path.join(buildroot, 'test_results.tgz')
-    if os.path.exists(archive_tarball): os.remove(archive_tarball)
+    test_tarball = os.path.join(buildroot, 'test_results.tgz')
+    if os.path.exists(test_tarball): os.remove(test_tarball)
     cros_lib.OldRunCommand(['tar',
                             'czf',
-                            archive_tarball,
+                            test_tarball,
                             '--directory=%s' % results_path,
                             '.'])
     shutil.rmtree(results_path)
 
-    return archive_tarball
+    return test_tarball
 
   except Exception, e:
     cros_lib.Warning('========================================================')
@@ -388,28 +388,25 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.Warning('========================================================')
 
 
-def UploadTestTarball(archive_tarball, local_archive_path, upload_url, debug):
+def UploadTestTarball(test_tarball, local_archive_dir, upload_url, debug):
   """Uploads the test results tarball.
 
   Arguments:
-    archive_tarball: Path to test tarball.
+    test_tarball: Path to test tarball.
     upload_url: Google Storage location for test tarball.
-    local_archive_path: Local path to archive tarball.
+    local_archive_dir: Local directory for archive tarball.
     debug: Whether we're in debug mode.
   """
-  if local_archive_path:
-    try:
-      # Files created in our archive dir should be publicly accessible.
-      old_umask = os.umask(022)
-      shutil.copy(archive_tarball, local_archive_path)
-    finally:
-      os.umask(old_umask)
+  if local_archive_dir:
+    archived_tarball = os.path.join(local_archive_dir, 'test_results.tgz')
+    shutil.copy(test_tarball, archived_tarball)
+    os.chmod(archived_tarball, 0644)
 
   if upload_url and not debug:
     tarball_url = '%s/%s' % (upload_url, 'test_results.tgz')
     cros_lib.OldRunCommand([_GSUTIL_PATH,
                             'cp',
-                            archive_tarball,
+                            test_tarball,
                             tarball_url])
     cros_lib.OldRunCommand([_GSUTIL_PATH,
                             'setacl',

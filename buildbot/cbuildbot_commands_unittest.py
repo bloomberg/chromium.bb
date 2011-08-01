@@ -55,7 +55,7 @@ class CBuildBotTest(mox.MoxTestBase):
     # Set vars for call.
     self.mox.StubOutWithMock(shutil, 'rmtree')
     buildroot = '/fake_dir'
-    archive_tarball = os.path.join(buildroot, 'test_results.tgz')
+    test_tarball = os.path.join(buildroot, 'test_results.tgz')
     test_results_dir = 'fake_results_dir'
 
     # Convenience variables to make archive easier to understand.
@@ -65,7 +65,7 @@ class CBuildBotTest(mox.MoxTestBase):
                            print_cmd=False)
     cros_lib.OldRunCommand(['tar',
                             'czf',
-                            archive_tarball,
+                            test_tarball,
                             '--directory=%s' % path_to_results,
                             '.'])
     shutil.rmtree(path_to_results)
