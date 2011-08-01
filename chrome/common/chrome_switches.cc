@@ -472,10 +472,6 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // Enables TLS origin bound certificate extension.
 const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
 
-// This applies only when the process type is "service". Enables the
-// Chromoting Host Process within the service process.
-const char kEnableRemoting[]                = "enable-remoting";
-
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";

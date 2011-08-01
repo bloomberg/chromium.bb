@@ -97,13 +97,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableVerticalTabs)
   },
   {
-    "remoting",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_REMOTING_NAME,
-    IDS_FLAGS_REMOTING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableRemoting)
-  },
-  {
     "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,

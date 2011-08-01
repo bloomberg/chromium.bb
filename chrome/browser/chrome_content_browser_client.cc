@@ -340,7 +340,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableInBrowserThumbnailing,
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
-      switches::kEnableRemoting,
       switches::kEnableResourceContentSettings,
       switches::kEnableSearchProviderApiV2,
       switches::kEnableWatchdog,
@@ -378,7 +377,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kZygoteProcess) {
     static const char* const kSwitchNames[] = {
-      switches::kEnableRemoting,
       switches::kUserDataDir,  // Make logs go to the right file.
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kPpapiFlashInProcess,

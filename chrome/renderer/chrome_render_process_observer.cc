@@ -363,20 +363,14 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
   }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
   // Remoting requires NSS to function properly.
-  if (!command_line.HasSwitch(switches::kSingleProcess) &&
-      command_line.HasSwitch(switches::kEnableRemoting)) {
-#if defined(USE_NSS)
+  if (!command_line.HasSwitch(switches::kSingleProcess)) {
     // We are going to fork to engage the sandbox and we have not loaded
     // any security modules so it is safe to disable the fork check in NSS.
     crypto::DisableNSSForkCheck();
     crypto::ForceNSSNoDBInit();
     crypto::EnsureNSSInit();
-#else
-    // TODO(bulach): implement openssl support.
-    NOTREACHED() << "Remoting is not supported for openssl";
-#endif
   }
 #elif defined(OS_WIN)
   // crypt32.dll is used to decode X509 certificates for Chromoting.

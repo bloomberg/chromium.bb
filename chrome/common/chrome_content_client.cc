@@ -120,31 +120,28 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
     }
   }
 
-  // The Remoting Viewer plugin is built-in, but behind a flag for now.
+  // The Remoting Viewer plugin is built-in.
 #if defined(ENABLE_REMOTING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableRemoting)) {
-    PepperPluginInfo info;
-    info.is_internal = true;
-    info.name = kRemotingViewerPluginName;
-    info.path = FilePath(kRemotingViewerPluginPath);
-    webkit::npapi::WebPluginMimeType remoting_mime_type(
-        kRemotingViewerPluginMimeType,
-        std::string(),
-        std::string());
-    info.mime_types.push_back(remoting_mime_type);
-    webkit::npapi::WebPluginMimeType old_remoting_mime_type(
-        kRemotingViewerPluginOldMimeType,
-        std::string(),
-        std::string());
-    info.mime_types.push_back(old_remoting_mime_type);
-    info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
-    info.internal_entry_points.initialize_module =
-        remoting::PPP_InitializeModule;
-    info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+  PepperPluginInfo info;
+  info.is_internal = true;
+  info.name = kRemotingViewerPluginName;
+  info.path = FilePath(kRemotingViewerPluginPath);
+  webkit::npapi::WebPluginMimeType remoting_mime_type(
+      kRemotingViewerPluginMimeType,
+      std::string(),
+      std::string());
+  info.mime_types.push_back(remoting_mime_type);
+  webkit::npapi::WebPluginMimeType old_remoting_mime_type(
+      kRemotingViewerPluginOldMimeType,
+      std::string(),
+      std::string());
+  info.mime_types.push_back(old_remoting_mime_type);
+  info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
+  info.internal_entry_points.initialize_module =
+      remoting::PPP_InitializeModule;
+  info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
 
-    plugins->push_back(info);
-  }
+  plugins->push_back(info);
 #endif
 }
 
