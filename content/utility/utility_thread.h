@@ -10,12 +10,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "content/common/child_thread.h"
 
 class IndexedDBKey;
 class SerializedScriptValue;
 
+namespace webkit_glue {
+class WebKitClientImpl;
+}
 
 // This class represents the background thread where the utility task runs.
 class UtilityThread : public ChildThread {
@@ -33,7 +37,7 @@ class UtilityThread : public ChildThread {
 
  private:
   // ChildThread implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // IPC message handlers.
   void OnIDBKeysFromValuesAndKeyPath(
@@ -48,6 +52,8 @@ class UtilityThread : public ChildThread {
 
   // True when we're running in batch mode.
   bool batch_mode_;
+
+  scoped_ptr<webkit_glue::WebKitClientImpl> webkit_client_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };

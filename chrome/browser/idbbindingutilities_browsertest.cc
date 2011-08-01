@@ -13,14 +13,34 @@
 #include "content/common/utility_messages.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/web_io_operators.h"
+#include "webkit/glue/webkitclient_impl.h"
 
 using WebKit::WebSerializedScriptValue;
 
+// Enables calling WebKit::shutdown no matter where a "return" happens.
+class ScopedShutdownWebKit {
+ public:
+  ScopedShutdownWebKit() {
+  }
+
+  ~ScopedShutdownWebKit() {
+    WebKit::shutdown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWebKit);
+};
+
 // Sanity test, check the function call directly outside the sandbox.
 TEST(IDBKeyPathWithoutSandbox, Value) {
+  webkit_glue::WebKitClientImpl webkit_client;
+  WebKit::initialize(&webkit_client);
+  ScopedShutdownWebKit shutdown_webkit;
+
   char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};
   std::vector<WebSerializedScriptValue> serialized_values;
   serialized_values.push_back(

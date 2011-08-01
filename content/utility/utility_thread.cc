@@ -11,8 +11,10 @@
 #include "content/common/utility_messages.h"
 #include "content/utility/content_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
+#include "webkit/glue/webkitclient_impl.h"
 
 namespace {
 
@@ -25,14 +27,16 @@ void ConvertVector(const SRC& src, DEST* dest) {
 
 }  // namespace
 
-
 UtilityThread::UtilityThread()
     : batch_mode_(false) {
   ChildProcess::current()->AddRefProcess();
+  webkit_client_.reset(new webkit_glue::WebKitClientImpl);
+  WebKit::initialize(webkit_client_.get());
   content::GetContentClient()->utility()->UtilityThreadStarted();
 }
 
 UtilityThread::~UtilityThread() {
+  WebKit::shutdown();
 }
 
 bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
