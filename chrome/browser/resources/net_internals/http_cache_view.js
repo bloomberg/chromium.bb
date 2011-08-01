@@ -4,38 +4,54 @@
 
 /**
  * This view displays information on the HTTP cache.
- *  @constructor
  */
-function HttpCacheView() {
-  const mainBoxId = 'http-cache-view-tab-content';
-  const statsDivId = 'http-cache-view-cache-stats';
 
-  DivView.call(this, mainBoxId);
+var HttpCacheView = (function() {
+  // IDs for special HTML elements in http_cache_view.html
+  const MAIN_BOX_ID = 'http-cache-view-tab-content';
+  const STATS_DIV_ID = 'http-cache-view-cache-stats';
 
-  this.statsDiv_ = $(statsDivId);
+  // We inherit from DivView.
+  var superClass = DivView;
 
-  // Register to receive http cache info.
-  g_browser.addHttpCacheInfoObserver(this);
-}
+  /**
+   *  @constructor
+   */
+  function HttpCacheView() {
+    // Call superclass's constructor.
+    superClass.call(this, MAIN_BOX_ID);
 
-inherits(HttpCacheView, DivView);
+    this.statsDiv_ = $(STATS_DIV_ID);
 
-HttpCacheView.prototype.onLoadLogFinish = function(data) {
-  return this.onHttpCacheInfoChanged(data.httpCacheInfo);
-};
-
-HttpCacheView.prototype.onHttpCacheInfoChanged = function(info) {
-  this.statsDiv_.innerHTML = '';
-
-  if (!info)
-    return false;
-
-  // Print the statistics.
-  var statsUl = addNode(this.statsDiv_, 'ul');
-  for (var statName in info.stats) {
-    var li = addNode(statsUl, 'li');
-    addTextNode(li, statName + ': ' + info.stats[statName]);
+    // Register to receive http cache info.
+    g_browser.addHttpCacheInfoObserver(this);
   }
-  return true;
-};
 
+  cr.addSingletonGetter(HttpCacheView);
+
+  HttpCacheView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
+
+    onLoadLogFinish: function(data) {
+      return this.onHttpCacheInfoChanged(data.httpCacheInfo);
+    },
+
+    onHttpCacheInfoChanged: function(info) {
+      this.statsDiv_.innerHTML = '';
+
+      if (!info)
+        return false;
+
+      // Print the statistics.
+      var statsUl = addNode(this.statsDiv_, 'ul');
+      for (var statName in info.stats) {
+        var li = addNode(statsUl, 'li');
+        addTextNode(li, statName + ': ' + info.stats[statName]);
+      }
+      return true;
+    }
+  };
+
+  return HttpCacheView;
+})();
