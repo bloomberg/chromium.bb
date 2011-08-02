@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 #include <Carbon/Carbon.h>
+
+#include <cmath>
 #include <numeric>
 
 #include "base/command_line.h"
@@ -1774,32 +1776,43 @@ typedef NSInteger NSWindowAnimationBehavior;
       twoFingerGestureTouches_.release());
 
   // Construct a vector of magnitudes. Since gesture events do not have the
-  // |-deltaX| property set, this creates the X magnitude for each finger.
-  std::vector<CGFloat> magnitudes;
+  // |-deltaX| property set, this creates the X/Y magnitudes for each finger.
+  std::vector<CGFloat> deltasX;
+  std::vector<CGFloat> deltasY;
   for (NSTouch* touch in touches) {
     NSTouch* beginTouch = [beginTouches objectForKey:touch.identity];
     if (!beginTouch)
       continue;
 
-    // The |normalizedPosition| is scaled from (0,1).
-    magnitudes.push_back(touch.normalizedPosition.x -
-        beginTouch.normalizedPosition.x);
+    // The |normalizedPosition| is scaled from (0, 1).
+    NSPoint beginPoint = beginTouch.normalizedPosition;
+    NSPoint endPoint = touch.normalizedPosition;
+
+    deltasX.push_back(endPoint.x - beginPoint.x);
+    deltasY.push_back(endPoint.y - beginPoint.y);
   }
 
   // Need at least two points to gesture.
-  if (magnitudes.size() < 2)
+  if (deltasX.size() < 2)
     return;
 
-  CGFloat sum = std::accumulate(magnitudes.begin(), magnitudes.end(), 0.0f);
+  CGFloat sumX = std::accumulate(deltasX.begin(), deltasX.end(), 0.0f);
+  CGFloat sumY = std::accumulate(deltasY.begin(), deltasY.end(), 0.0f);
+
+  // If the Y magnitude is greater than the X, then don't treat this as a
+  // gesture. It was likely a vertical scroll instead.
+  if (std::abs(sumY) > std::abs(sumX))
+    return;
+
   // On Lion, the user can choose to use a "natural" scroll direction with
   // inverted axes.
   if (gesture_utils::IsScrollDirectionInverted())
-    sum *= -1;
+    sumX *= -1;
 
   int command_id = 0;
-  if (sum > 0.3)
+  if (sumX > 0.3)
     command_id = IDC_FORWARD;
-  else if (sum < -0.3)
+  else if (sumX < -0.3)
     command_id = IDC_BACK;
   else
     return;
