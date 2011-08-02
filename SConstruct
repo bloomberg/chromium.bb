@@ -888,12 +888,6 @@ def IrtIsBroken(env):
   if env.Bit('nacl_glibc'):
     # The glibc startup code is not yet compatible with IRT.
     return True
-  if env.Bit('bitcode') and env.Bit('target_x86_64'):
-    # The pnacl-built binaries do not match the canonical x86-64 ABI
-    # wrt structure passing.  Since the IRT itself is not built with
-    # pnacl, this mismatch bites some PPAPI calls.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1902
-    return True
   return False
 
 pre_base_env.AddMethod(IrtIsBroken)
