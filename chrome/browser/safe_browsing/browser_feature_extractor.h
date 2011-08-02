@@ -17,9 +17,11 @@
 
 #include "base/basictypes.h"
 #include "base/callback_old.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/browser/cancelable_request.h"
 
 class HistoryService;
@@ -33,6 +35,10 @@ struct BrowseInfo {
   // List of IPv4 and IPv6 addresses from which content was requested
   // while browsing to the |url|.
   std::set<std::string> ips;
+
+  // If a SafeBrowsing interstitial was shown for the current URL
+  // this will contain the UnsafeResource struct for that URL.
+  scoped_ptr<SafeBrowsingService::UnsafeResource> unsafe_resource;
 
   BrowseInfo();
   ~BrowseInfo();
@@ -88,6 +94,13 @@ extern const char kIsFirstNavigation[];
 
 // Resource was fetched from a known bad IP address.
 extern const char kBadIpFetch[];
+
+// SafeBrowsing related featues.  Fields from the UnsafeResource if there is
+// any.
+extern const char kSafeBrowsingMaliciousUrl[];
+extern const char kSafeBrowsingOriginalUrl[];
+extern const char kSafeBrowsingIsSubresource[];
+extern const char kSafeBrowsingThreatType[];
 }  // namespace features
 
 // All methods of this class must be called on the UI thread (including

@@ -241,10 +241,38 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     csd_host_->feature_extractor_.reset(extractor);
   }
 
-  void SetUnsafeUniquePageIdToCurrent() {
-    csd_host_->unsafe_unique_page_id_ =
-        contents()->controller().GetActiveEntry()->unique_id();
+  void SetUnsafeResourceToCurrent() {
+    SafeBrowsingService::UnsafeResource resource;
+    resource.url = GURL("http://www.malware.com/");
+    resource.original_url = contents()->GetURL();
+    resource.is_subresource = true;
+    resource.threat_type = SafeBrowsingService::URL_MALWARE;
+    // Bogus client class.  We just need this class to check that the client
+    // field of the UnsafeResource gets cleared before we stored it in the
+    // host object.
+    class BogusClient : public SafeBrowsingService::Client {
+     public:
+      BogusClient() {}
+      virtual ~BogusClient() {}
+    };
+    resource.client = new BogusClient();
+    resource.render_process_host_id = contents()->GetRenderProcessHost()->id();
+    resource.render_view_id = contents()->render_view_host()->routing_id();
+    csd_host_->OnSafeBrowsingHit(resource);
+    delete resource.client;
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
+    ASSERT_TRUE(csd_host_->unsafe_resource_.get());
+    // Test that the resource above was copied.
+    EXPECT_EQ(resource.url, csd_host_->unsafe_resource_->url);
+    EXPECT_EQ(resource.original_url, csd_host_->unsafe_resource_->original_url);
+    EXPECT_EQ(resource.is_subresource,
+              csd_host_->unsafe_resource_->is_subresource);
+    EXPECT_EQ(resource.threat_type, csd_host_->unsafe_resource_->threat_type);
+    EXPECT_EQ(NULL, csd_host_->unsafe_resource_->client);
+    EXPECT_EQ(resource.render_process_host_id,
+              csd_host_->unsafe_resource_->render_process_host_id);
+    EXPECT_EQ(resource.render_view_id,
+              csd_host_->unsafe_resource_->render_view_id);
   }
 
  protected:
@@ -519,7 +547,7 @@ TEST_F(ClientSideDetectionHostTest,
                                 &kFalse, &kFalse);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
-  SetUnsafeUniquePageIdToCurrent();
+  SetUnsafeResourceToCurrent();
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(

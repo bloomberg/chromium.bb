@@ -352,6 +352,10 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
       tab_contents()->controller().GetActiveEntry()) {
     unsafe_unique_page_id_ =
         tab_contents()->controller().GetActiveEntry()->unique_id();
+    // We also keep the resource around in order to be able to send the
+    // malicious URL to the server.
+    unsafe_resource_.reset(new SafeBrowsingService::UnsafeResource(resource));
+    unsafe_resource_->client = NULL;  // Make sure we don't do anything stupid.
   }
 }
 
@@ -390,6 +394,9 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       // malware or phishing interstitial was shown but the user clicked
       // through.
       (verdict->is_phishing() || DidShowSBInterstitial())) {
+    if (DidShowSBInterstitial()) {
+      browse_info_->unsafe_resource.reset(unsafe_resource_.release());
+    }
     // Start browser-side feature extraction.  Once we're done it will send
     // the client verdict request.
     feature_extractor_->ExtractFeatures(

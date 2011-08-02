@@ -43,6 +43,10 @@ const char kHasSSLReferrer[] = "HasSSLReferrer";
 const char kPageTransitionType[] = "PageTransitionType";
 const char kIsFirstNavigation[] = "IsFirstNavigation";
 const char kBadIpFetch[] = "BadIpFetch=";
+const char kSafeBrowsingMaliciousUrl[] = "SafeBrowsingMaliciousUrl=";
+const char kSafeBrowsingOriginalUrl[] = "SafeBrowsingOriginalUrl=";
+const char kSafeBrowsingIsSubresource[] = "SafeBrowsingIsSubresource";
+const char kSafeBrowsingThreatType[] = "SafeBrowsingThreatType";
 }  // namespace features
 
 BrowseInfo::BrowseInfo() {}
@@ -226,6 +230,24 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
       }
     }
   }
+  if (info.unsafe_resource.get()) {
+    // A SafeBrowsing interstitial was shown for the current URL.
+    AddFeature(features::kSafeBrowsingMaliciousUrl +
+               info.unsafe_resource->url.spec(),
+               1.0,
+               request);
+    AddFeature(features::kSafeBrowsingOriginalUrl +
+               info.unsafe_resource->original_url.spec(),
+               1.0,
+               request);
+    AddFeature(features::kSafeBrowsingIsSubresource,
+               info.unsafe_resource->is_subresource ? 1.0 : 0.0,
+               request);
+    AddFeature(features::kSafeBrowsingThreatType,
+               static_cast<double>(info.unsafe_resource->threat_type),
+               request);
+  }
+
 }
 
 void BrowserFeatureExtractor::StartExtractFeatures(

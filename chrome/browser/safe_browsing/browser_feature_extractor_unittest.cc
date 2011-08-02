@@ -449,4 +449,29 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   EXPECT_FALSE(features.count(std::string(features::kBadIpFetch) +
                               "23.94.78.1"));
 }
+
+TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
+  contents()->NavigateAndCommit(GURL("http://www.foo.com/malware.html"));
+  ClientPhishingRequest request;
+  request.set_url("http://www.foo.com/malware.html");
+  request.set_client_score(0.5);
+
+  browse_info_->unsafe_resource.reset(new SafeBrowsingService::UnsafeResource);
+  browse_info_->unsafe_resource->url = GURL("http://www.malware.com/");
+  browse_info_->unsafe_resource->original_url = GURL("http://www.good.com/");
+  browse_info_->unsafe_resource->is_subresource = true;
+  browse_info_->unsafe_resource->threat_type = SafeBrowsingService::URL_MALWARE;
+
+  ExtractFeatures(&request);
+  std::map<std::string, double> features;
+  GetFeatureMap(request, &features);
+  EXPECT_TRUE(features.count(StringPrintf("%s%s",
+                                          features::kSafeBrowsingMaliciousUrl,
+                                          "http://www.malware.com/")));
+  EXPECT_TRUE(features.count(StringPrintf("%s%s",
+                                          features::kSafeBrowsingOriginalUrl,
+                                          "http://www.good.com/")));
+  EXPECT_DOUBLE_EQ(1.0, features[features::kSafeBrowsingIsSubresource]);
+  EXPECT_DOUBLE_EQ(2.0, features[features::kSafeBrowsingThreatType]);
+}
 }  // namespace safe_browsing

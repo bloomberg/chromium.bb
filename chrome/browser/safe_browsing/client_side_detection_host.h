@@ -117,8 +117,10 @@ class ClientSideDetectionHost : public TabContentsObserver,
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
 
-  // Unique page ID of the most recent unsafe site that was loaded in this tab.
+  // Unique page ID of the most recent unsafe site that was loaded in this tab
+  // as well as the UnsafeResource.
   int unsafe_unique_page_id_;
+  scoped_ptr<SafeBrowsingService::UnsafeResource> unsafe_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
