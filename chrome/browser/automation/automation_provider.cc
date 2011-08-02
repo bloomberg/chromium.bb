@@ -804,13 +804,17 @@ void AutomationProvider::InstallExtensionAndGetHandle(
         AutomationMsg_InstallExtensionAndGetHandle::ID,
         reply_message);
 
-    ExtensionInstallUI* client =
-        (with_ui ? new ExtensionInstallUI(profile_) : NULL);
-    scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
-    if (!with_ui)
-      installer->set_allow_silent_install(true);
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
-    installer->InstallCrx(crx_path);
+    if (crx_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
+      ExtensionInstallUI* client =
+          (with_ui ? new ExtensionInstallUI(profile_) : NULL);
+      scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
+      if (!with_ui)
+        installer->set_allow_silent_install(true);
+      installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
+      installer->InstallCrx(crx_path);
+    } else {
+      service->LoadExtension(crx_path, with_ui);
+    }
   } else {
     AutomationMsg_InstallExtensionAndGetHandle::WriteReplyParams(
         reply_message, 0);

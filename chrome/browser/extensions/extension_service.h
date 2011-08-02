@@ -328,6 +328,10 @@ class ExtensionService
   // Loads the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
+  // Loads the extension from the directory |extension_path|.
+  // This version of this method is intended for testing only.
+  void LoadExtension(const FilePath& extension_path, bool prompt_for_plugins);
+
   // Same as above, but for use with command line switch --load-extension=path.
   void LoadExtensionFromCommandLine(const FilePath& extension_path);
 
