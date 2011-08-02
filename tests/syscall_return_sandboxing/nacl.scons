@@ -29,8 +29,7 @@ asm_env = env.Clone()
 use_obj_env = env.Clone()
 
 if asm_env.Bit('bitcode'):
-  asm_env.Replace(OBJSUFFIX='.o')
-  asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+  asm_env.PNaClForceNative()
   # Allow use of native object file
   use_obj_env.Append(LINKFLAGS=['--pnacl-allow-native'])
 

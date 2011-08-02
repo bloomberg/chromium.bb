@@ -79,8 +79,11 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     ;;
   win-32-newlib)
     TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
-    # TODO(pdox): Determine which tests should be run.
-    RUN_TESTS=""
+    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
+    ;;
+  win-64-newlib)
+    TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
+    RUN_TESTS="x86-64 x86-64-pic x86-64-browser"
     ;;
   *)
     echo -n "*** UNRECOGNIZED CONFIGURATION: "

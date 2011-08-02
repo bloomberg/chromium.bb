@@ -42,11 +42,12 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   # NOTE(robertm): convert this to pure C code so that most of this
   # special handling can be eliminated
   if asm_env.Bit('bitcode'):
-    asm_env.Replace(OBJSUFFIX='.o')
-    asm_env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'])
+    asm_env.PNaClForceNative()
     # NOTE: "PNACL_AS" controls small code adaptions needed for  the
     # pnacl assembler
     asm_env.Append(ASFLAGS='-DPNACL_AS=1')
+    # Windows uses CC for assembling
+    asm_env.Append(CFLAGS='-DPNACL_AS=1')
   link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 

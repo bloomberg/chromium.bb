@@ -3,7 +3,7 @@
 :: found in the LICENSE file.
 
 setlocal
-call "%~dp0cygwin_env.bat"
+set "PATH=c:\cygwin\bin;%PATH%"
 bash -c "buildbot/buildbot_toolchain_arm_untrusted.sh %*"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal

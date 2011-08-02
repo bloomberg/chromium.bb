@@ -10,10 +10,12 @@
 #
 
 from driver_tools import *
-import fcntl
 import platform
 import random
 import hashlib
+
+if not IsWindowsPython():
+  import fcntl
 
 EXTRA_ENV = {
   'NATIVE_HACK' : '0',    # Only link native code, ignore bitcode libraries.
@@ -763,7 +765,7 @@ def GetMD5Sum(path):
   return m.hexdigest()
 
 def FileLock(filename):
-  if platform.system().lower() == "windows":
+  if IsWindowsPython():
     return None
   else:
     return FileLockUnix(filename)
