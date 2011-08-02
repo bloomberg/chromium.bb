@@ -76,6 +76,7 @@ class Upgrader(object):
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
                '_stable_repo',  # Path to portage-stable
+               '_stable_repo_stashed', # True if portage-stable has a git stash
                '_stable_repo_status', # git status report at start of run
                '_targets',      # Processed list of portage targets
                '_upgrade',      # Boolean indicating upgrade requested
@@ -138,6 +139,8 @@ class Upgrader(object):
       self._stable_repo_status = statuses
     else:
       self._stable_repo_status = None
+
+    self._stable_repo_stashed = False
 
   def _CheckStableRepoOnBranch(self):
     """Raise exception if |self._stable_repo| is not on a branch now."""
@@ -229,11 +232,13 @@ class Upgrader(object):
     (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
     return '%s/%s' % (cat, pn)
 
-  def _RunGit(self, repo, command, redirect_stdout=False):
+  def _RunGit(self, repo, command, redirect_stdout=False,
+              combine_stdout_stderr=False):
     """Runs |command| in the git |repo|.
 
     This leverages the cros_build_lib.RunCommand function.  The
-    |redirect_stdout| argument is passed to that function.
+    |redirect_stdout| and |combine_stdout_stderr| arguments are
+    passed to that function.
 
     Returns a Result object as documented by cros_build_lib.RunCommand.
     Most usefully, the result object has a .output attribute containing
@@ -243,7 +248,8 @@ class Upgrader(object):
                (repo, command)]
     result = cros_lib.RunCommand(cmdline, exit_code=True,
                                  print_cmd=self._verbose,
-                                 redirect_stdout=redirect_stdout)
+                                 redirect_stdout=redirect_stdout,
+                                 combine_stdout_stderr=combine_stdout_stderr)
     return result
 
   def _SplitEBuildPath(self, ebuild_path):
@@ -384,6 +390,25 @@ class Upgrader(object):
       return True
 
     return False
+
+  def _AnyChangesStaged(self):
+    """Return True if any local changes are staged in stable repo."""
+    return bool(len(self._stable_repo_status))
+
+  def _StashChanges(self):
+    """Run 'git stash save' on stable repo."""
+    # Only one level of stashing expected/supported.
+    self._RunGit(self._stable_repo, 'stash save',
+                 redirect_stdout=True, combine_stdout_stderr=True)
+    self._stable_repo_stashed = True
+
+  def _UnstashAnyChanges(self):
+    """Unstash any changes in stable repo."""
+    # Only one level of stashing expected/supported.
+    if self._stable_repo_stashed:
+      self._RunGit(self._stable_repo, 'stash pop',
+                   redirect_stdout=True, combine_stdout_stderr=True)
+      self._stable_repo_stashed = False
 
   def _CopyUpstreamPackage(self, upstream_cpv):
     """Upgrades package in |upstream_cpv| to the version in |upstream_cpv|.
@@ -854,6 +879,7 @@ class Upgrader(object):
                      'the changes in portage-stable.' %
                      (self._GetPkgKeywordsFile(),
                       '\n'.join(key_lines)))
+
       oper.Info('If you wish to undo these changes instead:\n'
                 ' cd %s; git reset --hard HEAD^; cd -' %
                 self._stable_repo)
@@ -883,8 +909,12 @@ class Upgrader(object):
                                            upgrade=upgrade_mode,
                                            name=board)
 
+    if self._AnyChangesStaged():
+      self._StashChanges()
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
+
+    self._UnstashAnyChanges()
     self._UpgradePackages(infolist)
 
     # Merge tables together after each run.
