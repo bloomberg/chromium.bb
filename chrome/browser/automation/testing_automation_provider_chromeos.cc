@@ -375,6 +375,8 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   // Ethernet network.
   bool ethernet_available = network_library->ethernet_available();
   bool ethernet_enabled = network_library->ethernet_enabled();
+  return_value->SetBoolean("ethernet_available", ethernet_available);
+  return_value->SetBoolean("ethernet_enabled", ethernet_enabled);
   if (ethernet_available && ethernet_enabled) {
     const chromeos::EthernetNetwork* ethernet_network =
         network_library->ethernet_network();
@@ -389,6 +391,8 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   // Wi-fi networks.
   bool wifi_available = network_library->wifi_available();
   bool wifi_enabled = network_library->wifi_enabled();
+  return_value->SetBoolean("wifi_available", wifi_available);
+  return_value->SetBoolean("wifi_enabled", wifi_enabled);
   if (wifi_available && wifi_enabled) {
     const chromeos::WifiNetworkVector& wifi_networks =
         network_library->wifi_networks();
@@ -408,6 +412,8 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   // Cellular networks.
   bool cellular_available = network_library->cellular_available();
   bool cellular_enabled = network_library->cellular_enabled();
+  return_value->SetBoolean("cellular_available", cellular_available);
+  return_value->SetBoolean("cellular_enabled", cellular_enabled);
   if (cellular_available && cellular_enabled) {
     const chromeos::CellularNetworkVector& cellular_networks =
         network_library->cellular_networks();
@@ -455,6 +461,37 @@ void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
 
   // Set up an observer (it will delete itself).
   new NetworkScanObserver(this, reply_message);
+}
+
+void TestingAutomationProvider::ToggleNetworkDevice(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  AutomationJSONReply reply(this, reply_message);
+  std::string device;
+  bool enable;
+  if (!args->GetString("device", &device) ||
+      !args->GetBoolean("enable", &enable)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  // Set up an observer (it will delete itself).
+  new ToggleNetworkDeviceObserver(this, reply_message, device, enable);
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  if (device == "ethernet") {
+    network_library->EnableEthernetNetworkDevice(enable);
+  } else if (device == "wifi") {
+    network_library->EnableWifiNetworkDevice(enable);
+  } else if (device == "cellular") {
+    network_library->EnableCellularNetworkDevice(enable);
+  } else {
+    reply.SendError(
+        "Unknown device. Valid devices are ethernet, wifi, cellular.");
+    return;
+  }
 }
 
 void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,

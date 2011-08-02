@@ -25,6 +25,19 @@ class ChromeosWifiSanity(chromeos_network.PyNetworkUITest):
     self.assertTrue(result)
     logging.debug(result)
 
+  def testToggleNetworkDevice(self):
+    """Sanity check to make sure wifi can be disabled and reenabled."""
+    self.ToggleNetworkDevice('wifi', False)
+    self.assertFalse(self.GetNetworkInfo()['wifi_enabled'],
+                     'Disabled wifi but it is still enabled.')
+    self.assertFalse('wifi_networks' in self.GetNetworkInfo(), 'GetNetworkInfo '
+                     'returned a wifi_networks dict, but wifi is disabled.')
+    self.ToggleNetworkDevice("wifi", True)
+    self.assertTrue(self.GetNetworkInfo()['wifi_enabled'],
+                    'Enabled wifi but it is still disabled.')
+    self.assertTrue('wifi_networks' in self.GetNetworkInfo(), 'GetNetworkInfo '
+                    'did not return a wifi_networks dict.')
+
   def testConnectToHiddenWiFiNonExistent(self):
     """Connecting to a non-existent network should fail.
 

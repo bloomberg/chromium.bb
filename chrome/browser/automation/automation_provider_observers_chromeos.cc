@@ -158,6 +158,31 @@ void NetworkScanObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   delete this;
 }
 
+ToggleNetworkDeviceObserver::ToggleNetworkDeviceObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    const std::string& device, bool enable)
+    : automation_(automation->AsWeakPtr()), reply_message_(reply_message),
+      device_(device), enable_(enable) {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->AddNetworkManagerObserver(this);
+}
+
+ToggleNetworkDeviceObserver::~ToggleNetworkDeviceObserver() {
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->RemoveNetworkManagerObserver(this);
+}
+
+void ToggleNetworkDeviceObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
+  if ((device_ == "ethernet" && enable_ == obj->ethernet_enabled()) ||
+      (device_ == "wifi" && enable_ == obj->wifi_enabled()) ||
+      (device_ == "cellular" && enable_ == obj->cellular_enabled())) {
+    if (automation_)
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
+    delete this;
+  }
+}
+
 NetworkConnectObserver::NetworkConnectObserver(AutomationProvider* automation,
                                                IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {

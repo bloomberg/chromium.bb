@@ -1177,6 +1177,9 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void NetworkScan(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  void ToggleNetworkDevice(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   void GetProxySettings(base::DictionaryValue* args,
                         IPC::Message* reply_message);
 

@@ -829,6 +829,28 @@ class NetworkScanObserver
   DISALLOW_COPY_AND_ASSIGN(NetworkScanObserver);
 };
 
+class ToggleNetworkDeviceObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  ToggleNetworkDeviceObserver(AutomationProvider* automation,
+                              IPC::Message* reply_message,
+                              const std::string& device,
+                              bool enable);
+
+  virtual ~ToggleNetworkDeviceObserver();
+
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  std::string device_;
+  bool enable_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToggleNetworkDeviceObserver);
+};
+
 // Waits for a connection success or failure for the specified
 // network and returns the status to the automation provider.
 class NetworkConnectObserver

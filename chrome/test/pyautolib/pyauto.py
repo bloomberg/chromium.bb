@@ -3073,8 +3073,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       A dictionary.
       Sample:
-      { u'connected_ethernet': u'/profile/default/ethernet_abcd',
+      { u'cellular_available': True,
+        u'cellular_enabled': False,
+        u'connected_ethernet': u'/profile/default/ethernet_abcd',
         u'connected_wifi': u'/profile/default/wifi_abcd_1234_managed_none',
+        u'ethernet_available': True,
+        u'ethernet_enabled': True,
         u'ethernet_networks':
             { u'/profile/default/ethernet_abcd':
                 { u'device_path': u'/device/abcdeth',
@@ -3084,6 +3088,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                   u'/profile/default/ethernet_abcd',
                   u'status': u'Connected'}},
         u'ip_address': u'11.22.33.44',
+        u'remembered_wifi': [ u'/profile/default/ethernet_abcd',
+                              u'/profile/default/ethernet_efgh'],
+        u'wifi_available': True,
+        u'wifi_enabled': True,
         u'wifi_networks':
             { u'/profile/default/wifi_abcd_1234_managed_none':
                 { u'device_path': u'/device/abcdwifi',
@@ -3101,9 +3109,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     u'name': u'WifiNetworkName2',
                     u'service_path':
                     u'status': u'Idle',
-                    u'strength': 79}},
-        u'remembered_wifi': [ u'/profile/default/ethernet_abcd',
-                              u'/profile/default/ethernet_efgh',]}
+                    u'strength': 79}}}
 
 
     Raises:
@@ -3133,6 +3139,21 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'NetworkScan' }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     return self.GetNetworkInfo()
+
+  def ToggleNetworkDevice(self, device, enable):
+    """Enable or disable a network device on ChromeOS.
+
+    Valid device names are ethernet, wifi, cellular.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'ToggleNetworkDevice',
+        'device': device,
+        'enable': enable,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   PROXY_TYPE_DIRECT = 1
   PROXY_TYPE_MANUAL = 2

@@ -2229,6 +2229,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   handler_map["GetNetworkInfo"] = &TestingAutomationProvider::GetNetworkInfo;
   handler_map["NetworkScan"] = &TestingAutomationProvider::NetworkScan;
+  handler_map["ToggleNetworkDevice"] =
+      &TestingAutomationProvider::ToggleNetworkDevice;
   handler_map["GetProxySettings"] =
       &TestingAutomationProvider::GetProxySettings;
   handler_map["SetProxySettings"] =
