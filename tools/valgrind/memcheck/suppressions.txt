@@ -3776,7 +3776,7 @@
    ...
    fun:_ZN*TabContentsView*CreateView*
    fun:_ZN11TabContentsC2EPN7content14BrowserContextEP12SiteInstanceiPKS_P23SessionStorageNamespace
-   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   fun:_ZN15TestTabContentsC1EPN7content14BrowserContextEP12SiteInstance
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
    fun:_ZN19PasswordManagerTest5SetUpEv
