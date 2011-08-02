@@ -310,11 +310,6 @@ enum {
   // is the profile, the details the URL.
   NOTIFICATION_BOOKMARK_BUBBLE_SHOWN,
 
-  // Task Manager ------------------------------------------------------------
-
-  // Sent when WebUI TaskManager opens and is ready for showing tasks.
-  NOTIFICATION_TASK_MANAGER_WINDOW_READY,
-
   // Non-history storage services --------------------------------------------
 
   // Notification that the TemplateURLService has finished loading from the

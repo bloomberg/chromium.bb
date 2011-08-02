@@ -11,9 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -247,10 +244,6 @@ void TaskManagerHandler::OnItemsAdded(const int start, const int length) {
 }
 
 void TaskManagerHandler::OnItemsRemoved(const int start, const int length) {
-  // Returns if this is called before updating |resource_to_group_table_|.
-  if (resource_to_group_table_.size() < static_cast<size_t>(start + length))
-    return;
-
   // Converts from an index of resources to an index of groups.
   int group_start = resource_to_group_table_[start];
   int group_end = resource_to_group_table_[start + length - 1];
@@ -339,11 +332,6 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
   is_enabled_ = true;
   model_->AddObserver(this);
   model_->StartUpdating();
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TASK_MANAGER_WINDOW_READY,
-      Source<TaskManagerModel>(model_),
-      NotificationService::NoDetails());
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {

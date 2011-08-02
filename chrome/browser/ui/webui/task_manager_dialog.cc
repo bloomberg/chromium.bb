@@ -20,6 +20,8 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   static void Show();
   static TaskManagerDialogImpl* GetInstance();
 
+  void ShowDialog();
+
  protected:
   friend struct DefaultSingletonTraits<TaskManagerDialogImpl>;
   virtual ~TaskManagerDialogImpl();
@@ -61,7 +63,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   }
 
  private:
-  void ShowDialog();
   void OpenHtmlDialog();
 
   bool is_shown_;
@@ -82,12 +83,6 @@ TaskManagerDialogImpl::TaskManagerDialogImpl() : is_shown_(false) {
 }
 
 TaskManagerDialogImpl::~TaskManagerDialogImpl() {
-}
-
-void TaskManagerDialogImpl::Show() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TaskManagerDialogImpl* dialog = TaskManagerDialogImpl::GetInstance();
-  dialog->ShowDialog();
 }
 
 void TaskManagerDialogImpl::ShowDialog() {
@@ -112,8 +107,7 @@ void TaskManagerDialogImpl::OpenHtmlDialog() {
 //
 // static
 void TaskManagerDialog::Show() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&TaskManagerDialogImpl::Show));
+  TaskManagerDialogImpl* dialog = TaskManagerDialogImpl::GetInstance();
+  dialog->ShowDialog();
 }
 

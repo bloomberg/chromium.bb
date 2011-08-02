@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -47,6 +46,58 @@ namespace {
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
+class ResourceChangeObserver : public TaskManagerModelObserver {
+ public:
+  ResourceChangeObserver(const TaskManagerModel* model,
+                         int target_resource_count)
+      : model_(model),
+        target_resource_count_(target_resource_count) {
+  }
+
+  virtual void OnModelChanged() {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsChanged(int start, int length) {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsAdded(int start, int length) {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsRemoved(int start, int length) {
+    OnResourceChange();
+  }
+
+ private:
+  void OnResourceChange() {
+    if (model_->ResourceCount() == target_resource_count_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  const TaskManagerModel* model_;
+  const int target_resource_count_;
+};
+
+// Helper class used to wait for a BackgroundContents to finish loading.
+class BackgroundContentsListener : public NotificationObserver {
+ public:
+  explicit BackgroundContentsListener(Profile* profile) {
+    registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
+                   Source<Profile>(profile));
+  }
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    // Quit once the BackgroundContents has been loaded.
+    if (type == chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED)
+      MessageLoopForUI::current()->Quit();
+  }
+ private:
+  NotificationRegistrar registrar_;
+};
+
 }  // namespace
 
 class TaskManagerBrowserTest : public ExtensionBrowserTest {
@@ -56,12 +107,18 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
   void WaitForResourceChange(int target_count) {
-    TaskManagerBrowserTestUtil::WaitForResourceChange(target_count);
+    if (model()->ResourceCount() == target_count)
+      return;
+    ResourceChangeObserver observer(model(), target_count);
+    model()->AddObserver(&observer);
+    ui_test_utils::RunMessageLoop();
+    model()->RemoveObserver(&observer);
   }
 
   // Wait for any pending BackgroundContents to finish starting up.
   void WaitForBackgroundContents() {
-    TaskManagerBrowserTestUtil::WaitForBackgroundContents(browser());
+    BackgroundContentsListener listener(browser()->profile());
+    ui_test_utils::RunMessageLoop();
   }
 };
 
