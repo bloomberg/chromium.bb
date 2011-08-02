@@ -582,7 +582,6 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       page_params.page_number = i;
-      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame);
     }
   } else {
@@ -590,7 +589,6 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       if (params.pages[i] >= page_count)
         break;
       page_params.page_number = params.pages[i];
-      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame);
     }
   }
@@ -1092,12 +1090,6 @@ bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
     return false;
   std::string mime(frame()->dataSource()->response().mimeType().utf8());
   return mime != "application/pdf";
-}
-
-int PrintWebViewHelper::PrintPreviewContext::GetPageSlotForPage(
-    int page_number) const {
-  int page_slot = rendered_pages_[page_number].second;
-  return page_slot == -1 ? page_number : page_slot;
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {

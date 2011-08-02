@@ -49,11 +49,10 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
 }
 
 SkDevice* PdfMetafileSkia::StartPageForVectorCanvas(
-    int page_number, const gfx::Size& page_size, const gfx::Rect& content_area,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
-  DCHECK_EQ(outstanding_page_number_, kNoOutstandingPage);
-  DCHECK_GE(page_number, 0);
-  outstanding_page_number_ = page_number;
+  DCHECK(!page_outstanding_);
+  page_outstanding_ = true;
 
   // Adjust for the margins and apply the scale factor.
   SkMatrix transform;
@@ -84,11 +83,9 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
 
 bool PdfMetafileSkia::FinishPage() {
   DCHECK(data_->current_page_.get());
-  DCHECK_GE(outstanding_page_number_, 0);
 
-  data_->pdf_doc_.setPage(outstanding_page_number_ + 1,
-                          data_->current_page_.get());
-  outstanding_page_number_ = kNoOutstandingPage;
+  data_->pdf_doc_.appendPage(data_->current_page_.get());
+  page_outstanding_ = false;
   return true;
 }
 
@@ -97,7 +94,7 @@ bool PdfMetafileSkia::FinishDocument() {
   if (data_->pdf_stream_.getOffset())
     return true;
 
-  if (outstanding_page_number_ >= 0)
+  if (page_outstanding_)
     FinishPage();
 
   data_->current_page_ = NULL;
@@ -239,7 +236,7 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
 
 PdfMetafileSkia::PdfMetafileSkia()
     : data_(new PdfMetafileSkiaData),
-      outstanding_page_number_(kNoOutstandingPage) {
+      page_outstanding_(false) {
 }
 
 PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {

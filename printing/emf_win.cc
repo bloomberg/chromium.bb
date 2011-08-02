@@ -404,9 +404,8 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
 }
 
 SkDevice* Emf::StartPageForVectorCanvas(
-    int page_number, const gfx::Size& page_size, const gfx::Rect& content_area,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
-  DCHECK(page_number == page_count_);
   if (!StartPage(page_size, content_area, scale_factor))
     return NULL;
 

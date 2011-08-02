@@ -32,12 +32,11 @@ void PrintWebViewHelper::PrintPageInternal(
 
   float scale_factor = frame->getPrintPageShrink(params.page_number);
   int page_number = params.page_number;
-  int page_slot = params.page_slot;
 
   // Render page for printing.
   gfx::Rect content_area(params.params.printable_size);
   RenderPage(params.params.printable_size, content_area, scale_factor,
-             page_number, page_slot, frame, &metafile);
+             page_number, frame, &metafile);
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
@@ -81,7 +80,6 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   RenderPage(printParams.page_size, content_area, scale_factor, page_number,
-             print_preview_context_.GetPageSlotForPage(page_number),
              print_preview_context_.frame(), initial_render_metafile);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
@@ -114,13 +112,13 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
 void PrintWebViewHelper::RenderPage(
     const gfx::Size& page_size, const gfx::Rect& content_area,
-    const float& scale_factor, int page_number, int page_slot, WebFrame* frame,
+    const float& scale_factor, int page_number, WebFrame* frame,
     printing::Metafile* metafile) {
 
   {
 #if defined(USE_SKIA)
     SkDevice* device = metafile->StartPageForVectorCanvas(
-        page_slot, page_size, content_area, scale_factor);
+        page_size, content_area, scale_factor);
     if (!device)
       return;
 

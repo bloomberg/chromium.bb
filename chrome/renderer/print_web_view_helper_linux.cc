@@ -29,8 +29,6 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_preview_context_.print_params();
   page_params.page_number = page_number;
-  page_params.page_slot =
-      print_preview_context_.GetPageSlotForPage(page_number);
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   PrintPageInternal(page_params,
@@ -162,13 +160,11 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   if (params.pages.empty()) {
     for (int i = 0; i < *page_count; ++i) {
       page_params.page_number = i;
-      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame, metafile);
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       page_params.page_number = params.pages[i];
-      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame, metafile);
     }
   }
@@ -202,7 +198,7 @@ void PrintWebViewHelper::PrintPageInternal(
                          page_layout_in_points.content_height);
 
   SkDevice* device = metafile->StartPageForVectorCanvas(
-      params.page_slot, page_size, content_area, 1.0f);
+      page_size, content_area, 1.0f);
   if (!device)
     return;
 

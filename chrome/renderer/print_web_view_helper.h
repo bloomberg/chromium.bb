@@ -228,12 +228,11 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
   void RenderPage(const PrintMsg_Print_Params& params, float* scale_factor,
-                  int page_number, int page_slot, bool is_preview,
-                  WebKit::WebFrame* frame,
+                  int page_number, bool is_preview, WebKit::WebFrame* frame,
                   scoped_ptr<printing::Metafile>* metafile);
 #elif defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Rect& content_area,
-                  const float& scale_factor, int page_number, int page_slot,
+                  const float& scale_factor, int page_number,
                   WebKit::WebFrame* frame, printing::Metafile* metafile);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
@@ -340,11 +339,6 @@ class PrintWebViewHelper : public RenderViewObserver,
     bool IsReadyToRender() const;
     bool IsBusy() const;
     bool IsModifiable() const;
-
-    // Return the page slot in the final document for |page_number|. i.e. if
-    // the user selected just page 3, the page slot would be 0, since it is
-    // the first page in the resulting document.
-    int GetPageSlotForPage(int page_number) const;
 
     // Getters
     WebKit::WebFrame* frame() const;

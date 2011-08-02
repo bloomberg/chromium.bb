@@ -107,7 +107,7 @@ bool PdfMetafileCg::InitFromData(const void* src_buffer,
 }
 
 SkDevice* PdfMetafileCg::StartPageForVectorCanvas(
-    int page_number, const gfx::Size& page_size, const gfx::Rect& content_area,
+    const gfx::Size& page_size, const gfx::Rect& content_area,
     const float& scale_factor) {
   NOTIMPLEMENTED();
   return NULL;

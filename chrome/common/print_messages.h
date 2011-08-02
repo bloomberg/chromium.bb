@@ -60,11 +60,6 @@ IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
   // The page number is the indicator of the square that should be rendered
   // according to the layout specified in PrintMsg_Print_Params.
   IPC_STRUCT_MEMBER(int, page_number)
-
-  // The page number in the resulting document.  If the user is only printing
-  // page 2, |page_number| above will 1, but |page_slot| will be 0, as it's the
-  // first page in the final document.
-  IPC_STRUCT_MEMBER(int, page_slot)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPages_Params)
