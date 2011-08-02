@@ -223,6 +223,8 @@ void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
       L"\\BaseNamedObjects").data());
   policy->AddKernelObjectToClose(L"Section", PrependWindowsSessionPath(
       L"\\BaseNamedObjects\\windows_shell_global_counters").data());
+  // These are the CSRSS and LSASS handles opened at initialization.
+  policy->AddKernelObjectToClose(L"ALPC Port", NULL);
 }
 
 // Adds the generic policy rules to a sandbox TargetPolicy.
