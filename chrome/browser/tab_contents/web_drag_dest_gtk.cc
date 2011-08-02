@@ -166,8 +166,7 @@ void WebDragDestGtk::OnDragDataReceived(
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->plain_text =
-            UTF8ToUTF16(std::string(reinterpret_cast<char*>(text),
-                                    data->length));
+            UTF8ToUTF16(std::string(reinterpret_cast<char*>(text)));
         g_free(text);
       }
     } else if (data->target == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
