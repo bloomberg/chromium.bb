@@ -8,6 +8,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/common/database_messages.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -114,12 +115,15 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   if (frame->parent())
     return; // Not a top-level navigation.
 
-  // Clear "block" flags for the new page. This needs to happen before any of
-  // allowScripts(), allowImages(), allowPlugins() is called for the new page
-  // so that these functions can correctly detect that a piece of content
-  // flipped from "not blocked" to "blocked".
-  ClearBlockedContentSettings();
-  plugins_temporarily_allowed_ = false;
+  NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
+  if (!state->was_within_same_page()) {
+    // Clear "block" flags for the new page. This needs to happen before any of
+    // allowScripts(), allowImages(), allowPlugins() is called for the new page
+    // so that these functions can correctly detect that a piece of content
+    // flipped from "not blocked" to "blocked".
+    ClearBlockedContentSettings();
+    plugins_temporarily_allowed_ = false;
+  }
 
   GURL url = frame->document().url();
 

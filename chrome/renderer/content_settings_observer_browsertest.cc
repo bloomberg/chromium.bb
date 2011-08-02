@@ -138,3 +138,34 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   EXPECT_NE(-1, block_index);
   EXPECT_LT(navigation_index, block_index);
 }
+
+TEST_F(RenderViewTest, PluginsTemporarilyAllowed) {
+  // Load some HTML.
+  LoadHTML("<html>Foo</html>");
+
+  // Block plugins.
+  ContentSettings settings;
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    settings.settings[i] = CONTENT_SETTING_ALLOW;
+  settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] = CONTENT_SETTING_BLOCK;
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  observer->SetContentSettings(settings);
+  ContentSettingsObserver::SetDefaultContentSettings(settings);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // Temporarily allow plugins.
+  view_->OnMessageReceived(ViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // Simulate a navigation within the page.
+  view_->didNavigateWithinPage(GetMainFrame(), true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // Navigate to a different page.
+  LoadHTML("<html>Bar</html>");
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
+}
