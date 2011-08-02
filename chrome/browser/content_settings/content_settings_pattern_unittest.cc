@@ -361,6 +361,22 @@ TEST(ContentSettingsPatternTest, InvalidPatterns) {
   EXPECT_STREQ("", Pattern("file:///foo/bar.html:8080").ToString().c_str());
 }
 
+TEST(ContentSettingsPatternTest, UnequalOperator) {
+  EXPECT_TRUE(Pattern("http://www.foo.com") != Pattern("http://www.foo.com*"));
+  EXPECT_TRUE(Pattern("http://www.foo.com*") !=
+              ContentSettingsPattern::Wildcard());
+
+  EXPECT_TRUE(Pattern("http://www.foo.com") !=
+              ContentSettingsPattern::Wildcard());
+
+  EXPECT_TRUE(Pattern("http://www.foo.com") != Pattern("www.foo.com"));
+  EXPECT_TRUE(Pattern("http://www.foo.com") !=
+              Pattern("http://www.foo.com:80"));
+
+  EXPECT_FALSE(Pattern("http://www.foo.com") != Pattern("http://www.foo.com"));
+  EXPECT_TRUE(Pattern("http://www.foo.com") == Pattern("http://www.foo.com"));
+}
+
 TEST(ContentSettingsPatternTest, Compare) {
   // Test identical patterns patterns.
   ContentSettingsPattern pattern1 =

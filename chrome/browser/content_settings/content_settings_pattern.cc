@@ -473,6 +473,11 @@ bool ContentSettingsPattern::operator==(
   return Compare(other) == IDENTITY;
 }
 
+bool ContentSettingsPattern::operator!=(
+    const ContentSettingsPattern& other) const {
+  return !(*this == other);
+}
+
 bool ContentSettingsPattern::operator<(
     const ContentSettingsPattern& other) const {
   return Compare(other) < 0;

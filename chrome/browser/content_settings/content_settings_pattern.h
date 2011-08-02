@@ -136,6 +136,9 @@ class ContentSettingsPattern {
   // Returns true if the pattern and the |other| pattern are identical.
   bool operator==(const ContentSettingsPattern& other) const;
 
+  // Returns true if the pattern and the |other| pattern are not identical.
+  bool operator!=(const ContentSettingsPattern& other) const;
+
   // Returns true if the pattern has a lower priority than the |other| pattern.
   bool operator<(const ContentSettingsPattern& other) const;
 
