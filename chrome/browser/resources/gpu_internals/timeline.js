@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Interactive visualizaiton of TimelineModel objects
  * based loosely on gantt charts. Each thread in the TimelineModel is given a
@@ -183,9 +182,11 @@ cr.define('gpu', function() {
       }.bind(this), 250);
 
       document.addEventListener('keypress', this.onKeypress_.bind(this));
+      document.addEventListener('keydown', this.onKeydown_.bind(this));
       document.addEventListener('mousedown', this.onMouseDown_.bind(this));
       document.addEventListener('mousemove', this.onMouseMove_.bind(this));
       document.addEventListener('mouseup', this.onMouseUp_.bind(this));
+      document.addEventListener('dblclick', this.onDblClick_.bind(this));
 
       this.lastMouseViewPos_ = {x: 0, y: 0};
 
@@ -266,70 +267,143 @@ cr.define('gpu', function() {
 
     onKeypress_: function(e) {
       var vp = this.viewport_;
-      if (this.firstCanvas) {
-        var viewWidth = this.firstCanvas.clientWidth;
-        var curMouseV, curCenterW;
-        switch (event.keyCode) {
-          case 101: // e
-            var vX = this.lastMouseViewPos_.x;
-            var wX = vp.xViewToWorld(this.lastMouseViewPos_.x);
-            var distFromCenter = vX - (viewWidth / 2);
-            var percFromCenter = distFromCenter / viewWidth;
-            var percFromCenterSq = percFromCenter * percFromCenter;
-            vp.xPanWorldPosToViewPos(wX, 'center', viewWidth);
-            break;
-          case 119:  // w
-            curMouseV = this.lastMouseViewPos_.x;
-            curCenterW = vp.xViewToWorld(curMouseV);
-            vp.scaleX = vp.scaleX * 1.5;
-            vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
-            break;
-          case 115:  // s
-            curMouseV = this.lastMouseViewPos_.x;
-            curCenterW = vp.xViewToWorld(curMouseV);
-            vp.scaleX = vp.scaleX / 1.5;
-            vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
-            break;
-          case 103:  // g
-            this.onGridToggle_(true);
-            break;
-          case 71:  // G
-            this.onGridToggle_(false);
-            break;
-          case 87:  // W
-            curMouseV = this.lastMouseViewPos_.x;
-            curCenterW = vp.xViewToWorld(curMouseV);
-            vp.scaleX = vp.scaleX * 10;
-            vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
-            break;
-          case 83:  // S
-            curMouseV = this.lastMouseViewPos_.x;
-            curCenterW = vp.xViewToWorld(curMouseV);
-            vp.scaleX = vp.scaleX / 10;
-            vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
-            break;
-          case 97:  // a
-            vp.panX += vp.xViewVectorToWorld(viewWidth * 0.1);
-            break;
-          case 100:  // d
-            vp.panX -= vp.xViewVectorToWorld(viewWidth * 0.1);
-            break;
-          case 65:  // A
-            vp.panX += vp.xViewVectorToWorld(viewWidth * 0.5);
-            break;
-          case 68:  // D
-            vp.panX -= vp.xViewVectorToWorld(viewWidth * 0.5);
-            break;
-        }
+      if (!this.firstCanvas)
+        return;
+      var viewWidth = this.firstCanvas.clientWidth;
+      var curMouseV, curCenterW;
+      switch (e.keyCode) {
+        case 101: // e
+          var vX = this.lastMouseViewPos_.x;
+          var wX = vp.xViewToWorld(this.lastMouseViewPos_.x);
+          var distFromCenter = vX - (viewWidth / 2);
+          var percFromCenter = distFromCenter / viewWidth;
+          var percFromCenterSq = percFromCenter * percFromCenter;
+          vp.xPanWorldPosToViewPos(wX, 'center', viewWidth);
+          break;
+        case 119:  // w
+          this.zoomBy_(1.5);
+          break;
+        case 115:  // s
+          this.zoomBy_(1 / 1.5);
+          break;
+        case 103:  // g
+          this.onGridToggle_(true);
+          break;
+        case 71:  // G
+          this.onGridToggle_(false);
+          break;
+        case 87:  // W
+          this.zoomBy_(10);
+          break;
+        case 83:  // S
+          this.zoomBy_(1 / 10);
+          break;
+        case 97:  // a
+          vp.panX += vp.xViewVectorToWorld(viewWidth * 0.1);
+          break;
+        case 100:  // d
+          vp.panX -= vp.xViewVectorToWorld(viewWidth * 0.1);
+          break;
+        case 65:  // A
+          vp.panX += vp.xViewVectorToWorld(viewWidth * 0.5);
+          break;
+        case 68:  // D
+          vp.panX -= vp.xViewVectorToWorld(viewWidth * 0.5);
+          break;
       }
+    },
+
+    // Not all keys send a keypress.
+    onKeydown_: function(e) {
+      switch (e.keyCode) {
+        case 37:   // left arrow
+          this.selectPrevious_(e);
+          e.preventDefault();
+          break;
+        case 39:   // right arrow
+          this.selectNext_(e);
+          e.preventDefault();
+          break;
+        case 9:    // TAB
+          if (e.shiftKey)
+            this.selectPrevious_(e);
+          else
+            this.selectNext_(e);
+          e.preventDefault();
+          break;
+      }
+    },
+
+    /**
+     * Zoom in or out on the timeline by the given scale factor.
+     * @param {integer} scale The scale factor to apply.  If <1, zooms out.
+     */
+    zoomBy_: function(scale) {
+      if (!this.firstCanvas)
+        return;
+      var vp = this.viewport_;
+      var viewWidth = this.firstCanvas.clientWidth;
+      var curMouseV = this.lastMouseViewPos_.x;
+      var curCenterW = vp.xViewToWorld(curMouseV);
+      vp.scaleX = vp.scaleX * scale;
+      vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
+    },
+
+    /** Select the next slice on the timeline.  Applies to each track. */
+    selectNext_: function(e) {
+      this.selectAdjoining_(e, true);
+    },
+
+    /** Select the previous slice on the timeline.  Applies to each track. */
+    selectPrevious_: function(e) {
+      this.selectAdjoining_(e, false);
+    },
+
+    /**
+     * Helper for selection previous or next.
+     * @param {Event} The current event.
+     * @param {boolean} forwardp If true, select one forward (next).
+     *   Else, select previous.
+     */
+    selectAdjoining_: function(e, forwardp) {
+      var i, track, slice, adjoining;
+      var selection = [];
+      // Clear old selection; try and select next.
+      for (i = 0; i < this.selection_.length; ++i) {
+        adjoining = undefined;
+        this.selection_[i].slice.selected = false;
+        var track = this.selection_[i].track;
+        var slice = this.selection_[i].slice;
+        if (slice) {
+          if (forwardp)
+            adjoining = track.pickNext(slice);
+          else
+            adjoining = track.pickPrevious(slice);
+        }
+        if (adjoining != undefined)
+          selection.push({track: track, slice: adjoining});
+      }
+      // Activate the new selection.
+      this.selection_ = selection;
+      for (i = 0; i < this.selection_.length; ++i)
+        this.selection_[i].slice.selected = true;
+      cr.dispatchSimpleEvent(this, 'selectionChange');
+      this.invalidate();  // Cause tracks to redraw.
+      e.preventDefault();
     },
 
     get keyHelp() {
       return 'Keyboard shortcuts:\n' +
-          ' w/s   : Zoom in/out\n' +
-          ' a/d   : Pan left/right\n' +
-          ' e     : Center on mouse' +
-          ' g/G   : Shows grid at the start/end of the selected task';
+          ' w/s     : Zoom in/out    (with shift: go faster)\n' +
+          ' a/d     : Pan left/right\n' +
+          ' e       : Center on mouse\n' +
+          ' g/G     : Shows grid at the start/end of the selected task\n' +
+          ' <-,^TAB : Select previous event on current timeline\n' +
+          ' ->, TAB : Select next event on current timeline\n' +
+        '\n' +
+        'Dbl-click to zoom in; Shift dbl-click to zoom out\n';
+
+
     },
 
     get selection() {
@@ -342,6 +416,7 @@ cr.define('gpu', function() {
     },
 
     showDragBox_: function() {
+      this.dragBox_.hidden = false;
     },
 
     hideDragBox_: function() {
@@ -349,6 +424,11 @@ cr.define('gpu', function() {
       this.dragBox_.style.top = '-1000px';
       this.dragBox_.style.width = 0;
       this.dragBox_.style.height = 0;
+      this.dragBox_.hidden = true;
+    },
+
+    get dragBoxVisible_() {
+      return this.dragBox_.hidden == false;
     },
 
     setDragBoxPosition_: function(eDown, eCur) {
@@ -407,9 +487,6 @@ cr.define('gpu', function() {
 
       var wX = this.viewport_.xViewToWorld(pos.x);
 
-      // Update the drag box position
-      this.showDragBox_();
-      this.setDragBoxPosition_(e, e);
       this.dragBeginEvent_ = e;
       e.preventDefault();
     },
@@ -425,6 +502,12 @@ cr.define('gpu', function() {
 
       // Remember position. Used during keyboard zooming.
       this.lastMouseViewPos_ = pos;
+
+      // Initiate the drag box if needed.
+      if (this.dragBeginEvent_ && !this.dragBoxVisible_) {
+        this.showDragBox_();
+        this.setDragBoxPosition_(e, e);
+      }
 
       // Update the drag box
       if (this.dragBeginEvent_) {
@@ -480,7 +563,15 @@ cr.define('gpu', function() {
         }
         this.invalidate();  // Cause tracks to redraw.
       }
-    }
+    },
+
+    onDblClick_: function(e) {
+      var scale = 4;
+      if (e.shiftKey)
+        scale = 1 / scale;
+      this.zoomBy_(scale);
+      e.preventDefault();
+    },
   };
 
   /**

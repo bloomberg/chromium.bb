@@ -292,7 +292,23 @@ cr.define('gpu', function() {
 
         if (w < pixWidth)
           w = pixWidth;
-        tr.fillRect(x, w, colorId);
+        if (slice.duration > 0) {
+          tr.fillRect(x, w, colorId);
+        } else {
+          // Instant: draw a triangle.  If zoomed too far, collapse
+          // into the FastRectRenderer.
+          if (pixWidth > 0.001) {
+            tr.fillRect(x, pixWidth, colorId);
+          } else {
+            ctx.fillStyle = pallette[colorId];
+            ctx.beginPath();
+            ctx.moveTo(x - (4 * pixWidth), canvasH);
+            ctx.lineTo(x, 0);
+            ctx.lineTo(x + (4 * pixWidth), canvasH);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
       }
       tr.flush();
       ctx.restore();
@@ -311,12 +327,21 @@ cr.define('gpu', function() {
           if (slice.didNotFinish) {
             title += " (Did Not Finish)";
           }
-          var labelWidth = quickMeasureText(ctx, title) + 2;
-          var labelWidthWorld = pixWidth * labelWidth;
-          if (labelWidthWorld < slice.duration) {
-            var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
-            ctx.fillText(title, cX, 2.5);
+          function labelWidth() {
+            return quickMeasureText(ctx, title) + 2;
           }
+          function labelWidthWorld() {
+            return pixWidth * labelWidth();
+          }
+          var elided = false;
+          while (labelWidthWorld() > slice.duration) {
+            title = title.substring(0, title.length * 0.75);
+            elided = true;
+          }
+          if (elided && title.length > 3)
+            title = title.substring(0, title.length - 3) + '...';
+          var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
+          ctx.fillText(title, cX, 2.5, labelWidthWorld());
         }
       }
     },
@@ -374,7 +399,55 @@ cr.define('gpu', function() {
           function(x) { return x.duration; },
           loWX, hiWX,
           onPickHit);
-    }
+    },
+
+    /**
+     * Find the index for the given slice.
+     * @return {index} Index of the given slice, or undefined.
+     * @private
+     */
+    indexOfSlice_: function(slice) {
+      var index = gpu.findLowIndexInSortedArray(this.slices_,
+          function(x) { return x.start; },
+          slice.start);
+      while (index < this.slices_.length &&
+          slice.start == this.slices_[index].start &&
+          slice.colorId != this.slices_[index].colorId) {
+        index++;
+      }
+      return index < this.slices_.length ? index : undefined;
+    },
+
+    /**
+     * Return the next slice, if any, after the given slice.
+     * @param {slice} The previous slice.
+     * @return {slice} The next slice, or undefined.
+     * @private
+     */
+    pickNext: function(slice) {
+      var index = this.indexOfSlice_(slice);
+      if (index != undefined) {
+        if (index < this.slices_.length - 1)
+          index++;
+        else
+          index = undefined;
+      }
+      return index != undefined ? this.slices_[index] : undefined;
+    },
+
+   /**
+     * Return the previous slice, if any, before the given slice.
+     * @param {slice} A slice.
+     * @return {slice} The previous slice, or undefined.
+     */
+    pickPrevious: function(slice) {
+      var index = this.indexOfSlice_(slice);
+      if (index == 0)
+        return undefined;
+      else if ((index != undefined) && (index > 0))
+        index--;
+      return index != undefined ? this.slices_[index] : undefined;
+    },
 
   };
 

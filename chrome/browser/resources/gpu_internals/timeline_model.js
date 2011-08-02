@@ -163,72 +163,93 @@ cr.define('gpu', function() {
           for (var i = 0; i < name.length; ++i)
             hash = (hash + 37 * hash + 11 * name.charCodeAt(i)) % 0xFFFFFFFF;
           nameToColorMap[name] = hash % numColorIds;
-          console.log(name, nameToColorMap[name]);
         }
         return nameToColorMap[name];
+      }
+
+      var self = this;
+
+      /**
+       * Helper to process a 'begin' event (e.g. initiate a slice).
+       * @param {ThreadState} state Thread state (holds slices).
+       * @param {Object} event The current trace event.
+       */
+      function processBegin(state, event) {
+        var colorId = getColor(event.name);
+        var slice =
+            { index: eI,
+              slice: new TimelineSlice(event.name, colorId, event.ts,
+                                       event.args) };
+        if (event.args['ui-nest'] === '0') {
+          var sliceID = event.name;
+          for (var x in event.args)
+            sliceID += ';' + event.args[x];
+          if (state.openNonNestedSlices[sliceID])
+            console.log('Event ' + sliceID + ' already open.');
+          state.openNonNestedSlices[sliceID] = slice;
+        } else {
+          state.openSlices.push(slice);
+        }
+      }
+
+      /**
+       * Helper to process an 'end' event (e.g. close a slice).
+       * @param {ThreadState} state Thread state (holds slices).
+       * @param {Object} event The current trace event.
+       */
+      function processEnd(state, event) {
+        if (event.args['ui-nest'] === '0') {
+          var sliceID = event.name;
+          for (var x in event.args)
+            sliceID += ';' + event.args[x];
+          var slice = state.openNonNestedSlices[sliceID];
+          if (!slice)
+            return;
+          slice.slice.duration = event.ts - slice.slice.start;
+
+          // Store the slice in a non-nested subrow.
+          var thread = self.getProcess(event.pid).getThread(event.tid);
+          thread.addNonNestedSlice(slice.slice);
+          delete state.openNonNestedSlices[name];
+        } else {
+          if (state.openSlices.length == 0) {
+            // Ignore E events that are unmatched.
+            return;
+          }
+          var slice = state.openSlices.pop().slice;
+          slice.duration = event.ts - slice.start;
+
+          // Store the slice on the correct subrow.
+          var thread = self.getProcess(event.pid).getThread(event.tid);
+          var subRowIndex = state.openSlices.length;
+          thread.getSubrow(subRowIndex).push(slice);
+
+          // Add the slice to the subSlices array of its parent.
+          if (state.openSlices.length) {
+            var parentSlice = state.openSlices[state.openSlices.length - 1];
+            parentSlice.slice.subSlices.push(slice);
+          }
+        }
       }
 
       // Walk through events
       for (var eI = 0; eI < events.length; eI++) {
         var event = events[eI];
         var ptid = event.pid + ':' + event.tid;
-        if (!(ptid in threadStateByPTID)) {
+
+        if (!(ptid in threadStateByPTID))
           threadStateByPTID[ptid] = new ThreadState();
-        }
         var state = threadStateByPTID[ptid];
+
         if (event.ph == 'B') {
-          var colorId = getColor(event.name);
-          var slice =
-              { index: eI,
-                slice: new TimelineSlice(event.name, colorId, event.ts,
-                                         event.args) };
-          if (event.args['ui-nest'] === '0') {
-            var sliceID = event.name;
-            for (var x in event.args) {
-              sliceID += ';' + event.args[x];
-            }
-            if (state.openNonNestedSlices[sliceID])
-              console.log('Event ' + sliceID + ' already open.');
-            state.openNonNestedSlices[sliceID] = slice;
-          } else
-            state.openSlices.push(slice);
+          processBegin(state, event);
         } else if (event.ph == 'E') {
-          if (event.args['ui-nest'] === '0') {
-            var sliceID = event.name;
-            for (var x in event.args) {
-              sliceID += ';' + event.args[x];
-            }
-            var slice = state.openNonNestedSlices[sliceID];
-            if (!slice)
-              continue;
-            slice.slice.duration = event.ts - slice.slice.start;
-
-            // Store the slice in a non-nested subrow.
-            var thread = this.getProcess(event.pid).getThread(event.tid);
-            thread.addNonNestedSlice(slice.slice);
-            delete state.openNonNestedSlices[name];
-          } else {
-            if (state.openSlices.length == 0) {
-              // Ignore E events that that are unmatched.
-              continue;
-            }
-            var slice = state.openSlices.pop().slice;
-            slice.duration = event.ts - slice.start;
-
-            // Store the slice on the correct subrow.
-            var thread = this.getProcess(event.pid).getThread(event.tid);
-            var subRowIndex = state.openSlices.length;
-            thread.getSubrow(subRowIndex).push(slice);
-
-            // Add the slice to the subSlices array of its parent.
-            if (state.openSlices.length) {
-              var parentSlice = state.openSlices[state.openSlices.length - 1];
-              parentSlice.slice.subSlices.push(slice);
-            }
-          }
+          processEnd(state, event);
         } else if (event.ph == 'I') {
-          // TODO(nduca): Implement parsing of immediate events.
-          console.log('Parsing of I-type events not implemented.');
+          // Treat an Instant event as a duration 0 slice.
+          // TimelineSliceTrack's redraw() knows how to handle this.
+          processBegin(state, event);
+          processEnd(state, event);
         } else {
           throw new Error('Unrecognized event phase: ' + event.ph +
                           '(' + event.name + ')');
