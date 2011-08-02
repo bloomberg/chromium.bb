@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
@@ -86,16 +87,18 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/extension_input_ui_api.h"
 #endif
 
@@ -679,6 +682,7 @@ void ExtensionService::InitEventRouters() {
   chromeos::ExtensionInputMethodEventRouter::GetInstance();
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
+  ExtensionInputImeEventRouter::GetInstance()->Init();
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
@@ -1437,13 +1441,20 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   if (plugins_changed || nacl_modules_changed)
     PluginService::GetInstance()->PurgePluginListCache(false);
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS)
+#if defined(TOUCH_UI)
   chromeos::input_method::InputMethodManager* input_method_manager =
       chromeos::input_method::InputMethodManager::GetInstance();
+#endif
   for (std::vector<Extension::InputComponentInfo>::const_iterator component =
            extension->input_components().begin();
        component != extension->input_components().end();
        ++component) {
+    if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
+      ExtensionInputImeEventRouter::GetInstance()->RegisterIme(
+          profile_, extension->id(), *component);
+    }
+#if defined(TOUCH_UI)
     if (component->type == Extension::INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD &&
         !component->layouts.empty()) {
       const bool is_system =
@@ -1452,6 +1463,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
                                                     component->layouts,
                                                     is_system);
     }
+#endif
   }
 #endif
 }

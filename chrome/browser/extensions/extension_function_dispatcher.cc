@@ -74,6 +74,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_input_method_api.h"
 #include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
 #endif
@@ -291,8 +292,17 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetKeyboardHeightFunction>();
 #endif
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+#if defined(OS_CHROMEOS)
   // IME
+  RegisterFunction<SetCompositionFunction>();
+  RegisterFunction<ClearCompositionFunction>();
+  RegisterFunction<CommitTextFunction>();
+  RegisterFunction<SetCandidateWindowPropertiesFunction>();
+  RegisterFunction<SetCandidatesFunction>();
+  RegisterFunction<SetCursorPositionFunction>();
+  RegisterFunction<SetMenuItemsFunction>();
+  RegisterFunction<UpdateMenuItemsFunction>();
+#if defined(TOUCH_UI)
   RegisterFunction<CandidateClickedInputUiFunction>();
   RegisterFunction<CursorUpInputUiFunction>();
   RegisterFunction<CursorDownInputUiFunction>();
@@ -301,6 +311,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<RegisterInputUiFunction>();
   RegisterFunction<PageUpInputUiFunction>();
   RegisterFunction<PageDownInputUiFunction>();
+#endif
 #endif
 
   // Management.
