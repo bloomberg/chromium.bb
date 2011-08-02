@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace skia {
 
 // Returns the CGContext that backing the SkDevice.  Forwards to the bound
 // PlatformDevice.  Returns NULL if no PlatformDevice is bound.
-CGContextRef GetBitmapContext(SkDevice* device);
+SK_API CGContextRef GetBitmapContext(SkDevice* device);
 
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface CoreGraphics can also
