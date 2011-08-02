@@ -69,6 +69,26 @@ int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path,
   return QuotaManager::kTemporaryStorageQuotaMaxSize;
 }
 
+void CountOriginType(const std::set<GURL>& origins,
+                     SpecialStoragePolicy* policy,
+                     size_t* protected_origins,
+                     size_t* unlimited_origins) {
+  DCHECK(protected_origins);
+  DCHECK(unlimited_origins);
+  *protected_origins = 0;
+  *unlimited_origins = 0;
+  if (!policy)
+    return;
+  for (std::set<GURL>::const_iterator itr = origins.begin();
+       itr != origins.end();
+       ++itr) {
+    if (policy->IsStorageProtected(*itr))
+      ++*protected_origins;
+    if (policy->IsStorageUnlimited(*itr))
+      ++*unlimited_origins;
+  }
+}
+
 }  // anonymous namespace
 
 // TODO(kinuko): We will need to have different sizes for different platforms
@@ -1381,8 +1401,19 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
 
   std::set<GURL> origins;
   GetCachedOrigins(type, &origins);
+
+  size_t num_origins = origins.size();
+  size_t protected_origins = 0;
+  size_t unlimited_origins = 0;
+  CountOriginType(origins, special_storage_policy_,
+                  &protected_origins, &unlimited_origins);
+
   UMA_HISTOGRAM_COUNTS("Quota.NumberOfTemporaryStorageOrigins",
-                       origins.size());
+                       num_origins);
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfProtectedTemporaryStorageOrigins",
+                       protected_origins);
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfUnlimitedTemporaryStorageOrigins",
+                       unlimited_origins);
 }
 
 void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
@@ -1393,8 +1424,19 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
 
   std::set<GURL> origins;
   GetCachedOrigins(type, &origins);
+
+  size_t num_origins = origins.size();
+  size_t protected_origins = 0;
+  size_t unlimited_origins = 0;
+  CountOriginType(origins, special_storage_policy_,
+                  &protected_origins, &unlimited_origins);
+
   UMA_HISTOGRAM_COUNTS("Quota.NumberOfPersistentStorageOrigins",
-                       origins.size());
+                       num_origins);
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfProtectedPersistentStorageOrigins",
+                       protected_origins);
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfUnlimitedPersistentStorageOrigins",
+                       unlimited_origins);
 }
 
 void QuotaManager::DidInitializeTemporaryGlobalQuota(int64 quota) {
