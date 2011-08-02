@@ -47,10 +47,9 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
   DCHECK(browser_window);
 #if defined(TOOLKIT_VIEWS)
   gfx::NativeWindow window = browser_window->GetNativeHandle();
-  DCHECK(window);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(
-          GTK_WIDGET(window));
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  DCHECK(widget);
+  views::FocusManager* focus_manager = widget->GetFocusManager();
   DCHECK(focus_manager);
   return focus_manager->GetFocusedView() &&
       focus_manager->GetFocusedView()->id() == vid;

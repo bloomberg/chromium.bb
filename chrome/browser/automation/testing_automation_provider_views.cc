@@ -144,8 +144,9 @@ void TestingAutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   *view_id = -1;
   if (window_tracker_->ContainsHandle(handle)) {
     gfx::NativeWindow window = window_tracker_->GetResource(handle);
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeWindow(window);
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    DCHECK(widget);
+    views::FocusManager* focus_manager = widget->GetFocusManager();
     DCHECK(focus_manager);
     views::View* focused_view = focus_manager->GetFocusedView();
     if (focused_view)
@@ -158,8 +159,9 @@ void TestingAutomationProvider::WaitForFocusedViewIDToChange(
   if (!window_tracker_->ContainsHandle(handle))
     return;
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeWindow(window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  DCHECK(widget);
+  views::FocusManager* focus_manager = widget->GetFocusManager();
 
   // The waiter will respond to the IPC and delete itself when done.
   new ViewFocusChangeWaiter(focus_manager,

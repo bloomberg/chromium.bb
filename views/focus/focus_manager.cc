@@ -463,25 +463,6 @@ bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
 }
 
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeView(
-    gfx::NativeView native_view) {
-  // TODO(beng): This method probably isn't necessary.
-  Widget* widget = Widget::GetTopLevelWidgetForNativeView(native_view);
-  return widget ? widget->GetFocusManager() : NULL;
-}
-
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeWindow(
-    gfx::NativeWindow native_window) {
-  // TODO(beng): This method probably isn't necessary.
-  Widget* widget = Widget::GetWidgetForNativeWindow(native_window);
-  if (!widget)
-    return NULL;
-  widget = widget->GetTopLevelWidget();
-  return widget ? widget->GetFocusManager() : NULL;
-}
-
 void FocusManager::ViewRemoved(View* removed) {
   // If the view being removed contains (or is) the focused view,
   // clear the focus.  However, it's not safe to call ClearFocus()

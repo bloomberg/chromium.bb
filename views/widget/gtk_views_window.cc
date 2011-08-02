@@ -1,11 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
 #include "views/events/event.h"
-#include "views/widget/gtk_views_window.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/gtk_views_window.h"
+#include "views/widget/widget.h"
 
 G_BEGIN_DECLS
 
@@ -13,8 +14,9 @@ G_DEFINE_TYPE(GtkViewsWindow, gtk_views_window, GTK_TYPE_WINDOW)
 
 static void gtk_views_window_move_focus(GtkWindow* window,
                                         GtkDirectionType dir) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeWindow(window);
+      widget ? widget->GetFocusManager() : NULL;
   if (focus_manager) {
     GdkEvent* key = gtk_get_current_event();
     if (key && key->type == GDK_KEY_PRESS) {

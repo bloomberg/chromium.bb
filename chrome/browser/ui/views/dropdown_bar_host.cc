@@ -70,8 +70,7 @@ void DropdownBarHost::Init(views::View* view,
 
   // Start listening to focus changes, so we can register and unregister our
   // own handler for Escape.
-  focus_manager_ =
-      views::FocusManager::GetFocusManagerForNativeView(host_->GetNativeView());
+  focus_manager_ = host_->GetFocusManager();
   if (focus_manager_) {
     focus_manager_->AddFocusChangeListener(this);
   } else {

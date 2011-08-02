@@ -1601,32 +1601,38 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
 
   // Get the focus manager directly from the first window.  Should exist
   // because the first window is the root widget.
-  views::FocusManager* focus_manager_member1 = widget1->GetFocusManager();
-  EXPECT_TRUE(focus_manager_member1);
+  views::FocusManager* focus_manager1 = widget1->GetFocusManager();
+  EXPECT_TRUE(focus_manager1);
 
   // Create another view window parented to the first view window.
   scoped_ptr<Widget> widget2(new Widget);
   params.parent = widget1->GetNativeView();
   widget2->Init(params);
 
-  // Get the focus manager directly from the second window. Should return the
-  // first window's focus manager.
-  views::FocusManager* focus_manager_member2 = widget2->GetFocusManager();
-  EXPECT_EQ(focus_manager_member2, focus_manager_member1);
+  // Access the shared focus manager directly from the second window.
+  views::FocusManager* focus_manager2 = widget2->GetFocusManager();
+  EXPECT_EQ(focus_manager2, focus_manager1);
 
-  // Get the focus manager indirectly using the first window handle. Should
-  // return the first window's focus manager.
-  views::FocusManager* focus_manager_indirect =
-      views::FocusManager::GetFocusManagerForNativeView(
-          widget1->GetNativeView());
-  EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
+  // Access the shared focus manager indirectly from the first window handle.
+  gfx::NativeWindow native_window = widget1->GetNativeWindow();
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(native_window);
+  EXPECT_EQ(widget->GetFocusManager(), focus_manager1);
 
-  // Get the focus manager indirectly using the second window handle. Should
-  // return the first window's focus manager.
-  focus_manager_indirect =
-      views::FocusManager::GetFocusManagerForNativeView(
-          widget2->GetNativeView());
-  EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
+  // Access the shared focus manager indirectly from the second window handle.
+  native_window = widget2->GetNativeWindow();
+  widget = views::Widget::GetWidgetForNativeWindow(native_window);
+  EXPECT_EQ(widget->GetFocusManager(), focus_manager1);
+
+  // Access the shared focus manager indirectly from the first view handle.
+  gfx::NativeView native_view = widget1->GetNativeView();
+  widget = views::Widget::GetTopLevelWidgetForNativeView(native_view);
+  EXPECT_EQ(widget->GetFocusManager(), focus_manager1);
+
+  // Access the shared focus manager indirectly from the second view handle.
+  native_view = widget2->GetNativeView();
+  widget = views::Widget::GetTopLevelWidgetForNativeView(native_view);
+  EXPECT_EQ(widget->GetFocusManager(), focus_manager1);
 
   DestroyWindow(hwnd);
 }

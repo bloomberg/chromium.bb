@@ -326,22 +326,6 @@ bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
          !key_event.IsControlDown();
 }
 
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeView(
-    gfx::NativeView native_view) {
-  NativeWidget* native_widget =
-      NativeWidget::GetNativeWidgetForNativeView(native_view);
-  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
-}
-
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeWindow(
-    gfx::NativeWindow native_window) {
-  NativeWidget* native_widget =
-      NativeWidget::GetNativeWidgetForNativeWindow(native_window);
-  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // FocusManager, private:
 

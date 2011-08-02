@@ -497,11 +497,13 @@ void RenderWidgetHostViewWin::Focus() {
 }
 
 void RenderWidgetHostViewWin::Blur() {
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(m_hWnd);
-  // We don't have a FocusManager if we are hidden.
-  if (focus_manager)
-    focus_manager->ClearFocus();
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(m_hWnd);
+  if (widget) {
+    views::FocusManager* focus_manager = widget->GetFocusManager();
+    // We don't have a FocusManager if we are hidden.
+    if (focus_manager)
+      focus_manager->ClearFocus();
+  }
 }
 
 bool RenderWidgetHostViewWin::HasFocus() {

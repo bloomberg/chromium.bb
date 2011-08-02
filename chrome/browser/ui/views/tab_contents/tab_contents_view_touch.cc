@@ -190,8 +190,7 @@ void TabContentsViewTouch::StoreFocus() {
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
 
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+  views::FocusManager* focus_manager = GetFocusManager();
   if (focus_manager) {
     // |focus_manager| can be NULL if the tab has been detached but still
     // exists.
@@ -208,8 +207,7 @@ void TabContentsViewTouch::RestoreFocus() {
   if (!last_focused_view) {
     SetInitialFocus();
   } else {
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+    views::FocusManager* focus_manager = GetFocusManager();
 
     // If you hit this DCHECK, please report it to Jay (jcampan).
     DCHECK(focus_manager != NULL) << "No focus manager when restoring focus.";
@@ -318,8 +316,7 @@ void TabContentsViewTouch::TakeFocus(bool reverse) {
   if (tab_contents_->delegate() &&
       !tab_contents_->delegate()->TakeFocus(reverse)) {
 
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+    views::FocusManager* focus_manager = GetFocusManager();
 
     // We may not have a focus manager if the tab has been switched before this
     // message arrived.

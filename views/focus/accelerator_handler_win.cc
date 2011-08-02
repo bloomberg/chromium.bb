@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -18,8 +19,8 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
   bool process_message = true;
 
   if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) {
-    FocusManager* focus_manager =
-        FocusManager::GetFocusManagerForNativeView(msg.hwnd);
+    Widget* widget = Widget::GetTopLevelWidgetForNativeView(msg.hwnd);
+    FocusManager* focus_manager = widget ? widget->GetFocusManager() : NULL;
     if (focus_manager) {
       switch (msg.message) {
         case WM_KEYDOWN:

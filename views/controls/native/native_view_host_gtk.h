@@ -64,7 +64,7 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   static void CallDestroy(GtkObject* object, NativeViewHostGtk* host);
 
   // Invoked from the 'focus-in-event' signal.
-  static gboolean CallFocusIn(GtkWidget* widget,
+  static gboolean CallFocusIn(GtkWidget* gtk_widget,
                               GdkEventFocus* event,
                               NativeViewHostGtk* button);
 

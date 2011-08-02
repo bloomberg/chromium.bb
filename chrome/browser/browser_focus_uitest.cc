@@ -246,12 +246,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_BrowsersRememberFocus) {
   browser2->window()->Show();
   ui_test_utils::NavigateToURL(browser2, url);
 
-  HWND hwnd2 = reinterpret_cast<HWND>(browser2->window()->GetNativeHandle());
+  gfx::NativeWindow window2 = browser2->window()->GetNativeHandle();
   BrowserView* browser_view2 =
-      BrowserView::GetBrowserViewForNativeWindow(hwnd2);
+      BrowserView::GetBrowserViewForNativeWindow(window2);
   ASSERT_TRUE(browser_view2);
-  views::FocusManager* focus_manager2 =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd2);
+  views::Widget* widget2 = views::Widget::GetWidgetForNativeWindow(window2);
+  ASSERT_TRUE(widget2);
+  views::FocusManager* focus_manager2 = widget2->GetFocusManager();
   ASSERT_TRUE(focus_manager2);
   EXPECT_EQ(browser_view2->GetTabContentsContainerView(),
             focus_manager2->GetFocusedView());
@@ -264,9 +265,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_BrowsersRememberFocus) {
 
   // Switch back to the second browser, focus should still be on the page.
   browser2->window()->Activate();
-  EXPECT_EQ(NULL,
-            views::FocusManager::GetFocusManagerForNativeView(
-                browser()->window()->GetNativeHandle())->GetFocusedView());
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  ASSERT_TRUE(widget);
+  EXPECT_EQ(NULL, widget->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(browser_view2->GetTabContentsContainerView(),
             focus_manager2->GetFocusedView());
 

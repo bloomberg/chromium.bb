@@ -47,7 +47,7 @@ class NativeControlGtk : public NativeViewHost {
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
-  static gboolean CallFocusIn(GtkWidget* widget,
+  static gboolean CallFocusIn(GtkWidget* gtk_widget,
                               GdkEventFocus* event,
                               NativeControlGtk* button);
 

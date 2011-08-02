@@ -8,6 +8,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace ui {
 
@@ -18,8 +19,8 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
   bool process_message = true;
 
   if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) {
-    FocusManager* focus_manager =
-        FocusManager::GetFocusManagerForNativeView(msg.hwnd);
+    Widget* widget = Widget::GetTopLevelWidgetForNativeView(msg.hwnd);
+    FocusManager* focus_manager = widget ? widget->GetFocusManager() : NULL;
     if (focus_manager) {
       switch (msg.message) {
         case WM_KEYDOWN:

@@ -232,11 +232,11 @@ void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
 }
 
 // static
-gboolean NativeControlGtk::CallFocusIn(GtkWidget* widget,
+gboolean NativeControlGtk::CallFocusIn(GtkWidget* gtk_widget,
                                        GdkEventFocus* event,
                                        NativeControlGtk* control) {
-  FocusManager* focus_manager =
-      FocusManager::GetFocusManagerForNativeView(widget);
+  Widget* widget = Widget::GetTopLevelWidgetForNativeView(gtk_widget);
+  FocusManager* focus_manager = widget ? widget->GetFocusManager() : NULL;
   if (!focus_manager) {
     // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
     // options page is only based on views.

@@ -27,6 +27,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #elif defined(OS_MACOSX)
@@ -751,9 +752,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
   GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeWindow(
-          browser()->window()->GetNativeHandle());
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  views::FocusManager* focus_manager = widget->GetFocusManager();
 
   // See where Escape is registered.
   views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);

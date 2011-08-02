@@ -840,8 +840,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   root->AddChildView(view);
 
   // Get the focus manager.
-  FocusManager* focus_manager = FocusManager::GetFocusManagerForNativeView(
-      widget->GetNativeView());
+  FocusManager* focus_manager = widget->GetFocusManager();
   ASSERT_TRUE(focus_manager);
 
   // Hit the return key and see if it takes effect.
@@ -904,8 +903,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   View* root = widget->GetRootView();
   root->AddChildView(view);
 
-  FocusManager* focus_manager = FocusManager::GetFocusManagerForNativeView(
-      widget->GetNativeView());
+  FocusManager* focus_manager = widget->GetFocusManager();
   ASSERT_TRUE(focus_manager);
 
   view->SetVisible(false);
