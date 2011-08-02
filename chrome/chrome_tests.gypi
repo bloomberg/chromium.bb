@@ -2578,6 +2578,8 @@
         'browser/speech/speech_input_bubble_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager/task_manager_browsertest.cc',
+        'browser/task_manager/task_manager_browsertest_util.cc',
+        'browser/task_manager/task_manager_browsertest_util.h',
         'browser/task_manager/task_manager_notification_browsertest.cc',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/browser_browsertest.cc',
