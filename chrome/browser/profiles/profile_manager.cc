@@ -356,8 +356,11 @@ void ProfileManager::OnBrowserSetLastActive(const Browser* browser) {
   Profile* last_active = browser->GetProfile();
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  local_state->SetString(prefs::kProfileLastUsed,
-      last_active->GetPath().BaseName().MaybeAsASCII());
+  // Only keep track of profiles that we are managing; tests may create others.
+  if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end()) {
+    local_state->SetString(prefs::kProfileLastUsed,
+                           last_active->GetPath().BaseName().MaybeAsASCII());
+  }
 }
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
