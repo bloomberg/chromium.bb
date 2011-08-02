@@ -65,6 +65,11 @@ def RunShard(test, num_shards, index, gtest_args, stdout, stderr):
   env = os.environ.copy()
   env["GTEST_TOTAL_SHARDS"] = str(num_shards)
   env["GTEST_SHARD_INDEX"] = str(index)
+
+  # Use a unique log file for each shard
+  # Allows ui_tests to be run in parallel on the same machine
+  env["CHROME_LOG_FILE"] = "chrome_log_%d" % index
+
   return subprocess.Popen(
       args, stdout=stdout, stderr=stderr, env=env, bufsize=0)
 
