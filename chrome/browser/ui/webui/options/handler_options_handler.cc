@@ -45,7 +45,7 @@ void HandlerOptionsHandler::Initialize() {
   UpdateHandlerList();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      NotificationService::AllSources());
+      Source<Profile>(web_ui_->GetProfile()));
 }
 
 void HandlerOptionsHandler::RegisterMessages() {

@@ -285,7 +285,7 @@ void ContentSettingsHandler::Initialize() {
       NotificationService::AllSources());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      NotificationService::AllSources());
+      Source<Profile>(web_ui_->GetProfile()));
 
   PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);

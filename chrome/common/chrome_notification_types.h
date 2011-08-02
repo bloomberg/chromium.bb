@@ -889,7 +889,7 @@ enum {
 #endif
 
   // Protocol Handler Registry -----------------------------------------------
-  // Sent when a ProtocolHandlerRegistry is changed.
+  // Sent when a ProtocolHandlerRegistry is changed. The source is the profile.
   NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
 
   // Sent when the cached profile info has changed.
