@@ -13,6 +13,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
 // Unfortunately kNumServices must be defined in the .h.
@@ -68,7 +69,7 @@ void TokenService::Initialize(const char* const source,
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_UPDATED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
 }
 
 void TokenService::ResetCredentialsInMemory() {
@@ -281,7 +282,7 @@ void TokenService::LoadTokensIntoMemory(
 void TokenService::Observe(int type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TOKEN_UPDATED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_TOKEN_UPDATED);
   TokenAvailableDetails* tok_details =
       Details<TokenAvailableDetails>(details).ptr();
   OnIssueAuthTokenSuccess(tok_details->service(), tok_details->token());

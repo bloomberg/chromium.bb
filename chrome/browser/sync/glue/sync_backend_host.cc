@@ -60,7 +60,7 @@ using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
-    : core_(new Core(profile->GetDebugName(),
+    : core_(new Core(profile,
                      ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       initialization_state_(NOT_INITIALIZED),
       sync_thread_("Chrome_SyncThread"),
@@ -534,7 +534,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_UPDATED,
-      NotificationService::AllSources(),
+      Source<Profile>(profile_),
       Details<const TokenAvailableDetails>(&details));
 }
 
@@ -629,8 +629,8 @@ void SyncBackendHost::LogUnsyncedItems(int level) const {
   return core_->sync_manager()->LogUnsyncedItems(level);
 }
 
-SyncBackendHost::Core::Core(const std::string& name, SyncBackendHost* backend)
-    : name_(name),
+SyncBackendHost::Core::Core(Profile* profile, SyncBackendHost* backend)
+    : profile_(profile),
       host_(backend),
       processing_passphrase_(false) {
 }
@@ -680,7 +680,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   bool success = file_util::CreateDirectory(host_->sync_data_folder_path());
   DCHECK(success);
 
-  sync_manager_.reset(new sync_api::SyncManager(name_)),
+  sync_manager_.reset(new sync_api::SyncManager(profile_->GetDebugName())),
   sync_manager_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
   success = sync_manager_->Init(

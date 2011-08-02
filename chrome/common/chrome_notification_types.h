@@ -736,8 +736,8 @@ enum {
   NOTIFICATION_TOKEN_REQUEST_FAILED,
 
   // When a service has a new token they got from a frontend that the
-  // TokenService should know about, fire this notification. The details
-  // are a TokenAvailableDetails object.
+  // TokenService should know about, fire this notification. The source is the
+  // Profile. The details are a TokenAvailableDetails object.
   NOTIFICATION_TOKEN_UPDATED,
 
   // Sent when a user signs into Google services such as sync.

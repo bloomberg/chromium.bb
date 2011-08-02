@@ -254,7 +254,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
                public sync_api::SyncManager::Observer {
    public:
-    Core(const std::string& name, SyncBackendHost* backend);
+    Core(Profile* profile, SyncBackendHost* backend);
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate
@@ -462,8 +462,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Return true if a model lives on the current thread.
     bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
 
-    // Debug name of the Profile this object is for.
-    const std::string name_;
+    Profile* profile_;
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
