@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -18,14 +19,15 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
  public:
   BrightnessLibraryImpl() : brightness_connection_(NULL) {}
 
-  ~BrightnessLibraryImpl() {
+  virtual ~BrightnessLibraryImpl() {
     if (brightness_connection_) {
       chromeos::DisconnectBrightness(brightness_connection_);
       brightness_connection_ = NULL;
     }
   }
 
-  void Init() {
+  // Begin BrightnessLibrary implementation.
+  virtual void Init() OVERRIDE {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       CHECK(!brightness_connection_) << "Already intialized";
       brightness_connection_ =
@@ -33,23 +35,24 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
     }
   }
 
-  void AddObserver(Observer* observer) {
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  void DecreaseScreenBrightness(bool allow_off) {
+  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
     if (chromeos::DecreaseScreenBrightness)
       chromeos::DecreaseScreenBrightness(allow_off);
   }
 
-  void IncreaseScreenBrightness() {
+  virtual void IncreaseScreenBrightness() OVERRIDE {
     if (chromeos::IncreaseScreenBrightness)
       chromeos::IncreaseScreenBrightness();
   }
+  // End BrightnessLibrary implementation.
 
  private:
   static void BrightnessChangedHandler(void* object,
@@ -85,12 +88,12 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
 class BrightnessLibraryStubImpl : public BrightnessLibrary {
  public:
   BrightnessLibraryStubImpl() {}
-  ~BrightnessLibraryStubImpl() {}
-  void Init() {}
-  void AddObserver(Observer* observer) {}
-  void RemoveObserver(Observer* observer) {}
-  void DecreaseScreenBrightness(bool allow_off) {}
-  void IncreaseScreenBrightness() {}
+  virtual ~BrightnessLibraryStubImpl() {}
+  virtual void Init() OVERRIDE {}
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {}
+  virtual void IncreaseScreenBrightness() OVERRIDE {}
 };
 
 // static
