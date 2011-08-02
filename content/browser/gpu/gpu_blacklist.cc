@@ -746,6 +746,9 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
               GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas))
         feature_status_list->Append(NewStatusValue("2d_canvas",
                                                    "unavailable_software"));
+      else if (disable_accelerated_compositing)
+        feature_status_list->Append(NewStatusValue("2d_canvas",
+                                                   "disabled_software"));
       else
         feature_status_list->Append(NewStatusValue("2d_canvas",
                                                    "enabled"));
@@ -789,6 +792,9 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
         GpuFeatureFlags::kGpuFeatureWebgl))
       feature_status_list->Append(NewStatusValue("webgl",
                                                  "unavailable_off"));
+    else if (disable_accelerated_compositing)
+      feature_status_list->Append(NewStatusValue("webgl",
+                                                 "enabled_readback"));
     else
       feature_status_list->Append(NewStatusValue("webgl",
                                                  "enabled"));
@@ -834,7 +840,8 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
       DictionaryValue* problem = new DictionaryValue();
       problem->SetString("description",
           "Accelerated compositing has been disabled, either via about:flags "
-          "or command line");
+          "or command line. This adversely affects performance of all hardware "
+          " accelerated features.");
       problem->Set("crBugs", new ListValue());
       problem->Set("webkitBugs", new ListValue());
       problem_list->Append(problem);

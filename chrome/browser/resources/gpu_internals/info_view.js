@@ -62,7 +62,7 @@ cr.define('gpu', function() {
       var featureLabelMap = {
         '2d_canvas': 'Canvas',
         '3d_css': '3D CSS',
-        'compositing': 'Compositing',
+        'compositing': 'HTML Rendering',
         'webgl': 'WebGL',
         'multisampling': 'WebGL multisampling'
       };
@@ -73,6 +73,7 @@ cr.define('gpu', function() {
         'unavailable_off': 'Unavailable. Hardware acceleration unavailable',
         'unavailable_software':
             'Software only, hardware acceleration unavailable',
+        'enabled_readback': 'Hardware accelerated, but at reduced performance',
         'enabled': 'Hardware accelerated'
       };
       var statusClassMap = {
