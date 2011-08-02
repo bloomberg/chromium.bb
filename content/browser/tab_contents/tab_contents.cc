@@ -514,16 +514,21 @@ bool TabContents::NeedToFireBeforeUnload() {
       !render_view_host()->SuddenTerminationAllowed();
 }
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* TabContents::OpenURL(const GURL& url,
                                   const GURL& referrer,
                                   WindowOpenDisposition disposition,
                                   PageTransition::Type transition) {
+  return OpenURL(OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* TabContents::OpenURL(const OpenURLParams& params) {
   if (delegate_) {
-    TabContents* new_contents =
-        delegate_->OpenURLFromTab(this, url, referrer, disposition, transition);
+    TabContents* new_contents = delegate_->OpenURLFromTab(this, params);
     // Notify observers.
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                      DidOpenURL(url, referrer, disposition, transition));
+                      DidOpenURL(params.url, params.referrer,
+                                 params.disposition, params.transition));
     return new_contents;
   }
   return NULL;

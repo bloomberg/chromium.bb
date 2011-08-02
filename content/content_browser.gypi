@@ -425,6 +425,7 @@
         'browser/tab_contents/navigation_details.h',
         'browser/tab_contents/navigation_entry.cc',
         'browser/tab_contents/navigation_entry.h',
+        'browser/tab_contents/page_navigator.cc',
         'browser/tab_contents/page_navigator.h',
         'browser/tab_contents/provisional_load_details.cc',
         'browser/tab_contents/provisional_load_details.h',

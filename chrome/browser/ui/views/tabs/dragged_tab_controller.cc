@@ -411,18 +411,26 @@ void DraggedTabController::InitTabDragData(BaseTab* tab,
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, PageNavigator implementation:
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* DraggedTabController::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* DraggedTabController::OpenURLFromTab(TabContents* source,
+                                                  const OpenURLParams& params) {
   if (source_tab_drag_data()->original_delegate) {
-    if (disposition == CURRENT_TAB)
-      disposition = NEW_WINDOW;
+    OpenURLParams forward_params = params;
+    if (params.disposition == CURRENT_TAB)
+      forward_params.disposition = NEW_WINDOW;
 
     return source_tab_drag_data()->original_delegate->OpenURLFromTab(
-        source, url, referrer, disposition, transition);
+        source, forward_params);
   }
   return NULL;
 }

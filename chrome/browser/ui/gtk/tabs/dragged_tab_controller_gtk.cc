@@ -110,18 +110,27 @@ bool DraggedTabControllerGtk::IsTabDetached(const TabGtk* tab) const {
 ////////////////////////////////////////////////////////////////////////////////
 // DraggedTabControllerGtk, TabContentsDelegate implementation:
 
+// TODO(adriansc): Remove this method once refactoring has changed all call
+// sites.
 TabContents* DraggedTabControllerGtk::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  if (original_delegate_) {
-    if (disposition == CURRENT_TAB)
-      disposition = NEW_WINDOW;
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
 
-    return original_delegate_->OpenURLFromTab(source, url, referrer,
-                                              disposition, transition);
+TabContents* DraggedTabControllerGtk::OpenURLFromTab(
+    TabContents* source,
+    const OpenURLParams& params) {
+  if (original_delegate_) {
+    OpenURLParams forward_params = params;
+    if (params.disposition == CURRENT_TAB)
+      forward_params.disposition = NEW_WINDOW;
+
+    return original_delegate_->OpenURLFromTab(source, forward_params);
   }
   return NULL;
 }

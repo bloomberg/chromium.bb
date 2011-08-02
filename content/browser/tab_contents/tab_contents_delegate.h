@@ -32,6 +32,7 @@ class HistoryAddPageArgs;
 }
 
 struct ContextMenuParams;
+struct OpenURLParams;
 class DownloadItem;
 class GURL;
 class HtmlDialogUIDelegate;
@@ -51,14 +52,19 @@ class TabContentsDelegate {
   //
   // A NULL source indicates the current tab (callers should probably use
   // OpenURL() for these cases which does it for you).
-  //
+
   // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
   // opened immediately.
+  // Deprecated. Please use the two-arguments method instead.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
                                       PageTransition::Type transition);
+
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params);
 
   // Called to inform the delegate that the tab content's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state

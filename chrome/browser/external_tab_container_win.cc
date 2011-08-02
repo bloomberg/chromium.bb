@@ -362,24 +362,25 @@ ExternalTabContainer*
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, TabContentsDelegate implementation:
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* ExternalTabContainer::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  if (pending()) {
-    PendingTopLevelNavigation url_request;
-    url_request.disposition = disposition;
-    url_request.transition = transition;
-    url_request.url = url;
-    url_request.referrer = referrer;
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
 
-    pending_open_url_requests_.push_back(url_request);
+TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
+                                                  const OpenURLParams& params) {
+  if (pending()) {
+    pending_open_url_requests_.push_back(params);
     return NULL;
   }
 
-  switch (disposition) {
+  switch (params.disposition) {
     case CURRENT_TAB:
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
@@ -389,24 +390,25 @@ TabContents* ExternalTabContainer::OpenURLFromTab(
     case SAVE_TO_DISK:
       if (automation_) {
         automation_->Send(new AutomationMsg_OpenURL(tab_handle_,
-                                                    url, referrer,
-                                                    disposition));
+                                                    params.url,
+                                                    params.referrer,
+                                                    params.disposition));
         // TODO(ananta)
         // We should populate other fields in the
         // ViewHostMsg_FrameNavigate_Params structure. Another option could be
         // to refactor the UpdateHistoryForNavigation function in TabContents.
-        ViewHostMsg_FrameNavigate_Params params;
-        params.referrer = referrer;
-        params.url = url;
-        params.page_id = -1;
-        params.transition = PageTransition::LINK;
+        ViewHostMsg_FrameNavigate_Params nav_params;
+        nav_params.referrer = params.referrer;
+        nav_params.url = params.url;
+        nav_params.page_id = -1;
+        nav_params.transition = PageTransition::LINK;
 
         content::LoadCommittedDetails details;
         details.did_replace_entry = false;
 
         scoped_refptr<history::HistoryAddPageArgs> add_page_args(
             tab_contents_->history_tab_helper()->
-                CreateHistoryAddPageArgs(url, details, params));
+                CreateHistoryAddPageArgs(params.url, details, nav_params));
         tab_contents_->history_tab_helper()->
             UpdateHistoryForNavigation(add_page_args);
 
@@ -1093,10 +1095,8 @@ void ExternalTabContainer::ServicePendingOpenURLRequests() {
 
   for (size_t index = 0; index < pending_open_url_requests_.size();
        ++index) {
-    const PendingTopLevelNavigation& url_request =
-        pending_open_url_requests_[index];
-    OpenURLFromTab(tab_contents(), url_request.url, url_request.referrer,
-                   url_request.disposition, url_request.transition);
+    const OpenURLParams& url_request = pending_open_url_requests_[index];
+    OpenURLFromTab(tab_contents(), url_request);
   }
   pending_open_url_requests_.clear();
 }
@@ -1147,16 +1147,23 @@ TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
 TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
+    TabContents* source,
+    const OpenURLParams& params) {
   if (!automation_)
     return NULL;
 
-  if (disposition == CURRENT_TAB) {
+  OpenURLParams forward_params = params;
+  if (params.disposition == CURRENT_TAB) {
     DCHECK(route_all_top_level_navigations_);
-    disposition = NEW_FOREGROUND_TAB;
+    forward_params.disposition = NEW_FOREGROUND_TAB;
   }
   TabContents* new_contents =
-      ExternalTabContainer::OpenURLFromTab(
-          source, url, referrer, disposition, transition);
+      ExternalTabContainer::OpenURLFromTab(source, forward_params);
   // support only one navigation for a dummy tab before it is killed.
   ::DestroyWindow(GetNativeView());
   return new_contents;

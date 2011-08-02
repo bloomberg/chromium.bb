@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 
 class Browser;
@@ -33,10 +34,16 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
 
   // TabContentsDelegate declarations.
 
+  // Deprecated. Use two-arguments variant instead.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const GURL& url, const GURL& referrer,
+                                      const GURL& url,
+                                      const GURL& referrer,
                                       WindowOpenDisposition disposition,
-                                      PageTransition::Type transition);
+                                      PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
+
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,

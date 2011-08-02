@@ -106,16 +106,24 @@ void BlockedContentContainer::Clear() {
 }
 
 // Overridden from TabContentsDelegate:
+
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* BlockedContentContainer::OpenURLFromTab(
     TabContents* source,
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  return owner_->tab_contents()->OpenURL(url,
-                                         referrer,
-                                         disposition,
-                                         transition);
+  return owner_->tab_contents()->OpenURL(OpenURLParams(url,
+                                                       referrer,
+                                                       disposition,
+                                                       transition));
+}
+
+TabContents* BlockedContentContainer::OpenURLFromTab(
+    TabContents* source,
+    const OpenURLParams& params) {
+  return owner_->tab_contents()->OpenURL(params);
 }
 
 void BlockedContentContainer::AddNewContents(TabContents* source,

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -115,11 +116,16 @@ class ExternalTabContainer : public TabContentsDelegate,
   static ExternalTabContainer* GetContainerForTab(HWND tab_window);
 
   // Overridden from TabContentsDelegate:
+
+  // Deprecated. Please used two-arguments variant.
+  // TODO(adriansc): Remove method once refactoring changed all call sites.
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
-                                      PageTransition::Type transition);
+                                      PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
   virtual void AddNewContents(TabContents* source,
@@ -219,22 +225,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   void RegisterRenderViewHostForAutomation(RenderViewHost* render_view_host,
                                            bool pending_view);
 
-  // Top level navigations received for a tab while it is waiting for an ack
-  // from the external host go here. Scenario is a window.open executes on a
-  // page in ChromeFrame. A new TabContents is created and the current
-  // ExternalTabContainer is notified via AddNewContents. At this point we
-  // send off an attach tab request to the host browser. Before the host
-  // browser sends over the ack, we receive a top level URL navigation for the
-  // new tab, which needs to be routed over the correct automation channel.
-  // We receive the automation channel only when the external host acks the
-  // attach tab request.
-  struct PendingTopLevelNavigation {
-    GURL url;
-    GURL referrer;
-    WindowOpenDisposition disposition;
-    PageTransition::Type transition;
-  };
-
   // Helper function for processing keystokes coming back from the renderer
   // process.
   bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,
@@ -296,9 +286,18 @@ class ExternalTabContainer : public TabContentsDelegate,
   // A mapping between accelerators and commands.
   std::map<views::Accelerator, int> accelerator_table_;
 
+  // Top level navigations received for a tab while it is waiting for an ack
+  // from the external host go here. Scenario is a window.open executes on a
+  // page in ChromeFrame. A new TabContents is created and the current
+  // ExternalTabContainer is notified via AddNewContents. At this point we
+  // send off an attach tab request to the host browser. Before the host
+  // browser sends over the ack, we receive a top level URL navigation for the
+  // new tab, which needs to be routed over the correct automation channel.
+  // We receive the automation channel only when the external host acks the
+  // attach tab request.
   // Contains the list of URL requests which are pending waiting for an ack
   // from the external host.
-  std::vector<PendingTopLevelNavigation> pending_open_url_requests_;
+  std::vector<OpenURLParams> pending_open_url_requests_;
 
   // Set to true if the ExternalTabContainer instance is waiting for an ack
   // from the host.
@@ -347,11 +346,14 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
   virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) {}
 
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const GURL& url,
+  // Deprecated. Please use the two-argument variant.
+  // TODO(adriansc): Remove method once refactoring changed all call sites.
+  virtual TabContents* OpenURLFromTab(TabContents* source, const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
-                                      PageTransition::Type transition);
+                                      PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
 
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {

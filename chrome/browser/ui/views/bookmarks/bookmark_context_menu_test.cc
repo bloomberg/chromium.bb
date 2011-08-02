@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -27,11 +28,18 @@ namespace {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
+  // Deprecated. Please use one-argument variant.
+  // TODO(adriansc): Remove this method once refactoring changed all call
+  // sites.
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) {
-    urls_.push_back(url);
+                               PageTransition::Type transition) OVERRIDE {
+    return OpenURL(OpenURLParams(url, referrer, disposition, transition));
+  }
+
+  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+    urls_.push_back(params.url);
     return NULL;
   }
 

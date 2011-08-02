@@ -21,6 +21,12 @@ TabContents* TabContentsDelegate::OpenURLFromTab(
     const GURL& referrer,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* TabContentsDelegate::OpenURLFromTab(TabContents* source,
+                                                 const OpenURLParams& params) {
   return NULL;
 }
 

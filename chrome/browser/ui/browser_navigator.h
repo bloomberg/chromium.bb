@@ -108,6 +108,9 @@ struct NavigateParams {
   // If non-empty, the new tab is an app tab.
   std::string extension_app_id;
 
+  // If non-empty, the new tab contents encoding is overriden by this value.
+  std::string override_encoding;
+
   // If non-empty, specifies the desired initial position and size of the
   // window if |disposition| == NEW_POPUP.
   // TODO(beng): Figure out if this can be used to create Browser windows

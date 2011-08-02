@@ -2626,11 +2626,17 @@ GURL Browser::GetHomePage() const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* Browser::OpenURL(const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition) {
-  return OpenURLFromTab(NULL, url, referrer, disposition, transition);
+  return OpenURLFromTab(NULL,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* Browser::OpenURL(const OpenURLParams& params) {
+  return OpenURLFromTab(NULL, params);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3045,22 +3051,32 @@ void Browser::TabStripEmpty() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabContentsDelegate implementation:
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* Browser::OpenURLFromTab(TabContents* source,
                                      const GURL& url,
                                      const GURL& referrer,
                                      WindowOpenDisposition disposition,
                                      PageTransition::Type transition) {
-  browser::NavigateParams params(this, url, transition);
-  params.source_contents =
-    tabstrip_model()->GetTabContentsAt(
-      tabstrip_model()->GetWrapperIndex(source));
-  params.referrer = referrer;
-  params.disposition = disposition;
-  params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  params.window_action = browser::NavigateParams::SHOW_WINDOW;
-  params.user_gesture = true;
-  browser::Navigate(&params);
-  return params.target_contents ? params.target_contents->tab_contents() : NULL;
+  return OpenURLFromTab(source, OpenURLParams(url, referrer, disposition,
+                                              transition));
+}
+
+TabContents* Browser::OpenURLFromTab(TabContents* source,
+                                     const OpenURLParams& params) {
+  browser::NavigateParams nav_params(this, params.url, params.transition);
+  nav_params.source_contents =
+      tabstrip_model()->GetTabContentsAt(
+          tabstrip_model()->GetWrapperIndex(source));
+  nav_params.referrer = params.referrer;
+  nav_params.disposition = params.disposition;
+  nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  nav_params.user_gesture = true;
+  nav_params.override_encoding = params.override_encoding;
+  browser::Navigate(&nav_params);
+
+  return nav_params.target_contents ?
+      nav_params.target_contents->tab_contents() : NULL;
 }
 
 void Browser::NavigationStateChanged(const TabContents* source,

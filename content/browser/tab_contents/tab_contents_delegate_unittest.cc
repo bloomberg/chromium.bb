@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
@@ -15,11 +16,18 @@ class MockTabContentsDelegate : public TabContentsDelegate {
  public:
   virtual ~MockTabContentsDelegate() {}
 
+  // TODO(adriansc): Remove this method when refactoring changed all call sites.
+  virtual TabContents* OpenURLFromTab(
+      TabContents* source,
+      const GURL& url,
+      const GURL& referrer,
+      WindowOpenDisposition disposition,
+      PageTransition::Type transition) OVERRIDE {
+    return NULL;
+  }
+
   virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const GURL& url,
-                                      const GURL& referrer,
-                                      WindowOpenDisposition disposition,
-                                      PageTransition::Type transition) {
+                              const OpenURLParams& params) OVERRIDE {
     return NULL;
   }
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -112,11 +113,18 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
+  // Deprecated. Please use the one-argument variant.
+  // TODO(adriansc): Remove this function once refactoring has changed
+  // all call sites.
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) {
-    url_ = url;
+                               PageTransition::Type transition) OVERRIDE {
+    return OpenURL(OpenURLParams(url, referrer, disposition, transition));
+  }
+
+  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE {
+    url_ = params.url;
     return NULL;
   }
 

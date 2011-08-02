@@ -116,17 +116,25 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, TabContentsDelegate implementation:
- TabContents* RegistrationScreen::OpenURLFromTab(
-     TabContents* source,
-     const GURL& url,
-     const GURL& referrer,
-     WindowOpenDisposition disposition,
-     PageTransition::Type transition) {
-  if (url.spec() == kRegistrationSuccessUrl) {
+
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
+TabContents* RegistrationScreen::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* RegistrationScreen::OpenURLFromTab(TabContents* source,
+                                                const OpenURLParams& params) {
+  if (params.url.spec() == kRegistrationSuccessUrl) {
     source->Stop();
     VLOG(1) << "Registration form completed.";
     CloseScreen(ScreenObserver::REGISTRATION_SUCCESS);
-  } else if (url.spec() == kRegistrationSkippedUrl) {
+  } else if (params.url.spec() == kRegistrationSkippedUrl) {
     source->Stop();
     VLOG(1) << "Registration form skipped.";
     CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
@@ -134,7 +142,7 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
     source->Stop();
     // Host registration page and actual registration page hosted by
     // OEM partner doesn't contain links to external URLs.
-    LOG(WARNING) << "Navigate to unsupported url: " << url.spec();
+    LOG(WARNING) << "Navigate to unsupported url: " << params.url.spec();
   }
   return NULL;
 }

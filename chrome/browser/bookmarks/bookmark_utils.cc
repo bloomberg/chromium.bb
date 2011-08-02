@@ -71,18 +71,25 @@ class NewBrowserPageNavigator : public PageNavigator {
 
   Browser* browser() const { return browser_; }
 
+  // Deprecated. Please use one-argument variant.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
                                PageTransition::Type transition) OVERRIDE {
+    return OpenURL(OpenURLParams(url, referrer, disposition, transition));
+  }
+
+  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE {
     if (!browser_) {
-      Profile* profile = (disposition == OFF_THE_RECORD) ?
+      Profile* profile = (params.disposition == OFF_THE_RECORD) ?
           profile_->GetOffTheRecordProfile() : profile_;
       browser_ = Browser::Create(profile);
-      // Always open the first tab in the foreground.
-      disposition = NEW_FOREGROUND_TAB;
     }
-    return browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
+
+    OpenURLParams forward_params = params;
+    forward_params.disposition = NEW_FOREGROUND_TAB;
+    return browser_->OpenURL(forward_params);
   }
 
  private:
@@ -147,8 +154,8 @@ void OpenAllImpl(const BookmarkNode* node,
       disposition = NEW_BACKGROUND_TAB;
     else
       disposition = initial_disposition;
-    (*navigator)->OpenURL(node->url(), GURL(), disposition,
-                          PageTransition::AUTO_BOOKMARK);
+    (*navigator)->OpenURL(OpenURLParams(node->url(), GURL(), disposition,
+                          PageTransition::AUTO_BOOKMARK));
     if (!*opened_url) {
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered

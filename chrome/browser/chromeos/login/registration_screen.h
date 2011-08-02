@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -84,11 +85,16 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   virtual RegistrationView* AllocateView();
 
   // TabContentsDelegate implementation:
+  // Deprecated. Please use two-argument variant.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
-                                      PageTransition::Type transition);
+                                      PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
+
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // WebPageScreen implementation:

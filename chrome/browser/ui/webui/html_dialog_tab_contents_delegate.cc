@@ -28,26 +28,34 @@ void HtmlDialogTabContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
+// TODO(adriansc): Remove this method once refactoring changed all call sites.
 TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
+  return OpenURLFromTab(source,
+                        OpenURLParams(url, referrer, disposition, transition));
+}
+
+TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
+    TabContents* source, const OpenURLParams& params) {
   if (profile_) {
     // Specify a NULL browser for navigation. This will cause Navigate()
     // to find a browser matching params.profile or create a new one.
     Browser* browser = NULL;
-    browser::NavigateParams params(browser, url, transition);
-    params.profile = profile_;
-    params.referrer = referrer;
-    if (source && source->is_crashed() && disposition == CURRENT_TAB &&
-        transition == PageTransition::LINK)
-      params.disposition = NEW_FOREGROUND_TAB;
+    browser::NavigateParams nav_params(browser, params.url, params.transition);
+    nav_params.profile = profile_;
+    nav_params.referrer = params.referrer;
+    if (source && source->is_crashed() &&
+        params.disposition == CURRENT_TAB &&
+        params.transition == PageTransition::LINK)
+      nav_params.disposition = NEW_FOREGROUND_TAB;
     else
-      params.disposition = disposition;
-    params.window_action = browser::NavigateParams::SHOW_WINDOW;
-    params.user_gesture = true;
-    browser::Navigate(&params);
-    return params.target_contents ?
-        params.target_contents->tab_contents() : NULL;
+      nav_params.disposition = params.disposition;
+    nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+    nav_params.user_gesture = true;
+    browser::Navigate(&nav_params);
+    return nav_params.target_contents ?
+        nav_params.target_contents->tab_contents() : NULL;
   }
   return NULL;
 }

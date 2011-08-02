@@ -686,10 +686,13 @@ class Browser : public TabHandlerDelegate,
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from PageNavigator:
+  // Deprecated. Please use the one-argument variant instead.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
                                PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
   virtual void ExecuteCommand(int id);
@@ -824,11 +827,15 @@ class Browser : public TabHandlerDelegate,
   };
 
   // Overridden from TabContentsDelegate:
+  // Deprecated. Please use two-argument variant.
+  // TODO(adriansc): Remove this method once refactoring changed all call sites.
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
                                       PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
