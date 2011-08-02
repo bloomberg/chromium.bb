@@ -18,7 +18,15 @@ bool IsWindowRestoreEnabled() {
   // The defaults must be synchronized here otherwise a stale value will be
   // returned for an indeterminate amount of time.
   [defaults synchronize];
-  return !![defaults boolForKey:@"NSQuitAlwaysKeepsWindows"];
+
+  // By default, the preference is not set. When it's not, the intrinsic Lion
+  // default (YES) should be returned.
+  NSDictionary* prefs = [defaults dictionaryRepresentation];
+  NSNumber* value = [prefs objectForKey:@"NSQuitAlwaysKeepsWindows"];
+  if (!value)
+    return true;
+
+  return !![value boolValue];
 }
 
 }  // namespace restore_utils
