@@ -144,12 +144,8 @@ IMultimedia* MakeEmuPrimitives(int width, int heigth, const char* title) {
 
 
 void InvokeInputEventCallback(NaClCommandLoop* ncl,
-                              UserEvent* event,
-                              int instances,
-                              int event_resource) {
+                              UserEvent* event) {
   UNREFERENCED_PARAMETER(ncl);
   UNREFERENCED_PARAMETER(event);
-  UNREFERENCED_PARAMETER(instances);
-  UNREFERENCED_PARAMETER(event_resource);
   NaClLog(LOG_FATAL, "InputEvents not supported\n");
 }

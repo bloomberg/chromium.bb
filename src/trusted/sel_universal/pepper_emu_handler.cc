@@ -177,9 +177,8 @@ static void InvokeCompletionCallback(NaClCommandLoop* ncl,
 }
 
 
-static bool HandleSynthesizedEvent(NaClCommandLoop* ncl, UserEvent* event) {
-  NaClLog(1, "Got sythesized event [%s]\n",
-          StringifyEvent(event).c_str());
+static bool HandleUserEvent(NaClCommandLoop* ncl, UserEvent* event) {
+  NaClLog(1, "Got user event with code %d\n", event->type);
 
   switch (event->type) {
     case EVENT_TYPE_TERMINATION:
@@ -198,6 +197,8 @@ static bool HandleSynthesizedEvent(NaClCommandLoop* ncl, UserEvent* event) {
     // This event gets created so that we can invoke
     // RunCompletionCallback after PPB_Graphics2D_Flush
     case EVENT_TYPE_FLUSH_CALLBACK: {
+      NaClLog(2, "Completion callback(%d, %d)\n",
+              event->callback, event->result);
       InvokeCompletionCallback(ncl,
                                event->callback,
                                event->result,
@@ -208,6 +209,7 @@ static bool HandleSynthesizedEvent(NaClCommandLoop* ncl, UserEvent* event) {
     // This event gets created so that we can invoke
     // PPP_Audio_StreamCreated after PPB_Audio_Create
     case EVENT_TYPE_INIT_AUDIO:
+      NaClLog(1, "audio init callback\n");
 #if (NACL_LINUX || NACL_OSX)
       sleep(1);
 #elif NACL_WINDOWS
@@ -255,10 +257,9 @@ bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
     }
 
     if (IsInputEvent(event)) {
-      // NOTE: for now always use the same event resource
-      InvokeInputEventCallback(ncl, event, Global.instance, kFirstEventHandle);
+      InvokeInputEventCallback(ncl, event);
     } else {
-      keep_going = HandleSynthesizedEvent(ncl, event);
+      keep_going = HandleUserEvent(ncl, event);
     }
     // NOTE: this is the global event sink where all events get deleted.
     delete event;

@@ -44,8 +44,6 @@ if env.Bit('sdl_sel_universal'):
 
   env.ComponentLibrary('sel_universal_sdl',
                        ['sdl_ppapi_event_translator.cc',
-                        '${SOURCE_ROOT}/native_client/src/shared/ppapi_proxy/' +
-                        'input_event_data.cc',
                         'primitives_sdl.cc',
                         ])
 else:

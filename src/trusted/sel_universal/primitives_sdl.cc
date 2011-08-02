@@ -15,6 +15,7 @@
 
 #include <functional>
 #include <queue>
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -27,8 +28,9 @@
 
 // from sdl_ppapi_event_translator.cc
 // TODO(robertm): add header when this becomes more complex
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-extern UserEvent* MakeInputEventFromSDLEvent(const SDL_Event& sdl_event);
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
+extern bool ConvertSDLEventToPPAPI(
+  const SDL_Event& sdl_event, PP_InputEvent* pp_event);
 
 // This file implements a IMultimedia interface using SDL
 
@@ -64,10 +66,7 @@ class MultimediaSDL;
 
 struct TimerEventState {
   MultimediaSDL* mm;
-  UserEvent* event;
-
-  TimerEventState(MultimediaSDL* the_mm, UserEvent* the_event)
-    : mm(the_mm), event(the_event) {}
+  PP_InputEvent* event;
 };
 
 
@@ -276,8 +275,8 @@ class JobSdlUpdate: public Job {
 
 class JobSdlEventPoll: public Job {
  public:
-  JobSdlEventPoll(SDLInfo* info, bool poll)
-    : info_(info), event_(NULL), poll_(poll) {}
+  JobSdlEventPoll(SDLInfo* info, PP_InputEvent* pp_event, bool poll)
+    : info_(info), pp_event_(pp_event), poll_(poll) {}
 
   virtual void Action() {
     NaClLog(3, "JobSdlEventPoll::Action\n");
@@ -291,35 +290,36 @@ class JobSdlEventPoll: public Job {
       const int32_t result = poll_ ?
                              SDL_PollEvent(&sdl_event) :
                              SDL_WaitEvent(&sdl_event);
+
       if (result == 0) {
         if (poll_) {
+          MakeInvalidEvent(pp_event_);
           return;
         } else {
           NaClLog(LOG_WARNING, "SDL_WaitEvent failed\n");
-          continue;
         }
       }
 
       // special handling for user events
       if (sdl_event.type == SDL_USEREVENT) {
-        event_ = static_cast<UserEvent*>(sdl_event.user.data1);
+        PP_InputEvent* original_pp_event =
+          static_cast<PP_InputEvent*>(sdl_event.user.data1);
+        *pp_event_ = *original_pp_event;
+        delete original_pp_event;
         break;
       }
 
-      event_ = MakeInputEventFromSDLEvent(sdl_event);
-      if (event_ != NULL) {
-        break;
+      if (!ConvertSDLEventToPPAPI(sdl_event, pp_event_)) {
+        continue;
       }
+
+      break;
     }
-  }
-
-  UserEvent* GetEvent() {
-    return event_;
   }
 
  private:
   SDLInfo* info_;
-  UserEvent* event_;
+  PP_InputEvent* pp_event_;
   bool poll_;
 };
 
@@ -330,7 +330,7 @@ class MultimediaSDL : public IMultimedia {
  public:
   MultimediaSDL(int width, int heigth, const char* title)
     : video_width_(width), video_height_(heigth) {
-    NaClLog(1, "MultimediaSDL::Constructor\n");
+    NaClLog(2, "MultimediaSDL::Constructor\n");
     sdl_workqueue_.StartInAnotherThread();
     JobSdlInit job(&sdl_info_, width, heigth, title);
     sdl_workqueue_.JobPut(&job);
@@ -364,70 +364,60 @@ class MultimediaSDL : public IMultimedia {
     job.Wait();
   }
 
-  virtual void PushUserEvent(UserEvent* event) {
-    CHECK(event != NULL);
+  virtual void PushUserEvent(PP_InputEvent* user_event) {
     // NOTE: this is intentionally not using the work queue
     // so we can unblock a queue that is waiting for an event
-    NaClLog(2, "JobSdlPushUserEvent::Action [%s]\n",
-            StringifyEvent(event).c_str());
+    NaClLog(3, "JobSdlPushUserEvent::Action\n");
+    CHECK(IsUserEvent(user_event));
+
     if (!sdl_info_.initialized_sdl) {
       NaClLog(LOG_FATAL, "sdl not initialized\n");
     }
 
-    SDL_Event sdl_event;
-    sdl_event.type = SDL_USEREVENT;
-    sdl_event.user.code = 0;
-    sdl_event.user.data1 = event;
-    sdl_event.user.data2 = 0;
-    // NOTE:  SDL_PushEvent copies the sdl_event
-    SDL_PushEvent(&sdl_event);
+    PP_InputEvent* event_copy = new PP_InputEvent;
+    *event_copy = *user_event;
+    SDL_Event event;
+    event.type = SDL_USEREVENT;
+    event.user.code = 0;
+    event.user.data1 = reinterpret_cast<void*>(event_copy);
+    event.user.data2 = 0;
+    SDL_PushEvent(&event);
   }
 
-  virtual void PushDelayedUserEvent(int delay, UserEvent* event) {
-    CHECK(event != NULL);
-    NaClLog(2, "JobSdlPushDelayedUserEvent::Action %d [%s]\n",
-            delay, StringifyEvent(event).c_str());
+  virtual void PushDelayedUserEvent(int delay, PP_InputEvent* user_event) {
     // NOTE: this is intentionally not using the work queue
     // so we can unblock a queue that is waiting for an event
+    NaClLog(3, "JobSdlPushUserEvent::Action\n");
+    CHECK(IsUserEvent(user_event));
     if (!sdl_info_.initialized_sdl) {
       NaClLog(LOG_FATAL, "sdl not initialized\n");
     }
 
-    if (delay == 0) {
-      PushUserEvent(event);
-      return;
-    }
     // schedule a timer to inject the event into the event stream
-    SDL_TimerID id =
-      SDL_AddTimer(delay, TimerCallBack, new TimerEventState(this, event));
-    CHECK(id != NULL);
+    TimerEventState* state = new TimerEventState();
+    state->mm = this;
+    state->event = new PP_InputEvent;
+    *state->event = *user_event;
+    SDL_AddTimer(delay, TimerCallBack, state);
   }
 
-  virtual UserEvent* EventPoll() {
-    JobSdlEventPoll job(&sdl_info_, true);
+  virtual void EventPoll(PP_InputEvent* event) {
+    JobSdlEventPoll job(&sdl_info_, event, true);
     sdl_workqueue_.JobPut(&job);
     job.Wait();
-    return job.GetEvent();
   }
 
-  virtual UserEvent* EventGet() {
-    JobSdlEventPoll job(&sdl_info_, false);
+  virtual void EventGet(PP_InputEvent* event) {
+    JobSdlEventPoll job(&sdl_info_, event, false);
     sdl_workqueue_.JobPut(&job);
     job.Wait();
-    return job.GetEvent();
   }
 
   virtual void AudioInit16Bit(int frequency,
-                              int channels,
-                              int frame_size,
-                              AUDIO_CALLBACK cb,
-                              void* cb_data ) {
-    JobSdlAudioInit job(&sdl_info_,
-                        frequency,
-                        channels,
-                        frame_size,
-                        cb,
-                        cb_data);
+                         int channels,
+                         int frame_size,
+                         AUDIO_CALLBACK cb) {
+    JobSdlAudioInit job(&sdl_info_, frequency, channels, frame_size, cb);
     sdl_workqueue_.JobPut(&job);
     job.Wait();
   }
@@ -454,16 +444,12 @@ class MultimediaSDL : public IMultimedia {
 // This is called when a timed event encapsulatd by "data"
 // is finally due. We simply inject into the event stream,
 static Uint32 TimerCallBack(Uint32 interval, void* data) {
-  CHECK(interval != 0);
-  CHECK(data != NULL);
   UNREFERENCED_PARAMETER(interval);
   TimerEventState* state = reinterpret_cast<TimerEventState*>(data);
-  NaClLog(2, "Timer: %d [%s]\n",
-          interval, StringifyEvent(state->event).c_str());
   state->mm->PushUserEvent(state->event);
-  // state was allocated in PushDelayedUserEvent()
+  delete state->event;
   delete state;
-  // stop timer: this MUST be a different value from interval
+  // stop timer
   return 0;
 }
 
