@@ -1465,7 +1465,7 @@ void HistoryBackend::SetPageContents(const GURL& url,
 
 void HistoryBackend::SetPageThumbnail(
     const GURL& url,
-    const SkBitmap& thumbnail,
+    const gfx::Image* thumbnail,
     const ThumbnailScore& score) {
   if (!db_.get() || !thumbnail_db_.get())
     return;

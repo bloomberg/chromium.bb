@@ -27,6 +27,11 @@ UI_API Image* ImageFromPNGEncodedData(const unsigned char* input,
 UI_API bool PNGEncodedDataFromImage(const Image& image,
                                     std::vector<unsigned char>* dst);
 
+// Fills the |dst| vector with JPEG-encoded bytes based on the given Image.
+// Returns true if the Image was encoded successfully.
+UI_API bool JPEGEncodedDataFromImage(const Image& image,
+                                     std::vector<unsigned char>* dst);
+
 }
 
 #endif  // UI_GFX_IMAGE_IMAGE_UTIL_H_

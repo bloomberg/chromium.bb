@@ -178,13 +178,11 @@ void InsertURLBatch(Profile* profile,
     history_service->SetPageTitle(url, ConstructRandomTitle());
     if (types & FULL_TEXT)
       history_service->SetPageContents(url, ConstructRandomPage());
-    if (types & TOP_SITES) {
+    if (types & TOP_SITES && top_sites) {
       SkBitmap* bitmap = (RandomInt(0, 2) == 0) ? google_bitmap.get() :
                                                   weewar_bitmap.get();
-      if (top_sites)
-        top_sites->SetPageThumbnail(url, *bitmap, score);
-      else
-        history_service->SetPageThumbnail(url, *bitmap, score);
+      gfx::Image image(new SkBitmap(*bitmap));
+      top_sites->SetPageThumbnail(url, &image, score);
     }
 
     previous_url = url;

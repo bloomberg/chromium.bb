@@ -27,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/image/image.h"
 
 using base::Time;
 
@@ -267,18 +268,19 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   URLRow outrow1;
   EXPECT_TRUE(mem_backend_->db_->GetRowForURL(row1.url(), NULL));
 
-  // Add thumbnails for each page.
+  // Add thumbnails for each page. The |Images| take ownership of SkBitmap
+  // created from decoding the images.
   ThumbnailScore score(0.25, true, true);
-  scoped_ptr<SkBitmap> google_bitmap(
+  gfx::Image google_bitmap(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
 
   Time time;
   GURL gurl;
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row1_id, *google_bitmap,
+  backend_->thumbnail_db_->SetPageThumbnail(gurl, row1_id, &google_bitmap,
                                             score, time);
-  scoped_ptr<SkBitmap> weewar_bitmap(
+  gfx::Image weewar_bitmap(
      gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, *weewar_bitmap,
+  backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, &weewar_bitmap,
                                             score, time);
 
   // Star row1.

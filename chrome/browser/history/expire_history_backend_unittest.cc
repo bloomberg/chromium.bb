@@ -226,16 +226,16 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   url_ids[2] = main_db_->AddURL(url_row3);
   thumb_db_->AddIconMapping(url_row3.url(), favicon2);
 
-  // Thumbnails for each URL.
-  scoped_ptr<SkBitmap> thumbnail(
+  // Thumbnails for each URL. |thumbnail| takes ownership of decoded SkBitmap.
+  gfx::Image thumbnail(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
   ThumbnailScore score(0.25, true, true, Time::Now());
 
   Time time;
   GURL gurl;
-  top_sites_->SetPageThumbnail(url_row1.url(), *thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row2.url(), *thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row3.url(), *thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row1.url(), &thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row2.url(), &thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row3.url(), &thumbnail, score);
 
   // Four visits.
   VisitRow visit_row1;

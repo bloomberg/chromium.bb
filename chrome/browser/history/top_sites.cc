@@ -33,9 +33,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/image/image_util.h"
 
 namespace history {
 
@@ -188,7 +187,7 @@ void TopSites::Init(const FilePath& db_name) {
 }
 
 bool TopSites::SetPageThumbnail(const GURL& url,
-                                const SkBitmap& thumbnail,
+                                gfx::Image* thumbnail,
                                 const ThumbnailScore& score) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -591,19 +590,15 @@ bool TopSites::SetPageThumbnailEncoded(const GURL& url,
 }
 
 // static
-bool TopSites::EncodeBitmap(const SkBitmap& bitmap,
+bool TopSites::EncodeBitmap(gfx::Image* bitmap,
                             scoped_refptr<RefCountedBytes>* bytes) {
-  *bytes = new RefCountedBytes();
-  SkAutoLockPixels bitmap_lock(bitmap);
-  std::vector<unsigned char> data;
-  if (!gfx::JPEGCodec::Encode(
-          reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(),
-          bitmap.height(),
-          static_cast<int>(bitmap.rowBytes()), 90,
-          &data)) {
+  if (!bitmap)
     return false;
-  }
+  *bytes = new RefCountedBytes();
+  std::vector<unsigned char> data;
+  if (!gfx::JPEGEncodedDataFromImage(*bitmap, &data))
+    return false;
+
   // As we're going to cache this data, make sure the vector is only as big as
   // it needs to be, as JPEGCodec::Encode() over-allocates data.capacity().
   // (In a C++0x future, we can just call shrink_to_fit() in Encode())

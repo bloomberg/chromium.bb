@@ -24,9 +24,9 @@
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/image/image.h"
 
 class FilePath;
-class SkBitmap;
 class Profile;
 
 namespace base {
@@ -61,7 +61,7 @@ class TopSites
   // was updated. False means either the URL wasn't known to us, or we felt
   // that our current thumbnail was superior to the given one.
   bool SetPageThumbnail(const GURL& url,
-                        const SkBitmap& thumbnail,
+                        gfx::Image* thumbnail,
                         const ThumbnailScore& score);
 
   // Callback for GetMostVisitedURLs.
@@ -225,7 +225,7 @@ class TopSites
 
   // Encodes the bitmap to bytes for storage to the db. Returns true if the
   // bitmap was successfully encoded.
-  static bool EncodeBitmap(const SkBitmap& bitmap,
+  static bool EncodeBitmap(gfx::Image* bitmap,
                            scoped_refptr<RefCountedBytes>* bytes);
 
   // Removes the cached thumbnail for url. Does nothing if |url| if not cached

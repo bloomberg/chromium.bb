@@ -428,16 +428,6 @@ void HistoryService::SetPageContents(const GURL& url,
                     url, contents);
 }
 
-void HistoryService::SetPageThumbnail(const GURL& page_url,
-                                      const SkBitmap& thumbnail,
-                                      const ThumbnailScore& score) {
-  if (!CanAddURL(page_url))
-    return;
-
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageThumbnail,
-                    page_url, thumbnail, score);
-}
-
 HistoryService::Handle HistoryService::GetPageThumbnail(
     const GURL& page_url,
     CancelableRequestConsumerBase* consumer,

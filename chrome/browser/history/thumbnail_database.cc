@@ -20,8 +20,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/image/image_util.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -233,7 +232,7 @@ void ThumbnailDatabase::Vacuum() {
 void ThumbnailDatabase::SetPageThumbnail(
     const GURL& url,
     URLID id,
-    const SkBitmap& thumbnail,
+    const gfx::Image* thumbnail,
     const ThumbnailScore& score,
     base::Time time) {
   if (use_top_sites_) {
@@ -241,7 +240,7 @@ void ThumbnailDatabase::SetPageThumbnail(
     return;  // Not possible after migration to TopSites.
   }
 
-  if (!thumbnail.isNull()) {
+  if (thumbnail) {
     bool add_thumbnail = true;
     ThumbnailScore current_score;
     if (ThumbnailScoreForId(id, &current_score)) {
@@ -256,18 +255,8 @@ void ThumbnailDatabase::SetPageThumbnail(
       if (!statement)
         return;
 
-      // We use 90 quality (out of 100) which is pretty high, because
-      // we're very sensitive to artifacts for these small sized,
-      // highly detailed images.
       std::vector<unsigned char> jpeg_data;
-      SkAutoLockPixels thumbnail_lock(thumbnail);
-      bool encoded = gfx::JPEGCodec::Encode(
-          reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_SkBitmap, thumbnail.width(),
-          thumbnail.height(),
-          static_cast<int>(thumbnail.rowBytes()), 90,
-          &jpeg_data);
-
+      bool encoded = gfx::JPEGEncodedDataFromImage(*thumbnail, &jpeg_data);
       if (encoded) {
         statement.BindInt64(0, id);
         statement.BindDouble(1, score.boring_score);

@@ -148,10 +148,12 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
   if (profile->IsOffTheRecord())
     return;
 
-  // Tell History about this thumbnail
+  // Tell History about this thumbnail.
   history::TopSites* ts = profile->GetTopSites();
-  if (ts)
-    ts->SetPageThumbnail(url, bitmap, score);
+  if (ts) {
+    gfx::Image thumbnail(new SkBitmap(bitmap));
+    ts->SetPageThumbnail(url, &thumbnail, score);
+  }
 }
 
 HistoryService* HistoryTabHelper::GetHistoryService() {

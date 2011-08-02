@@ -159,13 +159,13 @@ class TopSitesTest : public HistoryUnitTestBase {
         ExtractThumbnail(*data.get()) : SkBitmap();
   }
 
-  // Creates a bitmap of the specified color.
-  SkBitmap CreateBitmap(SkColor color) {
-    SkBitmap thumbnail;
-    thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
-    thumbnail.allocPixels();
-    thumbnail.eraseColor(color);
-    return thumbnail;
+  // Creates a bitmap of the specified color. Caller takes ownership.
+  gfx::Image CreateBitmap(SkColor color) {
+    SkBitmap* thumbnail = new SkBitmap;
+    thumbnail->setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
+    thumbnail->allocPixels();
+    thumbnail->eraseColor(color);
+    return gfx::Image(thumbnail);  // takes ownership.
   }
 
   // Forces top sites to load top sites from history, then recreates top sites.
@@ -263,9 +263,10 @@ class TopSitesTest : public HistoryUnitTestBase {
   }
 
   // Returns true if the thumbnail equals the specified bytes.
-  bool ThumbnailEqualsBytes(const SkBitmap& image, RefCountedBytes* bytes) {
+  bool ThumbnailEqualsBytes(const gfx::Image& image, RefCountedBytes* bytes) {
     scoped_refptr<RefCountedBytes> encoded_image;
-    EncodeBitmap(image, &encoded_image);
+    gfx::Image copy(image);  // EncodeBitmap() doesn't accept const images.
+    TopSites::EncodeBitmap(&copy, &encoded_image);
     return ThumbnailsAreEqual(encoded_image, bytes);
   }
 
@@ -289,11 +290,6 @@ class TopSitesTest : public HistoryUnitTestBase {
 
   void StartQueryForMostVisited() {
     top_sites()->StartQueryForMostVisited();
-  }
-
-  bool EncodeBitmap(const SkBitmap& image,
-                    scoped_refptr<RefCountedBytes>* bytes) {
-    return TopSites::EncodeBitmap(image, bytes);
   }
 
   void SetLastNumUrlsChanged(size_t value) {
@@ -491,7 +487,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   SetTopSites(list);
 
   // Create a dummy thumbnail.
-  SkBitmap thumbnail(CreateBitmap(SK_ColorWHITE));
+  gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
 
   base::Time now = base::Time::Now();
   ThumbnailScore low_score(1.0, true, true, now);
@@ -500,20 +496,20 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
 
   // Setting the thumbnail for invalid pages should fail.
   EXPECT_FALSE(top_sites()->SetPageThumbnail(invalid_url,
-                                             thumbnail, medium_score));
+                                             &thumbnail, medium_score));
 
   // Setting the thumbnail for url2 should succeed, lower scores shouldn't
   // replace it, higher scores should.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, thumbnail, medium_score));
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(url2, thumbnail, low_score));
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, thumbnail, high_score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, &thumbnail, medium_score));
+  EXPECT_FALSE(top_sites()->SetPageThumbnail(url2, &thumbnail, low_score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, &thumbnail, high_score));
 
   // Set on the redirect source should succeed. It should be replacable by
   // the same score on the redirect destination, which in turn should not
   // be replaced by the source again.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1a, thumbnail, medium_score));
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1b, thumbnail, medium_score));
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(url1a, thumbnail, medium_score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1a, &thumbnail, medium_score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1b, &thumbnail, medium_score));
+  EXPECT_FALSE(top_sites()->SetPageThumbnail(url1a, &thumbnail, medium_score));
 }
 
 // Makes sure a thumbnail is correctly removed when the page is removed.
@@ -526,7 +522,7 @@ TEST_F(TopSitesTest, ThumbnailRemoved) {
   SetTopSites(list);
 
   // Create a dummy thumbnail.
-  SkBitmap thumbnail(CreateBitmap(SK_ColorRED));
+  gfx::Image thumbnail(CreateBitmap(SK_ColorRED));
 
   base::Time now = base::Time::Now();
   ThumbnailScore low_score(1.0, true, true, now);
@@ -534,7 +530,7 @@ TEST_F(TopSitesTest, ThumbnailRemoved) {
   ThumbnailScore high_score(0.0, true, true, now);
 
   // Set the thumbnail.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url, thumbnail, medium_score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url, &thumbnail, medium_score));
 
   // Make sure the thumbnail was actually set.
   scoped_refptr<RefCountedBytes> result;
@@ -563,15 +559,15 @@ TEST_F(TopSitesTest, GetPageThumbnail) {
   SetTopSites(url_list);
 
   // Create a dummy thumbnail.
-  SkBitmap thumbnail(CreateBitmap(SK_ColorWHITE));
+  gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
   ThumbnailScore score(0.5, true, true, base::Time::Now());
 
   scoped_refptr<RefCountedBytes> result;
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1.url, thumbnail, score));
+  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1.url, &thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://gmail.com"),
-                                           thumbnail, score));
+                                           &thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://gmail.com"),
                                             &result));
   // Get a thumbnail via a redirect.
@@ -579,7 +575,7 @@ TEST_F(TopSitesTest, GetPageThumbnail) {
                                             &result));
 
   EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://mail.google.com"),
-                                           thumbnail, score));
+                                           &thumbnail, score));
   EXPECT_TRUE(top_sites()->GetPageThumbnail(url2.url, &result));
 
   EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
@@ -626,8 +622,8 @@ TEST_F(TopSitesTest, SaveToDB) {
   WaitForHistory();
 
   // Add a thumbnail.
-  SkBitmap tmp_bitmap(CreateBitmap(SK_ColorBLUE));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(asdf_url, tmp_bitmap,
+  gfx::Image tmp_bitmap(CreateBitmap(SK_ColorBLUE));
+  ASSERT_TRUE(top_sites()->SetPageThumbnail(asdf_url, &tmp_bitmap,
                                             ThumbnailScore()));
 
   RecreateTopSitesAndBlock();
@@ -654,7 +650,7 @@ TEST_F(TopSitesTest, SaveToDB) {
 
   // Add new thumbnail at rank 0 and shift the other result to 1.
   ASSERT_TRUE(top_sites()->SetPageThumbnail(google_url,
-                                            tmp_bitmap,
+                                            &tmp_bitmap,
                                             ThumbnailScore()));
 
   // Make TopSites reread from the db.
@@ -687,9 +683,9 @@ TEST_F(TopSitesTest, RealDatabase) {
   url.url = asdf_url;
   url.title = asdf_title;
   url.redirects.push_back(url.url);
-  SkBitmap asdf_thumbnail(CreateBitmap(SK_ColorRED));
+  gfx::Image asdf_thumbnail(CreateBitmap(SK_ColorRED));
   ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  asdf_url, asdf_thumbnail, ThumbnailScore()));
+                  asdf_url, &asdf_thumbnail, ThumbnailScore()));
 
   base::Time add_time(base::Time::Now());
   AddPageToHistory(url.url, url.title, url.redirects, add_time);
@@ -723,9 +719,9 @@ TEST_F(TopSitesTest, RealDatabase) {
   AddPageToHistory(google3_url, url2.title, url2.redirects,
                    add_time - base::TimeDelta::FromMinutes(2));
 
-  SkBitmap google_thumbnail(CreateBitmap(SK_ColorBLUE));
+  gfx::Image google_thumbnail(CreateBitmap(SK_ColorBLUE));
   ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  url2.url, google_thumbnail, ThumbnailScore()));
+                  url2.url, &google_thumbnail, ThumbnailScore()));
 
   RefreshTopSitesAndRecreate();
 
@@ -746,7 +742,7 @@ TEST_F(TopSitesTest, RealDatabase) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 2));
   }
 
-  SkBitmap weewar_bitmap(CreateBitmap(SK_ColorYELLOW));
+  gfx::Image weewar_bitmap(CreateBitmap(SK_ColorYELLOW));
 
   base::Time thumbnail_time(base::Time::Now());
   ThumbnailScore low_score(1.0, true, true, thumbnail_time);
@@ -755,7 +751,7 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   // 1. Set to weewar. (Writes the thumbnail to the DB.)
   EXPECT_TRUE(top_sites()->SetPageThumbnail(google3_url,
-                                            weewar_bitmap,
+                                            &weewar_bitmap,
                                             medium_score));
   RefreshTopSitesAndRecreate();
   {
@@ -764,16 +760,16 @@ TEST_F(TopSitesTest, RealDatabase) {
     EXPECT_TRUE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
   }
 
-  SkBitmap google_bitmap(CreateBitmap(SK_ColorGREEN));
+  gfx::Image green_bitmap(CreateBitmap(SK_ColorGREEN));
 
   // 2. Set to google - low score.
   EXPECT_FALSE(top_sites()->SetPageThumbnail(google3_url,
-                                             google_bitmap,
+                                             &green_bitmap,
                                              low_score));
 
   // 3. Set to google - high score.
   EXPECT_TRUE(top_sites()->SetPageThumbnail(google1_url,
-                                            google_bitmap,
+                                            &green_bitmap,
                                             high_score));
 
   // Check that the thumbnail was updated.
@@ -782,7 +778,7 @@ TEST_F(TopSitesTest, RealDatabase) {
     scoped_refptr<RefCountedBytes> read_data;
     EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, &read_data));
     EXPECT_FALSE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
-    EXPECT_TRUE(ThumbnailEqualsBytes(google_bitmap, read_data.get()));
+    EXPECT_TRUE(ThumbnailEqualsBytes(green_bitmap, read_data.get()));
   }
 }
 
@@ -1081,18 +1077,18 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
   GURL url1b("http://www.google.com/");
 
   // Create a dummy thumbnail.
-  SkBitmap thumbnail(CreateBitmap(SK_ColorRED));
+  gfx::Image thumbnail(CreateBitmap(SK_ColorRED));
 
   ThumbnailScore medium_score(0.5, true, true, base::Time::Now());
 
   // Don't store thumbnails for Javascript URLs.
   EXPECT_FALSE(top_sites()->SetPageThumbnail(invalid_url,
-                                             thumbnail,
+                                             &thumbnail,
                                              medium_score));
   // Store thumbnails for unknown (but valid) URLs temporarily - calls
   // AddTemporaryThumbnail.
   EXPECT_TRUE(top_sites()->SetPageThumbnail(unknown_url,
-                                            thumbnail,
+                                            &thumbnail,
                                             medium_score));
 
   // We shouldn't get the thumnail back though (the url isn't in to sites yet).

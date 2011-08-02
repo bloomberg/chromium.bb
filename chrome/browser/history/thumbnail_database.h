@@ -25,6 +25,10 @@ namespace base {
 class Time;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace history {
 
 class ExpireHistoryBackend;
@@ -73,7 +77,7 @@ class ThumbnailDatabase {
   // data, the thumbnail will be deleted.
   void SetPageThumbnail(const GURL& url,
                         URLID id,
-                        const SkBitmap& thumbnail,
+                        const gfx::Image* thumbnail,
                         const ThumbnailScore& score,
                         base::Time time);
 

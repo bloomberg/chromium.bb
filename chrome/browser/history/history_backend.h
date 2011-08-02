@@ -190,7 +190,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Thumbnails ----------------------------------------------------------------
 
   void SetPageThumbnail(const GURL& url,
-                        const SkBitmap& thumbnail,
+                        const gfx::Image* thumbnail,
                         const ThumbnailScore& score);
 
   // Retrieves a thumbnail, passing it across thread boundaries

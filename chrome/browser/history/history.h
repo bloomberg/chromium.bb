@@ -50,6 +50,10 @@ class HistoryModelWorker;
 class TypedUrlDataTypeController;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace history {
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
@@ -376,12 +380,6 @@ class HistoryService : public CancelableRequestProvider,
   // thumbnail for that page. In these cases, the data pointer will be NULL.
   typedef Callback2<Handle, scoped_refptr<RefCountedBytes> >::Type
       ThumbnailDataCallback;
-
-  // Sets the thumbnail for a given URL. The URL must be in the history
-  // database or the request will be ignored.
-  void SetPageThumbnail(const GURL& url,
-                        const SkBitmap& thumbnail,
-                        const ThumbnailScore& score);
 
   // Requests a page thumbnail. See ThumbnailDataCallback definition above.
   Handle GetPageThumbnail(const GURL& page_url,
