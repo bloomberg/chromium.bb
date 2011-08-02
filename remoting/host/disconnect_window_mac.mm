@@ -21,8 +21,6 @@ class DisconnectWindowMac : public remoting::DisconnectWindow {
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
-  void ResetWindowController(DisconnectWindowController* window_controller);
-
  private:
   DisconnectWindowController* window_controller_;
 
@@ -49,15 +47,10 @@ void DisconnectWindowMac::Show(remoting::ChromotingHost* host,
 }
 
 void DisconnectWindowMac::Hide() {
+  // DisconnectWindowController is responsible for releasing itself in its
+  // windowWillClose: method.
   [window_controller_ close];
   window_controller_ = nil;
-}
-
-void DisconnectWindowMac::ResetWindowController(
-    DisconnectWindowController* window_controller) {
-  if (window_controller_ == window_controller) {
-    window_controller_ = NULL;
-  }
 }
 
 remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
@@ -82,15 +75,15 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
           username:(NSString*)username {
   self = [super initWithWindowNibName:@"disconnect_window"];
   if (self) {
-    self.host = host;
-    self.disconnectWindow = disconnectWindow;
-    self.username = username;
+    host_ = host;
+    disconnectWindow_ = disconnectWindow;
+    username_ = [username copy];
   }
   return self;
 }
 
 - (void)dealloc {
-  self.username = nil;
+  [username_ release];
   [super dealloc];
 }
 
@@ -99,10 +92,7 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
     self.host->Shutdown(NULL);
     self.host = NULL;
   }
-  if (self.disconnectWindow) {
-    self.disconnectWindow->ResetWindowController(self);
-    self.disconnectWindow = NULL;
-  }
+  self.disconnectWindow = NULL;
 }
 
 - (void)windowDidLoad {
