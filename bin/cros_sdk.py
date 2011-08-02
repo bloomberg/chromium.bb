@@ -21,15 +21,16 @@ import buildbot.constants as constants
 
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
-SDK_DIR = os.path.join(constants.SOURCE_ROOT, 'sdks')
-SDK_VERSION_FILE = os.path.join(constants.SOURCE_ROOT,
+SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
+SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
+SDK_VERSION_FILE = os.path.join(SRC_ROOT,
   'src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf')
 
 
 def GetHostArch():
   """Returns a string for the host architecture"""
   out = cros_build_lib.RunCommand(['uname', '-m'],
-      redirect_stdout=True).output
+      redirect_stdout=True, print_cmd=False).output
   return out.rstrip('\n')
 
 
@@ -89,8 +90,7 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   # make_chroot provides a variety of hacks to make the chroot useable.
   # These should all be eliminated/minimised, after which, we can change
   # this to just unpacking the sdk.
-  print 'Deferring to make_chroot'
-  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/make_chroot'),
+  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
          '--stage3_path', tarball_dest,
          '--chroot', chroot_path]
   if replace:
@@ -104,7 +104,7 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
 
 def DeleteChroot(chroot_path):
   """Deletes an existing chroot"""
-  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/make_chroot'),
+  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
          '--chroot', chroot_path,
          '--delete']
   try:
@@ -116,8 +116,7 @@ def DeleteChroot(chroot_path):
 
 def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   """Enters an existing SDK chroot"""
-
-  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/enter_chroot.sh'),
+  cmd = [os.path.join(SRC_ROOT, 'src/scripts/enter_chroot.sh'),
          '--chroot', chroot_path]
   if chrome_root:
     cmd.append('--chrome_root')
@@ -136,7 +135,7 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
 
 
 def RefreshSudoCredentials():
-  cros_build_lib.RunCommand(['sudo', 'true'])
+  cros_build_lib.RunCommand(['sudo', 'true'], print_cmd=False)
 
 
 def main():
@@ -190,7 +189,7 @@ To replace, use --replace."""
     parser.print_help()
     sys.exit(1)
 
-  chroot_path = os.path.join(constants.SOURCE_ROOT, options.chroot)
+  chroot_path = os.path.join(SRC_ROOT, options.chroot)
 
   if options.delete and not os.path.exists(chroot_path):
     print "Not doing anything. The chroot you want to remove doesn't exist."
