@@ -23,9 +23,9 @@ function init() {
     console.log('params: ' + JSON.stringify(params));
   }
 
-  function onEntriesFound(entries) {
+  function onEntriesFound(filesystem, entries) {
     FileManager.initStrings(function () {
-      fileManager = new FileManager(document.body, entries, params);
+      fileManager = new FileManager(document.body, filesystem, entries, params);
       // We're ready to run.  Tests can monitor for this state with
       // ExtensionTestMessageListener listener("ready");
       // ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -46,7 +46,7 @@ function init() {
       if (entry) {
         entries.push(entry);
       } else {
-        onEntriesFound(entries);
+        onEntriesFound(filesystem, entries);
       }
     }
 

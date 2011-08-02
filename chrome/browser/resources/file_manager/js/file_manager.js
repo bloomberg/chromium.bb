@@ -31,12 +31,12 @@ const IMAGE_EDITOR_ENABLED = false;
  *     - defaultPath: The default path for the dialog.  The default path should
  *       end with a trailing slash if it represents a directory.
  */
-function FileManager(dialogDom, rootEntries, params) {
+function FileManager(dialogDom, filesystem, rootEntries, params) {
   console.log('Init FileManager: ' + dialogDom);
 
   this.dialogDom_ = dialogDom;
   this.rootEntries_ = rootEntries;
-  this.filesystem_ = rootEntries[0].filesystem;
+  this.filesystem_ = filesystem;
   this.params_ = params || {};
 
   this.listType_ = null;
