@@ -15,9 +15,11 @@
 
 struct PPB_Context3D_Dev;
 struct PPB_Core;
+struct PPB_CursorControl_Dev;
 struct PPB_FileIO;
 struct PPB_FileRef;
 struct PPB_FileSystem;
+struct PPB_Font_Dev;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
 struct PPB_InputEvent;
@@ -33,6 +35,7 @@ struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
 struct PPB_Var;
 struct PPB_WheelInputEvent;
+struct PPB_Widget_Dev;
 
 // Looks up the interface and returns its pointer or NULL.
 const void* GetBrowserInterface(const char* interface_name);
@@ -67,9 +70,12 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 //
 
 const PPB_Context3D_Dev* PPBContext3DDev();
+const PPB_CursorControl_Dev* PPBCursorControlDev();
+const PPB_Font_Dev* PPBFontDev();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Surface3D_Dev* PPBSurface3DDev();
 const PPB_Testing_Dev* PPBTestingDev();
+const PPB_Widget_Dev* PPBWidgetDev();
 
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H

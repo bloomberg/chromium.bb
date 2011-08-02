@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_widget_dev.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
 #include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
 #include "native_client/src/third_party/ppapi/c/ppb_file_ref.h"
@@ -25,6 +26,9 @@
 #include "native_client/src/third_party/ppapi/c/ppb_url_request_info.h"
 #include "native_client/src/third_party/ppapi/c/ppb_url_response_info.h"
 #include "native_client/src/third_party/ppapi/c/ppb_var.h"
+
+#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
 const void* GetBrowserInterface(const char* interface_name) {
   return (*ppb_get_interface())(interface_name);
@@ -126,6 +130,16 @@ const PPB_Context3D_Dev* PPBContext3DDev() {
       GetBrowserInterface(PPB_CONTEXT_3D_DEV_INTERFACE));
 }
 
+const PPB_CursorControl_Dev* PPBCursorControlDev() {
+  return reinterpret_cast<const PPB_CursorControl_Dev*>(
+      GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
+}
+
+const PPB_Font_Dev* PPBFontDev() {
+  return reinterpret_cast<const PPB_Font_Dev*>(
+      GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
+}
+
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
@@ -145,3 +159,9 @@ const PPB_Testing_Dev* PPBTestingDev() {
   return  reinterpret_cast<const PPB_Testing_Dev*>(
       GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
 }
+
+const PPB_Widget_Dev* PPBWidgetDev() {
+  return  reinterpret_cast<const PPB_Widget_Dev*>(
+      GetBrowserInterface(PPB_WIDGET_DEV_INTERFACE));
+}
+
