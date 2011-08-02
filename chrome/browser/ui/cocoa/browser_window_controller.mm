@@ -1677,13 +1677,6 @@ typedef NSInteger NSWindowAnimationBehavior;
   CGFloat deltaX = [event deltaX];
   CGFloat deltaY = [event deltaY];
 
-  // On Lion, the user can choose to use a "natural" scroll direction with
-  // inverted axes.
-  if (gesture_utils::IsScrollDirectionInverted()) {
-    deltaX *= -1;
-    deltaY *= -1;
-  }
-
   // Map forwards and backwards to history; left is positive, right is negative.
   unsigned int command = 0;
   if (deltaX > 0.5) {
@@ -1692,7 +1685,7 @@ typedef NSInteger NSWindowAnimationBehavior;
     command = IDC_FORWARD;
   } else if (deltaY > 0.5) {
     // TODO(pinkerton): figure out page-up, http://crbug.com/16305
-  } else if ([event deltaY] < -0.5) {
+  } else if (deltaY < -0.5) {
     // TODO(pinkerton): figure out page-down, http://crbug.com/16305
     browser_->ExecuteCommand(IDC_TABPOSE);
   }
