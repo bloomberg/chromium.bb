@@ -36,6 +36,7 @@ class PanelBrowserView : public ::BrowserView,
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
 
   // views::Widget::Observer overrides.
   virtual void OnWidgetActivationChanged(views::Widget* widget,

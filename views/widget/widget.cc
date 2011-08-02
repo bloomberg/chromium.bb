@@ -471,6 +471,13 @@ void Widget::Hide() {
 }
 
 void Widget::ShowInactive() {
+  // If this gets called with saved_maximized_state_ == true, call SetBounds()
+  // with the restored bounds to set the correct size. This normally should
+  // not happen, but if it does we should avoid showing unsized windows.
+  if (saved_maximized_state_ && !initial_restored_bounds_.IsEmpty()) {
+    SetBounds(initial_restored_bounds_);
+    saved_maximized_state_ = false;
+  }
   native_widget_->ShowWithState(internal::NativeWidgetPrivate::SHOW_INACTIVE);
 }
 
@@ -1028,7 +1035,7 @@ void Widget::SaveWindowPosition() {
   if (!widget_delegate_)
     return;
 
-  bool maximized;
+  bool maximized = false;
   gfx::Rect bounds;
   native_widget_->GetWindowBoundsAndMaximizedState(&bounds, &maximized);
   widget_delegate_->SaveWindowPlacement(bounds, maximized);

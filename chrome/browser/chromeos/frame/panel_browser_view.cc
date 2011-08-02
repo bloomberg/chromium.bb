@@ -117,6 +117,11 @@ bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return res;
 }
 
+bool PanelBrowserView::GetSavedMaximizedState(bool* maximized) const {
+  // Panels have no maximized state.
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::Widget::Observer overrides.
 
