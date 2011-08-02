@@ -561,21 +561,6 @@ bool RenderViewContextMenu::AppendCustomItems() {
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  // Show Inspect Element in DevTools itself only in case of the debug
-  // devtools build.
-  bool show_developer_items = !IsDevToolsURL(params_.page_url);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDebugDevToolsFrontend))
-    show_developer_items = true;
-
-#if defined(DEBUG_DEVTOOLS)
-  show_developer_items = true;
-#endif
-
-  if (!show_developer_items)
-    return;
-
   // In the DevTools popup menu, "developer items" is normally the only
   // section, so omit the separator there.
   if (menu_model_.GetItemCount() > 0)
@@ -1765,8 +1750,20 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAlwaysEnableDevTools))
+    return true;
+
+  NavigationEntry *active_entry =
+      source_tab_contents_->controller().GetActiveEntry();
+  if (!active_entry)
+    return false;
+
+  // Don't inspect view source.
+  if (active_entry->IsViewSourceMode())
+    return false;
+
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     // Don't enable the web inspector if JavaScript is disabled.
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))

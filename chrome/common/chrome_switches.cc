@@ -48,6 +48,10 @@ const char kAllowWebUIOobe[]                = "allow-webui-oobe";
 // installed but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
 
+// Enable web inspector for all windows, even if they're part of the browser.
+// Allows us to use our dev tools to debug browser windows itself.
+const char kAlwaysEnableDevTools[]          = "always-enable-dev-tools";
+
 // Specifies that the associated value should be launched in "application" mode.
 const char kApp[]                           = "app";
 
