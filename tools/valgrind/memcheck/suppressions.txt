@@ -5128,7 +5128,7 @@
 {
    bug_90967
    Memcheck:Addr4
-   fun:_ZN6webkit5ppapi9ObjectVar15InstanceDeletedEv
+   fun:_ZN5ppapi11NPObjectVar15InstanceDeletedEv
    fun:_ZN6webkit5ppapi15ResourceTracker19CleanupInstanceDataEib
    fun:_ZN6webkit5ppapi15ResourceTracker15InstanceDeletedEi
    fun:_ZN6webkit5ppapi14PluginInstanceD0Ev
