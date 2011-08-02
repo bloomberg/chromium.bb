@@ -2796,6 +2796,9 @@ sdk-libs() {
 }
 
 sdk-verify() {
+  # This avoids errors when *.o finds no matches.
+  shopt -s nullglob
+
   StepBanner "SDK" "Verify"
 
   # Verify bitcode libraries
@@ -2815,12 +2818,12 @@ sdk-verify() {
       verify-object-${platform} "$i"
     done
 
-    if ! ${LIBMODE_GLIBC}; then
-      for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
-        verify-archive-${platform} "$i"
-      done
-    fi
+    for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
+      verify-archive-${platform} "$i"
+    done
   done
+
+  shopt -u nullglob
 }
 
 newlib-nacl-headers-clean() {
