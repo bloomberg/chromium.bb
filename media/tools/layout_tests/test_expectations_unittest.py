@@ -200,6 +200,23 @@ class TestTestExpectationsManager(unittest.TestCase):
             now, past, ['media/audio-repaint.html'], -1, False)
         self.assertTrue(result_list is not None)
 
+    def test_get_all_column_names_no_other_field(self):
+        test_expectations_manager = TestExpectationsManager()
+        column_names = test_expectations_manager.get_all_column_names(False,
+                                                                      True)
+        other_field_column_names = test_expectations_manager.OTHER_FIELD_NAMES
+        for other_field_column_name in other_field_column_names:
+            self.assertFalse(other_field_column_name in column_names)
+
+    def test_get_all_column_names_no_comment_field(self):
+        test_expectations_manager = TestExpectationsManager()
+        column_names = test_expectations_manager.get_all_column_names(True,
+                                                                      False)
+        other_field_column_names = (
+            test_expectations_manager.COMMENT_COLUMN_NAMES)
+        for other_field_column_name in other_field_column_names:
+            self.assertFalse(other_field_column_name in column_names)
+
 
 def main():
     test_suite = unittest.TestLoader().loadTestsFromTestCase(

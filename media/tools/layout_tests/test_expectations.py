@@ -104,7 +104,8 @@ class TestExpectationsManager(object):
         return_list = (
             self.DECISION_COLUMN_NAMES + self.PLATFORM_COLUMN_NAMES +
             self.CONFIG_COLUMN_NAMES + self.EXPECTATION_COLUMN_NAMES)
-        return_list = self.OTHER_FIELD_NAMES + return_list
+        if include_other_fields:
+            return_list = self.OTHER_FIELD_NAMES + return_list
         if include_comments:
             return_list.extend(self.COMMENT_COLUMN_NAMES)
             return_list.append(self.RAW_COMMENT_COLUMN_NAME)
