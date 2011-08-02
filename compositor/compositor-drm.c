@@ -516,13 +516,15 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 
 		if (connector->connection == DRM_MODE_CONNECTED &&
 		    (option_connector == 0 ||
-		     connector->connector_id == option_connector))
+		     connector->connector_id == option_connector)) {
 			if (create_output_for_connector(ec, resources,
 							connector, x, y) < 0)
 				return -1;
 
-		x += container_of(ec->base.output_list.prev, struct wlsc_output,
-				  link)->current->width;
+			x += container_of(ec->base.output_list.prev,
+					  struct wlsc_output,
+					  link)->current->width;
+		}
 
 		drmModeFreeConnector(connector);
 	}
