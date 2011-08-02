@@ -95,7 +95,6 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
       has_active_network_ = false;
       service_path_.clear();
       ip_address_.clear();
-      connection_state_ = chromeos::STATE_UNKNOWN;
     } else {
       has_active_network_ = true;
       service_path_ = network->service_path();
