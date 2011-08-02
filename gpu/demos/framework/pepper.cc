@@ -24,7 +24,8 @@ class PluginInstance : public pp::Instance {
         module_(module),
         demo_(CreateDemo()),
         swap_pending_(false),
-        paint_needed_(false) {
+        paint_needed_(false),
+        resize_needed_(false) {
     // Set the callback object outside of the initializer list to avoid a
     // compiler warning about using "this" in an initializer list.
     callback_factory_.Initialize(this);
@@ -44,18 +45,11 @@ class PluginInstance : public pp::Instance {
       return;
 
     size_ = position.size();
-    demo_->InitWindowSize(size_.width(), size_.height());
 
-    if (context_.is_null()) {
-      context_ = pp::Graphics3D_Dev(*this, 0, pp::Graphics3D_Dev(), NULL);
-      if (context_.is_null())
-        return;
-
-      pp::Instance::BindGraphics(context_);
-      glSetCurrentContextPPAPI(context_.pp_resource());
-      demo_->InitGL();
-      glSetCurrentContextPPAPI(0);
-    }
+    if (context_.is_null())
+      CreateContext();
+    else
+      resize_needed_ = true;
 
     Paint();
   }
@@ -66,15 +60,46 @@ class PluginInstance : public pp::Instance {
       paint_needed_ = true;
       return;
     }
+
+    if (resize_needed_) {
+      context_.ResizeBuffers(size_.width(), size_.height());
+      demo_->Resize(size_.width(), size_.height());
+      resize_needed_ = false;
+    }
+
     glSetCurrentContextPPAPI(context_.pp_resource());
     demo_->Draw();
+    glSetCurrentContextPPAPI(0);
+
     swap_pending_ = true;
     context_.SwapBuffers(
         callback_factory_.NewCallback(&PluginInstance::OnSwap));
-    glSetCurrentContextPPAPI(0);
   }
 
  private:
+  void CreateContext() {
+    int32_t attribs[] = {
+        PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
+        PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
+        PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
+        PP_GRAPHICS3DATTRIB_SAMPLES, 0,
+        PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, 0,
+        PP_GRAPHICS3DATTRIB_WIDTH, size_.width(),
+        PP_GRAPHICS3DATTRIB_HEIGHT, size_.height(),
+        PP_GRAPHICS3DATTRIB_NONE
+    };
+    context_ = pp::Graphics3D_Dev(*this, 0, pp::Graphics3D_Dev(), attribs);
+    if (context_.is_null())
+      return;
+
+    pp::Instance::BindGraphics(context_);
+
+    glSetCurrentContextPPAPI(context_.pp_resource());
+    demo_->InitGL();
+    demo_->Resize(size_.width(), size_.height());
+    glSetCurrentContextPPAPI(0);
+  }
+
   void OnSwap(int32_t) {
     swap_pending_ = false;
     if (paint_needed_ || demo_->IsAnimated()) {
@@ -89,6 +114,7 @@ class PluginInstance : public pp::Instance {
   pp::Size size_;
   bool swap_pending_;
   bool paint_needed_;
+  bool resize_needed_;
   pp::CompletionCallbackFactory<PluginInstance> callback_factory_;
 };
 

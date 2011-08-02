@@ -1,12 +1,44 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Pepper GPU Demo</title>
+<style>
+  #container
+  {
+    margin: auto;
+    padding: 0px;
+    width: 90%;
+    height: 90%;
+    border-style: solid;
+  }
+  #plugin
+  {
+    margin: 0;
+    border: 0;
+  }
+</style>
+
+<script type="text/javascript">
+var container;
+var plugin;
+
+function resizePlugin() {
+  plugin.width = container.clientWidth;
+  plugin.height = container.clientHeight;
+};
+
+function init() {
+  container = document.getElementById('container');
+  plugin = document.getElementById('plugin');
+
+  window.onresize = resizePlugin;
+  resizePlugin();
+}
+</script>
 </head>
 
-<body style="background-color:Silver; -webkit-perspective: 1000;">
-
-<h1>Pepper GPU Demo</h1>
-<embed id="plugin" type="pepper-application/x-gpu-demo" width="512" height="512" style="position:absolute; top: 30px; -webkit-transform: rotateY(30deg);" />
-<p style="position:absolute; top: 256px;">Text on top</p>
+<body onload="init();">
+<div id="container">
+  <embed id="plugin" type="pepper-application/x-gpu-demo" />
+</div>
 </body>
 </html>

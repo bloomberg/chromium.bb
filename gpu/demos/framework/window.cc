@@ -41,7 +41,7 @@ bool Window::Init(int width, int height) {
   if (!CreateRenderContext(PluginWindow(window_handle_)))
     return false;
 
-  demo_->InitWindowSize(width, height);
+  demo_->Resize(width, height);
   return demo_->InitGL();
 }
 

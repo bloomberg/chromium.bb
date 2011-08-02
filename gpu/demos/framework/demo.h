@@ -25,9 +25,6 @@ class Demo {
   // html page where demo is running.
   virtual const wchar_t* Title() const = 0;
 
-  // Initializes the size of the window on which this demo object will render.
-  void InitWindowSize(int width, int height);
-
   // This function is called by the framework to initialize the OpenGL state
   // required by this demo. When this function is called, it is assumed that
   // a rendering context has already been created and made current.
@@ -36,6 +33,10 @@ class Demo {
   // Returns whether the demo is animated. Animated demos are drawn
   // continuously. Unanimated demos are only drawn when the window is invalid.
   virtual bool IsAnimated();
+
+  // This function is called by the network to notify demo that window
+  // surface has been resized.
+  void Resize(int width, int height);
 
   // This function is called by the framework to perform OpenGL rendering.
   // When this function is called, it is assumed that the rendering context

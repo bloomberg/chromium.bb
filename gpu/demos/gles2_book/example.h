@@ -51,8 +51,6 @@ class Example : public gpu::demos::Demo {
     // Note that update_func is optional.
     assert(init_func_ && draw_func_ && shut_down_func_);
 
-    context_.width = width();
-    context_.height = height();
     if (!init_func_(&context_)) return false;
     return true;
   }
@@ -69,6 +67,9 @@ class Example : public gpu::demos::Demo {
   }
 
   virtual void Render(float elapsed_sec) {
+    context_.width = width();
+    context_.height = height();
+
     if (update_func_) update_func_(&context_, elapsed_sec);
     draw_func_(&context_);
   }

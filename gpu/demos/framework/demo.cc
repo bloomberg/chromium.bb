@@ -14,11 +14,6 @@ Demo::Demo() : width_(0), height_(0), last_draw_time_(0) {
 Demo::~Demo() {
 }
 
-void Demo::InitWindowSize(int width, int height) {
-  width_ = width;
-  height_ = height;
-}
-
 void Demo::Draw() {
   float elapsed_sec = 0.0f;
   clock_t current_time = clock();
@@ -33,6 +28,11 @@ void Demo::Draw() {
 
 bool Demo::IsAnimated() {
   return false;
+}
+
+void Demo::Resize(int width, int height) {
+  width_ = width;
+  height_ = height;
 }
 
 }  // namespace demos
