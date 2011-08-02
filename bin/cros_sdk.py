@@ -106,11 +106,14 @@ def DeleteChroot(chroot_path):
   cros_build_lib.RunCommand(cmd)
 
 
-def EnterChroot(chroot_path, additional_args):
+def EnterChroot(chroot_path, chrome_root, additional_args):
   """Enters an existing SDK chroot"""
 
   cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/enter_chroot.sh'),
          '--chroot', chroot_path]
+  if chrome_root:
+    cmd.append('--chrome_root')
+    cmd.append(chrome_root)
   if len(additional_args) > 0:
     cmd.append('--')
     cmd.extend(additional_args)
@@ -135,6 +138,9 @@ To replace, use --replace."""
   parser.add_option('', '--enter',
                     action='store_true', dest='enter', default=False,
                     help=('Enter the SDK chroot, possibly (re)create first'))
+  parser.add_option('', '--chrome_root',
+                    dest='chrome_root', default='',
+                    help=('Mount this chrome root into the chroot'))
   parser.add_option('', '--delete',
                     action='store_true', dest='delete', default=False,
                     help=('Delete the current SDK chroot'))
@@ -185,7 +191,7 @@ To replace, use --replace."""
                  chroot_path, options.replace)
 
   if options.enter:
-    EnterChroot(chroot_path, remaining_arguments)
+    EnterChroot(chroot_path, options.chrome_root, remaining_arguments)
 
 if __name__ == '__main__':
   main()
