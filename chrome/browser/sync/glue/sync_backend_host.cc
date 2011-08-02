@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_event_details.h"
+#include "chrome/browser/sync/js_event_handler.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
@@ -93,6 +94,7 @@ SyncBackendHost::~SyncBackendHost() {
 
 void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
+    const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
     const SyncCredentials& credentials,
@@ -132,6 +134,7 @@ void SyncBackendHost::Initialize(
   }
 
   InitCore(Core::DoInitializeOptions(
+      event_handler,
       sync_service_url,
       profile_->GetRequestContext(),
       credentials,
@@ -169,15 +172,6 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
 bool SyncBackendHost::IsCryptographerReady(
     const sync_api::BaseTransaction* trans) const {
   return initialized() && trans->GetCryptographer()->is_ready();
-}
-
-JsBackend* SyncBackendHost::GetJsBackend() {
-  if (initialized()) {
-    return core_.get();
-  } else {
-    NOTREACHED();
-    return NULL;
-  }
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
@@ -563,6 +557,7 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
 
 
 SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
+    const WeakHandle<JsEventHandler>& event_handler,
     const GURL& service_url,
     const scoped_refptr<net::URLRequestContextGetter>&
         request_context_getter,
@@ -570,7 +565,8 @@ SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode)
-    : service_url(service_url),
+    : event_handler(event_handler),
+      service_url(service_url),
       request_context_getter(request_context_getter),
       credentials(credentials),
       delete_sync_data_folder(delete_sync_data_folder),
@@ -636,8 +632,6 @@ void SyncBackendHost::LogUnsyncedItems(int level) const {
 SyncBackendHost::Core::Core(const std::string& name, SyncBackendHost* backend)
     : name_(name),
       host_(backend),
-      sync_manager_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      parent_router_(NULL),
       processing_passphrase_(false) {
 }
 
@@ -691,6 +685,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   const FilePath& path_str = host_->sync_data_folder_path();
   success = sync_manager_->Init(
       path_str,
+      options.event_handler,
       options.service_url.host() + options.service_url.path(),
       options.service_url.EffectiveIntPort(),
       options.service_url.SchemeIsSecure(),
@@ -767,7 +762,6 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   save_changes_timer_.Stop();
   sync_manager_->Shutdown();  // Stops the SyncerThread.
   sync_manager_->RemoveObserver(this);
-  DisconnectChildJsEventRouter();
   sync_manager_.reset();
   host_->ui_worker()->OnSyncerShutdownComplete();
 
@@ -883,7 +877,8 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
     host_->frontend_->OnSyncCycleCompleted();
 }
 
-void SyncBackendHost::Core::OnInitializationComplete() {
+void SyncBackendHost::Core::OnInitializationComplete(
+    const WeakHandle<JsBackend>& js_backend) {
   if (!host_ || !host_->frontend_)
     return;  // We may have been told to Shutdown before initialization
              // completed.
@@ -893,7 +888,7 @@ void SyncBackendHost::Core::OnInitializationComplete() {
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
                         &Core::HandleInitializationCompletedOnFrontendLoop,
-                        true));
+                        js_backend, true));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
   host_->sync_thread_.message_loop()->PostTask(FROM_HERE,
@@ -901,18 +896,19 @@ void SyncBackendHost::Core::OnInitializationComplete() {
 }
 
 void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
+    const WeakHandle<JsBackend>& js_backend,
     bool success) {
   if (!host_)
     return;
-  host_->HandleInitializationCompletedOnFrontendLoop(success);
+  host_->HandleInitializationCompletedOnFrontendLoop(js_backend, success);
 }
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
-    bool success) {
+    const WeakHandle<JsBackend>& js_backend, bool success) {
   if (!frontend_)
     return;
   if (!success) {
-    frontend_->OnBackendInitialized(false);
+    frontend_->OnBackendInitialized(WeakHandle<JsBackend>(), false);
     return;
   }
 
@@ -926,7 +922,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     if (setup_completed)
       core_->sync_manager()->RefreshEncryption();
     initialization_state_ = INITIALIZED;
-    frontend_->OnBackendInitialized(true);
+    frontend_->OnBackendInitialized(js_backend, true);
     return;
   }
 
@@ -937,7 +933,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       sync_api::CONFIGURE_REASON_NEW_CLIENT,
       base::Bind(
           &SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop,
-          core_.get()),
+          core_.get(), js_backend),
       true);
 }
 
@@ -1005,22 +1001,6 @@ void SyncBackendHost::Core::OnEncryptionComplete(
                         encrypted_types));
 }
 
-void SyncBackendHost::Core::RouteJsEvent(
-    const std::string& name, const JsEventDetails& details) {
-  host_->frontend_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          this, &Core::RouteJsEventOnFrontendLoop, name, details));
-}
-
-void SyncBackendHost::Core::RouteJsMessageReply(
-    const std::string& name, const JsArgList& args,
-    const JsEventHandler* target) {
-  host_->frontend_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          this, &Core::RouteJsMessageReplyOnFrontendLoop,
-          name, args, target));
-}
-
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
   if (!host_ || !host_->frontend_)
     return;
@@ -1050,27 +1030,6 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
   host_->frontend_->OnAuthError();
 }
 
-void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(
-    const std::string& name, const JsEventDetails& details) {
-  if (!host_ || !parent_router_)
-    return;
-
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-
-  parent_router_->RouteJsEvent(name, details);
-}
-
-void SyncBackendHost::Core::RouteJsMessageReplyOnFrontendLoop(
-    const std::string& name, const JsArgList& args,
-    const JsEventHandler* target) {
-  if (!host_ || !parent_router_)
-    return;
-
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-
-  parent_router_->RouteJsMessageReply(name, args, target);
-}
-
 void SyncBackendHost::Core::StartSavingChanges() {
   save_changes_timer_.Start(
       base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
@@ -1094,70 +1053,6 @@ void SyncBackendHost::Core::DeleteSyncDataFolder() {
     if (!file_util::Delete(host_->sync_data_folder_path(), true))
       LOG(DFATAL) << "Could not delete the Sync Data folder.";
   }
-}
-
-void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  DCHECK(router);
-  parent_router_ = router;
-  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
-  CHECK(sync_loop);
-  sync_loop->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &SyncBackendHost::Core::ConnectChildJsEventRouter));
-}
-
-void SyncBackendHost::Core::RemoveParentJsEventRouter() {
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  parent_router_ = NULL;
-  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
-  CHECK(sync_loop);
-  sync_loop->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &SyncBackendHost::Core::DisconnectChildJsEventRouter));
-}
-
-const JsEventRouter* SyncBackendHost::Core::GetParentJsEventRouter() const {
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  return parent_router_;
-}
-
-void SyncBackendHost::Core::ProcessMessage(
-    const std::string& name, const JsArgList& args,
-    const JsEventHandler* sender) {
-  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
-  MessageLoop* sync_loop = host_->sync_thread_.message_loop();
-  CHECK(sync_loop);
-  sync_loop->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &SyncBackendHost::Core::DoProcessMessage,
-                        name, args, sender));
-}
-
-void SyncBackendHost::Core::ConnectChildJsEventRouter() {
-  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
-  // We need this check since AddObserver() can be called at most once
-  // for a given observer.
-  if (!sync_manager_->GetJsBackend()->GetParentJsEventRouter()) {
-    sync_manager_->GetJsBackend()->SetParentJsEventRouter(this);
-    sync_manager_->AddObserver(&sync_manager_observer_);
-  }
-}
-
-void SyncBackendHost::Core::DisconnectChildJsEventRouter() {
-  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
-  sync_manager_->GetJsBackend()->RemoveParentJsEventRouter();
-  sync_manager_->RemoveObserver(&sync_manager_observer_);
-}
-
-void SyncBackendHost::Core::DoProcessMessage(
-    const std::string& name, const JsArgList& args,
-    const JsEventHandler* sender) {
-  DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
-  sync_manager_->GetJsBackend()->ProcessMessage(name, args, sender);
 }
 
 }  // namespace browser_sync

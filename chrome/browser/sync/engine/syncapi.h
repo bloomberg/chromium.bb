@@ -52,6 +52,7 @@
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
@@ -63,6 +64,7 @@ class DictionaryValue;
 
 namespace browser_sync {
 class JsBackend;
+class JsEventHandler;
 class ModelSafeWorkerRegistrar;
 
 namespace sessions {
@@ -834,7 +836,78 @@ class SyncManager {
     // notification is illegal!
     // WARNING: Calling methods on the SyncManager before receiving this
     // message, unless otherwise specified, produces undefined behavior.
-    virtual void OnInitializationComplete() = 0;
+    //
+    // The given backend can emit the following events:
+
+    /**
+     * @param {{ enabled: boolean }} details A dictionary containing:
+     *     - enabled: whether or not notifications are enabled.
+     */
+    // function onNotificationStateChange(details);
+
+    /**
+     * @param {{ changedTypes: Array.<string> }} details A dictionary
+     *     containing:
+     *     - changedTypes: a list of types (as strings) for which there
+             are new updates.
+     */
+    // function onIncomingNotification(details);
+
+    // The given backend responds to the following messages (all other
+    // messages are ignored):
+
+    /**
+     * Gets the current notification state.
+     *
+     * @param {function(boolean)} callback Called with whether or not
+     *     notifications are enabled.
+     */
+    // function getNotificationState(callback);
+
+    /**
+     * Gets details about the root node.
+     *
+     * @param {function(!Object)} callback Called with details about the
+     *     root node.
+     */
+    // TODO(akalin): Change this to getRootNodeId or eliminate it
+    // entirely.
+    // function getRootNodeDetails(callback);
+
+    /**
+     * Gets summary information for a list of ids.
+     *
+     * @param {Array.<string>} idList List of 64-bit ids in decimal
+     *     string form.
+     * @param {Array.<{id: string, title: string, isFolder: boolean}>}
+     * callback Called with summaries for the nodes in idList that
+     *     exist.
+     */
+    // function getNodeSummariesById(idList, callback);
+
+    /**
+     * Gets detailed information for a list of ids.
+     *
+     * @param {Array.<string>} idList List of 64-bit ids in decimal
+     *     string form.
+     * @param {Array.<!Object>} callback Called with detailed
+     *     information for the nodes in idList that exist.
+     */
+    // function getNodeDetailsById(idList, callback);
+
+    /**
+     * Gets child ids for a given id.
+     *
+     * @param {string} id 64-bit id in decimal string form of the parent
+     *     node.
+     * @param {Array.<string>} callback Called with the (possibly empty)
+     *     list of child ids.
+     */
+    // function getChildNodeIds(id);
+
+    virtual void OnInitializationComplete(
+        const browser_sync::WeakHandle<browser_sync::JsBackend>&
+            js_backend) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number
@@ -865,6 +938,8 @@ class SyncManager {
   // the directory in which to locate a sqlite repository storing the syncer
   // backend state. Initialization will open the database, or create it if it
   // does not already exist. Returns false on failure.
+  // |event_handler| is the JsEventHandler used to propagate events to
+  // chrome://sync-internals.  |event_handler| may be uninitialized.
   // |sync_server_and_path| and |sync_server_port| represent the Chrome sync
   // server to use, and |use_ssl| specifies whether to communicate securely;
   // the default is false.
@@ -875,6 +950,8 @@ class SyncManager {
   // HTTP header. Used internally when collecting stats to classify clients.
   // |sync_notifier| is owned and used to listen for notifications.
   bool Init(const FilePath& database_location,
+            const browser_sync::WeakHandle<browser_sync::JsEventHandler>&
+                event_handler,
             const std::string& sync_server_and_path,
             int sync_server_port,
             bool use_ssl,
@@ -948,76 +1025,6 @@ class SyncManager {
   // Observer is being destroyed so the SyncManager doesn't
   // potentially dereference garbage.
   void RemoveObserver(Observer* observer);
-
-  // Returns a pointer to the JsBackend (which is owned by the sync
-  // manager).  Never returns NULL.  jsDocs for raised events are below:
-
-  /**
-   * @param {{ enabled: boolean }} details enabled is set to whether
-   *     or not notifications are enabled.
-   */
-  // function onNotificationStateChange(details);
-
-  /**
-   * @param {{ changedTypes: Array.<string> }} details changedTypes is
-   *     a list of types (as strings) for which there are new updates.
-   */
-  // function onIncomingNotification(details);
-
-  // jsDocs for handled messages are below (all other messages are
-  // ignored).
-
-  /**
-   * Gets the current notification state.
-   *
-   * @param {function(boolean)} callback Called with whether or not
-   *     notifications are enabled.
-   */
-  // function getNotificationState(callback);
-
-  /**
-   * Gets details about the root node.
-   *
-   * @param {function(!Object)} callback Called with details about the
-   *     root node.
-   */
-  // TODO(akalin): Change this to getRootNodeId or eliminate it
-  // entirely.
-  //
-  // function getRootNodeDetails(callback);
-
-  /**
-   * Gets summary information for a list of ids.
-   *
-   * @param {Array.<string>} idList List of 64-bit ids in decimal
-   *     string form.
-   * @param {Array.<{id: string, title: string, isFolder: boolean}>}
-   * callback Called with summaries for the nodes in idList that
-   *     exist.
-   */
-  // function getNodeSummariesById(idList, callback);
-
-  /**
-   * Gets detailed information for a list of ids.
-   *
-   * @param {Array.<string>} idList List of 64-bit ids in decimal
-   *     string form.
-   * @param {Array.<!Object>} callback Called with detailed
-   *     information for the nodes in idList that exist.
-   */
-  // function getNodeDetailsById(idList, callback);
-
-  /**
-   * Gets child ids for a given id.
-   *
-   * @param {string} id 64-bit id in decimal string form of the parent
-   *     node.
-   * @param {Array.<string>} callback Called with the (possibly empty)
-   *     list of child ids.
-   */
-  // function getChildNodeIds(id);
-
-  browser_sync::JsBackend* GetJsBackend();
 
   // Status-related getters. Typically GetStatusSummary will suffice, but
   // GetDetailedSyncStatus can be useful for gathering debug-level details of

@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/test/sync/engine/test_user_share.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,32 +28,43 @@ using ::testing::StrictMock;
 
 class JsSyncManagerObserverTest : public testing::Test {
  protected:
-  JsSyncManagerObserverTest() : sync_manager_observer_(&mock_router_) {}
+  JsSyncManagerObserverTest() {
+    js_sync_manager_observer_.SetJsEventHandler(
+        mock_js_event_handler_.AsWeakHandle());
+  }
 
-  StrictMock<MockJsEventRouter> mock_router_;
-  JsSyncManagerObserver sync_manager_observer_;
+  StrictMock<MockJsEventHandler> mock_js_event_handler_;
+  JsSyncManagerObserver js_sync_manager_observer_;
+
+  void PumpLoop() {
+    message_loop_.RunAllPending();
+  }
+
+ private:
+  MessageLoop message_loop_;
 };
 
 TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
   InSequence dummy;
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onInitializationComplete",
-                           HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onStopSyncingPermanently",
-                           HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onClearServerDataSucceeded",
-                           HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onClearServerDataFailed",
-                           HasDetails(JsEventDetails())));
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onInitializationComplete",
+                            HasDetails(JsEventDetails())));
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onStopSyncingPermanently",
+                            HasDetails(JsEventDetails())));
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onClearServerDataSucceeded",
+                            HasDetails(JsEventDetails())));
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onClearServerDataFailed",
+                            HasDetails(JsEventDetails())));
 
-  sync_manager_observer_.OnInitializationComplete();
-  sync_manager_observer_.OnStopSyncingPermanently();
-  sync_manager_observer_.OnClearServerDataSucceeded();
-  sync_manager_observer_.OnClearServerDataFailed();
+  js_sync_manager_observer_.OnInitializationComplete(WeakHandle<JsBackend>());
+  js_sync_manager_observer_.OnStopSyncingPermanently();
+  js_sync_manager_observer_.OnClearServerDataSucceeded();
+  js_sync_manager_observer_.OnClearServerDataFailed();
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnChangesComplete) {
@@ -63,15 +76,16 @@ TEST_F(JsSyncManagerObserverTest, OnChangesComplete) {
     expected_details.SetString(
         "modelType",
         syncable::ModelTypeToString(syncable::ModelTypeFromInt(i)));
-    EXPECT_CALL(mock_router_,
-                RouteJsEvent("onChangesComplete",
+    EXPECT_CALL(mock_js_event_handler_,
+                HandleJsEvent("onChangesComplete",
                              HasDetailsAsDictionary(expected_details)));
   }
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
-    sync_manager_observer_.OnChangesComplete(syncable::ModelTypeFromInt(i));
+    js_sync_manager_observer_.OnChangesComplete(syncable::ModelTypeFromInt(i));
   }
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
@@ -93,11 +107,12 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
   DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onSyncCycleCompleted",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onSyncCycleCompleted",
                            HasDetailsAsDictionary(expected_details)));
 
-  sync_manager_observer_.OnSyncCycleCompleted(&snapshot);
+  js_sync_manager_observer_.OnSyncCycleCompleted(&snapshot);
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnAuthError) {
@@ -105,11 +120,12 @@ TEST_F(JsSyncManagerObserverTest, OnAuthError) {
   DictionaryValue expected_details;
   expected_details.Set("authError", error.ToValue());
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onAuthError",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onAuthError",
                            HasDetailsAsDictionary(expected_details)));
 
-  sync_manager_observer_.OnAuthError(error);
+  js_sync_manager_observer_.OnAuthError(error);
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
@@ -135,27 +151,28 @@ TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
       sync_api::PassphraseRequiredReasonToString(
           sync_api::REASON_SET_PASSPHRASE_FAILED));
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseRequired",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onPassphraseRequired",
                            HasDetailsAsDictionary(
                                reason_passphrase_not_required_details)));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseRequired",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onPassphraseRequired",
                            HasDetailsAsDictionary(reason_encryption_details)));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseRequired",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onPassphraseRequired",
                            HasDetailsAsDictionary(reason_decryption_details)));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onPassphraseRequired",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onPassphraseRequired",
                            HasDetailsAsDictionary(
                                reason_set_passphrase_failed_details)));
 
-  sync_manager_observer_.OnPassphraseRequired(
+  js_sync_manager_observer_.OnPassphraseRequired(
       sync_api::REASON_PASSPHRASE_NOT_REQUIRED);
-  sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION);
-  sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION);
-  sync_manager_observer_.OnPassphraseRequired(
+  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_ENCRYPTION);
+  js_sync_manager_observer_.OnPassphraseRequired(sync_api::REASON_DECRYPTION);
+  js_sync_manager_observer_.OnPassphraseRequired(
       sync_api::REASON_SET_PASSPHRASE_FAILED);
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
@@ -164,16 +181,17 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
   DictionaryValue redacted_bootstrap_token_details;
   redacted_bootstrap_token_details.SetString("bootstrapToken", "<redacted>");
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onUpdatedToken",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onUpdatedToken",
                            HasDetailsAsDictionary(redacted_token_details)));
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent(
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent(
                   "onPassphraseAccepted",
                   HasDetailsAsDictionary(redacted_bootstrap_token_details)));
 
-  sync_manager_observer_.OnUpdatedToken("sensitive_token");
-  sync_manager_observer_.OnPassphraseAccepted("sensitive_token");
+  js_sync_manager_observer_.OnUpdatedToken("sensitive_token");
+  js_sync_manager_observer_.OnPassphraseAccepted("sensitive_token");
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
@@ -190,11 +208,12 @@ TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
         syncable::ModelTypeToString(type)));
   }
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onEncryptionComplete",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onEncryptionComplete",
                            HasDetailsAsDictionary(expected_details)));
 
-  sync_manager_observer_.OnEncryptionComplete(encrypted_types);
+  js_sync_manager_observer_.OnEncryptionComplete(encrypted_types);
+  PumpLoop();
 }
 
 TEST_F(JsSyncManagerObserverTest, OnMigrationNeededForTypes) {
@@ -211,11 +230,12 @@ TEST_F(JsSyncManagerObserverTest, OnMigrationNeededForTypes) {
         syncable::ModelTypeToString(type)));
   }
 
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onMigrationNeededForTypes",
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onMigrationNeededForTypes",
                            HasDetailsAsDictionary(expected_details)));
 
-  sync_manager_observer_.OnMigrationNeededForTypes(types);
+  js_sync_manager_observer_.OnMigrationNeededForTypes(types);
+  PumpLoop();
 }
 
 namespace {
@@ -289,8 +309,8 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
       sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
       expected_changes->Append(changes[j].ToValue(&trans));
     }
-    EXPECT_CALL(mock_router_,
-                RouteJsEvent("onChangesApplied",
+    EXPECT_CALL(mock_js_event_handler_,
+                HandleJsEvent("onChangesApplied",
                              HasDetailsAsDictionary(expected_details)));
   }
 
@@ -298,12 +318,13 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   for (int i = syncable::AUTOFILL_PROFILE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     sync_api::ReadTransaction trans(FROM_HERE, test_user_share.user_share());
-    sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
-                                            &trans, &changes[i],
-                                            syncable::MODEL_TYPE_COUNT - i);
+    js_sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
+                                               &trans, &changes[i],
+                                               syncable::MODEL_TYPE_COUNT - i);
   }
 
   test_user_share.TearDown();
+  PumpLoop();
 }
 
 }  // namespace

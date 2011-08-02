@@ -10,18 +10,24 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/weak_handle.h"
+
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace browser_sync {
 
-class JsEventRouter;
+class JsEventDetails;
+class JsEventHandler;
 
-// Routes SyncManager events to a JsEventRouter.
+// Routes SyncManager events to a JsEventHandler.
 class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
  public:
-  // |parent_router| must be non-NULL and must outlive this object.
-  explicit JsSyncManagerObserver(JsEventRouter* parent_router);
-
+  JsSyncManagerObserver();
   virtual ~JsSyncManagerObserver();
+
+  void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
   // sync_api::SyncManager::Observer implementation.
   virtual void OnChangesApplied(
@@ -38,14 +44,18 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
   virtual void OnEncryptionComplete(
       const syncable::ModelTypeSet& encrypted_types);
-  virtual void OnInitializationComplete();
+  virtual void OnInitializationComplete(
+      const WeakHandle<JsBackend>& js_backend);
   virtual void OnStopSyncingPermanently();
   virtual void OnClearServerDataSucceeded();
   virtual void OnClearServerDataFailed();
   virtual void OnMigrationNeededForTypes(const syncable::ModelTypeSet& types);
 
  private:
-  JsEventRouter* parent_router_;
+  void HandleJsEvent(const tracked_objects::Location& from_here,
+                    const std::string& name, const JsEventDetails& details);
+
+  WeakHandle<JsEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(JsSyncManagerObserver);
 };

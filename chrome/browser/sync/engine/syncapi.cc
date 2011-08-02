@@ -43,9 +43,11 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_transaction_observer.h"
 #include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/sync/js_reply_handler.h"
+#include "chrome/browser/sync/js_sync_manager_observer.h"
+#include "chrome/browser/sync/js_transaction_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
@@ -77,6 +79,15 @@
 using base::TimeDelta;
 using browser_sync::AllStatus;
 using browser_sync::Cryptographer;
+using browser_sync::JsArgList;
+using browser_sync::JsBackend;
+using browser_sync::JsEventDetails;
+using browser_sync::JsEventHandler;
+using browser_sync::JsReplyHandler;
+using browser_sync::JsSyncManagerObserver;
+using browser_sync::JsTransactionObserver;
+using browser_sync::MakeWeakHandle;
+using browser_sync::WeakHandle;
 using browser_sync::KeyParams;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
@@ -1206,8 +1217,7 @@ syncable::ModelTypeSet GetEncryptedTypes(
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public sync_notifier::SyncNotifierObserver,
-      public browser_sync::JsBackend,
-      public browser_sync::JsEventRouter,
+      public JsBackend,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
       public syncable::DirectoryChangeDelegate {
@@ -1216,12 +1226,10 @@ class SyncManager::SyncInternal
  public:
   explicit SyncInternal(const std::string& name)
       : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        parent_router_(NULL),
         registrar_(NULL),
         initialized_(false),
         setup_for_test_mode_(false),
-        observing_ip_address_changes_(false),
-        js_transaction_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        observing_ip_address_changes_(false) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -1258,6 +1266,7 @@ class SyncManager::SyncInternal
   }
 
   bool Init(const FilePath& database_location,
+            const WeakHandle<JsEventHandler>& event_handler,
             const std::string& sync_server_and_path,
             int port,
             bool use_ssl,
@@ -1405,25 +1414,12 @@ class SyncManager::SyncInternal
   // ServerConnectionEventListener implementation.
   virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
 
-  // browser_sync::JsBackend implementation.
-  virtual void SetParentJsEventRouter(
-      browser_sync::JsEventRouter* router) OVERRIDE;
-  virtual void RemoveParentJsEventRouter() OVERRIDE;
-  virtual const browser_sync::JsEventRouter*
-      GetParentJsEventRouter() const OVERRIDE;
-  virtual void ProcessMessage(
-      const std::string& name,
-      const browser_sync::JsArgList& args,
-      const browser_sync::JsEventHandler* sender) OVERRIDE;
-
-  // JsEventRouter implementation.
-  virtual void RouteJsEvent(
-      const std::string& name,
-      const browser_sync::JsEventDetails& details) OVERRIDE;
-  virtual void RouteJsMessageReply(
-      const std::string& name,
-      const browser_sync::JsArgList& args,
-      const browser_sync::JsEventHandler* target) OVERRIDE;
+  // JsBackend implementation.
+  virtual void SetJsEventHandler(
+      const WeakHandle<JsEventHandler>& event_handler) OVERRIDE;
+  virtual void ProcessJsMessage(
+      const std::string& name, const JsArgList& args,
+      const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
 
  private:
   struct NotificationInfo {
@@ -1444,11 +1440,9 @@ class SyncManager::SyncInternal
   };
 
   typedef std::map<syncable::ModelType, NotificationInfo> NotificationInfoMap;
-  typedef browser_sync::JsArgList
-      (SyncManager::SyncInternal::*UnboundJsMessageHandler)(
-          const browser_sync::JsArgList&);
-  typedef base::Callback<browser_sync::JsArgList(browser_sync::JsArgList)>
-      JsMessageHandler;
+  typedef JsArgList
+      (SyncManager::SyncInternal::*UnboundJsMessageHandler)(const JsArgList&);
+  typedef base::Callback<JsArgList(JsArgList)> JsMessageHandler;
   typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
 
   // Helper to call OnAuthError when no authentication credentials are
@@ -1550,34 +1544,20 @@ class SyncManager::SyncInternal
 
   // Helper function used only by the constructor.
   void BindJsMessageHandler(
-    const std::string& name,
-    UnboundJsMessageHandler unbound_message_handler);
+    const std::string& name, UnboundJsMessageHandler unbound_message_handler);
 
   // Returned pointer is owned by the caller.
   static DictionaryValue* NotificationInfoToValue(
       const NotificationInfoMap& notification_info);
 
   // JS message handlers.
-  browser_sync::JsArgList GetNotificationState(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList GetNotificationInfo(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList GetRootNodeDetails(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList GetNodeSummariesById(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList GetNodeDetailsById(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList GetChildNodeIds(
-      const browser_sync::JsArgList& args);
-
-  browser_sync::JsArgList FindNodesContainingString(
-      const browser_sync::JsArgList& args);
+  JsArgList GetNotificationState(const JsArgList& args);
+  JsArgList GetNotificationInfo(const JsArgList& args);
+  JsArgList GetRootNodeDetails(const JsArgList& args);
+  JsArgList GetNodeSummariesById(const JsArgList& args);
+  JsArgList GetNodeDetailsById(const JsArgList& args);
+  JsArgList GetChildNodeIds(const JsArgList& args);
+  JsArgList FindNodesContainingString(const JsArgList& args);
 
   const std::string name_;
 
@@ -1594,7 +1574,7 @@ class SyncManager::SyncInternal
   // we'd have another worker class which implements
   // HandleCalculateChangesChangeEventFromSyncApi() and we'd pass it a
   // WeakHandle when we construct it.
-  browser_sync::WeakHandle<SyncInternal> weak_handle_this_;
+  WeakHandle<SyncInternal> weak_handle_this_;
 
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
@@ -1605,8 +1585,6 @@ class SyncManager::SyncInternal
   // from any thread and added to/removed from on the core thread.
   mutable base::Lock observers_lock_;
   ObserverList<SyncManager::Observer> observers_;
-
-  browser_sync::JsEventRouter* parent_router_;
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
@@ -1649,9 +1627,11 @@ class SyncManager::SyncInternal
   // about:sync page.
   NotificationInfoMap notification_info_map_;
 
-  browser_sync::JsTransactionObserver js_transaction_observer_;
-
+  // These are for interacting with chrome://sync-internals.
   JsMessageHandlerMap js_message_handlers_;
+  WeakHandle<JsEventHandler> js_event_handler_;
+  JsSyncManagerObserver js_sync_manager_observer_;
+  JsTransactionObserver js_transaction_observer_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1661,21 +1641,24 @@ SyncManager::Observer::~Observer() {}
 SyncManager::SyncManager(const std::string& name)
     : data_(new SyncInternal(name)) {}
 
-bool SyncManager::Init(const FilePath& database_location,
-                       const std::string& sync_server_and_path,
-                       int sync_server_port,
-                       bool use_ssl,
-                       HttpPostProviderFactory* post_factory,
-                       ModelSafeWorkerRegistrar* registrar,
-                       const std::string& user_agent,
-                       const SyncCredentials& credentials,
-                       sync_notifier::SyncNotifier* sync_notifier,
-                       const std::string& restored_key_for_bootstrapping,
-                       bool setup_for_test_mode) {
+bool SyncManager::Init(
+    const FilePath& database_location,
+    const WeakHandle<JsEventHandler>& event_handler,
+    const std::string& sync_server_and_path,
+    int sync_server_port,
+    bool use_ssl,
+    HttpPostProviderFactory* post_factory,
+    ModelSafeWorkerRegistrar* registrar,
+    const std::string& user_agent,
+    const SyncCredentials& credentials,
+    sync_notifier::SyncNotifier* sync_notifier,
+    const std::string& restored_key_for_bootstrapping,
+    bool setup_for_test_mode) {
   DCHECK(post_factory);
   VLOG(1) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
   return data_->Init(database_location,
+                     event_handler,
                      server_string,
                      sync_server_port,
                      use_ssl,
@@ -1759,6 +1742,7 @@ const std::string& SyncManager::GetAuthenticatedUsername() {
 
 bool SyncManager::SyncInternal::Init(
     const FilePath& database_location,
+    const WeakHandle<JsEventHandler>& event_handler,
     const std::string& sync_server_and_path,
     int port,
     bool use_ssl,
@@ -1775,13 +1759,15 @@ bool SyncManager::SyncInternal::Init(
 
   VLOG(1) << "Starting SyncInternal initialization.";
 
-  weak_handle_this_ =
-      browser_sync::MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
+  weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
 
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
 
   sync_notifier_.reset(sync_notifier);
+
+  AddObserver(&js_sync_manager_observer_);
+  SetJsEventHandler(event_handler);
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
 
@@ -1829,7 +1815,8 @@ bool SyncManager::SyncInternal::Init(
   ObserverList<SyncManager::Observer> temp_obs_list;
   CopyObservers(&temp_obs_list);
   FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                    OnInitializationComplete());
+                    OnInitializationComplete(
+                        WeakHandle<JsBackend>(weak_ptr_factory_.GetWeakPtr())));
 
   // The following calls check that initialized_ is true.
 
@@ -1912,12 +1899,7 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   }
 
   connection_manager()->set_client_id(lookup->cache_guid());
-
-  if (parent_router_) {
-    // Make sure we add the observer at most once.
-    lookup->RemoveTransactionObserver(&js_transaction_observer_);
-    lookup->AddTransactionObserver(&js_transaction_observer_);
-  }
+  lookup->AddTransactionObserver(&js_transaction_observer_);
   return true;
 }
 
@@ -2220,10 +2202,6 @@ void SyncManager::RemoveObserver(Observer* observer) {
   data_->RemoveObserver(observer);
 }
 
-browser_sync::JsBackend* SyncManager::GetJsBackend() {
-  return data_;
-}
-
 void SyncManager::RequestEarlyExit() {
   data_->RequestEarlyExit();
 }
@@ -2248,6 +2226,9 @@ void SyncManager::SyncInternal::Shutdown() {
   // Automatically stops the scheduler.
   scheduler_.reset();
 
+  SetJsEventHandler(WeakHandle<JsEventHandler>());
+  RemoveObserver(&js_sync_manager_observer_);
+
   if (sync_notifier_.get()) {
     sync_notifier_->RemoveObserver(this);
   }
@@ -2262,6 +2243,12 @@ void SyncManager::SyncInternal::Shutdown() {
   observing_ip_address_changes_ = false;
 
   if (dir_manager()) {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (lookup.good()) {
+      lookup->RemoveTransactionObserver(&js_transaction_observer_);
+    } else {
+      NOTREACHED();
+    }
     dir_manager()->FinalSaveChangesForAll();
     dir_manager()->Close(username_for_share());
   }
@@ -2271,7 +2258,6 @@ void SyncManager::SyncInternal::Shutdown() {
   share_.dir_manager.reset();
 
   setup_for_test_mode_ = false;
-  parent_router_ = NULL;
   registrar_ = NULL;
 
   initialized_ = false;
@@ -2643,52 +2629,24 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   }
 }
 
-void SyncManager::SyncInternal::SetParentJsEventRouter(
-    browser_sync::JsEventRouter* router) {
-  DCHECK(router);
-  parent_router_ = router;
-
-  // We might be called before OpenDirectory() or after shutdown.
-  if (!dir_manager()) {
-    return;
-  }
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
-    return;
-  }
-
-  // Make sure we add the observer at most once.
-  lookup->RemoveTransactionObserver(&js_transaction_observer_);
-  lookup->AddTransactionObserver(&js_transaction_observer_);
+void SyncManager::SyncInternal::SetJsEventHandler(
+    const WeakHandle<JsEventHandler>& event_handler) {
+  js_event_handler_ = event_handler;
+  js_sync_manager_observer_.SetJsEventHandler(js_event_handler_);
+  js_transaction_observer_.SetJsEventHandler(js_event_handler_);
 }
 
-void SyncManager::SyncInternal::RemoveParentJsEventRouter() {
-  parent_router_ = NULL;
-
-  // We might be called before OpenDirectory() or after shutdown.
-  if (!dir_manager()) {
-    return;
-  }
-  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-  if (!lookup.good()) {
+void SyncManager::SyncInternal::ProcessJsMessage(
+    const std::string& name, const JsArgList& args,
+    const WeakHandle<JsReplyHandler>& reply_handler) {
+  if (!initialized_) {
+    NOTREACHED();
     return;
   }
 
-  lookup->RemoveTransactionObserver(&js_transaction_observer_);
-}
-
-const browser_sync::JsEventRouter*
-    SyncManager::SyncInternal::GetParentJsEventRouter() const {
-  return parent_router_;
-}
-
-void SyncManager::SyncInternal::ProcessMessage(
-    const std::string& name, const browser_sync::JsArgList& args,
-    const browser_sync::JsEventHandler* sender) {
-  DCHECK(initialized_);
-  if (!parent_router_) {
-    VLOG(1) << "No parent router; not replying to message " << name
-            << " with args " << args.ToString();
+  if (!reply_handler.IsInitialized()) {
+    VLOG(1) << "Uninitialized reply handler; dropping unknown message "
+            << name << " with args " << args.ToString();
     return;
   }
 
@@ -2699,27 +2657,9 @@ void SyncManager::SyncInternal::ProcessMessage(
     return;
   }
 
-  parent_router_->RouteJsMessageReply(
-      name, js_message_handler.Run(args), sender);
-}
-
-void SyncManager::SyncInternal::RouteJsEvent(
-    const std::string& name,
-    const browser_sync::JsEventDetails& details) {
-  if (!parent_router_) {
-    return;
-  }
-  parent_router_->RouteJsEvent(name, details);
-}
-
-void SyncManager::SyncInternal::RouteJsMessageReply(
-      const std::string& name,
-      const browser_sync::JsArgList& args,
-      const browser_sync::JsEventHandler* target) {
-  if (!parent_router_) {
-    return;
-  }
-  parent_router_->RouteJsMessageReply(name, args, target);
+  reply_handler.Call(FROM_HERE,
+                     &JsReplyHandler::HandleJsReply,
+                     name, js_message_handler.Run(args));
 }
 
 void SyncManager::SyncInternal::BindJsMessageHandler(
@@ -2743,32 +2683,29 @@ DictionaryValue* SyncManager::SyncInternal::NotificationInfoToValue(
   return value;
 }
 
-browser_sync::JsArgList
-    SyncManager::SyncInternal::GetNotificationState(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetNotificationState(
+    const JsArgList& args) {
   bool notifications_enabled = allstatus_.status().notifications_enabled;
   ListValue return_args;
   return_args.Append(Value::CreateBooleanValue(notifications_enabled));
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
-browser_sync::JsArgList
-    SyncManager::SyncInternal::GetNotificationInfo(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetNotificationInfo(
+    const JsArgList& args) {
   ListValue return_args;
   return_args.Append(NotificationInfoToValue(notification_info_map_));
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
-browser_sync::JsArgList
-    SyncManager::SyncInternal::GetRootNodeDetails(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetRootNodeDetails(
+    const JsArgList& args) {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode root(&trans);
   root.InitByRootLookup();
   ListValue return_args;
   return_args.Append(root.GetDetailsAsValue());
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
 namespace {
@@ -2785,10 +2722,9 @@ int64 GetId(const ListValue& ids, int i) {
   return id;
 }
 
-browser_sync::JsArgList GetNodeInfoById(
-    const browser_sync::JsArgList& args,
-    UserShare* user_share,
-    DictionaryValue* (BaseNode::*info_getter)() const) {
+JsArgList GetNodeInfoById(const JsArgList& args,
+                          UserShare* user_share,
+                          DictionaryValue* (BaseNode::*info_getter)() const) {
   CHECK(info_getter);
   ListValue return_args;
   ListValue* node_summaries = new ListValue();
@@ -2809,26 +2745,23 @@ browser_sync::JsArgList GetNodeInfoById(
       node_summaries->Append((node.*info_getter)());
     }
   }
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
 }  // namespace
 
-browser_sync::JsArgList
-    SyncManager::SyncInternal::GetNodeSummariesById(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetNodeSummariesById(
+    const JsArgList& args) {
   return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetSummaryAsValue);
 }
 
-browser_sync::JsArgList
-    SyncManager::SyncInternal::GetNodeDetailsById(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetNodeDetailsById(
+    const JsArgList& args) {
   return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetDetailsAsValue);
 }
 
-browser_sync::JsArgList SyncManager::SyncInternal::
-    GetChildNodeIds(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::GetChildNodeIds(
+    const JsArgList& args) {
   ListValue return_args;
   ListValue* child_ids = new ListValue();
   return_args.Append(child_ids);
@@ -2844,17 +2777,16 @@ browser_sync::JsArgList SyncManager::SyncInternal::
           base::Int64ToString(*it)));
     }
   }
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
-browser_sync::JsArgList SyncManager::SyncInternal::
-    FindNodesContainingString(
-        const browser_sync::JsArgList& args) {
+JsArgList SyncManager::SyncInternal::FindNodesContainingString(
+    const JsArgList& args) {
   std::string query;
   ListValue return_args;
   if (!args.Get().GetString(0, &query)) {
     return_args.Append(new ListValue());
-    return browser_sync::JsArgList(&return_args);
+    return JsArgList(&return_args);
   }
 
   // Convert the query string to lower case to perform case insensitive
@@ -2878,7 +2810,7 @@ browser_sync::JsArgList SyncManager::SyncInternal::
     }
   }
 
-  return browser_sync::JsArgList(&return_args);
+  return JsArgList(&return_args);
 }
 
 void SyncManager::SyncInternal::OnNotificationStateChange(
@@ -2889,11 +2821,13 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   if (scheduler()) {
     scheduler()->set_notifications_enabled(notifications_enabled);
   }
-  if (parent_router_) {
+  if (js_event_handler_.IsInitialized()) {
     DictionaryValue details;
     details.Set("enabled", Value::CreateBooleanValue(notifications_enabled));
-    parent_router_->RouteJsEvent("onNotificationStateChange",
-                                 browser_sync::JsEventDetails(&details));
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onNotificationStateChange",
+                           JsEventDetails(&details));
   }
 }
 
@@ -2922,7 +2856,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     LOG(WARNING) << "Sync received notification without any type information.";
   }
 
-  if (parent_router_) {
+  if (js_event_handler_.IsInitialized()) {
     DictionaryValue details;
     ListValue* changed_types = new ListValue();
     details.Set("changedTypes", changed_types);
@@ -2933,8 +2867,10 @@ void SyncManager::SyncInternal::OnIncomingNotification(
           syncable::ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
-    parent_router_->RouteJsEvent("onIncomingNotification",
-                                 browser_sync::JsEventDetails(&details));
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onIncomingNotification",
+                           JsEventDetails(&details));
   }
 }
 

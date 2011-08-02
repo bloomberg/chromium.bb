@@ -24,12 +24,11 @@
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_sync_manager_observer.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
-#include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -49,7 +48,7 @@ struct SyncSessionSnapshot;
 
 class ChangeProcessor;
 class DataTypeController;
-class JsArgList;
+class JsEventHandler;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -63,7 +62,8 @@ class SyncFrontend {
   // The backend has completed initialization and it is now ready to accept and
   // process changes.  If success is false, initialization wasn't able to be
   // completed and should be retried.
-  virtual void OnBackendInitialized(bool success) = 0;
+  virtual void OnBackendInitialized(
+      const WeakHandle<JsBackend>& js_backend, bool success) = 0;
 
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
@@ -132,6 +132,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // bootstrap authentication using |lsid|, if it isn't empty.
   // Optionally delete the Sync Data folder (if it's corrupt).
   void Initialize(SyncFrontend* frontend,
+                  const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
                   const syncable::ModelTypeSet& types,
                   const sync_api::SyncCredentials& credentials,
@@ -239,15 +240,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // using a token previously received.
   bool IsCryptographerReady(const sync_api::BaseTransaction* trans) const;
 
-  // Returns a pointer to the JsBackend (which is owned by the
-  // service).  Must be called only after the sync backend has been
-  // initialized, and never returns NULL if you do so.  Overrideable
-  // for testing purposes.
-  virtual JsBackend* GetJsBackend();
-
-  // TODO(akalin): Write unit tests for the JsBackend, finding a way
-  // to make this class testable in general.
-
  protected:
   // An enum representing the steps to initializing the SyncBackendHost.
   enum InitializationState {
@@ -260,9 +252,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // The real guts of SyncBackendHost, to keep the public client API clean.
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
-               public sync_api::SyncManager::Observer,
-               public JsBackend,
-               public JsEventRouter {
+               public sync_api::SyncManager::Observer {
    public:
     Core(const std::string& name, SyncBackendHost* backend);
 
@@ -277,7 +267,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnChangesComplete(syncable::ModelType model_type);
     virtual void OnSyncCycleCompleted(
         const sessions::SyncSessionSnapshot* snapshot);
-    virtual void OnInitializationComplete();
+    virtual void OnInitializationComplete(
+        const WeakHandle<JsBackend>& js_backend);
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
     virtual void OnPassphraseRequired(
         sync_api::PassphraseRequiredReason reason);
@@ -289,22 +280,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnEncryptionComplete(
         const syncable::ModelTypeSet& encrypted_types);
 
-    // JsBackend implementation.
-    virtual void SetParentJsEventRouter(JsEventRouter* router) OVERRIDE;
-    virtual void RemoveParentJsEventRouter() OVERRIDE;
-    virtual const JsEventRouter* GetParentJsEventRouter() const OVERRIDE;
-    virtual void ProcessMessage(const std::string& name, const JsArgList& args,
-                                const JsEventHandler* sender) OVERRIDE;
-
-    // JsEventRouter implementation.
-    virtual void RouteJsEvent(const std::string& event_name,
-                              const JsEventDetails& details) OVERRIDE;
-    virtual void RouteJsMessageReply(const std::string& event_name,
-                                     const JsArgList& args,
-                                     const JsEventHandler* target) OVERRIDE;
-
     struct DoInitializeOptions {
       DoInitializeOptions(
+          const WeakHandle<JsEventHandler>& event_handler,
           const GURL& service_url,
           const scoped_refptr<net::URLRequestContextGetter>&
               request_context_getter,
@@ -314,6 +292,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           bool setup_for_test_mode);
       ~DoInitializeOptions();
 
+      WeakHandle<JsEventHandler> event_handler;
       GURL service_url;
       scoped_refptr<net::URLRequestContextGetter> request_context_getter;
       sync_api::SyncCredentials credentials;
@@ -396,20 +375,14 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // sync databases), as well as shutdown when you're no longer syncing.
     void DeleteSyncDataFolder();
 
-    void ConnectChildJsEventRouter();
-
-    void DisconnectChildJsEventRouter();
-
-    void DoProcessMessage(
-        const std::string& name, const JsArgList& args,
-        const JsEventHandler* sender);
-
     // A callback from the SyncerThread when it is safe to continue config.
     void FinishConfigureDataTypes();
 
     // Called to handle updating frontend thread components whenever we may
     // need to alert the frontend that the backend is intialized.
-    void HandleInitializationCompletedOnFrontendLoop(bool success);
+    void HandleInitializationCompletedOnFrontendLoop(
+        const WeakHandle<JsBackend>& js_backend,
+        bool success);
 
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
@@ -423,7 +396,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       sync_api::SyncCredentials credentials;
       credentials.email = WideToUTF8(test_user);
       credentials.sync_token = "token";
-      DoInitialize(DoInitializeOptions(GURL(), getter, credentials,
+      DoInitialize(DoInitializeOptions(WeakHandle<JsEventHandler>(),
+                                       GURL(), getter, credentials,
                                        delete_sync_data_folder,
                                        "", true));
     }
@@ -483,13 +457,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleClearServerDataSucceededOnFrontendLoop();
     void HandleClearServerDataFailedOnFrontendLoop();
 
-    void RouteJsEventOnFrontendLoop(
-        const std::string& name, const JsEventDetails& details);
-
-    void RouteJsMessageReplyOnFrontendLoop(
-        const std::string& name, const JsArgList& args,
-        const JsEventHandler* target);
-
     void FinishConfigureDataTypesOnFrontendLoop();
 
     // Return true if a model lives on the current thread.
@@ -507,10 +474,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // The top-level syncapi entry point.  Lives on the sync thread.
     scoped_ptr<sync_api::SyncManager> sync_manager_;
 
-    JsSyncManagerObserver sync_manager_observer_;
-
-    JsEventRouter* parent_router_;
-
     // Denotes if the core is currently attempting to set a passphrase. While
     // this is true, OnPassphraseRequired calls are dropped.
     // Note: after initialization, this variable should only ever be accessed or
@@ -523,7 +486,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
-  virtual void HandleInitializationCompletedOnFrontendLoop(bool success);
+  virtual void HandleInitializationCompletedOnFrontendLoop(
+      const WeakHandle<JsBackend>& js_backend,
+      bool success);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.

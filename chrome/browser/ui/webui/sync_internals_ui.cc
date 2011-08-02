@@ -13,34 +13,51 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_controller.h"
 #include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_frontend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/sync_internals_html_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/browser_thread.h"
 
+using browser_sync::JsArgList;
+using browser_sync::JsEventDetails;
+using browser_sync::JsReplyHandler;
+using browser_sync::WeakHandle;
+
+namespace {
+
+// Gets the ProfileSyncService of the underlying original profile.
+// May return NULL (e.g., if sync is disabled on the command line).
+ProfileSyncService* GetProfileSyncService(Profile* profile) {
+  return profile->GetOriginalProfile()->GetProfileSyncService();
+}
+
+}  // namespace
+
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
-    : ChromeWebUI(contents) {
-  browser_sync::JsFrontend* backend = GetJsFrontend();
-  if (backend) {
-    backend->AddHandler(this);
-  }
-  // If this PostTask() call fails, it's most likely because this is
-  // being run from a unit test.  The created objects will be cleaned
-  // up, anyway.
+    : ChromeWebUI(contents),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  // TODO(akalin): Fix.
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
       new SyncInternalsHTMLSource());
+  ProfileSyncService* sync_service = GetProfileSyncService(profile);
+  if (sync_service) {
+    js_controller_ = sync_service->GetJsController();
+  }
+  if (js_controller_.get()) {
+    js_controller_->AddJsEventHandler(this);
+  }
 }
 
 SyncInternalsUI::~SyncInternalsUI() {
-  browser_sync::JsFrontend* backend = GetJsFrontend();
-  if (backend) {
-    backend->RemoveHandler(this);
+  if (js_controller_.get()) {
+    js_controller_->RemoveJsEventHandler(this);
   }
 }
 
@@ -48,7 +65,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
                                   const std::string& name,
                                   const ListValue& content) {
   scoped_ptr<ListValue> content_copy(content.DeepCopy());
-  browser_sync::JsArgList args(content_copy.get());
+  JsArgList args(content_copy.get());
   VLOG(1) << "Received message: " << name << " with args "
           << args.ToString();
   // We handle this case directly because it needs to work even if
@@ -57,13 +74,14 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
     ListValue return_args;
     DictionaryValue* about_info = new DictionaryValue();
     return_args.Append(about_info);
-    ProfileSyncService* service = GetProfile()->GetProfileSyncService();
+    ProfileSyncService* service = GetProfileSyncService(GetProfile());
     sync_ui_util::ConstructAboutInformation(service, about_info);
-    HandleJsMessageReply(name, browser_sync::JsArgList(&return_args));
+    HandleJsReply(name, JsArgList(&return_args));
   } else {
-    browser_sync::JsFrontend* backend = GetJsFrontend();
-    if (backend) {
-      backend->ProcessMessage(name, args, this);
+    if (js_controller_.get()) {
+      js_controller_->ProcessJsMessage(
+          name, args,
+          WeakHandle<JsReplyHandler>(weak_ptr_factory_.GetWeakPtr()));
     } else {
       LOG(WARNING) << "No sync service; dropping message " << name
                    << " with args " << args.ToString();
@@ -72,8 +90,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
 }
 
 void SyncInternalsUI::HandleJsEvent(
-    const std::string& name,
-    const browser_sync::JsEventDetails& details) {
+    const std::string& name, const JsEventDetails& details) {
   VLOG(1) << "Handling event: " << name << " with details "
           << details.ToString();
   const std::string& event_handler = "chrome.sync." + name + ".fire";
@@ -81,19 +98,11 @@ void SyncInternalsUI::HandleJsEvent(
   CallJavascriptFunction(event_handler, arg_list);
 }
 
-void SyncInternalsUI::HandleJsMessageReply(
-    const std::string& name,
-    const browser_sync::JsArgList& args) {
+void SyncInternalsUI::HandleJsReply(
+    const std::string& name, const JsArgList& args) {
   VLOG(1) << "Handling reply for " << name << " message with args "
           << args.ToString();
   const std::string& reply_handler = "chrome.sync." + name + ".handleReply";
   std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
   CallJavascriptFunction(reply_handler, arg_list);
-}
-
-browser_sync::JsFrontend* SyncInternalsUI::GetJsFrontend() {
-  // If this returns NULL that means that sync is disabled for
-  // whatever reason.
-  ProfileSyncService* sync_service = GetProfile()->GetProfileSyncService();
-  return sync_service ? sync_service->GetJsFrontend() : NULL;
 }

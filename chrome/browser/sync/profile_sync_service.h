@@ -9,8 +9,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/task.h"
@@ -21,8 +23,8 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/js_event_handler_list.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/sync_js_controller.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -43,7 +45,7 @@ namespace browser_sync {
 class BackendMigrator;
 class ChangeProcessor;
 class DataTypeManager;
-class JsFrontend;
+class JsController;
 class SessionModelAssociator;
 namespace sessions { struct SyncSessionSnapshot; }
 }
@@ -189,19 +191,23 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void SetSyncSetupCompleted();
 
   // SyncFrontend implementation.
-  virtual void OnBackendInitialized(bool success);
-  virtual void OnSyncCycleCompleted();
-  virtual void OnAuthError();
-  virtual void OnStopSyncingPermanently();
-  virtual void OnClearServerDataFailed();
-  virtual void OnClearServerDataTimeout();
-  virtual void OnClearServerDataSucceeded();
-  virtual void OnPassphraseRequired(sync_api::PassphraseRequiredReason reason);
-  virtual void OnPassphraseAccepted();
+  virtual void OnBackendInitialized(
+      const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
+      bool success) OVERRIDE;
+  virtual void OnSyncCycleCompleted() OVERRIDE;
+  virtual void OnAuthError() OVERRIDE;
+  virtual void OnStopSyncingPermanently() OVERRIDE;
+  virtual void OnClearServerDataFailed() OVERRIDE;
+  virtual void OnClearServerDataSucceeded() OVERRIDE;
+  virtual void OnPassphraseRequired(
+      sync_api::PassphraseRequiredReason reason) OVERRIDE;
+  virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types);
+      const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
   virtual void OnMigrationNeededForTypes(
-      const syncable::ModelTypeSet& types);
+      const syncable::ModelTypeSet& types) OVERRIDE;
+
+  void OnClearServerDataTimeout();
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
@@ -324,10 +330,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Returns true if |observer| has already been added as an observer.
   bool HasObserver(Observer* observer) const;
 
-  // Returns a pointer to the service's JsFrontend (which is owned by
-  // the service).  Never returns NULL.  Overrideable for testing
-  // purposes.
-  virtual browser_sync::JsFrontend* GetJsFrontend();
+  // Returns a weak pointer to the service's JsController.
+  // Overrideable for testing purposes.
+  virtual base::WeakPtr<browser_sync::JsController> GetJsController();
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
@@ -589,7 +594,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ObserverList<Observer> observers_;
 
-  browser_sync::JsEventHandlerList js_event_handlers_;
+  browser_sync::SyncJsController sync_js_controller_;
 
   NotificationRegistrar registrar_;
 

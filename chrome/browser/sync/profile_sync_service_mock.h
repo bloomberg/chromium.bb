@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -21,7 +22,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   virtual ~ProfileSyncServiceMock();
 
   MOCK_METHOD0(DisableForUser, void());
-  MOCK_METHOD1(OnBackendInitialized, void(bool));
+  MOCK_METHOD2(OnBackendInitialized,
+               void(const browser_sync::WeakHandle<browser_sync::JsBackend>&,
+                    bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
   MOCK_METHOD4(OnUserSubmittedAuth,
@@ -44,7 +47,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(InitializeBackend, void());
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
-  MOCK_METHOD0(GetJsFrontend, browser_sync::JsFrontend*());
+  MOCK_METHOD0(GetJsController, base::WeakPtr<browser_sync::JsController>());
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
   MOCK_METHOD1(ChangePreferredDataTypes,

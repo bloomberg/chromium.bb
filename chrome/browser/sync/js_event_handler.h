@@ -12,7 +12,6 @@
 
 namespace browser_sync {
 
-class JsArgList;
 class JsEventDetails;
 
 // An interface for objects that handle Javascript events (e.g.,
@@ -21,9 +20,6 @@ class JsEventHandler {
  public:
   virtual void HandleJsEvent(
       const std::string& name, const JsEventDetails& details) = 0;
-
-  virtual void HandleJsMessageReply(
-      const std::string& name, const JsArgList& args) = 0;
 
  protected:
   virtual ~JsEventHandler() {}

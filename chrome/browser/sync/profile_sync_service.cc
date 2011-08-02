@@ -54,7 +54,12 @@
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
+using browser_sync::JsBackend;
+using browser_sync::JsController;
+using browser_sync::JsEventDetails;
+using browser_sync::JsEventHandler;
 using browser_sync::SyncBackendHost;
+using browser_sync::WeakHandle;
 using sync_api::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
@@ -356,11 +361,13 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile_->GetRequestContext());
 
-  backend_->Initialize(this,
-                       sync_service_url_,
-                       types,
-                       credentials,
-                       delete_sync_data_folder);
+  backend_->Initialize(
+      this,
+      WeakHandle<JsEventHandler>(sync_js_controller_.AsWeakPtr()),
+      sync_service_url_,
+      types,
+      credentials,
+      delete_sync_data_folder);
 }
 
 void ProfileSyncService::CreateBackend() {
@@ -419,7 +426,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   // Shutdown the migrator before the backend to ensure it doesn't pull a null
   // snapshot.
   migrator_.reset();
-  js_event_handlers_.RemoveBackend();
+  sync_js_controller_.AttachJsBackend(WeakHandle<JsBackend>());
 
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
@@ -486,8 +493,8 @@ void ProfileSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   // TODO(akalin): Make an Observer subclass that listens and does the
   // event routing.
-  js_event_handlers_.RouteJsEvent(
-      "onServiceStateChanged", browser_sync::JsEventDetails());
+  sync_js_controller_.HandleJsEvent(
+      "onServiceStateChanged", JsEventDetails());
 }
 
 // static
@@ -550,7 +557,8 @@ void ProfileSyncService::OnUnrecoverableError(
         &ProfileSyncService::Shutdown, true));
 }
 
-void ProfileSyncService::OnBackendInitialized(bool success) {
+void ProfileSyncService::OnBackendInitialized(
+    const WeakHandle<JsBackend>& js_backend, bool success) {
   if (!success) {
     // If backend initialization failed, abort.  We only want to blow away
     // state (DBs, etc) if this was a first-time scenario that failed.
@@ -561,7 +569,7 @@ void ProfileSyncService::OnBackendInitialized(bool success) {
 
   backend_initialized_ = true;
 
-  js_event_handlers_.SetBackend(backend_->GetJsBackend());
+  sync_js_controller_.AttachJsBackend(js_backend);
 
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  last_synced_time_ will only be null
@@ -1344,8 +1352,8 @@ bool ProfileSyncService::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-browser_sync::JsFrontend* ProfileSyncService::GetJsFrontend() {
-  return &js_event_handlers_;
+base::WeakPtr<JsController> ProfileSyncService::GetJsController() {
+  return sync_js_controller_.AsWeakPtr();
 }
 
 void ProfileSyncService::SyncEvent(SyncEventCodes code) {

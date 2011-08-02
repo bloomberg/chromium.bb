@@ -109,17 +109,29 @@ MockJsBackend::MockJsBackend() {}
 
 MockJsBackend::~MockJsBackend() {}
 
-MockJsFrontend::MockJsFrontend() {}
+WeakHandle<JsBackend> MockJsBackend::AsWeakHandle() {
+  return WeakHandle<JsBackend>(AsWeakPtr());
+}
 
-MockJsFrontend::~MockJsFrontend() {}
+MockJsController::MockJsController() {}
+
+MockJsController::~MockJsController() {}
 
 MockJsEventHandler::MockJsEventHandler() {}
 
+WeakHandle<JsEventHandler> MockJsEventHandler::AsWeakHandle() {
+  return WeakHandle<JsEventHandler>(AsWeakPtr());
+}
+
 MockJsEventHandler::~MockJsEventHandler() {}
 
-MockJsEventRouter::MockJsEventRouter() {}
+MockJsReplyHandler::MockJsReplyHandler() {}
 
-MockJsEventRouter::~MockJsEventRouter() {}
+MockJsReplyHandler::~MockJsReplyHandler() {}
+
+WeakHandle<JsReplyHandler> MockJsReplyHandler::AsWeakHandle() {
+  return WeakHandle<JsReplyHandler>(AsWeakPtr());
+}
 
 }  // namespace browser_sync
 

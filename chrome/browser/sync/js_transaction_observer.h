@@ -12,18 +12,25 @@
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
+#include "chrome/browser/sync/weak_handle.h"
+
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace browser_sync {
 
-class JsEventRouter;
+class JsEventDetails;
+class JsEventHandler;
 
-// Routes SyncManager events to a JsEventRouter.
+// Routes SyncManager events to a JsEventHandler.
 class JsTransactionObserver : public syncable::TransactionObserver {
  public:
-  // |parent_router| must be non-NULL and must outlive this object.
-  explicit JsTransactionObserver(JsEventRouter* parent_router);
+  JsTransactionObserver();
 
   virtual ~JsTransactionObserver();
+
+  void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
   // syncable::TransactionObserver implementation.
   virtual void OnTransactionStart(
@@ -40,7 +47,11 @@ class JsTransactionObserver : public syncable::TransactionObserver {
 
  private:
   base::NonThreadSafe non_thread_safe_;
-  JsEventRouter* parent_router_;
+  WeakHandle<JsEventHandler> event_handler_;
+
+  void HandleJsEvent(
+    const tracked_objects::Location& from_here,
+    const std::string& name, const JsEventDetails& details);
 
   DISALLOW_COPY_AND_ASSIGN(JsTransactionObserver);
 };

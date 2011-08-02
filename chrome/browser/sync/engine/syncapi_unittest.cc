@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -27,7 +28,7 @@
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/js_event_handler.h"
-#include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/js_reply_handler.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
@@ -52,17 +53,22 @@ using browser_sync::HasArgsAsList;
 using browser_sync::HasDetailsAsDictionary;
 using browser_sync::KeyParams;
 using browser_sync::JsArgList;
+using browser_sync::JsBackend;
+using browser_sync::JsEventHandler;
+using browser_sync::JsReplyHandler;
 using browser_sync::MockJsEventHandler;
-using browser_sync::MockJsEventRouter;
+using browser_sync::MockJsReplyHandler;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
+using browser_sync::WeakHandle;
 using syncable::ModelType;
 using syncable::ModelTypeSet;
 using test::ExpectDictDictionaryValue;
 using test::ExpectDictStringValue;
 using testing::_;
+using testing::AnyNumber;
 using testing::AtLeast;
 using testing::InSequence;
 using testing::Invoke;
@@ -638,15 +644,41 @@ TEST_F(SyncApiTest, ChangeRecordToValue) {
 
 namespace {
 
+class TestHttpPostProviderInterface : public HttpPostProviderInterface {
+ public:
+  virtual ~TestHttpPostProviderInterface() {}
+
+  virtual void SetUserAgent(const char* user_agent) OVERRIDE {}
+  virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE {}
+  virtual void SetURL(const char* url, int port) OVERRIDE {}
+  virtual void SetPostPayload(const char* content_type,
+                              int content_length,
+                              const char* content) OVERRIDE {}
+  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code)
+      OVERRIDE {
+    return false;
+  }
+  virtual int GetResponseContentLength() const OVERRIDE {
+    return 0;
+  }
+  virtual const char* GetResponseContent() const OVERRIDE {
+    return "";
+  }
+  virtual const std::string GetResponseHeaderValue(
+      const std::string& name) const OVERRIDE {
+    return "";
+  }
+  virtual void Abort() OVERRIDE {}
+};
+
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   virtual ~TestHttpPostProviderFactory() {}
-  virtual HttpPostProviderInterface* Create() {
-    NOTREACHED();
-    return NULL;
+  virtual HttpPostProviderInterface* Create() OVERRIDE {
+    return new TestHttpPostProviderInterface();
   }
-  virtual void Destroy(HttpPostProviderInterface* http) {
-    NOTREACHED();
+  virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
+    delete http;
   }
 };
 
@@ -660,7 +692,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD1(OnChangesComplete, void(ModelType));  // NOLINT
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot*));  // NOLINT
-  MOCK_METHOD0(OnInitializationComplete, void());  // NOLINT
+  MOCK_METHOD1(OnInitializationComplete,
+               void(const WeakHandle<JsBackend>&));  // NOLINT
   MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
   MOCK_METHOD1(OnPassphraseRequired,
                void(sync_api::PassphraseRequiredReason));  // NOLINT
@@ -722,16 +755,23 @@ class SyncManagerTest : public testing::Test,
     EXPECT_CALL(*sync_notifier_mock_, RemoveObserver(_)).
         WillOnce(Invoke(this, &SyncManagerTest::SyncNotifierRemoveObserver));
 
+    sync_manager_.AddObserver(&observer_);
+    EXPECT_CALL(observer_, OnInitializationComplete(_)).
+        WillOnce(SaveArg<0>(&js_backend_));
+
     EXPECT_FALSE(sync_notifier_observer_);
+    EXPECT_FALSE(js_backend_.IsInitialized());
 
     // Takes ownership of |sync_notifier_mock_|.
-    sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
+    sync_manager_.Init(temp_dir_.path(),
+                       WeakHandle<JsEventHandler>(),
+                       "bogus", 0, false,
                        new TestHttpPostProviderFactory(), this, "bogus",
                        credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */);
 
     EXPECT_TRUE(sync_notifier_observer_);
-    sync_manager_.AddObserver(&observer_);
+    EXPECT_TRUE(js_backend_.IsInitialized());
 
     EXPECT_EQ(1, update_enabled_types_call_count_);
 
@@ -746,6 +786,7 @@ class SyncManagerTest : public testing::Test,
       type_roots_[i->first] = MakeServerNodeForType(
           sync_manager_.GetUserShare(), i->first);
     }
+    PumpLoop();
   }
 
   void TearDown() {
@@ -753,6 +794,7 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Shutdown();
     sync_notifier_mock_ = NULL;
     EXPECT_FALSE(sync_notifier_observer_);
+    PumpLoop();
   }
 
   // ModelSafeWorkerRegistrar implementation.
@@ -827,6 +869,23 @@ class SyncManagerTest : public testing::Test,
     ++update_enabled_types_call_count_;
   }
 
+  void PumpLoop() {
+    ui_loop_.RunAllPending();
+  }
+
+  void SendJsMessage(const std::string& name, const JsArgList& args,
+                     const WeakHandle<JsReplyHandler>& reply_handler) {
+    js_backend_.Call(FROM_HERE, &JsBackend::ProcessJsMessage,
+                     name, args, reply_handler);
+    PumpLoop();
+  }
+
+  void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler) {
+    js_backend_.Call(FROM_HERE, &JsBackend::SetJsEventHandler,
+                     event_handler);
+    PumpLoop();
+  }
+
  private:
   // Needed by |ui_thread_|.
   MessageLoopForUI ui_loop_;
@@ -840,6 +899,7 @@ class SyncManagerTest : public testing::Test,
 
  protected:
   SyncManager sync_manager_;
+  WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
   sync_notifier::SyncNotifierObserver* sync_notifier_observer_;
   int update_enabled_types_call_count_;
@@ -852,84 +912,36 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   EXPECT_EQ(2, update_enabled_types_call_count_);
 }
 
-TEST_F(SyncManagerTest, ParentJsEventRouter) {
-  StrictMock<MockJsEventRouter> event_router;
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-  EXPECT_EQ(NULL, js_backend->GetParentJsEventRouter());
-  js_backend->SetParentJsEventRouter(&event_router);
-  EXPECT_EQ(&event_router, js_backend->GetParentJsEventRouter());
-  js_backend->RemoveParentJsEventRouter();
-  EXPECT_EQ(NULL, js_backend->GetParentJsEventRouter());
-}
-
-TEST_F(SyncManagerTest, ProcessMessage) {
+TEST_F(SyncManagerTest, ProcessJsMessage) {
   const JsArgList kNoArgs;
 
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+  StrictMock<MockJsReplyHandler> reply_handler;
 
-  // Messages sent without any parent router should be dropped.
-  {
-    StrictMock<MockJsEventHandler> event_handler;
-    js_backend->ProcessMessage("unknownMessage",
-                               kNoArgs, &event_handler);
-    js_backend->ProcessMessage("getNotificationState",
-                               kNoArgs, &event_handler);
-  }
+  ListValue false_args;
+  false_args.Append(Value::CreateBooleanValue(false));
 
-  {
-    StrictMock<MockJsEventHandler> event_handler;
-    StrictMock<MockJsEventRouter> event_router;
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getNotificationState",
+                            HasArgsAsList(false_args)));
 
-    ListValue false_args;
-    false_args.Append(Value::CreateBooleanValue(false));
+  // This message should be dropped.
+  SendJsMessage("unknownMessage", kNoArgs, reply_handler.AsWeakHandle());
 
-    EXPECT_CALL(event_router,
-                RouteJsMessageReply("getNotificationState",
-                                    HasArgsAsList(false_args),
-                                    &event_handler));
-
-    js_backend->SetParentJsEventRouter(&event_router);
-
-    // This message should be dropped.
-    js_backend->ProcessMessage("unknownMessage",
-                               kNoArgs, &event_handler);
-
-    // This should trigger the reply.
-    js_backend->ProcessMessage("getNotificationState",
-                               kNoArgs, &event_handler);
-
-    js_backend->RemoveParentJsEventRouter();
-  }
-
-  // Messages sent after a parent router has been removed should be
-  // dropped.
-  {
-    StrictMock<MockJsEventHandler> event_handler;
-    js_backend->ProcessMessage("unknownMessage",
-                               kNoArgs, &event_handler);
-    js_backend->ProcessMessage("getNotificationState",
-                               kNoArgs, &event_handler);
-  }
+  SendJsMessage("getNotificationState", kNoArgs, reply_handler.AsWeakHandle());
 }
 
-TEST_F(SyncManagerTest, ProcessMessageGetRootNodeDetails) {
+TEST_F(SyncManagerTest, ProcessJsMessageGetRootNodeDetails) {
   const JsArgList kNoArgs;
 
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-  StrictMock<MockJsEventHandler> event_handler;
-  StrictMock<MockJsEventRouter> event_router;
+  StrictMock<MockJsReplyHandler> reply_handler;
 
   JsArgList return_args;
 
-  EXPECT_CALL(event_router,
-              RouteJsMessageReply("getRootNodeDetails", _, &event_handler))
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getRootNodeDetails", _))
       .WillOnce(SaveArg<1>(&return_args));
 
-  js_backend->SetParentJsEventRouter(&event_router);
-
-  // Should trigger the reply.
-  js_backend->ProcessMessage("getRootNodeDetails", kNoArgs, &event_handler);
+  SendJsMessage("getRootNodeDetails", kNoArgs, reply_handler.AsWeakHandle());
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
   DictionaryValue* node_info = NULL;
@@ -942,8 +954,6 @@ TEST_F(SyncManagerTest, ProcessMessageGetRootNodeDetails) {
   } else {
     ADD_FAILURE();
   }
-
-  js_backend->RemoveParentJsEventRouter();
 }
 
 void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
@@ -981,64 +991,51 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
         MakeNode(sync_manager_.GetUserShare(),
                  syncable::BOOKMARKS, "testtag");
 
-    browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-    StrictMock<MockJsEventHandler> event_handler;
-    StrictMock<MockJsEventRouter> event_router;
+    StrictMock<MockJsReplyHandler> reply_handler;
 
     JsArgList return_args;
 
     const int64 ids[] = { root_id, child_id };
 
-    EXPECT_CALL(event_router,
-                RouteJsMessageReply(message_name, _, &event_handler))
+    EXPECT_CALL(reply_handler,
+                HandleJsReply(message_name, _))
         .Times(arraysize(ids)).WillRepeatedly(SaveArg<1>(&return_args));
-
-    js_backend->SetParentJsEventRouter(&event_router);
 
     for (size_t i = 0; i < arraysize(ids); ++i) {
       ListValue args;
       ListValue* id_values = new ListValue();
       args.Append(id_values);
       id_values->Append(Value::CreateStringValue(base::Int64ToString(ids[i])));
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
 
       CheckGetNodesByIdReturnArgs(sync_manager_, return_args,
                                   ids[i], is_detailed);
     }
-
-    js_backend->RemoveParentJsEventRouter();
   }
 
   void RunGetNodesByIdFailureTest(const char* message_name) {
-    browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-    StrictMock<MockJsEventHandler> event_handler;
-    StrictMock<MockJsEventRouter> event_router;
+    StrictMock<MockJsReplyHandler> reply_handler;
 
     ListValue empty_list_args;
     empty_list_args.Append(new ListValue());
 
-    EXPECT_CALL(event_router,
-                RouteJsMessageReply(message_name,
-                                    HasArgsAsList(empty_list_args),
-                                    &event_handler))
+    EXPECT_CALL(reply_handler,
+                HandleJsReply(message_name,
+                                    HasArgsAsList(empty_list_args)))
         .Times(6);
-
-    js_backend->SetParentJsEventRouter(&event_router);
 
     {
       ListValue args;
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
       ListValue args;
       args.Append(new ListValue());
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
@@ -1046,8 +1043,8 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       ListValue* ids = new ListValue();
       args.Append(ids);
       ids->Append(Value::CreateStringValue(""));
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
@@ -1055,8 +1052,8 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       ListValue* ids = new ListValue();
       args.Append(ids);
       ids->Append(Value::CreateStringValue("nonsense"));
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
@@ -1064,8 +1061,8 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       ListValue* ids = new ListValue();
       args.Append(ids);
       ids->Append(Value::CreateStringValue("0"));
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
@@ -1073,11 +1070,9 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
       ListValue* ids = new ListValue();
       args.Append(ids);
       ids->Append(Value::CreateStringValue("9999"));
-      js_backend->ProcessMessage(message_name,
-                                 JsArgList(&args), &event_handler);
+      SendJsMessage(message_name,
+                    JsArgList(&args), reply_handler.AsWeakHandle());
     }
-
-    js_backend->RemoveParentJsEventRouter();
   }
 };
 
@@ -1098,25 +1093,19 @@ TEST_F(SyncManagerGetNodesByIdTest, GetNodeDetailsByIdFailure) {
 }
 
 TEST_F(SyncManagerTest, GetChildNodeIds) {
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-  StrictMock<MockJsEventHandler> event_handler;
-  StrictMock<MockJsEventRouter> event_router;
+  StrictMock<MockJsReplyHandler> reply_handler;
 
   JsArgList return_args;
 
-  EXPECT_CALL(event_router,
-              RouteJsMessageReply("getChildNodeIds", _, &event_handler))
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getChildNodeIds", _))
       .Times(1).WillRepeatedly(SaveArg<1>(&return_args));
 
-  js_backend->SetParentJsEventRouter(&event_router);
-
-  // Should trigger the reply.
   {
     ListValue args;
     args.Append(Value::CreateStringValue("1"));
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
@@ -1124,98 +1113,89 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
   EXPECT_EQ(5u, nodes->GetSize());
-
-  js_backend->RemoveParentJsEventRouter();
 }
 
 TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
-
-  StrictMock<MockJsEventHandler> event_handler;
-  StrictMock<MockJsEventRouter> event_router;
+  StrictMock<MockJsReplyHandler> reply_handler;
 
   ListValue empty_list_args;
   empty_list_args.Append(new ListValue());
 
-  EXPECT_CALL(event_router,
-              RouteJsMessageReply("getChildNodeIds",
-                                  HasArgsAsList(empty_list_args),
-                                  &event_handler))
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getChildNodeIds",
+                                   HasArgsAsList(empty_list_args)))
       .Times(5);
-
-  js_backend->SetParentJsEventRouter(&event_router);
 
   {
     ListValue args;
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue(""));
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("nonsense"));
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("0"));
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
     ListValue args;
     args.Append(Value::CreateStringValue("9999"));
-    js_backend->ProcessMessage("getChildNodeIds",
-                               JsArgList(&args), &event_handler);
+    SendJsMessage("getChildNodeIds",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
   }
-
-  js_backend->RemoveParentJsEventRouter();
 }
 
 // TODO(akalin): Add unit tests for findNodesContainingString message.
 
 TEST_F(SyncManagerTest, OnNotificationStateChange) {
   InSequence dummy;
-  StrictMock<MockJsEventRouter> event_router;
+  StrictMock<MockJsEventHandler> event_handler;
 
   DictionaryValue true_details;
   true_details.SetBoolean("enabled", true);
   DictionaryValue false_details;
   false_details.SetBoolean("enabled", false);
 
-  EXPECT_CALL(event_router,
-              RouteJsEvent("onNotificationStateChange",
-                           HasDetailsAsDictionary(true_details)));
-  EXPECT_CALL(event_router,
-              RouteJsEvent("onNotificationStateChange",
-                           HasDetailsAsDictionary(false_details)));
-
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onNotificationStateChange",
+                            HasDetailsAsDictionary(true_details)));
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onNotificationStateChange",
+                            HasDetailsAsDictionary(false_details)));
 
   sync_manager_.TriggerOnNotificationStateChangeForTest(true);
   sync_manager_.TriggerOnNotificationStateChangeForTest(false);
 
-  js_backend->SetParentJsEventRouter(&event_router);
+  SetJsEventHandler(event_handler.AsWeakHandle());
   sync_manager_.TriggerOnNotificationStateChangeForTest(true);
   sync_manager_.TriggerOnNotificationStateChangeForTest(false);
-  js_backend->RemoveParentJsEventRouter();
+  SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   sync_manager_.TriggerOnNotificationStateChangeForTest(true);
   sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+
+  // Should trigger the replies.
+  PumpLoop();
 }
 
 TEST_F(SyncManagerTest, OnIncomingNotification) {
-  StrictMock<MockJsEventRouter> event_router;
+  StrictMock<MockJsEventHandler> event_handler;
 
   const syncable::ModelTypeBitSet empty_model_types;
   syncable::ModelTypeBitSet model_types;
@@ -1239,21 +1219,22 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
     }
   }
 
-  EXPECT_CALL(event_router,
-              RouteJsEvent("onIncomingNotification",
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onIncomingNotification",
                            HasDetailsAsDictionary(expected_details)));
 
-  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
+  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+
+  SetJsEventHandler(event_handler.AsWeakHandle());
+  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
   sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
 
-  js_backend->SetParentJsEventRouter(&event_router);
-  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
-  js_backend->RemoveParentJsEventRouter();
-
-  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
-  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  // Should trigger the replies.
+  PumpLoop();
 }
 
 TEST_F(SyncManagerTest, RefreshEncryptionReady) {

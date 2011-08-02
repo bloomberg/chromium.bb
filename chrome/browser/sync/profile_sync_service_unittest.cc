@@ -145,30 +145,19 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset();
 }
 
-TEST_F(ProfileSyncServiceTest, JsFrontendHandlersBasic) {
+TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   StartSyncService();
-
-  StrictMock<MockJsEventHandler> event_handler;
-
-  SyncBackendHostForProfileSyncTest* test_backend =
-      service_->GetBackendForTest();
-
   EXPECT_TRUE(service_->sync_initialized());
-  ASSERT_TRUE(test_backend != NULL);
-  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
-  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
 
-  JsFrontend* js_backend = service_->GetJsFrontend();
-  js_backend->AddHandler(&event_handler);
-  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
-  EXPECT_TRUE(test_backend->GetJsBackend()->GetParentJsEventRouter() != NULL);
-
-  js_backend->RemoveHandler(&event_handler);
-  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+  JsController* js_controller = service_->GetJsController();
+  StrictMock<MockJsEventHandler> event_handler;
+  js_controller->AddJsEventHandler(&event_handler);
+  js_controller->RemoveJsEventHandler(&event_handler);
 }
 
 TEST_F(ProfileSyncServiceTest,
-       JsFrontendHandlersDelayedBackendInitialization) {
+       JsControllerHandlersDelayedBackendInitialization) {
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
   StrictMock<MockJsEventHandler> event_handler;
@@ -193,153 +182,62 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_EQ(NULL, service_->GetBackendForTest());
   EXPECT_FALSE(service_->sync_initialized());
 
-  JsFrontend* js_backend = service_->GetJsFrontend();
-  js_backend->AddHandler(&event_handler);
+  JsController* js_controller = service_->GetJsController();
+  js_controller->AddJsEventHandler(&event_handler);
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
   profile_->GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "token");
-
-  SyncBackendHostForProfileSyncTest* test_backend =
-      service_->GetBackendForTest();
-
   EXPECT_TRUE(service_->sync_initialized());
-  ASSERT_TRUE(test_backend != NULL);
-  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
-  EXPECT_TRUE(test_backend->GetJsBackend()->GetParentJsEventRouter() != NULL);
-
-  js_backend->RemoveHandler(&event_handler);
-  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+  js_controller->RemoveJsEventHandler(&event_handler);
 }
 
-TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
+TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   StartSyncService();
 
-  StrictMock<MockJsEventHandler> event_handler;
-  // For some reason, these events may or may not fire.
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
-      .Times(AtMost(1));
+  StrictMock<MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateBooleanValue(true));
-  arg_list1.Append(Value::CreateIntegerValue(5));
+  arg_list1.Append(Value::CreateBooleanValue(false));
   JsArgList args1(&arg_list1);
-  EXPECT_CALL(event_handler,
-              HandleJsMessageReply("testMessage1", HasArgs(args1)));
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getNotificationState", HasArgs(args1)));
 
-  ListValue arg_list2;
-  arg_list2.Append(Value::CreateStringValue("test"));
-  arg_list2.Append(arg_list1.DeepCopy());
-  JsArgList args2(&arg_list2);
-  EXPECT_CALL(event_handler,
-              HandleJsMessageReply("delayTestMessage2", HasArgs(args2)));
+  {
+    JsController* js_controller = service_->GetJsController();
+    js_controller->ProcessJsMessage("getNotificationState", args1,
+                                    reply_handler.AsWeakHandle());
+  }
 
-  ListValue arg_list3;
-  arg_list3.Append(arg_list1.DeepCopy());
-  arg_list3.Append(arg_list2.DeepCopy());
-  JsArgList args3(&arg_list3);
-
-  JsFrontend* js_backend = service_->GetJsFrontend();
-
-  // Never replied to.
-  js_backend->ProcessMessage("notRepliedTo", args3, &event_handler);
-
-  // Replied to later.
-  js_backend->ProcessMessage("delayTestMessage2", args2, &event_handler);
-
-  js_backend->AddHandler(&event_handler);
-
-  // Replied to immediately.
-  js_backend->ProcessMessage("testMessage1", args1, &event_handler);
-
-  // Fires off reply for delayTestMessage2.
+  // This forces the sync thread to process the message and reply.
+  service_.reset();
   ui_loop_.RunAllPending();
-
-  // Never replied to.
-  js_backend->ProcessMessage("delayNotRepliedTo", args3, &event_handler);
-
-  js_backend->RemoveHandler(&event_handler);
-
-  ui_loop_.RunAllPending();
-
-  // Never replied to.
-  js_backend->ProcessMessage("notRepliedTo", args3, &event_handler);
 }
 
 TEST_F(ProfileSyncServiceTest,
-       JsFrontendProcessMessageBasicDelayedBackendInitialization) {
+       JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
-  StrictMock<MockJsEventHandler> event_handler;
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onTransactionStart", _)).Times(AnyNumber());
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onTransactionEnd", _)).Times(AnyNumber());
-  // For some reason, these events may or may not fire.
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
-      .Times(AtMost(1));
+  StrictMock<MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateBooleanValue(true));
-  arg_list1.Append(Value::CreateIntegerValue(5));
+  arg_list1.Append(Value::CreateBooleanValue(false));
   JsArgList args1(&arg_list1);
-  EXPECT_CALL(event_handler,
-              HandleJsMessageReply("testMessage1", HasArgs(args1)));
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getNotificationState", HasArgs(args1)));
 
-  ListValue arg_list2;
-  arg_list2.Append(Value::CreateStringValue("test"));
-  arg_list2.Append(arg_list1.DeepCopy());
-  JsArgList args2(&arg_list2);
-  EXPECT_CALL(event_handler,
-              HandleJsMessageReply("testMessage2", HasArgs(args2)));
+  {
+    JsController* js_controller = service_->GetJsController();
+    js_controller->ProcessJsMessage("getNotificationState",
+                                    args1, reply_handler.AsWeakHandle());
+  }
 
-  ListValue arg_list3;
-  arg_list3.Append(arg_list1.DeepCopy());
-  arg_list3.Append(arg_list2.DeepCopy());
-  JsArgList args3(&arg_list3);
-  EXPECT_CALL(event_handler,
-              HandleJsMessageReply("delayTestMessage3", HasArgs(args3)));
-
-  const JsEventDetails kNoDetails;
-
-  EXPECT_CALL(event_handler, HandleJsEvent("onServiceStateChanged",
-      HasDetails(kNoDetails))).Times(AtLeast(3));
-
-  JsFrontend* js_backend = service_->GetJsFrontend();
-
-  // We expect a reply for this message, even though its sent before
-  // |event_handler| is added as a handler.
-  js_backend->ProcessMessage("testMessage1", args1, &event_handler);
-
-  js_backend->AddHandler(&event_handler);
-
-  js_backend->ProcessMessage("testMessage2", args2, &event_handler);
-  js_backend->ProcessMessage("delayTestMessage3", args3, &event_handler);
-
-  // Fires testMessage1 and testMessage2.
   profile_->GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "token");
 
-  // Fires delayTestMessage3.
+  // This forces the sync thread to process the message and reply.
+  service_.reset();
   ui_loop_.RunAllPending();
-
-  const JsArgList kNoArgs;
-
-  js_backend->ProcessMessage("delayNotRepliedTo", kNoArgs, &event_handler);
-
-  js_backend->RemoveHandler(&event_handler);
-
-  ui_loop_.RunAllPending();
-
-  js_backend->ProcessMessage("notRepliedTo", kNoArgs, &event_handler);
 }
 
 // Make sure that things still work if sync is not enabled, but some old sync

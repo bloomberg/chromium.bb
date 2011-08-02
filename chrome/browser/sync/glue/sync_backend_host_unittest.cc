@@ -33,7 +33,7 @@ class MockSyncFrontend : public SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
-  MOCK_METHOD1(OnBackendInitialized, void(bool));
+  MOCK_METHOD2(OnBackendInitialized, void(const WeakHandle<JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
   MOCK_METHOD0(OnStopSyncingPermanently, void());
@@ -101,6 +101,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   credentials.email = "user@example.com";
   credentials.sync_token = "sync_token";
   backend.Initialize(&mock_frontend,
+                     WeakHandle<JsEventHandler>(),
                      GURL(k_mock_url),
                      syncable::ModelTypeSet(),
                      credentials,

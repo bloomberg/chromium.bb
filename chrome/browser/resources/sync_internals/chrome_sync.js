@@ -118,7 +118,7 @@ function makeSyncFunction(name) {
   };
 
   // Handle a reply, assuming that messages are processed in FIFO order.
-  // Called by SyncInternalsUI::HandleJsMessageReply().
+  // Called by SyncInternalsUI::HandleJsReply().
   fn.handleReply = function() {
     var args = Array.prototype.slice.call(arguments);
     // Remove the callback before we call it since the callback may

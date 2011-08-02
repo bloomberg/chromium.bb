@@ -4,13 +4,17 @@ Overview of chrome://sync-internals
 This note explains how chrome://sync-internals (also known as
 about:sync) interacts with the sync service/backend.
 
-Basically, chrome://sync-internals sends asynchronous messages to the
-sync backend and the sync backend asynchronously raises events and
-message replies to chrome://sync-internals.
+Basically, chrome://sync-internals sends messages to the sync backend
+and the sync backend sends the reply asynchronously.  The sync backend
+also asynchronously raises events which chrome://sync-internals listen
+to.
 
-Both messages and events have a name and a list of arguments, the
-latter of which is represented by a JsArgList (js_arg_list.h) object,
-which is basically a wrapper around an immutable ListValue.
+A message and its reply has a name and a list of arguments, which is
+basically a wrapper around an immutable ListValue.
+
+An event has a name and a details object, which is represented by a
+JsEventDetails (js_event_details.h) object, which is basically a
+wrapper around an immutable DictionaryValue.
 
 TODO(akalin): Move all the js_* files into a js/ subdirectory.
 
@@ -19,37 +23,28 @@ Message/event flow
 
 chrome://sync-internals is represented by SyncInternalsUI
 (chrome/browser/ui/webui/sync_internals_ui.h).  SyncInternalsUI
-interacts with the sync service via a JsFrontend (js_frontend.h)
-object, which has a ProcessMessage() method.  The JsFrontend can
-handle some messages itself, but it can also delegate the rest to a
-JsBackend instance (js_backend.h), which also has a ProcessMessage()
-method.  A JsBackend can in turn handle some messages itself and
-delegate to other JsBackend instances.
+interacts with the sync service via a JsController (js_controller.h)
+object, which has a ProcessJsMessage() method that just delegates to
+an underlying JsBackend instance (js_backend.h).  The SyncInternalsUI
+object also registers itself (as a JsEventHandler
+[js_event_handler.h]) to the JsController object, and any events
+raised by the JsBackend are propagated to the JsController and then to
+the registered JsEventHandlers.
 
-Essentially, there is a tree with a JsFrontend as the root and
-JsBackend as non-root internal nodes and leaf nodes (although
-currently, the tree is more like a simple list).  The sets of messages
-handled by the JsBackends and the JsFrontend are disjoint, which means
-that at most one node handles a given message type.  Also, the
-JsBackends may live on different threads, but JsArgList is thread-safe
-so that's okay.
+The ProcessJsMessage() takes a WeakHandle (weak_handle.h) to a
+JsReplyHandler (js_reply_handler.h), which the backend uses to send
+replies safely across threads.  SyncInternalsUI implements
+JsReplyHandler, so it simply passes itself as the reply handler when
+it calls ProcessJsMessage() on the JsController.
 
-SyncInternalsUI is a JsEventHandler (js_event_handler.h), which means
-that it has a HandleJsEvent() method and a HandleJsMessageReply()
-method, but JsBackends cannot easily access those objects.  Instead,
-each JsBackend keeps track of its parent router, which is a
-JsEventRouter object (js_event_router.h).  Basically, a JsEventRouter
-is another JsBackend object or a JsFrontend object.  So an event or
-message reply travels up through the JsEventRouter until it reaches
-the JsFrontend, which knows about the existing JsEventHandlers (via
-AddHandler()/RemoveHandler()) and so can delegate to the right one.
+The following objects live on the UI thread:
 
-A diagram of the flow of a message and its reply:
+- SyncInternalsUI (implements JsEventHandler, JsReplyHandler)
+- SyncJsController (implements JsController, JsEventHandler)
 
-msg(args) -> F -> B -> B -> B
-             |    |    |
-        H <- R <- R <- R <- reply-event(args)
+The following objects live on the sync thread:
 
-F = JsFrontend, B = JsBackend, R = JsEventRouter, H = JsEventHandler
+- SyncManager::SyncInternal (implements JsBackend)
 
-Non-reply events are percolated up similarly.
+Of course, none of these objects need to know where the other objects
+live, since they interact via WeakHandles.

@@ -9,10 +9,12 @@
 #include <ostream>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_frontend.h"
+#include "chrome/browser/sync/js_controller.h"
 #include "chrome/browser/sync/js_event_handler.h"
-#include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/js_reply_handler.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -31,7 +33,7 @@ void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 
 // A gmock matcher for JsArgList.  Use like:
 //
-//   EXPECT_CALL(mock, HandleJsMessageReply("foo", HasArgs(expected_args)));
+//   EXPECT_CALL(mock, HandleJsReply("foo", HasArgs(expected_args)));
 ::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args);
 
 // Like HasArgs() but takes a ListValue instead.
@@ -50,51 +52,56 @@ void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 
 // Mocks.
 
-class MockJsBackend : public JsBackend {
+class MockJsBackend : public JsBackend,
+                      public base::SupportsWeakPtr<MockJsBackend> {
  public:
   MockJsBackend();
-  ~MockJsBackend();
+  virtual ~MockJsBackend();
 
-  MOCK_METHOD1(SetParentJsEventRouter, void(JsEventRouter*));
-  MOCK_METHOD0(RemoveParentJsEventRouter, void());
-  MOCK_CONST_METHOD0(GetParentJsEventRouter, const JsEventRouter*());
-  MOCK_METHOD3(ProcessMessage, void(const ::std::string&, const JsArgList&,
-                                    const JsEventHandler*));
+  WeakHandle<JsBackend> AsWeakHandle();
+
+  MOCK_METHOD1(SetJsEventHandler, void(const WeakHandle<JsEventHandler>&));
+  MOCK_METHOD3(ProcessJsMessage, void(const ::std::string&, const JsArgList&,
+                                    const WeakHandle<JsReplyHandler>&));
 };
 
-class MockJsFrontend : public JsFrontend {
+class MockJsController : public JsController,
+                         public base::SupportsWeakPtr<MockJsController> {
  public:
-  MockJsFrontend();
-  ~MockJsFrontend();
+  MockJsController();
+  virtual ~MockJsController();
 
-  MOCK_METHOD1(AddHandler, void(JsEventHandler*));
-  MOCK_METHOD1(RemoveHandler, void(JsEventHandler*));
-  MOCK_METHOD3(ProcessMessage,
+  MOCK_METHOD1(AddJsEventHandler, void(JsEventHandler*));
+  MOCK_METHOD1(RemoveJsEventHandler, void(JsEventHandler*));
+  MOCK_METHOD3(ProcessJsMessage,
                void(const ::std::string&, const JsArgList&,
-                    const JsEventHandler*));
+                    const WeakHandle<JsReplyHandler>&));
 };
 
-class MockJsEventHandler : public JsEventHandler {
+class MockJsEventHandler
+    : public JsEventHandler,
+      public base::SupportsWeakPtr<MockJsEventHandler> {
  public:
   MockJsEventHandler();
-  ~MockJsEventHandler();
+  virtual ~MockJsEventHandler();
+
+  WeakHandle<JsEventHandler> AsWeakHandle();
 
   MOCK_METHOD2(HandleJsEvent,
                void(const ::std::string&, const JsEventDetails&));
-  MOCK_METHOD2(HandleJsMessageReply,
-               void(const ::std::string&, const JsArgList&));
 };
 
-class MockJsEventRouter : public JsEventRouter {
+class MockJsReplyHandler
+    : public JsReplyHandler,
+      public base::SupportsWeakPtr<MockJsReplyHandler> {
  public:
-  MockJsEventRouter();
-  ~MockJsEventRouter();
+  MockJsReplyHandler();
+  virtual ~MockJsReplyHandler();
 
-  MOCK_METHOD2(RouteJsEvent,
-               void(const ::std::string&, const JsEventDetails&));
-  MOCK_METHOD3(RouteJsMessageReply,
-               void(const ::std::string&, const JsArgList&,
-                    const JsEventHandler*));
+  WeakHandle<JsReplyHandler> AsWeakHandle();
+
+  MOCK_METHOD2(HandleJsReply,
+               void(const ::std::string&, const JsArgList&));
 };
 
 }  // namespace browser_sync

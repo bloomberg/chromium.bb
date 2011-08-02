@@ -11,18 +11,19 @@
 #include "base/tracked.h"
 #include "base/values.h"
 #include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/js_event_handler.h"
 
 namespace browser_sync {
 
-JsTransactionObserver::JsTransactionObserver(
-    JsEventRouter* parent_router)
-    : parent_router_(parent_router) {
-  DCHECK(parent_router_);
-}
+JsTransactionObserver::JsTransactionObserver() {}
 
 JsTransactionObserver::~JsTransactionObserver() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+}
+
+void JsTransactionObserver::SetJsEventHandler(
+    const WeakHandle<JsEventHandler>& event_handler) {
+  event_handler_ = event_handler;
 }
 
 namespace {
@@ -40,11 +41,13 @@ void JsTransactionObserver::OnTransactionStart(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
   DictionaryValue details;
   details.SetString("location", GetLocationString(location));
   details.SetString("writer", syncable::WriterTagToString(writer));
-  parent_router_->RouteJsEvent("onTransactionStart",
-                               JsEventDetails(&details));
+  HandleJsEvent(FROM_HERE, "onTransactionStart", JsEventDetails(&details));
 }
 
 void JsTransactionObserver::OnTransactionMutate(
@@ -53,25 +56,40 @@ void JsTransactionObserver::OnTransactionMutate(
     const syncable::EntryKernelMutationSet& mutations,
     const syncable::ModelTypeBitSet& models_with_changes) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
   DictionaryValue details;
   details.SetString("location", GetLocationString(location));
   details.SetString("writer", syncable::WriterTagToString(writer));
   details.Set("mutations", syncable::EntryKernelMutationSetToValue(mutations));
   details.Set("modelsWithChanges",
               syncable::ModelTypeBitSetToValue(models_with_changes));
-  parent_router_->RouteJsEvent("onTransactionMutate",
-                               JsEventDetails(&details));
+  HandleJsEvent(FROM_HERE, "onTransactionMutate", JsEventDetails(&details));
 }
 
 void JsTransactionObserver::OnTransactionEnd(
     const tracked_objects::Location& location,
     const syncable::WriterTag& writer) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
   DictionaryValue details;
   details.SetString("location", GetLocationString(location));
   details.SetString("writer", syncable::WriterTagToString(writer));
-  parent_router_->RouteJsEvent("onTransactionEnd",
-                               JsEventDetails(&details));
+  HandleJsEvent(FROM_HERE, "onTransactionEnd", JsEventDetails(&details));
+}
+
+void JsTransactionObserver::HandleJsEvent(
+    const tracked_objects::Location& from_here,
+    const std::string& name, const JsEventDetails& details) {
+  if (!event_handler_.IsInitialized()) {
+    NOTREACHED();
+    return;
+  }
+  event_handler_.Call(from_here,
+                      &JsEventHandler::HandleJsEvent, name, details);
 }
 
 }  // namespace browser_sync

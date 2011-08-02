@@ -14,26 +14,23 @@ namespace browser_sync {
 
 class JsArgList;
 class JsEventHandler;
-class JsEventRouter;
+class JsReplyHandler;
+template <typename T> class WeakHandle;
 
+// Interface representing the backend of chrome://sync-internals.  A
+// JsBackend can handle messages and can emit events to a
+// JsEventHandler.
 class JsBackend {
  public:
-  // Sets the JS event router to which all backend events will be
-  // sent.
-  virtual void SetParentJsEventRouter(JsEventRouter* router) = 0;
+  // Starts emitting events to the given handler, if initialized.
+  virtual void SetJsEventHandler(
+      const WeakHandle<JsEventHandler>& event_handler) = 0;
 
-  // Removes any existing JS event router.
-  virtual void RemoveParentJsEventRouter() = 0;
-
-  // Gets the crurent JS event router, or NULL if there is none.  Used
-  // for testing.
-  virtual const JsEventRouter* GetParentJsEventRouter() const = 0;
-
-  // Processes the given message.  All reply events are sent to the
-  // parent JS event router (if set).
-  virtual void ProcessMessage(
+  // Processes the given message and replies via the given handler, if
+  // initialized.
+  virtual void ProcessJsMessage(
       const std::string& name, const JsArgList& args,
-      const JsEventHandler* sender) = 0;
+      const WeakHandle<JsReplyHandler>& reply_handler) = 0;
 
  protected:
   virtual ~JsBackend() {}

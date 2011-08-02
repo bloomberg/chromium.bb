@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/js_reply_handler.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sessions/session_state.h"
@@ -45,7 +46,6 @@ class FakeSigninManager : public SigninManager {
 
 namespace browser_sync {
 
-using ::testing::_;
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     bool set_initial_sync_ended_on_init,
@@ -56,16 +56,6 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
       fail_initial_download_(fail_initial_download) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
-
-void SyncBackendHostForProfileSyncTest::ConfigureDataTypes(
-    const DataTypeController::TypeMap& data_type_controllers,
-    const syncable::ModelTypeSet& types,
-    sync_api::ConfigureReason reason,
-    base::Callback<void(bool)> ready_task,
-    bool nigori_enabled) {
-  SyncBackendHost::ConfigureDataTypes(data_type_controllers, types,
-                                      reason, ready_task, nigori_enabled);
-}
 
 void SyncBackendHostForProfileSyncTest::
     SimulateSyncCycleCompletedInitialSyncEnded(
@@ -110,40 +100,6 @@ void SyncBackendHostForProfileSyncTest::InitCore(
     // The SyncBackend posts a task to the current loop when
     // initialization completes.
     MessageLoop::current()->Run();
-  }
-}
-
-JsBackend* SyncBackendHostForProfileSyncTest::GetJsBackend() {
-  // Return a non-NULL result only when the overridden function does.
-  if (SyncBackendHost::GetJsBackend()) {
-    return this;
-  } else {
-    NOTREACHED();
-    return NULL;
-  }
-}
-
-void SyncBackendHostForProfileSyncTest::SetParentJsEventRouter(
-    JsEventRouter* router) {
-  core_->SetParentJsEventRouter(router);
-}
-
-void SyncBackendHostForProfileSyncTest::RemoveParentJsEventRouter() {
-  core_->RemoveParentJsEventRouter();
-}
-
-const JsEventRouter*
-    SyncBackendHostForProfileSyncTest::GetParentJsEventRouter() const {
-  return core_->GetParentJsEventRouter();
-}
-
-void SyncBackendHostForProfileSyncTest::ProcessMessage(
-    const std::string& name, const JsArgList& args,
-    const JsEventHandler* sender) {
-  if (name.find("delay") != name.npos) {
-    core_->RouteJsMessageReply(name, args, sender);
-  } else {
-    core_->RouteJsMessageReplyOnFrontendLoop(name, args, sender);
   }
 }
 
@@ -223,7 +179,9 @@ void TestProfileSyncService::SetInitialSyncEndedForEnabledTypes() {
   }
 }
 
-void TestProfileSyncService::OnBackendInitialized(bool success) {
+void TestProfileSyncService::OnBackendInitialized(
+    const browser_sync::WeakHandle<browser_sync::JsBackend>& backend,
+    bool success) {
   bool send_passphrase_required = false;
   if (success) {
     // Set this so below code can access GetUserShare().
@@ -259,7 +217,7 @@ void TestProfileSyncService::OnBackendInitialized(bool success) {
     }
   }
 
-  ProfileSyncService::OnBackendInitialized(success);
+  ProfileSyncService::OnBackendInitialized(backend, success);
   if (success && send_passphrase_required)
     OnPassphraseRequired(sync_api::REASON_DECRYPTION);
 
@@ -295,8 +253,4 @@ void TestProfileSyncService::CreateBackend() {
       set_initial_sync_ended_on_init_,
       synchronous_backend_initialization_,
       fail_initial_download_));
-}
-
-std::string TestProfileSyncService::GetLsidForAuthBootstraping() {
-  return "foo";
 }
