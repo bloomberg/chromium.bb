@@ -115,13 +115,6 @@ void TestNavigationObserver::Observe(
       }
       break;
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
-      // crbug.com/90476 - debugging flakiness in
-      // ExtensionWebRequestApiTest.WebRequestEvents due to recent changes.
-      // TODO(scr) remove this log.
-      DLOG(INFO)
-          << "NOTIFICATION_RENDER_VIEW_HOST_CREATED received by "
-          << "TestNavigationObserver";
-
       rvho_send_js_.reset(new RVHOSendJS(Source<RenderViewHost>(source).ptr(),
                                          js_injection_ready_observer_));
       break;
