@@ -48,7 +48,7 @@ class ChannelAuthenticator : public base::NonThreadSafe {
 class HostChannelAuthenticator : public ChannelAuthenticator {
  public:
   HostChannelAuthenticator(net::SSLServerSocket* socket);
-  ~HostChannelAuthenticator();
+  virtual ~HostChannelAuthenticator();
 
   // ChannelAuthenticator overrides.
   virtual void Authenticate(const std::string& shared_secret,
@@ -74,11 +74,11 @@ class HostChannelAuthenticator : public ChannelAuthenticator {
 class ClientChannelAuthenticator : public ChannelAuthenticator {
  public:
   ClientChannelAuthenticator(net::SSLClientSocket* socket);
-  ~ClientChannelAuthenticator();
+  virtual ~ClientChannelAuthenticator();
 
   // ChannelAuthenticator overrides.
-  void Authenticate(const std::string& shared_secret,
-                    const DoneCallback& done_callback);
+  virtual void Authenticate(const std::string& shared_secret,
+                            const DoneCallback& done_callback);
 
  private:
   void DoAuthWrite();
