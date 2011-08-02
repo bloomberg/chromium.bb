@@ -8,6 +8,13 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 
+namespace {
+
+// Delay for online change notification reporting.
+const int kOnlineNotificationDelayMS = 500;
+
+}
+
 namespace chromeos {
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
@@ -22,8 +29,11 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
       chromeos::CrosLibrary::Get()->GetPowerLibrary();
   power->AddObserver(this);
 
-  connection_state_ = net->active_network() ?
-          net->active_network()->connection_state() : chromeos::STATE_UNKNOWN;
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &NetworkChangeNotifierChromeos::UpdateInitialState, this),
+      kOnlineNotificationDelayMS);
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
@@ -122,11 +132,29 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
   connection_state_ = new_connection_state;
   if (is_online != was_online || is_portal != was_portal ||
       is_unknown != was_unknown) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
-           &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
+    if (!IsCurrentlyOffline()) {
+      // Delay reporting of edge when we go online. dns resolution service
+      // does not seem to be immediately available.
+      BrowserThread::PostDelayedTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableFunction(
+             &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange),
+          kOnlineNotificationDelayMS);
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableFunction(
+             &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
+    }
   }
+}
+
+// static
+void NetworkChangeNotifierChromeos::UpdateInitialState(
+    NetworkChangeNotifierChromeos* self) {
+  chromeos::NetworkLibrary* net =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  self->UpdateNetworkState(net);
 }
 
 }  // namespace net

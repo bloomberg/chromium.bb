@@ -42,6 +42,10 @@ class NetworkChangeNotifierChromeos
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);
   // Updates network connectivity state.
   void UpdateConnectivityState(const chromeos::Network* network);
+  // Updates the initial state. Lets us trigger initial eval of the
+  // connectivity status without waiting for an event from the connection
+  // manager.
+  static void UpdateInitialState(NetworkChangeNotifierChromeos* self);
 
   // True if we previously had an active network around.
   bool has_active_network_;
