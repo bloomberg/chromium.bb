@@ -20,6 +20,8 @@ import cros_mark_chrome_as_stable
 
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
+fake_svn_rev = '12345'
+new_fake_svn_rev = '23456'
 
 def _TouchAndWrite(path, data=None):
   """Writes data (if it exists) to the file specified by the path."""
@@ -77,7 +79,11 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     _TouchAndWrite(self.sticky, stable_data)
     _TouchAndWrite(self.sticky_rc, stable_data)
     _TouchAndWrite(self.latest_stable, stable_data)
-    _TouchAndWrite(self.tot_stable, stable_data)
+    _TouchAndWrite(self.tot_stable,
+                   '\n'.join(
+                       (stable_data,
+                        '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
+                                   fake_svn_rev))))
 
   def tearDown(self):
     """Cleans up mock dir."""
@@ -144,11 +150,11 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     cros_mark_chrome_as_stable.RunCommand(
         ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl()],
         redirect_stdout=True).AndReturn(
-            'Some Junk 2134\nRevision: 12345\nOtherInfo: test_data')
+            'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' % fake_svn_rev)
     self.mox.ReplayAll()
     revision = cros_mark_chrome_as_stable._GetTipOfTrunkSvnRevision()
     self.mox.VerifyAll()
-    self.assertEquals(revision, '12345')
+    self.assertEquals(revision, fake_svn_rev)
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
@@ -199,6 +205,42 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     release = cros_mark_chrome_as_stable._GetLatestRelease(self.sticky_branch)
     self.mox.VerifyAll()
     self.assertEqual('8.0.224.2', release)
+
+  def testGetRevisionFromEBuild(self):
+    """Tests that we can recover the svn revision from a ToT chrome ebuild."""
+    self.assertEqual(fake_svn_rev,
+                     cros_mark_chrome_as_stable.GetRevisionFromEBuild(
+                         cros_mark_chrome_as_stable.ChromeEBuild(
+                             self.tot_stable)))
+
+  def testLatestChromeRevisionListLink(self):
+    """Tests that we can generate a link to the revision list between the
+    latest Chromium release and the last one we successfully built."""
+    _TouchAndWrite(self.latest_new, stable_data)
+    expected = cros_mark_chrome_as_stable.GetChromeRevisionLinkFromVersions(
+        self.latest_stable_version, self.latest_new_version)
+    made = cros_mark_chrome_as_stable.GetChromeRevisionListLink(
+        cros_mark_chrome_as_stable.ChromeEBuild(self.latest_stable),
+        cros_mark_chrome_as_stable.ChromeEBuild(self.latest_new),
+        constants.CHROME_REV_LATEST)
+    self.assertEqual(expected, made)
+
+  def testTotChromeRevisionListLink(self):
+    """Tests that we can generate a link to the revision list between ToT
+    Chromium and the last ToT Chromium we successfully built."""
+    _TouchAndWrite(self.tot_new,
+                   '\n'.join(
+                       (stable_data,
+                        '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
+                                   new_fake_svn_rev))))
+
+    expected = cros_mark_chrome_as_stable.GetChromeRevisionLinkFromRevisions(
+        fake_svn_rev, new_fake_svn_rev)
+    made = cros_mark_chrome_as_stable.GetChromeRevisionListLink(
+        cros_mark_chrome_as_stable.ChromeEBuild(self.tot_stable),
+        cros_mark_chrome_as_stable.ChromeEBuild(self.tot_new),
+        constants.CHROME_REV_TOT)
+    self.assertEqual(expected, made)
 
   def testStickyEBuild(self):
     """Tests if we can find the sticky ebuild from our mock directories."""
