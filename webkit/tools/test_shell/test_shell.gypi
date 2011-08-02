@@ -702,33 +702,17 @@
         {
           'target_name': 'test_shell_resources',
           'type': 'none',
+          'variables': {
+            'grit_grd_file': './test_shell_resources.grd',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/test_shell',
+          },
           'actions': [
             {
               'action_name': 'test_shell_resources',
-              'variables': {
-                'grit_path': '../../../tools/grit/grit.py',
-                'input_path': './test_shell_resources.grd',
-                'out_dir': '<(SHARED_INTERMEDIATE_DIR)/test_shell',
-              },
-              'inputs': [
-                '<(input_path)',
-              ],
-              'outputs': [
-                '<(out_dir)/grit/test_shell_resources.h',
-                '<(out_dir)/test_shell_resources.pak',
-              ],
-              'action': ['python', '<(grit_path)',
-                  '-i', '<(input_path)',
-                  'build', '-o', '<(out_dir)',
-                  '<@(grit_defines)'],
-              'message': 'Generating resources from <(input_path)',
+              'includes': [ '../../../build/grit_action.gypi' ],
             },
           ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/test_shell',
-            ],
-          },
+          'includes': [ '../../../build/grit_target.gypi' ],
         },
       ],
     }],
