@@ -54,11 +54,15 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
+  PORTAGE_GIT_URL = ('ssh://gerrit.chromium.org:29418/'
+                     'chromiumos/overlays/portage.git')
+  ORIGIN_GENTOO = 'origin/gentoo'
+  UPSTREAM_TMP_REPO = '/tmp/cros_portage_upgrade-gentoo-portage'
   UPSTREAM_OVERLAY_NAME = 'portage'
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'csv_file', 'rdeps',
+  OPT_SLOTS = ['amend', 'csv_file', 'no_upstream_cache', 'rdeps',
                'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
 
   __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
@@ -73,6 +77,7 @@ class Upgrader(object):
                '_master_archs', # Set. Archs of tables merged into master_table
                '_master_cnt',   # Number of tables merged into master_table
                '_master_table', # Merged table from all board runs
+               '_no_upstream_cache', # Boolean.  Delete upstream cache when done
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
                '_stable_repo',  # Path to portage-stable
@@ -101,8 +106,7 @@ class Upgrader(object):
                                      self.STABLE_OVERLAY_NAME)
     self._upstream_repo = options.upstream
     if not self._upstream_repo:
-      self._upstream_repo = os.path.join(options.srcroot, 'third_party',
-                                         self.UPSTREAM_OVERLAY_NAME)
+      self._upstream_repo = self.UPSTREAM_TMP_REPO
     self._cros_overlay = os.path.join(options.srcroot, 'third_party',
                                       self.CROS_OVERLAY_NAME)
 
@@ -437,6 +441,9 @@ class Upgrader(object):
       os.makedirs(pkgdir)
 
     # Grab all non-ebuilds from upstream plus the specific ebuild requested.
+    # TODO: Selectively exclude files under the 'files' directory that clearly
+    # apply to other package versions.  For example, 'files/foo-1.2.3-bar.patch'
+    # when upgrading to foo-3.2.1.  Must do this carefully.
     if os.path.exists(upstream_pkgdir):
       items = os.listdir(upstream_pkgdir)
       for item in items:
@@ -762,27 +769,48 @@ class Upgrader(object):
 
   def PrepareToRun(self):
     """Checkout upstream gentoo if necessary, and any other prep steps."""
-    # TODO(petkov): Currently portage's master branch is stale so we need to
-    # checkout latest upstream. At some point portage's master branch will be
-    # upstream so there will be no need to chdir/checkout. At that point we
-    # can also fuse this loop into the caller and avoid generating a separate
-    # list.
     if not self._upstream:
-      dash_q = '-q' if not self._verbose else ''
-      oper.Info('Checking out cros/gentoo at %s as upstream reference.' %
-                self._upstream_repo)
-      self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
+      if os.path.exists(self._upstream_repo):
+        # Previously created upstream cache can be re-used.  Just update it.
+        oper.Info('Updating previously created upstream cache at %s.' %
+                  self._upstream_repo)
+        self._RunGit(self._upstream_repo, 'remote update')
+      else:
+        # Create local copy of upstream gentoo.
+        oper.Info('Cloning origin/gentoo at %s as upstream reference.' %
+                  self._upstream_repo)
+        root = os.path.dirname(self._upstream_repo)
+        name = os.path.basename(self._upstream_repo)
+        self._RunGit(root, 'clone %s %s' % (self.PORTAGE_GIT_URL, name))
+
+        # Create a README file to explain its presence.
+        fh = open(self._upstream_repo + '-README', 'w')
+        fh.write('Directory at %s is local copy of upstream '
+                 'Gentoo/Portage packages. Used by cros_portage_upgrade.\n'
+                 'Feel free to delete if you want the space back.\n' %
+                 self._upstream_repo)
+        fh.close()
+
+      self._RunGit(self._upstream_repo, 'checkout %s' % self.ORIGIN_GENTOO,
+                   redirect_stdout=True, combine_stdout_stderr=True)
 
     # An empty directory is needed to trick equery later.
     self._emptydir = tempfile.mkdtemp()
 
   def RunCompleted(self):
-    """Undo any checkout of upstream gentoo that was done."""
+    """Undo any checkout of upstream gentoo if requested."""
     if not self._upstream:
-      dash_q = '-q' if not self._verbose else ''
-      oper.Info('Undoing checkout of cros/gentoo at %s.' %
-                self._upstream_repo)
-      self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
+      if self._no_upstream_cache:
+        oper.Info('Removing upstream cache at %s as requested.'
+                  % self._upstream_repo)
+        shutil.rmtree(self._upstream_repo)
+
+        # Remove the README file, too.
+        readmepath = self._upstream_repo + '-README'
+        if os.path.exists(readmepath):
+          os.remove(readmepath)
+      else:
+        oper.Info('Keeping upstream cache at %s.' % self._upstream_repo)
 
     os.rmdir(self._emptydir)
 
@@ -869,6 +897,10 @@ class Upgrader(object):
                    ' but message needs edit BY YOU:\n'
                    ' cd %s; git commit --amend; cd -' %
                    self._stable_repo)
+      oper.Info('To remove any file above from commit do:\n'
+                ' cd %s; git reset HEAD^ <filepath>; rm <filepath>;'
+                ' git commit --amend; cd -' %
+                self._stable_repo)
 
       if key_lines:
         oper.Warning('Because one or more unstable versions are involved'
@@ -994,6 +1026,9 @@ def main():
   parser.add_option('--host', dest='host', action='store_true',
                     default=False,
                     help="Host target pseudo-board")
+  parser.add_option('--no-upstream-cache', dest='no_upstream_cache',
+                    action='store_true', default=False,
+                    help="Do not preserve cached upstream for future runs")
   parser.add_option('--rdeps', dest='rdeps', action='store_true',
                     default=False,
                     help="Use runtime dependencies only")
@@ -1034,6 +1069,12 @@ def main():
   if options.upgrade_deep and options.upgrade:
     parser.print_help()
     oper.Die('The --upgrade and --upgrade-deep options ' +
+             'are mutually exclusive.')
+
+  # The --upstream and --no-upstream-cache options are mutually exclusive.
+  if options.upstream and options.no_upstream_cache:
+    parser.print_help()
+    oper.Die('The --upstream and --no-upstream-cache options ' +
              'are mutually exclusive.')
 
   # If upstream portage is provided, verify that it is a valid directory.
