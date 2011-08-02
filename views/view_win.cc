@@ -4,27 +4,18 @@
 
 #include "views/view.h"
 
-#include <atlcomcli.h>
-//  Necessary to define oleacc GUID's used in window_win.cc.
+// Necessary to define oleacc GUID's.
 #include <initguid.h>
 #include <oleacc.h>
+#include <windows.h>
 
-#include "base/string_util.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "views/accessibility/native_view_accessibility_win.h"
-#include "views/border.h"
-#include "views/views_delegate.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 namespace views {
 
 gfx::NativeViewAccessible View::GetNativeViewAccessible() {
   if (!native_view_accessibility_win_.get())
-    native_view_accessibility_win_ =
-        NativeViewAccessibilityWin::Create(this);
+    native_view_accessibility_win_ = NativeViewAccessibilityWin::Create(this);
   return native_view_accessibility_win_.get();
 }
 
