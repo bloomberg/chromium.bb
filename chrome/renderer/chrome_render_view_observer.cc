@@ -218,6 +218,7 @@ ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_WebUIJavaScript, OnWebUIJavaScript)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_HandleMessageFromExternalHost,
                         OnHandleMessageFromExternalHost)
@@ -241,6 +242,18 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void ChromeRenderViewObserver::OnWebUIJavaScript(
+    const string16& frame_xpath,
+    const string16& jscript,
+    int id,
+    bool notify_result) {
+  webui_javascript_.reset(new WebUIJavaScript());
+  webui_javascript_->frame_xpath = frame_xpath;
+  webui_javascript_->jscript = jscript;
+  webui_javascript_->id = id;
+  webui_javascript_->notify_result = notify_result;
 }
 
 void ChromeRenderViewObserver::OnCaptureSnapshot() {
@@ -599,6 +612,16 @@ void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
     // The PrerenderHelper will destroy itself either after recording histograms
     // or on destruction of the RenderView.
     new prerender::PrerenderHelper(render_view());
+  }
+}
+
+void ChromeRenderViewObserver::DidStartLoading() {
+  if (BindingsPolicy::is_web_ui_enabled(render_view()->enabled_bindings()) &&
+      webui_javascript_.get()) {
+    render_view()->EvaluateScript(webui_javascript_->frame_xpath,
+                                  webui_javascript_->jscript,
+                                  webui_javascript_->id,
+                                  webui_javascript_->notify_result);
   }
 }
 

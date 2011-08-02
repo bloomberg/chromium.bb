@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_WEB_UI_TEST_HANDLER_H_
 #pragma once
 
-#include <string>
-
+#include "base/string16.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"
 
@@ -15,8 +14,17 @@
 class WebUITestHandler : public WebUIMessageHandler,
                          public NotificationObserver {
  public:
-  // Runs a string of javascript. Returns pass fail.
-  bool RunJavascript(const std::string& js_test, bool is_test);
+  // Sends a message through |preload_host| with the |js_text| to preload at the
+  // appropriate time before the onload call is made.
+  void PreloadJavaScript(const string16& js_text,
+                         RenderViewHost* preload_host);
+
+  // Runs |js_text| in this object's WebUI frame. Does not wait for any result.
+  void RunJavaScript(const string16& js_text);
+
+  // Runs |js_text| in this object's WebUI frame. Waits for result, logging an
+  // error message on failure. Returns test pass/fail.
+  bool RunJavaScriptTestWithResult(const string16& js_text);
 
  private:
   // WebUIMessageHandler overrides.

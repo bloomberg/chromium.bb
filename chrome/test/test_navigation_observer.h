@@ -7,28 +7,31 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class NavigationController;
+class RenderViewHost;
 
-// In order to support testing of print preview, we need to wait for the tab to
-// be inserted, and then observe notifications on the newly added tab's
-// controller to wait for it to be loaded. To support tests registering
-// javascript WebUI handlers, we need to inject the framework & registration
-// javascript before the webui page loads by calling back through the
-// TestTabStripModelObserver::LoadStartObserver when the new page starts
-// loading.
+// For browser_tests, which run on the UI thread, run a second
+// MessageLoop and quit when the navigation completes loading. For
+// WebUI tests that need to inject javascript, construct with a
+// JsInjectionReadyObserver and this class will call its
+// OnJsInjectionReady() at the appropriate time.
 class TestNavigationObserver : public NotificationObserver {
  public:
+  class RVHOSendJS;
+
+  // Interface to notify when JavaScript injection is possible.
   class JsInjectionReadyObserver {
    public:
     JsInjectionReadyObserver();
     virtual ~JsInjectionReadyObserver();
 
-    // Called to indicate page entry committed and ready for javascript
+    // Called to indicate page entry committed and ready for JavaScript
     // injection.
-    virtual void OnJsInjectionReady() = 0;
+    virtual void OnJsInjectionReady(RenderViewHost* render_view_host) = 0;
   };
 
   // Create and register a new TestNavigationObserver against the
@@ -66,16 +69,13 @@ class TestNavigationObserver : public NotificationObserver {
   // If true the navigation has started.
   bool navigation_started_;
 
-  // If true the navigation has been committed.
-  bool navigation_entry_committed_;
-
   // The number of navigations that have been completed.
   int navigations_completed_;
 
   // The number of navigations to wait for.
   int number_of_navigations_;
 
-  // Observer to take some action when the page is ready for javascript
+  // Observer to take some action when the page is ready for JavaScript
   // injection.
   JsInjectionReadyObserver* js_injection_ready_observer_;
 
@@ -84,6 +84,10 @@ class TestNavigationObserver : public NotificationObserver {
 
   // |running_| will be true during WaitForObservation until |done_| is true.
   bool running_;
+
+  // |rvho_send_js_| will hold a RenderViewHostObserver subclass to allow
+  // JavaScript injection at the appropriate time.
+  scoped_ptr<RVHOSendJS> rvho_send_js_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };

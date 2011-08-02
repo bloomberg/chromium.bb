@@ -145,6 +145,15 @@ IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
 // JS garbage, not in purging irreplaceable objects.
 IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
 
+// For WebUI testing, this message stores parameters to do ScriptEvalRequest at
+// a time which is late enough to not be thrown out, and early enough to be
+// before onload events are fired.
+IPC_MESSAGE_ROUTED4(ViewMsg_WebUIJavaScript,
+                    string16,  /* frame_xpath */
+                    string16,  /* jscript_url */
+                    int,  /* ID */
+                    bool  /* If true, result is sent back. */)
+
 // Tells the render view to capture a thumbnail image of the page. The
 // render view responds with a ViewHostMsg_Snapshot.
 IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)

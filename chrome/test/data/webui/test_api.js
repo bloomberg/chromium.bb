@@ -201,17 +201,9 @@ var currentTestCase = null;
   }
 
   /**
-   * Holds the old chrome object when overriding for preload and registry of
-   * handlers.
-   * @type {Object}
-   **/
-  var oldChrome = chrome;
-
-  /**
    * Overrides {@code chrome.send} for routing messages to javascript
-   * functions. Also fallsback to sending with the |oldChrome| object.
+   * functions. Also fallsback to sending with the original chrome object.
    * @param {string} messageName The message to route.
-   * @see oldChrome
    **/
   function send(messageName) {
     var callback = sendCallbacks[messageName];
@@ -219,7 +211,7 @@ var currentTestCase = null;
     if (callback != undefined)
       callback[1].apply(callback[0], args);
     else
-      oldChrome.send.apply(oldChrome, args);
+      this.__proto__.send.apply(this.__proto__, args);
   }
 
   /**
@@ -540,15 +532,21 @@ var currentTestCase = null;
    * appropriate time for javascript injection into the current page. This
    * creates a test case and calls its PreLoad for any early initialization such
    * as registering handlers before the page's javascript runs it's OnLoad
-   * method.
+   * method. This is called before the page is loaded, so the |chrome| object is
+   * not yet bound and this DOMContentLoaded listener will be called first to
+   * override |chrome| in order to route messages registered in |sendCallbacks|.
    * @param {string} testFixture The test fixture name.
    * @param {string} testName The test name.
+   * @see sendCallbacks
    **/
   function preloadJavascriptLibraries(testFixture, testName) {
-    chrome = {
-      __proto__: oldChrome,
-      send: send,
-    };
+    window.addEventListener('DOMContentLoaded', function() {
+      var oldChrome = chrome;
+      chrome = {
+        __proto__: oldChrome,
+        send: send,
+      };
+    });
     currentTestCase = createTestCase(testFixture, testName);
     currentTestCase.PreLoad();
   }
@@ -560,7 +558,7 @@ var currentTestCase = null;
 
   /**
    * At runtime, register the testName with a test fixture. Since this method
-   * doesn't have a test fixture, we create a dummy fixture to hold its |name|
+   * doesn't have a test fixture, create a dummy fixture to hold its |name|
    * and |testCaseBodies|.
    * @param {string} testCaseName The name of the test case.
    * @param {string} testName The name of the test function.

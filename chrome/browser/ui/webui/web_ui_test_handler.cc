@@ -6,25 +6,33 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_registrar.h"
 
-bool WebUITestHandler::RunJavascript(const std::string& js_test, bool is_test) {
-  if (is_test) {
-    NotificationRegistrar notification_registrar;
-    notification_registrar.Add(
-        this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-        Source<RenderViewHost>(web_ui_->GetRenderViewHost()));
-    web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrameNotifyResult(
-        string16(), UTF8ToUTF16(js_test));
-    return WaitForResult();
-  } else {
-    web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        string16(), UTF8ToUTF16(js_test));
-    return true;
-  }
+void WebUITestHandler::PreloadJavaScript(const string16& js_text,
+                                         RenderViewHost* preload_host) {
+  DCHECK(preload_host);
+  preload_host->Send(new ViewMsg_WebUIJavaScript(
+      preload_host->routing_id(), string16(), js_text, 0,
+      false));
+}
+
+void WebUITestHandler::RunJavaScript(const string16& js_text) {
+  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      string16(), js_text);
+}
+
+bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
+  NotificationRegistrar notification_registrar;
+  notification_registrar.Add(
+      this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
+      Source<RenderViewHost>(web_ui_->GetRenderViewHost()));
+  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrameNotifyResult(
+      string16(), js_text);
+  return WaitForResult();
 }
 
 void WebUITestHandler::Observe(int type,

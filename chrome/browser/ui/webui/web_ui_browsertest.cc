@@ -73,7 +73,8 @@ bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
 bool WebUIBrowserTest::RunJavascriptFunction(
     const std::string& function_name,
     const ConstValueVector& function_arguments) {
-  return RunJavascriptUsingHandler(function_name, function_arguments, false);
+  return RunJavascriptUsingHandler(
+      function_name, function_arguments, false, NULL);
 }
 
 bool WebUIBrowserTest::RunJavascriptTestF(const std::string& test_fixture,
@@ -107,17 +108,19 @@ bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
 bool WebUIBrowserTest::RunJavascriptTest(
     const std::string& test_name,
     const ConstValueVector& test_arguments) {
-  return RunJavascriptUsingHandler(test_name, test_arguments, true);
+  return RunJavascriptUsingHandler(test_name, test_arguments, true, NULL);
 }
 
 void WebUIBrowserTest::PreLoadJavascriptLibraries(
     const std::string& preload_test_fixture,
-    const std::string& preload_test_name) {
+    const std::string& preload_test_name,
+    RenderViewHost* preload_host) {
   ASSERT_FALSE(libraries_preloaded_);
   ConstValueVector args;
   args.push_back(Value::CreateStringValue(preload_test_fixture));
   args.push_back(Value::CreateStringValue(preload_test_name));
-  RunJavascriptFunction("preloadJavascriptLibraries", args);
+  RunJavascriptUsingHandler(
+      "preloadJavascriptLibraries", args, false, preload_host);
   libraries_preloaded_ = true;
 }
 
@@ -190,12 +193,14 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
   return net::FilePathToFileURL(test_path);
 }
 
-void WebUIBrowserTest::OnJsInjectionReady() {
-  PreLoadJavascriptLibraries(preload_test_fixture_, preload_test_name_);
+void WebUIBrowserTest::OnJsInjectionReady(RenderViewHost* render_view_host) {
+  PreLoadJavascriptLibraries(preload_test_fixture_, preload_test_name_,
+                             render_view_host);
 }
 
-void WebUIBrowserTest::BuildJavascriptLibraries(std::string* content) {
+void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
   ASSERT_TRUE(content != NULL);
+  std::string utf8_content;
   std::vector<FilePath>::iterator user_libraries_iterator;
   for (user_libraries_iterator = user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();
@@ -209,9 +214,10 @@ void WebUIBrowserTest::BuildJavascriptLibraries(std::string* content) {
           test_data_directory_.Append(*user_libraries_iterator),
               &library_content));
     }
-    content->append(library_content);
-    content->append(";\n");
+    utf8_content.append(library_content);
+    utf8_content.append(";\n");
   }
+  content->append(UTF8ToUTF16(utf8_content));
 }
 
 string16 WebUIBrowserTest::BuildRunTestJSCall(
@@ -234,8 +240,10 @@ string16 WebUIBrowserTest::BuildRunTestJSCall(
 bool WebUIBrowserTest::RunJavascriptUsingHandler(
     const std::string& function_name,
     const ConstValueVector& function_arguments,
-    bool is_test) {
-  std::string content;
+    bool is_test,
+    RenderViewHost* preload_host) {
+
+  string16 content;
   if (!libraries_preloaded_)
     BuildJavascriptLibraries(&content);
 
@@ -247,11 +255,22 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
       called_function = WebUI::GetJavascriptCall(function_name,
                                                  function_arguments);
     }
-    content.append(UTF16ToUTF8(called_function));
+    content.append(called_function);
   }
-  SetupHandlers();
+
+  if (!preload_host)
+    SetupHandlers();
+
   logging::SetLogMessageHandler(&LogHandler);
-  bool result = test_handler_->RunJavascript(content, is_test);
+  bool result = true;
+
+  if (is_test)
+    result = test_handler_->RunJavaScriptTestWithResult(content);
+  else if (preload_host)
+    test_handler_->PreloadJavaScript(content, preload_host);
+  else
+    test_handler_->RunJavaScript(content);
+
   logging::SetLogMessageHandler(NULL);
 
   if (error_messages_.Get().size() > 0) {

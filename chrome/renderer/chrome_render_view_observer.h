@@ -48,8 +48,18 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   virtual ~ChromeRenderViewObserver();
 
  private:
+  // Holds the information received in OnWebUIJavaScript for later use
+  // to call EvaluateScript() to preload javascript for WebUI tests.
+  struct WebUIJavaScript {
+    string16 frame_xpath;
+    string16 jscript;
+    int id;
+    bool notify_result;
+  };
+
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidChangeIcon(WebKit::WebFrame* frame,
                              WebKit::WebIconURL::Type icon_type) OVERRIDE;
@@ -93,6 +103,10 @@ class ChromeRenderViewObserver : public RenderViewObserver,
       const WebKit::WebSecurityOrigin& context,
       const WebKit::WebURL& url) OVERRIDE;
 
+  void OnWebUIJavaScript(const string16& frame_xpath,
+                         const string16& jscript,
+                         int id,
+                         bool notify_result);
   void OnCaptureSnapshot();
   void OnHandleMessageFromExternalHost(const std::string& message,
                                        const std::string& origin,
@@ -151,6 +165,9 @@ class ChromeRenderViewObserver : public RenderViewObserver,
 
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
+
+  // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
+  scoped_ptr<WebUIJavaScript> webui_javascript_;
 
   // Have the same lifetime as us.
   ContentSettingsObserver* content_settings_;

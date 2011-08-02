@@ -9,10 +9,12 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/test_navigation_observer.h"
 
+class RenderViewHost;
 class WebUIMessageHandler;
 
 namespace base {
@@ -70,12 +72,12 @@ class WebUIBrowserTest
   bool RunJavascriptTest(const std::string& test_name,
                          const ConstValueVector& test_arguments);
 
-  // Preloads the javascript libraries and sets the |libraries_preloaded| flag
-  // to prevent re-loading at next javascript invocation. If
-  // |override_chrome_send| is true, then chrome.send is overridden for
-  // javascript to register handlers.
+  // Sends message through |preload_host| to preload javascript libraries and
+  // sets the |libraries_preloaded| flag to prevent re-loading at next
+  // javascript invocation.
   void PreLoadJavascriptLibraries(const std::string& preload_test_fixture,
-                                  const std::string& preload_test_name);
+                                  const std::string& preload_test_name,
+                                  RenderViewHost* preload_host);
 
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
@@ -108,22 +110,27 @@ class WebUIBrowserTest
 
  private:
   // TestNavigationObserver::JsInjectionReadyObserver implementation.
-  virtual void OnJsInjectionReady() OVERRIDE;
+  virtual void OnJsInjectionReady(RenderViewHost* render_view_host) OVERRIDE;
 
   // Builds a string containing all added javascript libraries.
-  void BuildJavascriptLibraries(std::string* content);
+  void BuildJavascriptLibraries(string16* content);
 
   // Builds a string with a call to the runTest JS function, passing the
   // given test and its arguments.
   string16 BuildRunTestJSCall(const std::string& test_name,
                               const WebUIBrowserTest::ConstValueVector& args);
 
-  // Calls the specified function with all libraries available. If |is_test|
-  // is true, the framework listens for pass fail messages from javascript.
-  // The provided arguments vector is passed to |function_name|.
+  // Loads all libraries added with AddLibrary(), and calls |function_name| with
+  // |function_arguments|. When |is_test| is true, the framework wraps
+  // |function_name| with a test helper function, which waits for completion,
+  // logging an error message on failure, otherwise |function_name| is called
+  // asynchronously. When |preload_host| is non-NULL, sends the javascript to
+  // the RenderView for evaluation at the appropriate time before the onload
+  // call is made.
   bool RunJavascriptUsingHandler(const std::string& function_name,
                                  const ConstValueVector& function_arguments,
-                                 bool is_test);
+                                 bool is_test,
+                                 RenderViewHost* preload_host);
 
   // Attaches mock and test handlers.
   void SetupHandlers();
