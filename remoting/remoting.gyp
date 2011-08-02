@@ -403,7 +403,7 @@
         'host/json_host_config.cc',
         'host/json_host_config.h',
         'host/local_input_monitor_linux.cc',
-        'host/local_input_monitor_mac.cc',
+        'host/local_input_monitor_mac.mm',
         'host/local_input_monitor_thread_linux.cc',
         'host/local_input_monitor_win.cc',
         'host/register_support_host_request.cc',
@@ -439,6 +439,20 @@
           },
         }],
         ['OS=="mac"', {
+          'sources': [
+            '../third_party/GTM/AppKit/GTMCarbonEvent.h',
+            '../third_party/GTM/AppKit/GTMCarbonEvent.m',
+            '../third_party/GTM/DebugUtils/GTMDebugSelectorValidation.h',
+            '../third_party/GTM/DebugUtils/GTMTypeCasting.h',
+            '../third_party/GTM/Foundation/GTMObjectSingleton.h',
+            '../third_party/GTM/GTMDefines.h',
+          ],
+          'include_dirs': [
+            '../third_party/GTM',
+            '../third_party/GTM/AppKit',
+            '../third_party/GTM/DebugUtils',
+            '../third_party/GTM/Foundation',
+          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
