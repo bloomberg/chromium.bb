@@ -74,13 +74,13 @@ class BookmarkBarFolderViewTest : public CocoaTest {
   }
 
   id GetFakeDragInfoForType(NSString* dataType) {
+    // Need something non-nil to return as the draggingSource.
+    id source = [OCMockObject mockForClass:[NSObject class]];
     id drag_info = [OCMockObject mockForProtocol:@protocol(NSDraggingInfo)];
     id pasteboard = GetFakePasteboardForType(dataType);
     [[[drag_info stub] andReturn:pasteboard] draggingPasteboard];
-    [[[drag_info stub] andReturnNSPoint:kPoint]
-     draggingLocation];
-    [[[drag_info stub] andReturn:drag_info]
-     draggingSource];
+    [[[drag_info stub] andReturnNSPoint:kPoint] draggingLocation];
+    [[[drag_info stub] andReturn:source] draggingSource];
     [[[drag_info stub]
       andReturnUnsignedInteger:NSDragOperationCopy | NSDragOperationMove]
      draggingSourceOperationMask];

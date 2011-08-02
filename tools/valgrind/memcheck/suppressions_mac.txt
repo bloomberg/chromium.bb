@@ -1675,16 +1675,6 @@
    fun:_ZN6webkit5npapi12_GLOBAL__N_119ReadPlistPluginInfoERK8FilePathP10__CFBundlePNS0_13WebPluginInfoE
 }
 {
-   bug_83979
-   Memcheck:Leak
-   fun:*alloc*
-   ...
-   fun:_ZN12_GLOBAL__N_125BookmarkBarFolderViewTest22GetFakeDragInfoForTypeEP8NSString
-   fun:_ZN12_GLOBAL__N_*BookmarkBarFolderViewTest_*_Test8TestBodyEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-}
-{
    bug_84329
    Memcheck:Addr4
    fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_
