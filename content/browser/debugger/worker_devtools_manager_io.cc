@@ -7,8 +7,6 @@
 #include <list>
 
 #include "base/tuple.h"
-#include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
@@ -187,18 +185,6 @@ bool WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
   return true;
 }
 
-static void OpenDevToolsForWorkerOnUIThread(int worker_process_host_id,
-                                            int worker_route_id) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (!profile)
-    return;
-  DevToolsWindow* window = DevToolsWindow::CreateDevToolsWindowForWorker(
-      profile);
-  window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
-  ClientsUI::GetInstance()->RegisterDevToolsClientForWorker(
-      worker_process_host_id, worker_route_id, window);
-}
-
 static WorkerProcessHost* FindWorkerProcessHostForWorker(
     int worker_process_host_id,
     int worker_route_id) {
@@ -218,8 +204,42 @@ static WorkerProcessHost* FindWorkerProcessHostForWorker(
   return NULL;
 }
 
-void WorkerDevToolsManagerIO::OpenDevToolsForWorker(int worker_process_host_id,
-                                                    int worker_route_id) {
+// static
+bool WorkerDevToolsManagerIO::HasDevToolsClient(
+    int worker_process_id,
+    int worker_route_id) {
+  return NULL != ClientsUI::GetInstance()->
+      FindDevToolsClient(worker_process_id, worker_route_id);
+}
+
+// static
+void WorkerDevToolsManagerIO::RegisterDevToolsClientForWorkerOnUIThread(
+      DevToolsClientHost* client,
+      int worker_process_id,
+      int worker_route_id) {
+  DCHECK(!HasDevToolsClient(worker_process_id, worker_route_id));
+  ClientsUI::GetInstance()->RegisterDevToolsClientForWorker(
+      worker_process_id, worker_route_id, client);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          WorkerDevToolsManagerIO::RegisterDevToolsClientForWorker,
+          worker_process_id,
+          worker_route_id));
+}
+
+// static
+void WorkerDevToolsManagerIO::RegisterDevToolsClientForWorker(
+    int worker_process_id,
+    int worker_route_id) {
+  WorkerDevToolsManagerIO::GetInstance()->AddInspectedInstance(
+      worker_process_id,
+      worker_route_id);
+}
+
+void WorkerDevToolsManagerIO::AddInspectedInstance(
+    int worker_process_host_id,
+    int worker_route_id) {
   WorkerProcessHost* host = FindWorkerProcessHostForWorker(
       worker_process_host_id,
       worker_route_id);
@@ -233,12 +253,6 @@ void WorkerDevToolsManagerIO::OpenDevToolsForWorker(int worker_process_host_id,
   host->Send(new WorkerDevToolsAgentMsg_Attach(worker_route_id));
 
   inspected_workers_->AddInstance(host, worker_route_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(
-          OpenDevToolsForWorkerOnUIThread,
-          worker_process_host_id,
-          worker_route_id));
 }
 
 void WorkerDevToolsManagerIO::WorkerDevToolsClientClosing(

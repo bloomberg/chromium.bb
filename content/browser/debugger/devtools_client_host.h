@@ -33,7 +33,6 @@ class DevToolsClientHost {
   };
 
   static DevToolsClientHost* FindOwnerClientHost(RenderViewHost* client_rvh);
-  static DevToolsClientHost* GetDevToolsClientHostForTest();
 
   virtual ~DevToolsClientHost();
 

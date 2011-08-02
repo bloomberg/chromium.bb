@@ -20,13 +20,6 @@ DevToolsClientHost* DevToolsClientHost::FindOwnerClientHost(
   return NULL;
 }
 
-// static
-DevToolsClientHost* DevToolsClientHost::GetDevToolsClientHostForTest() {
-  if (instances_.empty())
-    return NULL;
-  return instances_.back();
-}
-
 DevToolsClientHost::~DevToolsClientHost() {
   DevToolsClientHostList::iterator it = std::find(instances_.begin(),
                                                   instances_.end(),

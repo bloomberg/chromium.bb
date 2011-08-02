@@ -9,6 +9,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -124,12 +125,6 @@ void WorkersDOMHandler::RegisterMessages() {
       NewCallback(this, &WorkersDOMHandler::HandleOpenDevTools));
 }
 
-static void OpenDevToolsOnIOThread(int worker_process_host_id,
-                                   int worker_route_id) {
-  WorkerDevToolsManagerIO::GetInstance()->OpenDevToolsForWorker(
-      worker_process_host_id, worker_route_id);
-}
-
 void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
   std::string worker_process_host_id_str;
   std::string worker_route_id_str;
@@ -141,8 +136,20 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
   CHECK(base::StringToInt(worker_process_host_id_str,
                           &worker_process_host_id));
   CHECK(base::StringToInt(worker_route_id_str, &worker_route_id));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-      &OpenDevToolsOnIOThread, worker_process_host_id, worker_route_id));
+
+  if (WorkerDevToolsManagerIO::HasDevToolsClient(worker_process_host_id,
+                                                 worker_route_id))
+    return;
+  Profile* profile = web_ui_->GetProfile();
+  if (!profile)
+    return;
+  DevToolsWindow* window = DevToolsWindow::CreateDevToolsWindowForWorker(
+      profile);
+  window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+  WorkerDevToolsManagerIO::RegisterDevToolsClientForWorkerOnUIThread(
+      window,
+      worker_process_host_id,
+      worker_route_id);
 }
 
 }  // namespace

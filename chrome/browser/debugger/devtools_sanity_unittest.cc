@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -263,6 +264,13 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   }
 
  protected:
+  struct WorkerData : public base::RefCountedThreadSafe<WorkerData> {
+    WorkerData() : worker_process_id(0), worker_route_id(0), valid(false) {}
+    int worker_process_id;
+    int worker_route_id;
+    bool valid;
+  };
+
   void RunTest(const char* test_name, const char* test_page) {
     ASSERT_TRUE(test_server()->Start());
     GURL url = test_server()->GetURL(test_page);
@@ -273,9 +281,10 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     CloseDevToolsWindow();
   }
 
-  static void OpenDevToolsWindowForFirstSharedWorkerOnIOThread(int attempt) {
+  static void WaitForFirstSharedWorkerOnIOThread(
+      scoped_refptr<WorkerData> worker_data,
+      int attempt) {
     BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
-    bool found = false;
     for (; !iter.Done(); ++iter) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
       const WorkerProcessHost::Instances& instances = worker->instances();
@@ -283,35 +292,40 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
            i != instances.end(); ++i) {
         if (!i->shared())
           continue;
-        WorkerDevToolsManagerIO::GetInstance()->OpenDevToolsForWorker(
-            worker->id(), i->worker_route_id());
-        found = true;
-        break;
+        worker_data->worker_process_id = worker->id();
+        worker_data->worker_route_id = i->worker_route_id();
+        worker_data->valid = true;
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+            new MessageLoop::QuitTask);
+        return;
       }
     }
-    if (found) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          new MessageLoop::QuitTask);
-    } else if (attempt < TestTimeouts::action_timeout_ms() /
-                   TestTimeouts::tiny_timeout_ms()) {
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          NewRunnableFunction(
-              &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, attempt + 1),
-          TestTimeouts::tiny_timeout_ms());
-    } else {
+    if (attempt > TestTimeouts::action_timeout_ms() /
+            TestTimeouts::tiny_timeout_ms())
       FAIL() << "Shared worker not found.";
-    }
-
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableFunction(
+            &WaitForFirstSharedWorkerOnIOThread,
+            worker_data,
+            attempt + 1),
+        TestTimeouts::tiny_timeout_ms());
   }
 
   void OpenDevToolsWindowForFirstSharedWorker() {
+    scoped_refptr<WorkerData> worker_data(new WorkerData());
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-        &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, 1));
+        &WaitForFirstSharedWorkerOnIOThread, worker_data, 1));
     ui_test_utils::RunMessageLoop();
-    window_ = static_cast<DevToolsWindow*>(
-                  DevToolsClientHost::GetDevToolsClientHostForTest());
-    ASSERT_TRUE(window_ != NULL);
+    ASSERT_TRUE(worker_data->valid);
+
+    Profile* profile = browser()->profile();
+    window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
+    window_->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+    WorkerDevToolsManagerIO::RegisterDevToolsClientForWorkerOnUIThread(
+        window_,
+        worker_data->worker_process_id,
+        worker_data->worker_route_id);
 
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();

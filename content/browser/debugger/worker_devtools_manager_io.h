@@ -27,7 +27,12 @@ class WorkerDevToolsManagerIO {
       DevToolsClientHost* from,
       const IPC::Message& message);
 
-  void OpenDevToolsForWorker(int worker_process_id, int worker_route_id);
+  static bool HasDevToolsClient(int worker_process_id, int worker_route_id);
+  static void RegisterDevToolsClientForWorkerOnUIThread(
+      DevToolsClientHost* client,
+      int worker_process_id,
+      int worker_route_id);
+
   void WorkerDevToolsClientClosing(int worker_process_host_id,
                                    int worker_route_id);
 
@@ -41,6 +46,10 @@ class WorkerDevToolsManagerIO {
 
   WorkerDevToolsManagerIO();
   ~WorkerDevToolsManagerIO();
+  static void RegisterDevToolsClientForWorker(int worker_process_id,
+                                              int worker_route_id);
+  void AddInspectedInstance(int worker_process_host_id,
+                            int worker_route_id);
   static void ForwardToWorkerDevToolsAgentOnIOThread(
       int worker_process_host_id,
       int worker_route_id,
