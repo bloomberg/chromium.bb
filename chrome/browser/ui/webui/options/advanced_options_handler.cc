@@ -17,6 +17,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -485,25 +486,27 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   // Open the connector enable page in the current tab.
   web_ui_->tab_contents()->OpenURL(
       CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceEnableURL(
-          web_ui_->GetProfile()->GetCloudPrintProxyService()->proxy_id()),
+          CloudPrintProxyServiceFactory::GetForProfile(
+              web_ui_->GetProfile())->proxy_id()),
       GURL(), CURRENT_TAB, PageTransition::LINK);
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
     const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_DisableCloudPrintProxy"));
-  web_ui_->GetProfile()->GetCloudPrintProxyService()->DisableForUser();
+  CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())->
+      DisableForUser();
 }
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
   DCHECK(web_ui_);
   if (cloud_print_proxy_ui_enabled_)
-    web_ui_->GetProfile()->GetCloudPrintProxyService()->
+    CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())->
         RefreshStatusFromService();
 }
 
 void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
-  if (NULL == web_ui_->GetProfile()->GetCloudPrintProxyService()) {
+  if (!CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())) {
     cloud_print_proxy_ui_enabled_ = false;
     RemoveCloudPrintProxySection();
     return;

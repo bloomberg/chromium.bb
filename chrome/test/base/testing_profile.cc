@@ -751,10 +751,6 @@ ProfileSyncService* TestingProfile::GetProfileSyncService(
   return profile_sync_service_.get();
 }
 
-CloudPrintProxyService* TestingProfile::GetCloudPrintProxyService() {
-  return NULL;
-}
-
 ChromeBlobStorageContext* TestingProfile::GetBlobStorageContext() {
   return NULL;
 }

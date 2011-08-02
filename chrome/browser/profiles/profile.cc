@@ -589,10 +589,6 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetBrowserSignin();
   }
 
-  virtual CloudPrintProxyService* GetCloudPrintProxyService() {
-    return NULL;
-  }
-
   virtual bool IsSameProfile(Profile* profile) {
     return (profile == this) || (profile == profile_);
   }

@@ -57,7 +57,6 @@ class BookmarkModel;
 class BrowserSignin;
 class ChromeAppCacheService;
 class ChromeURLDataManager;
-class CloudPrintProxyService;
 class Extension;
 class ExtensionDevToolsManager;
 class ExtensionEventRouter;
@@ -422,9 +421,6 @@ class Profile : public content::BrowserContext {
   // the specified CrOS username.
   virtual ProfileSyncService* GetProfileSyncService(
       const std::string& cros_user) = 0;
-
-  // Returns the CloudPrintProxyService, creating if not yet created.
-  virtual CloudPrintProxyService* GetCloudPrintProxyService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality

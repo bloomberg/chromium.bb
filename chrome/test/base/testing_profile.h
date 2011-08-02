@@ -268,7 +268,6 @@ class TestingProfile : public Profile {
   virtual ProfileSyncService* GetProfileSyncService();
   virtual ProfileSyncService* GetProfileSyncService(
       const std::string& cros_notes);
-  virtual CloudPrintProxyService* GetCloudPrintProxyService();
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();

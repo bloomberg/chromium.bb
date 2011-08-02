@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace {
@@ -56,8 +57,8 @@ bool SetCloudPrintCredentialsFunction::RunImpl() {
     test_response.append(credentials);
     result_.reset(Value::CreateStringValue(test_response));
   } else {
-    profile_->GetCloudPrintProxyService()->EnableForUserWithRobot(
-        credentials, robot_email, user_email);
+    CloudPrintProxyServiceFactory::GetForProfile(profile_)->
+        EnableForUserWithRobot(credentials, robot_email, user_email);
   }
   SendResponse(true);
   return true;

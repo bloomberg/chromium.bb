@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 
 class Profile;
 
@@ -22,7 +23,8 @@ struct CloudPrintProxyInfo;
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
 class CloudPrintProxyService
-    : public CloudPrintSetupHandlerDelegate {
+    : public CloudPrintSetupHandlerDelegate,
+      public ProfileKeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();

@@ -34,6 +34,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -1373,7 +1374,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   // the service process, we do not want to open any browser windows.
   if (command_line.HasSwitch(switches::kNotifyCloudPrintTokenExpired)) {
     silent_launch = true;
-    profile->GetCloudPrintProxyService()->ShowTokenExpiredNotification();
+    CloudPrintProxyServiceFactory::GetForProfile(profile)->
+        ShowTokenExpiredNotification();
   }
 
   // If we are just displaying a print dialog we shouldn't open browser

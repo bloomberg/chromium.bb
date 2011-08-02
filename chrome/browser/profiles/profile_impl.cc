@@ -56,7 +56,6 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -1585,12 +1584,6 @@ BrowserSignin* ProfileImpl::GetBrowserSignin() {
   return browser_signin_.get();
 }
 
-CloudPrintProxyService* ProfileImpl::GetCloudPrintProxyService() {
-  if (!cloud_print_proxy_service_.get())
-    InitCloudPrintProxyService();
-  return cloud_print_proxy_service_.get();
-}
-
 void ProfileImpl::InitSyncService(const std::string& cros_user) {
   profile_sync_factory_.reset(
       new ProfileSyncFactoryImpl(this, CommandLine::ForCurrentProcess()));
@@ -1598,11 +1591,6 @@ void ProfileImpl::InitSyncService(const std::string& cros_user) {
       profile_sync_factory_->CreateProfileSyncService(cros_user));
   profile_sync_factory_->RegisterDataTypes(sync_service_.get());
   sync_service_->Initialize();
-}
-
-void ProfileImpl::InitCloudPrintProxyService() {
-  cloud_print_proxy_service_.reset(new CloudPrintProxyService(this));
-  cloud_print_proxy_service_->Initialize();
 }
 
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {

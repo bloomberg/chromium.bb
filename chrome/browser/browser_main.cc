@@ -64,6 +64,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1977,7 +1978,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Create the instance of the cloud print proxy service so that it can launch
   // the service process if needed. This is needed because the service process
   // might have shutdown because an update was available.
-  profile->GetCloudPrintProxyService();
+  // TODO(torne): this should maybe be done with
+  // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
+  CloudPrintProxyServiceFactory::GetForProfile(profile);
 
   // Initialize GpuDataManager and collect preliminary gpu info on FILE thread.
   // Upon completion, it posts GpuBlacklist auto update task on UI thread.

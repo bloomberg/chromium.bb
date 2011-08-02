@@ -1756,6 +1756,8 @@
         'browser/printing/background_printing_manager.h',
         'browser/printing/cloud_print/cloud_print_proxy_service.cc',
         'browser/printing/cloud_print/cloud_print_proxy_service.h',
+        'browser/printing/cloud_print/cloud_print_proxy_service_factory.cc',
+        'browser/printing/cloud_print/cloud_print_proxy_service_factory.h',
         'browser/printing/cloud_print/cloud_print_setup_flow.cc',
         'browser/printing/cloud_print/cloud_print_setup_flow.h',
         'browser/printing/cloud_print/cloud_print_setup_handler.cc',

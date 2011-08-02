@@ -12,6 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_source.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -215,8 +216,8 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
   ShowGaiaSuccessAndSettingUp();
   authenticator_.reset();
 
-  profile_->GetCloudPrintProxyService()->EnableForUser(credentials.lsid,
-                                                       login_);
+  CloudPrintProxyServiceFactory::GetForProfile(profile_)->EnableForUser(
+      credentials.lsid, login_);
   // TODO(sanjeevr): Should we wait and verify that the enable succeeded?
   ShowSetupDone();
 }
