@@ -221,7 +221,7 @@ void NativeDialogHost::Init() {
   contents_view_ = new views::NativeViewHost();
   // TODO(xiyuan): Find a better way to get proper background.
   contents_view_->set_background(views::Background::CreateSolidBackground(
-      BubbleWindow::kBackgroundColor));
+      kBubbleWindowBackgroundColor));
   AddChildView(contents_view_);
   contents_view_->Attach(contents);
 

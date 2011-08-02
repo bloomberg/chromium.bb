@@ -16,8 +16,7 @@ views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
                                  views::WidgetDelegate* delegate) {
 #if defined(OS_CHROMEOS)
   return chromeos::BubbleWindow::Create(parent,
-                                        chromeos::BubbleWindow::STYLE_GENERIC,
-                                        delegate);
+      chromeos::STYLE_GENERIC, delegate);
 #else
   return views::Widget::CreateWindowWithParent(delegate, parent);
 #endif

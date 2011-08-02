@@ -7,8 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #include "views/window/non_client_view.h"
 
@@ -27,10 +25,8 @@ void SetRegionUnionWithPoint(int i, int j, GdkRegion* region) {
 
 namespace chromeos {
 
-// static
-const SkColor BubbleWindow::kBackgroundColor = SK_ColorWHITE;
-
-BubbleWindow::BubbleWindow(views::Widget* window, Style style)
+BubbleWindow::BubbleWindow(views::Widget* window,
+    BubbleWindowStyle style)
     : views::NativeWidgetGtk(window),
       style_(style) {
 }
@@ -42,7 +38,8 @@ void BubbleWindow::InitNativeWidget(const views::Widget::InitParams& params) {
   // flash as in http://crosbug.com/9065.
   EnableDoubleBuffer(true);
 
-  GdkColor background_color = gfx::SkColorToGdkColor(kBackgroundColor);
+  GdkColor background_color =
+      gfx::SkColorToGdkColor(kBubbleWindowBackgroundColor);
   gtk_widget_modify_bg(GetNativeView(), GTK_STATE_NORMAL, &background_color);
 
   // A work-around for http://crosbug.com/8538. All GdkWindow of top-level
@@ -116,7 +113,7 @@ void BubbleWindow::TrimMargins(int margin_left, int margin_right,
 
 views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
-    Style style,
+    BubbleWindowStyle style,
     views::WidgetDelegate* widget_delegate) {
   views::Widget* window = new views::Widget;
   BubbleWindow* bubble_window = new BubbleWindow(window, style);

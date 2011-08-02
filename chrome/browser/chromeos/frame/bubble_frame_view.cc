@@ -41,7 +41,7 @@ namespace chromeos {
 
 BubbleFrameView::BubbleFrameView(views::Widget* frame,
                                  views::WidgetDelegate* widget_delegate,
-                                 BubbleWindow::Style style)
+                                 BubbleWindowStyle style)
     : frame_(frame),
       style_(style),
       title_(NULL),
@@ -57,7 +57,7 @@ BubbleFrameView::BubbleFrameView(views::Widget* frame,
     AddChildView(title_);
   }
 
-  if (style_ & BubbleWindow::STYLE_XBAR) {
+  if (style_ & STYLE_XBAR) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -69,7 +69,7 @@ BubbleFrameView::BubbleFrameView(views::Widget* frame,
     AddChildView(close_button_);
   }
 
-  if (style_ & BubbleWindow::STYLE_THROBBER) {
+  if (style_ & STYLE_THROBBER) {
     throbber_ = CreateDefaultSmoothedThrobber();
     AddChildView(throbber_);
   }
@@ -212,7 +212,7 @@ void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(BubbleWindow::kBackgroundColor);
+  paint.setColor(kBubbleWindowBackgroundColor);
   gfx::Path path;
   gfx::Rect bounds(GetContentsBounds());
   SkRect rect;

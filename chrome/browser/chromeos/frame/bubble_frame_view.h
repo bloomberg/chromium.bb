@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ class Size;
 namespace views {
 class ImageButton;
 class Label;
+class Throbber;
 class Widget;
 }
 
@@ -32,7 +33,7 @@ class BubbleFrameView : public views::NonClientFrameView,
  public:
   BubbleFrameView(views::Widget* frame,
                   views::WidgetDelegate* widget_delegate,
-                  BubbleWindow::Style style);
+                  BubbleWindowStyle style);
   virtual ~BubbleFrameView();
 
   // Overridden from views::NonClientFrameView:
@@ -64,7 +65,7 @@ class BubbleFrameView : public views::NonClientFrameView,
   views::Widget* frame_;
 
   // Allows to tweak appearance of the view.
-  BubbleWindow::Style style_;
+  BubbleWindowStyle style_;
 
   // Title label
   views::Label* title_;
