@@ -157,7 +157,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
         }
-      } else if (auth_error.state() != AuthError::NONE) {
+      } else if (auth_error.state() != AuthError::NONE &&
+                 auth_error.state() != AuthError::TWO_FACTOR) {
         if (status_label) {
           status_label->clear();
           GetStatusLabelsForAuthError(auth_error, service, status_label, NULL);
