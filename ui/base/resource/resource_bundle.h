@@ -207,8 +207,8 @@ class UI_API ResourceBundle {
 #if defined(OS_WIN)
   // Windows stores resources in DLLs, which are managed by HINSTANCE.
   typedef HINSTANCE DataHandle;
-#elif defined(USE_BASE_DATA_PACK)
-  // Linux uses base::DataPack.
+#elif defined(OS_POSIX)
+  // Everyone else uses base::DataPack.
   typedef DataPack* DataHandle;
 #endif
 
@@ -236,7 +236,7 @@ class UI_API ResourceBundle {
   // Initialize all the gfx::Font members if they haven't yet been initialized.
   void LoadFontsIfNecessary();
 
-#if defined(USE_BASE_DATA_PACK)
+#if defined(OS_POSIX)
   // Returns the full pathname of the main resources file to load.  May return
   // an empty string if no main resources data files are found.
   static FilePath GetResourcesFilePath();
