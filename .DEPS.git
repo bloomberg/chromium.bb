@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@ecd773a417bc77c8c863ab52cb3be481144ffa87'
+         '@62654d6a41f8a81f70b9847b7b3cbe76125d982c'
 }
 
 deps = {
@@ -39,7 +39,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
-        Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@f1ca2c36ed2e085ec64a85c9cafb041972f034d3',
+        Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@2bd4562d201c4e0426771543ddaf4bdc16f91d6e',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/deps/ffmpeg/source.git@eadfe2d42f368f3f8bed8663b8771b377ac6e8ee',
     'src/third_party/flac':
