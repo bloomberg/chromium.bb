@@ -324,6 +324,13 @@ add_config('arm-generic-chrome-pre-flight-queue', [chrome_pfq, arm, {
   'chrome_rev': constants.CHROME_REV_LATEST,
 }])
 
+add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
+  'board' : 'tegra2',
+  'chrome_rev': constants.CHROME_REV_LATEST,
+  # TODO(sosa): Remove once tegra2 is stable.
+  'important': False,
+}])
+
 add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
@@ -335,7 +342,7 @@ add_config('x86-pineview-bin', [{
 }])
 
 add_config('arm-tegra2-bin', [arm, {
-  'board' : 'tegra2_dev-board',
+  'board' : 'tegra2',
 
   'uprev' : True,
   'overlays': 'public',
@@ -359,7 +366,7 @@ add_config('arm-generic-full', [arm, full, {
 }])
 
 add_config('arm-tegra2-full', [arm, full, {
-  'board' : 'tegra2_dev-board',
+  'board' : 'tegra2',
 }])
 
 add_config('arm-tegra2-seaboard-full', [arm, full, {
