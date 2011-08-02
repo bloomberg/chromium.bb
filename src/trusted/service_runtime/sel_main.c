@@ -100,17 +100,6 @@ int ImportModeMap(char opt) {
   /* NOTREACHED */
 }
 
-int NaClDup2(int d_old, int d_new) {
-  if (d_old == d_new) {
-    return 0;
-  }
-  if (DUP2(d_old, d_new) == -1) {
-    fprintf(stderr, "sel_ldr: dup2 for log file failed\n");
-    exit(1);
-  }
-  return 1;
-}
-
 
 static void PrintUsage() {
   /* NOTE: this is broken up into multiple statements to work around
