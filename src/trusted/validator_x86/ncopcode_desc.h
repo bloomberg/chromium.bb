@@ -15,21 +15,19 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
-#include "native_client/src/trusted/validator/x86/x86_insts.h"
 #include "native_client/src/shared/utils/types.h"
-
-/* Define enumerated types. */
 #include "native_client/src/trusted/validator_x86/gen/nacl_disallows.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_prefix.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_insts.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_opcode_flags.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_kind.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_flag.h"
+#include "native_client/src/trusted/validator_x86/nc_decode_tables_types.h"
+#include "native_client/src/trusted/validator/x86/x86_insts.h"
 
 EXTERN_C_BEGIN
 
-/* Defines the maximum allowable bytes per x86 instruction. */
-#define NACL_MAX_BYTES_PER_X86_INSTRUCTION 15
+struct NaClDecodeTables;
 
 /* Defines integer to represent sets of possible opcode (instruction) flags */
 typedef uint64_t NaClIFlags;
@@ -107,11 +105,11 @@ typedef struct NaClInst {
   /* The number of operands modeled for this instruction. */
   uint8_t num_operands;
   /* The corresponding models of the operands. */
-  const NaClOp* operands;
+  uint16_t operands_offset;
   /* Pointer to the next pattern to try and match for the
    * given sequence of opcode bytes.
    */
-  const struct NaClInst* next_rule;
+  uint16_t next_rule;
 } NaClInst;
 
 /* Returns the OpcodeInModRm value in the opcode_ext field. */
@@ -128,9 +126,9 @@ uint8_t NaClGetOpcodePlusR(uint8_t opcode_ext);
  */
 typedef struct NaClInstNode {
   /* The matching byte for the trie node. */
-  uint8_t matching_byte;
+  const uint8_t matching_byte;
   /* The matching modeled instruction, if byte matched. */
-  const NaClInst* matching_inst;
+  const uint16_t matching_inst;
   /* Node to match remaining bytes if matching_byte matches. */
   const struct NaClInstNode* success;
   /* Node to try next if match_byte doesn't match. Note:
@@ -153,8 +151,9 @@ uint8_t NaClGetInstNumberOperands(const NaClInst* inst);
  * a special encoding that extends the opcode. In the latter
  * case, the (index+1)-th operand is returned.
  */
-const NaClOp* NaClGetInstOperand(const NaClInst* inst,
-                                       uint8_t index);
+const NaClOp* NaClGetInstOperand(const struct NaClDecodeTables* tables,
+                                 const NaClInst* inst,
+                                 uint8_t index);
 
 /* Print out the given operand structure to the given file. */
 void NaClOpPrint(struct Gio* f, const NaClOp* operand);
@@ -169,7 +168,9 @@ const char* OpcodePrefixBytes(NaClInstPrefix prefix);
  * function should be used to print out an individual opcode (instruction)
  * pattern.
  */
-void NaClInstPrint(struct Gio* f,  const NaClInst* inst);
+void NaClInstPrint(struct Gio* f,
+                   const struct NaClDecodeTables* tables,
+                   const NaClInst* inst);
 
 EXTERN_C_END
 

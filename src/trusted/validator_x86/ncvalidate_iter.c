@@ -458,6 +458,7 @@ NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,
   state = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (state != NULL) {
     return_value = state;
+    state->decoder_tables = kNaClDecoderTables;
     state->vbase = vbase;
     state->alignment = alignment;
     state->vlimit = vlimit;
@@ -585,7 +586,7 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
     NCHaltTrimSegment(mbase, vbase, state->alignment, &size, &state->vlimit);
     NaClSegmentInitialize(mbase, vbase, size, &segment);
     do {
-      iter = NaClInstIterCreateWithLookback(kNaClDecoderTables,
+      iter = NaClInstIterCreateWithLookback(state->decoder_tables,
                                             &segment, kLookbackSize);
       if (NULL == iter) {
         NaClValidatorMessage(LOG_ERROR, state, "Not enough memory\n");
@@ -789,10 +790,10 @@ void NaClValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
   NaClSegmentInitialize(mbase_old, vbase, size, &segment_old);
   NaClSegmentInitialize(mbase_new, vbase, size, &segment_new);
   do {
-    iter_old = NaClInstIterCreateWithLookback(kNaClDecoderTables,
+    iter_old = NaClInstIterCreateWithLookback(state->decoder_tables,
                                               &segment_old, kLookbackSize);
     if (NULL == iter_old) break;
-    iter_new = NaClInstIterCreateWithLookback(kNaClDecoderTables,
+    iter_new = NaClInstIterCreateWithLookback(state->decoder_tables,
                                               &segment_new, kLookbackSize);
     if (NULL == iter_new) break;
     while (NaClInstIterHasNext(iter_old) &&

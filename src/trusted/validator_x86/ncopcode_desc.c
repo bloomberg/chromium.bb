@@ -9,17 +9,16 @@
 #include <assert.h>
 #include <string.h>
 
-#define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-#include "native_client/src/shared/utils/types.h"
 
-/* Generated files */
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/gen/nacl_disallows_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_prefix_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_insts_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_opcode_flags_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_kind_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncopcode_operand_flag_impl.h"
+#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
 
 uint8_t NaClGetOpcodeInModRm(uint8_t opcode_ext) {
   return opcode_ext & 0x0F;
@@ -37,9 +36,10 @@ uint8_t NaClGetInstNumberOperands(const NaClInst* inst) {
   return inst->num_operands;
 }
 
-const NaClOp* NaClGetInstOperand(const NaClInst* inst, uint8_t index) {
+const NaClOp* NaClGetInstOperand(const NaClDecodeTables* tables,
+                                 const NaClInst* inst, uint8_t index) {
   assert(index < inst->num_operands);
-  return &inst->operands[index];
+  return &tables->operands_table[inst->operands_offset + index];
 }
 
 /* Print out the opcode operand flags in a simplified (i.e. more human readable)
@@ -123,7 +123,9 @@ const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
   }
 }
 
-void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
+void NaClInstPrint(struct Gio* f,
+                   const NaClDecodeTables* tables,
+                   const NaClInst* inst) {
   { /* Print out instruction type less the NACLi_ prefix. */
     const char* name = NaClInstTypeString(inst->insttype);
     gprintf(f, "%s ", name + strlen("NACLi_"));
@@ -141,19 +143,20 @@ void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
     int i;
     gprintf(f, "    %s", NaClMnemonicName(inst->name));
     for (i = 0; i < inst->num_operands; ++i) {
-      if (NULL == inst->operands[i].format_string) continue;
+      const NaClOp* op = NaClGetInstOperand(tables, inst, i);
+      if (NULL == op->format_string) continue;
       if (is_first) {
         is_first = FALSE;
       } else {
         gprintf(f, ",");
       }
-      gprintf(f, " %s", inst->operands[i].format_string);
+      gprintf(f, " %s", op->format_string);
     }
     gprintf(f, "\n");
     /* Now print actual encoding of each operand. */
     for (i = 0; i < inst->num_operands; ++i) {
       gprintf(f, "      ");
-      NaClOpPrint(f, inst->operands + i);
+      NaClOpPrint(f, NaClGetInstOperand(tables, inst, i));
     }
   }
 }

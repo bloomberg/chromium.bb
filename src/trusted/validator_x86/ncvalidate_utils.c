@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Some useful utilities for validator patterns. */
@@ -9,7 +9,8 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_utils.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
 /* To turn on debugging of instruction decoding, change value of
@@ -44,26 +45,29 @@ Bool NaClIsBinaryUsingRegisters(const NaClInst* inst,
       reg_2 == NaClGetExpRegister(&vector->node[3]);
 }
 
-Bool NaClIsMovUsingRegisters(const NaClInst* inst,
+Bool NaClIsMovUsingRegisters(const NaClDecodeTables* tables,
+                             const NaClInst* inst,
                              NaClExpVector* vector,
                              NaClOpKind reg_set,
                              NaClOpKind reg_use) {
   return NaClIsBinaryUsingRegisters(inst, InstMov, vector, reg_set, reg_use) &&
       NACL_OPFLAG(OpSet) ==
-      (NaClGetInstOperand(inst, 0)->flags & NaClOpSetOrUse) &&
+      (NaClGetInstOperand(tables, inst, 0)->flags & NaClOpSetOrUse) &&
       NACL_OPFLAG(OpUse) ==
-      (NaClGetInstOperand(inst, 1)->flags & NaClOpSetOrUse);
+      (NaClGetInstOperand(tables, inst, 1)->flags & NaClOpSetOrUse);
 }
 
-Bool NaClIsBinarySetUsingRegisters(const NaClInst* inst,
+Bool NaClIsBinarySetUsingRegisters(const NaClDecodeTables* tables,
+                                   const NaClInst* inst,
                                    NaClMnemonic name,
                                    NaClExpVector* vector,
                                    NaClOpKind reg_1,
                                    NaClOpKind reg_2) {
   return NaClIsBinaryUsingRegisters(inst, name, vector, reg_1, reg_2) &&
-      NaClOpSetOrUse == (NaClGetInstOperand(inst, 0)->flags & NaClOpSetOrUse) &&
+      NaClOpSetOrUse ==
+      (NaClGetInstOperand(tables, inst, 0)->flags & NaClOpSetOrUse) &&
       NACL_OPFLAG(OpUse) ==
-      (NaClGetInstOperand(inst, 1)->flags & NaClOpSetOrUse);
+      (NaClGetInstOperand(tables, inst, 1)->flags & NaClOpSetOrUse);
 }
 
 Bool NaClOperandOneIsRegisterSet(NaClInstState* inst,
@@ -93,9 +97,9 @@ Bool NaClOperandOneZeroExtends(NaClInstState* state) {
   Bool result = FALSE;
   const NaClInst* inst = NaClInstStateInst(state);
   DEBUG(NaClLog(LOG_INFO, "->NaClOperandOneZeroExtends\n"));
-  DEBUG(NaClInstPrint(NaClLogGetGio(), inst));
+  DEBUG(NaClInstPrint(NaClLogGetGio(), state->decoder_tables, inst));
   result = (1 <= NaClGetInstNumberOperands(inst) &&
-            (NaClGetInstOperand(inst, 0)->flags &
+            (NaClGetInstOperand(state->decoder_tables, inst, 0)->flags &
              NACL_OPFLAG(OperandZeroExtends_v)) &&
             4 == NaClInstStateOperandSize(state));
   DEBUG(NaClLog(LOG_INFO,

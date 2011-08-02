@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -13,6 +13,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+
+EXTERN_C_BEGIN
 
 /* Defines the state used to match an instruction, while walking
  * instructions using the NaClInstIter.
@@ -46,5 +48,7 @@ NaClOpKind NaClGet64For32BitReg(NaClOpKind reg32);
  * Returns RegUnknown if no such register exists.
  */
 NaClOpKind NaClGet32For64BitReg(NaClOpKind reg64);
+
+EXTERN_C_END
 
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_ */

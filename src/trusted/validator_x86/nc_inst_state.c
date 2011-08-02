@@ -60,7 +60,8 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
           NaClClearInstState(state, inst_length);
           state->inst = cand_insts;
           DEBUG(NaClLog(LOG_INFO, "try opcode pattern:\n"));
-          DEBUG(NaClInstPrint(NaClLogGetGio(), state->inst));
+          DEBUG(NaClInstPrint(NaClLogGetGio(), state->decoder_tables,
+                              state->inst));
           if (NaClConsumeAndCheckOperandSize(state) &&
               NaClConsumeAndCheckAddressSize(state) &&
               NaClConsumeModRm(state) &&
@@ -84,12 +85,14 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
               DEBUG(NaClLog(LOG_INFO,
                             "NaClConsume immediate byte opcode char: %"
                             NACL_PRIx8"\n", opcode_byte));
-              cand_inst = (*state->decoder_tables->inst_table)
-                  [Prefix0F0F][opcode_byte];
+              cand_inst = NaClGetPrefixOpcodeInst(state->decoder_tables,
+                                                  Prefix0F0F, opcode_byte);
               if (NULL != cand_inst) {
                 state->inst = cand_inst;
                 DEBUG(NaClLog(LOG_INFO, "Replace with 3DNOW opcode:\n"));
-                DEBUG(NaClInstPrint(NaClLogGetGio(), state->inst));
+                DEBUG(NaClInstPrint(NaClLogGetGio(),
+                                    state->decoder_tables,
+                                    state->inst));
               }
             }
             /* found a match, exit loop. */
@@ -100,7 +103,8 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
             break;
           } else {
             /* match failed, try next candidate pattern. */
-            cand_insts = cand_insts->next_rule;
+            cand_insts = NaClGetOpcodeInst(state->decoder_tables,
+                                           cand_insts->next_rule);
           }
         }
         DEBUG(if (! found_match) {

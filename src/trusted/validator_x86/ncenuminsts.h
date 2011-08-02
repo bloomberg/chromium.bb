@@ -29,4 +29,8 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
                             uint8_t size,
                             NaClPcAddress vbase);
 
+
+/* Changes opcode encodings to match those used by xed. */
+void NaClChangeOpcodesToXedsModel();
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCEMNUMINSTS_H_ */

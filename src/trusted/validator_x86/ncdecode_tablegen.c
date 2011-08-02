@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/nc_compress.h"
+#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -1902,6 +1903,36 @@ size_t NaClOpOffset(const NaClOp* op) {
   return 0;
 }
 
+/* Finds the index to use for the given instruction, assuming
+ * it is a compressed instruction.
+ */
+static size_t NaClFindInstIndex(const NaClModeledInst* inst) {
+  size_t i;
+  if (NULL == inst) return 0;
+  for (i = 0; i < nacl_inst_compressed_size; ++i) {
+    /* Fail if number of compressed instructions matches
+     * special NULL constant.
+     */
+    if (i == NACL_OPCODE_NULL_OFFSET) continue;
+    if (inst == NaClInstsCompressed[i]) return i;
+  }
+  NaClFatal("Unable to find instruction index\n");
+  /* NOT REACHED */
+  return 0;
+}
+
+/* Print out the given opcode offset value corresponding to the
+ * given instruction.
+ */
+static void NaClPrintInstOffset(struct Gio* f,
+                                const NaClModeledInst* inst) {
+  if (NULL == inst) {
+    gprintf(f, "NACL_OPCODE_NULL_OFFSET");
+  } else {
+    gprintf(f, "%d", NaClFindInstIndex(inst));
+  }
+}
+
 /* Prints out the given instruction to the given file. If index >= 0,
  * print out a comment, with the value of index, before the printed
  * instruction. Lookahead is used to convert the next_rule pointer into
@@ -1910,38 +1941,22 @@ size_t NaClOpOffset(const NaClOp* op) {
  * assumed to be in an array static initializer.
  */
 static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
-                                  size_t index, const NaClModeledInst* inst,
-                                  size_t lookahead) {
+                                  size_t index, const NaClModeledInst* inst) {
   gprintf(f, "  /* %d */\n", index);
   gprintf(f, "  { %s,\n", NaClInstTypeString(inst->insttype));
   gprintf(f, "    ");
   NaClIFlagsPrintInternal(f, inst->flags);
   gprintf(f, ",\n");
-  gprintf(f, "    Inst%s, 0x%02x,\n", NaClMnemonicName(inst->name),
+  gprintf(f, "    Inst%s, 0x%02x, ", NaClMnemonicName(inst->name),
           inst->opcode_ext);
-  gprintf(f, "    %u, g_Operands + %"NACL_PRIuS",\n",
+  gprintf(f, "%u, %"NACL_PRIuS", ",
           inst->num_operands, NaClOpOffset(inst->operands));
-  if (index < 0 || NULL == inst->next_rule) {
-    gprintf(f, "    NULL\n");
-  } else {
-    gprintf(f, "    g_Opcodes + %d\n", lookahead);
-  }
+  NaClPrintInstOffset(f, (index < 0) ? NULL : inst->next_rule);
   if (as_array_element) {
     gprintf(f, "  }%s\n", index < 0 ? ";" : ",");
   } else {
     gprintf(f, "  };\n");
   }
-}
-
-/* Prints out the given instruction to the given file. If index >= 0,
- * print out a comment, with the value of index, before the printed
- * instruction Lookahead is used to convert the next_rule pointer into
- * a symbolic reference using the name "g_Opcodes", plus the index and
- * the lookahead.
- */
-void NaClInstPrintTablegen(struct Gio* f, int index,
-                           const NaClModeledInst* inst, int lookahead) {
-  NaClInstPrintInternal(f, TRUE, index, inst, lookahead);
 }
 
 /* Generate header information, based on the executable name in argv0,
@@ -1995,20 +2010,6 @@ static void NaClPrintInstTrieEdge(const NaClModeledInstNode* edge,
   gprintf(f, ",\n");
 }
 
-/* Finds the index to use for the given instruction, assuming
- * it is a compressed instruction.
- */
-static size_t NaClFindInstIndex(const NaClModeledInst* inst) {
-  size_t i;
-  if (NULL == inst) return 0;
-  for (i = 0; i < nacl_inst_compressed_size; ++i) {
-    if (inst == NaClInstsCompressed[i]) return i;
-  }
-  NaClFatal("Unable to find instruction index\n");
-  /* NOT REACHED */
-  return 0;
-}
-
 static void NaClPrintInstTrieNode(const NaClModeledInstNode* root,
                                   int root_index, struct Gio* f) {
   if (NULL == root) {
@@ -2017,11 +2018,7 @@ static void NaClPrintInstTrieNode(const NaClModeledInstNode* root,
     int next_index = root_index + 1;
     gprintf(f, "  /* %d */\n", root_index);
     gprintf(f, "  { 0x%02x,\n    ", root->matching_byte);
-    if (NULL == root->matching_inst) {
-      gprintf(f, "NULL");
-    } else {
-      gprintf(f, "g_Opcodes + %d", NaClFindInstIndex(root->matching_inst));
-    }
+    NaClPrintInstOffset(f, root->matching_inst);
     gprintf(f, ",\n");
     NaClPrintInstTrieEdge(root->success, &next_index, f);
     NaClPrintInstTrieEdge(root->fail, &next_index, f);
@@ -2059,6 +2056,8 @@ static void NaClPrintOperandTable(struct Gio* f) {
   gprintf(f, "};\n\n");
 }
 
+static const size_t NaClOffsetsPerLine = 8;
+
 static void NaClPrintInstTable(struct Gio* f) {
   size_t i;
   NaClInstPrefix prefix;
@@ -2069,32 +2068,30 @@ static void NaClPrintInstTable(struct Gio* f) {
           nacl_inst_compressed_size);
   for (i = 0; i < nacl_inst_compressed_size; ++i) {
     const NaClModeledInst* next = NaClInstsCompressed[i];
-    NaClInstPrintInternal(f, TRUE, i, next, NaClFindInstIndex(next->next_rule));
+    NaClInstPrintInternal(f, TRUE, i, next);
   }
   gprintf(f, "};\n\n");
 
   /* Now print lookup table of rulees. */
   gprintf(f,
-          "static const NaClInst* "
-          "g_OpcodeTable[NaClInstPrefixEnumSize][NCDTABLESIZE] = {\n");
+          "static const NaClOperandArrayOffset\n"
+          "   g_OpcodeTable[NaClInstPrefixEnumSize][NCDTABLESIZE] = {\n");
   for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
     gprintf(f,"/* %s */\n", NaClInstPrefixName(prefix));
-    gprintf(f, "{\n");
+    gprintf(f, "{");
     for (i = 0; i < NCDTABLESIZE; ++i) {
       /* Take advantage of the fact that the lists were added to
        * the array of opcodes such that the next element in the list
        * will always follow the current entry.
        */
       const NaClModeledInst* next = NaClInstTable[i][prefix];
-      gprintf(f, "  /* %02x */ ", i);
-      if (NULL == next) {
-        gprintf(f, "NULL");
-      } else {
-        gprintf(f, "g_Opcodes + %d", NaClFindInstIndex(next));
+      if (0 == (i % NaClOffsetsPerLine)) {
+        gprintf(f, "\n  /* %02x */ ", i);
       }
-      gprintf(f, "  ,\n");
+      NaClPrintInstOffset(f, next);
+      gprintf(f, ", ");
     }
-    gprintf(f, "},\n");
+    gprintf(f, "\n},\n");
   }
   gprintf(f, "};\n\n");
 }

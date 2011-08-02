@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -14,6 +14,8 @@
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_flag.h"
 #include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_kind.h"
+
+EXTERN_C_BEGIN
 
 /* Defines the state used to match an instruction, while walking
  * instructions using the NaClInstIter.
@@ -111,5 +113,7 @@ void NaClInstStateInstPrint(struct Gio* file, struct NaClInstState* state);
  * for testing purposes.
  */
 char* NaClInstStateInstructionToString(struct NaClInstState* state);
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOP_EXPS_H_ */

@@ -99,15 +99,15 @@ class NcInstStateTests : public ::testing::Test {
   void VerifyConsumeOneByteInstructions();
 
   // The instruction state to test.
-  NaClInstState* _state;
+  struct NaClInstState* _state;
   // The instruction iterator to use.
-  NaClInstIter* _iter;
+  struct NaClInstIter* _iter;
   // The memory segment to test.
-  NaClSegment _segment;
+  struct NaClSegment _segment;
   // The memory buffer in the memory segment.
   uint8_t _buffer[kBufferSize];
   // The instruction pattern to match against.
-  NaClInst _inst_pattern;
+  struct NaClInst _inst_pattern;
   // The index of where the next planted byte should
   // be added to the input buffer.
   size_t _plant_index;

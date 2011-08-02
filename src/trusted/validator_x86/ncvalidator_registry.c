@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
@@ -32,7 +32,7 @@ static void NaClValidatorTrace(NaClValidatorState* state,
     NaClInstStateInstPrint(g, inst_state);
   }
   if (NaClValidatorStateGetTraceInstInternals(state)) {
-    NaClInstPrint(g, NaClInstStateInst(inst_state));
+    NaClInstPrint(g, state->decoder_tables, NaClInstStateInst(inst_state));
     NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
   }
 }

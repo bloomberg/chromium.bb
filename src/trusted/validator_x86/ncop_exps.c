@@ -1,8 +1,10 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
+#include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -10,14 +12,12 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#include "native_client/src/trusted/validator_x86/ncop_exps.h"
-
-#include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_flag_impl.h"
 #include "native_client/src/trusted/validator_x86/gen/ncop_expr_node_kind_impl.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -389,7 +389,7 @@ void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   /* Print out the address and the inst bytes. */
   int length = NaClInstStateLength(state);
 
-  DEBUG(NaClInstPrint(file, NaClInstStateInst(state)));
+  DEBUG(NaClInstPrint(file, state->decoder_tables, NaClInstStateInst(state)));
   DEBUG(NaClExpVectorPrint(file, NaClInstStateExpVector(state)));
   gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
   for (i = 0; i < length; ++i) {

@@ -1572,7 +1572,8 @@ void NaClBuildExpVector(struct NaClInstState* state) {
                 NaClInstStateVpc(state)));
   for (i = 0; i < state->inst->num_operands; i++) {
     NaClExp* n;
-    const NaClOp* op = &state->inst->operands[i];
+    const NaClOp* op = NaClGetInstOperand(state->decoder_tables,
+                                          state->inst, i);
     DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
     n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
     if (op->flags & NACL_OPFLAG(OpImplicit)) {

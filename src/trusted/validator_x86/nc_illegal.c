@@ -435,7 +435,8 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
   DEBUG({
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "->NaClValidateInstructionLegal\n");
-      NaClInstPrint(g, NaClInstStateInst(state->cur_inst_state));
+      NaClInstPrint(g, state->decoder_tables,
+                    NaClInstStateInst(state->cur_inst_state));
       NaClExpVectorPrint(g, state->cur_inst_vector);
     });
   NaClCheckForPrefixIssues(state, &is_legal, &disallows_flags);

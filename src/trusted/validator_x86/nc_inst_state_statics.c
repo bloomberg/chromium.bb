@@ -759,6 +759,22 @@ static void NaClClearInstState(NaClInstState* state, uint8_t inst_length) {
   state->nodes.number_expr_nodes = 0;
 }
 
+/* Get the corresponding instruction for the given offset. */
+static const NaClInst* NaClGetOpcodeInst(const NaClDecodeTables *tables,
+                                         NaClOpcodeArrayOffset offset) {
+  return (NACL_OPCODE_NULL_OFFSET == offset)
+      ? NULL
+      : &tables->opcodes_table[offset];
+}
+
+/* Get the corresponding instruction for the given prefix and opcode. */
+static const NaClInst* NaClGetPrefixOpcodeInst(const NaClDecodeTables *tables,
+                                               NaClInstPrefix prefix,
+                                               uint8_t opcode) {
+  return NaClGetOpcodeInst(tables,
+                           (*tables->inst_table)[prefix][opcode]);
+}
+
 /*
  * Given the opcode prefix descriptor, return the list of candidate opcodes to
  * try and match against the byte stream in the given state. Before returning,
@@ -782,8 +798,9 @@ static const NaClInst* NaClGetNextInstCandidates(
     (*inst_length) += desc->next_length_adjustment;
     desc->opcode_byte = state->bytes.byte[*inst_length - 1];
   }
-  cand_insts = (*state->decoder_tables->
-                inst_table)[desc->matched_prefix][desc->opcode_byte];
+  cand_insts = NaClGetPrefixOpcodeInst(state->decoder_tables,
+                                       desc->matched_prefix,
+                                       desc->opcode_byte);
   DEBUG(NaClLog(LOG_INFO, "Lookup candidates using [%s][%x]\n",
                 NaClInstPrefixName(desc->matched_prefix), desc->opcode_byte));
   switch (desc->matched_prefix) {
@@ -836,8 +853,9 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
       DEBUG(NaClLog(LOG_INFO,
                     "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
       next_length++;
-      if (NULL != next->matching_inst) {
-        matching_inst = next->matching_inst;
+      if (NACL_OPCODE_NULL_OFFSET != next->matching_inst) {
+        matching_inst = NaClGetOpcodeInst(state->decoder_tables,
+                                          next->matching_inst);
         matching_length = next_length;
       }
       if (next_length < state->length_limit) {

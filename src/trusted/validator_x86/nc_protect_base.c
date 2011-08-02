@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
@@ -318,6 +319,7 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
       {
         /* case 2/4 (depending on instruction name). */
         if (NaClIsBinarySetUsingRegisters(
+                state->decoder_tables,
                 inst, inst_name, vector, RegRSP,
                 state->base_register) &&
             NaClInstIterHasLookbackState(iter, 1)) {
@@ -362,8 +364,8 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
       }
       /* Intentionally fall to the next case. */
     default:
-      if (NaClIsMovUsingRegisters(inst, vector,
-                                  RegRSP, RegRBP)) {
+      if (NaClIsMovUsingRegisters(state->decoder_tables,
+                                  inst, vector, RegRSP, RegRBP)) {
         /* case (1) -- see above, matching
          *    mov %rsp, %rbp
          */
@@ -422,6 +424,7 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
         NaClInstState* prev_state =
             NaClInstIterGetLookbackState(iter, 1);
         if (NaClIsBinarySetUsingRegisters(
+                state->decoder_tables,
                 inst, InstAdd, vector,
                 RegRBP, state->base_register) &&
             NaClAssignsRegisterWithZeroExtends(
@@ -441,7 +444,8 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
       }
       break;
     default:
-      if (NaClIsMovUsingRegisters(inst, vector, RegRBP, RegRSP)) {
+      if (NaClIsMovUsingRegisters(inst_state->decoder_tables,
+                                  inst, vector, RegRBP, RegRSP)) {
         /* case 1 */
         return;
       }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* Some useful utilities for validator patterns. */
@@ -13,6 +13,7 @@
 
 struct NaClInstState;
 struct NaClExpVector;
+struct NaClDecodeTables;
 
 /* Special flag set to find set/use of an operand. */
 extern const NaClOpFlags NaClOpSetOrUse;
@@ -45,7 +46,8 @@ Bool NaClIsBinaryUsingRegisters(const NaClInst* inst,
  *   reg_use - The register whose value is used (along with reg_set) to generate
  *             the or value.
  */
-Bool NaClIsBinarySetUsingRegisters(const NaClInst* opcode,
+Bool NaClIsBinarySetUsingRegisters(const struct NaClDecodeTables* tables,
+                                   const NaClInst* opcode,
                                    NaClMnemonic name,
                                    struct NaClExpVector* vector,
                                    NaClOpKind reg_1,
@@ -60,7 +62,8 @@ Bool NaClIsBinarySetUsingRegisters(const NaClInst* opcode,
  *   reg_set - The register set by the move.
  *   reg_use - The register whose value is used to define the set.
  */
-Bool NaClIsMovUsingRegisters(const NaClInst* inst,
+Bool NaClIsMovUsingRegisters(const struct NaClDecodeTables* tables,
+                             const NaClInst* inst,
                              struct NaClExpVector* vector,
                              NaClOpKind reg_set,
                              NaClOpKind reg_use);

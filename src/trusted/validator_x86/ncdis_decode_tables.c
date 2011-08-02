@@ -14,21 +14,12 @@
 #endif
 
 static const NaClDecodeTables kDecoderTables = {
+  g_Operands,
   g_Opcodes + 0,
-  (const nacl_inst_table_type*)(&g_OpcodeTable),
+  g_Opcodes + 0,
+  (const NaclInstTableType*)(&g_OpcodeTable),
   kNaClPrefixTable,
   g_OpcodeSeq
 };
 
 const struct NaClDecodeTables* kNaClDecoderTables = &kDecoderTables;
-
-void NaClChangeOpcodesToXedsModel() {
-  /* Changes opcodes to match xed. That is change:
-   * 0f0f..1c: Pf2iw $Pq, $Qq => 0f0f..2c: Pf2iw $Pq, $Qq
-   * 0f0f..1d: Pf2id $Pq, $Qq => 0f0f..2d: Pf2id $Pq, $Qq
-   */
-  g_OpcodeTable[Prefix0F0F][0x2c] = g_OpcodeTable[Prefix0F0F][0x1c];
-  g_OpcodeTable[Prefix0F0F][0x1c] = NULL;
-  g_OpcodeTable[Prefix0F0F][0x2d] = g_OpcodeTable[Prefix0F0F][0x1d];
-  g_OpcodeTable[Prefix0F0F][0x1d] = NULL;
-}

@@ -17,11 +17,11 @@
  * prefix selector and the corresponding (first) opcode byte.
  */
 typedef NaClModeledInst*
-nacl_inst_table_type[NCDTABLESIZE][NaClInstPrefixEnumSize];
+NaclModeledInstTableType[NCDTABLESIZE][NaClInstPrefixEnumSize];
 
 /* The type for the array of compressed instructions. */
 typedef NaClModeledInst*
-nacl_compressed_table_type[NACL_MAX_INSTRUCTIONS_TOTAL];
+NaclCompressedTableType[NACL_MAX_INSTRUCTIONS_TOTAL];
 
 /* Models the arrays used in table generation, and the corresponding
  * tables used to model the compressed data.
@@ -30,11 +30,11 @@ typedef struct NaClInstTables {
   /* The lookup table of posssible instructions, based on opcode and
    * prefix selector.
    */
-  nacl_inst_table_type* inst_table;
+  NaclModeledInstTableType* inst_table;
   /* The root of the hard coded instructions. */
   NaClModeledInstNode** inst_node_root;
   /* The generated array of compressed instructions. */
-  nacl_compressed_table_type* inst_compressed;
+  NaclCompressedTableType* inst_compressed;
   /* The number of compressed instructions added to inst_compressed. */
   size_t* inst_compressed_size;
   /* The array of modeled set of operands defined for instructions. */

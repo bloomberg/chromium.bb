@@ -1,9 +1,8 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 
@@ -112,7 +111,7 @@ static Bool NaClIsValidMemOffset(
       DEBUG({
           struct Gio* g = NaClLogGetGio();
           NaClLog(LOG_INFO, "prev inst:\n");
-          NaClInstPrint(g, NaClInstStateInst(prev_inst));
+          NaClInstPrint(g, state->decoder_tables, NaClInstStateInst(prev_inst));
           NaClExpVectorPrint(g, NaClInstStateExpVector(prev_inst));
         });
       if (NaClAssignsRegisterWithZeroExtends(
@@ -157,7 +156,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "-> Validating store\n");
       NaClInstStateInstPrint(g, inst_state);
-      NaClInstPrint(g, state->cur_inst);
+      NaClInstPrint(g, state->decoder_tables, state->cur_inst);
       NaClExpVectorPrint(g, vector);
     });
 

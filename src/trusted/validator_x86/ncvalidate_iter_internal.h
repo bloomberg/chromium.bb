@@ -13,6 +13,7 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
+struct NaClDecodeTables;
 struct NaClExpVector;
 
 /* Defines the maximum number of validators that can be registered. */
@@ -42,6 +43,8 @@ typedef struct NaClValidatorDefinition {
 } NaClValidatorDefinition;
 
 struct NaClValidatorState {
+  /* Holds the decoder tables to use. */
+  const struct NaClDecodeTables* decoder_tables;
   /* Holds the vbase value passed to NaClValidatorStateCreate. */
   NaClPcAddress vbase;
   /* Holds the alignment value passed to NaClValidatorStateCreate. */

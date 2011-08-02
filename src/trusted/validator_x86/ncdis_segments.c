@@ -98,7 +98,7 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
         NaClInstStateInstPrint(gout, state);
         if (NACL_FLAGS_internal) {
           NaClInstPrintOpcodeSeq(gout, state);
-          NaClInstPrint(gout, NaClInstStateInst(state));
+          NaClInstPrint(gout, state->decoder_tables, NaClInstStateInst(state));
           NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
         }
       }
