@@ -392,6 +392,82 @@ void RecordDownloadInterrupted(int error, int64 received, int64 total) {
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
+namespace {
+
+enum DownloadContent {
+  DOWNLOAD_CONTENT_UNRECOGNIZED = 0,
+  DOWNLOAD_CONTENT_TEXT = 1,
+  DOWNLOAD_CONTENT_IMAGE = 2,
+  DOWNLOAD_CONTENT_AUDIO = 3,
+  DOWNLOAD_CONTENT_VIDEO = 4,
+  DOWNLOAD_CONTENT_OCTET_STREAM = 5,
+  DOWNLOAD_CONTENT_PDF = 6,
+  DOWNLOAD_CONTENT_DOC = 7,
+  DOWNLOAD_CONTENT_XLS = 8,
+  DOWNLOAD_CONTENT_PPT = 9,
+  DOWNLOAD_CONTENT_ARCHIVE = 10,
+  DOWNLOAD_CONTENT_EXE = 11,
+  DOWNLOAD_CONTENT_DMG = 12,
+  DOWNLOAD_CONTENT_CRX = 13,
+  DOWNLOAD_CONTENT_MAX = 14,
+};
+
+struct MimeTypeToDownloadContent {
+  const char* mime_type;
+  DownloadContent download_content;
+};
+
+static MimeTypeToDownloadContent kMapMimeTypeToDownloadContent[] = {
+  {"application/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
+  {"binary/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
+  {"application/pdf", DOWNLOAD_CONTENT_PDF},
+  {"application/msword", DOWNLOAD_CONTENT_DOC},
+  {"application/vnd.ms-excel", DOWNLOAD_CONTENT_XLS},
+  {"application/vns.ms-powerpoint", DOWNLOAD_CONTENT_PPT},
+  {"application/zip", DOWNLOAD_CONTENT_ARCHIVE},
+  {"application/x-gzip", DOWNLOAD_CONTENT_ARCHIVE},
+  {"application/x-rar-compressed", DOWNLOAD_CONTENT_ARCHIVE},
+  {"application/x-tar", DOWNLOAD_CONTENT_ARCHIVE},
+  {"application/x-bzip", DOWNLOAD_CONTENT_ARCHIVE},
+  {"application/x-exe", DOWNLOAD_CONTENT_EXE},
+  {"application/x-apple-diskimage", DOWNLOAD_CONTENT_DMG},
+  {"application/x-chrome-extension", DOWNLOAD_CONTENT_CRX},
+};
+
+}  // namespace
+
+void RecordDownloadMimeType(const std::string& mime_type_string) {
+  DownloadContent download_content = DOWNLOAD_CONTENT_UNRECOGNIZED;
+
+  // Look up exact matches.
+  for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadContent); ++i) {
+    const MimeTypeToDownloadContent& entry =
+        kMapMimeTypeToDownloadContent[i];
+    if (mime_type_string == entry.mime_type) {
+      download_content = entry.download_content;
+      break;
+    }
+  }
+
+  // Do partial matches.
+  if (download_content == DOWNLOAD_CONTENT_UNRECOGNIZED) {
+    if (StartsWithASCII(mime_type_string, "text/", true)) {
+      download_content = DOWNLOAD_CONTENT_TEXT;
+    } else if (StartsWithASCII(mime_type_string, "image/", true)) {
+      download_content = DOWNLOAD_CONTENT_IMAGE;
+    } else if (StartsWithASCII(mime_type_string, "audio/", true)) {
+      download_content = DOWNLOAD_CONTENT_AUDIO;
+    } else if (StartsWithASCII(mime_type_string, "video/", true)) {
+      download_content = DOWNLOAD_CONTENT_VIDEO;
+    }
+  }
+
+  // Record the value.
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentType",
+                            download_content,
+                            DOWNLOAD_CONTENT_MAX);
+}
+
 // Download progress painting --------------------------------------------------
 
 // Common bitmaps used for download progress animations. We load them once the

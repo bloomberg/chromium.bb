@@ -174,6 +174,9 @@ void RecordDownloadCompleted(const base::TimeTicks& start);
 // Record INTERRUPTED_COUNT, |error|, |received| and |total| bytes.
 void RecordDownloadInterrupted(int error, int64 received, int64 total);
 
+// Records the mime type of the download.
+void RecordDownloadMimeType(const std::string& mime_type);
+
 // Paint the common download animation progress foreground and background,
 // clipping the foreground to 'percent' full. If percent is -1, then we don't
 // know the total size, so we just draw a rotating segment until we're done.

@@ -95,6 +95,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
                                                global_id_.request_id);
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
+  download_util::RecordDownloadMimeType(info->mime_type);
   // TODO(ahendrickson) -- Get the last modified time and etag, so we can
   // resume downloading.
 
