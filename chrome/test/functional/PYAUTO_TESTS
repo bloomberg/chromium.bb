@@ -224,11 +224,13 @@
       # crbug.com/85310
       '-omnibox.OmniboxTest.testAutoCompleteForSearch',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
+      '-omnibox.OmniboxTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
       '-omnibox.OmniboxTest.testGoogleSearch',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSelect',
+      '-omnibox.OmniboxTest.testSuggest',
       '-omnibox.OmniboxTest.testSuggestPref',
       # System password manager obstructs password automation.
       '-passwords',
@@ -411,11 +413,13 @@
       'instant',
       'omnibox.OmniboxTest.testAutoCompleteForSearch',
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
+      'omnibox.OmniboxTest.testCrazyFilenames',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
       'omnibox.OmniboxTest.testGoogleSearch',
       'omnibox.OmniboxTest.testInlinAutoComplete',
       'omnibox.OmniboxTest.testSelect',
+      'omnibox.OmniboxTest.testSuggest',
       'omnibox.OmniboxTest.testSuggestPref',
 
       # ==================================================
