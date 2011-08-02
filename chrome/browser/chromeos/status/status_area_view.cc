@@ -6,12 +6,15 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
+#include "chrome/browser/chromeos/status/memory_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -32,11 +35,17 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
       caps_lock_view_(NULL),
       clock_view_(NULL),
       input_method_view_(NULL),
+      memory_view_(NULL),
       network_view_(NULL),
       power_view_(NULL) {
 }
 
 void StatusAreaView::Init() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget)) {
+    memory_view_ = new MemoryMenuButton(host_);
+    AddChildView(memory_view_);
+  }
+
   caps_lock_view_ = new CapsLockMenuButton(host_);
   caps_lock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
   AddChildView(caps_lock_view_);
@@ -102,6 +111,8 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 }
 
 void StatusAreaView::MakeButtonsActive(bool active) {
+  if (memory_view_)
+    memory_view_->set_active(active);
   clock_view()->set_active(active);
   input_method_view()->set_active(active);
   network_view()->set_active(active);

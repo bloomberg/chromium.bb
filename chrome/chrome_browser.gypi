@@ -710,6 +710,8 @@
         'browser/chromeos/status/input_method_menu.h',
         'browser/chromeos/status/input_method_menu_button.cc',
         'browser/chromeos/status/input_method_menu_button.h',
+        'browser/chromeos/status/memory_menu_button.cc',
+        'browser/chromeos/status/memory_menu_button.h',
         'browser/chromeos/status/network_dropdown_button.cc',
         'browser/chromeos/status/network_dropdown_button.h',
         'browser/chromeos/status/network_menu.cc',
