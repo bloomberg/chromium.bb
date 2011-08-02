@@ -59,8 +59,10 @@ class SubsetterImpl {
  private:
   Font* FindFont(const char* font_name, const FontArray& font_array);
   bool HasName(const char* font_name, Font* font);
-  CALLER_ATTACH Font* Subset(const unsigned int* glyph_ids,
-                             size_t glyph_count);
+  bool ResolveCompositeGlyphs(const unsigned int* glyph_ids,
+                              size_t glyph_count,
+                              IntegerSet* glyph_id_processed);
+  CALLER_ATTACH Font* Subset(const IntegerSet& glyph_ids);
 
   FontFactoryPtr factory_;
   FontPtr font_;
