@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/history_types.h"
@@ -146,6 +147,7 @@ class HistoryDatabase : public DownloadDatabase,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
+
   // Implemented for URLDatabase.
   virtual sql::Connection& GetDB();
 

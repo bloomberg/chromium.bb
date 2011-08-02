@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"
@@ -34,10 +33,7 @@ class StarredURLDatabase : public URLDatabase {
   virtual ~StarredURLDatabase();
 
  protected:
-  // The unit tests poke our innards.
-  friend class HistoryTest;
   friend class StarredURLDatabaseTest;
-  FRIEND_TEST_ALL_PREFIXES(HistoryTest, CreateStarFolder);
 
   // ID (both star_id and folder_id) of the bookmark bar.
   // This entry always exists.
@@ -50,6 +46,9 @@ class StarredURLDatabase : public URLDatabase {
   virtual sql::Connection& GetDB() = 0;
 
  private:
+  // Used when checking integrity of starred table.
+  typedef ui::TreeNodeWithValue<StarredEntry> StarredNode;
+
   // Makes sure the starred table is in a sane state. This does the following:
   // . Makes sure there is a bookmark bar and other nodes. If no bookmark bar
   //   node is found, the table is dropped and recreated.
@@ -117,9 +116,6 @@ class StarredURLDatabase : public URLDatabase {
   // We currently only support one entry per URL. This URL should not already be
   // starred when calling this function or it will fail and will return 0.
   StarID CreateStarredEntry(StarredEntry* entry);
-
-  // Used when checking integrity of starred table.
-  typedef ui::TreeNodeWithValue<history::StarredEntry> StarredNode;
 
   // Returns the max folder id, or 0 if there is an error.
   UIStarID GetMaxFolderID();
