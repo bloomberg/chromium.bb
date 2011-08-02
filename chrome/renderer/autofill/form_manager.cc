@@ -78,14 +78,6 @@ bool IsSelectElement(const WebFormControlElement& element) {
   return element.formControlType() == ASCIIToUTF16("select-one");
 }
 
-bool IsTextContainerElement(const WebElement& element) {
-  return
-      element.hasTagName("p") ||
-      element.hasTagName("b") ||
-      element.hasTagName("span") ||
-      element.hasTagName("font");
-}
-
 bool IsOptionElement(const WebElement& element) {
   return element.hasTagName("option");
 }
@@ -107,6 +99,40 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
   return IsTextInput(input_element) || IsSelectElement(element);
 }
 
+// Appends |suffix| to |prefix| so that any intermediary whitespace is collapsed
+// to a single space.  If |force_whitespace| is true, then the resulting string
+// is guaranteed to have a space between |prefix| and |suffix|.  Otherwise, the
+// result includes a space only if |prefix| has trailing whitespace or |suffix|
+// has leading whitespace.
+// A few examples:
+//  * CombineAndCollapseWhitespace("foo", "bar", false)       -> "foobar"
+//  * CombineAndCollapseWhitespace("foo", "bar", true)        -> "foo bar"
+//  * CombineAndCollapseWhitespace("foo ", "bar", false)      -> "foo bar"
+//  * CombineAndCollapseWhitespace("foo", " bar", false)      -> "foo bar"
+//  * CombineAndCollapseWhitespace("foo", " bar", true)       -> "foo bar"
+//  * CombineAndCollapseWhitespace("foo   ", "   bar", false) -> "foo bar"
+//  * CombineAndCollapseWhitespace(" foo", "bar ", false)     -> " foobar "
+//  * CombineAndCollapseWhitespace(" foo", "bar ", true)      -> " foo bar "
+const string16 CombineAndCollapseWhitespace(const string16& prefix,
+                                            const string16& suffix,
+                                            bool force_whitespace) {
+  string16 prefix_trimmed;
+  TrimPositions prefix_trailing_whitespace =
+      TrimWhitespace(prefix, TRIM_TRAILING, &prefix_trimmed);
+
+  // Recursively compute the children's text.
+  string16 suffix_trimmed;
+  TrimPositions suffix_leading_whitespace =
+      TrimWhitespace(suffix, TRIM_LEADING, &suffix_trimmed);
+
+  if (prefix_trailing_whitespace || suffix_leading_whitespace ||
+      force_whitespace) {
+    return prefix_trimmed + ASCIIToUTF16(" ") + suffix_trimmed;
+  } else {
+    return prefix_trimmed + suffix_trimmed;
+  }
+}
+
 // This is a helper function for the FindChildText() function (see below).
 // Search depth is limited with the |depth| parameter.
 string16 FindChildTextInner(const WebNode& node, int depth) {
@@ -126,39 +152,27 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
     const WebElement element = node.toConst<WebElement>();
     if (IsOptionElement(element) ||
         IsScriptElement(element) ||
-        IsNoScriptElement(element)) {
+        IsNoScriptElement(element) ||
+        (element.isFormControlElement() &&
+         IsAutofillableElement(element.toConst<WebFormControlElement>()))) {
       return string16();
     }
   }
 
   // Extract the text exactly at this node.
   string16 node_text = node.nodeValue();
-  TrimPositions node_trailing_whitespace =
-      TrimWhitespace(node_text, TRIM_TRAILING, &node_text);
 
   // Recursively compute the children's text.
   // Preserve inter-element whitespace separation.
   string16 child_text = FindChildTextInner(node.firstChild(), depth - 1);
-  TrimPositions child_leading_whitespace =
-      TrimWhitespace(child_text, TRIM_LEADING, &child_text);
-  if (node_trailing_whitespace || child_leading_whitespace ||
-      (node.nodeType() == WebNode::TextNode && node_text.empty())) {
-    node_text += ASCIIToUTF16(" ");
-  }
-  node_text += child_text;
-  node_trailing_whitespace =
-      TrimWhitespace(node_text, TRIM_TRAILING, &node_text);
+  bool add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
+  node_text = CombineAndCollapseWhitespace(node_text, child_text, add_space);
 
   // Recursively compute the siblings' text.
   // Again, preserve inter-element whitespace separation.
   string16 sibling_text = FindChildTextInner(node.nextSibling(), depth - 1);
-  TrimPositions sibling_leading_whitespace =
-      TrimWhitespace(sibling_text, TRIM_LEADING, &sibling_text);
-  if (node_trailing_whitespace || sibling_leading_whitespace ||
-      (node.nodeType() == WebNode::TextNode && node_text.empty())) {
-    node_text += ASCIIToUTF16(" ");
-  }
-  node_text += sibling_text;
+  add_space = node.nodeType() == WebNode::TextNode && node_text.empty();
+  node_text = CombineAndCollapseWhitespace(node_text, sibling_text, add_space);
 
   return node_text;
 }
@@ -169,85 +183,79 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
 // used when the structure is not directly known.  However, unlike with
 // |innerText()|, the search depth and breadth are limited to a fixed threshold.
 // Whitespace is trimmed from text accumulated at descendant nodes.
-string16 FindChildText(const WebElement& element) {
-  WebNode child = element.firstChild();
+string16 FindChildText(const WebNode& node) {
+  if (node.isTextNode())
+    return node.nodeValue();
+
+  WebNode child = node.firstChild();
 
   const int kChildSearchDepth = 10;
-  string16 element_text = FindChildTextInner(child, kChildSearchDepth);
-  TrimWhitespace(element_text, TRIM_ALL, &element_text);
-  return element_text;
+  string16 node_text = FindChildTextInner(child, kChildSearchDepth);
+  TrimWhitespace(node_text, TRIM_ALL, &node_text);
+  return node_text;
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
-// a previous sibling of |element|.
+// a previous sibling of |element|,
+// e.g. Some Text <input ...>
+// or   Some <span>Text</span> <input ...>
+// or   <p>Some Text</p><input ...>
+// or   <label>Some Text</label> <input ...>
+// or   Some Text <img><input ...>
+// or   <b>Some Text</b><br/> <input ...>.
 string16 InferLabelFromPrevious(const WebFormControlElement& element) {
   string16 inferred_label;
-  WebNode previous = element.previousSibling();
-  if (previous.isNull())
-    return string16();
-
-  // Check for text immediately before the |element|.
-  if (previous.isTextNode()) {
-    inferred_label = previous.nodeValue();
-    TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-  }
-
-  // If we didn't find text, check for an immediately preceding text container,
-  // e.g. <p>Some Text</p><input ...>
-  // Note the lack of whitespace between <p> and <input> elements.
-  if (inferred_label.empty() && previous.isElementNode()) {
-    WebElement previous_element = previous.to<WebElement>();
-    if (IsTextContainerElement(previous_element))
-      inferred_label = FindChildText(previous_element);
-  }
-
-  // If we didn't find one immediately preceding, check for a text container
-  // separated from this node only by whitespace,
-  // e.g. <p>Some Text</p>   <input ...>
-  // Note the whitespace between <p> and <input> elements.
-  if (inferred_label.empty() && previous.isTextNode()) {
-    WebNode sibling = previous.previousSibling();
-    if (!sibling.isNull() && sibling.isElementNode()) {
-      WebElement previous_element = sibling.to<WebElement>();
-      if (IsTextContainerElement(previous_element))
-        inferred_label = FindChildText(previous_element);
-    }
-  }
-
-  // Look for a text node prior to <img> or <br> tags,
-  // e.g. Some Text<img/><input ...> or Some Text<br/><input ...>
-  while (inferred_label.empty() && !previous.isNull()) {
-    if (previous.isTextNode()) {
-      inferred_label = previous.nodeValue();
-      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-    } else if (previous.isElementNode()) {
-      WebElement previous_element = previous.to<WebElement>();
-      if (IsTextContainerElement(previous_element))
-        inferred_label = FindChildText(previous_element);
-      else if (!HasTagName(previous, "img") && !HasTagName(previous, "br"))
-        break;
-    } else {
-      break;
-    }
-
+  WebNode previous = element;
+  while (true) {
     previous = previous.previousSibling();
-  }
-
-  // Look for a label node prior to the <input> tag,
-  // e.g. <label>Some Text</label><input ...>
-  while (inferred_label.empty() && !previous.isNull()) {
-    if (previous.isTextNode()) {
-      inferred_label = previous.nodeValue();
-      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-    } else if (HasTagName(previous, "label")) {
-      inferred_label = FindChildText(previous.to<WebElement>());
-    } else {
+    if (previous.isNull())
       break;
+
+    // Skip over comments.
+    WebNode::NodeType node_type = previous.nodeType();
+    if (node_type == WebNode::CommentNode)
+      continue;
+
+    // Otherwise, only consider normal HTML elements and their contents.
+    if (node_type != WebNode::TextNode &&
+        node_type != WebNode::ElementNode)
+      break;
+
+    // A label might be split across multiple "lightweight" nodes.
+    // Coalesce any text contained in multiple consecutive
+    //  (a) plain text nodes or
+    //  (b) inline HTML elements that are essentially equivalent to text nodes.
+    if (previous.isTextNode() ||
+        HasTagName(previous, "b") || HasTagName(previous, "strong") ||
+        HasTagName(previous, "span") || HasTagName(previous, "font")) {
+      string16 value = FindChildText(previous);
+      // A text node's value will be empty if it is for a line break.
+      bool add_space = previous.isTextNode() && value.empty();
+      inferred_label =
+          CombineAndCollapseWhitespace(value, inferred_label, add_space);
+      continue;
     }
 
-    previous = previous.previousSibling();
+    // If we have identified a partial label and have reached a non-lightweight
+    // element, consider the label to be complete.
+    string16 trimmed_label;
+    TrimWhitespace(inferred_label, TRIM_ALL, &trimmed_label);
+    if (!trimmed_label.empty())
+      break;
+
+    // <img> and <br> tags often appear between the input element and its
+    // label text, so skip over them.
+    if (HasTagName(previous, "img") || HasTagName(previous, "br"))
+      continue;
+
+    // We only expect <p> and <label> tags to contain the full label text.
+    if (HasTagName(previous, "p") || HasTagName(previous, "label"))
+      inferred_label = FindChildText(previous);
+
+    break;
   }
 
+  TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
   return inferred_label;
 }
 
@@ -262,7 +270,7 @@ string16 InferLabelFromListItem(const WebFormControlElement& element) {
   }
 
   if (!parent.isNull() && HasTagName(parent, "li"))
-    return FindChildText(parent.to<WebElement>());
+    return FindChildText(parent);
 
   return string16();
 }
@@ -289,7 +297,7 @@ string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
   WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, "td") || HasTagName(previous, "th"))
-      inferred_label = FindChildText(previous.to<WebElement>());
+      inferred_label = FindChildText(previous);
 
     previous = previous.previousSibling();
   }
@@ -316,7 +324,7 @@ string16 InferLabelFromTableRow(const WebFormControlElement& element) {
   WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, "tr"))
-      inferred_label = FindChildText(previous.to<WebElement>());
+      inferred_label = FindChildText(previous);
 
     previous = previous.previousSibling();
   }
@@ -330,23 +338,29 @@ string16 InferLabelFromTableRow(const WebFormControlElement& element) {
 // e.g. <div>Some Text</div><div><input ...></div>
 string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   WebNode node = element.parentNode();
-  while (!node.isNull() && node.isElementNode() &&
-         !node.to<WebElement>().hasTagName("div") &&
-         // If the element is in a table, its label most likely is too.
-         !node.to<WebElement>().hasTagName("table")) {
-    node = node.parentNode();
-  }
+  bool looking_for_parent = true;
 
-  if (node.isNull() || !HasTagName(node, "div"))
-    return string16();
-
-  // Search the siblings while we cannot find label.
+  // Search the sibling and parent <div>s until we find a candidate label.
   string16 inferred_label;
   while (inferred_label.empty() && !node.isNull()) {
-    if (HasTagName(node, "div"))
-      inferred_label = FindChildText(node.to<WebElement>());
+    if (HasTagName(node, "div")) {
+      looking_for_parent = false;
+      inferred_label = FindChildText(node);
+    } else if (looking_for_parent &&
+               (HasTagName(node, "table") || HasTagName(node, "fieldset"))) {
+      // If the element is in a table or fieldset, its label most likely is too.
+      break;
+    }
 
-    node = node.previousSibling();
+    if (node.previousSibling().isNull()) {
+      // If there are no more siblings, continue walking up the tree.
+      looking_for_parent = true;
+    }
+
+    if (looking_for_parent)
+      node = node.parentNode();
+    else
+      node = node.previousSibling();
   }
 
   return inferred_label;
@@ -373,7 +387,7 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
   if (previous.isNull() || !HasTagName(previous, "dt"))
     return string16();
 
-  return FindChildText(previous.to<WebElement>());
+  return FindChildText(previous);
 }
 
 // Infers corresponding label for |element| from surrounding context in the DOM,
@@ -645,9 +659,12 @@ string16 FormManager::LabelForElement(const WebFormControlElement& element) {
   WebNodeList labels = element.document().getElementsByTagName("label");
   for (unsigned i = 0; i < labels.length(); ++i) {
     WebLabelElement label = labels.item(i).to<WebLabelElement>();
-    DCHECK(label.hasTagName("label"));
-    if (label.correspondingControl() == element)
+    WebElement corresponding_control = label.correspondingControl();
+    if (corresponding_control == element ||
+        (corresponding_control.isNull() &&
+         label.getAttribute("for") == element.nameForAutofill())) {
       return FindChildText(label);
+    }
   }
 
   // Infer the label from context if not found in label element.
@@ -732,13 +749,21 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     WebLabelElement label = labels.item(i).to<WebLabelElement>();
     WebFormControlElement field_element =
         label.correspondingControl().to<WebFormControlElement>();
-    if (field_element.isNull() ||
-        !field_element.isFormControlElement() ||
-        field_element.formControlType() == WebString::fromUTF8("hidden"))
-      continue;
 
-    std::map<string16, FormField*>::iterator iter =
-        name_map.find(field_element.nameForAutofill());
+    string16 element_name;
+    if (field_element.isNull()) {
+      // Sometimes site authors will incorrectly specify the corresponding
+      // field element's name rather than its id, so we compensate here.
+      element_name = label.getAttribute("for");
+    } else if (
+        !field_element.isFormControlElement() ||
+        field_element.formControlType() == WebString::fromUTF8("hidden")) {
+      continue;
+    } else {
+      element_name = field_element.nameForAutofill();
+    }
+
+    std::map<string16, FormField*>::iterator iter = name_map.find(element_name);
     // Concatenate labels because some sites might have multiple label
     // candidates.
     if (iter != name_map.end())

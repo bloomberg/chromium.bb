@@ -10,6 +10,6 @@ PHONE_HOME_WHOLE_NUMBER | user[phone_first] | Phone Number |
 EMAIL_ADDRESS | user[email] | Email Address | 
 EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address | 
 CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number | 
-CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | MM (TWO DIGIT MONTH) | 
-CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | YYYY (FOUR DIGIT YEAR) | 
-UNKNOWN_TYPE | payment[sigpanel] | What's this? | 
+CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month | 
+CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year | 
+UNKNOWN_TYPE | payment[sigpanel] | CVV2/Panel Code | 

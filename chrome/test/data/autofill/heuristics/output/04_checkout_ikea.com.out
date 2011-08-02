@@ -1,15 +1,15 @@
-NAME_FIRST | firstName |  | 
-NAME_LAST | lastName |  | 
-ADDRESS_HOME_LINE1 | address1 |  | 
-ADDRESS_HOME_LINE2 | address2 |  | 
-ADDRESS_HOME_STATE | state |  | 
-ADDRESS_HOME_ZIP | zipCode |  | 
-ADDRESS_HOME_CITY | city |  | 
-EMAIL_ADDRESS | email1 |  | 
-EMAIL_ADDRESS | email1retype |  | 
-PHONE_HOME_WHOLE_NUMBER | phone1 | Ext: (Optional) | 
+NAME_FIRST | firstName | First Name: | 
+NAME_LAST | lastName | Last Name: | 
+ADDRESS_HOME_LINE1 | address1 | Address 1: | 
+ADDRESS_HOME_LINE2 | address2 | Address 2: (Optional) | 
+ADDRESS_HOME_STATE | state | State: | 
+ADDRESS_HOME_ZIP | zipCode | Zip Code: | 
+ADDRESS_HOME_CITY | city | City: | 
+EMAIL_ADDRESS | email1 | Email: | 
+EMAIL_ADDRESS | email1retype | Re-type Email: | 
+PHONE_HOME_WHOLE_NUMBER | phone1 | Primary Tel Number: | 
 UNKNOWN_TYPE | phone1ext | Ext: (Optional) | 
-PHONE_HOME_WHOLE_NUMBER | phone2 | Ext: (Optional) | 
+PHONE_HOME_WHOLE_NUMBER | phone2 | Alternative Number: | 
 UNKNOWN_TYPE | phone2ext | Ext: (Optional) | 
-PHONE_FAX_WHOLE_NUMBER | fax1 | Ext: (Optional) | 
+PHONE_FAX_WHOLE_NUMBER | fax1 | Fax Number: (Optional) | 
 UNKNOWN_TYPE | fax1ext | Ext: (Optional) | 

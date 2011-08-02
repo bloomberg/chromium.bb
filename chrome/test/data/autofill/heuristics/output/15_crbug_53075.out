@@ -1,24 +1,24 @@
 COMPANY_NAME | ecomms_company_name | Company Name: | 
-UNKNOWN_TYPE | ecomms_title | Title: * | 
-NAME_FIRST | ecomms_first_name | First Name: * | 
-NAME_LAST | ecomms_last_name | Last Name: * | 
-PHONE_HOME_WHOLE_NUMBER | ecomms_telephone | Telephone: * | 
-PHONE_HOME_WHOLE_NUMBER | ecomms_mobile | Mobile: * | 
-EMAIL_ADDRESS | ecomms_email | Email Address: * | x@foo.com
-ADDRESS_HOME_LINE1 | ecomms_address1 | Address1: * | 
+UNKNOWN_TYPE | ecomms_title | Title: | 
+NAME_FIRST | ecomms_first_name | First Name: | 
+NAME_LAST | ecomms_last_name | Last Name: | 
+PHONE_HOME_WHOLE_NUMBER | ecomms_telephone | Telephone: | 
+PHONE_HOME_WHOLE_NUMBER | ecomms_mobile | Mobile: | 
+EMAIL_ADDRESS | ecomms_email | Email Address: | x@foo.com
+ADDRESS_HOME_LINE1 | ecomms_address1 | Address1: | 
 ADDRESS_HOME_LINE2 | ecomms_address2 | Address2: | 
-ADDRESS_HOME_CITY | ecomms_town | Town / City: * | 
-ADDRESS_HOME_STATE | ecomms_county | County: * | 
-ADDRESS_HOME_ZIP | ecomms_postcode | Postcode: * | 
+ADDRESS_HOME_CITY | ecomms_town | Town / City: | 
+ADDRESS_HOME_STATE | ecomms_county | County: | 
+ADDRESS_HOME_ZIP | ecomms_postcode | Postcode: | 
 ADDRESS_HOME_COUNTRY | ecomms_country | Country: | 224
-UNKNOWN_TYPE | del_title | Title: * | 
-NAME_FIRST | del_first_name | First Name: * | 
-NAME_LAST | del_last_name | Last Name: * | 
-PHONE_HOME_WHOLE_NUMBER | del_telephone | Telephone: * | 
-PHONE_HOME_WHOLE_NUMBER | del_mobile | Mobile: * | 
-ADDRESS_HOME_LINE1 | del_address1 | Address1: * | 
+UNKNOWN_TYPE | del_title | Title: | 
+NAME_FIRST | del_first_name | First Name: | 
+NAME_LAST | del_last_name | Last Name: | 
+PHONE_HOME_WHOLE_NUMBER | del_telephone | Telephone: | 
+PHONE_HOME_WHOLE_NUMBER | del_mobile | Mobile: | 
+ADDRESS_HOME_LINE1 | del_address1 | Address1: | 
 ADDRESS_HOME_LINE2 | del_address2 | Address2: | 
-ADDRESS_HOME_CITY | del_town | Town / City: * | 
-ADDRESS_HOME_STATE | del_county | County: * | 
-ADDRESS_HOME_ZIP | del_postcode | Postcode: * | 
+ADDRESS_HOME_CITY | del_town | Town / City: | 
+ADDRESS_HOME_STATE | del_county | County: | 
+ADDRESS_HOME_ZIP | del_postcode | Postcode: | 
 ADDRESS_HOME_COUNTRY | ecomms_del_country | Country: | 224

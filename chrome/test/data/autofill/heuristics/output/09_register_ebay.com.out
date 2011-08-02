@@ -6,7 +6,7 @@ ADDRESS_HOME_CITY | city | City |
 ADDRESS_HOME_STATE | state | State / Province | default
 ADDRESS_HOME_ZIP | zip | ZIP / Postal code | 
 ADDRESS_HOME_COUNTRY | countryId | Country or region | 1
-PHONE_HOME_CITY_CODE | dayphone1 | Primary telephone number - - | 
+PHONE_HOME_CITY_CODE | dayphone1 | Primary telephone number | 
 PHONE_HOME_NUMBER | dayphone2 | - | 
 PHONE_HOME_NUMBER | dayphone3 | - | 
 UNKNOWN_TYPE | dayphone4 | ext.: | 

@@ -17,7 +17,7 @@ PHONE_FAX_NUMBER | addrsForm[0].faxNumber3 | - |
 EMAIL_ADDRESS | addrsForm[0].email | *Email Address: | 
 UNKNOWN_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |  
 CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: | 
-CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: / (mm/yyyy) |  
+CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: |  
 CREDIT_CARD_EXP_4_DIGIT_YEAR | paymentFormInfo.creditCardExpYear | / | -1
 UNKNOWN_TYPE | paymentFormInfo.creditCardCvv | CID | 
 NAME_FIRST | addrsForm[2].firstName | *First Name: | 

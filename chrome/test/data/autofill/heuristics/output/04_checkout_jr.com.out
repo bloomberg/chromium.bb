@@ -1,24 +1,24 @@
 NAME_FIRST | billingAddress.firstName | * | 
 NAME_LAST | billingAddress.lastName | * | 
 ADDRESS_BILLING_LINE1 | billingAddress.address1 | * | 
-ADDRESS_BILLING_LINE2 | billingAddress.address2 |  | 
+ADDRESS_BILLING_LINE2 | billingAddress.address2 | Street address or P.O. box | 
 ADDRESS_BILLING_CITY | billingAddress.city | * | 
 ADDRESS_BILLING_STATE | billingAddress.stateCode | * | XX
 ADDRESS_BILLING_ZIP | billingAddress.postalCode | * | 
-ADDRESS_BILLING_COUNTRY | billingAddress.country | International billing instructions | US
+ADDRESS_BILLING_COUNTRY | billingAddress.country | * | US
 PHONE_HOME_WHOLE_NUMBER | billingAddress.phoneNumber | * | 
 EMAIL_ADDRESS | customer.emailAddress | * | 
 NAME_FIRST | shippingAddress.firstName | * | 
 NAME_LAST | shippingAddress.lastName | * | 
 ADDRESS_HOME_LINE1 | shippingAddress.address1 | * | 
-ADDRESS_HOME_LINE2 | shippingAddress.address2 |  | 
+ADDRESS_HOME_LINE2 | shippingAddress.address2 | Street address or P.O. box | 
 ADDRESS_HOME_CITY | shippingAddress.city | * | 
 ADDRESS_HOME_STATE | shippingAddress.stateCode | * | XX
 ADDRESS_HOME_ZIP | shippingAddress.postalCode | * | 
 ADDRESS_HOME_COUNTRY | shippingAddress.country | * | US
 PHONE_HOME_WHOLE_NUMBER | shippingAddress.phoneNumber | * | 
-UNKNOWN_TYPE | customOrderHeader.internationalBilling |  | 
-UNKNOWN_TYPE | customOrderHeader.salespersonNumber |  | 
-UNKNOWN_TYPE | customOrderHeader.giftFromName |  | 
-UNKNOWN_TYPE | customOrderHeader.giftMessage |  | 
-EMAIL_ADDRESS | customOrderHeader.giftEmailAddress |  | 
+UNKNOWN_TYPE | customOrderHeader.internationalBilling | International Billing | 
+UNKNOWN_TYPE | customOrderHeader.salespersonNumber | Salesperson Number | 
+UNKNOWN_TYPE | customOrderHeader.giftFromName | Gift From | 
+UNKNOWN_TYPE | customOrderHeader.giftMessage | Gift Message | 
+EMAIL_ADDRESS | customOrderHeader.giftEmailAddress | Gift Email | 

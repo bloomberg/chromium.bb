@@ -24,8 +24,8 @@ FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
     return NULL;
 
   scoped_ptr<AddressField> address_field(new AddressField);
-  const AutofillField* initial_field = scanner->Cursor();
-  scanner->SaveCursor();
+  const AutofillField* const initial_field = scanner->Cursor();
+  size_t saved_cursor = scanner->SaveCursor();
 
   string16 attention_ignored =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ATTENTION_IGNORED_RE);
@@ -33,13 +33,17 @@ FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_REGION_IGNORED_RE);
 
   // Allow address fields to appear in any order.
+  size_t begin_trailing_non_labeled_fields = 0;
+  bool has_trailing_non_labeled_fields = false;
   while (!scanner->IsEnd()) {
+    const size_t cursor = scanner->SaveCursor();
     if (ParseAddressLines(scanner, is_ecml, address_field.get()) ||
         ParseCity(scanner, is_ecml, address_field.get()) ||
         ParseState(scanner, is_ecml, address_field.get()) ||
         ParseZipCode(scanner, is_ecml, address_field.get()) ||
         ParseCountry(scanner, is_ecml, address_field.get()) ||
         ParseCompany(scanner, is_ecml, address_field.get())) {
+      has_trailing_non_labeled_fields = false;
       continue;
     } else if (ParseField(scanner, attention_ignored, NULL) ||
                ParseField(scanner, region_ignored, NULL)) {
@@ -56,6 +60,11 @@ FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
       // types after any non-labeled fields, and we want email address fields to
       // have precedence since some pages contain fields labeled
       // "Email address".
+      if (!has_trailing_non_labeled_fields) {
+        has_trailing_non_labeled_fields = true;
+        begin_trailing_non_labeled_fields = cursor;
+      }
+
       continue;
     } else {
       // No field found.
@@ -70,11 +79,15 @@ FormField* AddressField::Parse(AutofillScanner* scanner, bool is_ecml) {
       address_field->city_ != NULL || address_field->state_ != NULL ||
       address_field->zip_ != NULL || address_field->zip4_ ||
       address_field->country_ != NULL) {
+    // Don't slurp non-labeled fields at the end into the address.
+    if (has_trailing_non_labeled_fields)
+      scanner->RewindTo(begin_trailing_non_labeled_fields);
+
     address_field->type_ = address_field->FindType();
     return address_field.release();
   }
 
-  scanner->Rewind();
+  scanner->RewindTo(saved_cursor);
   return NULL;
 }
 

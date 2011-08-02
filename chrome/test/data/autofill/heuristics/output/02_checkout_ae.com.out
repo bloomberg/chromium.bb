@@ -6,14 +6,14 @@ ADDRESS_HOME_COUNTRY | country | Country, APO/FPO | US
 NAME_FIRST | firstName | First Name | 
 NAME_LAST | lastName | Last Name | 
 ADDRESS_HOME_LINE1 | address1 | Address | 
-ADDRESS_HOME_LINE2 | address2 |  | 
+ADDRESS_HOME_LINE2 | address2 | Address | 
 ADDRESS_HOME_CITY | city | City | 
 ADDRESS_HOME_STATE | state | State | 
 ADDRESS_HOME_ZIP | zip | Zip | 
 UNKNOWN_TYPE | ccType | Card Type: | 
 CREDIT_CARD_NUMBER | ccNumber | Card Number: | 
 CREDIT_CARD_EXP_MONTH | expMonth | Expiration: | 1
-CREDIT_CARD_EXP_4_DIGIT_YEAR | expYear |  | 2011
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expYear | Expiration: | 2011
 UNKNOWN_TYPE | ccSecCode | Security Code: CLOSEVisa, Mastercard & Discover:The security code is a 3-digit number found on the back of the card near the signature strip.American Express:The security code is a 4-digit number found on the front right side of the card. | 
 UNKNOWN_TYPE | birthMonthBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
 UNKNOWN_TYPE | birthDayBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
@@ -24,13 +24,13 @@ ADDRESS_HOME_COUNTRY | country | Country, APO/FPO | US
 NAME_FIRST | firstName | First Name | 
 NAME_LAST | lastName | Last Name | 
 ADDRESS_HOME_LINE1 | address1 | Address | 
-ADDRESS_HOME_LINE2 | address2 |  | 
+ADDRESS_HOME_LINE2 | address2 | Address | 
 ADDRESS_HOME_CITY | city | City | 
 ADDRESS_HOME_STATE | state | State | 
 ADDRESS_HOME_ZIP | zip | Zip | 
-EMAIL_ADDRESS | email |  | 
-EMAIL_ADDRESS | confirmEmail |  | 
-PHONE_HOME_WHOLE_NUMBER | billingPhone |  | 
+EMAIL_ADDRESS | email | Email CLOSEWe use this to send you an order confirmation and tracking info once your order ships. | 
+EMAIL_ADDRESS | confirmEmail | Re-Type Email | 
+PHONE_HOME_WHOLE_NUMBER | billingPhone | Billing Phone Number CLOSEThis must match the phone number on your credit card statement. Don't worry... we never share your number with anyone. | 
 UNKNOWN_TYPE | accessPassNumber | My AEREWARD$ # CLOSEAEREWARD$ NumberEnter the number found on the back of your AEREWARD$ card to earn rewards for your purchase.Learn More about AEREWARD$ | 
 UNKNOWN_TYPE | birthMonthBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
 UNKNOWN_TYPE | birthDayBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 

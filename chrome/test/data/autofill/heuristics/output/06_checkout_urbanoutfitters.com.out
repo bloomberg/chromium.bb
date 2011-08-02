@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | shipto | Select a Saved Shipping Addressenter a new shipping address | 
+UNKNOWN_TYPE | shipto | Select a Saved Shipping Address | 
 NAME_FIRST | shippingFirstName |  | First Name
 NAME_LAST | shippingLastName |  | Last Name
 ADDRESS_HOME_LINE1 | shippingAddress |  | Street Address
@@ -19,7 +19,7 @@ ADDRESS_BILLING_ZIP | billingPostalCode |  | Postal Code
 ADDRESS_BILLING_COUNTRY | billingCountries |  | 
 PHONE_HOME_WHOLE_NUMBER | billingPhone |  | Phone
 PHONE_HOME_WHOLE_NUMBER | altBillingPhone |  | Alternate Phone (optional)
-UNKNOWN_TYPE | savedCreditCard | enter a new credit card | 
+UNKNOWN_TYPE | savedCreditCard |  | 
 UNKNOWN_TYPE | payment_cardtype |  | 
 CREDIT_CARD_NUMBER | payment_acctnum |  | Card Number (no spaces or dashes)
 CREDIT_CARD_EXP_MONTH | expmonth |  | 

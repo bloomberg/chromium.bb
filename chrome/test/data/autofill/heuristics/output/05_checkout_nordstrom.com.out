@@ -5,7 +5,7 @@ NAME_FIRST | ctl00$mainContentPlaceHolder$billingAddressForm$firstName | First N
 NAME_MIDDLE_INITIAL | ctl00$mainContentPlaceHolder$billingAddressForm$middleInitial | M.I. | 
 NAME_LAST | ctl00$mainContentPlaceHolder$billingAddressForm$lastName | Last Name | 
 ADDRESS_BILLING_LINE1 | ctl00$mainContentPlaceHolder$billingAddressForm$address1 | Address | 
-ADDRESS_BILLING_LINE2 | ctl00$mainContentPlaceHolder$billingAddressForm$address2 | Address The Billing Address field is a required field. The Address field contains invalid characters. | 
+ADDRESS_BILLING_LINE2 | ctl00$mainContentPlaceHolder$billingAddressForm$address2 | Address | 
 ADDRESS_BILLING_CITY | ctl00$mainContentPlaceHolder$billingAddressForm$city | City | 
 ADDRESS_BILLING_STATE | ctl00$mainContentPlaceHolder$billingAddressForm$stateProvince | State/Province | -1
 ADDRESS_BILLING_ZIP | ctl00$mainContentPlaceHolder$billingAddressForm$zipCode | Zip/Postal Code | 
@@ -14,7 +14,7 @@ NAME_FIRST | ctl00$mainContentPlaceHolder$shippingAddressForm$firstName | First 
 NAME_MIDDLE_INITIAL | ctl00$mainContentPlaceHolder$shippingAddressForm$middleInitial | M.I. | 
 NAME_LAST | ctl00$mainContentPlaceHolder$shippingAddressForm$lastName | Last Name | 
 ADDRESS_HOME_LINE1 | ctl00$mainContentPlaceHolder$shippingAddressForm$address1 | Address | 
-ADDRESS_HOME_LINE2 | ctl00$mainContentPlaceHolder$shippingAddressForm$address2 | Address The Shipping Address field is a required field. The Address field contains invalid characters. | 
+ADDRESS_HOME_LINE2 | ctl00$mainContentPlaceHolder$shippingAddressForm$address2 | Address | 
 ADDRESS_HOME_CITY | ctl00$mainContentPlaceHolder$shippingAddressForm$city | City | 
 ADDRESS_HOME_STATE | ctl00$mainContentPlaceHolder$shippingAddressForm$stateProvince | State/Province | -1
 ADDRESS_HOME_ZIP | ctl00$mainContentPlaceHolder$shippingAddressForm$zipCode | Zip/Postal Code | 

@@ -70,10 +70,10 @@
         name
       </message>
       <message name="IDS_AUTOFILL_CARD_NUMBER_RE">
-        number|card.?#|card.?no|ccnum|acctnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號<!-- ko-KR -->|카드
+        card.?number|card.?#|card.?no|ccnum|acctnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號<!-- ko-KR -->|카드
       </message>
       <message name="IDS_AUTOFILL_CARD_CVC_RE">
-        verification|card identification|security code|cvn|cvv|cvc
+        verification|card identification|security code|cvn|cvv|cvc|csc
       </message>
       <message name="IDS_AUTOFILL_EXPIRATION_MONTH_RE">
         expir|exp.*mo|exp.*date|ccmonth<!-- de-DE -->|gueltig|gültig|monat<!-- es -->|fecha<!-- fr-FR -->|date.*exp<!-- it-IT -->|scadenza<!-- ja-JP -->|有効期限<!-- pt-BR, pt-PT -->|validade<!-- ru -->|Срок действия карты<!-- zh-CN -->|月

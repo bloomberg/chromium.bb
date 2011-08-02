@@ -1,0 +1,32 @@
+NAME_FIRST | dnrfirst | Name * | 
+NAME_LAST | dnrlast | Name * | 
+COMPANY_NAME | company | Company | 
+ADDRESS_HOME_LINE1 | dadd1 | Address 1 * | 
+ADDRESS_HOME_LINE2 | dadd2 | Address 2 | 
+ADDRESS_HOME_CITY | dcity | City / State / Zip * | 
+ADDRESS_HOME_STATE | dstate | Name * | AL
+ADDRESS_HOME_ZIP | dzip | Name * | 
+ADDRESS_HOME_COUNTRY | CC_COUNTRY | Country | United States
+PHONE_HOME_WHOLE_NUMBER | dphone | Telephone | 
+EMAIL_ADDRESS | demail | Email * | 
+UNKNOWN_TYPE | amt | $ | 
+UNKNOWN_TYPE | ccrecurring | I would like to make this a recurring donation deducted | Monthly
+UNKNOWN_TYPE | remLen | ( You may enter up to 500 characters. ) | 500
+NAME_FULL | Tribute_Name | Name: | 
+UNKNOWN_TYPE | Tribute_occasion | Occasion: | 
+NAME_FULL | Tribute_NotifyName | Name: | 
+EMAIL_ADDRESS | Tribute_Email | Email: | 
+ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: | 
+ADDRESS_HOME_CITY | Tribute_NotifyCity | City / St. / Zip: | 
+ADDRESS_HOME_STATE | Tribute_NotifyState | City / St. / Zip: | 
+ADDRESS_HOME_ZIP | Tribute_NotifyZip | City / St. / Zip: | 
+UNKNOWN_TYPE | cctype | Credit Card Type * | Visa
+CREDIT_CARD_NUMBER | ccard | Credit Card Number * | 
+UNKNOWN_TYPE | csc | CSC Number * What Is This? | 
+CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1
+CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11
+ADDRESS_HOME_LINE1 | CC_Addr | Address 1 * | 
+ADDRESS_HOME_LINE2 | CC_Addr2 | Address 2 | 
+ADDRESS_HOME_CITY | CC_City | City / State / Zip * | 
+ADDRESS_HOME_STATE | CC_State | Credit Card Information | 
+ADDRESS_HOME_ZIP | CC_Zip | Credit Card Information | 
