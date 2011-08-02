@@ -12,9 +12,13 @@
 #include <stdint.h>
 #include <SDL/SDL_keysym.h>
 #include <SDL/SDL_events.h>
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/ppapi_proxy/input_event_data.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/ppapi/c/pp_input_event.h"
-
+#include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
+#include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 static PP_InputEvent_MouseButton SDLButtonToPPButton(uint32_t button) {
   switch (button) {
@@ -128,40 +132,54 @@ static uint32_t SDLKeyToPPKey(uint32_t key) {
   }
 }
 
-// Convert the SDL event, sdl_event, into the PPAPI event, pp_event.
-// Returns false if the event is not supported or cannot be processed.
-bool ConvertSDLEventToPPAPI(
-  const SDL_Event& sdl_event, PP_InputEvent* pp_event) {
+static UserEvent* MakeUserInputEvent(ppapi_proxy::InputEventData* nacl_event) {
+  return  MakeUserEvent(EVENT_TYPE_INPUT, 0, 0, nacl_event, sizeof *nacl_event);
+}
+
+// Convert the SDL event into an InputEventData event which is then
+// wrapped into a UserEvent.
+// NOTE: we try to keep the knowledge of the  InputEventData type
+//       restricted to this file
+UserEvent* MakeInputEventFromSDLEvent(const SDL_Event& sdl_event) {
+  ppapi_proxy::InputEventData* nacl_event;
   switch (sdl_event.type) {
     case SDL_KEYDOWN:
-      pp_event->type = PP_INPUTEVENT_TYPE_KEYDOWN;
-      pp_event->u.key.key_code = SDLKeyToPPKey(sdl_event.key.keysym.sym);
-     return true;
+     nacl_event = new ppapi_proxy::InputEventData;
+     nacl_event->event_type = PP_INPUTEVENT_TYPE_KEYDOWN;
+     nacl_event->key_code = SDLKeyToPPKey(sdl_event.key.keysym.sym);
+      // TODO(robertm): modifiers
+     return MakeUserInputEvent(nacl_event);
 
     case SDL_KEYUP:
-      pp_event->type = PP_INPUTEVENT_TYPE_KEYUP;
-      pp_event->u.key.key_code = SDLKeyToPPKey(sdl_event.key.keysym.sym);
-     return true;
+      nacl_event = new ppapi_proxy::InputEventData;
+      nacl_event->event_type = PP_INPUTEVENT_TYPE_KEYUP;
+      nacl_event->key_code = SDLKeyToPPKey(sdl_event.key.keysym.sym);
+      // TODO(robertm): modifiers
+      return MakeUserInputEvent(nacl_event);
 
     case SDL_MOUSEMOTION:
-      pp_event->type = PP_INPUTEVENT_TYPE_MOUSEMOVE;
-      pp_event->u.mouse.x = sdl_event.motion.x;
-      pp_event->u.mouse.y = sdl_event.motion.y;
-      return true;
+      nacl_event = new ppapi_proxy::InputEventData;
+      nacl_event->event_type = PP_INPUTEVENT_TYPE_MOUSEMOVE;
+      nacl_event->mouse_position.x = sdl_event.motion.x;
+      nacl_event->mouse_position.y = sdl_event.motion.y;
+      return MakeUserInputEvent(nacl_event);
 
     case SDL_MOUSEBUTTONDOWN:
-      pp_event->type = PP_INPUTEVENT_TYPE_MOUSEDOWN;
-      pp_event->u.mouse.button = SDLButtonToPPButton(sdl_event.button.button);
-      return true;
+      nacl_event = new ppapi_proxy::InputEventData;
+      nacl_event->event_type = PP_INPUTEVENT_TYPE_MOUSEDOWN;
+      nacl_event->mouse_button = SDLButtonToPPButton(sdl_event.button.button);
+      // TODO(robertm): click count
+      return MakeUserInputEvent(nacl_event);
 
     case SDL_MOUSEBUTTONUP:
-      pp_event->type = PP_INPUTEVENT_TYPE_MOUSEUP;
-      pp_event->u.mouse.button = SDLButtonToPPButton(sdl_event.button.button);
-      return true;
+      nacl_event = new ppapi_proxy::InputEventData;
+      nacl_event->event_type = PP_INPUTEVENT_TYPE_MOUSEUP;
+      nacl_event->mouse_button = SDLButtonToPPButton(sdl_event.button.button);
+      // TODO(robertm): click count ?
+      return MakeUserInputEvent(nacl_event);
 
     case SDL_QUIT:
-      MakeTerminationEvent(pp_event);
-      return true;
+      return MakeTerminationEvent();
     case SDL_ACTIVEEVENT:
     case SDL_SYSWMEVENT:
     case SDL_VIDEORESIZE:
@@ -174,6 +192,44 @@ bool ConvertSDLEventToPPAPI(
     case SDL_JOYBUTTONUP:
 
     default:
-      return false;
+      return 0;
   }
+}
+
+
+// NOTE: UserEvent is really a InputEventData when this is invoked
+void InvokeInputEventCallback(NaClCommandLoop* ncl,
+                              UserEvent* event,
+                              int instance,
+                              int event_resource) {
+  ppapi_proxy::InputEventData* nacl_event =
+    reinterpret_cast<ppapi_proxy::InputEventData*>(event->pointer);
+  NaClLog(1, "Got input event of pp type %d\n", nacl_event->event_type);
+  NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
+  NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
+  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
+  BuildArgVec(ins, in, 4);
+  BuildArgVec(outs, out, 1);
+
+  ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[0]->u.ival = instance;
+
+  ins[1]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ins[1]->u.ival = event_resource;
+
+  ins[2]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+  ins[2]->u.count = sizeof(*nacl_event);
+  ins[2]->arrays.carr = reinterpret_cast<char*>(nacl_event);
+
+  // for now we do not deliver any character_text
+  PP_Var character_text = PP_MakeUndefined();
+  ins[3]->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+  ins[3]->u.count = sizeof(character_text);
+  ins[3]->arrays.carr = reinterpret_cast<char*>(&character_text);
+
+  outs[0]->tag = NACL_SRPC_ARG_TYPE_INT;
+  ncl->InvokeNexeRpc("PPP_InputEvent_HandleInputEvent:iiCC:i", ins, outs);
+  // Allocated in MakeInputEventFromSDLEvent() above
+  delete nacl_event;
 }

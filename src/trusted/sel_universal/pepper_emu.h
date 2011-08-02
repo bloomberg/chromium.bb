@@ -21,5 +21,7 @@ void PepperEmuInit3D(NaClCommandLoop* ncl, IMultimedia* im);
 void InvokeAudioStreamCreatedCallback(NaClCommandLoop* ncl,
                                       const UserEvent* event);
 void InvokeInputEventCallback(NaClCommandLoop* ncl,
-                              UserEvent* event);
+                              UserEvent* event,
+                              int instance,
+                              int event_resource);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PEPPER_HANDLER_H_ */

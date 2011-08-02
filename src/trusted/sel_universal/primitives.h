@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 
+#include <string>
 enum EVENT_TYPE {
   EVENT_TYPE_INVALID,
   EVENT_TYPE_OPEN_CALLBACK,
@@ -41,7 +42,9 @@ UserEvent* MakeUserEvent(EVENT_TYPE type,
                          int size);
 UserEvent* MakeInvalidEvent();
 UserEvent* MakeTerminationEvent();
-
+// for debugging
+std::string StringifyEvent(const UserEvent* event);
+std::string StringifyEventType(const UserEvent* event);
 
 typedef void (*AUDIO_CALLBACK)(void* data, unsigned char* buffer, int length);
 

@@ -28,6 +28,7 @@ IMultimedia* GlobalMultiMediaInterface = 0;
 //       They undoubtedly need to be updated when ppapi changes.
 //       We do not use defines like PPB_CORE_INTERFACE because
 //       the implementation/emulation needs to be updated as well.
+// TODO(robertm): use  hash set
 bool IsSupportedInterface(string if_name) {
   return
     if_name == "PPB_Audio;1.0" ||
@@ -36,15 +37,19 @@ bool IsSupportedInterface(string if_name) {
     if_name == "PPB_FileIO;1.0" ||
     if_name == "PPB_Graphics2D;1.0" ||
     if_name == "PPB_ImageData;1.0" ||
+    if_name == "PPB_InputEvent;1.0" ||
     if_name == "PPB_Instance;1.0" ||
+    if_name == "PPB_KeyboardInputEvent;1.0" ||
     if_name == "PPB_Messaging;1.0" ||
+    if_name == "PPB_MouseInputEvent;1.0" ||
     if_name == "PPB_OpenGLES(Dev);2.0" ||
     if_name == "PPB_Context3D(Dev);0.1" ||
     if_name == "PPB_Surface3D(Dev);0.2" ||
     if_name == "PPB_URLLoader;1.0" ||
     if_name == "PPB_URLRequestInfo;1.0" ||
     if_name == "PPB_URLResponseInfo;1.0" ||
-    if_name == "PPB_Var;1.0";
+    if_name == "PPB_Var;1.0" ||
+    if_name == "PPB_WheelInputEvent;1.0";
 }
 
 // void* PPB_GetInterface(const char* interface_name);
@@ -115,6 +120,16 @@ void ReleaseResourceMultipleTimes(SRPC_PARAMS) {
   done->Run(done);
 }
 
+// We ignore this for now
+// PPB_InputEvent_RequestInputEvents:iii:i
+void PPB_InputEvent_RequestInputEvents(SRPC_PARAMS) {
+  NaClLog(1, "PPB_InputEvent_RequestInputEvents(%d, %d, %d)\n",
+          ins[0]->u.ival, ins[1]->u.ival, ins[2]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+  outs[0]->u.ival = 0;
+}
+
 }  // end namespace
 
 
@@ -123,11 +138,15 @@ void PepperEmuInitCore(NaClCommandLoop* ncl, IMultimedia* im) {
   GlobalMultiMediaInterface = im;
   // Register Core and misc interfaces
   ncl->AddUpcallRpc(TUPLE(PPB_Core_ReleaseResource, :i:));
-  ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
-  ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Core_CallOnMainThread, :iii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Core_AddRefResource, :i:));
-  // This is the only rpc for now that can be called from
+
+  // Misc functions that should into other files eventually:
+  ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
+  ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
+  ncl->AddUpcallRpc(TUPLE(PPB_InputEvent_RequestInputEvents, :iii:i));
+
+// This is the only rpc for now that can be called from
   // a nexe thread other than main
   // c.f. src/shared/ppapi_proxy/upcall_server.cc
   ncl->AddUpcallRpcSecondary(TUPLE(PPB_Core_CallOnMainThread, :iii:));
