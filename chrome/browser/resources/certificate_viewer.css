@@ -8,7 +8,9 @@ body {
 }
 
 .title {
+  display: inline-block;
   font-weight: bold;
+  padding-bottom: 2px;
   padding-top: 5px;
 }
 
