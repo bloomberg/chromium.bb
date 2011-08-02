@@ -6,6 +6,8 @@
 
 .handlers-column-headers {
   display: -webkit-box;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .handlers-type-column {
@@ -15,7 +17,6 @@
 }
 
 .handlers-site-column {
-  color: #555;
   max-width: 180px;
 }
 
