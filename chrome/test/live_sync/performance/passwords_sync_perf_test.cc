@@ -16,8 +16,7 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-class PasswordsSyncPerfTest
-    : public TwoClientLivePasswordsSyncTest {
+class PasswordsSyncPerfTest : public TwoClientLivePasswordsSyncTest {
  public:
   PasswordsSyncPerfTest() : password_number_(0) {}
 
@@ -81,48 +80,26 @@ std::string PasswordsSyncPerfTest::NextPassword() {
   return base::StringPrintf("password%d", password_number_++);
 }
 
-// TCM ID - 7567749.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  // TCM ID - 7367749.
   AddLogins(0, kNumPasswords);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
-
+  ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
   SyncTimingHelper::PrintResult("passwords", "add", dt);
-}
 
-// TCM ID - 7365093.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Update) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddLogins(0, kNumPasswords);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7365093.
   UpdateLogins(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
   SyncTimingHelper::PrintResult("passwords", "update", dt);
-}
 
-// TCM ID - 7557852.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddLogins(0, kNumPasswords);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7557852
   RemoveLogins(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0, GetPasswordCount(0));
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(0, GetPasswordCount(1));
   SyncTimingHelper::PrintResult("passwords", "delete", dt);
 }
 

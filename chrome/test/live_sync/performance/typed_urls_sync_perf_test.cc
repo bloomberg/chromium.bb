@@ -9,14 +9,13 @@
 
 // TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
 // datatypes into a performance test base class, once it is possible to do so.
-static const size_t kNumUrls = 150;
+static const int kNumUrls = 150;
 static const size_t kNumBenchmarkPoints = 18;
 static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                           150, 175, 200, 225, 250, 300, 350,
                                           400, 500};
 
-class TypedUrlsSyncPerfTest
-    : public TwoClientLiveTypedUrlsSyncTest {
+class TypedUrlsSyncPerfTest: public TwoClientLiveTypedUrlsSyncTest {
  public:
   TypedUrlsSyncPerfTest() : url_number(0) {}
 
@@ -28,6 +27,9 @@ class TypedUrlsSyncPerfTest
 
   // Removes all typed urls for |profile|.
   void RemoveURLs(int profile);
+
+  // Returns the number of typed urls stored in |profile|.
+  int GetURLCount(int profile);
 
   // Remvoes all typed urls for all profiles.  Called between benchmark
   // iterations.
@@ -66,6 +68,10 @@ void TypedUrlsSyncPerfTest::RemoveURLs(int profile) {
   }
 }
 
+int TypedUrlsSyncPerfTest::GetURLCount(int profile) {
+  return GetTypedUrlsFromClient(profile).size();
+}
+
 void TypedUrlsSyncPerfTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveURLs(i);
@@ -83,48 +89,26 @@ GURL TypedUrlsSyncPerfTest::IntToURL(int n) {
   return GURL(StringPrintf("http://history%d.google.com/", n));
 }
 
-// TCM ID - 7985716.
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  // TCM ID - 7985716.
   AddURLs(0, kNumUrls);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
-  AssertAllProfilesHaveSameURLsAsVerifier();
-
+  ASSERT_EQ(kNumUrls, GetURLCount(1));
   SyncTimingHelper::PrintResult("typed_urls", "add", dt);
-}
 
-// TCM ID - 7981755.
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Update) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddURLs(0, kNumUrls);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7981755.
   UpdateURLs(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
-  AssertAllProfilesHaveSameURLsAsVerifier();
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(kNumUrls, GetURLCount(1));
   SyncTimingHelper::PrintResult("typed_urls", "update", dt);
-}
 
-// TCM ID - 7651271
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddURLs(0, kNumUrls);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7651271.
   RemoveURLs(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
-  AssertAllProfilesHaveSameURLsAsVerifier();
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(0, GetURLCount(1));
   SyncTimingHelper::PrintResult("typed_urls", "delete", dt);
 }
 

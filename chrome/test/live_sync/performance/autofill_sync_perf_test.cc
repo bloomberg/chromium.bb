@@ -16,8 +16,7 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-class AutofillSyncPerfTest
-    : public TwoClientLiveAutofillSyncTest {
+class AutofillSyncPerfTest : public TwoClientLiveAutofillSyncTest {
  public:
   AutofillSyncPerfTest() : guid_number_(0), name_number_(0) {}
 
@@ -115,48 +114,26 @@ const std::string AutofillSyncPerfTest::IntToName(int n) {
   return StringPrintf("Name%d" , n);
 }
 
-// TCM ID - 7557873.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
+  // TCM ID - 7557873.
   AddProfiles(0, kNumProfiles);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumProfiles, GetProfileCount(0));
-  ASSERT_TRUE(AllProfilesMatch());
-
+  ASSERT_EQ(kNumProfiles, GetProfileCount(1));
   SyncTimingHelper::PrintResult("autofill", "add", dt);
-}
 
-// TCM ID - 7549835.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Update) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddProfiles(0, kNumProfiles);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7549835.
   UpdateProfiles(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumProfiles, GetProfileCount(0));
-  ASSERT_TRUE(AllProfilesMatch());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(kNumProfiles, GetProfileCount(1));
   SyncTimingHelper::PrintResult("autofill", "update", dt);
-}
 
-// TCM ID - 7553678.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddProfiles(0, kNumProfiles);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7553678.
   RemoveProfiles(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0, GetProfileCount(0));
-  ASSERT_TRUE(AllProfilesMatch());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(0, GetProfileCount(1));
   SyncTimingHelper::PrintResult("autofill", "delete", dt);
 }
 

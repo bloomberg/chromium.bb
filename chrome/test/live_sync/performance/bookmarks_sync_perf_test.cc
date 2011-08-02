@@ -31,6 +31,9 @@ class BookmarksSyncPerfTest : public LiveSyncTest {
   // Removes all bookmarks in the bookmark bar for |profile|.
   void RemoveURLs(int profile);
 
+  // Returns the number of bookmarks stored in the bookmark bar for |profile|.
+  int GetURLCount(int profile);
+
   // Remvoes all bookmarks in the bookmark bars for all profiles.  Called
   // between benchmark iterations.
   void Cleanup();
@@ -71,6 +74,10 @@ void BookmarksSyncPerfTest::RemoveURLs(int profile) {
   }
 }
 
+int BookmarksSyncPerfTest::GetURLCount(int profile) {
+  return BookmarksHelper::GetBookmarkBarNode(profile)->child_count();
+}
+
 void BookmarksSyncPerfTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveURLs(i);
@@ -88,53 +95,26 @@ std::wstring BookmarksSyncPerfTest::NextIndexedURLTitle() {
   return BookmarksHelper::IndexedURLTitle(url_title_number++);
 }
 
-// TCM ID - 7556828.
-IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  DisableVerifier();
 
+  // TCM ID - 7556828.
   AddURLs(0, kNumBookmarks);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumBookmarks,
-            BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
-
+  ASSERT_EQ(kNumBookmarks, GetURLCount(1));
   SyncTimingHelper::PrintResult("bookmarks", "add", dt);
-}
 
-// TCM ID - 7564762.
-IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Update) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  DisableVerifier();
-
-  AddURLs(0, kNumBookmarks);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7564762.
   UpdateURLs(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(kNumBookmarks,
-            BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(kNumBookmarks, GetURLCount(1));
   SyncTimingHelper::PrintResult("bookmarks", "update", dt);
-}
 
-// TCM ID - 7566626.
-IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  DisableVerifier();
-
-  AddURLs(0, kNumBookmarks);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
+  // TCM ID - 7566626.
   RemoveURLs(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_EQ(0, BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(0, GetURLCount(1));
   SyncTimingHelper::PrintResult("bookmarks", "delete", dt);
 }
 

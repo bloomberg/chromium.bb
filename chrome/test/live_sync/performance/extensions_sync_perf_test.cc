@@ -17,8 +17,7 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-class ExtensionsSyncPerfTest
-    : public TwoClientLiveExtensionsSyncTest {
+class ExtensionsSyncPerfTest : public TwoClientLiveExtensionsSyncTest {
  public:
   ExtensionsSyncPerfTest() : extension_number_(0) {}
 
@@ -30,6 +29,9 @@ class ExtensionsSyncPerfTest
 
   // Uninstalls all currently installed extensions from |profile|.
   void RemoveExtensions(int profile);
+
+  // Returns the number of currently installed extensions for |profile|.
+  int GetExtensionCount(int profile);
 
   // Uninstalls all extensions from all profiles.  Called between benchmark
   // iterations.
@@ -59,6 +61,10 @@ void ExtensionsSyncPerfTest::UpdateExtensions(int profile) {
   }
 }
 
+int ExtensionsSyncPerfTest::GetExtensionCount(int profile) {
+  return GetInstalledExtensions(GetProfile(profile)).size();
+}
+
 void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
   for (std::vector<int>::iterator it = extensions.begin();
@@ -75,48 +81,29 @@ void ExtensionsSyncPerfTest::Cleanup() {
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 }
 
-// TCM ID - 7563874.
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  int num_default_extensions = GetExtensionCount(0);
+  int expected_extension_count = num_default_extensions + kNumExtensions;
 
+  // TCM ID - 7563874.
   AddExtensions(0, kNumExtensions);
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   InstallExtensionsPendingForSync(GetProfile(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensions());
-
+  ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
   SyncTimingHelper::PrintResult("extensions", "add", dt);
-}
 
-// TCM ID - 7655397.
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Update) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddExtensions(0, kNumExtensions);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  InstallExtensionsPendingForSync(GetProfile(1));
-
+  // TCM ID - 7655397.
   UpdateExtensions(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensions());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
   SyncTimingHelper::PrintResult("extensions", "update", dt);
-}
 
-// TCM ID - 7567721.
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  AddExtensions(0, kNumExtensions);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  InstallExtensionsPendingForSync(GetProfile(1));
-
+  // TCM ID - 7567721.
   RemoveExtensions(0);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-  ASSERT_TRUE(AllProfilesHaveSameExtensions());
-
+  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  ASSERT_EQ(num_default_extensions, GetExtensionCount(1));
   SyncTimingHelper::PrintResult("extensions", "delete", dt);
 }
 
