@@ -1,4 +1,4 @@
-commit 070963bde0a9c474733f19fbd525ff14e3f15803
+commit b84efe75d31ad7e16bf8e97845d264a0f5994a3f
 Author: Adam Langley <agl@chromium.org>
 Date:   Fri Jun 24 13:10:38 2011 -0400
 
@@ -153,7 +153,7 @@ index 563cfd5..e7d6c54 100644
  ** certificate for the server and the servers private key. The arguments
  ** are copied.
 diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index 0997e18..f7064ef 100644
+index 0997e18..068f021 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3con.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3con.c
 @@ -5170,7 +5170,6 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
@@ -406,6 +406,15 @@ index 0997e18..f7064ef 100644
  		ssl_SetAlwaysBlock(ss);
  		goto cert_block;
  	    }
+@@ -8134,7 +8232,7 @@ ssl3_HandleCertificate(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     }
+ 
+     ss->sec.ci.sid->peerCert = CERT_DupCertificate(ss->sec.peerCert);
+-    ssl3_CopyPeerCertsToSID(certs, ss->sec.ci.sid);
++    ssl3_CopyPeerCertsToSID(ss->ssl3.peerCertChain, ss->sec.ci.sid);
+ 
+     if (!ss->sec.isServer) {
+ 	/* set the server authentication and key exchange types and sizes
 @@ -8179,8 +8277,6 @@ ssl3_HandleCertificate(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      	}
      }
