@@ -978,7 +978,9 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
 void TabContents::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
-    const std::string& security_info) {
+    const std::string& security_info,
+    const std::string& http_method,
+    ResourceType::Type resource_type) {
   base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
 

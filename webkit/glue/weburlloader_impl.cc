@@ -109,42 +109,6 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   bool has_accept_header_;
 };
 
-ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
-  switch (type) {
-    case WebURLRequest::TargetIsMainFrame:
-      return ResourceType::MAIN_FRAME;
-    case WebURLRequest::TargetIsSubframe:
-      return ResourceType::SUB_FRAME;
-    case WebURLRequest::TargetIsSubresource:
-      return ResourceType::SUB_RESOURCE;
-    case WebURLRequest::TargetIsStyleSheet:
-      return ResourceType::STYLESHEET;
-    case WebURLRequest::TargetIsScript:
-      return ResourceType::SCRIPT;
-    case WebURLRequest::TargetIsFontResource:
-      return ResourceType::FONT_RESOURCE;
-    case WebURLRequest::TargetIsImage:
-      return ResourceType::IMAGE;
-    case WebURLRequest::TargetIsObject:
-      return ResourceType::OBJECT;
-    case WebURLRequest::TargetIsMedia:
-      return ResourceType::MEDIA;
-    case WebURLRequest::TargetIsWorker:
-      return ResourceType::WORKER;
-    case WebURLRequest::TargetIsSharedWorker:
-      return ResourceType::SHARED_WORKER;
-    case WebURLRequest::TargetIsPrefetch:
-      return ResourceType::PREFETCH;
-    case WebURLRequest::TargetIsPrerender:
-      return ResourceType::PRERENDER;
-    case WebURLRequest::TargetIsFavicon:
-      return ResourceType::FAVICON;
-    default:
-      NOTREACHED();
-      return ResourceType::SUB_RESOURCE;
-  }
-}
-
 // Extracts the information from a data: url.
 bool GetInfoFromDataURL(const GURL& url,
                         ResourceResponseInfo* info,
@@ -434,7 +398,8 @@ void WebURLLoaderImpl::Context::Start(
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.
   request_info.requestor_pid = request.requestorProcessID();
-  request_info.request_type = FromTargetType(request.targetType());
+  request_info.request_type =
+      ResourceType::FromTargetType(request.targetType());
   request_info.appcache_host_id = request.appCacheHostID();
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();

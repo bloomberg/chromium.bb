@@ -2742,7 +2742,9 @@ void RenderView::didLoadResourceFromMemoryCache(
   Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
       routing_id_,
       request.url(),
-      response.securityInfo()));
+      response.securityInfo(),
+      request.httpMethod().utf8(),
+      ResourceType::FromTargetType(request.targetType())));
 }
 
 void RenderView::didDisplayInsecureContent(WebFrame* frame) {

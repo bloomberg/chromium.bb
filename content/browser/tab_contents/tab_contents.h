@@ -29,6 +29,7 @@
 #include "content/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/glue/resource_type.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -553,7 +554,9 @@ class TabContents : public PageNavigator,
                                          const GURL& url,
                                          bool showing_repost_interstitial);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
-                                        const std::string& security_info);
+                                        const std::string& security_info,
+                                        const std::string& http_request,
+                                        ResourceType::Type resource_type);
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);

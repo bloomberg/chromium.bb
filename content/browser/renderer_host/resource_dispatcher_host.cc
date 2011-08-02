@@ -68,7 +68,9 @@
 #include "net/base/request_priority.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/upload_data.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -338,8 +340,16 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
+                        OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+
+  if (message.type() == ViewHostMsg_DidLoadResourceFromMemoryCache::ID) {
+    // We just needed to peek at this message. We still want it to reach its
+    // normal destination.
+    handled = false;
+  }
 
   filter_ = NULL;
   return handled;
@@ -673,6 +683,18 @@ void ResourceDispatcherHost::OnSwapOutACK(
   CallRenderViewHost(params.closing_process_id,
                      params.closing_route_id,
                      &RenderViewHost::OnSwapOutACK);
+}
+
+void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(
+    const GURL& url,
+    const std::string& security_info,
+    const std::string& http_method,
+    ResourceType::Type resource_type) {
+  if (!url.is_valid() || !(url.SchemeIs("http") || url.SchemeIs("https")))
+    return;
+
+  filter_->GetURLRequestContext(resource_type)->http_transaction_factory()->
+      GetCache()->OnExternalCacheHit(url, http_method);
 }
 
 // We are explicitly forcing the download of 'url'.

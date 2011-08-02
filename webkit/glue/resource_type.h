@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_RESOURCE_TYPE_H__
 
 #include "base/basictypes.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
 class ResourceType {
  public:
@@ -36,6 +37,8 @@ class ResourceType {
   static Type FromInt(int32 type) {
     return static_cast<Type>(type);
   }
+
+  static Type FromTargetType(WebKit::WebURLRequest::TargetType type);
 
   static bool IsFrame(ResourceType::Type type) {
     return type == MAIN_FRAME || type == SUB_FRAME;

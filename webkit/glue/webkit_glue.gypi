@@ -382,6 +382,7 @@
         'resource_fetcher.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
+        'resource_type.cc',
         'resource_type.h',
         'request_extra_data.cc',
         'request_extra_data.h',

@@ -160,6 +160,12 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Called when the unload handler for a cross-site request has finished.
   void OnSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
+  // Called when the renderer loads a resource from its internal cache.
+  void OnDidLoadResourceFromMemoryCache(const GURL& url,
+                                        const std::string& security_info,
+                                        const std::string& http_method,
+                                        ResourceType::Type resource_type);
+
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int process_unique_id);
 
