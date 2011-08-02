@@ -372,6 +372,7 @@ class BuilderStage(object):
     use_manifest_version = self._build_config['manifest_version']
     for build_name, config in config.iteritems():
       if (config['important'] and config['build_type'] == build_type and
+          config['chrome_rev'] == self._options.chrome_rev and
           config['overlays'] == overlay_config and
           config['manifest_version'] == use_manifest_version):
         builders.append(build_name)
