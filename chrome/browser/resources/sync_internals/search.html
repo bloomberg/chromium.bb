@@ -12,15 +12,4 @@
   </div>
 </div>
 
-<script>
-// require: cr/ui.js
-// require: util.js
-
-cr.ui.decorate('#sync-results-splitter', cr.ui.Splitter);
-
-chrome.sync.decorateSearchControls(
-  $('sync-search-query'),
-  $('sync-search-status'),
-  $('sync-results-list'),
-  $('sync-result-details'));
-</script>
+<script src="chrome://sync-internals/search.js"></script>

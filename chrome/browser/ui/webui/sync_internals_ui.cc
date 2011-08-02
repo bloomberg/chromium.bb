@@ -20,9 +20,41 @@
 #include "chrome/browser/sync/weak_handle.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/sync_internals_html_source.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "grit/sync_internals_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+ChromeWebUIDataSource* CreateSyncInternalsHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUISyncInternalsHost);
+
+  source->set_json_path("strings.js");
+  source->add_resource_path("sync_index.js", IDR_SYNC_INTERNALS_INDEX_JS);
+  source->add_resource_path("chrome_sync.js",
+                            IDR_SYNC_INTERNALS_CHROME_SYNC_JS);
+  source->add_resource_path("sync_log.js", IDR_SYNC_INTERNALS_SYNC_LOG_JS);
+  source->add_resource_path("sync_node_browser.js",
+                            IDR_SYNC_INTERNALS_SYNC_NODE_BROWSER_JS);
+  source->add_resource_path("sync_search.js",
+                            IDR_SYNC_INTERNALS_SYNC_SEARCH_JS);
+  source->add_resource_path("about.js", IDR_SYNC_INTERNALS_ABOUT_JS);
+  source->add_resource_path("data.js", IDR_SYNC_INTERNALS_DATA_JS);
+  source->add_resource_path("events.js", IDR_SYNC_INTERNALS_EVENTS_JS);
+  source->add_resource_path("notifications.js",
+                            IDR_SYNC_INTERNALS_NOTIFICATIONS_JS);
+  source->add_resource_path("search.js", IDR_SYNC_INTERNALS_SEARCH_JS);
+  source->add_resource_path("node_browser.js",
+                            IDR_SYNC_INTERNALS_NODE_BROWSER_JS);
+  source->set_default_resource(IDR_SYNC_INTERNALS_INDEX_HTML);
+  return source;
+}
+
+}  // namespace
 
 using browser_sync::JsArgList;
 using browser_sync::JsEventDetails;
@@ -45,7 +77,7 @@ SyncInternalsUI::SyncInternalsUI(TabContents* contents)
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
-      new SyncInternalsHTMLSource());
+      CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);
   if (sync_service) {
     js_controller_ = sync_service->GetJsController();

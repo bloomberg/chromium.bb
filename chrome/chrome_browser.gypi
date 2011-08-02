@@ -3641,8 +3641,6 @@
         'browser/ui/webui/sessions_ui.h',
         'browser/ui/webui/shared_resources_data_source.cc',
         'browser/ui/webui/shared_resources_data_source.h',
-        'browser/ui/webui/sync_internals_html_source.cc',
-        'browser/ui/webui/sync_internals_html_source.h',
         'browser/ui/webui/sync_internals_ui.cc',
         'browser/ui/webui/sync_internals_ui.h',
         'browser/ui/webui/sync_setup_handler.cc',
