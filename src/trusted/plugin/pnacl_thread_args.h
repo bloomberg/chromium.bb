@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_THREAD_ARGS_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_THREAD_ARGS_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_THREAD_ARGS_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_THREAD_ARGS_H_
 
 #include "native_client/src/trusted/plugin/plugin_error.h"
 
@@ -94,4 +94,4 @@ struct DoLinkArgs : PnaclThreadArgs {
 
 
 }  // namespace plugin;
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_THREAD_ARGS_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_THREAD_ARGS_H_

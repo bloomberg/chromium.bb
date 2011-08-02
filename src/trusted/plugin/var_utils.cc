@@ -4,16 +4,16 @@
 
 #include <assert.h>
 
-#include "native_client/src/trusted/plugin/ppapi/var_utils.h"
+#include "native_client/src/trusted/plugin/var_utils.h"
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/array_ppapi.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
-#include "native_client/src/trusted/plugin/ppapi/array_ppapi.h"
-#include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 #include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"

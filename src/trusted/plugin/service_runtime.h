@@ -19,7 +19,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
+#include "native_client/src/trusted/plugin/file_downloader.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 

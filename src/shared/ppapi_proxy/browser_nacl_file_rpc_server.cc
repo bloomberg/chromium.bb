@@ -11,7 +11,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"

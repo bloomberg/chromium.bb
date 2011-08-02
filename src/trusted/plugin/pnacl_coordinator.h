@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_COORDINATOR_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_COORDINATOR_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_
 
 #include <set>
 #include <map>
@@ -11,10 +11,13 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/delayed_callback.h"
+#include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/ppapi/delayed_callback.h"
-#include "native_client/src/trusted/plugin/ppapi/pnacl_thread_args.h"
+#include "native_client/src/trusted/plugin/pnacl_thread_args.h"
 
 #include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
 
@@ -182,4 +185,4 @@ class PnaclCoordinator {
 //----------------------------------------------------------------------
 
 }  // namespace plugin;
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_COORDINATOR_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_COORDINATOR_H_

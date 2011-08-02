@@ -52,27 +52,27 @@ if env.Bit('windows'):
         CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
     )
 
-# The PPAPI plugin depends upon the code that is in the top (plugin) directory
-# and on a large set of libraries.  We continue to keep the common and ppapi
-# specific sources separate for the moment.
-# TODO: We should remove common and flatten ppapi into the main plugin dir
-# if we plan to only support one plugin architecture.
 common_inputs = [
-    # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
-    #       which exports a library which is then linked in.
-    #       Currently this results inlink time symbol clashes
-    # Portable plugin code
+    'array_ppapi.cc',
+    'async_receive.cc',
+    'browser_interface.cc',
     'desc_based_handle.cc',
+    'file_downloader.cc',
+    'manifest.cc',
     'method_map.cc',
+    'module_ppapi.cc',
     'nacl_subprocess.cc',
     'nexe_arch.cc',
     'plugin.cc',
+    'pnacl_coordinator.cc',
+    'pnacl_srpc_lib.cc',
     'portable_handle.cc',
     'scriptable_handle.cc',
     'service_runtime.cc',
     'srpc_client.cc',
     'string_encoding.cc',
     'utility.cc',
+    'var_utils.cc',
 ]
 
 if env.Bit('target_x86'):
@@ -123,8 +123,6 @@ if plugin_env.Bit('windows'):
 # PPAPI Plugin Build
 ###############################################################################
 
-# The PPAPI (Pepper v2) plugin is used in Chrome only.
-#
 # We build a shared library with this build script to allow easier build
 # testing. This library can also be loaded into Chrome using --no-sandbox
 # --register-pepper-plugins="path/to/library;application/x-nacl".
@@ -132,22 +130,6 @@ if plugin_env.Bit('windows'):
 # The .gyp files include rules used to link the plugin statically into Chrome.
 # (This is still work in progress as of mid-Nov 2010.)
 #
-# The PPAPI plugin uses code from
-#   trusted/plugin/ppapi/ - for implementing NaCl as a trusted PPAPI plugin
-#   shared/ppapi_proxy/ - for proxying PPAPI to NaCl modules
-ppapi_inputs = [
-    'ppapi/array_ppapi.cc',
-    'ppapi/async_receive.cc',
-    'ppapi/browser_interface_ppapi.cc',
-    'ppapi/file_downloader.cc',
-    'ppapi/manifest.cc',
-    'ppapi/module_ppapi.cc',
-    'ppapi/plugin_ppapi.cc',
-    'ppapi/pnacl_coordinator.cc',
-    'ppapi/pnacl_srpc_lib.cc',
-    'ppapi/scriptable_handle_ppapi.cc',
-    'ppapi/var_utils.cc',
-]
 
 ppNaClPlugin = 'ppNaClPlugin'
 
@@ -171,7 +153,7 @@ if not env.Bit('mac'):  # linux, windows, arm
   #   scons-out/.../staging/libppNaClPlugin.so on Linux and
   #   scons-out/.../staging/ppNaClPlugin.dll on Windows.
   ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
-                                            common_inputs + ppapi_inputs,
+                                            common_inputs,
                                             no_import_lib=True)
 else:  # mac
   # This builds with
@@ -186,7 +168,7 @@ else:  # mac
                     source='osx_ppapi/ppNaClPlugin.r',
                     action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
   ppapi_plugin = ppapi_env.ComponentProgram(ppNaClPlugin,
-                                            common_inputs + ppapi_inputs,
+                                            common_inputs,
                                             no_import_lib=True)
   # Bundle pattern can be found in
   # site_scons/site_tools/target_platform_mac.py
@@ -205,7 +187,7 @@ ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
 
 # Rather than link ppNaClPlugin statically, this unittest uses the dynamic
 # library.  Note that these tests do not yet run on ARM.
-unittest_sources = ['ppapi/dylib_unittest.cc', 'ppapi/plugin_unittest.cc']
+unittest_sources = ['dylib_unittest.cc', 'plugin_unittest.cc']
 if env.Bit('target_x86'):
   if env.Bit('linux'):
     unittest = env.ComponentProgram('ppapi_plugin_unittest',

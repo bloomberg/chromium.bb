@@ -6,8 +6,8 @@
 
 // Manifest file processing class.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_MANIFEST_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_MANIFEST_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_
 
 #include <map>
 #include <set>
@@ -99,4 +99,4 @@ class Manifest {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_MANIFEST_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_MANIFEST_H_

@@ -7,14 +7,14 @@
 // Utility functions for handling PPAPI Var's.
 
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_VAR_UTILS_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_VAR_UTILS_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_VAR_UTILS_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_VAR_UTILS_H_
 
 #include <string>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/third_party/ppapi/cpp/var.h"
 
 namespace plugin {

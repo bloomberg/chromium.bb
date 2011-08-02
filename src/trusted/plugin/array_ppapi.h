@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ARRAY_PPAPI_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ARRAY_PPAPI_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ARRAY_PPAPI_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ARRAY_PPAPI_H_
 
 #include <vector>
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "native_client/src/third_party/ppapi/cpp/instance.h"
 #include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
@@ -57,4 +57,4 @@ class ArrayPpapi : public pp::deprecated::ScriptableObject {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_ARRAY_PPAPI_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ARRAY_PPAPI_H_

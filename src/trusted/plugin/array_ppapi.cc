@@ -8,7 +8,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/trusted/plugin/ppapi/array_ppapi.h"
+#include "native_client/src/trusted/plugin/array_ppapi.h"
 
 
 namespace plugin {

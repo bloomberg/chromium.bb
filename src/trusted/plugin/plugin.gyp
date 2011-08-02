@@ -15,7 +15,6 @@
       ['target_base=="ppNaClPlugin"', {
         'sources': [
           '<@(common_sources)',
-          '<@(ppapi_sources)',
         ],
         'defines': [
           'NACL_PPAPI',
@@ -86,12 +85,11 @@
           'type': 'loadable_module',
           'sources': [
             '<@(common_sources)',
-            '<@(ppapi_sources)',
             'browser_utils.cc',
           ],
           'xcode_settings': {
             'OTHER_LDFLAGS': [
-                '-Wl,-exported_symbols_list <(DEPTH)/native_client/src/trusted/plugin/ppapi/ppapi.def'
+                '-Wl,-exported_symbols_list <(DEPTH)/native_client/src/trusted/plugin/ppapi.def'
             ],
           },
           'defines': [

@@ -5,38 +5,26 @@
 {
   'variables': {
     'common_sources': [
-      # TODO: If we decide to never support another plugin system  we should
-      # flatten the ppapi directory into the main plugin directory and remove
-      # this 'common' set of sources.
-      # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
-      # which exports a library which is then linked in.
-      # Currently this results inlink time symbol clashes
-      # Portable plugin code
+      'array_ppapi.cc',
+      'async_receive.cc',
+      'browser_interface.cc',
       'desc_based_handle.cc',
+      'file_downloader.cc',
+      'manifest.cc',
       'method_map.cc',
+      'module_ppapi.cc',
       'nacl_subprocess.cc',
       'nexe_arch.cc',
       'plugin.cc',
+      'pnacl_coordinator.cc',
+      'pnacl_srpc_lib.cc',
       'portable_handle.cc',
       'scriptable_handle.cc',
       'service_runtime.cc',
       'srpc_client.cc',
       'string_encoding.cc',
       'utility.cc',
-    ],
-    'ppapi_sources': [
-      # PPAPI specific code
-      'ppapi/array_ppapi.cc',
-      'ppapi/async_receive.cc',
-      'ppapi/browser_interface_ppapi.cc',
-      'ppapi/plugin_ppapi.cc',
-      'ppapi/manifest.cc',
-      'ppapi/module_ppapi.cc',
-      'ppapi/file_downloader.cc',
-      'ppapi/pnacl_coordinator.cc',
-      'ppapi/pnacl_srpc_lib.cc',
-      'ppapi/scriptable_handle_ppapi.cc',
-      'ppapi/var_utils.cc',
+      'var_utils.cc',
     ],
     # Append the arch-specific ISA code to common_sources.
     'conditions': [

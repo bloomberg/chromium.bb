@@ -5,8 +5,8 @@
 // Functions for dynamically loading the trusted plugin when running unit
 // tests.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_DYLIB_UNITTEST_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_DYLIB_UNITTEST_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DYLIB_UNITTEST_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DYLIB_UNITTEST_H_
 
 #if NACL_WINDOWS
 #include <windows.h>
@@ -36,4 +36,4 @@ bool DylibClose(DylibHandle dl_handle);
 // occurs.
 SymbolHandle GetSymbolHandle(DylibHandle dl_handle, const char* name);
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_DYLIB_UNITTEST_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DYLIB_UNITTEST_H_

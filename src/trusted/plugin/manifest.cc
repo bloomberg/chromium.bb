@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "native_client/src/trusted/plugin/ppapi/manifest.h"
+#include "native_client/src/trusted/plugin/manifest.h"
 
 #include <stdlib.h>
 

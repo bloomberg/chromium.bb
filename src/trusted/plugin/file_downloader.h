@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_
 
 #include <deque>
 
@@ -115,4 +115,4 @@ class FileDownloader {
   UrlSchemeType url_scheme_;
 };
 }  // namespace plugin;
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_REMOTE_FILE_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_

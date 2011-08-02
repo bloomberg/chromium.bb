@@ -4,11 +4,13 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_BARRIER_CALLBACK_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_BARRIER_CALLBACK_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DELAYED_CALLBACK_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DELAYED_CALLBACK_H_
 
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
 
@@ -65,4 +67,4 @@ class DelayedCallback {
 
 }  // namespace plugin
 
-#endif
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DELAYED_CALLBACK_H_

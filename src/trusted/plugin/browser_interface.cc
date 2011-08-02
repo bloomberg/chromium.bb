@@ -4,14 +4,14 @@
 
 #include <assert.h>
 
-#include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
+#include "native_client/src/trusted/plugin/browser_interface.h"
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
-#include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
 
 #include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
 #include "native_client/src/third_party/ppapi/cpp/private/var_private.h"

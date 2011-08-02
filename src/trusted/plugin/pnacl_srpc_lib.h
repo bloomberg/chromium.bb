@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_SRPC_LIB_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_SRPC_LIB_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_SRPC_LIB_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_SRPC_LIB_H_
 
 // Routines to simplify SRPC invocations.
 
@@ -66,4 +66,4 @@ class PnaclSrpcLib {
 
 }  // namespace plugin;
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PNACL_SRPC_LIB_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PNACL_SRPC_LIB_H_

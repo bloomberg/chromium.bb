@@ -7,8 +7,8 @@
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 
 #include "native_client/src/third_party/ppapi/c/private/ppb_nacl_private.h"
 #include "native_client/src/third_party/ppapi/cpp/module.h"

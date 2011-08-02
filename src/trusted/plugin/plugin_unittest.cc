@@ -8,7 +8,7 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
-#include "native_client/src/trusted/plugin/ppapi/dylib_unittest.h"
+#include "native_client/src/trusted/plugin/dylib_unittest.h"
 
 // Verify that the ISA string returned by the plugin is the correct one for
 // this platform.
@@ -58,4 +58,3 @@ int main(int argc, char** argv) {
     return 1;
   }
 }
-

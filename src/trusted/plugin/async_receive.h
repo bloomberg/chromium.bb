@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_ASYNC_RECEIVE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_ASYNC_RECEIVE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ASYNC_RECEIVE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ASYNC_RECEIVE_H_
 
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 namespace plugin {
@@ -29,4 +29,4 @@ void WINAPI AsyncNaClToJSThread(void* argument_to_thread);
 
 }  // namespace plugin
 
-#endif
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_ASYNC_RECEIVE_H_

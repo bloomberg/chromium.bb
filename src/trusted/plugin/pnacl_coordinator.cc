@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/plugin/ppapi/pnacl_coordinator.h"
+#include "native_client/src/trusted/plugin/pnacl_coordinator.h"
 
 #include <utility>
 #include <vector>
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
-#include "native_client/src/trusted/plugin/ppapi/pnacl_srpc_lib.h"
+#include "native_client/src/trusted/plugin/pnacl_srpc_lib.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 

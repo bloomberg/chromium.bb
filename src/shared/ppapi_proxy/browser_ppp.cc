@@ -24,7 +24,7 @@
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_printing_dev.h"
