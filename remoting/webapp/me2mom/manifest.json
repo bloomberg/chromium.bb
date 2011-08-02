@@ -1,7 +1,8 @@
 {
-  "name": "Remoting IT2Me NAME_SUFFIX",
+  "name": "__MSG_webappName__ NAME_SUFFIX",
   "version": "1.0.UNIQUE_VERSION",
-  "description": "IT2Me-style remote support in Chrome.",
+  "description": "__MSG_webappDescription__",
+  "default_locale": "en",
   "app": {
     "launch": {
       "local_path": "choice.html"

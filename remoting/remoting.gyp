@@ -73,6 +73,7 @@
       'webapp/me2mom/debug_log.js',
       'webapp/me2mom/dividerbottom.png',
       'webapp/me2mom/dividertop.png',
+      'webapp/me2mom/l10n.js',
       'webapp/me2mom/main.css',
       'webapp/me2mom/manifest.json',
       'webapp/me2mom/oauth2.js',
@@ -83,6 +84,9 @@
       'webapp/me2mom/toolbar.css',
       'webapp/me2mom/toolbar-stub.png',
       'webapp/me2mom/xhr.js',
+    ],
+    'remoting_it2me_locale_files': [
+      'webapp/me2mom/_locales/en/messages.json',
     ],
   },
 
@@ -226,6 +230,7 @@
         'webapp/build-webapp.py',
         '<@(remoting_it2me_files)',
         '<@(remoting_it2me_os_files)',
+        '<@(remoting_it2me_locale_files)',
       ],
       # Can't use a 'copies' because we need to manipulate
       # the manifest file to get the right plugin name.
@@ -244,6 +249,7 @@
             '<(_plugin_path)',
             '<@(remoting_it2me_files)',
             '<@(remoting_it2me_os_files)',
+            '<@(remoting_it2me_locale_files)',
           ],
           'outputs': [
             '<(_output_dir)',
@@ -258,6 +264,8 @@
             '<(name_suffix)',
             '<@(remoting_it2me_files)',
             '<@(remoting_it2me_os_files)',
+            '--locales',
+            '<@(remoting_it2me_locale_files)',
           ],
         },
       ],

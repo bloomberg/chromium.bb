@@ -46,7 +46,8 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
+def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files,
+                locales):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -59,6 +60,8 @@ def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
     name_suffix: A string to append to the webapp's title.
     files: An array of strings listing the paths for resources to include
            in this webapp.
+    locales: An array of strings listing locales, which are copied, along
+             with their directory structure from the _locales directory down.
   """
   # Ensure a fresh directory.
   try:
@@ -95,6 +98,24 @@ def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
       os.symlink(targetname, destination_file)
     else:
       shutil.copy2(current_file, destination_file)
+
+  # Copy all the locales, preserving directory structure
+  destination_locales = os.path.join(destination, "_locales")
+  os.mkdir(destination_locales , 0775)
+  for current_locale in locales:
+    pos = current_locale.find("/_locales/")
+    if (pos == -1):
+      raise "Missing locales directory in " + current_locale
+    subtree = current_locale[pos+10:]
+    pos = subtree.find("/")
+    if (pos == -1):
+      raise "Malformed locale: " + current_locale
+    locale_id = subtree[:pos]
+    messages = subtree[pos+1:]
+    destination_dir = os.path.join(destination_locales, locale_id)
+    destination_file = os.path.join(destination_dir, messages)
+    os.mkdir(destination_dir, 0775)
+    shutil.copy2(current_locale, destination_file)
 
   # Copy the plugin.
   pluginName = os.path.basename(plugin)
@@ -141,11 +162,23 @@ def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
 def main():
   if len(sys.argv) < 6:
     print ('Usage: build-webapp.py '
-           '<mime-type> <dst> <zip-path> <plugin> <other files...>')
+           '<mime-type> <dst> <zip-path> <plugin> <other files...> '
+           '--locales <locales...>')
     sys.exit(1)
 
+  reading_locales = False
+  files = []
+  locales = []
+  for arg in sys.argv[6:]:
+    if arg == "--locales":
+      reading_locales = True;
+    elif reading_locales:
+      locales.append(arg)
+    else:
+      files.append(arg)
+
   buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-              sys.argv[5], sys.argv[6:])
+              sys.argv[5], files, locales)
 
 
 if __name__ == '__main__':

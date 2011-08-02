@@ -36,16 +36,13 @@ remoting.AppMode = {
 remoting.EMAIL = 'email';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
-// TODO(jamiewalch): Replace this with a proper l10n strategy.
 /** @enum {string} */
 remoting.ClientError = {
-  NO_RESPONSE: 'Failed to get response from server.',
-  INVALID_ACCESS_CODE: 'Invalid access code.',
-  MISSING_PLUGIN: 'The viewer plugin is missing or out-of-date. Please ' +
-      'upgrade to a more recent version of Chrome.',
-  OAUTH_FETCH_FAILED: 'Unable to fetch OAuth2 token. Try revoking the ' +
-      'token and authenticating again.',
-  OTHER_ERROR: 'An error occurred.'
+  NO_RESPONSE: 'errorNoResponse',
+  INVALID_ACCESS_CODE: 'errorInvalidAccessCode',
+  MISSING_PLUGIN: 'errorMissingPlugin',
+  OAUTH_FETCH_FAILED: 'errorOAuthFailed',
+  OTHER_ERROR: 'errorGeneric'
 };
 
 /**
@@ -174,6 +171,7 @@ remoting.toggleDebugLog = function() {
 }
 
 remoting.init = function() {
+  l10n.localize();
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
   remoting.debug =
@@ -366,18 +364,6 @@ remoting.cancelShare = function() {
   disableTimeoutCountdown_();
 }
 
-/**
- * Show a client message that stays on the screeen until the state changes.
- *
- * @param {string} message The message to display.
- * @param {string} opt_host The host to display after the message.
- */
-function setClientStateMessage(message, opt_host) {
-  document.getElementById('session-status-message').innerText = message;
-  opt_host = opt_host || '';
-  document.getElementById('connected-to').innerText = opt_host;
-}
-
 function updateStatistics() {
   if (remoting.session.state != remoting.ClientSession.State.CONNECTED)
     return;
@@ -422,12 +408,6 @@ function onClientStateChange_(oldState) {
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
     remoting.debug.log('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
-    var split = remoting.hostJid.split('/');
-    var host = null;
-    if (split.length == 2) {
-      host = split[0];
-    }
-    setClientStateMessage('Connected to', host);
     remoting.setMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
     var accessCode = document.getElementById('access-code-entry');
@@ -467,10 +447,19 @@ function startSession_() {
   });
 }
 
+/**
+ * @param {ClientError} errorMsg The error to be localized and displayed.
+ * @return {void} Nothing.
+ */
 function showConnectError_(errorMsg) {
   remoting.debug.log('Connection failed: ' + errorMsg);
-  var errorNode = document.getElementById('connect-error-message');
-  errorNode.innerText = errorMsg;
+  var translation = chrome.i18n.getMessage(errorMsg);
+  if (translation) {
+    var errorNode = document.getElementById('connect-error-message');
+    errorNode.innerText = translation;
+  } else {
+    remoting.debug.error('Missing translation for ' + errorMsg);
+  }
   remoting.accessCode = '';
   if (remoting.session) {
     remoting.session.disconnect();
@@ -486,6 +475,8 @@ function parseServerResponse_(xhr) {
     if (host.data && host.data.jabberId) {
       remoting.hostJid = host.data.jabberId;
       remoting.hostPublicKey = host.data.publicKey;
+      var split = remoting.hostJid.split('/');
+      document.getElementById('connected-to').innerText = split[0];
       startSession_();
       return;
     }

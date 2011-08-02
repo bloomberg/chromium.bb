@@ -1,0 +1,170 @@
+{
+  "accessCode": {
+    "message": "Access code",
+    "description": "Label for the access code entry box"
+  },
+  "accessCodeTimer": {
+    "message": "This access code will expire in",
+    "description": "Text preceding the access code timer"
+  },
+  "authenticateButton": {
+    "message": "Get OAuth2 Token…",
+    "description": "Label for the authenticate button"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Label for general-purpose Cancel buttons"
+  },
+  "connectButton": {
+    "message": "Connect",
+    "description": "Label for the connect button"
+  },
+  "debugButton": {
+    "message": "Debug Log",
+    "description": "Label for the debug log button"
+  },
+  "descriptionConnect": {
+    "message": "Have the user whose computer you wish to access click ‘Share this computer’ and then have them read their access code to you.",
+    "description": "Description for the client app"
+  },
+  "descriptionShare": {
+    "message": "With Chromoting you can easily let another Chrome user see and control your computer.",
+    "description": "Description for the host app"
+  },
+  "disconnectButton": {
+    "message": "Disconnect",
+    "description": "Label for the debug log button"
+  },
+  "emailLabel": {
+    "message": "Email:",
+    "description": "Label to the left of the user's email address"
+  },
+  "errorGeneric": {
+    "message": "An error occurred.",
+    "description": "Generic error message"
+  },
+  "errorInvalidAccessCode": {
+    "message": "Invalid access code.",
+    "description": "Error displayed if an invalid access code is entered"
+  },
+  "errorMissingPlugin": {
+    "message": "The viewer plugin is missing or out-of-date. Please upgrade to a more recent version of Chrome.",
+    "description": "Error displayed if the client plugin fails to load"
+  },
+  "errorNoResponse": {
+    "message": "Failed to get response from server.",
+    "description": "Error displayed if an XHR request comes back empty"
+  },
+  "errorOAuthFailed": {
+    "message": "Unable to fetch OAuth2 token. Try revoking the token and authenticating again.",
+    "description": "Error displayed if the OAuth2 token cannot be refreshed"
+  },
+  "footerClient1": {
+    "message": "Click here to ",
+    "description": "Instructions to switch to host mode (first part, before the hyperlink--can be empty)"
+  },
+  "footerClient2": {
+    "message": "share this computer",
+    "description": "Instructions to switch to host mode (second part, hyperlinked--must not be empty)"
+  },
+  "footerClient3": {
+    "message": " with another user.",
+    "description": "Instructions to switch to host mode (third part, after the hyperlink--can be empty)"
+  },
+  "footerCrOS": {
+    "message": "Currently Hosting is not supported on Chromebooks. Hosting is supported on Windows, Mac OS X and Linux.",
+    "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink"
+  },
+  "footerHost1": {
+    "message": "Click here to ",
+    "description": "Instructions to switch to client mode (first part, before the hyperlink--can be empty)"
+  },
+  "footerHost2": {
+    "message": "access a shared computer",
+    "description": "Instructions to switch to client mode (second part, hyperlinked--must not be empty)"
+  },
+  "footerHost3": {
+    "message": ".",
+    "description": "Instructions to switch to client mode (third part, after the hyperlink--can be empty)"
+  },
+  "footerWaiting": {
+    "message": "waiting for connection…",
+    "description": "Footer text at the host when waiting for a client to connect"
+  },
+  "instructionsShareAbove": {
+    "message": "To begin sharing your desktop, read out the access code below to the person who will be assisting you.",
+    "description": "Instructions shown above the access code when it is ready to be conveyed to the client"
+  },
+  "instructionsShareBelow": {
+    "message": "Once they enter the code your sharing session will begin.",
+    "description": "Instructions shown below the access code when it is ready to be conveyed to the client"
+  },
+  "labelConnected": {
+    "message": "Connected:",
+    "description": "String displayed in front of the host in the in-session toolbar"
+  },
+  "messageGenerating": {
+    "message": "Generating access code…",
+    "description": "Text shown while generating an access code"
+  },
+  "messageSessionFinished": {
+    "message": "You are no longer connected to the remote desktop.",
+    "description": "Message displayed when the client has (been) disconnected"
+  },
+  "messageShared": {
+    "message": "Your desktop is currently being shared.",
+    "description": "Message shown on the host computer while a session is active"
+  },
+  "modeShare": {
+    "message": "Share",
+    "description": "Sub-title for the host app"
+  },
+  "modeConnect": {
+    "message": "Connect",
+    "description": "Sub-title for the client app"
+  },
+  "oauth2TokenLabel": {
+    "message": "OAuth2 Token:",
+    "description": "Label to the left of the authenticate/revoke button"
+  },
+  "ok": {
+    "message": "OK",
+    "description": "Label for general-purpose OK buttons"
+  },
+  "pageTitle": {
+    "message": "Chromoting",
+    "description": "Title of the main page"
+  },
+  "revokeButton": {
+    "message": "Revoke",
+    "description": "Label for the revoke button"
+  },
+  "scaleButton": {
+    "message": "Fit Screen",
+    "description": "Label for the scaling button"
+  },
+  "shareButton": {
+    "message": "Share This Computer",
+    "description": "Label for the share button"
+  },
+  "stopSharingButton": {
+    "message": "Stop Sharing",
+    "description": "Label for the 'stop sharing' button"
+  },
+  "unableToGetToken": {
+    "message": "Unable to get access token.",
+    "description": "Error message displayed if an access token could not be generated"
+  },
+  "verifyingCode": {
+    "message": "Verifying access code…",
+    "description": "Message displayed while the access code is verified"
+  },
+  "webappDescription": {
+    "message": "IT2Me-style remote support in Chrome.",
+    "description": "Web-app description"
+  },
+  "webappName": {
+    "message": "Remoting IT2Me",
+    "description": "Web-app name"
+  }
+}
