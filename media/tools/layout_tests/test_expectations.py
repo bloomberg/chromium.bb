@@ -412,16 +412,18 @@ class TestExpectationsManager(object):
                               pysvn.opt_revision_kind.date, end))
         result_list = []
         for i in xrange(len(logs) - 1):
-            rev1 = logs[i].revision.number
-            rev2 = logs[i + 1].revision.number
-            author = logs[i + 1].author
-            date = logs[i + 1].date
-            message = logs[i + 1].message
+            # PySVN.log returns logs in reverse chronological order.
+            new_rev = logs[i].revision.number
+            old_rev = logs[i + 1].revision.number
+            # Getting information about new revision.
+            author = logs[i].author
+            date = logs[i].date
+            message = logs[i].message
             text = client.diff('/tmp', 'tmp/test_expectations.txt',
                                revision1=pysvn.Revision(
-                                   pysvn.opt_revision_kind.number, rev2),
+                                   pysvn.opt_revision_kind.number, old_rev),
                                revision2=pysvn.Revision(
-                                   pysvn.opt_revision_kind.number, rev1))
+                                   pysvn.opt_revision_kind.number, new_rev))
             lines = text.split('\n')
             for line in lines:
                 for pattern in patterns:
@@ -430,10 +432,10 @@ class TestExpectationsManager(object):
                         if checkchange:
                             if ((line[0] == '+' and change > 0) or
                                 (line[0] == '-' and change < 0)):
-                                result_list.append((rev2, rev1, line,
+                                result_list.append((old_rev, new_rev, line,
                                                     author, date, message))
                         else:
                             if line[0] == '+' or line[0] == '-':
-                                result_list.append((rev2, rev1, line,
+                                result_list.append((old_rev, new_rev, line,
                                                     author, date, message))
         return result_list
