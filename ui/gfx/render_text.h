@@ -88,8 +88,8 @@ class UI_API RenderText {
   const StyleRange& default_style() const { return default_style_; }
   void set_default_style(StyleRange style) { default_style_ = style; }
 
-  const gfx::Rect& display_rect() const { return display_rect_; }
-  void set_display_rect(const gfx::Rect& r) { display_rect_ = r; }
+  const Rect& display_rect() const { return display_rect_; }
+  void set_display_rect(const Rect& r) { display_rect_ = r; }
 
   size_t GetCursorPosition() const;
   void SetCursorPosition(const size_t position);
@@ -110,13 +110,13 @@ class UI_API RenderText {
 
   // Move the cursor to the position associated with the clicked point.
   // If |select| is false, the selection range is emptied at the new position.
-  bool MoveCursorTo(const gfx::Point& point, bool select);
+  bool MoveCursorTo(const Point& point, bool select);
 
   const ui::Range& GetSelection() const;
   void SetSelection(const ui::Range& range);
 
   // Returns true if the local point is over selected text.
-  bool IsPointInSelection(const gfx::Point& point) const;
+  bool IsPointInSelection(const Point& point) const;
 
   // Selects no text, all text, or the word at the current cursor position.
   void ClearSelection();
@@ -137,30 +137,30 @@ class UI_API RenderText {
   // Get the width of the entire string.
   int GetStringWidth() const;
 
-  virtual void Draw(gfx::Canvas* canvas);
+  virtual void Draw(Canvas* canvas);
 
   // TODO(msw): Deprecate this function. Logical and visual cursors are not
   //  mapped one-to-one. See the selection_range_ TODO for more information.
   // Get the logical cursor position from a visual point in local coordinates.
-  virtual size_t FindCursorPosition(const gfx::Point& point) const;
+  virtual size_t FindCursorPosition(const Point& point) const;
 
   // Get the visual bounds containing the logical substring within |range|.
   // These bounds could be visually discontiguous if the logical selection range
   // is split by an odd number of LTR/RTL level change.
-  virtual std::vector<gfx::Rect> GetSubstringBounds(
+  virtual std::vector<Rect> GetSubstringBounds(
       const ui::Range& range) const;
 
   // Get the visual bounds describing the cursor at |position|. These bounds
   // typically represent a vertical line, but if |insert_mode| is true they
   // contain the bounds of the associated glyph.
-  virtual gfx::Rect GetCursorBounds(size_t position, bool insert_mode) const;
+  virtual Rect GetCursorBounds(size_t position, bool insert_mode) const;
 
  protected:
   RenderText();
 
   const StyleRanges& style_ranges() const { return style_ranges_; }
 
-  const gfx::Point& display_offset() const { return display_offset_; }
+  const Point& display_offset() const { return display_offset_; }
 
   // Get the cursor position that visually neighbors |position|.
   // If |move_by_word| is true, return the neighboring word delimiter position.
@@ -212,9 +212,9 @@ class UI_API RenderText {
   StyleRange default_style_;
 
   // The local display area for rendering the text.
-  gfx::Rect display_rect_;
+  Rect display_rect_;
   // The offset for the text to be drawn, relative to the display area.
-  gfx::Point display_offset_;
+  Point display_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

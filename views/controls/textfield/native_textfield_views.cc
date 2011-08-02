@@ -73,6 +73,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   default_style.font = textfield_->font();
   default_style.foreground = textfield_->text_color();
   GetRenderText()->set_default_style(default_style);
+  GetRenderText()->ApplyDefaultStyle();
 
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -367,6 +368,12 @@ void NativeTextfieldViews::UpdateReadOnly() {
 }
 
 void NativeTextfieldViews::UpdateFont() {
+  // Update the default text style.
+  gfx::StyleRange default_style(GetRenderText()->default_style());
+  default_style.font = textfield_->font();
+  GetRenderText()->set_default_style(default_style);
+  GetRenderText()->ApplyDefaultStyle();
+
   OnCaretBoundsChanged();
 }
 

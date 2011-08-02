@@ -112,6 +112,7 @@ void ApplyURLStyle(views::Textfield* textfield,
                    SkColor color,
                    bool strike) {
   gfx::StyleRange style;
+  style.font = textfield->font();
   style.foreground = color;
   style.range = ui::Range(start, end);
   style.strike = strike;

@@ -174,7 +174,7 @@ bool RenderText::MoveCursorTo(size_t position, bool select) {
   return changed;
 }
 
-bool RenderText::MoveCursorTo(const gfx::Point& point, bool select) {
+bool RenderText::MoveCursorTo(const Point& point, bool select) {
   // TODO(msw): Make this function support cursor placement via mouse near BiDi
   //  level changes. The visual cursor appearance will depend on the location
   //  clicked, not solely the resulting logical cursor position. See the TODO
@@ -191,7 +191,7 @@ void RenderText::SetSelection(const ui::Range& range) {
   selection_range_.set_start(std::min(range.start(), text().length()));
 
   // Update |display_offset_| to ensure the current cursor is visible.
-  gfx::Rect cursor_bounds(GetCursorBounds(GetCursorPosition(), insert_mode()));
+  Rect cursor_bounds(GetCursorBounds(GetCursorPosition(), insert_mode()));
   int display_width = display_rect_.width();
   int string_width = GetStringWidth();
   if (string_width < display_width) {
@@ -206,7 +206,7 @@ void RenderText::SetSelection(const ui::Range& range) {
   }
 }
 
-bool RenderText::IsPointInSelection(const gfx::Point& point) const {
+bool RenderText::IsPointInSelection(const Point& point) const {
   size_t pos = FindCursorPosition(point);
   return (pos >= GetSelection().GetMin() && pos < GetSelection().GetMax());
 }
@@ -298,19 +298,22 @@ int RenderText::GetStringWidth() const {
   return GetSubstringBounds(ui::Range(0, text_.length()))[0].width();
 }
 
-void RenderText::Draw(gfx::Canvas* canvas) {
+void RenderText::Draw(Canvas* canvas) {
   // Clip the canvas to the text display area.
   canvas->ClipRectInt(display_rect_.x(), display_rect_.y(),
                       display_rect_.width(), display_rect_.height());
 
   // Draw the selection.
-  std::vector<gfx::Rect> selection(GetSubstringBounds(GetSelection()));
+  std::vector<Rect> selection(GetSubstringBounds(GetSelection()));
   SkColor selection_color =
       focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
-  for (std::vector<gfx::Rect>::const_iterator i = selection.begin();
+  for (std::vector<Rect>::const_iterator i = selection.begin();
        i < selection.end(); ++i) {
-    gfx::Rect r(*i);
+    Rect r(*i);
+    r.Offset(display_rect_.origin());
     r.Offset(display_offset_);
+    // Center the rect vertically in |display_rect_|.
+    r.Offset(Point(0, (display_rect_.height() - r.height()) / 2));
     canvas->FillRectInt(selection_color, r.x(), r.y(), r.width(), r.height());
   }
 
@@ -336,11 +339,11 @@ void RenderText::Draw(gfx::Canvas* canvas) {
   }
 
   // Draw the text.
-  gfx::Rect bounds(display_rect_);
+  Rect bounds(display_rect_);
   bounds.Offset(display_offset_);
   for (StyleRanges::const_iterator i = style_ranges.begin();
        i < style_ranges.end(); ++i) {
-    Font font = !i->underline ? i->font :
+    const Font& font = !i->underline ? i->font :
         i->font.DeriveFont(0, i->font.GetStyle() | Font::UNDERLINED);
     string16 text = text_.substr(i->range.start(), i->range.length());
     bounds.set_width(font.GetStringWidth(text));
@@ -376,8 +379,8 @@ void RenderText::Draw(gfx::Canvas* canvas) {
   }
 }
 
-size_t RenderText::FindCursorPosition(const gfx::Point& point) const {
-  const gfx::Font& font = Font();
+size_t RenderText::FindCursorPosition(const Point& point) const {
+  const Font& font = default_style_.font;
   int left = 0;
   int left_pos = 0;
   int right = font.GetStringWidth(text());
@@ -405,25 +408,24 @@ size_t RenderText::FindCursorPosition(const gfx::Point& point) const {
   return left_pos;
 }
 
-std::vector<gfx::Rect> RenderText::GetSubstringBounds(
+std::vector<Rect> RenderText::GetSubstringBounds(
     const ui::Range& range) const {
   size_t start = range.GetMin();
   size_t end = range.GetMax();
-  gfx::Font font;
+  const Font& font = default_style_.font;
   int start_x = font.GetStringWidth(text().substr(0, start));
   int end_x = font.GetStringWidth(text().substr(0, end));
-  std::vector<gfx::Rect> bounds;
-  bounds.push_back(gfx::Rect(start_x, 0, end_x - start_x, font.GetHeight()));
+  std::vector<Rect> bounds;
+  bounds.push_back(Rect(start_x, 0, end_x - start_x, font.GetHeight()));
   return bounds;
 }
 
-gfx::Rect RenderText::GetCursorBounds(size_t cursor_pos,
-                                      bool insert_mode) const {
-  gfx::Font font;
+Rect RenderText::GetCursorBounds(size_t cursor_pos, bool insert_mode) const {
+  const Font& font = default_style_.font;
   int x = font.GetStringWidth(text_.substr(0U, cursor_pos));
   DCHECK_GE(x, 0);
   int h = std::min(display_rect_.height(), font.GetHeight());
-  gfx::Rect bounds(x, (display_rect_.height() - h) / 2, 1, h);
+  Rect bounds(x, (display_rect_.height() - h) / 2, 1, h);
   if (!insert_mode && text_.length() != cursor_pos)
     bounds.set_width(font.GetStringWidth(text_.substr(0, cursor_pos + 1)) - x);
   return bounds;
