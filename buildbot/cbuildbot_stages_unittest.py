@@ -846,7 +846,7 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UpdateIndex')
     self.mox.StubOutWithMock(commands, 'PushImages')
     self.mox.StubOutWithMock(shutil, 'rmtree')
-    shutil.rmtree(mox.Regex(r'^/var/www'))
+    shutil.rmtree(mox.Regex(r'^/var/www'), ignore_errors=True)
 
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,

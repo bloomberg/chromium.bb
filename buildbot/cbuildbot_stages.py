@@ -987,7 +987,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       shutil.rmtree(self._local_archive_path, ignore_errors=True)
     else:
       # Buildbot: Clear out any leftover build artifacts, if present.
-      shutil.rmtree(full_archive_path)
+      shutil.rmtree(full_archive_path, ignore_errors=True)
 
     commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
