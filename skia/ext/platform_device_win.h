@@ -49,6 +49,9 @@ class SK_API PlatformDevice : public SkDevice {
   // Sets the opacity of each pixel in the specified region to be opaque.
   virtual void MakeOpaque(int x, int y, int width, int height) { }
 
+  // Returns if GDI is allowed to render text to this device.
+  virtual bool IsNativeFontRenderingAllowed() { return true; }
+
   // Loads a SkPath into the GDI context. The path can there after be used for
   // clipping or as a stroke. Returns false if the path failed to be loaded.
   static bool LoadPathToDC(HDC context, const SkPath& path);

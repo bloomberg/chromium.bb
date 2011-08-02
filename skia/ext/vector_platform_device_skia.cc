@@ -27,6 +27,10 @@ VectorPlatformDeviceSkia::VectorPlatformDeviceSkia(SkPDFDevice* pdf_device)
 VectorPlatformDeviceSkia::~VectorPlatformDeviceSkia() {
 }
 
+bool VectorPlatformDeviceSkia::IsNativeFontRenderingAllowed() {
+  return false;
+}
+
 PlatformDevice::PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
   // Even when drawing a vector representation of the page, we have to
   // provide a raster surface for plugins to render into - they don't have

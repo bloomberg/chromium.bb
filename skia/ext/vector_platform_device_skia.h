@@ -29,6 +29,9 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
 
   SkPDFDevice* PdfDevice() { return pdf_device_.get(); }
 
+  // PlatformDevice methods.
+  virtual bool IsNativeFontRenderingAllowed();
+
   virtual PlatformSurface BeginPlatformPaint();
   virtual void EndPlatformPaint();
 #if defined(OS_WIN)
