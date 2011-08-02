@@ -214,10 +214,10 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
       "https://www.google.com/support/chrome/bin/answer.py?answer=142065";
 #endif
 
-  // Ignore the click disposition and always open in a new top level tab.
   tab_contents_->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),
-      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      PageTransition::LINK);
   return false;  // Do not dismiss the info bar.
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -83,8 +84,9 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
 
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  // Ignore the click dispostion and always open in a new top level tab.
-  tab_contents_->OpenURL(GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
-                         GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+      chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      PageTransition::LINK);
   return false;
 }

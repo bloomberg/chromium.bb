@@ -401,9 +401,9 @@ FilePath GetLogFileName() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty()) {
 #if defined(OS_WIN)
-    return FilePath(UTF8ToWide(filename).c_str());
+    return FilePath(UTF8ToWide(filename));
 #elif defined(OS_POSIX)
-    return FilePath(filename.c_str());
+    return FilePath(filename);
 #endif
   }
 

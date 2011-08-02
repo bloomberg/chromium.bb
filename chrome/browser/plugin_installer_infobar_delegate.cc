@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 
+#include "chrome/browser/google/google_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
@@ -58,10 +59,10 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  // Ignore the click dispostion and always open in a new top level tab.
-  static const char kLearnMorePluginInstallerUrl[] = "http://www.google.com/"
-      "support/chrome/bin/answer.py?answer=95697&amp;topic=14687";
-  tab_contents_->OpenURL(GURL(kLearnMorePluginInstallerUrl), GURL(),
-                         NEW_FOREGROUND_TAB, PageTransition::LINK);
+  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+      "http://www.google.com/support/chrome/bin/answer.py?answer=95697&topic="
+      "14687")), GURL(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      PageTransition::LINK);
   return false;
 }

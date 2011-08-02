@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/page_transition_types.h"
@@ -77,8 +78,9 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  tab_contents_->tab_contents()->OpenURL(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1342714"),
+  tab_contents_->tab_contents()->OpenURL(
+      google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       PageTransition::LINK);
   return false;
