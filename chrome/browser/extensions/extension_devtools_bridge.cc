@@ -38,6 +38,7 @@ static std::string FormatDevToolsMessage(int id, const std::string& method) {
   DictionaryValue message;
   message.SetInteger("id", id);
   message.SetString("method", method);
+  message.Set("params", new DictionaryValue);
 
   std::string json;
   base::JSONWriter::Write(&message, false, &json);
