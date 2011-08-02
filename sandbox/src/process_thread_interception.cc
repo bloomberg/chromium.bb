@@ -424,4 +424,13 @@ HANDLE WINAPI TargetCreateThread(CreateThreadFunction orig_CreateThread,
   return thread;
 }
 
+// Cache the default LCID to avoid pinging CSRSS after lockdown.
+// TODO(jschuh): This approach will miss a default locale changes after
+// lockdown. In the future we may want to have the broker check instead.
+LCID WINAPI TargetGetUserDefaultLCID(
+    GetUserDefaultLCIDFunction orig_GetUserDefaultLCID) {
+  static LCID default_lcid = orig_GetUserDefaultLCID();
+  return default_lcid;
+}
+
 }  // namespace sandbox

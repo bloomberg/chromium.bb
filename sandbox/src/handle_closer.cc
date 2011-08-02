@@ -159,8 +159,16 @@ bool HandleCloser::SetupHandleInterceptions(InterceptionManager* manager) {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
       names != handles_to_close_.end() &&
       (names->second.empty() || names->second.size() == 0)) {
-    return INTERCEPT_EAT(manager, kKerneldllName, CreateThread,
-                         CREATE_THREAD_ID, 28);
+    if (!INTERCEPT_EAT(manager, kKerneldllName, CreateThread,
+                       CREATE_THREAD_ID, 28)) {
+      return false;
+    }
+    if (!INTERCEPT_EAT(manager, kKerneldllName, GetUserDefaultLCID,
+                       GET_USER_DEFAULT_LCID_ID, 4)) {
+      return false;
+    }
+
+    return true;
   }
 
   return true;

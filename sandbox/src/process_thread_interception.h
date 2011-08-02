@@ -44,6 +44,8 @@ typedef HANDLE (WINAPI *CreateThreadFunction)(
     DWORD dwCreationFlags,
     LPDWORD lpThreadId);
 
+typedef LCID (WINAPI *GetUserDefaultLCIDFunction)();
+
 // Interception of NtOpenThread on the child process.
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThread(
     NtOpenThreadFunction orig_OpenThread, PHANDLE thread,
@@ -87,6 +89,10 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateThread(
     LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size,
     LPTHREAD_START_ROUTINE start_address, PVOID parameter,
     DWORD creation_flags, LPDWORD thread_id);
+
+// Interception of GetUserDefaultLCID in kernel32.dll.
+SANDBOX_INTERCEPT LCID WINAPI TargetGetUserDefaultLCID(
+    GetUserDefaultLCIDFunction orig_GetUserDefaultLCID);
 
 }  // extern "C"
 

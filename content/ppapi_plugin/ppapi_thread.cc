@@ -140,8 +140,16 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   // Once we lower the token the sandbox is locked down and no new modules
   // can be loaded. TODO(cpu): consider changing to the loading style of
   // regular plugins.
-  if (g_target_services)
+  if (g_target_services) {
+    // Cause advapi32 to load before the sandbox is turned on.
+    unsigned int dummy_rand;
+    rand_s(&dummy_rand);
+    // Warm up language subsystems before the sandbox is turned on.
+    ::GetUserDefaultLangID();
+    ::GetUserDefaultLCID();
+
     g_target_services->LowerToken();
+  }
 #endif
 
   if (!library.is_valid()) {

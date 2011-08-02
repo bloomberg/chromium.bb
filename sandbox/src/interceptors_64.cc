@@ -79,6 +79,12 @@ HANDLE WINAPI TargetCreateThread64(
                             thread_id);
 }
 
+LCID WINAPI TargetGetUserDefaultLCID64(void) {
+  GetUserDefaultLCIDFunction orig_fn = reinterpret_cast<
+      GetUserDefaultLCIDFunction>(g_originals[GET_USER_DEFAULT_LCID_ID]);
+  return TargetGetUserDefaultLCID(orig_fn);
+}
+
 // -----------------------------------------------------------------------
 
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtCreateFile64(

@@ -50,6 +50,9 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateThread64(
     LPTHREAD_START_ROUTINE start_address, PVOID parameter,
     DWORD creation_flags, LPDWORD thread_id);
 
+// Interception of GetUserDefaultLCID on the child process.
+SANDBOX_INTERCEPT LCID WINAPI TargetGetUserDefaultLCID64();
+
 // -----------------------------------------------------------------------
 // Interceptors handled by the file system dispatcher.
 

@@ -118,6 +118,13 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
       parameters_.sandbox_info_.TargetServices();
 
   if (target_services) {
+    // Cause advapi32 to load before the sandbox is turned on.
+    unsigned int dummy_rand;
+    rand_s(&dummy_rand);
+    // Warm up language subsystems before the sandbox is turned on.
+    ::GetUserDefaultLangID();
+    ::GetUserDefaultLCID();
+
     target_services->LowerToken();
     return true;
   }
