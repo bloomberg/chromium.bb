@@ -274,6 +274,16 @@ var chrome = chrome || {};
     this.callbackMap_ = {};
   };
 
+  // Test if the given callback is registered for this event.
+  chrome.WebRequestEvent.prototype.hasListener = function(cb) {
+    return this.findListener_(cb) > -1;
+  };
+
+  // Test if any callbacks are registered fur thus event.
+  chrome.WebRequestEvent.prototype.hasListeners = function(cb) {
+    return this.subEvents_.length > 0;
+  };
+
   // Registers a callback to be called when this event is dispatched. If
   // opt_filter is specified, then the callback is only called for events that
   // match the given filters. If opt_extraInfo is specified, the given optional

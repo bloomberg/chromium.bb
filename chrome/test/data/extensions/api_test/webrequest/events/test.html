@@ -226,7 +226,7 @@ function removeListeners() {
     for (var cb in event.callbackMap_) {
       event.removeListener(cb);
     }
-    chrome.test.assertEq(0, event.subEvents_.length);
+    chrome.test.assertFalse(event.hasListeners());
   }
   helper(chrome.experimental.webRequest.onBeforeRequest);
   helper(chrome.experimental.webRequest.onBeforeSendHeaders);
