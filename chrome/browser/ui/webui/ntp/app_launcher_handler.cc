@@ -130,6 +130,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                            ExtensionPrefs::LAUNCH_DEFAULT));
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);
+  value->SetBoolean("is_webstore",
+      extension->id() == extension_misc::kWebStoreAppId);
 
   if (notification)
     value->Set("notification", SerializeNotification(*notification));

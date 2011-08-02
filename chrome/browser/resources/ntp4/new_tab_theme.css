@@ -25,12 +25,6 @@ body {
   color: $9; /* COLOR_NTP_LINK */
 }
 
-:link,
-:visited,
-.link {
-  color: $14; /* COLOR_NTP_LINK_UNDERLINE */
-}
-
 .app span,
 .link span {
   color: $8; /* COLOR_NTP_TEXT */

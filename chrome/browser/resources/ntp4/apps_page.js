@@ -178,6 +178,9 @@ cr.define('ntp4', function() {
 
       this.className = 'app';
 
+      var appContents = this.ownerDocument.createElement('div');
+      appContents.className = 'app-contents';
+
       var appImg = this.ownerDocument.createElement('img');
       appImg.src = this.appData_.icon_big;
       // We use a mask of the same image so CSS rules can highlight just the
@@ -186,16 +189,70 @@ cr.define('ntp4', function() {
       // We put a click handler just on the app image - so clicking on the
       // margins between apps doesn't do anything.
       appImg.addEventListener('click', this.onClick_.bind(this));
-      this.appendChild(appImg);
+      appContents.appendChild(appImg);
       this.appImg_ = appImg;
 
       var appSpan = this.ownerDocument.createElement('span');
       appSpan.textContent = this.appData_.name;
-      this.appendChild(appSpan);
+      appContents.appendChild(appSpan);
+      this.appendChild(appContents);
 
-      this.addEventListener('contextmenu', cr.ui.contextMenuHandler);
       this.addEventListener('keydown', cr.ui.contextMenuHandler);
       this.addEventListener('keyup', cr.ui.contextMenuHandler);
+
+      // This hack is here so that appContents.contextMenu will be the same as
+      // this.contextMenu.
+      var self = this;
+      appContents.__defineGetter__('contextMenu', function() {
+        return self.contextMenu;
+      });
+      appContents.addEventListener('contextmenu', cr.ui.contextMenuHandler);
+
+      this.isStore_ = this.appData_.is_webstore;
+      if (this.isStore_)
+        this.createAppsPromoExtras_();
+    },
+
+    /**
+     * Creates the apps-promo section of the app (should only be called for the
+     * webstore app).
+     * @private
+     */
+    createAppsPromoExtras_: function() {
+      this.classList.add('webstore');
+
+      this.appsPromoExtras_ = $('apps-promo-extras-template').cloneNode(true);
+      this.appsPromoExtras_.id = '';
+      this.appsPromoHeading_ =
+          this.appsPromoExtras_.querySelector('.apps-promo-heading');
+      this.appsPromoLink_ =
+          this.appsPromoExtras_.querySelector('.apps-promo-link');
+      this.appsPromoHide_ =
+          this.appsPromoExtras_.querySelector('.apps-promo-hide');
+
+      this.appendChild(this.appsPromoExtras_);
+      this.appsPromoExtras_.hidden = false;
+      // TODO(estade): A ping url needs to be set for the app icon.
+    },
+
+    /**
+     * Sets the apps promo appearance. If |data| is null, there is no promo. If
+     * |data| is non-null, it contains strings to be shown for the promo. The
+     * promo is only shown when the webstore app icon is alone on a page.
+     * @param {Object} data A dictionary that contains apps promo strings.
+     */
+    setAppsPromoData: function(data) {
+      if (data) {
+        this.classList.add('has-promo');
+      } else {
+        this.classList.remove('has-promo');
+        return;
+      }
+
+      this.appsPromoHeading_.textContent = data.promoHeader;
+      this.appsPromoLink_.href = data.promoLink;
+      this.appsPromoLink_.textContent = data.promoButton;
+      this.appsPromoHide_.textContent = data.promoExpire;
     },
 
     /**
@@ -206,9 +263,11 @@ cr.define('ntp4', function() {
      *     animate.
      */
     setBounds: function(size, x, y) {
-      this.appImg_.style.width = this.appImg_.style.height =
-          (size * APP_IMG_SIZE_FRACTION) + 'px';
+      var imgSize = size * APP_IMG_SIZE_FRACTION;
+      this.appImg_.style.width = this.appImg_.style.height = imgSize + 'px';
       this.style.width = this.style.height = size + 'px';
+      if (this.isStore_)
+        this.appsPromoExtras_.style.left = size + (imgSize - size) / 2 + 'px';
 
       this.style.left = x + 'px';
       this.style.right = x + 'px';
@@ -368,6 +427,12 @@ cr.define('ntp4', function() {
 
       chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
     },
+  };
+
+  AppsPage.setPromo = function(data) {
+    var store = document.querySelector('.webstore');
+    if (store)
+      store.setAppsPromoData(data);
   };
 
   return {

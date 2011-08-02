@@ -8,16 +8,16 @@
   text-align: center;
 }
 
-.app span {
+.app-contents > span {
   display: block;
+  overflow: hidden;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 /* TODO(estade): hover effect? press effect? */
-.app img {
+.app-contents > img {
   cursor: pointer;
   display: block;
   margin-left: auto;
@@ -34,17 +34,47 @@
   z-index: 1000;
 }
 
-/* Link (bookmark) tiles. */
-.link {
-  display: -webkit-box;
-  position: absolute;
-  -webkit-box-orient: vertical;
+/* Promo */
+/* Show the promo if the webstore has a promo and is the only app on the page.
+ */
+.tile:only-of-type > .has-promo > .app-contents > span {
+  display: none;
 }
 
-.link > * {
-  -webkit-box-flex: 1;
-}
-
-.link span {
+/* TODO(estade): animation? */
+.tile:only-of-type > .has-promo > .apps-promo-extras {
   display: block;
+}
+
+.apps-promo-extras {
+  display: none;
+  position: absolute;
+  text-align: left;
+  top: 0;
+}
+
+.apps-promo-heading {
+  font-weight: bold;
+  margin-bottom: 5px;
+  -webkit-margin-start: 3px;
+}
+
+.g-button-basic {
+  border-width: 6px 10px 12px 6px;
+  color: #fff !important;
+  display: inline-block;
+  font-size: 1.3em;
+  font-weight: bold;
+  padding: 2px 10px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-border-image: url('../ntp/g-button-chocobo.png') 6 10 12 6;
+}
+
+.apps-promo-hide {
+  font-size: 90%;
+  margin-top: 2px;
+  text-decoration: underline;
+  -webkit-margin-start: 5px;
 }

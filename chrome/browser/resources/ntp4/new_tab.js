@@ -276,6 +276,8 @@ cr.define('ntp4', function() {
       appsPages[pageIndex].appendApp(app);
     }
 
+    ntp4.AppsPage.setPromo(data.showPromo ? data : null);
+
     // Tell the slider about the pages
     updateSliderCards();
 

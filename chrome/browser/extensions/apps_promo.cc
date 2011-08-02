@@ -20,6 +20,19 @@ namespace {
 // The default logo for the promo.
 const char kDefaultPromoLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
 
+// Returns the string pref at |path|, using |fallback| as the default (if there
+// is no pref value present). |fallback| is used for debugging in concert with
+// --force-apps-promo-visible.
+std::string GetStringPref(const char* path, const std::string& fallback) {
+  PrefService* local_state = g_browser_process->local_state();
+  std::string retval(local_state->GetString(path));
+  if (retval.empty() && CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceAppsPromoVisible)) {
+    retval = fallback;
+  }
+  return retval;
+}
+
 } // namespace
 
 // static
@@ -85,30 +98,34 @@ bool AppsPromo::IsWebStoreSupportedForLocale() {
 
 // static
 std::string AppsPromo::GetPromoButtonText() {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetString(prefs::kNTPWebStorePromoButton);
+  return GetStringPref(prefs::kNTPWebStorePromoButton, "Click here now");
 }
 
 // static
 std::string AppsPromo::GetPromoId() {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetString(prefs::kNTPWebStorePromoId);
+  return GetStringPref(prefs::kNTPWebStorePromoId, "");
 }
 
 // static
 std::string AppsPromo::GetPromoHeaderText() {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetString(prefs::kNTPWebStorePromoHeader);
+  return GetStringPref(prefs::kNTPWebStorePromoHeader, "Get great apps!");
 }
 
 // static
 GURL AppsPromo::GetPromoLink() {
-  PrefService* local_state = g_browser_process->local_state();
-  return GURL(local_state->GetString(prefs::kNTPWebStorePromoLink));
+  return GURL(GetStringPref(prefs::kNTPWebStorePromoLink,
+                            "https://chrome.google.com/webstore"));
 }
 
 // static
 GURL AppsPromo::GetPromoLogo() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+    PrefService* local_state = g_browser_process->local_state();
+    GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
+    return logo_url;
+  }
+
+  // TODO(estade): rip this out after ntp4 is default.
   PrefService* local_state = g_browser_process->local_state();
   GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
   if (logo_url.is_valid() && logo_url.SchemeIs("data"))
@@ -118,8 +135,7 @@ GURL AppsPromo::GetPromoLogo() {
 
 // static
 std::string AppsPromo::GetPromoExpireText() {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetString(prefs::kNTPWebStorePromoExpire);
+  return GetStringPref(prefs::kNTPWebStorePromoExpire, "No thanks.");
 }
 
 // static
