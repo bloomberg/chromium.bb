@@ -159,7 +159,7 @@ class InputMethodEngine {
                              std::string* error) = 0;
 
   // Set the position of the cursor in the candidate window.
-  virtual bool SetCursorPosition(int context_id, int position,
+  virtual bool SetCursorPosition(int context_id, int candidate_id,
                                  std::string* error) = 0;
 
   // Set the list of items that appears in the language menu when this IME is

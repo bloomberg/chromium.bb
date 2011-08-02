@@ -261,6 +261,19 @@ class InputMethodManagerImpl : public InputMethodManager,
     extra_input_method_ids_.erase(id);
   }
 
+  virtual bool GetExtraDescriptor(
+      const std::string& id,
+      input_method::InputMethodDescriptor* descriptor) {
+    std::map<std::string, input_method::InputMethodDescriptor>::
+        const_iterator ix = extra_input_method_ids_.find(id);
+    if (ix != extra_input_method_ids_.end()) {
+      *descriptor = ix->second;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   virtual input_method::InputMethodDescriptor previous_input_method() const {
     if (previous_input_method_.id().empty()) {
       return input_method::GetFallbackInputMethodDescriptor();

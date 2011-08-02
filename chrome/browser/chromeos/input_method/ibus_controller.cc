@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 
 namespace chromeos {
 namespace input_method {
@@ -931,17 +932,22 @@ class IBusControllerImpl : public IBusController {
       }
     }
 
-    if (!engine_info) {
-      LOG(ERROR) << current_global_engine_id
-                 << " is not found in the input method white-list.";
-      return;
+    InputMethodDescriptor current_input_method;
+    if (engine_info) {
+      current_input_method =
+          InputMethodDescriptor::CreateInputMethodDescriptor(
+              engine_info->input_method_id,
+              engine_info->xkb_layout_id,
+              engine_info->language_code);
+    } else {
+      if (!InputMethodManager::GetInstance()->GetExtraDescriptor(
+          current_global_engine_id, &current_input_method)) {
+        LOG(ERROR) << current_global_engine_id
+                   << " is not found in the input method white-list.";
+        return;
+      }
     }
 
-    InputMethodDescriptor current_input_method =
-        InputMethodDescriptor::CreateInputMethodDescriptor(
-            engine_info->input_method_id,
-            engine_info->xkb_layout_id,
-            engine_info->language_code);
 
     VLOG(1) << "Updating the UI. ID:" << current_input_method.id()
             << ", keyboard_layout:" << current_input_method.keyboard_layout();

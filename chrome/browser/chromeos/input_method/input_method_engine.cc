@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
+#include <map>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
@@ -18,6 +20,7 @@ namespace chromeos {
 const char* kExtensionImePrefix = "_ext_ime_";
 const char* kErrorNotActive = "IME is not active";
 const char* kErrorWrongContext = "Context is not active";
+const char* kCandidateNotFound = "Candidate not found";
 
 InputMethodEngine::KeyboardEvent::KeyboardEvent() {
 }
@@ -80,7 +83,7 @@ class InputMethodEngineImpl
   virtual bool SetCandidates(int context_id,
                              const std::vector<Candidate>& candidates,
                              std::string* error);
-  virtual bool SetCursorPosition(int context_id, int position,
+  virtual bool SetCursorPosition(int context_id, int candidate_id,
                                  std::string* error);
   virtual void SetMenuItems(const std::vector<MenuItem>& items);
   virtual void UpdateMenuItems(const std::vector<MenuItem>& items);
@@ -123,6 +126,9 @@ class InputMethodEngineImpl
 
   // Mapping of candidate index to candidate id.
   std::vector<int> candidate_ids_;
+
+  // Mapping of candidate id to index.
+  std::map<int, int> candidate_indexs_;
 };
 
 InputMethodEngine* InputMethodEngine::CreateEngine(
@@ -314,13 +320,15 @@ bool InputMethodEngineImpl::SetCandidates(
     ibus_candidates.back().label = ix->label;
     ibus_candidates.back().annotation = ix->annotation;
 
+    // Store a mapping from the user defined ID to the candidate index.
+    candidate_indexs_[ix->id] = candidate_ids_.size();
     candidate_ids_.push_back(ix->id);
   }
   connection_->SetCandidates(ibus_candidates);
   return true;
 }
 
-bool InputMethodEngineImpl::SetCursorPosition(int context_id, int position,
+bool InputMethodEngineImpl::SetCursorPosition(int context_id, int candidate_id,
                                               std::string* error) {
   if (!active_) {
     *error = kErrorNotActive;
@@ -331,7 +339,14 @@ bool InputMethodEngineImpl::SetCursorPosition(int context_id, int position,
     return false;
   }
 
-  connection_->SetCursorPosition(position);
+  std::map<int, int>::const_iterator position =
+      candidate_indexs_.find(candidate_id);
+  if (position == candidate_indexs_.end()) {
+    *error = kCandidateNotFound;
+    return false;
+  }
+
+  connection_->SetCursorPosition(position->second);
   return true;
 }
 

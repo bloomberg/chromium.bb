@@ -79,6 +79,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
       g_object_unref(ibus_);
     }
     g_connections_->erase(engine_id_);
+    VLOG(1) << "Removing engine: " << engine_id_;
   }
 
   // Initializes the object. Returns true on success.
@@ -110,6 +111,9 @@ class IBusEngineControllerImpl : public IBusEngineController {
       return false;
     }
 
+    (*g_connections_)[engine_id_] = this;
+    VLOG(1) << "Adding engine: " << engine_id_;
+
     // Check the IBus connection status.
     bool result = true;
     if (ibus_bus_is_connected(ibus_)) {
@@ -125,6 +129,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void SetPreeditText(const char* text, int cursor) {
     if (engine_) {
+      VLOG(1) << "SetPreeditText";
       if (preedit_text_) {
         g_object_unref(preedit_text_);
         preedit_text_ = NULL;
@@ -138,6 +143,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   virtual void SetPreeditUnderline(int start, int end, int type) {
+    VLOG(1) << "SetPreeditUnderline";
     if (engine_ && preedit_text_) {
       // Translate the type to ibus's constants.
       int underline_type;
@@ -175,6 +181,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void CommitText(const char* text) {
     if (engine_) {
+      VLOG(1) << "CommitText";
       // Reset the preedit text when a commit occurs.
       SetPreeditText("", 0);
       if (preedit_text_) {
@@ -190,6 +197,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetTableVisible(bool visible) {
     table_visible_ = visible;
     if (engine_) {
+      VLOG(1) << "SetTableVisible";
       ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
                                       table_visible_);
       if (visible) {
@@ -203,6 +211,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCursorVisible(bool visible) {
     cursor_visible_ = visible;
     if (engine_) {
+      VLOG(1) << "SetCursorVisible";
       ibus_lookup_table_set_cursor_visible(engine_->table, visible);
       ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
                                       table_visible_);
@@ -212,6 +221,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetOrientationVertical(bool vertical) {
     vertical_ = vertical;
     if (engine_) {
+      VLOG(1) << "SetOrientationVertical";
       ibus_lookup_table_set_orientation(engine_->table,
                                         vertical ? IBUS_ORIENTATION_VERTICAL :
                                         IBUS_ORIENTATION_HORIZONTAL);
@@ -223,6 +233,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetPageSize(unsigned int size) {
     page_size_ = size;
     if (engine_) {
+      VLOG(1) << "SetPageSize";
       ibus_lookup_table_set_page_size(engine_->table, size);
       ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
                                       table_visible_);
@@ -231,6 +242,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void ClearCandidates() {
     if (engine_) {
+      VLOG(1) << "ClearCandidates";
       ibus_lookup_table_clear(engine_->table);
       ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
                                       table_visible_);
@@ -241,6 +253,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     // Text with this foreground color will be treated as an annotation.
     const guint kAnnotationForegroundColor = 0x888888;
     if (engine_) {
+      VLOG(1) << "SetCandidates";
       ibus_lookup_table_clear(engine_->table);
 
       for (std::vector<Candidate>::iterator ix = candidates.begin();
@@ -286,6 +299,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCandidateAuxText(const char* text) {
     aux_text_ = text;
     if (engine_) {
+      VLOG(1) << "SetCandidateAuxText";
       IBusText* ibus_text = static_cast<IBusText*>(
           g_object_ref_sink(ibus_text_new_from_string(aux_text_.c_str())));
       ibus_engine_update_auxiliary_text(IBUS_ENGINE(engine_), ibus_text,
@@ -298,6 +312,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCandidateAuxTextVisible(bool visible) {
     aux_text_visible_ = visible;
     if (engine_) {
+      VLOG(1) << "SetCandidateAuxTextVisible";
       IBusText* ibus_text = static_cast<IBusText*>(
           g_object_ref_sink(ibus_text_new_from_string(aux_text_.c_str())));
       ibus_engine_update_auxiliary_text(IBUS_ENGINE(engine_), ibus_text,
@@ -310,6 +325,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCursorPosition(unsigned int position) {
     cursor_position_ = position;
     if (engine_) {
+      VLOG(1) << "SetCursorPosition";
       ibus_lookup_table_set_cursor_pos(engine_->table, position);
       ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
                                       table_visible_);
@@ -347,6 +363,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     if (!ibus_) {
       return;
     }
+    VLOG(1) << "ConnectIBusSignals";
     g_signal_connect(ibus_,
                      "connected",
                      G_CALLBACK(IBusBusConnectedCallback),
@@ -394,6 +411,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
       return false;
     }
 
+    VLOG(1) << "MaybeCreateComponent";
     IBusComponent* component = ibus_component_new(bus_name_.c_str(),
                                                   description_.c_str(),
                                                   "",
@@ -418,13 +436,12 @@ class IBusEngineControllerImpl : public IBusEngineController {
     ibus_bus_register_component(ibus_, component);
     g_object_unref(component);
 
-    (*g_connections_)[engine_id_] = this;
-
     return true;
   }
 
   static gboolean OnProcessKeyEvent(IBusEngine* ibus_engine, guint keyval,
                                     guint keycode, guint modifiers) {
+    VLOG(1) << "OnProcessKeyEvent";
     // TODO: Use async version.
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnKeyEvent(!(modifiers & IBUS_RELEASE_MASK),
@@ -436,26 +453,31 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnReset(IBusEngine* ibus_engine) {
+    VLOG(1) << "OnReset";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnReset();
   }
 
   static void OnEnable(IBusEngine* ibus_engine) {
+    VLOG(1) << "OnEnable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnEnable();
   }
 
   static void OnDisable(IBusEngine* ibus_engine) {
+    VLOG(1) << "OnDisable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnDisable();
   }
 
   static void OnFocusIn(IBusEngine* ibus_engine) {
+    VLOG(1) << "OnFocusIn";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnFocusIn();
   }
 
   static void OnFocusOut(IBusEngine* ibus_engine) {
+    VLOG(1) << "OnFocusOut";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnFocusOut();
   }
@@ -478,12 +500,14 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   static void OnPropertyActivate(IBusEngine* ibus_engine,
                                  const gchar *prop_name, guint prop_state) {
+    VLOG(1) << "OnPropertyActivate";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnPropertyActivate(prop_name, prop_state);
   }
 
   static void OnCandidateClicked(IBusEngine* ibus_engine, guint index,
                                  guint button, guint state) {
+    VLOG(1) << "OnCandidateClicked";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     int pressed_button = 0;
     if (button & IBUS_BUTTON1_MASK) {
@@ -506,7 +530,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
         ->constructor(type, n_construct_params, construct_params);
     const gchar* name = ibus_engine_get_name((IBusEngine*)engine);
     ConnectionMap::iterator connection = g_connections_->find(name);
-    CHECK(connection != g_connections_->end());
+    if (connection == g_connections_->end()) {
+      LOG(ERROR) << "Connection never created: " << name;
+      return (GObject *) engine;
+    }
     connection->second->engine_ = engine;
     engine->connection = connection->second;
 
@@ -527,8 +554,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
   static void OnDestroy(IBusChromeOSEngine* chromeos_engine) {
     const gchar* name = ibus_engine_get_name((IBusEngine*)chromeos_engine);
     ConnectionMap::iterator connection = g_connections_->find(name);
-    CHECK(connection != g_connections_->end());
-    g_connections_->erase(name);
+    if (connection == g_connections_->end()) {
+      LOG(ERROR) << "Connection already destroyed, or never created: " << name;
+      return;
+    }
     if (chromeos_engine->table) {
       g_object_unref(chromeos_engine->table);
       chromeos_engine->table = NULL;

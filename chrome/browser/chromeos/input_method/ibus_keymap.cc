@@ -78,16 +78,17 @@ std::string GetIBusKey(int keyval) {
 
 std::string GetIBusKeyCode(int keycode) {
   // TODO: Support keyboard layouts properly.
-  return GetIBusKeyCode(keycode);
+  return GetIBusKey(keycode);
 }
 #else
-std::string GetIBusKey(int keyval, int keycode) {
+std::string GetIBusKey(int keyval) {
   return "";
 }
 
-std::string GetIBusKeyCode(int keyval, int keycode) {
+std::string GetIBusKeyCode(int keycode) {
   return "";
 }
+
 #endif // HAVE_IBUS
 
 }  // namespace input_method

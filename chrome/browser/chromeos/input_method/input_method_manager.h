@@ -132,6 +132,10 @@ class InputMethodManager {
   // Remove an input method from the language menu.
   virtual void RemoveActiveIme(const std::string& id) = 0;
 
+  virtual bool GetExtraDescriptor(
+      const std::string& id,
+      input_method::InputMethodDescriptor* descriptor) = 0;
+
   // Sets the IME state to enabled, and launches input method daemon if needed.
   // Returns true if the daemon is started. Otherwise, e.g. the daemon is
   // already started, returns false.
