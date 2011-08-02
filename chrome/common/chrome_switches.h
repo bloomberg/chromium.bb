@@ -32,7 +32,6 @@ extern const char kAllowWebSocketProxy[];
 extern const char kAllowWebUICompositing[];
 extern const char kAllowWebUIOobe[];
 extern const char kAlwaysAuthorizePlugins[];
-extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
 extern const char kAppId[];
 extern const char kAppsCheckoutURL[];
