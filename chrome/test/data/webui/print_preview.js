@@ -200,8 +200,7 @@ var fooIndex = 0;
 var barIndex = 1;
 
 // Test some basic assumptions about the print preview WebUI.
-// crbug.com/88282
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterList', function() {
+TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
   assertGE(printerList.options.length, printerListMinLength);
@@ -274,8 +273,7 @@ function checkSectionVisible(section, visible) {
 }
 
 // Test that disabled settings hide the disabled sections.
-// crbug.com/90476
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestSectionsDisabled', function() {
+TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
       will(callFunction(function() {
         updateWithPrinterCapabilities({
@@ -294,8 +292,7 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestSectionsDisabled', function() {
 });
 
 // Test that the color settings are set according to the printer capabilities.
-// crbug.com/90476
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestColorSettings', function() {
+TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
       will(callFunction(function() {
         updateWithPrinterCapabilities({
@@ -326,8 +323,7 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestColorSettings', function() {
 });
 
 // Test that changing the selected printer updates the preview.
-// crbug.com/90476
-TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterChangeUpdatesPreview',
+TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview',
        function() {
   var matchAnythingSave = new SaveArgumentsMatcher(ANYTHING);
 
@@ -376,8 +372,7 @@ PrintPreviewNoPDFWebUITest.prototype = {
 };
 
 // Test that error message is displayed when plugin doesn't exist.
-// crbug.com/90476
-TEST_F('PrintPreviewNoPDFWebUITest', 'FLAKY_TestErrorMessage', function() {
+TEST_F('PrintPreviewNoPDFWebUITest', 'TestErrorMessage', function() {
   var errorButton = $('error-button');
   assertNotEquals(null, errorButton);
   expectFalse(errorButton.disabled);
