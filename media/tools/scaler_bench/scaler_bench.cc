@@ -16,7 +16,7 @@
 #include "base/time.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

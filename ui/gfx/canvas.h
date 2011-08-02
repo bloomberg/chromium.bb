@@ -9,8 +9,9 @@
 #include <string>
 
 #include "base/string16.h"
-// TODO(beng): remove this include when we no longer depend on SkTypes.
-#include "skia/ext/platform_canvas.h"
+// TODO(beng): remove these includes when we no longer depend on SkTypes.
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ui_api.h"
 

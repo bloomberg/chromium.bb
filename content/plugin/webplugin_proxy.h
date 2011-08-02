@@ -27,6 +27,10 @@
 
 class PluginChannel;
 
+namespace skia {
+class PlatformCanvas;
+}
+
 namespace webkit {
 namespace npapi {
 class WebPluginDelegateImpl;

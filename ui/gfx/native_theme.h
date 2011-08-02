@@ -6,9 +6,11 @@
 #define UI_GFX_NATIVE_THEME_H_
 #pragma once
 
-#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ui_api.h"
+
+class SkCanvas;
 
 namespace gfx {
 

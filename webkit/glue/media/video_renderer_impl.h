@@ -13,7 +13,6 @@
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

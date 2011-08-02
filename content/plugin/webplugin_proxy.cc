@@ -17,6 +17,7 @@
 #include "content/plugin/npobject_util.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
+#include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "ui/gfx/blit.h"

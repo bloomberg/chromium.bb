@@ -15,6 +15,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
+#include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFont.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFontDescription.h"

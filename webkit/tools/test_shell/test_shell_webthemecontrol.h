@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,10 @@
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBTHEMECONTROL_H_
 
 #include "base/basictypes.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
+
+class SkCanvas;
 
 namespace TestShellWebTheme {
 
@@ -175,4 +176,3 @@ class Control {
 }  // namespace TestShellWebTheme
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBTHEMECONTROL_H_
-
