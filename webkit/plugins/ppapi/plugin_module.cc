@@ -146,14 +146,6 @@ void ReleaseResource(PP_Resource resource) {
   }
 }
 
-void* MemAlloc(uint32_t num_bytes) {
-  return malloc(num_bytes);
-}
-
-void MemFree(void* ptr) {
-  free(ptr);
-}
-
 PP_Time GetTime() {
   return TimeToPPTime(base::Time::Now());
 }

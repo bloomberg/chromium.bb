@@ -41,14 +41,6 @@ void ReleaseResource(PP_Resource resource) {
   PluginResourceTracker::GetInstance()->ReleaseResource(resource);
 }
 
-void* MemAlloc(uint32_t num_bytes) {
-  return malloc(num_bytes);
-}
-
-void MemFree(void* ptr) {
-  free(ptr);
-}
-
 double GetTime() {
   return TimeToPPTime(base::Time::Now());
 }
