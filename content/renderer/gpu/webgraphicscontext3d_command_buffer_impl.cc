@@ -39,6 +39,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 #endif  // defined(OS_MACOSX)
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
+      swapbuffers_complete_callback_(0),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -978,6 +979,8 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersComplete();
+  if (swapbuffers_complete_callback_)
+    swapbuffers_complete_callback_->onSwapBuffersComplete();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
@@ -992,6 +995,12 @@ WGC3Denum WebGraphicsContext3DCommandBufferImpl::getGraphicsResetStatusARB() {
   }
 
   return context_lost_reason_;
+}
+
+void WebGraphicsContext3DCommandBufferImpl::
+    setSwapBuffersCompleteCallbackCHROMIUM(
+    WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* cb) {
+  swapbuffers_complete_callback_ = cb;
 }
 
 namespace {

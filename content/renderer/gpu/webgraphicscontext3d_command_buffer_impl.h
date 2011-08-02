@@ -424,6 +424,10 @@ class WebGraphicsContext3DCommandBufferImpl
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
   virtual WGC3Denum getGraphicsResetStatusARB();
 
+  virtual void setSwapBuffersCompleteCallbackCHROMIUM(
+      WebGraphicsContext3D::
+          WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
+
  private:
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
@@ -442,6 +446,9 @@ class WebGraphicsContext3DCommandBufferImpl
 #endif
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;
+
+  WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM*
+      swapbuffers_complete_callback_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;
