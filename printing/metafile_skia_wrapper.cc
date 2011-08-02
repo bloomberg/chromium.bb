@@ -12,7 +12,8 @@ namespace printing {
 
 namespace {
 
-static const char* kMetafileKey = "CrMetafile";
+const char* kDraftModeKey = "CrDraftMode";
+const char* kMetafileKey = "CrMetafile";
 
 SkMetaData& getMetaData(SkCanvas* canvas) {
   DCHECK(canvas != NULL);
@@ -44,6 +45,21 @@ Metafile* MetafileSkiaWrapper::GetMetafileFromCanvas(SkCanvas* canvas) {
     return NULL;
 
   return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
+}
+
+// static
+void MetafileSkiaWrapper::SetDraftMode(SkCanvas* canvas, bool draft_mode) {
+  SkMetaData& meta = getMetaData(canvas);
+  meta.setBool(kDraftModeKey, draft_mode);
+}
+
+// static
+bool MetafileSkiaWrapper::GetDraftMode(SkCanvas* canvas) {
+  SkMetaData& meta = getMetaData(canvas);
+  bool draft_mode;
+  if (!meta.findBool(kDraftModeKey, &draft_mode))
+    draft_mode = false;
+  return draft_mode;
 }
 
 MetafileSkiaWrapper::MetafileSkiaWrapper(Metafile* metafile)

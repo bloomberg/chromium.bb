@@ -23,6 +23,10 @@ class MetafileSkiaWrapper : public SkRefCnt {
 
   static Metafile* GetMetafileFromCanvas(SkCanvas* canvas);
 
+  static void SetDraftMode(SkCanvas* canvas, bool draft_mode);
+
+  static bool GetDraftMode(SkCanvas* canvas);
+
  private:
   explicit MetafileSkiaWrapper(Metafile* metafile);
 
