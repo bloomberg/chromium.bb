@@ -132,8 +132,6 @@
       # ==================================================
       # crbug.com/89081
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
-      # crbug.com/85597
-      '-cookies.CookiesTest.testCookiesFile',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/50481, crbug.com/54942
