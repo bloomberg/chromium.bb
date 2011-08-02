@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,27 +37,16 @@ void StartHTML(std::string* out) {
   out->append(
       "<!DOCTYPE HTML>"
       "<html><title>Blob Storage Internals</title>"
-      "<style>"
+      "<meta http-equiv=\"X-WebKit-CSP\""
+      "  content=\"obejct-src 'none'; script-src 'none'\">\n"
+      "<style>\n"
       "body { font-family: sans-serif; font-size: 0.8em; }\n"
       "tt, code, pre { font-family: WebKitHack, monospace; }\n"
+      "form { display: inline }\n"
       ".subsection_body { margin: 10px 0 10px 2em; }\n"
       ".subsection_title { font-weight: bold; }\n"
-      "</style>"
-      "<script>\n"
-      // Unfortunately we can't do XHR from chrome://blob-internals
-      // because the chrome:// protocol restricts access.
-      //
-      // So instead, we will send commands by doing a form
-      // submission (which as a side effect will reload the page).
-      "function SubmitCommand(command) {\n"
-      "  document.getElementById('cmd').value = command;\n"
-      "  document.getElementById('cmdsender').submit();\n"
-      "}\n"
-      "</script>\n"
-      "</head><body>"
-      "<form action='' method=GET id=cmdsender>"
-      "<input type='hidden' id=cmd name='remove'>"
-      "</form>");
+      "</style>\n"
+      "</head><body>\n");
 }
 
 void EndHTML(std::string* out) {
@@ -94,10 +83,12 @@ void AddHTMLButton(const std::string& title,
   // No need to escape title since constant string is passed.
   std::string escaped_command = EscapeForHTML(command.c_str());
   base::StringAppendF(out,
-                      "<input type=\"button\" value=\"%s\" "
-                      "onclick=\"SubmitCommand('%s')\" />",
-                      title.c_str(),
-                      escaped_command.c_str());
+                      "<form action=\"\" method=\"GET\">\n"
+                      "<input type=\"hidden\" name=\"remove\" value=\"%s\">\n"
+                      "<input type=\"submit\" value=\"%s\">\n"
+                      "</form><br/>\n",
+                      escaped_command.c_str(),
+                      title.c_str());
 }
 
 }  // namespace
@@ -173,7 +164,6 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
        ++iter) {
     AddHTMLBoldText(iter->first, out);
     AddHTMLButton(kRemove, iter->first, out);
-    out->append("<br/>");
     GenerateHTMLForBlobData(*iter->second, out);
   }
 }

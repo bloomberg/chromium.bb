@@ -48,26 +48,22 @@ const char kViewCacheCommand[] = "view-cache";
 const char kViewEntryCommand[] = "view-entry";
 
 void EmitPageStart(std::string* out) {
-  DCHECK(out);
   out->append(
       "<!DOCTYPE HTML>\n"
       "<html><title>AppCache Internals</title>\n"
+      "<meta http-equiv=\"X-WebKit-CSP\""
+      "  content=\"object-src 'none'; script-src 'none'\">\n"
       "<style>\n"
       "body { font-family: sans-serif; font-size: 0.8em; }\n"
       "tt, code, pre { font-family: WebKitHack, monospace; }\n"
+      "form { display: inline; }\n"
       ".subsection_body { margin: 10px 0 10px 2em; }\n"
       ".subsection_title { font-weight: bold; }\n"
       "</style>\n"
-      "<script>\n"
-      "function PerformCommand(command, param) {\n"
-      "  location = location.pathname + '?' + command + '=' + param;\n"
-      "}\n"
-      "</script>\n"
       "</head><body>\n");
 }
 
 void EmitPageEnd(std::string* out) {
-  DCHECK(out);
   out->append("</body></html>\n");
 }
 
@@ -78,26 +74,31 @@ void EmitCommandButton(const std::string& label,
                        const std::string& command,
                        const std::string& param,
                        std::string* out) {
-  base::StringAppendF(out, "<input type=\"button\" value=\"%s\" "
-                      "onclick=\"PerformCommand('%s', '%s')\" />\n",
-                      label.c_str(), command.c_str(), param.c_str());
+  base::StringAppendF(out,
+                      "<form action=\"\" method=\"GET\">\n"
+                      "<input type=\"hidden\" name=\"%s\" value=\"%s\">\n"
+                      "<input type=\"submit\" value=\"%s\">\n"
+                      "</form>",
+                      EscapeForHTML(command).c_str(),
+                      EscapeForHTML(param).c_str(),
+                      EscapeForHTML(label).c_str());
 }
 
-void EmitListItem(const std::string& label,  const std::string& data,
+void EmitListItem(const std::string& label,
+                  const std::string& data,
                   std::string* out) {
-  DCHECK(out);
   out->append("<li>");
-  out->append(label);
+  out->append(EscapeForHTML(label));
   out->append(data);
   out->append("</li>\n");
 }
 
 void EmitAnchor(const std::string& url, const std::string& text,
                 std::string* out) {
-  out->append("<a href=");
-  out->append(url);
-  out->append(">");
-  out->append(text);
+  out->append("<a href=\"");
+  out->append(EscapeForHTML(url));
+  out->append("\">");
+  out->append(EscapeForHTML(text));
   out->append("</a><br/>");
 }
 
