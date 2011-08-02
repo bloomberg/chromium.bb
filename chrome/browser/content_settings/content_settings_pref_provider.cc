@@ -83,37 +83,6 @@ void SetDefaultContentSettings(DictionaryValue* default_settings) {
   }
 }
 
-const char* kPatternSeparator = ",";
-
-std::string CreatePatternString(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern) {
-  return primary_pattern.ToString() +
-         std::string(kPatternSeparator) +
-         secondary_pattern.ToString();
-}
-
-std::pair<ContentSettingsPattern, ContentSettingsPattern>
-    ParsePatternString(const std::string& pattern_str) {
-  DCHECK(!pattern_str.empty());
-  size_t pos = pattern_str.find(kPatternSeparator);
-
-  std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair;
-  if (pos == std::string::npos) {
-    pattern_pair.first = ContentSettingsPattern::FromString(pattern_str);
-    DCHECK(pattern_pair.first.IsValid());
-    pattern_pair.second = ContentSettingsPattern();
-  } else {
-    pattern_pair.first = ContentSettingsPattern::FromString(
-        pattern_str.substr(0, pos));
-    DCHECK(pattern_pair.first.IsValid());
-    pattern_pair.second = ContentSettingsPattern::FromString(
-        pattern_str.substr(pos+1, pattern_str.size() - pos - 1));
-    DCHECK(pattern_pair.second.IsValid());
-  }
-  return pattern_pair;
-}
-
 ContentSetting ValueToContentSetting(Value* value) {
   int int_value;
   value->GetAsInteger(&int_value);
@@ -865,6 +834,11 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
     const std::string& pattern_str(*i);
     std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
          ParsePatternString(pattern_str);
+    if (!pattern_pair.first.IsValid() ||
+        !pattern_pair.second.IsValid()) {
+      LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
+      continue;
+    }
 
     const std::string canonicalized_pattern_str = CreatePatternString(
         pattern_pair.first, pattern_pair.second);
@@ -1006,9 +980,11 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
       // Validate pattern string and skip it if it is invalid.
       std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
           ParsePatternString(key);
-      ContentSettingsPattern primary_pattern = pattern_pair.first;
-      if (!primary_pattern.IsValid())
+      const ContentSettingsPattern& primary_pattern = pattern_pair.first;
+      if (!primary_pattern.IsValid()) {
+        LOG(DFATAL) << "Invalid pattern strings: " << key;
         continue;
+      }
 
       // Copy dictionary value.
       // Get old settings.
@@ -1046,8 +1022,10 @@ void PrefProvider::SyncObsoletePref() {
       // Validate pattern string and skip it if it is invalid.
       std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
           ParsePatternString(key);
-      if (!pattern_pair.first.IsValid() || !pattern_pair.second.IsValid())
+      if (!pattern_pair.first.IsValid() || !pattern_pair.second.IsValid()) {
+        LOG(DFATAL) << "Invalid pattern strings: " << key;
         continue;
+      }
 
       // Copy dictionary
       DictionaryValue* dictionary = NULL;

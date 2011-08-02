@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_UTILS_H_
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/values.h"
