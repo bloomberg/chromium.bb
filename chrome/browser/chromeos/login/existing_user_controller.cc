@@ -366,6 +366,9 @@ void ExistingUserController::OnLoginSuccess(
     login_status_consumer_->OnLoginSuccess(username, password,
                                            credentials, pending_requests,
                                            using_oauth);
+
+  // Notifiy LoginDisplay to allow it provide visual feedback to user.
+  login_display_->OnLoginSuccess(username);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {

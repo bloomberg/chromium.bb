@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
 
@@ -21,6 +22,7 @@ namespace chromeos {
 class LoginDisplayWebUIHandler {
  public:
   virtual void ClearAndEnablePassword() = 0;
+  virtual void OnLoginSuccess(const std::string& username) = 0;
   virtual void ShowError(const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
@@ -55,6 +57,7 @@ class SigninScreenHandler : public BaseScreenHandler,
                             public LoginDisplayWebUIHandler {
  public:
   SigninScreenHandler();
+  virtual ~SigninScreenHandler();
 
   // Shows the sign in screen. |oobe_ui| indicates whether the signin
   // screen is for OOBE or usual sign-in flow.
@@ -71,6 +74,7 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // BaseLoginUIHandler implementation.
   virtual void ClearAndEnablePassword() OVERRIDE;
+  virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void ShowError(const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
@@ -100,6 +104,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handles Enterprise Enrollment screen toggling.
   void HandleToggleEnrollmentScreen(const base::ListValue* args);
 
+  // Handles 'launchHelpApp' request.
+  void HandleLaunchHelpApp(const base::ListValue* args);
+
   // Sends user list to account picker.
   void SendUserList();
 
@@ -115,9 +122,12 @@ class SigninScreenHandler : public BaseScreenHandler,
   // True if new user sign in flow is driven by the extension.
   bool extension_driven_;
 
+  // Help application used for help dialogs.
+  scoped_refptr<HelpAppLauncher> help_app_;
+
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };
 
-}  // namespae chromeoc
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_

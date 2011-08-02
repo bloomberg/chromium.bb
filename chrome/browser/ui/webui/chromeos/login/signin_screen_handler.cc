@@ -62,6 +62,9 @@ SigninScreenHandler::SigninScreenHandler()
   delegate_->SetWebUIHandler(this);
 }
 
+SigninScreenHandler::~SigninScreenHandler() {
+}
+
 void SigninScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("signinScreenTitle",
@@ -136,6 +139,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleRemoveUser));
   web_ui_->RegisterMessageCallback("toggleEnrollmentScreen",
       NewCallback(this, &SigninScreenHandler::HandleToggleEnrollmentScreen));
+  web_ui_->RegisterMessageCallback("launchHelpApp",
+      NewCallback(this, &SigninScreenHandler::HandleLaunchHelpApp));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -143,14 +148,24 @@ void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
-  web_ui_->CallJavascriptFunction("login.SigninScreen.reset");
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI");
+}
+
+void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
+  base::StringValue username_value(username);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
 }
 
 void SigninScreenHandler::ShowError(const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
-  // TODO(xiyuan): Pass error + help to a propery error UI and save topic id.
-  ClearAndEnablePassword();
+  base::StringValue error_message(error_text);
+  base::StringValue help_link(help_link_text);
+  base::FundamentalValue help_id(static_cast<int>(help_topic_id));
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showSignInError",
+                                  error_message,
+                                  help_link,
+                                  help_id);
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
@@ -208,6 +223,20 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 void SigninScreenHandler::HandleToggleEnrollmentScreen(
     const base::ListValue* args) {
   delegate_->ShowEnterpriseEnrollmentScreen();
+}
+
+void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
+  double help_topic_id;  // Javascript number is passed back as double.
+  if (!args->GetDouble(0, &help_topic_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!help_app_.get())
+    help_app_ = new HelpAppLauncher(
+        WebUILoginDisplay::GetLoginWindow()->GetNativeWindow());
+  help_app_->ShowHelpTopic(
+      static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
 void SigninScreenHandler::SendUserList() {

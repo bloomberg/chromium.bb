@@ -25,54 +25,62 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.ownerDocument.addEventListener('click',
                                           this.handleClick_.bind(this));
+      this.addEventListener('webkitTransitionEnd',
+                            this.handleTransitionEnd_.bind(this));
     },
 
     /**
      * Shows the bubble for given anchor element.
      * @param {!HTMLElement} el Anchor element of the bubble.
-     * @param {string} text Text message to show in bubble.
+     * @param {HTMLElement} content Content to show in bubble.
      * @public
      */
-    showTextForElement: function(el, text) {
-      // Just in cse previous fade out animation is not finished.
-      this.removeEventListener('webkitTransitionEnd',
-                               this.handleFadedEnd_.bind(this));
-
+    showContentForElement: function(el, content) {
       const ARROW_OFFSET = 14;
+      const HORIZONTAL_PADDING = 10;
       const VERTICAL_PADDING = 5;
 
       var elementOrigin = Oobe.getOffset(el);
-      var anchorX = elementOrigin.left + el.offsetWidth / 2 - ARROW_OFFSET;
+      var anchorX = elementOrigin.left + HORIZONTAL_PADDING - ARROW_OFFSET;
       var anchorY = elementOrigin.top + el.offsetHeight + VERTICAL_PADDING;
 
       this.style.left = anchorX + 'px';
       this.style.top = anchorY + 'px';
 
       this.anchor_ = el;
-      this.textContent = text;
+      this.innerHTML = '';
+      this.appendChild(content);
       this.hidden = false;
       this.classList.remove('faded');
+    },
+
+    /**
+     * Shows the bubble for given anchor element.
+     * @param {!HTMLElement} el Anchor element of the bubble.
+     * @param {string} text Text content to show in bubble.
+     * @public
+     */
+    showTextForElement: function(el, text) {
+      var span = this.ownerDocument.createElement('span');
+      span.textContent = text;
+      this.showContentForElement(el, span);
     },
 
     /**
      * Hides the bubble.
      */
     hide: function() {
-      if (!this.classList.contains('faded')) {
+      if (!this.classList.contains('faded'))
         this.classList.add('faded');
-        this.addEventListener('webkitTransitionEnd',
-                              this.handleFadedEnd_.bind(this));
-      }
     },
 
     /**
      * Handler for faded transition end.
      * @private
      */
-    handleFadedEnd_: function(e) {
-      this.removeEventListener('webkitTransitionEnd',
-                               this.handleFadedEnd_.bind(this));
-      this.hidden = true;
+    handleTransitionEnd_: function(e) {
+      if (this.classList.contains('faded'))
+        this.hidden = true;
     },
 
     /**

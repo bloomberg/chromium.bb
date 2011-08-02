@@ -62,6 +62,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void OnUserImageChanged(UserManager::User* user) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnFadeOut() OVERRIDE;
+  virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void SetUIEnabled(bool is_enabled) OVERRIDE;
   virtual void SelectPod(int index) OVERRIDE;
   virtual void ShowError(int error_msg_id,

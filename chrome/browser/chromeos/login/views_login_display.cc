@@ -171,6 +171,9 @@ void ViewsLoginDisplay::OnFadeOut() {
   controllers_[selected_view_index_]->StopThrobber();
 }
 
+void ViewsLoginDisplay::OnLoginSuccess(const std::string& username) {
+}
+
 void ViewsLoginDisplay::SetUIEnabled(bool is_enabled) {
   // Send message to WM to enable/disable click on windows.
   WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);

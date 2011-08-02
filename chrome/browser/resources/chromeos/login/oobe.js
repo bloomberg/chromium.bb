@@ -11,6 +11,9 @@ var localStrings = new LocalStrings();
 
 
 cr.define('cr.ui', function() {
+  const SCREEN_SIGNIN = 'signin';
+  const SCREEN_ACCOUNT_PICKER = 'account-picker';
+
   /**
   * Constructs an Out of box controller. It manages initialization of screens,
   * transitions, error messages display.
@@ -55,7 +58,7 @@ cr.define('cr.ui', function() {
           }
         case 'E':
           var currentStepId = this.screens_[this.currentStep_];
-          if (currentStepId == 'signin') {
+          if (currentStepId == SCREEN_SIGNIN) {
             if (e.altKey && e.ctrlKey) {
               chrome.send('toggleEnrollmentScreen', []);
               break;
@@ -431,6 +434,70 @@ cr.define('cr.ui', function() {
    */
   Oobe.isOobeUI = function() {
     return !document.body.classList.contains('login-display');
+  };
+
+  /**
+   * Resets sign-in input fields.
+   */
+  Oobe.resetSigninUI = function() {
+    var currentScreenId = Oobe.getInstance().currentScreen.id;
+    $('signin').reset(currentScreenId == SCREEN_SIGNIN);
+    $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
+  };
+
+  /**
+   * Shows sign-in error bubble.
+   * @param {string} message Error message to show.
+   * @param {string} link Text to use for help link.
+   * @param {number} helpId Help topic Id associated with help link.
+   */
+  Oobe.showSignInError = function(message, link, helpId) {
+    var currentScreenId = Oobe.getInstance().currentScreen.id;
+    var anchor = undefined;
+    if (currentScreenId == SCREEN_SIGNIN) {
+      anchor = $('email');
+
+      // Show email field so that bubble shows up at the right location.
+      $('signin').reset(true);
+    } else if (currentScreenId == SCREEN_ACCOUNT_PICKER &&
+               $('pod-row').activated) {
+      anchor = $('pod-row').activated.mainInput;
+    }
+    if (!anchor) {
+      console.log('Warning: Failed to find anchor element for error :' +
+                  message);
+      return;
+    }
+
+    var error = document.createElement('div');
+
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.textContent = message;
+    error.appendChild(messageDiv);
+
+    if (link) {
+      messageDiv.classList.add('error-message-padding');
+
+      var helpLink = document.createElement('a');
+      helpLink.href = '#';
+      helpLink.textContent = link;
+      helpLink.onclick = function(e) {
+        chrome.send('launchHelpApp', [helpId]);
+      }
+      error.appendChild(helpLink);
+    }
+
+    $('bubble').showContentForElement(anchor, error);
+  };
+
+  /**
+   * Handles login success notification.
+   */
+  Oobe.onLoginSuccess = function(username) {
+    if (Oobe.getInstance().currentScreen.id == SCREEN_ACCOUNT_PICKER) {
+      $('pod-row').startAuthenticatedAnimation();
+    }
   };
 
   // Export

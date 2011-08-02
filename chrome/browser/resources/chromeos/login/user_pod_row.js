@@ -153,26 +153,50 @@ cr.define('login', function() {
     },
 
     /**
-     * Focuses on input element.
+     * Gets main input element.
      */
-    focusInput: function() {
-      if (!this.isGuest) {
-        this.passwordElement.focus();
+    get mainInput() {
+      if (this.isGuest) {
+        return this.enterButtonElement;
       } else {
-        this.enterButtonElement.focus();
+        return this.passwordElement;
       }
     },
 
     /**
-     * Actiavtes the pod.
+     * Focuses on input element.
+     */
+    focusInput: function() {
+      this.mainInput.focus();
+    },
+
+    /**
+     * Activates the pod.
+     * @return {boolean} True if activated successfully.
      */
     activate: function() {
       if (this.isGuest) {
         chrome.send('launchIncognito');
       } else {
+        if (!this.passwordElement.value)
+          return false;
+
         chrome.send('authenticateUser',
             [this.email_, this.passwordElement.value]);
       }
+
+      return true;
+    },
+
+    /**
+     * Resets input field.
+     * @param {boolean} takeFocus True to take focus.
+     */
+    reset: function(takeFocus) {
+      this.passwordElement.value = '';
+
+      if (takeFocus)
+        this.mainInput.focus();
     },
 
     /**
@@ -206,6 +230,9 @@ cr.define('login', function() {
 
     // Focused pod.
     focusedPod_ : undefined,
+
+    // Acitvated pod, i.e. the pod of current login attempt.
+    activatedPod_: undefined,
 
     /** @inheritDoc */
     decorate: function() {
@@ -336,12 +363,22 @@ cr.define('login', function() {
 
         this.focusedPod_ = pod;
         this.scrollPodIntoView(pod);
+
+        // TODO(xiyuan): Put this in a proper place.
+        $('bubble').hide();
       } else {
         for (var i = 0; i < this.pods.length; ++i) {
           this.pods[i].classList.remove('faded');
         }
         this.focusedPod_ = undefined;
       }
+    },
+
+    /**
+     * Returns the currently activated pod.
+     */
+    get activated() {
+      return this.activatedPod_;
     },
 
     /**
@@ -352,9 +389,19 @@ cr.define('login', function() {
       if (!pod)
         return;
 
-      pod.activate();
+      if (pod.activate()) {
+        this.activatedPod_ = pod;
 
-      var activated = this.findIndex_(pod);
+        for (var i = 0; i < this.pods.length; ++i)
+          this.pods[i].mainInput.disabled = true;
+      }
+    },
+
+    /**
+     * Start login success animation.
+     */
+    startAuthenticatedAnimation: function() {
+      var activated = this.findIndex_(this.activatedPod_);
       if (activated == -1)
         return;
 
@@ -366,6 +413,18 @@ cr.define('login', function() {
         else
           this.pods[i].classList.add('zoom');
       }
+    },
+
+    /**
+     * Resets input UI.
+     * @param {boolean} takeFocus True to take focus.
+     */
+    reset: function(takeFocus) {
+      for (var i = 0; i < this.pods.length; ++i)
+        this.pods[i].mainInput.disabled = false;
+
+      if (this.activatedPod_)
+        this.activatedPod_.reset(takeFocus);
     },
 
     /**
@@ -385,6 +444,9 @@ cr.define('login', function() {
       var editing = false;
       if (e.target.tagName == 'INPUT' && e.target.value)
         editing = true;
+
+      // TODO(xiyuan): Put this in a proper place.
+      $('bubble').hide();
 
       switch (e.keyIdentifier) {
         case 'Left':

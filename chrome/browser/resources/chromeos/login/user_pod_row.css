@@ -97,10 +97,12 @@ podrow {
   position: absolute;
   width: 170px;
   top: 193px;
+  visibility: hidden;
 }
 
 .pod.focused input[type='password'] {
   opacity: 1;
+  visibility: visible;
 }
 
 .pod input[type='password']:focus {
@@ -124,10 +126,12 @@ podrow {
   padding: 0;
   position: absolute;
   top: 193px;
+  visibility: hidden;
 }
 
 .pod.focused .enter-guest-button {
   opacity: 1;
+  visibility: visible;
 }
 
 .remove-user-button {

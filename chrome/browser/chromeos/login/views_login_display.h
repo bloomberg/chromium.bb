@@ -38,16 +38,17 @@ class ViewsLoginDisplay : public LoginDisplay,
   // LoginDisplay implementation:
   virtual void Init(const std::vector<UserManager::User>& users,
                     bool show_guest,
-                    bool show_new_user);
-  virtual void OnBeforeUserRemoved(const std::string& username);
-  virtual void OnUserImageChanged(UserManager::User* user);
-  virtual void OnUserRemoved(const std::string& username);
-  virtual void OnFadeOut();
-  virtual void SetUIEnabled(bool is_enabled);
-  virtual void SelectPod(int index);
+                    bool show_new_user) OVERRIDE;
+  virtual void OnBeforeUserRemoved(const std::string& username) OVERRIDE;
+  virtual void OnUserImageChanged(UserManager::User* user) OVERRIDE;
+  virtual void OnUserRemoved(const std::string& username) OVERRIDE;
+  virtual void OnFadeOut() OVERRIDE;
+  virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
+  virtual void SetUIEnabled(bool is_enabled) OVERRIDE;
+  virtual void SelectPod(int index) OVERRIDE;
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
-                         HelpAppLauncher::HelpTopic help_topic_id);
+                         HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
   // UserController::Delegate implementation:
   virtual void CreateAccount() OVERRIDE;

@@ -87,12 +87,15 @@ cr.define('login', function() {
 
     /**
      * Clears input fields and switches to input mode.
+     * @param {boolean} takeFocus True to take focus.
      */
-    reset: function() {
+    reset: function(takeFocus) {
       $('email').value = '';
       $('password').value = '';
-      $('email').focus();
       this.state = SigninScreen.STATE_INPUT;
+
+      if (takeFocus)
+        $('email').focus();
     },
 
     /**
@@ -149,17 +152,9 @@ cr.define('login', function() {
      */
     handleEmailBlur_: function(e) {
       var emailElement = $('email');
-      if (emailElement.value.indexOf('@') == -1)
+      if (emailElement.value && emailElement.value.indexOf('@') == -1)
         emailElement.value += '@gmail.com';
     }
-  };
-
-  /**
-   * Expose 'reset' method that resets sign-in screen.
-   * @public
-   */
-  SigninScreen.reset = function() {
-    $('signin').reset();
   };
 
   return {

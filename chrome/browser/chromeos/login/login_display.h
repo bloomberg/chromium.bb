@@ -88,6 +88,9 @@ class LoginDisplay : public RemoveUserDelegate {
   // (e.g. hide throbber, etc.).
   virtual void OnFadeOut() = 0;
 
+  // Called when user is successfully authenticated.
+  virtual void OnLoginSuccess(const std::string& username) = 0;
+
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;
 

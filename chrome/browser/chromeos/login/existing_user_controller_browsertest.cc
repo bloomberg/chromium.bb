@@ -41,6 +41,7 @@ class MockLoginDisplay : public LoginDisplay {
   MOCK_METHOD3(Init, void(const UserVector&, bool, bool));
   MOCK_METHOD1(OnUserImageChanged, void(UserManager::User*));
   MOCK_METHOD0(OnFadeOut, void(void));
+  MOCK_METHOD1(OnLoginSuccess, void(const std::string&));
   MOCK_METHOD1(SetUIEnabled, void(bool));
   MOCK_METHOD1(SelectPod, void(int));
   MOCK_METHOD3(ShowError, void(int, int, HelpAppLauncher::HelpTopic));
