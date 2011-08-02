@@ -165,7 +165,7 @@ from regular windows. Please also consult the <a
 var config = {
   mode: "fixed_servers",
   rules: {
-    httpProxy: {
+    proxyForHttp: {
       scheme: "socks5",
       host: "1.2.3.4"
     },
@@ -213,7 +213,7 @@ chrome.proxy.settings.get(
 Note that the <code>value</code> object passed to <code>set()</code> is not
 identical to the <code>value</code> object passed to callback function of
 <code>get()</code>. The latter will contain a
-<code>rules.httpProxy.port</code> element.
+<code>rules.proxyForHttp.port</code> element.
 </p>
 
 <!-- END AUTHORED CONTENT -->

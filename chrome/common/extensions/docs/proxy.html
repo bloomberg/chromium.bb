@@ -502,7 +502,7 @@ from regular windows. Please also consult the <a href="types.html#ChromeSetting"
 <pre>var config = {
   mode: "fixed_servers",
   rules: {
-    httpProxy: {
+    proxyForHttp: {
       scheme: "socks5",
       host: "1.2.3.4"
     },
@@ -547,7 +547,7 @@ proxy settings can be determined by another extension or by a policy. See the <a
 Note that the <code>value</code> object passed to <code>set()</code> is not
 identical to the <code>value</code> object passed to callback function of
 <code>get()</code>. The latter will contain a
-<code>rules.httpProxy.port</code> element.
+<code>rules.proxyForHttp.port</code> element.
 </p>
 
 <!-- END AUTHORED CONTENT -->
