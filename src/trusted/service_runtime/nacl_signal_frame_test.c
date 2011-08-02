@@ -36,7 +36,6 @@ int main() {
   char *stack;
   stack_t st;
   int rc;
-  struct NaClApp nacl_app;
 
   NaClLogModuleInit();
   NaClInitGlobals();
@@ -54,16 +53,6 @@ int main() {
   st.ss_flags = 0;
   rc = sigaltstack(&st, NULL);
   CHECK(rc == 0);
-
-  /*
-   * Register a non-NULL NaClApp pointer in order to exercise the %cs
-   * value check in NaClSignalContextIsUntrusted().  This is necessary
-   * because NaClSignalContextIsUntrusted() checks g_SignalNAP first.
-   * Admittedly this is incestuous knowledge of the software under
-   * test, but it is difficult to test otherwise.
-   */
-  memset(&nacl_app, 0, sizeof(nacl_app));
-  NaClSignalRegisterApp(&nacl_app);
 
   /*
    * Trigger a signal.  This should produce a "** Signal X from

@@ -264,7 +264,3 @@ void NaClSignalHandlerFini() {
   /* We try to lock, but since we are shutting down, we ignore failures. */
   NaClSignalHandlerFiniPlatform();
 }
-
-void NaClSignalRegisterApp(struct NaClApp *nap) {
-  UNREFERENCED_PARAMETER(nap);
-}

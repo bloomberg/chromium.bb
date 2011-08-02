@@ -110,11 +110,6 @@ void NaClSignalAssertNoHandlers(void);
 ssize_t NaClSignalErrorMessage(const char *str);
 
 /*
- * Register NaClApp for use in the signal handler.
- */
-void NaClSignalRegisterApp(struct NaClApp *nap);
-
-/*
  * Add a signal handler to the front of the list.
  * Returns an id for the handler or returns 0 on failure.
  * This function is not thread-safe and should only be

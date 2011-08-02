@@ -797,9 +797,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
-  /* We are ready to distinguish crashes in trusted and untrusted code. */
-  NaClSignalRegisterApp(nap);
-
   /* NaClApp initialization is completed, call OOP debugger hook. */
   NaClOopDebuggerAppCreateHook(nap);
 
