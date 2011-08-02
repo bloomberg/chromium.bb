@@ -1009,7 +1009,9 @@ void PluginPpapi::ShutdownProxy() {
                 reinterpret_cast<void*>(ppapi_proxy_)));
   if (BrowserPpp::is_valid(ppapi_proxy_)) {
     ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
-    ppapi_proxy_->ShutdownModule();
+    if (BrowserPpp::is_valid(ppapi_proxy_)) {
+      ppapi_proxy_->ShutdownModule();
+    }
   }
   delete ppapi_proxy_;
   ppapi_proxy_ = NULL;
