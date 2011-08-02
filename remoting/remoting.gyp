@@ -580,6 +580,8 @@
         'protocol/auth_token_utils.h',
         'protocol/buffered_socket_writer.cc',
         'protocol/buffered_socket_writer.h',
+        'protocol/channel_authenticator.cc',
+        'protocol/channel_authenticator.h',
         'protocol/client_control_sender.cc',
         'protocol/client_control_sender.h',
         'protocol/client_message_dispatcher.cc',

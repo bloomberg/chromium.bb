@@ -4,7 +4,7 @@
 
 #include "remoting/protocol/jingle_stream_connector.h"
 
-#include "crypto/hmac.h"
+#include "base/bind.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "net/base/cert_status_flags.h"
@@ -21,12 +21,6 @@ namespace remoting {
 namespace protocol {
 
 namespace {
-
-// Size of the HMAC-SHA-1 authentication digest.
-const int kAuthDigestLength = 20;
-
-// Labels for use when exporting the SSL master keys.
-const char kClientSslExporterLabel[] = "EXPORTER-remoting-channel-auth-client";
 
 // Value is choosen to balance the extra latency against the reduced
 // load due to ACK traffic.
@@ -76,11 +70,7 @@ JingleStreamConnector::JingleStreamConnector(
       ALLOW_THIS_IN_INITIALIZER_LIST(tcp_connect_callback_(
           this, &JingleStreamConnector::OnTCPConnect)),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_connect_callback_(
-          this, &JingleStreamConnector::OnSSLConnect)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(auth_write_callback_(
-          this, &JingleStreamConnector::OnAuthBytesWritten)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(auth_read_callback_(
-          this, &JingleStreamConnector::OnAuthBytesRead)) {
+          this, &JingleStreamConnector::OnSSLConnect)) {
 }
 
 JingleStreamConnector::~JingleStreamConnector() {
@@ -197,156 +187,29 @@ void JingleStreamConnector::OnSSLConnect(int result) {
 }
 
 void JingleStreamConnector::AuthenticateChannel() {
-  DCHECK(CalledOnValidThread());
   if (initiator_) {
-    // Allocate a buffer to write the authentication digest.
-    scoped_refptr<net::IOBuffer> write_buf =
-        new net::IOBuffer(kAuthDigestLength);
-    auth_write_buf_ = new net::DrainableIOBuffer(write_buf,
-                                                 kAuthDigestLength);
+    authenticator_.reset(new ClientChannelAuthenticator(ssl_client_socket_));
+  } else {
+    authenticator_.reset(new HostChannelAuthenticator(ssl_server_socket_));
+  }
 
-    // Generate the auth digest to send.
-    if (!GetAuthBytes(kClientSslExporterLabel, auth_write_buf_->data())) {
+  authenticator_->Authenticate(
+      session_->shared_secret(),
+      base::Bind(&JingleStreamConnector::OnAuthenticationDone,
+                 base::Unretained(this)));
+}
+
+void JingleStreamConnector::OnAuthenticationDone(
+    ChannelAuthenticator::Result result) {
+  switch (result) {
+    case ChannelAuthenticator::SUCCESS:
+      NotifyDone(socket_.release());
+      break;
+
+    case ChannelAuthenticator::FAILURE:
       NotifyError();
-      return;
-    }
-
-    DoAuthWrite();
-  } else {
-    // Read an authentication digest.
-    auth_read_buf_ = new net::GrowableIOBuffer();
-    auth_read_buf_->SetCapacity(kAuthDigestLength);
-    DoAuthRead();
-  }
-}
-
-void JingleStreamConnector::DoAuthWrite() {
-  while (true) {
-    int result = socket_->Write(auth_write_buf_,
-                                auth_write_buf_->BytesRemaining(),
-                                &auth_write_callback_);
-    if (result == net::ERR_IO_PENDING)
-      break;
-    if (!HandleAuthBytesWritten(result))
       break;
   }
-}
-
-void JingleStreamConnector::DoAuthRead() {
-  while (true) {
-    int result = socket_->Read(auth_read_buf_,
-                               auth_read_buf_->RemainingCapacity(),
-                               &auth_read_callback_);
-    if (result == net::ERR_IO_PENDING)
-      break;
-    if (!HandleAuthBytesRead(result))
-      break;
-  }
-}
-
-void JingleStreamConnector::OnAuthBytesWritten(int result) {
-  if (HandleAuthBytesWritten(result))
-    DoAuthWrite();
-}
-
-void JingleStreamConnector::OnAuthBytesRead(int result) {
-  if (HandleAuthBytesRead(result))
-    DoAuthRead();
-}
-
-bool JingleStreamConnector::HandleAuthBytesWritten(int result) {
-  DCHECK(CalledOnValidThread());
-
-  if (result <= 0) {
-    LOG(ERROR) << "Error writing authentication: " << result;
-    NotifyError();
-    return false;
-  }
-
-  auth_write_buf_->DidConsume(result);
-  if (auth_write_buf_->BytesRemaining() > 0)
-    return true;
-
-  NotifyDone(socket_.release());
-  return false;
-}
-
-bool JingleStreamConnector::HandleAuthBytesRead(int read_result) {
-  DCHECK(CalledOnValidThread());
-
-  if (read_result <= 0) {
-    LOG(ERROR) << "Error reading authentication: " << read_result;
-    NotifyError();
-    return false;
-  }
-
-  auth_read_buf_->set_offset(auth_read_buf_->offset() + read_result);
-  if (auth_read_buf_->RemainingCapacity() > 0)
-    return true;
-
-  if (!VerifyAuthBytes(
-          kClientSslExporterLabel,
-          auth_read_buf_->StartOfBuffer())) {
-    NotifyError();
-    return false;
-  }
-
-  NotifyDone(socket_.release());
-  return false;
-}
-
-bool JingleStreamConnector::VerifyAuthBytes(const char* label,
-                                            const char* auth_bytes) {
-  char expected[kAuthDigestLength];
-  if (!GetAuthBytes(label, expected))
-    return false;
-  // Compare the received and expected digests in fixed time, to limit the
-  // scope for timing attacks.
-  uint8 result = 0;
-  for (unsigned i = 0; i < sizeof(expected); i++) {
-    result |= auth_bytes[i] ^ expected[i];
-  }
-  if (result != 0) {
-    LOG(ERROR) << "Mismatched authentication";
-    return false;
-  }
-  return true;
-}
-
-bool JingleStreamConnector::GetAuthBytes(const char* label,
-                                         char* out_bytes) {
-  // Fetch keying material from the socket.
-  unsigned char key_material[kAuthDigestLength];
-  int result;
-  if (initiator_) {
-    result = ssl_client_socket_->ExportKeyingMaterial(
-        kClientSslExporterLabel, "", key_material, sizeof(key_material));
-  } else {
-    result = ssl_server_socket_->ExportKeyingMaterial(
-        kClientSslExporterLabel, "", key_material, sizeof(key_material));
-  }
-  if (result != net::OK) {
-    LOG(ERROR) << "Error fetching keying material: " << result;
-    return false;
-  }
-
-  // Generate auth digest based on the keying material and shared secret.
-  crypto::HMAC response(crypto::HMAC::SHA1);
-  if (!response.Init(session_->shared_secret())) {
-    NOTREACHED() << "HMAC::Init failed";
-    return false;
-  }
-  base::StringPiece message(reinterpret_cast<const char*>(key_material),
-                            sizeof(key_material));
-  if (!response.Sign(
-          message,
-          reinterpret_cast<unsigned char*>(out_bytes),
-          kAuthDigestLength)) {
-    NOTREACHED() << "HMAC::Sign failed";
-    return false;
-  }
-
-  return true;
 }
 
 void JingleStreamConnector::NotifyDone(net::StreamSocket* socket) {

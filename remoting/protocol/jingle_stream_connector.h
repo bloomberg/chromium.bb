@@ -5,9 +5,9 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_STREAM_CONNECTOR_H_
 #define REMOTING_PROTOCOL_JINGLE_STREAM_CONNECTOR_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
+#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/jingle_channel_connector.h"
 #include "remoting/protocol/session.h"
 
@@ -61,14 +61,7 @@ class JingleStreamConnector : public JingleChannelConnector {
   void OnSSLConnect(int result);
 
   void AuthenticateChannel();
-  void DoAuthWrite();
-  void DoAuthRead();
-  void OnAuthBytesWritten(int result);
-  void OnAuthBytesRead(int result);
-  bool HandleAuthBytesWritten(int result);
-  bool HandleAuthBytesRead(int result);
-  bool VerifyAuthBytes(const char* label, const char* auth_bytes);
-  bool GetAuthBytes(const char* label, char* out_bytes);
+  void OnAuthenticationDone(ChannelAuthenticator::Result result);
 
   void NotifyDone(net::StreamSocket* socket);
   void NotifyError();
@@ -82,9 +75,6 @@ class JingleStreamConnector : public JingleChannelConnector {
   std::string remote_cert_;
   crypto::RSAPrivateKey* local_private_key_;
 
-  scoped_refptr<net::DrainableIOBuffer> auth_write_buf_;
-  scoped_refptr<net::GrowableIOBuffer> auth_read_buf_;
-
   cricket::TransportChannel* raw_channel_;
   scoped_ptr<net::StreamSocket> socket_;
 
@@ -95,11 +85,11 @@ class JingleStreamConnector : public JingleChannelConnector {
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;
 
+  scoped_ptr<ChannelAuthenticator> authenticator_;
+
   // Callback called by the TCP and SSL layers.
   net::CompletionCallbackImpl<JingleStreamConnector> tcp_connect_callback_;
   net::CompletionCallbackImpl<JingleStreamConnector> ssl_connect_callback_;
-  net::CompletionCallbackImpl<JingleStreamConnector> auth_write_callback_;
-  net::CompletionCallbackImpl<JingleStreamConnector> auth_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleStreamConnector);
 };
