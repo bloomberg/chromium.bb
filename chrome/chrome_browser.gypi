@@ -2634,8 +2634,6 @@
         'browser/ui/cocoa/tab_contents/web_drop_target.mm',
         'browser/ui/cocoa/tab_view_picker_table.h',
         'browser/ui/cocoa/tab_view_picker_table.mm',
-        'browser/ui/cocoa/table_model_array_controller.h',
-        'browser/ui/cocoa/table_model_array_controller.mm',
         'browser/ui/cocoa/table_row_nsimage_cache.h',
         'browser/ui/cocoa/table_row_nsimage_cache.mm',
         'browser/ui/cocoa/tabpose_window.h',

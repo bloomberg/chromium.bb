@@ -17,7 +17,6 @@
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 class FilePath;
-class TableModelArrayControllerTest;
 class PluginExceptionsTableModelTest;
 class Version;
 
@@ -205,7 +204,6 @@ class PluginGroup {
   friend class PluginList;
   friend class MockPluginList;
   friend class PluginGroupTest;
-  friend class ::TableModelArrayControllerTest;
   friend class ::PluginExceptionsTableModelTest;
   FRIEND_TEST_ALL_PREFIXES(PluginListTest, DisableOutdated);
 
