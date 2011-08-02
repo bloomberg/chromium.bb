@@ -16,6 +16,7 @@
 #include "content/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -117,8 +118,8 @@ class AutofillAgent : public RenderViewObserver,
                        bool display_warning_if_disabled);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
-  // |node|.
-  void QueryAutofillSuggestions(const WebKit::WebNode& node,
+  // |element|.
+  void QueryAutofillSuggestions(const WebKit::WebInputElement& element,
                                 bool display_warning_if_disabled);
 
   // Queries the AutofillManager for form data for the form containing |node|.
@@ -144,8 +145,8 @@ class AutofillAgent : public RenderViewObserver,
   // out of date responses.
   int autofill_query_id_;
 
-  // The node corresponding to the last request sent for form field Autofill.
-  WebKit::WebNode autofill_query_node_;
+  // The element corresponding to the last request sent for form field Autofill.
+  WebKit::WebInputElement autofill_query_element_;
 
   // The action to take when receiving Autofill data from the AutofillManager.
   AutofillAction autofill_action_;
