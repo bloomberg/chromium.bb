@@ -60,6 +60,7 @@ div.row > div {
   font-family: sans-serif;
   margin: 0;
   text-align: center;
+  white-space: nowrap;
 }
 
 .panel {
