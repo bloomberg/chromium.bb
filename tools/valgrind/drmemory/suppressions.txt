@@ -12,6 +12,10 @@ ADVAPI32.dll!WmiOpenBlock
 ADVAPI32.dll!WmiOpenBlock
 
 # Reports from Sophos antivirus
+UNADDRESSABLE ACCESS
+...
+sophos*.dll!*
+
 UNINITIALIZED READ
 ...
 sophos*.dll!*
@@ -33,24 +37,6 @@ UNINITIALIZED READ
 ############################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
 # assumptions or unhandled syscalls
-
-# False reports during printing using fprintf
-UNINITIALIZED READ
-system call NtRaiseException
-KERNEL32.dll!RaiseException
-*!DebuggerProbe
-*!DebuggerKnownHandle
-
-UNADDRESSABLE ACCESS
-ntdll.dll!towlower
-ntdll.dll!KiUserExceptionDispatcher
-*!DebuggerProbe
-*!DebuggerKnownHandle
-
-# LoadLibrary calls give some strange reports
-UNADDRESSABLE ACCESS
-ntdll.dll!strchr
-KERNEL32.dll!LoadLibraryExW
 
 # http://code.google.com/p/drmemory/issues/detail?id=12
 UNINITIALIZED READ
@@ -130,12 +116,6 @@ UNINITIALIZED READ
 ...
 UxTheme.dll!*
 
-# http://code.google.com/p/drmemory/issues/detail?id=36
-UNINITIALIZED READ
-system call NtContinue
-*!DebuggerProbe
-*!DebuggerKnownHandle
-
 # http://code.google.com/p/drmemory/issues/detail?id=40
 UNINITIALIZED READ
 ...
@@ -196,9 +176,6 @@ UNINITIALIZED READ
 USP10.dll!*
 ...
 USP10.dll!ScriptStringAnalyse
-
-UNADDRESSABLE ACCESS
-system call NtUserGetClassInfo* WNDCLASS*.lpszClassName
 
 LEAK
 IMM32.dll!ImmGetIMCCSize
@@ -288,10 +265,6 @@ GDI32.dll!CreateICW
 # http://code.google.com/p/drmemory/issues/detail?id=362
 UNINITIALIZED READ
 USER32.dll!UnregisterClass*
-
-# http://code.google.com/p/drmemory/issues/detail?id=380
-UNINITIALIZED READ
-system call NtQueryInformationToken
 
 # http://code.google.com/p/drmemory/issues/detail?id=382
 LEAK
@@ -646,6 +619,10 @@ LEAK
 ...
 *!base::LeakyLazyInstanceTraits*::New
 *!base::LazyInstance*::Pointer
+
+# Deliberate NULL deref to crash the child process
+UNADDRESSABLE ACCESS
+*!CrashingChildProcess
 
 ############################
 # Real issues in Chromium
