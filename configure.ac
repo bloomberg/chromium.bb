@@ -37,6 +37,11 @@ AM_CONDITIONAL(ENABLE_XSERVER_LAUNCHER, test x$enable_xserver_launcher == xyes)
 if test x$enable_xserver_launcher == xyes; then
   PKG_CHECK_MODULES([XSERVER_LAUNCHER], xcb)
   AC_DEFINE([BUILD_XSERVER_LAUNCHER], [1], [Build the X server launcher])
+
+  AC_ARG_WITH(xserver-path, AS_HELP_STRING([--with-xserver-path=PATH],
+              [Path to X server]), [XSERVER_PATH="$withval"],
+              [XSERVER_PATH="$bindir/Xorg"])
+  AC_SUBST([XSERVER_PATH])
 fi
 
 

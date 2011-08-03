@@ -501,8 +501,8 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		snprintf(logfile, sizeof logfile,
 			 "/tmp/x-log-%d", mxs->display);
 
-		if (execl(BINDIR "/Xorg",
-			  BINDIR "/Xorg",
+		if (execl(XSERVER_PATH,
+			  XSERVER_PATH,
 			  display,
 			  "-wayland",
 			  "-rootless",
