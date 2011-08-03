@@ -20,6 +20,8 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/component_updater/component_updater_configurator.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/remote_debugging_server.h"
 #include "chrome/browser/download/download_file_manager.h"
@@ -676,6 +678,23 @@ GpuBlacklistUpdater* BrowserProcessImpl::gpu_blacklist_updater() {
 
   return gpu_blacklist_updater_.get();
 }
+
+ComponentUpdateService* BrowserProcessImpl::component_updater() {
+#if defined(OS_CHROMEOS)
+  return NULL;
+#else
+  if (!component_updater_.get()) {
+    ComponentUpdateService::Configurator* configurator =
+        MakeChromeComponentUpdaterConfigurator(
+            CommandLine::ForCurrentProcess(),
+            io_thread()->system_url_request_context_getter());
+    // Creating the component updater does not do anything, components
+    // need to be registered and Start() needs to be called.
+    component_updater_.reset(ComponentUpdateServiceFactory(configurator));
+  }
+  return component_updater_.get();
+}
+#endif
 
 void BrowserProcessImpl::CreateResourceDispatcherHost() {
   DCHECK(!created_resource_dispatcher_host_ &&

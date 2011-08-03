@@ -772,6 +772,8 @@
         'browser/chromeos/xinput_hierarchy_changed_event_listener.h',
         'browser/command_updater.cc',
         'browser/command_updater.h',
+        'browser/component_updater/component_updater_configurator.cc',
+        'browser/component_updater/component_updater_configurator.h',
         'browser/component_updater/component_unpacker.cc',
         'browser/component_updater/component_unpacker.h',
         'browser/component_updater/component_updater_service.cc',

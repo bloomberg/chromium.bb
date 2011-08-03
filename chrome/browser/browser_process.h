@@ -21,6 +21,7 @@
 class AutomationProviderList;
 class BackgroundModeManager;
 class ChromeNetLog;
+class ComponentUpdateService;
 class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
@@ -245,6 +246,8 @@ class BrowserProcess {
   virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
 
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() = 0;
+
+  virtual ComponentUpdateService* component_updater() = 0;
 
  private:
   // User-data-dir based profiles.

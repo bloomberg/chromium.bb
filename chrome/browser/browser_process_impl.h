@@ -126,6 +126,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   virtual GpuBlacklistUpdater* gpu_blacklist_updater();
 
+  virtual ComponentUpdateService* component_updater();
+
  private:
   void CreateResourceDispatcherHost();
   void CreateMetricsService();
@@ -320,6 +322,10 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 
   scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater_;
+
+#if !defined(OS_CHROMEOS)
+  scoped_ptr<ComponentUpdateService> component_updater_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

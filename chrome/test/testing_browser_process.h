@@ -117,6 +117,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
   virtual MHTMLGenerationManager* mhtml_generation_manager();
   virtual GpuBlacklistUpdater* gpu_blacklist_updater();
+  virtual ComponentUpdateService* component_updater();
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
