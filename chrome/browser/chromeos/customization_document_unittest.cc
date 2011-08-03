@@ -205,7 +205,7 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
             deal->GetLocalizedString("en", "notification_text"));
 
   base::Time reference_time;
-  base::Time::FromString(L"31/12/12 0:00", &reference_time);
+  base::Time::FromString("31/12/12 0:00", &reference_time);
   EXPECT_EQ(reference_time, deal->expire_date());
 }
 
