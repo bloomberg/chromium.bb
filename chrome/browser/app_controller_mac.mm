@@ -983,6 +983,16 @@ void RecordLastRunAppBundlePath() {
 
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenuItem* profileMenu = [mainMenu itemWithTag:IDC_PROFILE_MAIN_MENU];
+
+  // On Leopard, hiding main menubar items does not work. This manifests itself
+  // in Chromium as squished menu items <http://crbug.com/90753>. To prevent
+  // this, remove the Profile menu on Leopard, regardless of the user's
+  // multiprofile state.
+  if (base::mac::IsOSLeopard()) {
+    [mainMenu removeItem:profileMenu];
+    return;
+  }
+
   [profileMenu setHidden:!enableMenu];
 
   if (enableMenu) {
