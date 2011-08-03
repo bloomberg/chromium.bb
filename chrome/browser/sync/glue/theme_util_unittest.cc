@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +35,7 @@ ProfileKeyedService* BuildMockThemeService(Profile* profile) {
   return new MockThemeService;
 }
 
-class ThemeUtilTest : public testing::Test {
+class ThemeUtilTest : public TestingBrowserProcessTest {
  protected:
   MockThemeService* BuildForProfile(Profile* profile) {
     return static_cast<MockThemeService*>(

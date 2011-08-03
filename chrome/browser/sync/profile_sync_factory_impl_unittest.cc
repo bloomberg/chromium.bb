@@ -15,11 +15,12 @@
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 
 using browser_sync::DataTypeController;
 
-class ProfileSyncFactoryImplTest : public testing::Test {
+class ProfileSyncFactoryImplTest : public TestingBrowserProcessTest {
  protected:
   ProfileSyncFactoryImplTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
@@ -52,7 +53,7 @@ class MockTableModelObserver : public ui::TableModelObserver {
 
 using ::testing::InSequence;
 
-class PluginExceptionsTableModelTest : public testing::Test {
+class PluginExceptionsTableModelTest : public TestingBrowserProcessTest {
  public:
   PluginExceptionsTableModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

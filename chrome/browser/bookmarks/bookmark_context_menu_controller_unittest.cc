@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -42,7 +43,7 @@ class TestingPageNavigator : public PageNavigator {
   std::vector<GURL> urls_;
 };
 
-class BookmarkContextMenuControllerTest : public testing::Test {
+class BookmarkContextMenuControllerTest : public TestingBrowserProcessTest {
  public:
   BookmarkContextMenuControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

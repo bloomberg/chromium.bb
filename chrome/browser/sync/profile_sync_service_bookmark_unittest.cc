@@ -30,6 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/sync/engine/test_user_share.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,7 +278,7 @@ class MockUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
                void(const tracked_objects::Location&, const std::string&));
 };
 
-class ProfileSyncServiceBookmarkTest : public testing::Test {
+class ProfileSyncServiceBookmarkTest : public TestingBrowserProcessTest {
  protected:
   enum LoadOption { LOAD_FROM_STORAGE, DELETE_EXISTING_STORAGE };
   enum SaveOption { SAVE_TO_STORAGE, DONT_SAVE_TO_STORAGE };

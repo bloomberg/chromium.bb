@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 
 using base::WaitableEvent;
@@ -110,7 +111,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   NonFrontendDataTypeControllerMock* mock_;
 };
 
-class NonFrontendDataTypeControllerTest : public testing::Test {
+class NonFrontendDataTypeControllerTest : public TestingBrowserProcessTest {
  public:
   NonFrontendDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

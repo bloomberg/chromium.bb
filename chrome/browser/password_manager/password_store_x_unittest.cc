@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
@@ -315,6 +316,8 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
         return NULL;
     }
   }
+
+  ScopedTestingBrowserProcess browser_process_;
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;

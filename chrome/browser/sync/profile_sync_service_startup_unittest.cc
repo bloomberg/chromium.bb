@@ -19,6 +19,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -37,7 +38,7 @@ ACTION_P(InvokeCallback, callback_result) {
 }
 
 // TODO(chron): Test not using cros_user flag and use signin_
-class ProfileSyncServiceStartupTest : public testing::Test {
+class ProfileSyncServiceStartupTest : public TestingBrowserProcessTest {
  public:
   ProfileSyncServiceStartupTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),

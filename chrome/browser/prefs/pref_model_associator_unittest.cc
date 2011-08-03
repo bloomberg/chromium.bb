@@ -8,9 +8,10 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class AbstractPreferenceMergeTest : public testing::Test {
+class AbstractPreferenceMergeTest : public TestingBrowserProcessTest {
  protected:
   virtual void SetUp() {
     pref_service_ = profile_.GetPrefs();

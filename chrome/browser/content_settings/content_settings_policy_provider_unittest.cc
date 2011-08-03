@@ -127,7 +127,7 @@ TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   provider.ShutdownOnUIThread();
 }
 
-class PolicyProviderTest : public testing::Test {
+class PolicyProviderTest : public TestingBrowserProcessTest {
  public:
   PolicyProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {

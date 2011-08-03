@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -150,7 +151,7 @@ class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
 
 // Test Class ----------------------------------------------------------------
 
-class BrowsingDataRemoverTest : public testing::Test {
+class BrowsingDataRemoverTest : public TestingBrowserProcessTest {
  public:
   BrowsingDataRemoverTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

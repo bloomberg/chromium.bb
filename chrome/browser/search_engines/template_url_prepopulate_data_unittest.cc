@@ -14,10 +14,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test TemplateURLPrepopulateDataTest;
+typedef TestingBrowserProcessTest TemplateURLPrepopulateDataTest;
 
 const int kCountryIds[] = {
     'A'<<8|'D', 'A'<<8|'E', 'A'<<8|'F', 'A'<<8|'G', 'A'<<8|'I',

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +23,7 @@ class EmptyTabstripOriginProvider : public TabstripOriginProvider {
   }
 };
 
-class BookmarkBarGtkUnittest : public ::testing::Test {
+class BookmarkBarGtkUnittest : public TestingBrowserProcessTest {
  protected:
   BookmarkBarGtkUnittest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

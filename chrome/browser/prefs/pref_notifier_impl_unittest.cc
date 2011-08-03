@@ -8,6 +8,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -54,7 +55,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
 };
 
 // Test fixture class.
-class PrefNotifierTest : public testing::Test {
+class PrefNotifierTest : public TestingBrowserProcessTest {
  protected:
   virtual void SetUp() {
     pref_service_.RegisterBooleanPref(kChangedPref,

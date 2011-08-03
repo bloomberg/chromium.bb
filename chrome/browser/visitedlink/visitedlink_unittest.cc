@@ -17,6 +17,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -72,7 +73,7 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
   int add_count_;
 };
 
-class VisitedLinkTest : public testing::Test {
+class VisitedLinkTest : public TestingBrowserProcessTest {
  protected:
   VisitedLinkTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

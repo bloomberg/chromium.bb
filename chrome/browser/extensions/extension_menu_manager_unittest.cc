@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,7 +31,7 @@ using testing::Return;
 using testing::SaveArg;
 
 // Base class for tests.
-class ExtensionMenuManagerTest : public testing::Test {
+class ExtensionMenuManagerTest : public TestingBrowserProcessTest {
  public:
   ExtensionMenuManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

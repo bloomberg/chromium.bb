@@ -188,7 +188,7 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
   NotificationRegistrar notification_registrar_;
 };
 
-class ProtocolHandlerRegistryTest : public testing::Test {
+class ProtocolHandlerRegistryTest : public TestingBrowserProcessTest {
  protected:
   ProtocolHandlerRegistryTest()
       : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}

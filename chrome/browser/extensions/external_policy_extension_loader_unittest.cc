@@ -15,10 +15,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExternalPolicyExtensionProviderTest : public testing::Test {
+class ExternalPolicyExtensionProviderTest : public TestingBrowserProcessTest {
  public:
   ExternalPolicyExtensionProviderTest()
       : loop_(MessageLoop::TYPE_IO),

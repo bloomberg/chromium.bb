@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 
 using browser_sync::ChangeProcessorMock;
@@ -81,7 +82,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   FrontendDataTypeControllerMock* mock_;
 };
 
-class FrontendDataTypeControllerTest : public testing::Test {
+class FrontendDataTypeControllerTest : public TestingBrowserProcessTest {
  public:
   FrontendDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

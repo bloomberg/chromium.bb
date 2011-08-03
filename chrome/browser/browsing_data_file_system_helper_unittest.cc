@@ -46,7 +46,7 @@ typedef scoped_ptr<FileSystemInfoVector> ScopedFileSystemInfoVector;
 // called. For this to work, you'll need to ensure that each async call is
 // implemented as a class method that that calls Notify() at an appropriate
 // point.
-class BrowsingDataFileSystemHelperTest : public testing::Test {
+class BrowsingDataFileSystemHelperTest : public TestingBrowserProcessTest {
  public:
   BrowsingDataFileSystemHelperTest()
       : helper_(BrowsingDataFileSystemHelper::Create(&profile_)),

@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -12,7 +13,7 @@
 
 namespace {
 
-class GeolocationSettingsStateTests : public testing::Test {
+class GeolocationSettingsStateTests : public TestingBrowserProcessTest {
  public:
    GeolocationSettingsStateTests()
     : ui_thread_(BrowserThread::UI, &message_loop_) {

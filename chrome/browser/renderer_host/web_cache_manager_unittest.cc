@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,7 +14,7 @@ using base::Time;
 using base::TimeDelta;
 using WebKit::WebCache;
 
-class WebCacheManagerTest : public testing::Test {
+class WebCacheManagerTest : public TestingBrowserProcessTest {
  protected:
   typedef WebCacheManager::StatsMap StatsMap;
   typedef WebCacheManager::Allocation Allocation;

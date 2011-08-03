@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -67,7 +68,7 @@ bool NthResultIs(const QueryResults& results,
 
 }  // namespace
 
-class HistoryQueryTest : public testing::Test {
+class HistoryQueryTest : public TestingBrowserProcessTest {
  public:
   HistoryQueryTest() {
   }

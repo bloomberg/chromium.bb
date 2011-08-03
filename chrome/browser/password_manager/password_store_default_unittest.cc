@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
@@ -98,7 +99,7 @@ class DBThreadObserverHelper :
 
 typedef std::vector<PasswordForm*> VectorOfForms;
 
-class PasswordStoreDefaultTest : public testing::Test {
+class PasswordStoreDefaultTest : public TestingBrowserProcessTest {
  protected:
   PasswordStoreDefaultTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

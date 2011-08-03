@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -29,6 +30,7 @@ class MockDOMStorageContext : public DOMStorageContext {
 };
 
 TEST(WebKitContextTest, Basic) {
+  ScopedTestingBrowserProcess browser_process;
   TestingProfile profile;
   scoped_refptr<WebKitContext> context1(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
@@ -46,6 +48,8 @@ TEST(WebKitContextTest, Basic) {
 }
 
 TEST(WebKitContextTest, PurgeMemory) {
+  ScopedTestingBrowserProcess browser_process;
+
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
   MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);

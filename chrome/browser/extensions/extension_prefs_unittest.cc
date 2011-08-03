@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
@@ -45,7 +46,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 // Base class for tests.
-class ExtensionPrefsTest : public testing::Test {
+class ExtensionPrefsTest : public TestingBrowserProcessTest {
  public:
   ExtensionPrefsTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

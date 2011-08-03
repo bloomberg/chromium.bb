@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_url_handler.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BrowserURLHandlerTest : public testing::Test {
+class BrowserURLHandlerTest : public TestingBrowserProcessTest {
 };
 
 // Test URL rewriter that rewrites all "foo://" URLs to "bar://bar".

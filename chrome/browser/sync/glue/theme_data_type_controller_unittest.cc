@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 
 using browser_sync::ThemeDataTypeController;
@@ -32,7 +33,7 @@ class StartCallback {
     const tracked_objects::Location& location));
 };
 
-class ThemeDataTypeControllerTest : public testing::Test {
+class ThemeDataTypeControllerTest : public TestingBrowserProcessTest {
  public:
   ThemeDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

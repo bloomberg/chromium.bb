@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +62,7 @@ class MockTabContentsDelegate : public TabContentsDelegate {
 
 TEST(TabContentsDelegateTest, UnregisterInDestructor) {
   MessageLoop loop(MessageLoop::TYPE_UI);
+  ScopedTestingBrowserProcess browser_process;
   scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
   scoped_ptr<Profile> profile(new TestingProfile());
   scoped_ptr<TabContents> contents_a(

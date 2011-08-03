@@ -4,9 +4,10 @@
 
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test PromoCounterTest;
+typedef TestingBrowserProcessTest PromoCounterTest;
 
 // Makes sure ShouldShow returns false after the max number of days.
 TEST_F(PromoCounterTest, MaxTimeElapsed) {

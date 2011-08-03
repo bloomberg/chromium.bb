@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
@@ -142,7 +143,7 @@ class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {
                                             const Value& arg2));
 };
 
-class CloudPrintURLTest : public testing::Test {
+class CloudPrintURLTest : public TestingBrowserProcessTest {
  public:
   CloudPrintURLTest() {}
 

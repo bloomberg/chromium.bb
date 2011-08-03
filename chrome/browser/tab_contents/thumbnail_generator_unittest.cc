@@ -8,6 +8,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
@@ -53,7 +54,7 @@ class TestRenderWidgetHostViewWithBackingStoreSkia
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetHostViewWithBackingStoreSkia);
 };
 
-class ThumbnailGeneratorTest : public testing::Test {
+class ThumbnailGeneratorTest : public TestingBrowserProcessTest {
  public:
   ThumbnailGeneratorTest() {
     profile_.reset(new TestingProfile());
@@ -207,12 +208,14 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
 
 #endif  // !defined(OS_MAC)
 
-TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
+typedef TestingBrowserProcessTest ThumbnailGeneratorSimpleTest;
+
+TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
   SkBitmap bitmap;
   EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
 }
 
-TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
+TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
   const SkColor kBlack = SkColorSetRGB(0, 0, 0);
   const gfx::Size kSize(20, 10);
   gfx::CanvasSkia canvas(kSize.width(), kSize.height(), true);
@@ -224,7 +227,7 @@ TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
   EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
 }
 
-TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
+TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
   const SkColor kBlack = SkColorSetRGB(0, 0, 0);
   const SkColor kWhite = SkColorSetRGB(0xFF, 0xFF, 0xFF);
   const gfx::Size kSize(20, 10);
@@ -242,7 +245,7 @@ TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
   EXPECT_DOUBLE_EQ(0.5, ThumbnailGenerator::CalculateBoringScore(&bitmap));
 }
 
-TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
+TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
   gfx::CanvasSkia canvas(40, 90, true);
   const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
@@ -258,7 +261,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
   EXPECT_EQ(ThumbnailGenerator::kTallerThanWide, clip_result);
 }
 
-TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
+TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
   gfx::CanvasSkia canvas(90, 40, true);
   const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
@@ -274,7 +277,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
   EXPECT_EQ(ThumbnailGenerator::kWiderThanTall, clip_result);
 }
 
-TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
+TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
   gfx::CanvasSkia canvas(40, 40, true);
   const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
@@ -290,7 +293,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
   EXPECT_EQ(ThumbnailGenerator::kNotClipped, clip_result);
 }
 
-TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
+TEST_F(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
   gfx::CanvasSkia canvas(40, 40, true);
   const SkBitmap bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);
@@ -343,7 +346,7 @@ class MockTopSites : public history::TopSites {
   std::map<std::string, ThumbnailScore> known_url_map_;
 };
 
-TEST(ThumbnailGeneratorSimpleTest, ShouldUpdateThumbnail) {
+TEST_F(ThumbnailGeneratorSimpleTest, ShouldUpdateThumbnail) {
   const GURL kGoodURL("http://www.google.com/");
   const GURL kBadURL("chrome://newtab");
 

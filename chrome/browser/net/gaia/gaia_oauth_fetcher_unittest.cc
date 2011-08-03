@@ -17,6 +17,7 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/notification_service.h"
 #include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -147,8 +148,9 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 }
 #endif  // 0  // Suppressing for now
 
+typedef TestingBrowserProcessTest GaiaOAuthFetcherTest;
 
-TEST(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
+TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   const std::string oauth_token="1/OAuth1-Access_Token-1234567890abcdefghijklm";
   const std::string oauth_token_secret="Dont_tell_the_secret-123";
   const std::string data("oauth_token="
@@ -183,7 +185,7 @@ TEST(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
                                    data);
 }
 
-TEST(GaiaOAuthFetcherTest, OAuthWrapBridge) {
+TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   const std::string wrap_token="1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
   const std::string expires_in="3600";
 
@@ -215,7 +217,7 @@ TEST(GaiaOAuthFetcherTest, OAuthWrapBridge) {
                                    data);
 }
 
-TEST(GaiaOAuthFetcherTest, UserInfo) {
+TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   const std::string email_address="someone@somewhere.net";
   const std::string wrap_token="1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
   const std::string expires_in="3600";

@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/profile_mock.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
@@ -80,7 +81,7 @@ class SignalEventTask : public Task {
   WaitableEvent* done_event_;
 };
 
-class AutofillDataTypeControllerTest : public testing::Test {
+class AutofillDataTypeControllerTest : public TestingBrowserProcessTest {
  public:
   AutofillDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

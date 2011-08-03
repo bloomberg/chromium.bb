@@ -6,6 +6,7 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
@@ -62,7 +63,7 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
   SiteInstanceTestWebUIFactory factory_;
 };
 
-class SiteInstanceTest : public testing::Test {
+class SiteInstanceTest : public TestingBrowserProcessTest {
  public:
   SiteInstanceTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

@@ -4,12 +4,13 @@
 
 #include "content/browser/plugin_service.h"
 
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class PluginServiceTest : public testing::Test {
+class PluginServiceTest : public TestingBrowserProcessTest {
  public:
   PluginServiceTest()
       : message_loop_(MessageLoop::TYPE_IO),

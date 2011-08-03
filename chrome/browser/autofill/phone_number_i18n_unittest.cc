@@ -4,6 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill_i18n::NormalizePhoneNumber;
@@ -13,7 +14,9 @@ using autofill_i18n::FormatPhone;
 using autofill_i18n::ComparePhones;
 using autofill_i18n::PhoneNumbersMatch;
 
-TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
+typedef TestingBrowserProcessTest PhoneNumberI18NTest;
+
+TEST_F(PhoneNumberI18NTest, NormalizePhoneNumber) {
   // "Large" digits.
   string16 phone1(UTF8ToUTF16("\xEF\xBC\x91\xEF\xBC\x96\xEF\xBC\x95\xEF\xBC\x90"
                               "\xEF\xBC\x97\xEF\xBC\x94\xEF\xBC\x99\xEF\xBC\x98"
@@ -35,7 +38,7 @@ TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
   EXPECT_EQ(NormalizePhoneNumber(phone5, "US"), ASCIIToUTF16("6502346789"));
 }
 
-TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
+TEST_F(PhoneNumberI18NTest, ParsePhoneNumber) {
   string16 number;
   string16 city_code;
   string16 country_code;
@@ -243,7 +246,7 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("1"), country_code);
 }
 
-TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
+TEST_F(PhoneNumberI18NTest, ConstructPhoneNumber) {
   string16 number;
   EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"),
                                    ASCIIToUTF16("650"),
@@ -321,7 +324,7 @@ TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
   EXPECT_EQ(number, ASCIIToUTF16("+49 2423/45678901"));
 }
 
-TEST(PhoneNumberI18NTest, FormatPhone) {
+TEST_F(PhoneNumberI18NTest, FormatPhone) {
   EXPECT_EQ(FormatPhone(ASCIIToUTF16("1[650]234-56-78"), "US",
             autofill_i18n::NATIONAL),
             ASCIIToUTF16("(650) 234-5678"));
@@ -342,7 +345,7 @@ TEST(PhoneNumberI18NTest, FormatPhone) {
             ASCIIToUTF16("+420 16502345678"));
 }
 
-TEST(PhoneNumberI18NTest, ComparePhones) {
+TEST_F(PhoneNumberI18NTest, ComparePhones) {
   EXPECT_EQ(ComparePhones(ASCIIToUTF16("1(650)234-56-78"),
                           ASCIIToUTF16("+16502345678"),
                           "US"),
@@ -369,7 +372,7 @@ TEST(PhoneNumberI18NTest, ComparePhones) {
             autofill_i18n::PHONES_NOT_EQUAL);
 }
 
-TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
+TEST_F(PhoneNumberI18NTest, PhoneNumbersMatch) {
   // Same numbers, defined country code.
   EXPECT_TRUE(PhoneNumbersMatch(ASCIIToUTF16("4158889999"),
                                 ASCIIToUTF16("4158889999"),

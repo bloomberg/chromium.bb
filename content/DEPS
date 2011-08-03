@@ -3,6 +3,7 @@
 include_rules = [
   "+crypto",
 
+  "-chrome",
   # Until we move most of our testing infrastructure in a way that content can
   # make use of it.
   "+chrome/test",

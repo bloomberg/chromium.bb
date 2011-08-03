@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +24,7 @@ SkColor GdkToSkColor(GdkColor* color) {
 
 }  // namespace
 
-class GtkThemeServiceTest : public testing::Test {
+class GtkThemeServiceTest : public TestingBrowserProcessTest {
  public:
   GtkThemeServiceTest() : provider_(NULL) {}
 

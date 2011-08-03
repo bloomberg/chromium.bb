@@ -15,6 +15,7 @@
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/test_notification_tracker.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +57,7 @@ class TokenFailedTracker : public TestNotificationTracker {
   TokenService::TokenRequestFailedDetails details_;
 };
 
-class TokenServiceTestHarness : public testing::Test {
+class TokenServiceTestHarness : public TestingBrowserProcessTest {
  public:
   TokenServiceTestHarness();
   virtual ~TokenServiceTestHarness();

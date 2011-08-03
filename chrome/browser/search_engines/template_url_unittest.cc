@@ -9,6 +9,7 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Simple implementation of SearchTermsData.
@@ -39,7 +40,7 @@ class TestSearchTermsData : public SearchTermsData {
   DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
 };
 
-class TemplateURLTest : public testing::Test {
+class TemplateURLTest : public TestingBrowserProcessTest {
  public:
   virtual void TearDown() {
     TemplateURLRef::SetGoogleBaseURL(NULL);

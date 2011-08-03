@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/sync/util/data_encryption.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
@@ -107,7 +108,7 @@ void CreateSubkey(RegKey* key, wchar_t const* subkey_name,
 
 }  // namespace
 
-class AutofillIeToolbarImportTest : public testing::Test {
+class AutofillIeToolbarImportTest : public TestingBrowserProcessTest {
  public:
   AutofillIeToolbarImportTest();
 

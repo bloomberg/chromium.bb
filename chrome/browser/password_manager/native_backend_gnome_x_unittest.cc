@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::PasswordForm;
@@ -279,7 +280,7 @@ struct RunnableMethodTraits<NativeBackendGnome> {
   void ReleaseCallee(NativeBackendGnome*) {}
 };
 
-class NativeBackendGnomeTest : public testing::Test {
+class NativeBackendGnomeTest : public TestingBrowserProcessTest {
  protected:
   NativeBackendGnomeTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

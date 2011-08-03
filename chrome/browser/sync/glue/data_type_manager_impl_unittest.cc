@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
@@ -61,7 +62,7 @@ DataTypeManager::ConfigureStatus GetStatus(
   return result->status;
 }
 
-class DataTypeManagerImplTest : public testing::Test {
+class DataTypeManagerImplTest : public TestingBrowserProcessTest {
  public:
   DataTypeManagerImplTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

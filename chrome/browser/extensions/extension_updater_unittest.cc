@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "libxml/globals.h"
@@ -286,7 +287,7 @@ static void ExtractParameters(const std::string& params,
 
 // All of our tests that need to use private APIs of ExtensionUpdater live
 // inside this class (which is a friend to ExtensionUpdater).
-class ExtensionUpdaterTest : public testing::Test {
+class ExtensionUpdaterTest : public TestingBrowserProcessTest {
  public:
   static void SimulateTimerFired(ExtensionUpdater* updater) {
     EXPECT_TRUE(updater->timer_.IsRunning());
@@ -1040,20 +1041,19 @@ class ExtensionUpdaterTest : public testing::Test {
 // actual test code to live in ExtenionUpdaterTest methods instead of TEST_F
 // subclasses where friendship with ExtenionUpdater is not inherited.
 
-TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
+TEST_F(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
   ExtensionUpdaterTest::TestExtensionUpdateCheckRequests(false);
 }
 
-TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequestsPending) {
+TEST_F(ExtensionUpdaterTest, TestExtensionUpdateCheckRequestsPending) {
   ExtensionUpdaterTest::TestExtensionUpdateCheckRequests(true);
 }
 
-// This test is disabled on Mac, see http://crbug.com/26035.
-TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
+TEST_F(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
   ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
 }
 
-TEST(ExtensionUpdaterTest, TestUpdateUrlData) {
+TEST_F(ExtensionUpdaterTest, TestUpdateUrlData) {
   MessageLoop message_loop;
   BrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
@@ -1066,39 +1066,38 @@ TEST(ExtensionUpdaterTest, TestUpdateUrlData) {
       Extension::GalleryUpdateUrl(true).spec());
 }
 
-TEST(ExtensionUpdaterTest, TestDetermineUpdates) {
+TEST_F(ExtensionUpdaterTest, TestDetermineUpdates) {
   ExtensionUpdaterTest::TestDetermineUpdates();
 }
 
-TEST(ExtensionUpdaterTest, TestDetermineUpdatesPending) {
+TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesPending) {
   ExtensionUpdaterTest::TestDetermineUpdatesPending();
 }
 
-TEST(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
+TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
   ExtensionUpdaterTest::TestMultipleManifestDownloading();
 }
 
-TEST(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading(false);
 }
 
-TEST(ExtensionUpdaterTest, TestSingleExtensionDownloadingPending) {
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPending) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading(true);
 }
 
-// This test is disabled on Mac, see http://crbug.com/26035.
-TEST(ExtensionUpdaterTest, TestBlacklistDownloading) {
+TEST_F(ExtensionUpdaterTest, TestBlacklistDownloading) {
   ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
-TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {
+TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {
   ExtensionUpdaterTest::TestMultipleExtensionDownloading(false);
 }
-TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesSucceed) {
+TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesSucceed) {
   ExtensionUpdaterTest::TestMultipleExtensionDownloading(true);
 }
 
-TEST(ExtensionUpdaterTest, TestGalleryRequests) {
+TEST_F(ExtensionUpdaterTest, TestGalleryRequests) {
   // We want to test a variety of combinations of expected ping conditions for
   // rollcall and active pings.
   int ping_cases[] = { ManifestFetchData::kNeverPinged, 0, 1, 5 };
@@ -1127,11 +1126,11 @@ TEST(ExtensionUpdaterTest, TestGalleryRequests) {
   }
 }
 
-TEST(ExtensionUpdaterTest, TestHandleManifestResults) {
+TEST_F(ExtensionUpdaterTest, TestHandleManifestResults) {
   ExtensionUpdaterTest::TestHandleManifestResults();
 }
 
-TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
+TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   MessageLoop message_loop;
   BrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
@@ -1180,7 +1179,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   EXPECT_FALSE(fetch->full_url().is_empty());
 }
 
-TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
+TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     MessageLoop message_loop;
     BrowserThread ui_thread(BrowserThread::UI, &message_loop);
     BrowserThread file_thread(BrowserThread::FILE, &message_loop);
@@ -1201,7 +1200,7 @@ TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
     updater.Stop();
 }
 
-TEST(ExtensionUpdaterTest, TestCheckSoon) {
+TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
     MessageLoop message_loop;
     BrowserThread ui_thread(BrowserThread::UI, &message_loop);
     BrowserThread file_thread(BrowserThread::FILE, &message_loop);

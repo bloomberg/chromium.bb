@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -23,7 +24,7 @@ static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 using namespace webkit_database;
 
 // Base class for our test fixtures.
-class IndexedDBQuotaClientTest : public testing::Test {
+class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
  public:
   const GURL kOriginA;
   const GURL kOriginB;

@@ -12,10 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
-class EncodingMenuControllerTest : public testing::Test {
+class EncodingMenuControllerTest : public TestingBrowserProcessTest {
 };
 
 TEST_F(EncodingMenuControllerTest, EncodingIDsBelongTest) {

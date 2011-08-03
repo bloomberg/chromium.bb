@@ -8,10 +8,13 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/select_control_handler.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 
-TEST(SelectControlHandlerTest, CreditCardMonthExact) {
+typedef TestingBrowserProcessTest SelectControlHandlerTest;
+
+TEST_F(SelectControlHandlerTest, CreditCardMonthExact) {
   const char* const kMonthsNumeric[] = {
     "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
   };
@@ -30,7 +33,7 @@ TEST(SelectControlHandlerTest, CreditCardMonthExact) {
   EXPECT_EQ(ASCIIToUTF16("01"), field.value);
 }
 
-TEST(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
+TEST_F(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
   const char* const kMonthsAbbreviated[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -50,7 +53,7 @@ TEST(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
   EXPECT_EQ(ASCIIToUTF16("Jan"), field.value);
 }
 
-TEST(SelectControlHandlerTest, CreditCardMonthFull) {
+TEST_F(SelectControlHandlerTest, CreditCardMonthFull) {
   const char* const kMonthsFull[] = {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
@@ -70,7 +73,7 @@ TEST(SelectControlHandlerTest, CreditCardMonthFull) {
   EXPECT_EQ(ASCIIToUTF16("January"), field.value);
 }
 
-TEST(SelectControlHandlerTest, CreditCardMonthNumeric) {
+TEST_F(SelectControlHandlerTest, CreditCardMonthNumeric) {
   const char* const kMonthsNumeric[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
   };
@@ -89,7 +92,7 @@ TEST(SelectControlHandlerTest, CreditCardMonthNumeric) {
   EXPECT_EQ(ASCIIToUTF16("1"), field.value);
 }
 
-TEST(SelectControlHandlerTest, AddressCountryFull) {
+TEST_F(SelectControlHandlerTest, AddressCountryFull) {
   const char* const kCountries[] = {
     "Albania", "Canada"
   };
@@ -108,7 +111,7 @@ TEST(SelectControlHandlerTest, AddressCountryFull) {
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
 }
 
-TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
+TEST_F(SelectControlHandlerTest, AddressCountryAbbrev) {
   const char* const kCountries[] = {
     "AL", "CA"
   };
@@ -127,7 +130,7 @@ TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
-TEST(SelectControlHandlerTest, AddressStateFull) {
+TEST_F(SelectControlHandlerTest, AddressStateFull) {
   const char* const kStates[] = {
     "Alabama", "California"
   };
@@ -146,7 +149,7 @@ TEST(SelectControlHandlerTest, AddressStateFull) {
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
-TEST(SelectControlHandlerTest, AddressStateAbbrev) {
+TEST_F(SelectControlHandlerTest, AddressStateAbbrev) {
   const char* const kStates[] = {
     "AL", "CA"
   };
@@ -165,7 +168,7 @@ TEST(SelectControlHandlerTest, AddressStateAbbrev) {
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
-TEST(SelectControlHandlerTest, FillByValue) {
+TEST_F(SelectControlHandlerTest, FillByValue) {
   const char* const kStates[] = {
     "Alabama", "California"
   };
@@ -187,7 +190,7 @@ TEST(SelectControlHandlerTest, FillByValue) {
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
-TEST(SelectControlHandlerTest, FillByContents) {
+TEST_F(SelectControlHandlerTest, FillByContents) {
   const char* const kStates[] = {
     "Alabama", "California"
   };

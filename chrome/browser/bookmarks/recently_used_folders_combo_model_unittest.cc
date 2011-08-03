@@ -7,10 +7,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class RecentlyUsedFoldersComboModelTest : public testing::Test {
+class RecentlyUsedFoldersComboModelTest : public TestingBrowserProcessTest {
  public:
   RecentlyUsedFoldersComboModelTest();
 

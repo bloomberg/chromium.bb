@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/test_notification_tracker.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
@@ -105,7 +106,7 @@ const char header_ok_reply[] =
 }  // namespace
 
 // Common fixture for all the component updater tests.
-class ComponentUpdaterTest : public testing::Test {
+class ComponentUpdaterTest : public TestingBrowserProcessTest {
  public:
   ComponentUpdaterTest() : component_updater_(NULL) {
     // The component updater instance under test.

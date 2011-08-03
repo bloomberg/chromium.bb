@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
@@ -31,7 +32,7 @@ private:
 }  // namespace
 
 
-class NotificationServiceTest : public testing::Test {
+class NotificationServiceTest : public TestingBrowserProcessTest {
  protected:
   NotificationRegistrar registrar_;
 };

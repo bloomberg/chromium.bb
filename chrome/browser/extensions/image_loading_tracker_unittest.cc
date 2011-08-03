@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
@@ -17,7 +18,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
-class ImageLoadingTrackerTest : public testing::Test,
+class ImageLoadingTrackerTest : public TestingBrowserProcessTest,
                                 public ImageLoadingTracker::Observer {
  public:
   ImageLoadingTrackerTest()

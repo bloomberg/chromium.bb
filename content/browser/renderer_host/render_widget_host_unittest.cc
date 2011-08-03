@@ -8,6 +8,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -246,7 +247,7 @@ class MockPaintingObserver : public NotificationObserver {
 
 // RenderWidgetHostTest --------------------------------------------------------
 
-class RenderWidgetHostTest : public testing::Test {
+class RenderWidgetHostTest : public TestingBrowserProcessTest {
  public:
   RenderWidgetHostTest() : process_(NULL) {
   }

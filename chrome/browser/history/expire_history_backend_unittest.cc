@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,7 @@ namespace history {
 
 // ExpireHistoryTest -----------------------------------------------------------
 
-class ExpireHistoryTest : public testing::Test,
+class ExpireHistoryTest : public TestingBrowserProcessTest,
                           public BroadcastNotificationDelegate {
  public:
   ExpireHistoryTest()

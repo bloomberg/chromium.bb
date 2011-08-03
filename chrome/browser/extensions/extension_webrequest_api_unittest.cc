@@ -16,6 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/common/json_value_serializer.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
@@ -76,7 +78,7 @@ class TestIPCSender : public IPC::Message::Sender {
   SentMessages sent_messages_;
 };
 
-class ExtensionWebRequestTest : public testing::Test {
+class ExtensionWebRequestTest : public TestingBrowserProcessTest {
  protected:
   virtual void SetUp() {
     event_router_ = new ExtensionEventRouterForwarder();
@@ -333,6 +335,7 @@ class ExtensionWebRequestHeaderModificationTest :
     context_->set_network_delegate(network_delegate_.get());
   }
 
+  ScopedTestingBrowserProcess browser_process_;
   MessageLoopForIO io_loop_;
   TestingProfile profile_;
   TestDelegate delegate_;
