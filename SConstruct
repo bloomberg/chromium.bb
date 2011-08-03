@@ -1166,7 +1166,7 @@ def PPAPIBrowserTester(env,
       '${PYTHON}', python_tester_script,
       '--browser_path', env.ChromeBinary(),
       '--url', url,
-      # Fail if there is no response for 20 seconds.
+      # Fail if there is no response for X seconds.
       '--timeout', str(timeout)]
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])

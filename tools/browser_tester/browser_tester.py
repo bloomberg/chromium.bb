@@ -76,8 +76,13 @@ def BuildArgParser():
                     help='Request debugging output from browser.')
   parser.add_option('--timeout', dest='timeout', action='store', type='float',
                     default=5.0,
-                    help='The maximum amount of time to wait for the browser to'
-                    ' make a request. The timer resets with each request.')
+                    help='The maximum amount of time to wait, in seconds, for '
+                    'the browser to make a request. The timer resets with each '
+                    'request.')
+  parser.add_option('--hard_timeout', dest='hard_timeout', action='store',
+                    type='float', default=None,
+                    help='The maximum amount of time to wait, in seconds, for '
+                    'the entire test.  This will kill runaway tests. ')
   parser.add_option('--allow_404', dest='allow_404', action='store_true',
                     default=False,
                     help='Allow 404s to occur without failing the test.')
@@ -137,12 +142,12 @@ def Run(url, options):
     if not os.path.exists(real_path):
       raise AssertionError('\'%s\' does not exist.' % real_path)
 
-  def shutdown_callback():
+  def ShutdownCallback():
     server.TestingEnded()
     close_browser = options.tool is not None and not options.interactive
     return close_browser
 
-  listener = browsertester.rpclistener.RPCListener(shutdown_callback)
+  listener = browsertester.rpclistener.RPCListener(ShutdownCallback)
   server.Configure(file_mapping,
                    dict(options.map_redirects),
                    options.allow_404,
@@ -156,12 +161,16 @@ def Run(url, options):
 
   # In Python 2.5, server.handle_request may block indefinitely.  Serving pages
   # is done in its own thread so the main thread can time out as needed.
-  def serve():
+  def Serve():
     while server.test_in_progress or options.interactive:
       server.handle_request()
-  thread.start_new_thread(serve, ())
+  thread.start_new_thread(Serve, ())
 
   tool_failed = False
+  time_started = time.time()
+
+  def HardTimeout(total_time):
+    return total_time >= 0.0 and time.time() - time_started >= total_time
 
   try:
     while server.test_in_progress or options.interactive:
@@ -178,6 +187,10 @@ def Run(url, options):
         else:
           err += '\nThe test probably did not get a callback that it expected.'
         listener.ServerError(err)
+        break
+      elif not options.interactive and HardTimeout(options.hard_timeout):
+        listener.ServerError('The test took over %.1f seconds.  This is '
+                             'probably a runaway test.' % options.hard_timeout)
         break
       else:
         # If Python 2.5 support is dropped, stick server.handle_request() here.
@@ -208,6 +221,9 @@ def RunFromCommandLine():
   url = options.url
   if url is None:
     parser.error('Must specify a URL')
+
+  if options.hard_timeout is None:
+    options.hard_timeout = options.timeout * 3
 
   return Run(url, options)
 
