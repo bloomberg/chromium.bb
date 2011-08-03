@@ -54,18 +54,13 @@ EXTRA_ENV = {
   'OPT_STRIP_all': '-disable-opt --strip',
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
-  # To be filled in, if generating a static nexe with a segment gap.
-  'SEGMENT_GAP_FLAGS': '',
-
   # Sandboxed LD is always BFD.
   'LD'          : '${SANDBOXED ? ${LD_SB} ${LD_BFD_FLAGS} ' +
                              ' : ${LD_%WHICH_LD%} ${LD_%WHICH_LD%_FLAGS}}',
 
-  'LD_BFD_FLAGS': '-m ${LD_EMUL} ${SEGMENT_GAP_FLAGS} ' +
-                  '${#LD_SCRIPT ? -T ${LD_SCRIPT}}',
+  'LD_BFD_FLAGS': '-m ${LD_EMUL} ${#LD_SCRIPT ? -T ${LD_SCRIPT}}',
 
   'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} ' +
-                   '${SEGMENT_GAP_FLAGS} ' +
                    '${#LD_SCRIPT ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
@@ -269,11 +264,6 @@ def main(argv):
   # Expand input files which are linker scripts
   inputs = ExpandLinkerScripts(inputs)
 
-  if ForceSegmentGap(inputs):
-    # Note: we do not use the native bookend file link_segment_gap.o,
-    # so we separately specify the segment gap size 0x10000000 (256 MB) here.
-    env.append('SEGMENT_GAP_FLAGS', '--defsym=__nacl_rodata_start=0x10000000')
-
   # NATIVE HACK
   native_left, native_right = RemoveBitcode(inputs)
   if env.getbool('NATIVE_HACK'):
@@ -397,23 +387,6 @@ def ExpandLinkerScripts(inputs):
       ret.append(f)
 
   return ret
-
-def ForceSegmentGap(inputs):
-  # Heuristic to detect when the nexe needs a segment gap (e.g., to be
-  # compatible with the IRT). The heuristic is to check for -lppapi.
-  # Currently, libppapi.a contains both bitcode and a native bookend
-  # file "link_segment_gap.o", so is considered bitcode.
-  # Thus, this must be checked before RemoveBitcode.
-  if not env.getbool('STATIC'):
-    # We only need this for static linking. In the dynamic linking case,
-    # having a segment gap is already the default.
-    return False
-  for f in inputs:
-    if IsFlag(f):
-      continue
-    if pathtools.basename(f) == 'libppapi.a':
-      return True
-  return False
 
 def IsBitcodeInput(f):
   if IsFlag(f):

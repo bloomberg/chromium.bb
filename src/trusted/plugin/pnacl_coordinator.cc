@@ -461,8 +461,6 @@ void WINAPI DoLinkThread(void* arg) {
                     "PnaclCoordinator::LinkThread unhandled ISA " +
                     sandbox_isa + "\n");
   }
-  // For IRT + static linking.
-  flags.push_back("--defsym=__nacl_rodata_start=0x10000000");
 
   for (string_vector::iterator i = flags.begin(), e = flags.end();
        i != e; ++i) {
