@@ -916,6 +916,9 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       } else if (data1 == output_port_ &&
                  data2 == OMX_IndexConfigCommonOutputCrop) {
         // TODO(vjain): Handle video crop rect.
+      } else if (data1 == output_port_ &&
+                 data2 == OMX_IndexConfigCommonScale) {
+        // TODO(ashokm@nvidia.com): Handle video SAR change.
       } else {
         RETURN_ON_FAILURE(false,
                           "Unexpected EventPortSettingsChanged: "
