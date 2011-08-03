@@ -128,20 +128,6 @@ int GetIndexOfFeedbackTab(Browser* browser) {
 
 namespace browser {
 
-// TODO(rkc): Eventually find a better way to do this
-std::vector<unsigned char>* last_screenshot_png = 0;
-gfx::Rect screen_size;
-
-void RefreshLastScreenshot(Browser* browser) {
-  if (last_screenshot_png)
-    last_screenshot_png->clear();
-  else
-    last_screenshot_png = new std::vector<unsigned char>;
-
-  gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
-  screen_size = browser::GrabWindowSnapshot(native_window, last_screenshot_png);
-}
-
 void ShowHtmlBugReportView(Browser* browser,
                            const std::string& description_template,
                            size_t issue_type) {
@@ -156,7 +142,14 @@ void ShowHtmlBugReportView(Browser* browser,
     return;
   }
 
-  RefreshLastScreenshot(browser);
+  std::vector<unsigned char>* last_screenshot_png =
+      BugReportUtil::GetScreenshotPng();
+  last_screenshot_png->clear();
+
+  gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
+  BugReportUtil::SetScreenshotSize(
+      browser::GrabWindowSnapshot(native_window, last_screenshot_png));
+
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
       "#" + base::IntToString(browser->active_index()) +
       "?description=" + EscapeUrlEncodedData(description_template, false) +
@@ -199,7 +192,7 @@ class BugReportHandler : public WebUIMessageHandler,
   TabContents* tab_;
   ScreenshotSource* screenshot_source_;
 
-  BugReportData* bug_report_;
+  BugReportData* bug_report_data_;
   std::string target_tab_url_;
 #if defined(OS_CHROMEOS)
   // Variables to track SyslogsProvider::RequestSyslogs callback.
@@ -316,62 +309,13 @@ ChromeWebUIDataSource* CreateBugReportUIHTMLSource(bool successful_init) {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BugReportData
-//
-////////////////////////////////////////////////////////////////////////////////
-void BugReportData::SendReport() {
-#if defined(OS_CHROMEOS)
-  // In case we already got the syslogs and sent the report, leave
-  if (sent_report_) return;
-  // Set send_report_ so that no one else processes SendReport
-  sent_report_ = true;
-#endif
-
-  int image_data_size = image_.size();
-  char* image_data = image_data_size ?
-      reinterpret_cast<char*>(&(image_.front())) : NULL;
-  BugReportUtil::SendReport(profile_
-                            , problem_type_
-                            , page_url_
-                            , description_
-                            , image_data
-                            , image_data_size
-                            , browser::screen_size.width()
-                            , browser::screen_size.height()
-#if defined(OS_CHROMEOS)
-                            , user_email_
-                            , zip_content_ ? zip_content_->c_str() : NULL
-                            , zip_content_ ? zip_content_->length() : 0
-                            , send_sys_info_ ? sys_info_ : NULL
-#endif
-                            );
-
-#if defined(OS_CHROMEOS)
-  if (sys_info_) {
-    delete sys_info_;
-    sys_info_ = NULL;
-  }
-  if (zip_content_) {
-    delete zip_content_;
-    zip_content_ = NULL;
-  }
-#endif
-
-  // Once the report has been sent, this object has no purpose in life, delete
-  // ourselves.
-  delete this;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // BugReportHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 BugReportHandler::BugReportHandler(TabContents* tab)
     : tab_(tab),
       screenshot_source_(NULL),
-      bug_report_(NULL)
+      bug_report_data_(NULL)
 #if defined(OS_CHROMEOS)
     , syslogs_handle_(0)
 #endif
@@ -379,12 +323,14 @@ BugReportHandler::BugReportHandler(TabContents* tab)
 }
 
 BugReportHandler::~BugReportHandler() {
-  // Just in case we didn't send off bug_report_ to SendReport
-  if (bug_report_) {
+  // Just in case we didn't send off bug_report_data_ to SendReport
+  if (bug_report_data_) {
     // If we're deleting the report object, cancel feedback collection first
     CancelFeedbackCollection();
-    delete bug_report_;
+    delete bug_report_data_;
   }
+  // Make sure we don't leave any screenshot data around.
+  BugReportUtil::ClearScreenshotPng();
 }
 
 void BugReportHandler::ClobberScreenshotsSource() {
@@ -394,16 +340,15 @@ void BugReportHandler::ClobberScreenshotsSource() {
   Profile* profile = Profile::FromBrowserContext(tab_->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(new ScreenshotSource(NULL));
 
-  // clobber last screenshot
-  if (browser::last_screenshot_png)
-    browser::last_screenshot_png->clear();
+  BugReportUtil::ClearScreenshotPng();
 }
 
 void BugReportHandler::SetupScreenshotsSource() {
   // If we don't already have a screenshot source object created, create one.
-  if (!screenshot_source_)
-    screenshot_source_ = new ScreenshotSource(browser::last_screenshot_png);
-
+  if (!screenshot_source_) {
+    screenshot_source_ =
+        new ScreenshotSource(BugReportUtil::GetScreenshotPng());
+  }
   // Add the source to the data manager.
   Profile* profile = Profile::FromBrowserContext(tab_->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
@@ -469,7 +414,8 @@ void BugReportHandler::RegisterMessages() {
 }
 
 void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
-  bug_report_ = new BugReportData();
+  // Will delete itself when bug_report_data_->SendReport() is called.
+  bug_report_data_ = new BugReportData();
 
   // send back values which the dialog js needs initially
   ListValue dialog_defaults;
@@ -491,7 +437,7 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
         true,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_FEEDBACK,
         &syslogs_consumer_,
-        NewCallback(bug_report_, &BugReportData::SyslogsComplete));
+        NewCallback(bug_report_data_, &BugReportData::SyslogsComplete));
   }
   // 2: user e-mail
   dialog_defaults.Append(new StringValue(GetUserEmail()));
@@ -521,7 +467,7 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
 
 
 void BugReportHandler::HandleSendReport(const ListValue* list_value) {
-  if (!bug_report_) {
+  if (!bug_report_data_) {
     LOG(ERROR) << "Bug report hasn't been intialized yet.";
     return;
   }
@@ -595,35 +541,35 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
     CancelFeedbackCollection();
 #endif
 
-  // Update the data in bug_report_ so it can be sent
-  bug_report_->UpdateData(web_ui_->GetProfile()
-                          , target_tab_url_
-                          , problem_type
-                          , page_url
-                          , description
-                          , image
+  // Update the data in bug_report_data_ so it can be sent
+  bug_report_data_->UpdateData(web_ui_->GetProfile()
+                               , target_tab_url_
+                               , problem_type
+                               , page_url
+                               , description
+                               , image
 #if defined(OS_CHROMEOS)
-                          , user_email
-                          , send_sys_info
-                          , false // sent_report
+                               , user_email
+                               , send_sys_info
+                               , false // sent_report
 #endif
-                          );
+                               );
 
 #if defined(OS_CHROMEOS)
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.
-  if (!send_sys_info || bug_report_->sys_info() != NULL ||
+  if (!send_sys_info || bug_report_data_->sys_info() != NULL ||
       syslogs_handle_ == 0) {
-    bug_report_->SendReport();
+    bug_report_data_->SendReport();
   }
 #else
-  bug_report_->SendReport();
+  bug_report_data_->SendReport();
 #endif
   // Lose the pointer to the BugReportData object; the object will delete itself
   // from SendReport, whether we called it, or will be called by the log
   // completion routine.
-  bug_report_ = NULL;
+  bug_report_data_ = NULL;
 
   // Whether we sent the report, or if it will be sent by the Syslogs complete
   // function, close our feedback tab anyway, we have no more use for it.

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 
+#include <functional>
+#include <set>
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -11,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/memory_details.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 
@@ -219,6 +224,78 @@ CancelableRequestProvider::Handle SyslogsProviderImpl::RequestSyslogs(
   return request->handle();
 }
 
+// Derived class from memoryDetails converts the results into a single string
+// and adds a "mem_usage" entry to the logs, then forwards the result.
+// Format of entry is (one process per line, reverse-sorted by size):
+//   Tab [Title1|Title2]: 50 MB
+//   Browser: 30 MB
+//   Tab [Title]: 20 MB
+//   Extension [Title]: 10 MB
+// ...
+class SyslogsMemoryHandler : public MemoryDetails {
+ public:
+  typedef SyslogsProvider::ReadCompleteCallback ReadCompleteCallback;
+
+  // |logs| is modified (see comment above) and passed to |request|.
+  // |zip_content| is passed to |request|.
+  SyslogsMemoryHandler(
+      scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
+      LogDictionaryType* logs,
+      std::string* zip_content)
+      : request_(request),
+        logs_(logs),
+        zip_content_(zip_content) {
+  }
+
+  virtual void OnDetailsAvailable() OVERRIDE {
+    const ProcessData& chrome = processes()[0];  // Chrome is the first entry.
+    // Process info, sorted by memory used (highest to lowest).
+    typedef std::pair<int, std::string> ProcInfo;
+    typedef std::set<ProcInfo, std::greater<ProcInfo> > ProcInfoSet;
+    ProcInfoSet process_info;
+    for (ProcessMemoryInformationList::const_iterator iter1 =
+             chrome.processes.begin();
+         iter1 != chrome.processes.end(); ++iter1) {
+      std::string process_string(
+          ChildProcessInfo::GetFullTypeNameInEnglish(
+              iter1->type, iter1->renderer_type));
+      if (!iter1->titles.empty()) {
+        std::string titles(" [");
+        for (std::vector<string16>::const_iterator iter2 =
+                 iter1->titles.begin();
+             iter2 != iter1->titles.end(); ++iter2) {
+          if (iter2 != iter1->titles.begin())
+            titles += "|";
+          titles += UTF16ToUTF8(*iter2);
+        }
+        titles += "]";
+        process_string += titles;
+      }
+      // Use private working set for memory used calculation.
+      int ws_mbytes = static_cast<int>(iter1->working_set.priv) / 1024;
+      process_info.insert(std::make_pair(ws_mbytes, process_string));
+    }
+    // Add one line for each reverse-sorted entry.
+    std::string mem_string;
+    for (ProcInfoSet::iterator iter = process_info.begin();
+         iter != process_info.end(); ++iter) {
+      mem_string += iter->second + StringPrintf(": %d MB", iter->first) + "\n";
+    }
+    (*logs_)["mem_usage"] = mem_string;
+    // This will call the callback on the calling thread.
+    request_->ForwardResult(
+        Tuple2<LogDictionaryType*, std::string*>(logs_, zip_content_));
+  }
+
+ private:
+  virtual ~SyslogsMemoryHandler() {}
+
+  scoped_refptr<CancelableRequest<ReadCompleteCallback> > request_;
+  LogDictionaryType* logs_;
+  std::string* zip_content_;
+  DISALLOW_COPY_AND_ASSIGN(SyslogsMemoryHandler);
+};
+
 // Called from FILE thread.
 void SyslogsProviderImpl::ReadSyslogs(
     scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
@@ -253,11 +330,13 @@ void SyslogsProviderImpl::ReadSyslogs(
     file_util::Delete(zip_file, false);
   }
 
-  // Will call the callback on the calling thread.
-  request->ForwardResult(Tuple2<LogDictionaryType*,
-                                std::string*>(logs, zip_content));
+  // SyslogsMemoryHandler will clean itself up.
+  // SyslogsMemoryHandler::OnDetailsAvailable() will modify |logs| and call
+  // request->ForwardResult(logs, zip_content).
+  scoped_refptr<SyslogsMemoryHandler>
+      handler(new SyslogsMemoryHandler(request, logs, zip_content));
+  handler->StartFetch();
 }
-
 
 void SyslogsProviderImpl::LoadCompressedLogs(const FilePath& zip_file,
                                             std::string* zip_content) {

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/bug_report_data.h"
 
+#include "chrome/browser/bug_report_util.h"
+#include "content/browser/browser_thread.h"
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #endif
@@ -34,6 +37,7 @@ void BugReportData::UpdateData(Profile* profile,
                                , const bool sent_report
 #endif
                                ) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   target_tab_url_ = target_tab_url;
   problem_type_ = problem_type;
@@ -47,11 +51,58 @@ void BugReportData::UpdateData(Profile* profile,
 #endif
 }
 
+void BugReportData::SendReport() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_CHROMEOS)
+  if (sent_report_)
+    return;  // We already received the syslogs and sent the report.
+
+  // Set send_report_ to ensure that we only send one report.
+  sent_report_ = true;
+#endif
+
+  int image_data_size = image_.size();
+  char* image_data = image_data_size ?
+      reinterpret_cast<char*>(&(image_.front())) : NULL;
+  gfx::Rect& screen_size = BugReportUtil::GetScreenshotSize();
+  BugReportUtil::SendReport(profile_
+                            , problem_type_
+                            , page_url_
+                            , description_
+                            , image_data
+                            , image_data_size
+                            , screen_size.width()
+                            , screen_size.height()
+#if defined(OS_CHROMEOS)
+                            , user_email_
+                            , zip_content_ ? zip_content_->c_str() : NULL
+                            , zip_content_ ? zip_content_->length() : 0
+                            , send_sys_info_ ? sys_info_ : NULL
+#endif
+                            );
 
 #if defined(OS_CHROMEOS)
-// Called from the same thread as HandleGetDialogDefaults, i.e. the UI thread.
+  if (sys_info_) {
+    delete sys_info_;
+    sys_info_ = NULL;
+  }
+  if (zip_content_) {
+    delete zip_content_;
+    zip_content_ = NULL;
+  }
+#endif
+
+  // Delete this object once the report has been sent.
+  delete this;
+}
+
+#if defined(OS_CHROMEOS)
+// SyslogsComplete may be called before UpdateData, in which case, we do not
+// want to delete the logs that were gathered, and we do not want to send the
+// report either. Instead simply populate |sys_info_| and |zip_content_|.
 void BugReportData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
                                     std::string* zip_content) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (sent_report_) {
     // We already sent the report, just delete the data.
     if (logs)

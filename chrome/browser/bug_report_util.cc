@@ -49,9 +49,6 @@ static char const kProtBufMimeType[] = "application/x-protobuf";
 static char const kPngMimeType[] = "image/png";
 
 // Tags we use in product specific data
-static char const kPageTitleTag[] = "PAGE TITLE";
-static char const kProblemTypeIdTag[] = "PROBLEM TYPE ID";
-static char const kProblemTypeTag[] = "PROBLEM TYPE";
 static char const kChromeVersionTag[] = "CHROME VERSION";
 static char const kOsVersionTag[] = "OS VERSION";
 
@@ -67,10 +64,10 @@ static char const kBZip2MimeType[] = "application/x-bzip2";
 static char const kLogsAttachmentName[] = "system_logs.bz2";
 // Maximum number of lines in system info log chunk to be still included
 // in product specific data.
-const size_t kMaxLineCount       = 10;
+const size_t kMaxLineCount       = 40;
 // Maximum number of bytes in system info log chunk to be still included
 // in product specific data.
-const size_t kMaxSystemLogLength = 1024;
+const size_t kMaxSystemLogLength = 4 * 1024;
 #endif
 
 const int64 kInitialRetryDelay = 900000; // 15 minutes
@@ -248,22 +245,22 @@ bool BugReportUtil::ValidFeedbackSize(const std::string& content) {
 #endif
 
 // static
-void BugReportUtil::SendReport(Profile* profile,
-    int problem_type,
-    const std::string& page_url_text,
-    const std::string& description,
-    const char* png_data,
-    int png_data_length,
-    int png_width,
+void BugReportUtil::SendReport(
+    Profile* profile
+    , int problem_type
+    , const std::string& page_url_text
+    , const std::string& description
+    , const char* png_data
+    , int png_data_length
+    , int png_width
+    , int png_height
 #if defined(OS_CHROMEOS)
-    int png_height,
-    const std::string& user_email_text,
-    const char* zipped_logs_data,
-    int zipped_logs_length,
-    const chromeos::system::LogDictionaryType* const sys_info) {
-#else
-    int png_height) {
+    , const std::string& user_email_text
+    , const char* zipped_logs_data
+    , int zipped_logs_length
+    , const chromeos::system::LogDictionaryType* const sys_info
 #endif
+    ) {
   // Create google feedback protocol buffer objects
   userfeedback::ExternalExtensionSubmit feedback_data;
   // type id set to 0, unused field but needs to be initialized to 0
@@ -327,11 +324,12 @@ void BugReportUtil::SendReport(Profile* profile,
   if (sys_info) {
     // Add the product specific data
     for (chromeos::system::LogDictionaryType::const_iterator i =
-             sys_info->begin(); i != sys_info->end(); ++i)
+             sys_info->begin(); i != sys_info->end(); ++i) {
       if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCompressSystemFeedback) || ValidFeedbackSize(i->second)) {
         AddFeedbackData(&feedback_data, i->first, i->second);
       }
+    }
 
     // If we have zipped logs, add them here
     if (zipped_logs_data && CommandLine::ForCurrentProcess()->HasSwitch(
@@ -385,3 +383,32 @@ void BugReportUtil::ReportPhishing(TabContents* currentTab,
       PageTransition::LINK);
 }
 #endif
+
+static std::vector<unsigned char>* screenshot_png = NULL;
+static gfx::Rect* screenshot_size = NULL;
+
+// static
+std::vector<unsigned char>* BugReportUtil::GetScreenshotPng() {
+  if (screenshot_png == NULL)
+    screenshot_png = new std::vector<unsigned char>;
+  return screenshot_png;
+}
+
+// static
+void BugReportUtil::ClearScreenshotPng() {
+  if (screenshot_png)
+    screenshot_png->clear();
+}
+
+// static
+gfx::Rect& BugReportUtil::GetScreenshotSize() {
+  if (screenshot_size == NULL)
+    screenshot_size = new gfx::Rect();
+  return *screenshot_size;
+}
+
+// static
+void BugReportUtil::SetScreenshotSize(const gfx::Rect& rect) {
+  gfx::Rect& screen_size = GetScreenshotSize();
+  screen_size = rect;
+}

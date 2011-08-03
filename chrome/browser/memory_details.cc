@@ -70,8 +70,9 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 // expensive parts of this operation over on the file thread.
 //
 void MemoryDetails::StartFetch() {
+  // This might get called from the UI or FILE threads, but should not be
+  // getting called from the IO thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.

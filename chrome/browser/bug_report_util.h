@@ -63,26 +63,30 @@ class BugReportUtil {
 
 
   // Generates bug report data.
-  static void SendReport(Profile* profile,
-      int problem_type,
-      const std::string& page_url_text,
-      const std::string& description,
-      const char* png_data,
-      int png_data_length,
-      int png_width,
+  static void SendReport(
+      Profile* profile
+      , int problem_type
+      , const std::string& page_url_text
+      , const std::string& description
+      , const char* png_data
+      , int png_data_length
+      , int png_width
+      , int png_height
 #if defined(OS_CHROMEOS)
-      int png_height,
-      const std::string& user_email_text,
-      const char* zipped_logs_data,
-      int zipped_logs_length,
-      const chromeos::system::LogDictionaryType* const sys_info);
-#else
-      int png_height);
+      , const std::string& user_email_text
+      , const char* zipped_logs_data
+      , int zipped_logs_length
+      , const chromeos::system::LogDictionaryType* const sys_info
 #endif
-
+  );
   // Redirects the user to Google's phishing reporting page.
   static void ReportPhishing(TabContents* currentTab,
                              const std::string& phishing_url);
+  // Maintains a single vector of bytes to store the last screenshot taken.
+  static std::vector<unsigned char>* GetScreenshotPng();
+  static void ClearScreenshotPng();
+  static void SetScreenshotSize(const gfx::Rect& rect);
+  static gfx::Rect& GetScreenshotSize();
 
   class PostCleanup;
 

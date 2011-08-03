@@ -9,24 +9,18 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bug_report_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #endif
 
+class Profile;
+
 class BugReportData {
  public:
-  // Make sure we initialize these flags to false since SyslogsComplete
-  // may be triggered before we've called update data; in which case,
-  // we do not want it to just delete the logs it just gathered, and we
-  // don't want it to send the report either - this will make sure that if
-  // SyslogsComplete gets called before UpdateData, we'll simply populate the
-  // sys_info and zip_content fields and exit without disturbing anything else
   BugReportData();
   ~BugReportData();
 
-  // Defined in bug_report_ui.cc
   void SendReport();
 
   void UpdateData(Profile* profile,
