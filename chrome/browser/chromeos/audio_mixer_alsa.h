@@ -118,6 +118,10 @@ class AudioMixerAlsa : public AudioMixer {
   // Background thread used for interacting with ALSA.
   scoped_ptr<base::Thread> thread_;
 
+  // Number of times that we've attempted to connect to ALSA.  Just used to keep
+  // us from spamming the logs.
+  int num_connection_attempts_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioMixerAlsa);
 };
 

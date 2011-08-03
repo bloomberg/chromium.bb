@@ -56,8 +56,14 @@ const double kDefaultVolumeDb = -10.0;
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
 
-// Number of seconds that we'll sleep between each initialization attempt.
-const int kInitRetrySleepSec = 1;
+// Number of seconds that we'll sleep between each connection attempt.
+const int kConnectionRetrySleepSec = 1;
+
+// Connection attempt number (1-indexed) for which we'll log an error if we're
+// still failing.  This is set high enough to give the ALSA modules some time to
+// be loaded into the kernel.  We want to log an error eventually if something
+// is broken, but we don't want to continue spamming the log indefinitely.
+const int kConnectionAttemptToLogFailure = 10;
 
 }  // namespace
 
@@ -70,7 +76,8 @@ AudioMixerAlsa::AudioMixerAlsa()
       alsa_mixer_(NULL),
       pcm_element_(NULL),
       prefs_(NULL),
-      disconnected_event_(true, false) {
+      disconnected_event_(true, false),
+      num_connection_attempts_(0) {
 }
 
 AudioMixerAlsa::~AudioMixerAlsa() {
@@ -93,6 +100,7 @@ void AudioMixerAlsa::Init() {
   volume_db_ = prefs_->GetDouble(prefs::kAudioVolume);
   is_muted_ = prefs_->GetInteger(prefs::kAudioMute);
 
+  DCHECK(!thread_.get()) << "Init() called twice";
   thread_.reset(new base::Thread("AudioMixerAlsa"));
   CHECK(thread_->Start());
   thread_->message_loop()->PostTask(
@@ -174,23 +182,26 @@ void AudioMixerAlsa::Connect() {
   if (!ConnectInternal()) {
     thread_->message_loop()->PostDelayedTask(FROM_HERE,
         NewRunnableMethod(this, &AudioMixerAlsa::Connect),
-        kInitRetrySleepSec * 1000);
+        kConnectionRetrySleepSec * 1000);
   }
 }
 
 bool AudioMixerAlsa::ConnectInternal() {
   DCHECK(MessageLoop::current() == thread_->message_loop());
+  num_connection_attempts_++;
   int err;
   snd_mixer_t* handle = NULL;
 
   if ((err = snd_mixer_open(&handle, 0)) < 0) {
-    LOG(WARNING) << "ALSA mixer open error: " << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "Mixer open error: " << snd_strerror(err);
     return false;
   }
 
   if ((err = snd_mixer_attach(handle, kCardName)) < 0) {
-    LOG(WARNING) << "ALSA Attach to card " << kCardName << " failed: "
-                 << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "Attach to card " << kCardName << " failed: "
+                   << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
@@ -205,23 +216,26 @@ bool AudioMixerAlsa::ConnectInternal() {
                           0)) >= 0) {
     snd_pcm_close(pcm_out_handle);
   } else {
-    LOG(WARNING) << "ALSA PCM open: " << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "PCM open failed: " << snd_strerror(err);
   }
 
   if ((err = snd_mixer_selem_register(handle, NULL, NULL)) < 0) {
-    LOG(WARNING) << "ALSA mixer register error: " << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "Mixer register error: " << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
 
   if ((err = snd_mixer_load(handle)) < 0) {
-    LOG(WARNING) << "ALSA mixer " << kCardName << " load error: %s"
-                 << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "Mixer " << kCardName << " load error: %s"
+                   << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
 
-  VLOG(1) << "Opened ALSA mixer " << kCardName << " OK";
+  VLOG(1) << "Opened mixer " << kCardName << " successfully";
 
   double min_volume_db = kDefaultMinVolumeDb;
   double max_volume_db = kDefaultMaxVolumeDb;
@@ -235,7 +249,8 @@ bool AudioMixerAlsa::ConnectInternal() {
   }
 
   if (master_elements.empty()) {
-    LOG(WARNING) << "Unable to find any ALSA mixer elements on " << kCardName;
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "Unable to find any mixer elements on " << kCardName;
     snd_mixer_close(handle);
     return false;
   }
@@ -245,8 +260,9 @@ bool AudioMixerAlsa::ConnectInternal() {
   err = snd_mixer_selem_get_playback_dB_range(
       master_elements.at(0), &long_low, &long_high);
   if (err != 0) {
-    LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed:"
-                 << snd_strerror(err);
+    if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed:"
+                   << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
@@ -260,8 +276,9 @@ bool AudioMixerAlsa::ConnectInternal() {
     err = snd_mixer_selem_get_playback_dB_range(
         pcm_element, &long_low, &long_high);
     if (err != 0) {
-      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for "
-                   << kPCMElementName << ": " << snd_strerror(err);
+      if (num_connection_attempts_ == kConnectionAttemptToLogFailure)
+        LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for "
+                     << kPCMElementName << ": " << snd_strerror(err);
       snd_mixer_close(handle);
       return false;
     }
@@ -269,7 +286,7 @@ bool AudioMixerAlsa::ConnectInternal() {
     max_volume_db += static_cast<double>(long_high) / 100.0;
   }
 
-  VLOG(1) << "ALSA volume range is " << min_volume_db << " dB to "
+  VLOG(1) << "Volume range is " << min_volume_db << " dB to "
           << max_volume_db << " dB";
   {
     base::AutoLock lock(lock_);
@@ -345,10 +362,8 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
   snd_mixer_selem_id_set_index(sid, 0);
   snd_mixer_selem_id_set_name(sid, element_name.c_str());
   snd_mixer_elem_t* element = snd_mixer_find_selem(handle, sid);
-  if (!element) {
-    LOG(WARNING) << "ALSA unable to find simple control "
-                 << snd_mixer_selem_id_get_name(sid);
-  }
+  if (!element)
+    VLOG(1) << "Unable to find control " << snd_mixer_selem_id_get_name(sid);
 
   snd_mixer_selem_id_free(sid);
   return element;
