@@ -1649,7 +1649,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
                                    ContextGroup* group)
     : GLES2Decoder(),
       surface_manager_(surface_manager),
-      group_(ContextGroup::Ref(group ? group : new ContextGroup())),
+      group_(group),
       error_bits_(0),
       pack_alignment_(4),
       unpack_alignment_(4),
@@ -1695,6 +1695,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
       frame_number_(0),
       has_arb_robustness_(false),
       reset_status_(GL_NO_ERROR) {
+  DCHECK(group);
+
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -2727,7 +2729,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
       glGenBuffersARB(1, &service_id);
       CreateBufferInfo(client_id, service_id);
       info = GetBufferInfo(client_id);
-      IdAllocator* id_allocator =
+      IdAllocatorInterface* id_allocator =
           group_->GetIdAllocator(id_namespaces::kBuffers);
       id_allocator->MarkAsUsed(client_id);
     }
@@ -2806,7 +2808,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
       glGenFramebuffersEXT(1, &service_id);
       CreateFramebufferInfo(client_id, service_id);
       info = GetFramebufferInfo(client_id);
-      IdAllocator* id_allocator =
+      IdAllocatorInterface* id_allocator =
           group_->GetIdAllocator(id_namespaces::kFramebuffers);
       id_allocator->MarkAsUsed(client_id);
     } else {
@@ -2845,7 +2847,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
       glGenRenderbuffersEXT(1, &service_id);
       CreateRenderbufferInfo(client_id, service_id);
       info = GetRenderbufferInfo(client_id);
-      IdAllocator* id_allocator =
+      IdAllocatorInterface* id_allocator =
           group_->GetIdAllocator(id_namespaces::kRenderbuffers);
       id_allocator->MarkAsUsed(client_id);
     } else {
@@ -2867,7 +2869,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       glGenTextures(1, &service_id);
       CreateTextureInfo(client_id, service_id);
       info = GetTextureInfo(client_id);
-      IdAllocator* id_allocator =
+      IdAllocatorInterface* id_allocator =
           group_->GetIdAllocator(id_namespaces::kTextures);
       id_allocator->MarkAsUsed(client_id);
     }
@@ -3360,7 +3362,7 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
 
 void GLES2DecoderImpl::DoDeleteSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
   for (GLsizei ii = 0; ii < n; ++ii) {
     id_allocator->FreeID(ids[ii]);
   }
@@ -3389,7 +3391,7 @@ error::Error GLES2DecoderImpl::HandleDeleteSharedIdsCHROMIUM(
 
 void GLES2DecoderImpl::DoGenSharedIdsCHROMIUM(
     GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
-  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
   if (id_offset == 0) {
     for (GLsizei ii = 0; ii < n; ++ii) {
       ids[ii] = id_allocator->AllocateID();
@@ -3426,7 +3428,7 @@ error::Error GLES2DecoderImpl::HandleGenSharedIdsCHROMIUM(
 
 void GLES2DecoderImpl::DoRegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
+  IdAllocatorInterface* id_allocator = group_->GetIdAllocator(namespace_id);
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (!id_allocator->MarkAsUsed(ids[ii])) {
       for (GLsizei jj = 0; jj < ii; ++jj) {

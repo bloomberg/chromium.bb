@@ -13,7 +13,9 @@
 #include <GLES2/gl2ext.h>
 
 #include <algorithm>
+#include <set>
 
+#include "base/lazy_instance.h"
 #include "base/string_tokenizer.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -29,6 +31,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
+
+static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
+    g_all_contexts(base::LINKER_INITIALIZED);
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
@@ -47,6 +52,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
+  g_all_contexts.Pointer()->erase(this);
   delete context_;
 }
 
@@ -107,6 +113,16 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (web_view && web_view->mainFrame())
     active_url = GURL(web_view->mainFrame()->document().url());
 
+  // HACK: Assume this is a WebGL context by looking for the noExtensions
+  // attribute. WebGL contexts must not go in the share group because they
+  // rely on destruction of the context to clean up owned resources. Putting
+  // them in a share group would prevent this from happening.
+  RendererGLContext* share_group = NULL;
+  if (!attributes.noExtensions) {
+    share_group = g_all_contexts.Pointer()->empty() ?
+        NULL : (*g_all_contexts.Pointer()->begin())->context_;
+  }
+
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
@@ -116,6 +132,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     context_ = RendererGLContext::CreateViewContext(
         host,
         renderview->routing_id(),
+        share_group,
         preferred_extensions,
         attribs,
         active_url);
@@ -128,6 +145,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     context_ = RendererGLContext::CreateOffscreenContext(
         host,
         gfx::Size(1, 1),
+        share_group,
         preferred_extensions,
         attribs,
         active_url);
@@ -163,6 +181,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     getIntegerv(GL_SAMPLES, &samples);
     attributes_.antialias = samples > 0;
   }
+
+  if (!attributes.noExtensions)
+    g_all_contexts.Pointer()->insert(this);
 
   return true;
 }

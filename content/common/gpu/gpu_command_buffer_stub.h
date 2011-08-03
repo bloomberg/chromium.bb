@@ -17,6 +17,7 @@
 #include "base/task.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -33,6 +34,7 @@ class GpuCommandBufferStub
  public:
   GpuCommandBufferStub(
       GpuChannel* channel,
+      GpuCommandBufferStub* share_group,
       gfx::PluginWindowHandle handle,
       const gfx::Size& size,
       const gpu::gles2::DisallowedExtensions& disallowed_extensions,
@@ -132,6 +134,9 @@ class GpuCommandBufferStub
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
   GpuChannel* channel_;
+
+  // The group of contexts that share namespaces with this context.
+  scoped_refptr<gpu::gles2::ContextGroup> context_group_;
 
   gfx::PluginWindowHandle handle_;
   gfx::Size initial_size_;

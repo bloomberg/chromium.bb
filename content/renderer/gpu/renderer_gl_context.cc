@@ -83,6 +83,7 @@ RendererGLContext::~RendererGLContext() {
 RendererGLContext* RendererGLContext::CreateViewContext(
     GpuChannelHost* channel,
     int render_view_id,
+    RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url) {
@@ -92,6 +93,7 @@ RendererGLContext* RendererGLContext::CreateViewContext(
       true,
       render_view_id,
       gfx::Size(),
+      share_group,
       allowed_extensions,
       attrib_list,
       active_url))
@@ -114,6 +116,7 @@ void RendererGLContext::ResizeOnscreen(const gfx::Size& size) {
 RendererGLContext* RendererGLContext::CreateOffscreenContext(
     GpuChannelHost* channel,
     const gfx::Size& size,
+    RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url) {
@@ -123,6 +126,7 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
       false,
       0,
       size,
+      share_group,
       allowed_extensions,
       attrib_list,
       active_url))
@@ -195,45 +199,14 @@ uint32 RendererGLContext::GetParentTextureId() {
 }
 
 uint32 RendererGLContext::CreateParentTexture(const gfx::Size& size) {
-  // Allocate a texture ID with respect to the parent.
-  if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return 0;
-    uint32 texture_id = parent_->gles2_implementation_->MakeTextureId();
-    parent_->gles2_implementation_->BindTexture(GL_TEXTURE_2D, texture_id);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    parent_->gles2_implementation_->TexImage2D(GL_TEXTURE_2D,
-        0,  // mip level
-        GL_RGBA,
-        size.width(),
-        size.height(),
-        0,  // border
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        NULL);
-    // Make sure that the parent texture's storage is allocated before we let
-    // the caller attempt to use it.
-    int32 token = parent_->gles2_helper_->InsertToken();
-    parent_->gles2_helper_->WaitForToken(token);
-    return texture_id;
-  }
-  return 0;
+  uint32 texture_id = 0;
+  gles2_implementation_->GenTextures(1, &texture_id);
+  gles2_implementation_->Flush();
+  return texture_id;
 }
 
 void RendererGLContext::DeleteParentTexture(uint32 texture) {
-  if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return;
-    parent_->gles2_implementation_->DeleteTextures(1, &texture);
-  }
+  gles2_implementation_->DeleteTextures(1, &texture);
 }
 
 void RendererGLContext::SetSwapBuffersCallback(Callback0::Type* callback) {
@@ -330,6 +303,7 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
 bool RendererGLContext::Initialize(bool onscreen,
                                    int render_view_id,
                                    const gfx::Size& size,
+                                   RendererGLContext* share_group,
                                    const char* allowed_extensions,
                                    const int32* attrib_list,
                                    const GURL& active_url) {
@@ -377,12 +351,14 @@ bool RendererGLContext::Initialize(bool onscreen,
                  "RendererGLContext::Initialize::CreateViewCommandBuffer");
     command_buffer_ = channel_->CreateViewCommandBuffer(
         render_view_id,
+        share_group ? share_group->command_buffer_ : NULL,
         allowed_extensions,
         attribs,
         active_url);
   } else {
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         size,
+        share_group ? share_group->command_buffer_ : NULL,
         allowed_extensions,
         attribs,
         active_url);
@@ -441,7 +417,7 @@ bool RendererGLContext::Initialize(bool onscreen,
       transfer_buffer.size,
       transfer_buffer.ptr,
       transfer_buffer_id_,
-      false);
+      true);
 
   size_ = size;
 
@@ -452,8 +428,17 @@ void RendererGLContext::Destroy() {
   TRACE_EVENT0("gpu", "RendererGLContext::Destroy");
   SetParent(NULL);
 
-  delete gles2_implementation_;
-  gles2_implementation_ = NULL;
+  if (gles2_implementation_) {
+    // First flush the context to ensure that any pending frees of resources
+    // are completed. Otherwise, if this context is part of a share group,
+    // those resources might leak. Also, any remaining side effects of commands
+    // issued on this context might not be visible to other contexts in the
+    // share group.
+    gles2_implementation_->Flush();
+
+    delete gles2_implementation_;
+    gles2_implementation_ = NULL;
+  }
 
   // Do not destroy this transfer buffer here, because commands are still
   // in flight on the GPU process that may access them. When the command buffer

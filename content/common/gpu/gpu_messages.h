@@ -23,6 +23,7 @@
 #define IPC_MESSAGE_START GpuMsgStart
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
+  IPC_STRUCT_MEMBER(int32, share_group_id)
   IPC_STRUCT_MEMBER(std::string, allowed_extensions)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)

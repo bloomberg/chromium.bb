@@ -95,6 +95,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
       parent_context_->GetCommandBufferProxy();
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       surface_size,
+      NULL,
       "*",
       attribs,
       GURL::EmptyGURL());

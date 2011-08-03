@@ -27,6 +27,12 @@ ContextGroup::ContextGroup()
       max_fragment_uniform_vectors_(0u),
       max_varying_vectors_(0u),
       max_vertex_uniform_vectors_(0u) {
+  id_namespaces_[id_namespaces::kBuffers].reset(new IdAllocator);
+  id_namespaces_[id_namespaces::kFramebuffers].reset(new IdAllocator);
+  id_namespaces_[id_namespaces::kProgramsAndShaders].reset(
+      new NonReusedIdAllocator);
+  id_namespaces_[id_namespaces::kRenderbuffers].reset(new IdAllocator);
+  id_namespaces_[id_namespaces::kTextures].reset(new IdAllocator);
 }
 
 ContextGroup::~ContextGroup() {
@@ -145,14 +151,11 @@ void ContextGroup::Destroy() {
   }
 }
 
-IdAllocator* ContextGroup::GetIdAllocator(unsigned namespace_id) {
-  IdAllocatorMap::iterator it = id_namespaces_.find(namespace_id);
-  if (it != id_namespaces_.end()) {
-    return it->second.get();
-  }
-  IdAllocator* id_allocator = new IdAllocator();
-  id_namespaces_[namespace_id] = linked_ptr<IdAllocator>(id_allocator);
-  return id_allocator;
+IdAllocatorInterface* ContextGroup::GetIdAllocator(unsigned namespace_id) {
+  if (namespace_id >= arraysize(id_namespaces_))
+    return NULL;
+
+  return id_namespaces_[namespace_id].get();
 }
 
 }  // namespace gles2

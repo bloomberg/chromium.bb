@@ -189,12 +189,22 @@ void GpuChannel::CreateViewCommandBuffer(
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 
 #if defined(ENABLE_GPU)
+  GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
+
   *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, window, gfx::Size(), disallowed_extensions_,
+      this,
+      share_group,
+      window,
+      gfx::Size(),
+      disallowed_extensions_,
       init_params.allowed_extensions,
-      init_params.attribs, *route_id, renderer_id_, render_view_id,
-      watchdog_, software_));
+      init_params.attribs,
+      *route_id,
+      renderer_id_,
+      render_view_id,
+      watchdog_,
+      software_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -293,10 +303,13 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
 
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
+  GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
+
   route_id = GenerateRouteID();
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
+      share_group,
       gfx::kNullPluginWindow,
       size,
       disallowed_extensions_,

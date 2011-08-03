@@ -69,6 +69,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateViewCommandBuffer(
       int render_view_id,
+      CommandBufferProxy* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url);
@@ -76,6 +77,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateOffscreenCommandBuffer(
       const gfx::Size& size,
+      CommandBufferProxy* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url);

@@ -13,6 +13,7 @@
 #include <GLES2/gl2ext.h>
 
 #include <algorithm>
+#include <set>
 
 #include "base/string_tokenizer.h"
 #include "base/command_line.h"
@@ -24,6 +25,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
@@ -96,6 +98,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   //
   static GLInProcessContext* CreateViewContext(
       gfx::PluginWindowHandle render_surface,
+      GLInProcessContext* context_group,
       const char* allowed_extensions,
       const int32* attrib_list,
       const GURL& active_arl);
@@ -118,6 +121,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   static GLInProcessContext* CreateOffscreenContext(
       GLInProcessContext* parent,
       const gfx::Size& size,
+      GLInProcessContext* context_group,
       const char* allowed_extensions,
       const int32* attrib_list,
       const GURL& active_url);
@@ -178,6 +182,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   bool Initialize(bool onscreen,
                   gfx::PluginWindowHandle render_surface,
                   const gfx::Size& size,
+                  GLInProcessContext* context_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,
                   const GURL& active_url);
@@ -208,6 +213,10 @@ const int32 kCommandBufferSize = 1024 * 1024;
 // creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
 
+static base::LazyInstance<
+    std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> > g_all_contexts(
+        base::LINKER_INITIALIZED);
+
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
  public:
@@ -236,6 +245,7 @@ GLInProcessContext::~GLInProcessContext() {
 
 GLInProcessContext* GLInProcessContext::CreateViewContext(
     gfx::PluginWindowHandle render_surface,
+    GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url) {
@@ -245,6 +255,7 @@ GLInProcessContext* GLInProcessContext::CreateViewContext(
       true,
       render_surface,
       gfx::Size(),
+      context_group,
       allowed_extensions,
       attrib_list,
       active_url))
@@ -266,6 +277,7 @@ void GLInProcessContext::ResizeOnscreen(const gfx::Size& size) {
 GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
     GLInProcessContext* parent,
     const gfx::Size& size,
+    GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
     const GURL& active_url) {
@@ -275,6 +287,7 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
       false,
       gfx::kNullPluginWindow,
       size,
+      context_group,
       allowed_extensions,
       attrib_list,
       active_url))
@@ -297,12 +310,9 @@ void GLInProcessContext::ResizeOffscreen(const gfx::Size& size) {
 }
 
 void GLInProcessContext::PumpCommands() {
-  ::gpu::CommandBuffer::State state;
-  do {
-    gpu_scheduler_->PutChanged();
-    MessageLoop::current()->RunAllPending();
-    state = command_buffer_->GetState();
-  } while (state.get_offset != state.put_offset);
+  gpu_scheduler_->PutChanged();
+  ::gpu::CommandBuffer::State state = command_buffer_->GetState();
+  CHECK(state.error == ::gpu::error::kNoError);
 }
 
 uint32 GLInProcessContext::GetParentTextureId() {
@@ -310,45 +320,14 @@ uint32 GLInProcessContext::GetParentTextureId() {
 }
 
 uint32 GLInProcessContext::CreateParentTexture(const gfx::Size& size) {
-  // Allocate a texture ID with respect to the parent.
-  if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return 0;
-    uint32 texture_id = parent_->gles2_implementation_->MakeTextureId();
-    parent_->gles2_implementation_->BindTexture(GL_TEXTURE_2D, texture_id);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    parent_->gles2_implementation_->TexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    parent_->gles2_implementation_->TexImage2D(GL_TEXTURE_2D,
-        0,  // mip level
-        GL_RGBA,
-        size.width(),
-        size.height(),
-        0,  // border
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        NULL);
-    // Make sure that the parent texture's storage is allocated before we let
-    // the caller attempt to use it.
-    int32 token = parent_->gles2_helper_->InsertToken();
-    parent_->gles2_helper_->WaitForToken(token);
-    return texture_id;
-  }
-  return 0;
+  uint32 texture = 0;
+  gles2_implementation_->GenTextures(1, &texture);
+  gles2_implementation_->Flush();
+  return texture;
 }
 
 void GLInProcessContext::DeleteParentTexture(uint32 texture) {
-  if (parent_.get()) {
-    if (!MakeCurrent(parent_.get()))
-      return;
-    parent_->gles2_implementation_->DeleteTextures(1, &texture);
-  }
+  gles2_implementation_->DeleteTextures(1, &texture);
 }
 
 void GLInProcessContext::SetSwapBuffersCallback(Callback0::Type* callback) {
@@ -434,6 +413,7 @@ GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
 bool GLInProcessContext::Initialize(bool onscreen,
                                     gfx::PluginWindowHandle render_surface,
                                     const gfx::Size& size,
+                                    GLInProcessContext* context_group,
                                     const char* allowed_extensions,
                                     const int32* attrib_list,
                                     const GURL& active_url) {
@@ -486,9 +466,12 @@ bool GLInProcessContext::Initialize(bool onscreen,
   if (!command_buffer_->Initialize(kCommandBufferSize))
     return false;
 
-  gpu_scheduler_ = GpuScheduler::Create(command_buffer_.get(),
-                                        NULL,
-                                        NULL);
+  gpu_scheduler_ = GpuScheduler::Create(
+      command_buffer_.get(),
+      NULL,
+      context_group ?
+          context_group->gpu_scheduler_->decoder()->GetContextGroup() :
+              new ::gpu::gles2::ContextGroup);
 
   if (onscreen) {
     if (render_surface == gfx::kNullPluginWindow) {
@@ -562,7 +545,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
       transfer_buffer.size,
       transfer_buffer.ptr,
       transfer_buffer_id_,
-      false);
+      true);
 
   size_ = size;
 
@@ -575,8 +558,17 @@ void GLInProcessContext::Destroy() {
     parent_texture_id_ = 0;
   }
 
-  delete gles2_implementation_;
-  gles2_implementation_ = NULL;
+  if (gles2_implementation_) {
+    // First flush the context to ensure that any pending frees of resources
+    // are completed. Otherwise, if this context is part of a share group,
+    // those resources might leak. Also, any remaining side effects of commands
+    // issued on this context might not be visible to other contexts in the
+    // share group.
+    gles2_implementation_->Flush();
+
+    delete gles2_implementation_;
+    gles2_implementation_ = NULL;
+  }
 
   if (command_buffer_.get() && transfer_buffer_id_ != -1) {
     command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
@@ -616,6 +608,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
+  g_all_contexts.Pointer()->erase(this);
 }
 
 // This string should only be passed for WebGL contexts. Nothing ELSE!!!
@@ -667,9 +660,19 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     }
   }
 
+  // HACK: Assume this is a WebGL context by looking for the noExtensions
+  // attribute. WebGL contexts must not go in the share group because they
+  // rely on destruction of the context to clean up owned resources. Putting
+  // them in a share group would prevent this from happening.
+  WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
+  if (!attributes.noExtensions)
+    context_group = g_all_contexts.Pointer()->empty() ?
+        NULL : *g_all_contexts.Pointer()->begin();
+
   context_ = GLInProcessContext::CreateOffscreenContext(
       parent_context,
       gfx::Size(1, 1),
+      context_group ? context_group->context_ : NULL,
       preferred_extensions,
       attribs,
       active_url);
@@ -701,6 +704,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     attributes_.antialias = samples > 0;
   }
   makeContextCurrent();
+
+  if (!attributes.noExtensions)
+    g_all_contexts.Pointer()->insert(this);
 
   return true;
 }

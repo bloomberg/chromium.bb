@@ -2310,7 +2310,7 @@ TEST_F(GLES2DecoderTest, SharedIds) {
   GLuint* ids = GetSharedMemoryAs<GLuint*>();
   gen_cmd.Init(kNamespaceId, 0, 2, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(gen_cmd));
-  IdAllocator* id_allocator = GetIdAllocator(kNamespaceId);
+  IdAllocatorInterface* id_allocator = GetIdAllocator(kNamespaceId);
   ASSERT_TRUE(id_allocator != NULL);
   // This check is implementation dependant but it's kind of hard to check
   // otherwise.

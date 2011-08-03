@@ -29,6 +29,7 @@ using gpu::Buffer;
 
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
+    GpuCommandBufferStub* share_group,
     gfx::PluginWindowHandle handle,
     const gfx::Size& size,
     const gpu::gles2::DisallowedExtensions& disallowed_extensions,
@@ -54,6 +55,10 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_texture_for_initialization_(0),
       watchdog_(watchdog),
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  if (share_group)
+    context_group_ = share_group->context_group_;
+  else
+    context_group_ = new gpu::gles2::ContextGroup;
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
@@ -147,7 +152,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (command_buffer_->Initialize(&shared_memory, size)) {
     scheduler_.reset(gpu::GpuScheduler::Create(command_buffer_.get(),
                                                channel_,
-                                               NULL));
+                                               context_group_.get()));
 #if defined(TOUCH_UI)
     if (software_) {
       OnInitializeFailed(reply_message);
