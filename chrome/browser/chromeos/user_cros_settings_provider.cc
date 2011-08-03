@@ -316,6 +316,21 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
       }
     } else if (path == kStatsReportingPref) {
       bool stats_consent = (use_value == USE_VALUE_SUPPLIED) ? value : false;
+      // TODO(pastarmovj): Remove this once migration is not needed anymore.
+      // If the value is not set we should try to migrate legacy consent file.
+      if (use_value == USE_VALUE_DEFAULT) {
+        // Loading consent file state causes us to do blocking IO on UI thread.
+        // Temporarily allow it until we fix http://crbug.com/62626
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
+        stats_consent = GoogleUpdateSettings::GetCollectStatsConsent();
+        // Store this value if possible.
+        SignedSettingsHelper::Get()->StartStorePropertyOp(
+            path, stats_consent ? "true" : "false", this);
+        UpdateCacheBool(path, stats_consent, USE_VALUE_SUPPLIED);
+        LOG(WARNING) << "No metrics policy set will revert to checking "
+                     << "consent file which is "
+                     << (stats_consent ? "on." : "off.");
+      }
       // TODO(pastarmovj): Remove this once we don't need to regenerate the
       // consent file for the GUID anymore.
       VLOG(1) << "Metrics policy is being set to : " << stats_consent
@@ -361,9 +376,9 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         else
           VLOG(1) << "Retrieved cros setting " << name << "=" << value;
         if (IsControlledBooleanSetting(name)) {
-          OnBooleanPropertyRetrieve(name, (value == kTrueIncantation),
-              fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
           UpdateCacheBool(name, (value == kTrueIncantation),
+              fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
+          OnBooleanPropertyRetrieve(name, (value == kTrueIncantation),
               fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
         } else if (IsControlledStringSetting(name)) {
           UpdateCacheString(name, value,
