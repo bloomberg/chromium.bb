@@ -92,20 +92,6 @@ const char kVideoSwitchValueZip[] = "zip";
 const char kVideoSwitchValueVp8[] = "vp8";
 const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
-// Glue class to print out the access code for IT2Me.
-void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
-                        bool successful, const std::string& support_id,
-                        const base::TimeDelta& lifetime) {
-  access_verifier->OnIT2MeHostRegistered(successful, support_id);
-  if (successful) {
-    std::cout << "Support id: " << support_id
-              << access_verifier->host_secret() << std::endl;
-  } else {
-    LOG(ERROR) << "If you haven't done so recently, try running"
-               << " remoting/tools/register_host.py.";
-  }
-}
-
 class SimpleHost {
  public:
   SimpleHost()
@@ -163,7 +149,8 @@ class SimpleHost {
           new remoting::SupportAccessVerifier());
       register_request.reset(new remoting::RegisterSupportHostRequest());
       if (!register_request->Init(
-              config, base::Bind(&SetIT2MeAccessCode,
+              config, base::Bind(&SimpleHost::SetIT2MeAccessCode,
+                                 base::Unretained(this),
                                  support_access_verifier.get()))) {
         return 1;
       }
@@ -200,18 +187,17 @@ class SimpleHost {
       desktop_environment.reset(DesktopEnvironment::Create(&context));
     }
 
-    scoped_refptr<ChromotingHost> host =
-        ChromotingHost::Create(&context, config, desktop_environment.get(),
-                               access_verifier.release(), logger_.get(),
-                               false);
-    host->set_it2me(is_it2me_);
+    host_ = ChromotingHost::Create(&context, config, desktop_environment.get(),
+                                   access_verifier.release(), logger_.get(),
+                                   false);
+    host_->set_it2me(is_it2me_);
 
     if (protocol_config_.get()) {
-      host->set_protocol_config(protocol_config_.release());
+      host_->set_protocol_config(protocol_config_.release());
     }
 
     if (is_it2me_) {
-      host->AddStatusObserver(register_request.get());
+      host_->AddStatusObserver(register_request.get());
     } else {
       // Initialize HeartbeatSender.
       heartbeat_sender.reset(
@@ -219,16 +205,18 @@ class SimpleHost {
                                         config));
       if (!heartbeat_sender->Init())
         return 1;
-      host->AddStatusObserver(heartbeat_sender.get());
+      host_->AddStatusObserver(heartbeat_sender.get());
     }
 
     // Let the chromoting host run until the shutdown task is executed.
-    host->Start();
+    host_->Start();
     message_loop.MessageLoop::Run();
 
     // And then stop the chromoting context.
     context.Stop();
     file_io_thread.Stop();
+
+    host_ = NULL;
 
     return 0;
   }
@@ -243,6 +231,24 @@ class SimpleHost {
   }
 
  private:
+  // TODO(wez): This only needs to be a member because it needs access to the
+  // ChromotingHost, which has to be created after the SupportAccessVerifier.
+  void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
+                          bool successful, const std::string& support_id,
+                          const base::TimeDelta& lifetime) {
+    access_verifier->OnIT2MeHostRegistered(successful, support_id);
+    if (successful) {
+      std::string access_code = support_id + access_verifier->host_secret();
+      std::cout << "Support id: " << access_code << std::endl;
+
+      // Tell the ChromotingHost the access code, to use as shared-secret.
+      host_->set_access_code(access_code);
+    } else {
+      LOG(ERROR) << "If you haven't done so recently, try running"
+                 << " remoting/tools/register_host.py.";
+    }
+  }
+
   FilePath GetConfigPath() {
     if (!config_path_.empty())
       return config_path_;
@@ -262,6 +268,8 @@ class SimpleHost {
   bool fake_;
   bool is_it2me_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
+
+  scoped_refptr<ChromotingHost> host_;
 };
 
 int main(int argc, char** argv) {
