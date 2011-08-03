@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/browser_process.h"

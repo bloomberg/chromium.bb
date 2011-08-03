@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_autofill_sync_test.h"

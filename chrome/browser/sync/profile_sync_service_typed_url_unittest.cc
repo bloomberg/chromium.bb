@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/tracked.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"

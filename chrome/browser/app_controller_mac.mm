@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/browser_process.h"

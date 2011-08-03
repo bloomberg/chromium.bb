@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"

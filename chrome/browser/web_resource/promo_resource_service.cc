@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/apps_promo.h"

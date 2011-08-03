@@ -19,7 +19,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -389,12 +388,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a usable state.
     void DoInitializeForTest(
-        const std::wstring& test_user,
+        const std::string& test_user,
         const scoped_refptr<net::URLRequestContextGetter>& getter,
         bool delete_sync_data_folder) {
       // Construct dummy credentials for test.
       sync_api::SyncCredentials credentials;
-      credentials.email = WideToUTF8(test_user);
+      credentials.email = test_user;
       credentials.sync_token = "token";
       DoInitialize(DoInitializeOptions(WeakHandle<JsEventHandler>(),
                                        GURL(), getter, credentials,

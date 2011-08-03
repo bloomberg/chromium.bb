@@ -16,6 +16,7 @@
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"

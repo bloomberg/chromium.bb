@@ -4,6 +4,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/memory/scoped_vector.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
