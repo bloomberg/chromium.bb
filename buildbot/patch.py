@@ -82,8 +82,9 @@ class GerritPatch(Patch):
                            '-b', constants.PATCH_BRANCH,
                            'FETCH_HEAD'], cwd=project_dir)
 
-      manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
-      cros_lib.RunCommand(['git', 'rebase', manifest_branch], cwd=project_dir)
+      manifest_default_branch = cros_lib.GetManifestDefaultBranch(buildroot)
+      cros_lib.RunCommand(['git', 'rebase', 'm/' + manifest_default_branch],
+                          cwd=project_dir)
     except cros_lib.RunCommandError as e:
       raise ApplyPatchException(e)
 

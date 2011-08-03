@@ -595,9 +595,6 @@ def _PostParseCheck(options):
   if cros_lib.IsInsideChroot():
     cros_lib.Die('Please run cbuildbot from outside the chroot.')
 
-  if options.lkgm and (options.local_patches or options.gerrit_patches):
-    cros_lib.Die('Patching is not supported with --lkgm option.')
-
 
 def main(argv=None):
   if not argv:
