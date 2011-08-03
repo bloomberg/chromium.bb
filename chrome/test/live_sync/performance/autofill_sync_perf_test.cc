@@ -6,8 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/autofill_helper.h"
-#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/live_autofill_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
 // TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
@@ -18,12 +17,9 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-class AutofillSyncPerfTest : public LiveSyncTest {
+class AutofillSyncPerfTest : public TwoClientLiveAutofillSyncTest {
  public:
-  AutofillSyncPerfTest()
-      : LiveSyncTest(TWO_CLIENT),
-        guid_number_(0),
-        name_number_(0) {}
+  AutofillSyncPerfTest() : guid_number_(0), name_number_(0) {}
 
   // Adds |num_profiles| new autofill profiles to the sync profile |profile|.
   void AddProfiles(int profile, int num_profiles);
@@ -59,9 +55,9 @@ class AutofillSyncPerfTest : public LiveSyncTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillSyncPerfTest);
 };
 
-void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
-  const std::vector<AutofillProfile*>& all_profiles =
-      AutofillHelper::GetAllProfiles(profile);
+void AutofillSyncPerfTest::AddProfiles(int profile,
+                                                  int num_profiles) {
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
@@ -69,24 +65,23 @@ void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
   for (int i = 0; i < num_profiles; ++i) {
     autofill_profiles.push_back(NextAutofillProfile());
   }
-  AutofillHelper::SetProfiles(profile, &autofill_profiles);
+  SetProfiles(profile, &autofill_profiles);
 }
 
 void AutofillSyncPerfTest::UpdateProfiles(int profile) {
-  const std::vector<AutofillProfile*>& all_profiles =
-      AutofillHelper::GetAllProfiles(profile);
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
     autofill_profiles.back().SetInfo(AutofillFieldType(NAME_FIRST),
                                UTF8ToUTF16(NextName()));
   }
-  AutofillHelper::SetProfiles(profile, &autofill_profiles);
+  SetProfiles(profile, &autofill_profiles);
 }
 
 void AutofillSyncPerfTest::RemoveProfiles(int profile) {
   std::vector<AutofillProfile> empty;
-  AutofillHelper::SetProfiles(profile, &empty);
+  SetProfiles(profile, &empty);
 }
 
 void AutofillSyncPerfTest::Cleanup() {
@@ -151,24 +146,24 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, DISABLED_Benchmark) {
     AddProfiles(0, num_profiles);
     base::TimeDelta dt_add =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_profiles, AutofillHelper::GetProfileCount(0));
-    ASSERT_TRUE(AutofillHelper::AllProfilesMatch());
+    ASSERT_EQ(num_profiles, GetProfileCount(0));
+    ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Add: " << num_profiles << " "
             << dt_add.InSecondsF();
 
     UpdateProfiles(0);
     base::TimeDelta dt_update =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_profiles, AutofillHelper::GetProfileCount(0));
-    ASSERT_TRUE(AutofillHelper::AllProfilesMatch());
+    ASSERT_EQ(num_profiles, GetProfileCount(0));
+    ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Update: " << num_profiles << " "
             << dt_update.InSecondsF();
 
     RemoveProfiles(0);
     base::TimeDelta dt_delete =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(0, AutofillHelper::GetProfileCount(0));
-    ASSERT_TRUE(AutofillHelper::AllProfilesMatch());
+    ASSERT_EQ(0, GetProfileCount(0));
+    ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Delete: " << num_profiles << " "
             << dt_delete.InSecondsF();
 

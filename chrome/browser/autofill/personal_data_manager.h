@@ -141,8 +141,8 @@ class PersonalDataManager
   // Make sure that only Profile and certain tests can create an instance of
   // PersonalDataManager.
   friend class base::RefCountedThreadSafe<PersonalDataManager>;
-  friend class AutofillHelper;
   friend class AutofillMergeTest;
+  friend class LiveAutofillSyncTest;
   friend class PersonalDataManagerTest;
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
