@@ -19,12 +19,6 @@
 %include "jcolsamp.inc"
 
 ; --------------------------------------------------------------------------
-%ifndef NEED_SECTION
-%define NEED_SECTION
-	SECTION	SEG_TEXT
-	BITS	32
-%endif
-
 ;
 ; Convert some rows of samples to the output colorspace.
 ;

@@ -2,10 +2,11 @@
  * jsimd_x86_64.c
  *
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright 2009 D. R. Commander
+ * Copyright 2009-2011 D. R. Commander
  * 
  * Based on the x86 SIMD extension for IJG JPEG library,
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
+ * For conditions of distribution and use, see copyright notice in jsimdext.inc
  *
  * This file contains the interface between the "normal" portions
  * of the library and the SIMD implementations when running on a
@@ -40,6 +41,23 @@ jsimd_can_rgb_ycc (void)
     return 0;
 
   if (!IS_ALIGNED_SSE(jconst_rgb_ycc_convert_sse2))
+    return 0;
+
+  return 1;
+}
+
+GLOBAL(int)
+jsimd_can_rgb_gray (void)
+{
+  /* The code is optimised for these values only */
+  if (BITS_IN_JSAMPLE != 8)
+    return 0;
+  if (sizeof(JDIMENSION) != 4)
+    return 0;
+  if ((RGB_PIXELSIZE != 3) && (RGB_PIXELSIZE != 4))
+    return 0;
+
+  if (!IS_ALIGNED_SSE(jconst_rgb_gray_convert_sse2))
     return 0;
 
   return 1;
@@ -91,6 +109,41 @@ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
       break;
     default:
       sse2fct=jsimd_rgb_ycc_convert_sse2;
+      break;
+  }
+
+  sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+}
+
+GLOBAL(void)
+jsimd_rgb_gray_convert (j_compress_ptr cinfo,
+                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+                        JDIMENSION output_row, int num_rows)
+{
+  void (*sse2fct)(JDIMENSION, JSAMPARRAY, JSAMPIMAGE, JDIMENSION, int);
+
+  switch(cinfo->in_color_space)
+  {
+    case JCS_EXT_RGB:
+      sse2fct=jsimd_extrgb_gray_convert_sse2;
+      break;
+    case JCS_EXT_RGBX:
+      sse2fct=jsimd_extrgbx_gray_convert_sse2;
+      break;
+    case JCS_EXT_BGR:
+      sse2fct=jsimd_extbgr_gray_convert_sse2;
+      break;
+    case JCS_EXT_BGRX:
+      sse2fct=jsimd_extbgrx_gray_convert_sse2;
+      break;
+    case JCS_EXT_XBGR:
+      sse2fct=jsimd_extxbgr_gray_convert_sse2;
+      break;
+    case JCS_EXT_XRGB:
+      sse2fct=jsimd_extxrgb_gray_convert_sse2;
+      break;
+    default:
+      sse2fct=jsimd_rgb_gray_convert_sse2;
       break;
   }
 

@@ -19,12 +19,6 @@
 %include "jcolsamp.inc"
 				
 ; --------------------------------------------------------------------------
-%ifndef NEED_SECTION
-%define NEED_SECTION
-	SECTION	SEG_TEXT
-	BITS	32
-%endif
-
 ;
 ; Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
 ;

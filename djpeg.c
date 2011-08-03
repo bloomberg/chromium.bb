@@ -2,6 +2,7 @@
  * djpeg.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Copyright (C) 2010-2011, D. R. Commander.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -25,6 +26,7 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"		/* for version message */
+#include "config.h"
 
 #include <ctype.h>		/* to declare isprint() */
 
@@ -101,6 +103,7 @@ usage (void)
   fprintf(stderr, "  -colors N      Reduce image to no more than N colors\n");
   fprintf(stderr, "  -fast          Fast, low-quality processing\n");
   fprintf(stderr, "  -grayscale     Force grayscale output\n");
+  fprintf(stderr, "  -rgb           Force RGB output\n");
 #ifdef IDCT_SCALING_SUPPORTED
   fprintf(stderr, "  -scale M/N     Scale output image by fraction M/N, eg, 1/8\n");
 #endif
@@ -240,7 +243,10 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
       static boolean printed_version = FALSE;
 
       if (! printed_version) {
-	fprintf(stderr, "Independent JPEG Group's DJPEG, version %s\n%s\n",
+	fprintf(stderr, "%s version %s (build %s)\n",
+		PACKAGE_NAME, VERSION, BUILD);
+	fprintf(stderr, "%s\n\n", LJTCOPYRIGHT);
+	fprintf(stderr, "Based on Independent JPEG Group's libjpeg, version %s\n%s\n\n",
 		JVERSION, JCOPYRIGHT);
 	printed_version = TRUE;
       }
@@ -262,6 +268,10 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "grayscale", 2) || keymatch(arg, "greyscale",2)) {
       /* Force monochrome output. */
       cinfo->out_color_space = JCS_GRAYSCALE;
+
+    } else if (keymatch(arg, "rgb", 2)) {
+      /* Force RGB output. */
+      cinfo->out_color_space = JCS_RGB;
 
     } else if (keymatch(arg, "map", 3)) {
       /* Quantize to a color map taken from an input file. */
@@ -455,7 +465,7 @@ main (int argc, char **argv)
    * APP12 is used by some digital camera makers for textual info,
    * so we provide the ability to display it as text.
    * If you like, additional APPn marker types can be selected for display,
-   * but don't try to override APP0 or APP14 this way (see libjpeg.doc).
+   * but don't try to override APP0 or APP14 this way (see libjpeg.txt).
    */
   jpeg_set_marker_processor(&cinfo, JPEG_COM, print_text_marker);
   jpeg_set_marker_processor(&cinfo, JPEG_APP0+12, print_text_marker);

@@ -38,19 +38,27 @@
 
 ; -- segment definition --
 ;
-%define SEG_TEXT    .text  align=16 ; public use32 class=CODE
-%define SEG_CONST   .rdata align=16 ; public use32 class=CONST
+%ifdef __YASM_VER__
+%define SEG_TEXT    .text  align=16
+%define SEG_CONST   .rdata align=16
+%else
+%define SEG_TEXT    .text  align=16 public use32 class=CODE
+%define SEG_CONST   .rdata align=16 public use32 class=CONST
+%endif
 
 %elifdef WIN64	; ----(nasm -fwin64 -DWIN64 ...)--------
 ; * Microsoft Visual C++
 
 ; -- segment definition --
 ;
-%define SEG_TEXT    .text  align=16 ; public use64 class=CODE
-%define SEG_CONST   .rdata align=16 ; public use64 class=CONST
-%ifdef MSVC
-%define EXTN(name)  name			; foo() -> foo
+%ifdef __YASM_VER__
+%define SEG_TEXT    .text  align=16
+%define SEG_CONST   .rdata align=16
+%else
+%define SEG_TEXT    .text  align=16 public use64 class=CODE
+%define SEG_CONST   .rdata align=16 public use64 class=CONST
 %endif
+%define EXTN(name)  name			; foo() -> foo
 
 %elifdef OBJ32	; ----(nasm -fobj -DOBJ32 ...)----------
 ; * Borland C++ (Win32)
@@ -299,8 +307,6 @@ const_base:
 %ifdef WIN64
 
 %imacro collect_args 0
-	push r10
-	push r11
 	push r12
 	push r13
 	push r14
@@ -330,8 +336,6 @@ const_base:
 	pop r14
 	pop r13
 	pop r12
-	pop r11
-	pop r10
 %endmacro
 
 %else
