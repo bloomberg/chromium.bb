@@ -5169,6 +5169,23 @@
    fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN19URLRequestChromeJob10StartAsyncEv
 }
+{
+   bug_91462
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync8internal14WeakHandleCoreINS_14JsEventHandlerEEC1ERKN4base7WeakPtrIS2_EE
+   fun:_ZN12browser_sync10WeakHandleINS_14JsEventHandlerEEC1ERKN4base7WeakPtrIS1_EE
+   fun:_ZN12browser_sync18MockJsEventHandler12AsWeakHandleEv
+   fun:_ZN12browser_sync*JsSyncManagerObserverTestC2Ev
+}
+{
+   bug_91465
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync8internal14WeakHandleCoreINS_9JsBackendEEC1ERKN4base7WeakPtrIS2_EE
+   fun:_ZN12browser_sync10WeakHandleINS_9JsBackendEEC1ERKN4base7WeakPtrIS1_EE
+   fun:_ZN8sync_api11SyncManager12SyncInternal4InitERK8FilePathRKN12browser_sync10WeakHandleINS5_14JsEventHandlerEEERKSsibPNS_23HttpPostProviderFactoryEPNS5_24ModelSafeWorkerRegistrarESC_RKNS_15SyncCredentialsEPN13sync_notifier12SyncNotifierESC_b
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
