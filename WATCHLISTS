@@ -242,6 +242,13 @@
                   '|chrome/browser/chromeos/wm_.*' \
                   '|ui/base/x/.*'
     },
+    'accessibility': {
+      'filepath': 'chrome/browser/accessibility/.*' \
+                  '|content/browser/accessibility/.*' \
+                  '|chrome/.*accessib.*' \
+                  '|ui/base/accessibility/.*' \
+                  '|views/accessibility/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -324,5 +331,13 @@
     'accelerator_table_gtk': ['mazda@chromium.org', 'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
     'x11': ['derat+watch@chromium.org'],
+    'accessibility': ['dmazzoni+watch@chromium.org',
+                      'dtseng+watch@chromium.org',
+                      'ctguil+watch@chromium.org',
+                      'aboxhall+watch@chromium.org',
+                      'davidbarr+watch@chromium.org',
+                      'zork+watch@chromium.org',
+                      'hashimoto+watch@chromium.org',
+                      'yuzo+watch@chromium.org'],
   },
 }
