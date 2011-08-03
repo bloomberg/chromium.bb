@@ -1730,3 +1730,10 @@
    fun:*WeakHandle
    fun:sync_api::SyncManager::SyncInternal::Init
 }
+{
+   bug_91486
+   Heapcheck:Leak
+   ...
+   fun:::ReadManifest
+   fun:ComponentUnpacker::ComponentUnpacker
+}

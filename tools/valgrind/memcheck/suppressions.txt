@@ -5186,6 +5186,24 @@
    fun:_ZN12browser_sync10WeakHandleINS_9JsBackendEEC1ERKN4base7WeakPtrIS1_EE
    fun:_ZN8sync_api11SyncManager12SyncInternal4InitERK8FilePathRKN12browser_sync10WeakHandleINS5_14JsEventHandlerEEERKSsibPNS_23HttpPostProviderFactoryEPNS5_24ModelSafeWorkerRegistrarESC_RKNS_15SyncCredentialsEPN13sync_notifier12SyncNotifierESC_b
 }
+{
+   bug_91486_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN12*ReadManifestERK8FilePath
+   fun:_ZN17ComponentUnpacker*ERKSt6vectorIhSaIhEERK8FilePathP18ComponentInstaller
+}
+{
+   bug_91486_b
+   Memcheck:Free
+   fun:_ZdlPv
+   ...
+   fun:_ZN10scoped_ptrIhED1Ev
+   fun:_ZN12_GLOBAL__N_112CRXValidator*
+   ...
+   fun:_ZN17ComponentUnpackerC1ERKSt6vectorIhSaIhEERK8FilePathP18ComponentInstaller
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
