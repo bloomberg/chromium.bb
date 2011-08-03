@@ -24,6 +24,7 @@
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
+#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
@@ -149,6 +150,33 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   const TimeDelta test_timeout_;
   scoped_refptr<AutofillDBThreadObserverHelper> observer_helper_;
   WaitableEvent done_event_;
+};
+
+// Simple consumer for WebIntents data. Stores the result data and quits UI
+// message loop when callback is invoked.
+class WebIntentsConsumer: public WebDataServiceConsumer {
+ public:
+  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
+                                           const WDTypedResult* result) {
+    intents.clear();
+    if (result) {
+      DCHECK(result->GetType() == WEB_INTENTS_RESULT);
+      intents = static_cast<
+          const WDResult<std::vector<WebIntentData> >*>(result)->GetValue();
+    }
+
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Quit();
+  }
+
+  // Run the current message loop. OnWebDataServiceRequestDone will invoke
+  // MessageLoop::Quit on completion, so this call will finish at that point.
+  static void WaitUntilCalled() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoop::current()->Run();
+  }
+
+  std::vector<WebIntentData> intents; // Result data from completion callback.
 };
 
 TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
@@ -573,3 +601,47 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   EXPECT_EQ(handle2, card_consumer2.handle());
   ASSERT_EQ(0U, card_consumer2.result().size());
 }
+
+TEST_F(WebDataServiceTest, WebIntents) {
+  WebIntentsConsumer consumer;
+
+  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  WebIntentsConsumer::WaitUntilCalled();
+  EXPECT_EQ(0U, consumer.intents.size());
+
+  WebIntentData intent;
+  intent.service_url = GURL("http://google.com");
+  intent.action = ASCIIToUTF16("share");
+  intent.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntent(intent);
+
+  intent.type = ASCIIToUTF16("video/*");
+  wds_->AddWebIntent(intent);
+
+  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  WebIntentsConsumer::WaitUntilCalled();
+  ASSERT_EQ(2U, consumer.intents.size());
+
+  if (consumer.intents[0].type != ASCIIToUTF16("image/*"))
+    std::swap(consumer.intents[0],consumer.intents[1]);
+
+  EXPECT_EQ(intent.service_url, consumer.intents[0].service_url);
+  EXPECT_EQ(intent.action, consumer.intents[0].action);
+  EXPECT_EQ(ASCIIToUTF16("image/*"), consumer.intents[0].type);
+  EXPECT_EQ(intent.service_url, consumer.intents[1].service_url);
+  EXPECT_EQ(intent.action, consumer.intents[1].action);
+  EXPECT_EQ(intent.type, consumer.intents[1].type);
+
+  intent.type = ASCIIToUTF16("image/*");
+  wds_->RemoveWebIntent(intent);
+
+  wds_->GetWebIntents(ASCIIToUTF16("share"), &consumer);
+  WebIntentsConsumer::WaitUntilCalled();
+  ASSERT_EQ(1U, consumer.intents.size());
+
+  intent.type = ASCIIToUTF16("video/*");
+  EXPECT_EQ(intent.service_url, consumer.intents[0].service_url);
+  EXPECT_EQ(intent.action, consumer.intents[0].action);
+  EXPECT_EQ(intent.type, consumer.intents[0].type);
+}
+

@@ -29,6 +29,7 @@ class SkBitmap;
 class Task;
 class TemplateURL;
 class WebDatabase;
+struct WebIntentData;
 
 namespace base {
 class Thread;
@@ -73,7 +74,8 @@ typedef enum {
   AUTOFILL_PROFILE_RESULT,     // WDResult<AutofillProfile>
   AUTOFILL_PROFILES_RESULT,    // WDResult<std::vector<AutofillProfile*>>
   AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
-  AUTOFILL_CREDITCARDS_RESULT  // WDResult<std::vector<CreditCard*>>
+  AUTOFILL_CREDITCARDS_RESULT, // WDResult<std::vector<CreditCard*>>
+  WEB_INTENTS_RESULT           // WDResult<std::vector<string16>>
 } WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
@@ -334,6 +336,23 @@ class WebDataService
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // Web Intents
+  //
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Adds a web intent provider registration.
+  void AddWebIntent(const WebIntentData& intent);
+
+  // Removes a web intent provider registration.
+  void RemoveWebIntent(const WebIntentData& intent);
+
+  // Get all web intent providers registered for the specified |action|.
+  // |consumer| must not be NULL.
+  Handle GetWebIntents(const string16& action,
+                       WebDataServiceConsumer* consumer);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // Token Service
   //
   //////////////////////////////////////////////////////////////////////////////
@@ -553,6 +572,15 @@ class WebDataService
   void SetWebAppHasAllImagesImpl(GenericRequest2<GURL, bool>* request);
   void RemoveWebAppImpl(GenericRequest<GURL>* request);
   void GetWebAppImagesImpl(GenericRequest<GURL>* request);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Web Intents.
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  void AddWebIntentImpl(GenericRequest<WebIntentData>* request);
+  void RemoveWebIntentImpl(GenericRequest<WebIntentData>* request);
+  void GetWebIntentsImpl(GenericRequest<string16>* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //

@@ -19,6 +19,7 @@
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/token_service_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
+#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -213,6 +214,42 @@ WebDataService::Handle WebDataService::GetWebAppImages(
                                  request));
   return request->GetHandle();
 }
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Web Intents.
+//
+//////////////////////////////////////////////////////////////////////////////
+
+void WebDataService::AddWebIntent(const WebIntentData& intent) {
+  GenericRequest<WebIntentData>* request = new GenericRequest<WebIntentData>(
+      this, GetNextRequestHandle(), NULL, intent);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this, &WebDataService::AddWebIntentImpl,
+                                 request));
+}
+
+void WebDataService::RemoveWebIntent(const WebIntentData& intent) {
+  GenericRequest<WebIntentData>* request = new GenericRequest<WebIntentData>(
+      this, GetNextRequestHandle(), NULL, intent);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this, &WebDataService::RemoveWebIntentImpl,
+                                 request));
+}
+
+WebDataService::Handle WebDataService::GetWebIntents(const string16& action,
+                                       WebDataServiceConsumer* consumer) {
+  DCHECK(consumer);
+  GenericRequest<string16>* request = new GenericRequest<string16>(
+      this, GetNextRequestHandle(), consumer, action);
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetWebIntentsImpl,
+                        request));
+  return request->GetHandle();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -781,6 +818,49 @@ void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
     db_->GetWebAppsTable()->GetWebAppImages(request->arg(), &result.images);
     request->SetResult(
         new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
+  }
+  request->RequestComplete();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Web Intents implementation.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void WebDataService::RemoveWebIntentImpl(
+    GenericRequest<WebIntentData>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const WebIntentData& intent = request->arg();
+    db_->GetWebIntentsTable()->RemoveWebIntent(intent.action,
+                                               intent.type,
+                                               intent.service_url);
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    const WebIntentData& intent = request->arg();
+    db_->GetWebIntentsTable()->SetWebIntent(intent.action,
+                                            intent.type,
+                                            intent.service_url);
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+
+void WebDataService::GetWebIntentsImpl(GenericRequest<string16>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::vector<WebIntentData> result;
+    db_->GetWebIntentsTable()->GetWebIntents(request->arg(), &result);
+    request->SetResult(
+        new WDResult<std::vector<WebIntentData> >(WEB_INTENTS_RESULT, result));
   }
   request->RequestComplete();
 }
