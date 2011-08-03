@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "chrome/test/base/view_event_test_base.h"
 #include "views/controls/button/button_dropdown.h"
 
 class ButtonDropDownDragTest : public ViewEventTestBase,

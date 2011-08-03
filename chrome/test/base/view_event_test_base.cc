@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "chrome/test/base/view_event_test_base.h"
 
 #if defined(OS_WIN)
 #include <ole2.h>

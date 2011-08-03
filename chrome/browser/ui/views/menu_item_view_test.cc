@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "chrome/test/base/view_event_test_base.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"

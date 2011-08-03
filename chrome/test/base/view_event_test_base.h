@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
-#define CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
+#ifndef CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_
+#define CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_
 #pragma once
 
 // We only want to use ViewEventTestBase in test targets which properly
@@ -149,4 +149,4 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
-#endif  // CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
+#endif  // CHROME_TEST_BASE_VIEW_EVENT_TEST_BASE_H_

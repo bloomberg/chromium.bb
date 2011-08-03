@@ -16,7 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/interactive_ui/view_event_test_base.h"
+#include "chrome/test/base/view_event_test_base.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"

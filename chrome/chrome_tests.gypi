@@ -496,8 +496,13 @@
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
         'browser/debugger/devtools_sanity_unittest.cc',
+        'browser/fast_shutdown_interactive_uitest.cc',
         'browser/instant/instant_browsertest.cc',
+        'browser/keyboard_access_uitest.cc',
+        'browser/mouseleave_interactive_uitest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
+        'browser/npapi_interactive_test.cc',
+        'browser/tab_contents/infobars_uitest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
@@ -509,13 +514,8 @@
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/webui/workers_ui_browsertest.cc',
         'test/base/out_of_proc_test_runner.cc',
-        'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
-        'test/interactive_ui/infobars_uitest.cc',
-        'test/interactive_ui/keyboard_access_uitest.cc',
-        'test/interactive_ui/mouseleave_interactive_uitest.cc',
-        'test/interactive_ui/npapi_interactive_test.cc',
-        'test/interactive_ui/view_event_test_base.cc',
-        'test/interactive_ui/view_event_test_base.h',
+        'test/base/view_event_test_base.cc',
+        'test/base/view_event_test_base.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -528,6 +528,7 @@
         ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
           'sources!': [
             # TODO(port)
+            'browser/npapi_interactive_test.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -535,16 +536,16 @@
             'browser/ui/views/menu_model_adapter_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
-            'test/interactive_ui/npapi_interactive_test.cc',
-            'test/interactive_ui/view_event_test_base.cc',
-            'test/interactive_ui/view_event_test_base.h',
+            'test/base/view_event_test_base.cc',
+            'test/base/view_event_test_base.h',
           ],
         }],
         ['OS=="linux" and toolkit_views==1', {
           'sources!': [
-            'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
             # TODO(port)
-            'test/interactive_ui/npapi_interactive_test.cc',
+            'browser/npapi_interactive_test.cc',
+
+            'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
           ],
         }],
         ['target_arch!="arm"', {
@@ -556,6 +557,7 @@
         ['OS=="mac"', {
           'sources!': [
             # TODO(port)
+            'browser/npapi_interactive_test.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -563,9 +565,8 @@
             'browser/ui/views/menu_model_adapter_test.cc',
             'browser/ui/views/tabs/tab_dragging_test.cc',
             'browser/ui/views/tabs/tab_strip_interactive_uitest.cc',
-            'test/interactive_ui/npapi_interactive_test.cc',
-            'test/interactive_ui/view_event_test_base.cc',
-            'test/interactive_ui/view_event_test_base.h',
+            'test/base/view_event_test_base.cc',
+            'test/base/view_event_test_base.h',
             '../content/browser/debugger/devtools_sanity_unittest.cc',
           ],
           # See comment about the same line in chrome/chrome_tests.gypi.
