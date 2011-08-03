@@ -14,6 +14,10 @@
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/common.h"
 
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Audio_API;
+using ppapi::thunk::PPB_AudioConfig_API;
+
 namespace webkit {
 namespace ppapi {
 
@@ -37,8 +41,7 @@ PP_Resource PPB_AudioConfig_Impl::Create(PluginInstance* instance,
   return config->GetReference();
 }
 
-::ppapi::thunk::PPB_AudioConfig_API*
-PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
+PPB_AudioConfig_API* PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
   return this;
 }
 
@@ -86,19 +89,14 @@ PP_Resource PPB_Audio_Impl::Create(PluginInstance* instance,
   return audio->GetReference();
 }
 
-::ppapi::thunk::PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
-  return this;
-}
-
-::ppapi::thunk::PPB_AudioTrusted_API* PPB_Audio_Impl::AsPPB_AudioTrusted_API() {
+PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
   return this;
 }
 
 bool PPB_Audio_Impl::Init(PP_Resource config_id,
                           PPB_Audio_Callback callback, void* user_data) {
   // Validate the config and keep a reference to it.
-  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_AudioConfig_API>
-      enter(config_id, true);
+  EnterResourceNoLock<PPB_AudioConfig_API> enter(config_id, true);
   if (enter.failed())
     return false;
   config_id_ = config_id;
@@ -147,8 +145,7 @@ int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config_id,
                                     PP_CompletionCallback create_callback) {
 
   // Validate the config and keep a reference to it.
-  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_AudioConfig_API>
-      enter(config_id, true);
+  EnterResourceNoLock<PPB_AudioConfig_API> enter(config_id, true);
   if (enter.failed())
     return false;
   config_id_ = config_id;

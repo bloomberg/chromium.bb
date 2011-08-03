@@ -14,6 +14,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::thunk::PPB_Broker_API;
+
 namespace pp {
 namespace proxy {
 
@@ -46,14 +48,13 @@ InterfaceProxy* CreateBrokerProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class Broker : public ppapi::thunk::PPB_Broker_API,
-               public PluginResource {
+class Broker : public PPB_Broker_API, public PluginResource {
  public:
   explicit Broker(const HostResource& resource);
   virtual ~Broker();
 
   // ResourceObjectBase overries.
-  virtual ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
+  virtual PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_Broker_API implementation.
   virtual int32_t Connect(PP_CompletionCallback connect_callback) OVERRIDE;
@@ -96,7 +97,7 @@ Broker::~Broker() {
   socket_handle_ = base::kInvalidPlatformFileValue;
 }
 
-ppapi::thunk::PPB_Broker_API* Broker::AsPPB_Broker_API() {
+PPB_Broker_API* Broker::AsPPB_Broker_API() {
   return this;
 }
 
@@ -204,14 +205,11 @@ void PPB_Broker_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_Broker_Proxy::OnMsgConnect(const HostResource& broker) {
-  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+  EnterHostFromHostResourceForceCallback<PPB_Broker_API> enter(
+      broker, callback_factory_,
       &PPB_Broker_Proxy::ConnectCompleteInHost, broker);
-
-  int32_t result = ppb_broker_target()->Connect(
-      broker.host_resource(),
-      callback.pp_completion_callback());
-  if (result !=  PP_OK_COMPLETIONPENDING)
-    callback.Run(result);
+  if (enter.succeeded())
+    enter.SetResult(enter.object()->Connect(enter.callback()));
 }
 
 // Called in the plugin to handle the connect callback.
@@ -225,7 +223,7 @@ void PPB_Broker_Proxy::OnMsgConnectComplete(
   DCHECK(result == PP_OK ||
          socket_handle == IPC::InvalidPlatformFileForTransit());
 
-  EnterPluginFromHostResource<ppapi::thunk::PPB_Broker_API> enter(resource);
+  EnterPluginFromHostResource<PPB_Broker_API> enter(resource);
   if (enter.failed()) {
     // As in Broker::ConnectComplete, we need to close the resource on error.
     base::SyncSocket temp_socket(

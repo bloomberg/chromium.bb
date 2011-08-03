@@ -12,6 +12,8 @@ namespace thunk {
 
 namespace {
 
+typedef EnterResource<PPB_Audio_API> EnterAudio;
+
 PP_Resource Create(PP_Instance instance,
                    PP_Resource config_id,
                    PPB_Audio_Callback callback,
@@ -24,26 +26,26 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsAudio(PP_Resource resource) {
-  EnterResource<PPB_Audio_API> enter(resource, false);
+  EnterAudio enter(resource, false);
   return enter.succeeded() ? PP_TRUE : PP_FALSE;
 }
 
 PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
-  EnterResource<PPB_Audio_API> enter(audio_id, true);
+  EnterAudio enter(audio_id, true);
   if (enter.failed())
     return 0;
   return enter.object()->GetCurrentConfig();
 }
 
 PP_Bool StartPlayback(PP_Resource audio_id) {
-  EnterResource<PPB_Audio_API> enter(audio_id, true);
+  EnterAudio enter(audio_id, true);
   if (enter.failed())
     return PP_FALSE;
   return enter.object()->StartPlayback();
 }
 
 PP_Bool StopPlayback(PP_Resource audio_id) {
-  EnterResource<PPB_Audio_API> enter(audio_id, true);
+  EnterAudio enter(audio_id, true);
   if (enter.failed())
     return PP_FALSE;
   return enter.object()->StopPlayback();

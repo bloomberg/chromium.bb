@@ -194,13 +194,11 @@ void PPB_FileChooser_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
-  CompletionCallback callback = callback_factory_.NewOptionalCallback(
-      &PPB_FileChooser_Proxy::OnShowCallback, chooser);
-
-  int32_t result = ppb_file_chooser_target()->Show(
-      chooser.host_resource(), callback.pp_completion_callback());
-  if (result != PP_OK_COMPLETIONPENDING)
-    callback.Run(result);
+  EnterHostFromHostResourceForceCallback<PPB_FileChooser_API> enter(
+      chooser, callback_factory_, &PPB_FileChooser_Proxy::OnShowCallback,
+      chooser);
+  if (enter.succeeded())
+    enter.SetResult(enter.object()->Show(enter.callback()));
 }
 
 void PPB_FileChooser_Proxy::OnMsgChooseComplete(
