@@ -2064,6 +2064,17 @@ NTPInfoObserver::NTPInfoObserver(
     apps_list->Append(*app);
   }
   delete disabled_apps;
+  // Process terminated extensions.
+  const ExtensionList* terminated_extensions =
+      ext_service->terminated_extensions();
+  std::vector<DictionaryValue*>* terminated_apps = GetAppInfoFromExtensions(
+      terminated_extensions, ext_service);
+  for (std::vector<DictionaryValue*>::const_iterator app =
+       terminated_apps->begin(); app != terminated_apps->end(); ++app) {
+    (*app)->SetBoolean("is_disabled", true);
+    apps_list->Append(*app);
+  }
+  delete terminated_apps;
   ntp_info_->Set("apps", apps_list);
 
   // Get the info that would be displayed in the recently closed section.

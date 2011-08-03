@@ -278,7 +278,7 @@ bool ExtensionIconSource::ParseData(const std::string& path,
 
   std::string extension_id = path_parts.at(0);
   const Extension* extension =
-      profile_->GetExtensionService()->GetExtensionById(extension_id, true);
+      profile_->GetExtensionService()->GetInstalledExtension(extension_id);
   if (!extension)
     return false;
 

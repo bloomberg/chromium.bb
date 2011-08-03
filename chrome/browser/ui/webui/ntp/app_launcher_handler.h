@@ -40,11 +40,16 @@ class AppLauncherHandler : public WebUIMessageHandler,
   explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
 
+  // Whether the app should be excluded from the "apps" list because
+  // it is special (such as the Web Store app).
+  static bool IsAppExcludedFromList(const Extension* extension);
+
   // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(const Extension* extension,
-                            const AppNotification* notification,
-                            ExtensionService* service,
-                            base::DictionaryValue* value);
+  static void CreateAppInfo(
+      const Extension* extension,
+      const AppNotification* notification,
+      ExtensionService* service,
+      base::DictionaryValue* value);
 
   // Callback for pings related to launching apps on the NTP.
   static bool HandlePing(Profile* profile, const std::string& path);
@@ -148,8 +153,8 @@ class AppLauncherHandler : public WebUIMessageHandler,
                        history::FaviconData data);
 
   // The apps are represented in the extensions model, which
-  // outlives us since its owned by our containing profile.
-  ExtensionService* const extensions_service_;
+  // outlives us since it's owned by our containing profile.
+  ExtensionService* const extension_service_;
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.
