@@ -774,6 +774,7 @@
         'browser/command_updater.h',
         'browser/component_updater/component_unpacker.cc',
         'browser/component_updater/component_unpacker.h',
+        'browser/component_updater/component_updater_service.cc',
         'browser/component_updater/component_updater_service.h',
         'browser/content_settings/content_settings_details.cc',
         'browser/content_settings/content_settings_details.h',

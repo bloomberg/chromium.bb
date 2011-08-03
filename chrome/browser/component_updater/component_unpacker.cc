@@ -21,10 +21,6 @@
 
 using crypto::SecureHash;
 
-// TODO(cpu): remove this ctor and dtor from here once other pieces land.
-CrxComponent::CrxComponent() {}
-CrxComponent::~CrxComponent() {}
-
 namespace {
 // This class makes sure that the CRX digital signature is valid
 // and well formed.

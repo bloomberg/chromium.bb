@@ -4,7 +4,6 @@
 
 #include "chrome/browser/component_updater/component_updater_service.h"
 
-#include "base/at_exit.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -14,27 +13,39 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/test_notification_tracker.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
-#include "content/test/test_url_fetcher_factory.h"
+#include "content/common/url_fetcher.h"
+
 #include "googleurl/src/gurl.h"
+#include "libxml/globals.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-// Overrides some of the component updater behaviors so it is easier
-// to test and loops faster.
+// Overrides some of the component updater behaviors so it is easier to test
+// and loops faster. In actual usage it takes hours do to a full cycle.
 class TestConfigurator : public ComponentUpdateService::Configurator {
  public:
   virtual int InitialDelay() OVERRIDE { return 0; }
 
   virtual int NextCheckDelay() OVERRIDE {
-    // Returning 0 makes the component updater to quit the message loop
-    // if it does not have pending update task.
+    // This is called when a new full cycle of checking for updates is going
+    // to happen. In test we normally only test one cycle so it is a good
+    // time to break from the test messageloop Run() method so the test can
+    // finish.
+    MessageLoop::current()->Quit();
     return 0;
   }
 
-  virtual int StepDelay() OVERRIDE { return 0; }
+  virtual int StepDelay() OVERRIDE {
+    return 0;
+  }
+
+  virtual int MinimumReCheckWait() OVERRIDE {
+    return 0;
+  }
 
   virtual GURL UpdateUrl() OVERRIDE { return GURL("http://localhost/upd"); }
 
@@ -50,8 +61,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
 class TestInstaller : public ComponentInstaller {
  public :
-  explicit TestInstaller(bool wrong_one)
-      : error_(0), install_(0), wrong_one_(wrong_one) {
+  explicit TestInstaller()
+      : error_(0), install_count_(0) {
   }
 
   virtual void OnUpdateError(int error) OVERRIDE {
@@ -61,30 +72,50 @@ class TestInstaller : public ComponentInstaller {
 
   virtual bool Install(base::DictionaryValue* manifest,
                        const FilePath& unpack_path) OVERRIDE {
-    EXPECT_FALSE(wrong_one_);
-    ++install_;
+    ++install_count_;
     return file_util::Delete(unpack_path, true);
   }
 
   int error() const { return error_; }
 
-  int install() const { return install_; }
+  int install_count() const { return install_count_; }
 
  private:
   int error_;
-  int install_;
-  bool wrong_one_;
+  int install_count_;
 };
 
+// component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and
+// the RSA public key the following hash:
+const uint8 jebg_hash[] = {0x94,0x16,0x0b,0x6d,0x41,0x75,0xe9,0xec,0x8e,0xd5,
+                           0xfa,0x54,0xb0,0xd2,0xdd,0xa5,0x6e,0x05,0x6b,0xe8,
+                           0x73,0x47,0xf6,0xc4,0x11,0x9f,0xbc,0xb3,0x09,0xb3,
+                           0x5b,0x40};
+// component 2 has extension id "abagagagagagagagagagagagagagagag", and
+// the RSA public key the following hash:
+const uint8 abag_hash[] = {0x01,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
+                           0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
+                           0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
+                           0x06,0x01};
+
+const char header_ok_reply[] =
+    "HTTP/1.1 200 OK\0"
+    "Content-type: text/html\0"
+    "\0";
 }  // namespace
 
 // Common fixture for all the component updater tests.
 class ComponentUpdaterTest : public testing::Test {
  public:
-  ComponentUpdaterTest() {
+  ComponentUpdaterTest() : component_updater_(NULL) {
+    // The component updater instance under test.
+    component_updater_.reset(
+        ComponentUpdateServiceFactory(new TestConfigurator));
+    // The test directory is chrome/test/data/components.
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("components");
 
+    // Subscribe to all component updater notifications.
     const int notifications[] = {
       chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
       chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
@@ -103,6 +134,10 @@ class ComponentUpdaterTest : public testing::Test {
     URLFetcher::enable_interception_for_tests(false);
   }
 
+  ComponentUpdateService* component_updater() {
+    return component_updater_.get();
+  }
+
   // Makes the full path to a component updater test file.
   const FilePath test_file(const char* file) {
     return test_data_dir_.AppendASCII(file);
@@ -113,14 +148,147 @@ class ComponentUpdaterTest : public testing::Test {
   }
 
  private:
+  scoped_ptr<ComponentUpdateService> component_updater_;
   FilePath test_data_dir_;
   TestNotificationTracker notification_tracker_;
-  // Note that the shadow |at_exit_manager_| will cause the destruction
-  // of the component updater when this object is destroyed.
-  base::ShadowingAtExitManager at_exit_manager_;
 };
 
-TEST_F(ComponentUpdaterTest, EmptyTest) {
+// Verify that our test fixture work and the component updater can
+// be created and destroyed with no side effects.
+TEST_F(ComponentUpdaterTest, VerifyFixture) {
+  EXPECT_TRUE(component_updater() != NULL);
   EXPECT_EQ(0ul, notification_tracker().size());
+}
+
+// Verify that the component updater can be caught in a quick
+// start-shutdown situation. Failure of this test will be a crash. Also
+// if there is no work to do, there are no notifications generated.
+TEST_F(ComponentUpdaterTest, StartStop) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+
+  component_updater()->Start();
+  message_loop.RunAllPending();
+  component_updater()->Stop();
+
+  EXPECT_EQ(0ul, notification_tracker().size());
+}
+
+// Verify that when the server has no updates, we go back to sleep and
+// the COMPONENT_UPDATER_STARTED and COMPONENT_UPDATER_SLEEPING notifications
+// are generated.
+TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread file_thread(BrowserThread::FILE);
+  BrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  file_thread.Start();
+
+  scoped_refptr<ComponentUpdateInterceptor>
+      interceptor(new ComponentUpdateInterceptor());
+
+  CrxComponent com;
+  com.name = "test_abag";
+  com.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+  com.version = Version("1.1");
+  com.installer = new TestInstaller;
+
+  component_updater()->RegisterComponent(com);
+
+  const char expected_update_url[] =
+      "http://localhost/upd?x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D1.1%26uc";
+
+  interceptor->SetResponse(expected_update_url,
+                           header_ok_reply,
+                           test_file("updatecheck_reply_1.xml"));
+
+  component_updater()->Start();
+
+  ASSERT_EQ(1ul, notification_tracker().size());
+  TestNotificationTracker::Event ev1 = notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev1.type);
+
+  message_loop.Run();
+
+  ASSERT_EQ(2ul, notification_tracker().size());
+  TestNotificationTracker::Event ev2 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  component_updater()->Stop();
+
+  delete com.installer;
+  xmlCleanupGlobals();
+}
+
+// Verify that we can check for updates and install one component. Besides
+// the notifications above NOTIFICATION_COMPONENT_UPDATE_FOUND and
+// NOTIFICATION_COMPONENT_UPDATE_READY should have been fired.
+TEST_F(ComponentUpdaterTest, InstallCrx) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread file_thread(BrowserThread::FILE);
+  BrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+  file_thread.Start();
+
+  scoped_refptr<ComponentUpdateInterceptor>
+      interceptor(new ComponentUpdateInterceptor());
+
+  CrxComponent com1;
+  com1.name = "test_jebg";
+  com1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+  com1.version = Version("0.9");
+  com1.installer = new TestInstaller;
+
+  CrxComponent com2;
+  com2.name = "test_abag";
+  com2.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+  com2.version = Version("2.2");
+  com2.installer = new TestInstaller;
+
+  component_updater()->RegisterComponent(com1);
+  component_updater()->RegisterComponent(com2);
+
+  const char expected_update_url[] =
+      "http://localhost/upd?x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc";
+
+  const char expected_crx_url[] =
+      "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
+
+  interceptor->SetResponse(expected_update_url, header_ok_reply,
+                           test_file("updatecheck_reply_1.xml"));
+  interceptor->SetResponse(expected_crx_url, header_ok_reply,
+                           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+
+  component_updater()->Start();
+  message_loop.Run();
+
+  ASSERT_EQ(4ul, notification_tracker().size());
+
+  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
+
+  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev2.type);
+
+  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
+  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
+
+  component_updater()->Stop();
+  delete com1.installer;
+  delete com2.installer;
+  xmlCleanupGlobals();
 }
 
