@@ -208,6 +208,7 @@ cr.define('gpu', function() {
       // Create tracks.
       this.tracks_.textContent = '';
       var threads = model.getAllThreads();
+      threads.sort(gpu.TimelineThread.compare);
       for (var tI = 0; tI < threads.length; tI++) {
         var thread = threads[tI];
         var track = new TimelineThreadTrack();

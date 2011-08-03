@@ -65,6 +65,11 @@ cr.define('gpu', function() {
   }
 
   TimelineThread.prototype = {
+    /**
+     * Name of the thread, if present.
+     */
+    name: undefined,
+
     getSubrow: function(i) {
       while (i >= this.subRows.length)
         this.subRows.push([]);
@@ -83,11 +88,26 @@ cr.define('gpu', function() {
       this.nonNestedSubRows.push([slice]);
     },
 
+    /**
+     * Updates the minTimestamp and maxTimestamp fields based on the
+     * current slices and nonNestedSubRows attached to the thread.
+     */
     updateBounds: function() {
-      var slices = this.subRows[0];
-      if (slices.length != 0) {
-        this.minTimestamp = slices[0].start;
-        this.maxTimestamp = slices[slices.length - 1].end;
+      var values = [];
+      var slices;
+      if (this.subRows[0].length != 0) {
+        slices = this.subRows[0];
+        values.push(slices[0].start);
+        values.push(slices[slices.length - 1].end);
+      }
+      for (var i = 0; i < this.nonNestedSubRows.length; ++i) {
+        slices = this.nonNestedSubRows[i];
+        values.push(slices[0].start);
+        values.push(slices[slices.length - 1].end);
+      }
+      if (values.length) {
+        this.minTimestamp = Math.min.apply(Math, values);
+        this.maxTimestamp = Math.max.apply(Math, values);
       } else {
         this.minTimestamp = undefined;
         this.maxTimestamp = undefined;
@@ -95,6 +115,30 @@ cr.define('gpu', function() {
     }
 
   };
+
+  /**
+   * Comparison between threads that orders first by pid,
+   * then by names, then by tid.
+   */
+  TimelineThread.compare = function(x,y) {
+    if(x.parent.pid != y.parent.pid) {
+      return x.parent.pid - y.parent.pid;
+    }
+
+    if (x.name && y.name) {
+      var tmp = x.name.localeCompare(y.name);
+      if (tmp == 0)
+        return x.tid - y.tid;
+      return tmp;
+    } else if (x.name) {
+      return -1;
+    } else if (y.name){
+      return 1;
+    } else {
+      return x.tid - y.tid;
+    }
+  };
+
 
   /**
    * The TimelineProcess represents a single process in the
@@ -123,6 +167,7 @@ cr.define('gpu', function() {
    */
   function TimelineModel(events) {
     this.processes = {};
+    this.importErrors = [];
 
     if (events)
       this.importEvents(events);
@@ -144,7 +189,7 @@ cr.define('gpu', function() {
     importEvents: function(events) {
       // A ptid is a pid and tid joined together x:y fashion, eg 1024:130
       // The ptid is a unique key for a thread in the trace.
-
+      this.importErrors = [];
 
       // Threadstate
       const numColorIds = 30;
@@ -185,7 +230,7 @@ cr.define('gpu', function() {
           for (var x in event.args)
             sliceID += ';' + event.args[x];
           if (state.openNonNestedSlices[sliceID])
-            console.log('Event ' + sliceID + ' already open.');
+            this.importErrors.push('Event ' + sliceID + ' already open.');
           state.openNonNestedSlices[sliceID] = slice;
         } else {
           state.openSlices.push(slice);
@@ -250,12 +295,19 @@ cr.define('gpu', function() {
           // TimelineSliceTrack's redraw() knows how to handle this.
           processBegin(state, event);
           processEnd(state, event);
+        } else if (event.ph == 'M') {
+          if (event.name == 'thread_name') {
+            var thread = this.getProcess(event.pid).getThread(event.tid);
+            thread.name = event.args.name;
+          } else {
+            this.importErrors.push('Unrecognized metadata name: ' + event.name);
+          }
         } else {
-          throw new Error('Unrecognized event phase: ' + event.ph +
+          this.importErrors.push('Unrecognized event phase: ' + event.ph +
                           '(' + event.name + ')');
         }
       }
-
+      this.pruneEmptyThreads();
       this.updateBounds();
 
       // Add end events for any events that are still on the stack. These
@@ -289,6 +341,22 @@ cr.define('gpu', function() {
       this.maxTimestamp = this.maxTimestamp + boost;
     },
 
+    /**
+     * Removes threads from the model that have no subrows.
+     */
+    pruneEmptyThreads: function() {
+      for (var pid in this.processes) {
+        var process = this.processes[pid];
+        var prunedThreads = [];
+        for (var tid in process.threads) {
+          var thread = process.threads[tid];
+          if (thread.subRows[0].length || thread.nonNestedSubRows.legnth)
+            prunedThreads.push(thread);
+        }
+        process.threads = prunedThreads;
+      }
+    },
+
     updateBounds: function() {
       var wmin = Infinity;
       var wmax = -wmin;
@@ -296,7 +364,8 @@ cr.define('gpu', function() {
       for (var tI = 0; tI < threads.length; tI++) {
         var thread = threads[tI];
         thread.updateBounds();
-        if (thread.minTimestamp && thread.maxTimestamp) {
+        if (thread.minTimestamp != undefined &&
+            thread.maxTimestamp != undefined) {
           wmin = Math.min(wmin, thread.minTimestamp);
           wmax = Math.max(wmax, thread.maxTimestamp);
         }

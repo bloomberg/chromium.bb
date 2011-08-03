@@ -132,8 +132,12 @@ cr.define('gpu', function() {
           addTrack(this, this.thread_.subRows[srI]);
         }
         if (this.tracks_.length > 0) {
+          var tname = this.thread_.name || this.thread_.tid;
           this.tracks_[0].heading = this.thread_.parent.pid + ': ' +
-              this.thread_.tid + ': ';
+              tname + ':';
+          this.tracks_[0].tooltip = 'pid: ' + this.thread_.parent.pid +
+              ', tid: ' + this.thread_.tid +
+              (this.thread_.name ? ', name: ' + this.thread_.name : '');
         }
       }
     },
@@ -194,9 +198,9 @@ cr.define('gpu', function() {
       this.className = 'timeline-slice-track';
       this.slices_ = null;
 
-      this.titleDiv_ = document.createElement('div');
-      this.titleDiv_.className = 'timeline-slice-track-title';
-      this.appendChild(this.titleDiv_);
+      this.headingDiv_ = document.createElement('div');
+      this.headingDiv_.className = 'timeline-slice-track-title';
+      this.appendChild(this.headingDiv_);
 
       this.canvasContainer_ = document.createElement('div');
       this.canvasContainer_.className = 'timeline-slice-track-canvas-container';
@@ -209,7 +213,11 @@ cr.define('gpu', function() {
     },
 
     set heading(text) {
-      this.titleDiv_.textContent = text;
+      this.headingDiv_.textContent = text;
+    },
+
+    set tooltip(text) {
+      this.headingDiv_.title = text;
     },
 
     set slices(slices) {
@@ -325,7 +333,7 @@ cr.define('gpu', function() {
         if (slice.duration > quickDiscardThresshold) {
           var title = slice.title;
           if (slice.didNotFinish) {
-            title += " (Did Not Finish)";
+            title += ' (Did Not Finish)';
           }
           function labelWidth() {
             return quickMeasureText(ctx, title) + 2;

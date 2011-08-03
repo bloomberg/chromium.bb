@@ -16,7 +16,6 @@
 
 var browserBridge;
 var tracingController;
-var timelineView; // made global for debugging purposes only
 var profilingView; // made global for debugging purposes only
 
 /**

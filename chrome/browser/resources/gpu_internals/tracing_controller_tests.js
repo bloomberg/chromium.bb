@@ -8,6 +8,15 @@ cr.define('gpu', function() {
       events_url: "./tests/big_trace.json"
     },
     {
+      name: "trivial_trace",
+      events: [
+        {"name":"a","args":{},"pid":52,"ts":9524,"cat":"foo","tid":53,"ph":"B"},
+        {"name":"a","args":{},"pid":52,"ts":9560,"cat":"foo","tid":53,"ph":"E"},
+        {"name":"b","args":{},"pid":52,"ts":9629,"cat":"foo","tid":53,"ph":"B"},
+        {"name":"b","args":{},"pid":52,"ts":9631,"cat":"foo","tid":53,"ph":"E"}
+      ]
+    },
+    {
       name: "simple_trace",
       events: [
         {"cat":"PERF","pid":22630,"tid":22630,"ts":826,"ph":"B",
@@ -46,14 +55,23 @@ cr.define('gpu', function() {
         {"cat":"PERF","pid":22630,"tid":22631,"ts":845,"ph":"I",
          "name":"I4","args":{}},
         {"cat":"PERF","pid":22630,"tid":22631,"ts":854,"ph":"E",
-         "name":"A","args":{}}
+         "name":"A","args":{}},
+
+        {"cat":"__metadata","pid":22630,"tid":22630,"ts":0,"ph":"M",
+         "name":"thread_name","args":{"name": "threadA"}},
+        {"cat":"__metadata","pid":22630,"tid":22631,"ts":0,"ph":"M",
+         "name":"thread_name","args":{"name": "threadB"}},
+        {"cat":"__metadata","pid":22630,"tid":22632,"ts":0,"ph":"M",
+         "name":"thread_name","args":{"name": "threadC"}}
       ]
     },
     {
       name: "nonnested_trace",
       events: [
-        {'cat':'PERF','pid':22630,'tid':22630,'ts':826,'ph':'B','name':'A','args':{}},
-        {'cat':'PERF','pid':22630,'tid':22630,'ts':827,'ph':'B','name':'Asub','args':{}},
+        {'cat':'PERF','pid':22630,'tid':22630,'ts':826,'ph':'B',
+         'name':'A','args':{}},
+        {'cat':'PERF','pid':22630,'tid':22630,'ts':827,'ph':'B',
+         'name':'Asub','args':{}},
         {'cat':'PERF','pid':22630,'tid':22630,'ts':829,'ph':'B',
          'name':'NonNest','args':{'id':'1','ui-nest':'0'}},
         {'cat':'PERF','pid':22630,'tid':22630,'ts':830,'ph':'B',
@@ -64,66 +82,74 @@ cr.define('gpu', function() {
          'name':'NonNest','args':{'id':'1','ui-nest':'0'}},
         {'cat':'PERF','pid':22630,'tid':22630,'ts':833,'ph':'E',
          'name':'NonNest','args':{'id':'2','ui-nest':'0'}},
-        {'cat':'PERF','pid':22630,'tid':22630,'ts':834,'ph':'E','name':'A','args':{}},
+        {'cat':'PERF','pid':22630,'tid':22630,'ts':834,'ph':'E',
+         'name':'A','args':{}},
 
-        {'cat':'PERF','pid':22630,'tid':22631,'ts':827,'ph':'B','name':'A','args':{}},
-        {'cat':'PERF','pid':22630,'tid':22631,'ts':854,'ph':'E','name':'A','args':{}}
+        {'cat':'PERF','pid':22630,'tid':22631,'ts':827,'ph':'B',
+         'name':'A','args':{}},
+        {'cat':'PERF','pid':22630,'tid':22631,'ts':854,'ph':'E',
+         'name':'A','args':{}}
       ]
     },
     {
       name: "tall_trace",
       events: [
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":826,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":827,"ph":"B","name":"Asub","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":828,"ph":"E","name":"Asub","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":829,"ph":"B","name":"Asub","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":832,"ph":"E","name":"Asub","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22630,"ts":833,"ph":"E","name":"","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":826,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":827,"ph":"B","name":"Asub","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":828,"ph":"E","name":"Asub","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":829,"ph":"B","name":"Asub","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":832,"ph":"E","name":"Asub","args":{}},
+        {"cat":"X","pid":30,"tid":30,"ts":833,"ph":"E","name":"","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22631,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22631,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":31,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":31,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22632,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22632,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":32,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":32,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22633,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22633,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":33,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":33,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22634,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22634,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":34,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":34,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22635,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22635,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":35,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":35,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22636,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22636,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":36,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":36,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22637,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22637,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":37,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":37,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22638,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22638,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":38,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":38,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22639,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22639,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":39,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":39,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22610,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22610,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":10,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":10,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22611,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22611,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":31,"tid":11,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":31,"tid":11,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22612,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22612,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":12,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":12,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22613,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22613,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":13,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":13,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22614,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22614,"ts":848,"ph":"E","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":14,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":14,"ts":848,"ph":"E","name":"A","args":{}},
 
-        {"cat":"PERF","pid":22630,"tid":22615,"ts":840,"ph":"B","name":"A","args":{}},
-        {"cat":"PERF","pid":22630,"tid":22615,"ts":848,"ph":"E","name":"A","args":{}}
+        {"cat":"X","pid":30,"tid":15,"ts":840,"ph":"B","name":"A","args":{}},
+        {"cat":"X","pid":30,"tid":15,"ts":848,"ph":"E","name":"A","args":{}},
+
+        {"cat":"__metadata","pid":30,"tid":14,"ts":0,"ph":"M",
+         "name":"thread_name","args":{"name": "threadB"}},
+        {"cat":"__metadata","pid":30,"tid":15,"ts":0,"ph":"M",
+         "name":"thread_name","args":{"name": "threadA"}}
       ]
     },
     {
