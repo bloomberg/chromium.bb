@@ -908,6 +908,10 @@ class TestSDKStage(BuilderStage):
     cmd.append('.')
     cros_lib.RunCommand(cmd, cwd=board_location)
 
+    # Make sure the regular user has the permission to read.
+    cmd = ['sudo', 'chmod', 'a+r', tarball_location]
+    cros_lib.RunCommand(cmd, cwd=board_location)
+
     # Build a new SDK using the tarball.
     cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot', '--replace',
            '--path', tarball_location]
