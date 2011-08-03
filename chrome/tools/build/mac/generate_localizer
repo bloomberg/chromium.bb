@@ -9,7 +9,7 @@
 # Extracts all the localizable strings that start with "^IDS" from the given
 # xib file, and then generates a localizer to process those strings.
 
-import os.path
+import os
 import plistlib
 import subprocess
 import sys
@@ -40,8 +40,9 @@ static const size_t kUIResourcesSize = arraysize(kUIResources);
 
 def xib_localizable_strings(xib_path):
   """Runs ibtool to extract the localizable strings data from the xib."""
-  ibtool_cmd = subprocess.Popen(['/usr/bin/ibtool', '--localizable-strings',
-                                 xib_path],
+  tools_dir = os.environ.get('DEVELOPER_BIN_DIR', '/usr/bin')
+  tool_path = os.path.join(tools_dir, 'ibtool')
+  ibtool_cmd = subprocess.Popen([tool_path, '--localizable-strings', xib_path],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (cmd_out, cmd_err) = ibtool_cmd.communicate()
   if ibtool_cmd.returncode:
