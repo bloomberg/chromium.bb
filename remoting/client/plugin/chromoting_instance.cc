@@ -8,17 +8,20 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 // TODO(sergeyu): We should not depend on renderer here. Instead P2P
 // Pepper API should be used. Remove this dependency.
 // crbug.com/74951
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
+#include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
@@ -49,13 +52,27 @@
 
 namespace remoting {
 
+namespace {
+
+const char kClientFirewallTraversalPolicyName[] =
+    "remote_access.client_firewall_traversal";
+
+}  // namespace
+
+PPP_PolicyUpdate_Dev ChromotingInstance::kPolicyUpdatedInterface = {
+  &ChromotingInstance::PolicyUpdatedThunk,
+};
+
 const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
       scale_to_fit_(false),
-      logger_(this) {
+      logger_(this),
+      enable_client_nat_traversal_(false),
+      initial_policy_received_(false),
+      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 }
@@ -88,11 +105,41 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
+  SubscribeToNatTraversalPolicy();
+
+  // Create the chromoting objects that don't depend on the network connection.
+  view_.reset(new PepperView(this, &context_));
+  view_proxy_ = new PepperViewProxy(this, view_.get());
+  rectangle_decoder_ = new RectangleUpdateDecoder(
+      context_.decode_message_loop(), view_proxy_);
+
+  // Default to a medium grey.
+  view_->SetSolidFill(0xFFCDCDCD);
+
+  return true;
+}
+
+void ChromotingInstance::Connect(const ClientConfig& config) {
+  DCHECK(CurrentlyOnPluginThread());
+
+  // This can only happen at initialization if the Javascript connect call
+  // occurs before the enterprise policy is read.  We are guaranteed that the
+  // enterprise policy is pushed at least once, we we delay the connect call.
+  if (!initial_policy_received_) {
+    logger_.Log(logging::LOG_INFO,
+                "Delaying connect until initial policy is read.");
+    delayed_connect_.reset(
+        task_factory_.NewRunnableMethod(&ChromotingInstance::Connect,
+                                          config));
+    return;
+  }
+
   webkit::ppapi::PluginInstance* plugin_instance =
       webkit::ppapi::ResourceTracker::Get()->GetInstance(pp_instance());
 
   P2PSocketDispatcher* socket_dispatcher =
       plugin_instance->delegate()->GetP2PSocketDispatcher();
+
   IpcNetworkManager* network_manager = NULL;
   IpcPacketSocketFactory* socket_factory = NULL;
   PortAllocatorSessionFactory* session_factory =
@@ -106,27 +153,12 @@ bool ChromotingInstance::Init(uint32_t argc,
     socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
   }
 
-  // Create the chromoting objects.
-  // TODO(sergeyu): Use firewall traversal policy settings here.
   host_connection_.reset(new protocol::ConnectionToHost(
       context_.network_message_loop(), network_manager, socket_factory,
-      session_factory, false));
-  view_.reset(new PepperView(this, &context_));
-  view_proxy_ = new PepperViewProxy(this, view_.get());
-  rectangle_decoder_ = new RectangleUpdateDecoder(
-      context_.decode_message_loop(), view_proxy_);
+      session_factory, enable_client_nat_traversal_));
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),
                                               view_proxy_));
-
-  // Default to a medium grey.
-  view_->SetSolidFill(0xFFCDCDCD);
-
-  return true;
-}
-
-void ChromotingInstance::Connect(const ClientConfig& config) {
-  DCHECK(CurrentlyOnPluginThread());
 
   client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
                                      view_proxy_, rectangle_decoder_.get(),
@@ -159,7 +191,11 @@ void ChromotingInstance::Disconnect() {
     client_->Stop(base::Bind(&base::WaitableEvent::Signal,
                              base::Unretained(&done_event)));
     done_event.Wait();
+    client_.reset();
   }
+
+  input_handler_.reset();
+  host_connection_.reset();
 
   GetScriptableObject()->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
 }
@@ -189,6 +225,9 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   DCHECK(CurrentlyOnPluginThread());
+  if (!input_handler_.get()) {
+    return false;
+  }
 
   PepperInputHandler* pih
       = static_cast<PepperInputHandler*>(input_handler_.get());
@@ -326,7 +365,84 @@ ChromotingStats* ChromotingInstance::GetStats() {
 }
 
 void ChromotingInstance::ReleaseAllKeys() {
+  if (!input_handler_.get()) {
+    return;
+  }
+
   input_handler_->ReleaseAllKeys();
+}
+
+// static
+void ChromotingInstance::PolicyUpdatedThunk(PP_Instance pp_instance,
+                                            PP_Var pp_policy_json) {
+  ChromotingInstance* instance = static_cast<ChromotingInstance*>(
+      pp::Module::Get()->InstanceForPPInstance(pp_instance));
+  std::string policy_json =
+      pp::Var(pp::Var::DontManage(), pp_policy_json).AsString();
+  instance->HandlePolicyUpdate(policy_json);
+}
+
+void ChromotingInstance::SubscribeToNatTraversalPolicy() {
+  pp::Module::Get()->AddPluginInterface(PPP_POLICY_UPDATE_DEV_INTERFACE,
+                                        &kPolicyUpdatedInterface);
+  const PPB_QueryPolicy_Dev* query_policy_interface =
+      static_cast<PPB_QueryPolicy_Dev const*>(
+          pp::Module::Get()->GetBrowserInterface(
+              PPB_QUERY_POLICY_DEV_INTERFACE));
+  query_policy_interface->SubscribeToPolicyUpdates(pp_instance());
+}
+
+bool ChromotingInstance::IsNatTraversalAllowed(
+    const std::string& policy_json) {
+  int error_code = base::JSONReader::JSON_NO_ERROR;
+  std::string error_message;
+  scoped_ptr<base::Value> policy(base::JSONReader::ReadAndReturnError(
+      policy_json, true, &error_code, &error_message));
+
+  if (!policy.get()) {
+    logger_.Log(logging::LOG_ERROR, "Error %d parsing policy: %s.",
+                error_code, error_message.c_str());
+    return false;
+  }
+
+  if (!policy->IsType(base::Value::TYPE_DICTIONARY)) {
+    logger_.Log(logging::LOG_ERROR, "Policy must be a dictionary");
+    return false;
+  }
+
+  base::DictionaryValue* dictionary =
+      static_cast<base::DictionaryValue*>(policy.get());
+  bool traversal_policy = false;
+  if (!dictionary->GetBoolean(kClientFirewallTraversalPolicyName,
+                              &traversal_policy)) {
+    // Disable NAT traversal on any failure of reading the policy.
+    return false;
+  }
+
+  return traversal_policy;
+}
+
+void ChromotingInstance::HandlePolicyUpdate(const std::string policy_json) {
+  DCHECK(CurrentlyOnPluginThread());
+  bool traversal_policy = IsNatTraversalAllowed(policy_json);
+
+  // If the policy changes from traversal allowed, to traversal denied, we
+  // need to immediately drop all connections and redo the conneciton
+  // preparation.
+  if (traversal_policy == false &&
+      traversal_policy != enable_client_nat_traversal_) {
+    if (client_.get()) {
+      // This will delete the client and network related objects.
+      Disconnect();
+    }
+  }
+
+  initial_policy_received_ = true;
+  enable_client_nat_traversal_ = traversal_policy;
+
+  if (delayed_connect_.get()) {
+    RunTaskOnPluginThread(delayed_connect_.release());
+  }
 }
 
 }  // namespace remoting

@@ -1324,16 +1324,9 @@ void PepperPluginDelegateImpl::SubscribeToPolicyUpdates(
     webkit::ppapi::PluginInstance* instance) {
   subscribed_to_policy_updates_.insert(instance);
 
-  // Call by the PPP interface via continuation to avoid reentry issues
-  // with being in the call chain that includes SubscribeToPolicyUpdates().
-  //
-  // TODO(ajwong): Hook this up into something that gets a real policy.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPluginDelegateImpl::PublishInitialPolicy,
-                 AsWeakPtr(),
-                 make_scoped_refptr(instance),
-                 "{\"test_policy\": \"i like bananas\"}"));
+  // TODO(ajwong): Make this only send an update to the current instance,
+  // and not all subscribed plugin instances.
+  render_view_->RequestRemoteAccessClientFirewallTraversal();
 }
 
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {

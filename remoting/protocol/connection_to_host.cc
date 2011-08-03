@@ -115,9 +115,6 @@ void ConnectionToHost::InitSession() {
   session_manager_.reset(session_manager);
   session_manager_->Init(
       local_jid_, signal_strategy_.get(), this, NULL, "", allow_nat_traversal_);
-
-  // Set the shared-secret for securing SSL channels.
-  session_->set_shared_secret(access_code_);
 }
 
 const SessionConfig* ConnectionToHost::config() {
@@ -154,6 +151,9 @@ void ConnectionToHost::OnSessionManagerInitialized() {
   session_.reset(session_manager_->Connect(
       host_jid_, host_public_key_, client_token, candidate_config,
       NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+
+  // Set the shared-secret for securing SSL channels.
+  session_->set_shared_secret(access_code_);
 }
 
 void ConnectionToHost::OnIncomingSession(
