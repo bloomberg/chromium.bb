@@ -42,12 +42,14 @@ basic-setup-nacl() {
   local platforms=$1
   build-sel_ldr "${platforms}"
   build-libs "${platforms}"
+  build-irt "${platforms}"
 }
 
 basic-setup-pnacl() {
   local platforms=$1
   build-sel_ldr "${platforms}"
   build-sel_universal "${platforms}"
+  build-irt "${platforms}"
   ${UTMAN} sdk
 }
 
@@ -64,6 +66,15 @@ build-sel_universal() {
   for platform in ${platforms} ; do
     echo "@@@BUILD_STEP scons sel_universal [${platform}]@@@"
     ${SCONS_TRUSTED} platform=${platform} sel_universal
+  done
+}
+
+build-irt() {
+  local platforms=$1
+  shift 1
+  for platform in ${platforms} ; do
+    echo "@@@BUILD_STEP scons irt_core [${platform}] $* @@@"
+    ${SCONS_NACL} platform=${platform} irt_core "$@"
   done
 }
 
@@ -216,4 +227,3 @@ if [[ ${RETCODE} != 0 ]]; then
   echo There were failed stages.
   exit ${RETCODE}
 fi
-

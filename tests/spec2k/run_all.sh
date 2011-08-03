@@ -119,8 +119,7 @@ SetupGccX8664Opt() {
 ######################################################################
 
 SetupNaclX8632Common() {
-  SEL_LDR=$(GetSelLdr "x86-32")
-  PREFIX="${SEL_LDR} -a -f"
+  SetupSelLdr x86-32
 }
 
 #@
@@ -140,8 +139,7 @@ SetupNaclX8632Opt() {
 }
 
 SetupNaclX8664Common() {
-  SEL_LDR=$(GetSelLdr "x86-64")
-  PREFIX="${SEL_LDR} -a -f"
+  SetupSelLdr x86-64
 }
 
 #@
@@ -161,8 +159,7 @@ SetupNaclX8664Opt() {
 }
 
 SetupNaclDynX8632Common() {
-  SEL_LDR=$(GetSelLdr "x86-32")
-  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD_X8632}"
+  SetupSelLdr x86-32 "" "-s" "${RUNNABLE_LD_X8632}"
 }
 
 #@
@@ -182,8 +179,7 @@ SetupNaclDynX8632Opt() {
 }
 
 SetupNaclDynX8664Common() {
-  SEL_LDR=$(GetSelLdr "x86-64")
-  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD_X8664}"
+  SetupSelLdr x86-64 "" "-s" "${RUNNABLE_LD_X8664}"
 }
 
 #@
@@ -206,8 +202,7 @@ SetupNaclDynX8664Opt() {
 
 SetupPnaclX8664Common() {
   CheckSDK
-  SEL_LDR=$(GetSelLdr "x86-64")
-  PREFIX="${SEL_LDR} -a -f"
+  SetupSelLdr x86-64
 }
 
 #@
@@ -246,8 +241,7 @@ SetupPnaclTranslatorX8664Opt() {
 
 SetupPnaclX8632Common() {
   CheckSDK
-  SEL_LDR=$(GetSelLdr "x86-32")
-  PREFIX="${SEL_LDR} -a -f"
+  SetupSelLdr x86-32
 }
 
 #@
@@ -296,8 +290,7 @@ SetupGccArm() {
 
 SetupPnaclArmCommon() {
   CheckSDK
-  SEL_LDR=$(GetSelLdr "arm")
-  PREFIX="${QEMU_TOOL} run ${SEL_LDR} -a -Q -f"
+  SetupSelLdr arm "${QEMU_TOOL} run" "-Q"
   SUFFIX=pnacl.arm
 }
 
@@ -336,8 +329,7 @@ SetupPnaclTranslatorArmOpt() {
 }
 
 SetupPnaclArmCommonHW() {
-  SEL_LDR=$(GetSelLdr "arm")
-  PREFIX="${SEL_LDR} -a -f"
+  SetupSelLdr arm
   SUFFIX=pnacl.arm
 }
 
@@ -445,14 +437,25 @@ CheckFileBuilt() {
 }
 
 #+
-#+ GetSelLdr <arch>
+#+ SetupSelLdr <arch> <prefix> <extra_flags> <preload>
 #+
-#+   Get sel_ldr for the given arch.
-GetSelLdr() {
-  local arch=$1
+#+   Set up PREFIX to run sel_ldr on <arch>.
+#+   <prefix> precedes sel_ldr in the command.
+#+   <extra_flags> are additional flags to sel_ldr.
+#+   <preload> is used as the actual nexe to load, making the real nexe an arg.
+SetupSelLdr() {
+  local arch="$1"
+  local prefix="${2-}"
+  local extra_flags="${3-}"
+  local preload="${4-}"
+
   SEL_LDR="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/sel_ldr"
   CheckFileBuilt "sel_ldr" "${SEL_LDR}"
-  echo "${SEL_LDR}"
+
+  IRT_IMAGE="${SCONS_OUT}/nacl_irt-${arch}/staging/irt_core.nexe"
+  CheckFileBuilt "IRT image" "${IRT_IMAGE}"
+
+  PREFIX="${prefix} ${SEL_LDR} -B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
 }
 
 CheckSelUniversal() {
@@ -633,10 +636,10 @@ ArchivedRunOnArmHW() {
 
   # Switch to native_client directory (from tests/spec2k) so that
   # when we extract, the builder will have a more natural directory layout.
-  # Unfortunately, this means we can't reuse GetSelLdr()...
   local TAR_FROM="../.."
   tar -C ${TAR_FROM} -czvf ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
-    scons-out/opt-${SCONS_BUILD_PLATFORM}-arm/staging/sel_ldr
+    scons-out/opt-${SCONS_BUILD_PLATFORM}-arm/staging/sel_ldr \
+    scons-out/nacl_irt-arm/staging/irt_core.nexe
   # Carefully tar only the parts of the spec harness that we need.
   (cd ${TAR_FROM} ;
     find tests/spec2k -type f -maxdepth 1 -print |
