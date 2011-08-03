@@ -82,11 +82,11 @@ bool SubsetterImpl::LoadFont(const char* font_name,
   ByteArrayPtr raw_font =
       new MemoryByteArray((byte_t*)original_font, font_size);
   if (factory_ == NULL) {
-    factory_.attach(FontFactory::getInstance());
+    factory_.Attach(FontFactory::GetInstance());
   }
 
   FontArray font_array;
-  factory_->loadFonts(raw_font, &font_array);
+  factory_->LoadFonts(raw_font, &font_array);
   font_ = FindFont(font_name, font_array);
   if (font_ == NULL) {
     return false;
@@ -109,17 +109,17 @@ int SubsetterImpl::SubsetFont(const unsigned int* glyph_ids,
   }
 
   FontPtr new_font;
-  new_font.attach(Subset(glyph_id_processed));
+  new_font.Attach(Subset(glyph_id_processed));
   if (new_font == NULL) {
     return 0;
   }
 
   MemoryOutputStream output_stream;
-  factory_->serializeFont(new_font, &output_stream);
-  int length = static_cast<int>(output_stream.size());
+  factory_->SerializeFont(new_font, &output_stream);
+  int length = static_cast<int>(output_stream.Size());
   if (length > 0) {
     *output_buffer = new unsigned char[length];
-    memcpy(*output_buffer, output_stream.get(), length);
+    memcpy(*output_buffer, output_stream.Get(), length);
   }
 
   return length;
@@ -153,10 +153,10 @@ bool SubsetterImpl::HasName(const char* font_name, Font* font) {
 
   typedef std::map<int32_t, UnicodeString> NameMap;
   NameMap names;
-  NameTablePtr name_table = down_cast<NameTable*>(font->table(Tag::name));
+  NameTablePtr name_table = down_cast<NameTable*>(font->GetTable(Tag::name));
 
-  for (int32_t i = 0; i < name_table->nameCount(); ++i) {
-    switch(name_table->nameId(i)) {
+  for (int32_t i = 0; i < name_table->NameCount(); ++i) {
+    switch(name_table->NameId(i)) {
       case NameId::kFontFamilyName:
       case NameId::kFontSubfamilyName:
       case NameId::kFullFontName:
@@ -164,12 +164,12 @@ bool SubsetterImpl::HasName(const char* font_name, Font* font) {
       case NameId::kPreferredSubfamily:
       case NameId::kWWSFamilyName:
       case NameId::kWWSSubfamilyName: {
-        int32_t hash_code = HashCode(name_table->platformId(i),
-                                      name_table->encodingId(i),
-                                      name_table->languageId(i),
-                                      name_table->nameId(i));
-        UChar* name_part = name_table->name(i);
-        ConstructName(name_part, &(names[hash_code]), name_table->nameId(i));
+        int32_t hash_code = HashCode(name_table->PlatformId(i),
+                                     name_table->EncodingId(i),
+                                     name_table->LanguageId(i),
+                                     name_table->NameId(i));
+        UChar* name_part = name_table->Name(i);
+        ConstructName(name_part, &(names[hash_code]), name_table->NameId(i));
         break;
       }
       default:
@@ -196,8 +196,9 @@ bool SubsetterImpl::ResolveCompositeGlyphs(const unsigned int* glyph_ids,
   }
 
   // Find glyf and loca table.
-  GlyphTablePtr glyph_table = down_cast<GlyphTable*>(font_->table(Tag::glyf));
-  LocaTablePtr loca_table = down_cast<LocaTable*>(font_->table(Tag::loca));
+  GlyphTablePtr glyph_table =
+      down_cast<GlyphTable*>(font_->GetTable(Tag::glyf));
+  LocaTablePtr loca_table = down_cast<LocaTable*>(font_->GetTable(Tag::loca));
   if (glyph_table == NULL || loca_table == NULL) {
     // The font is invalid.
     return false;
@@ -216,33 +217,33 @@ bool SubsetterImpl::ResolveCompositeGlyphs(const unsigned int* glyph_ids,
     IntegerSet comp_glyph_id;
     for (IntegerSet::iterator i = glyph_id_remaining.begin(),
                               e = glyph_id_remaining.end(); i != e; ++i) {
-      if (*i < 0 || *i >= loca_table->numGlyphs()) {
+      if (*i < 0 || *i >= loca_table->NumGlyphs()) {
         // Invalid glyph id, ignore.
         continue;
       }
 
-      int32_t length = loca_table->glyphLength(*i);
+      int32_t length = loca_table->GlyphLength(*i);
       if (length == 0) {
         // Empty glyph, ignore.
         continue;
       }
-      int32_t offset = loca_table->glyphOffset(*i);
+      int32_t offset = loca_table->GlyphOffset(*i);
 
       GlyphPtr glyph;
-      glyph.attach(glyph_table->glyph(offset, length));
+      glyph.Attach(glyph_table->GetGlyph(offset, length));
       if (glyph == NULL) {
         // Error finding glyph, ignore.
         continue;
       }
 
-      if (glyph->glyphType() == GlyphType::kComposite) {
+      if (glyph->GlyphType() == GlyphType::kComposite) {
         Ptr<GlyphTable::CompositeGlyph> comp_glyph =
             down_cast<GlyphTable::CompositeGlyph*>(glyph.p_);
-        for (int32_t j = 0; j < comp_glyph->numGlyphs(); ++j) {
-          int32_t glyph_id = comp_glyph->glyphIndex(j);
+        for (int32_t j = 0; j < comp_glyph->NumGlyphs(); ++j) {
+          int32_t glyph_id = comp_glyph->GlyphIndex(j);
           if (glyph_id_processed->find(glyph_id) == glyph_id_processed->end() &&
               glyph_id_remaining.find(glyph_id) == glyph_id_remaining.end()) {
-            comp_glyph_id.insert(comp_glyph->glyphIndex(j));
+            comp_glyph_id.insert(comp_glyph->GlyphIndex(j));
           }
         }
       }
@@ -257,19 +258,20 @@ bool SubsetterImpl::ResolveCompositeGlyphs(const unsigned int* glyph_ids,
 
 CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
   // The tables are already checked in ResolveCompositeGlyphs().
-  GlyphTablePtr glyph_table = down_cast<GlyphTable*>(font_->table(Tag::glyf));
-  LocaTablePtr loca_table = down_cast<LocaTable*>(font_->table(Tag::loca));
+  GlyphTablePtr glyph_table =
+      down_cast<GlyphTable*>(font_->GetTable(Tag::glyf));
+  LocaTablePtr loca_table = down_cast<LocaTable*>(font_->GetTable(Tag::loca));
 
   // Setup font builders we need.
   FontBuilderPtr font_builder;
-  font_builder.attach(factory_->newFontBuilder());
+  font_builder.Attach(factory_->NewFontBuilder());
 
   GlyphTableBuilderPtr glyph_table_builder;
-  glyph_table_builder.attach(down_cast<GlyphTable::Builder*>(
-      font_builder->newTableBuilder(Tag::glyf)));
+  glyph_table_builder.Attach(down_cast<GlyphTable::Builder*>(
+      font_builder->NewTableBuilder(Tag::glyf)));
   LocaTableBuilderPtr loca_table_builder;
-  loca_table_builder.attach(down_cast<LocaTable::Builder*>(
-      font_builder->newTableBuilder(Tag::loca)));
+  loca_table_builder.Attach(down_cast<LocaTable::Builder*>(
+      font_builder->NewTableBuilder(Tag::loca)));
   if (glyph_table_builder == NULL || loca_table_builder == NULL) {
     // Out of memory.
     return NULL;
@@ -277,27 +279,27 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
 
   // Extract glyphs and setup loca list.
   IntegerList loca_list;
-  loca_list.resize(loca_table->numGlyphs());
+  loca_list.resize(loca_table->NumGlyphs());
   loca_list.push_back(0);
   int32_t last_glyph_id = 0;
   int32_t last_offset = 0;
   GlyphTable::GlyphBuilderList* glyph_builders =
-      glyph_table_builder->glyphBuilders();
+      glyph_table_builder->GlyphBuilders();
   for (IntegerSet::const_iterator i = glyph_ids.begin(), e = glyph_ids.end();
                                   i != e; ++i) {
-    int32_t length = loca_table->glyphLength(*i);
-    int32_t offset = loca_table->glyphOffset(*i);
+    int32_t length = loca_table->GlyphLength(*i);
+    int32_t offset = loca_table->GlyphOffset(*i);
 
     GlyphPtr glyph;
-    glyph.attach(glyph_table->glyph(offset, length));
+    glyph.Attach(glyph_table->GetGlyph(offset, length));
 
     // Add glyph to new glyf table.
-    ReadableFontDataPtr data = glyph->readFontData();
+    ReadableFontDataPtr data = glyph->ReadFontData();
     WritableFontDataPtr copy_data;
-    copy_data.attach(font_builder->getNewData(data->length()));
-    data->copyTo(copy_data);
+    copy_data.Attach(font_builder->GetNewData(data->Length()));
+    data->CopyTo(copy_data);
     GlyphBuilderPtr glyph_builder;
-    glyph_builder.attach(glyph_table_builder->glyphBuilder(copy_data));
+    glyph_builder.Attach(glyph_table_builder->GlyphBuilder(copy_data));
     glyph_builders->push_back(glyph_builder);
 
     // Configure loca list.
@@ -308,26 +310,26 @@ CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
     loca_list[*i + 1] = last_offset;
     last_glyph_id = *i;
   }
-  for (int32_t j = last_glyph_id + 1; j <= loca_table->numGlyphs(); ++j) {
+  for (int32_t j = last_glyph_id + 1; j <= loca_table->NumGlyphs(); ++j) {
     loca_list[j] = last_offset;
   }
-  loca_table_builder->setLocaList(&loca_list);
+  loca_table_builder->SetLocaList(&loca_list);
 
   // Setup remaining builders.
-  for (TableMap::iterator i = font_->tables()->begin(),
-                          e = font_->tables()->end(); i != e; ++i) {
+  for (TableMap::iterator i = font_->Tables()->begin(),
+                          e = font_->Tables()->end(); i != e; ++i) {
     // We already build the builder for glyph and loca.
     if (i->first != Tag::glyf && i->first != Tag::loca) {
       // The newTableBuilder() call will alter internal state of font_builder
       // AND the reference count of returned object.  Therefore we need to
       // dereference it.
       TableBuilderPtr dereference;
-      dereference.attach(
-          font_builder->newTableBuilder(i->first, i->second->readFontData()));
+      dereference.Attach(
+          font_builder->NewTableBuilder(i->first, i->second->ReadFontData()));
     }
   }
 
-  return font_builder->build();
+  return font_builder->Build();
 }
 
 }  // namespace sfntly
