@@ -29,7 +29,8 @@ class LocalInputMonitorThread : public base::SimpleThread {
   ChromotingHost* host_;
   int wakeup_pipe_[2];
   Display* display_;
-  bool shift_pressed_;
+  bool alt_pressed_;
+  bool ctrl_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorThread);
 };

@@ -8,5 +8,5 @@ namespace remoting {
 // TODO(garykac): These strings should be localized.
 const char DisconnectWindow::kTitle[] = "Remoting";
 const char DisconnectWindow::kSharingWith[] = "Sharing with: ";
-const char DisconnectWindow::kDisconnectButton[] = "Disconnect (Shift+Esc)";
+const char DisconnectWindow::kDisconnectButton[] = "Disconnect (Ctrl+Alt+Esc)";
 }

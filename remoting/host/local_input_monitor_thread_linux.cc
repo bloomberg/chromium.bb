@@ -63,7 +63,7 @@ static void ProcessReply(XPointer thread,
 
 LocalInputMonitorThread::LocalInputMonitorThread(ChromotingHost* host)
     : base::SimpleThread("LocalInputMonitor"),
-      host_(host), display_(NULL), shift_pressed_(false) {
+      host_(host), display_(NULL), alt_pressed_(false), ctrl_pressed_(false) {
   wakeup_pipe_[0] = -1;
   wakeup_pipe_[1] = -1;
   CHECK_EQ(pipe(wakeup_pipe_), 0);
@@ -162,9 +162,11 @@ void LocalInputMonitorThread::LocalMouseMoved(const gfx::Point& pos) {
 
 void LocalInputMonitorThread::LocalKeyPressed(int key_code, bool down) {
   int key_sym = XKeycodeToKeysym(display_, key_code, 0);
-  if (key_sym == XK_Shift_L || key_sym == XK_Shift_R)
-    shift_pressed_ = down;
-  if (shift_pressed_ && key_sym == XK_Escape && down) {
+  if (key_sym == XK_Control_L || key_sym == XK_Control_R) {
+    ctrl_pressed_ = down;
+  } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {
+    alt_pressed_ = down;
+  } else if (alt_pressed_ && ctrl_pressed_ && key_sym == XK_Escape && down) {
     host_->Shutdown(NULL);
   }
 }
