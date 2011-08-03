@@ -53,6 +53,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                    net::URLRequestContextGetter* getter,
                    Profile* profile,
+                   const std::string& service_name,
                    const std::string& service_scope);
 
   virtual ~GaiaOAuthFetcher();
@@ -92,13 +93,15 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // wrap_token_duration is typically one hour,
   // which is also the max -- you can only decrease it.
   //
-  // oauth2_scope should be specific to a service.  For example, Chromium Sync
-  // uses https://www.googleapis.com/auth/chromesync as it's OAuth2 scope.
+  // service_name and service_scope should be specific to a service.  For
+  // example, Chromium Sync uses https://www.googleapis.com/auth/chromesync as
+  // its OAuth2 service scope.
   virtual void StartOAuthWrapBridge(
       const std::string& oauth1_access_token,
       const std::string& oauth1_access_token_secret,
       const std::string& wrap_token_duration,
-      const std::string& oauth2_scope);
+      const std::string& service_name,
+      const std::string& service_scope);
 
   // Obtains user information related to an OAuth2 access token
   //
@@ -230,7 +233,6 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   GaiaOAuthConsumer* const consumer_;
   net::URLRequestContextGetter* const getter_;
   Profile* profile_;
-  std::string service_scope_;
   Browser* popup_;
   NotificationRegistrar registrar_;
 
@@ -238,6 +240,8 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   scoped_ptr<URLFetcher> fetcher_;
   std::string request_body_;
   std::string request_headers_;
+  std::string service_name_;
+  std::string service_scope_;
   bool fetch_pending_;
   AutoFetchLimit auto_fetch_limit_;
 

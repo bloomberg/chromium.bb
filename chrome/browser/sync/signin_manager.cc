@@ -84,6 +84,7 @@ void SigninManager::StartOAuthSignIn() {
   oauth_login_.reset(new GaiaOAuthFetcher(this,
                                           profile_->GetRequestContext(),
                                           profile_,
+                                          GaiaConstants::kSyncService,
                                           kSyncOAuth2Scope));
   oauth_login_->StartGetOAuthToken();
 }
@@ -237,7 +238,8 @@ void SigninManager::OnOAuthGetAccessTokenFailure(
   VLOG(1) << "SigninManager::OnOAuthGetAccessTokenFailure";
 }
 
-void SigninManager::OnOAuthWrapBridgeSuccess(const std::string& token,
+void SigninManager::OnOAuthWrapBridgeSuccess(const std::string& service_name,
+                                             const std::string& token,
                                              const std::string& expires_in) {
   VLOG(1) << "SigninManager::OnOAuthWrapBridgeSuccess";
 }

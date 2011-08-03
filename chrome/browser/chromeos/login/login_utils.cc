@@ -156,6 +156,7 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
       : oauth_fetcher_(this,
             user_profile->GetOffTheRecordProfile()->GetRequestContext(),
             user_profile->GetOffTheRecordProfile(),
+            GaiaConstants::kSyncService,
             kServiceScopeChromeOS),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
@@ -200,6 +201,7 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
       : oauth_fetcher_(this,
                        profile->GetRequestContext(),
                        profile,
+                       GaiaConstants::kDeviceManagementService,
                        kServiceScopeChromeOSDeviceManagement),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
@@ -210,11 +212,13 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
 
   void Start() {
     oauth_fetcher_.StartOAuthWrapBridge(oauth1_token_, oauth1_secret_, "3600",
+        std::string(GaiaConstants::kDeviceManagementService),
         std::string(kServiceScopeChromeOSDeviceManagement));
   }
 
   // GaiaOAuthConsumer implementation:
   virtual void OnOAuthWrapBridgeSuccess(
+      const std::string& service_name,
       const std::string& token,
       const std::string& expires_in) OVERRIDE {
     policy::BrowserPolicyConnector* browser_policy_connector =
@@ -565,6 +569,7 @@ void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
   oauth_fetcher_.reset(new GaiaOAuthFetcher(this,
                                             auth_profile->GetRequestContext(),
                                             auth_profile,
+                                            GaiaConstants::kSyncService,
                                             kServiceScopeChromeOS));
   // Let's first get the Oauth request token and OAuth1 token+secret.
   // One we get that, we will kick off individial requests for OAuth2 tokens for

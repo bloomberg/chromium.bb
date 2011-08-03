@@ -13,6 +13,7 @@
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/test/base/testing_profile.h"
@@ -62,8 +63,9 @@ class MockGaiaOAuthConsumer : public GaiaOAuthConsumer {
   MOCK_METHOD1(OnOAuthGetAccessTokenFailure,
                void(const GoogleServiceAuthError& error));
 
-  MOCK_METHOD2(OnOAuthWrapBridgeSuccess,
-               void(const std::string& token,
+  MOCK_METHOD3(OnOAuthWrapBridgeSuccess,
+               void(const std::string& service_name,
+                    const std::string& token,
                     const std::string& expires_in));
   MOCK_METHOD1(OnOAuthWrapBridgeFailure,
                void(const GoogleServiceAuthError& error));
@@ -77,18 +79,21 @@ class MockGaiaOAuthFetcher : public GaiaOAuthFetcher {
   MockGaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                        net::URLRequestContextGetter* getter,
                        Profile* profile,
+                       const std::string& service_name,
                        const std::string& service_scope)
-      : GaiaOAuthFetcher(consumer, getter, profile, service_scope) {}
+      : GaiaOAuthFetcher(
+          consumer, getter, profile, service_name, service_scope) {}
 
   ~MockGaiaOAuthFetcher() {}
 
   MOCK_METHOD1(StartOAuthGetAccessToken,
                void(const std::string& oauth1_request_token));
 
-  MOCK_METHOD4(StartOAuthWrapBridge,
+  MOCK_METHOD5(StartOAuthWrapBridge,
                void(const std::string& oauth1_access_token,
                     const std::string& oauth1_access_token_secret,
                     const std::string& wrap_token_duration,
+                    const std::string& service_name,
                     const std::string& oauth2_scope));
 
   MOCK_METHOD1(StartUserInfo, void(const std::string& oauth2_access_token));
@@ -129,13 +134,13 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 
   TestingProfile profile;
 
-  MockGaiaOAuthFetcher auth(&consumer,
-                            profile.GetRequestContext(),
-                            &profile,
-                            std::string());
-  EXPECT_CALL(auth, StartOAuthGetAccessToken(oauth_token)).Times(1);
+  MockGaiaOAuthFetcher oauth_fetcher(&consumer,
+                                     profile.GetRequestContext(),
+                                     &profile,
+                                     std::string());
+  EXPECT_CALL(oauth_fetcher, StartOAuthGetAccessToken(oauth_token)).Times(1);
 
-  auth.Observe(
+  oauth_fetcher.Observe(
       chrome::NOTIFICATION_COOKIE_CHANGED,
       Source<Profile>(&profile),
       Details<ChromeCookieDetails>(cookie_details.get()));
@@ -156,23 +161,26 @@ TEST(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
                                            oauth_token_secret)).Times(1);
 
   TestingProfile profile;
-  MockGaiaOAuthFetcher auth(&consumer,
-                            profile .GetRequestContext(),
-                            &profile,
-                            std::string());
-  EXPECT_CALL(auth, StartOAuthWrapBridge(oauth_token,
-                                         oauth_token_secret,
-                                         "3600",
-                                         _)).Times(1);
+  MockGaiaOAuthFetcher oauth_fetcher(&consumer,
+                                     profile.GetRequestContext(),
+                                     &profile,
+                                     "service_name-eKARPyky",
+                                     "service_scope-JnG18MEE");
+  EXPECT_CALL(oauth_fetcher,
+              StartOAuthWrapBridge(oauth_token,
+                                   oauth_token_secret,
+                                   "3600",
+                                   "service_name-eKARPyky",
+                                   "service_scope-JnG18MEE")).Times(1);
 
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  auth.OnURLFetchComplete(NULL,
-                          GURL(kOAuthGetAccessTokenUrl),
-                          status,
-                          RC_REQUEST_OK,
-                          cookies,
-                          data);
+  oauth_fetcher.OnURLFetchComplete(NULL,
+                                   GURL(kOAuthGetAccessTokenUrl),
+                                   status,
+                                   RC_REQUEST_OK,
+                                   cookies,
+                                   data);
 }
 
 TEST(GaiaOAuthFetcherTest, OAuthWrapBridge) {
@@ -185,31 +193,32 @@ TEST(GaiaOAuthFetcherTest, OAuthWrapBridge) {
 
   MockGaiaOAuthConsumer consumer;
   EXPECT_CALL(consumer,
-              OnOAuthWrapBridgeSuccess(wrap_token,
+              OnOAuthWrapBridgeSuccess("service_name-62Ykg3K1",
+                                       wrap_token,
                                        expires_in)).Times(1);
 
   TestingProfile profile;
-  MockGaiaOAuthFetcher auth(&consumer,
-                            profile .GetRequestContext(),
-                            &profile,
-                            std::string());
-  EXPECT_CALL(auth, StartUserInfo(wrap_token)).Times(1);
+  MockGaiaOAuthFetcher oauth_fetcher(&consumer,
+                                     profile .GetRequestContext(),
+                                     &profile,
+                                     "service_name-62Ykg3K1",
+                                     "service_scope-0fL85iOi");
+  EXPECT_CALL(oauth_fetcher, StartUserInfo(wrap_token)).Times(1);
 
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  auth.OnURLFetchComplete(NULL,
-                          GURL(kOAuthWrapBridgeUrl),
-                          status,
-                          RC_REQUEST_OK,
-                          cookies,
-                          data);
+  oauth_fetcher.OnURLFetchComplete(NULL,
+                                   GURL(kOAuthWrapBridgeUrl),
+                                   status,
+                                   RC_REQUEST_OK,
+                                   cookies,
+                                   data);
 }
 
 TEST(GaiaOAuthFetcherTest, UserInfo) {
   const std::string email_address="someone@somewhere.net";
   const std::string wrap_token="1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
   const std::string expires_in="3600";
-
   const std::string data("{\n \"email\": \"someone@somewhere.net\",\n"
                          " \"verified_email\": true\n}\n");
   MockGaiaOAuthConsumer consumer;
@@ -217,17 +226,18 @@ TEST(GaiaOAuthFetcherTest, UserInfo) {
               OnUserInfoSuccess(email_address)).Times(1);
 
   TestingProfile profile;
-  MockGaiaOAuthFetcher auth(&consumer,
-                            profile .GetRequestContext(),
-                            &profile,
-                            std::string());
+  MockGaiaOAuthFetcher oauth_fetcher(&consumer,
+                                     profile .GetRequestContext(),
+                                     &profile,
+                                     "service_name-S2igVNUm",
+                                     "service_scope-Nrj4LmgU");
 
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  auth.OnURLFetchComplete(NULL,
-                          GURL(kUserInfoUrl),
-                          status,
-                          RC_REQUEST_OK,
-                          cookies,
-                          data);
+  oauth_fetcher.OnURLFetchComplete(NULL,
+                                   GURL(kUserInfoUrl),
+                                   status,
+                                   RC_REQUEST_OK,
+                                   cookies,
+                                   data);
 }

@@ -24,7 +24,8 @@ class GaiaOAuthConsumer {
   virtual void OnOAuthGetAccessTokenFailure(
       const GoogleServiceAuthError& error) {}
 
-  virtual void OnOAuthWrapBridgeSuccess(const std::string& token,
+  virtual void OnOAuthWrapBridgeSuccess(const std::string& service_name,
+                                        const std::string& token,
                                         const std::string& expires_in) {}
   virtual void OnOAuthWrapBridgeFailure(const GoogleServiceAuthError& error) {}
 

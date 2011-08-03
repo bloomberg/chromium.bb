@@ -54,12 +54,14 @@ static const char kOAuthTokenCookie[] = "oauth_token";
 GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                                    net::URLRequestContextGetter* getter,
                                    Profile* profile,
+                                   const std::string& service_name,
                                    const std::string& service_scope)
     : consumer_(consumer),
       getter_(getter),
       profile_(profile),
-      service_scope_(service_scope),
       popup_(NULL),
+      service_name_(service_name),
+      service_scope_(service_scope),
       fetch_pending_(false),
       auto_fetch_limit_(ALL_OAUTH_STEPS) {}
 
@@ -203,6 +205,7 @@ void GaiaOAuthFetcher::ParseGetOAuthTokenResponse(
     }
   }
 }
+
 // Helper method that extracts tokens from a successful reply.
 // static
 void GaiaOAuthFetcher::ParseOAuthLoginResponse(
@@ -405,18 +408,21 @@ void GaiaOAuthFetcher::StartOAuthWrapBridge(
     const std::string& oauth1_access_token,
     const std::string& oauth1_access_token_secret,
     const std::string& wrap_token_duration,
-    const std::string& oauth2_scope) {
+    const std::string& service_name,
+    const std::string& service_scope) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  std::string combined_oauth2_scope = oauth2_scope + " " +
+  VLOG(1) << "Starting OAuthWrapBridge for: " << service_name;
+  std::string combined_scope = service_scope + " " +
       kOAuthWrapBridgeUserInfoScope;
+  service_name_ = service_name;
 
   // Must outlive fetcher_.
   request_body_ = MakeOAuthWrapBridgeBody(
       oauth1_access_token,
       oauth1_access_token_secret,
       wrap_token_duration,
-      combined_oauth2_scope);
+      combined_scope);
 
   request_headers_ = "";
   fetcher_.reset(CreateGaiaFetcher(getter_,
@@ -588,7 +594,8 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     ParseOAuthGetAccessTokenResponse(data, &token, &secret);
     consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
     if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
-      StartOAuthWrapBridge(token, secret, "3600", service_scope_);
+      StartOAuthWrapBridge(
+          token, secret, "3600", service_name_, service_scope_);
   } else {
     consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status));
   }
@@ -603,7 +610,7 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     std::string token;
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
-    consumer_->OnOAuthWrapBridgeSuccess(token, expires_in);
+    consumer_->OnOAuthWrapBridgeSuccess(service_name_, token, expires_in);
     if (ShouldAutoFetch(USER_INFO))
       StartUserInfo(token);
   } else {
