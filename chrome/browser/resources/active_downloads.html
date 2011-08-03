@@ -385,6 +385,7 @@ function showAllDownloads() {
 function DownloadRow(list, result) {
   this.path = result.file_path;
   this.name = result.file_name;
+  this.fileUrl = result.file_url;
   this.list = list;
   this.id = result.id;
 
@@ -419,7 +420,7 @@ DownloadRow.prototype = {
   },
 
   openFilePath_: function() {
-    chromeSend('openNewFullWindow', 'file://' + escape(this.path));
+    chromeSend('openNewFullWindow', this.fileUrl);
   },
 
   /**
@@ -679,7 +680,7 @@ DownloadRow.prototype = {
     this.rowbutton.addEventListener('dragstart', function(e) {
       e.dataTransfer.effectAllowed = 'copy';
       e.dataTransfer.setData('Text', self.path);
-      e.dataTransfer.setData('URL', 'file:///' + self.path);
+      e.dataTransfer.setData('URL', self.fileUrl);
     }, false);
 
     this.removeDangerousPrompt_();
