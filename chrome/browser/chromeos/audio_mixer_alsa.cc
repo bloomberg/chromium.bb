@@ -35,10 +35,10 @@ namespace {
 // Name of the ALSA card to which we connect.
 const char kCardName[] = "default";
 
-// Mixer element names.  We keep an array of possible master element names and
-// will control all that exist.
-const char* const kMasterElementNames[] = {
-  "Master",
+// Mixer element names.  We try to connect to the preferred master element
+// first; if it doesn't exist, we'll control any of the alternates that exist.
+const char kPreferredMasterElementName[] = "Master";
+const char* const kAlternateMasterElementNames[] = {
   "Headphone",
   "Speaker",
 };
@@ -241,11 +241,16 @@ bool AudioMixerAlsa::ConnectInternal() {
   double max_volume_db = kDefaultMaxVolumeDb;
 
   vector<snd_mixer_elem_t*> master_elements;
-  for (size_t i = 0; i < arraysize(kMasterElementNames); ++i) {
-    snd_mixer_elem_t* element =
-        FindElementWithName(handle, kMasterElementNames[i]);
-    if (element)
-      master_elements.push_back(element);
+  snd_mixer_elem_t* element =
+      FindElementWithName(handle, kPreferredMasterElementName);
+  if (element) {
+    master_elements.push_back(element);
+  } else {
+    for (size_t i = 0; i < arraysize(kAlternateMasterElementNames); ++i) {
+      element = FindElementWithName(handle, kAlternateMasterElementNames[i]);
+      if (element)
+        master_elements.push_back(element);
+    }
   }
 
   if (master_elements.empty()) {
