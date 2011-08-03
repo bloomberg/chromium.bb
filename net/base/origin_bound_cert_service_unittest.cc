@@ -15,6 +15,9 @@
 
 namespace net {
 
+// See http://crbug.com/91512 - implement OpenSSL version of CreateSelfSigned.
+#if !defined(USE_OPENSSL)
+
 TEST(OriginBoundCertServiceTest, DuplicateCertTest) {
   scoped_refptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
@@ -64,5 +67,7 @@ TEST(OriginBoundCertServiceTest, ExtractValuesFromBytes) {
       X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size()));
   EXPECT_TRUE(x509cert != NULL);
 }
+
+#endif  // !defined(USE_OPENSSL)
 
 }  // namespace net
