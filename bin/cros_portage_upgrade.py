@@ -590,6 +590,7 @@ class Upgrader(object):
     # Perform the actual upgrade, if requested.
     cpv_cmp_upstream = None
     info['upgraded_cpv'] = None
+
     if upstream_cpv:
       # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
       cpv_cmp_upstream = Upgrader._CmpCpv(upstream_cpv, cpv)
@@ -827,6 +828,7 @@ class Upgrader(object):
 
     commit_lines = [] # Lines for the body of the commit message
     key_lines = []    # Lines needed in package.keywords
+    pkg_overlays = {} # Overlays for upgraded packages in non-portage overlays.
 
     # Assemble hash of COL_UPGRADED column names by arch.
     upgraded_cols = {}
@@ -846,6 +848,7 @@ class Upgrader(object):
       for arch in self._master_archs:
         upgraded_ver = row[upgraded_cols[arch]]
         if upgraded_ver:
+          # This package has been upgraded for this arch.
           upgraded_vers.add(upgraded_ver)
 
           # Is this upgraded version unstable for this arch?  If so, save
@@ -859,6 +862,16 @@ class Upgrader(object):
             cpv_key = pkg_keys.get(upgraded_cpv, set())
             cpv_key.add(arch)
             pkg_keys[upgraded_cpv] = cpv_key
+
+
+          # Save the overlay this package is originally from, if the overlay
+          # is not a Portage overlay (e.g. chromiumos-overlay).
+          ovrly_col = utable.UpgradeTable.COL_OVERLAY
+          ovrly_col = utable.UpgradeTable.GetColumnName(ovrly_col, arch)
+          ovrly = row[ovrly_col]
+          if (ovrly != self.UPSTREAM_OVERLAY_NAME and
+              ovrly != self.STABLE_OVERLAY_NAME):
+            pkg_overlays[pkg] = ovrly
 
       if len(upgraded_vers) == 1:
         # Upgrade is the same across all archs.
@@ -893,17 +906,33 @@ class Upgrader(object):
         message = self._CreateCommitMessage(commit_lines)
         self._RunGit(self._stable_repo, "commit -am '%s'" % message)
 
-      oper.Warning('Upgrade changes committed (see above),'
+      oper.Warning('\n'
+                   'Upgrade changes committed (see above),'
                    ' but message needs edit BY YOU:\n'
                    ' cd %s; git commit --amend; cd -' %
                    self._stable_repo)
-      oper.Info('To remove any file above from commit do:\n'
+      # See if any upgraded packages are in non-portage overlays now, meaning
+      # they probably require a patch and should not go into portage-stable.
+      if pkg_overlays:
+        lines = ['%s [%s]' % (p, pkg_overlays[p]) for p in pkg_overlays]
+        oper.Warning('\n'
+                     'The following packages were coming from a non-portage'
+                     ' overlay, which means they were probably patched.\n'
+                     'You should consider whether the upgraded package'
+                     ' needs the same patches applied now.\n'
+                     'If so, do not commit these changes in portage-stable.'
+                     ' Instead, copy them to the applicable overlay dir.\n'
+                     '%s' %
+                     '\n'.join(lines))
+      oper.Info('\n'
+                'To remove any individual file above from commit do:\n'
                 ' cd %s; git reset HEAD^ <filepath>; rm <filepath>;'
                 ' git commit --amend; cd -' %
                 self._stable_repo)
 
       if key_lines:
-        oper.Warning('Because one or more unstable versions are involved'
+        oper.Warning('\n'
+                     'Because one or more unstable versions are involved'
                      ' you must add line(s) like the following to\n'
                      ' %s:\n%s\n'
                      'This is needed before testing, and should be pushed'
@@ -912,9 +941,10 @@ class Upgrader(object):
                      (self._GetPkgKeywordsFile(),
                       '\n'.join(key_lines)))
 
-      oper.Info('If you wish to undo these changes instead:\n'
+      oper.Info('\n'
+                'If you wish to undo all the changes to %s:\n'
                 ' cd %s; git reset --hard HEAD^; cd -' %
-                self._stable_repo)
+                (self.STABLE_OVERLAY_NAME, self._stable_repo))
 
   def PreRunChecks(self):
     """Run any board-independent validation checks before Run is called."""
