@@ -850,8 +850,8 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     try:
       # TODO(davidjames): Run these steps in parallel.
-      ArchiveDebugSymbols()
       LegacyArchiveBuild()
+      ArchiveDebugSymbols()
       UploadTestResults()
     finally:
       # Update the _index.html file with the test artifacts and build artifacts
