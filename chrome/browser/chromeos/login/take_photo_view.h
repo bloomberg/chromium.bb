@@ -9,6 +9,7 @@
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
+class PhotoCaptureObserver;
 class SkBitmap;
 
 namespace views {
@@ -75,6 +76,10 @@ class TakePhotoView : public views::View,
  private:
   // Initializes layout manager for this view.
   void InitLayout();
+
+  // For automation purposes.
+  friend class ::PhotoCaptureObserver;
+  void FlipCapturingState();
 
   views::Label* title_label_;
   views::ImageButton* snapshot_button_;

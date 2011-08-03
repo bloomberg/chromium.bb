@@ -290,6 +290,10 @@ void TakePhotoView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
   DCHECK(sender == snapshot_button_);
+  FlipCapturingState();
+}
+
+void TakePhotoView::FlipCapturingState() {
   if (is_capturing_) {
     CaptureImage();
   } else {

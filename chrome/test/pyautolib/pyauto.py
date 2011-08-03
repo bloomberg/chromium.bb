@@ -3667,6 +3667,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def CaptureProfilePhoto(self):
+    """Captures user profile photo on ChromeOS.
+
+    This is done by driving the TakePhotoDialog. The image file is
+    saved on disk and its path is set in the local state preferences.
+
+    A user needs to be logged-in as a precondition. Note that the UI is not
+    destroyed afterwards, a browser restart is necessary if you want
+    to interact with the browser after this call in the same test case.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = { 'command': 'CaptureProfilePhoto' }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
   ## ChromeOS section -- end
 
 

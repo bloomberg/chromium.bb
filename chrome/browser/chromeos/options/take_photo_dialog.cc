@@ -92,17 +92,50 @@ void TakePhotoDialog::OnCapturingStarted() {
 void TakePhotoDialog::OnCapturingStopped() {
   GetDialogClientView()->ok_button()->SetEnabled(true);
   GetDialogClientView()->ok_button()->RequestFocus();
+  NotifyOnCapturingStopped();
 }
 
 void TakePhotoDialog::OnCaptureSuccess() {
   SkBitmap frame;
   camera_controller_.GetFrame(&frame);
-  if (!frame.isNull())
+  if (!frame.isNull()) {
     take_photo_view_->UpdateVideoFrame(frame);
+    NotifyOnCaptureSuccess();
+  }
 }
 
 void TakePhotoDialog::OnCaptureFailure() {
   take_photo_view_->ShowCameraError();
+  NotifyOnCaptureFailure();
+}
+
+void TakePhotoDialog::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void TakePhotoDialog::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
+}
+
+void TakePhotoDialog::NotifyOnCaptureSuccess() {
+ FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    OnCaptureSuccess(this, take_photo_view_));
+}
+
+void TakePhotoDialog::NotifyOnCaptureFailure() {
+ FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    OnCaptureFailure(this, take_photo_view_));
+}
+
+void TakePhotoDialog::NotifyOnCapturingStopped() {
+ FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    OnCapturingStopped(this, take_photo_view_));
 }
 
 void TakePhotoDialog::Observe(int type,

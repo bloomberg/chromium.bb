@@ -1243,6 +1243,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void SetVolume(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void SetMute(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  void CaptureProfilePhoto(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,

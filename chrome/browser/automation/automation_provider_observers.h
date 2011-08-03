@@ -26,7 +26,9 @@
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -981,6 +983,38 @@ class SSIDConnectObserver : public NetworkConnectObserver {
 
   DISALLOW_COPY_AND_ASSIGN(SSIDConnectObserver);
 };
+
+// Waits for profile photo to be captured by the camera,
+// saved to file, and the path set in local state preferences
+class PhotoCaptureObserver : public chromeos::TakePhotoDialog::Observer,
+                             public chromeos::UserManager::Observer {
+ public:
+  PhotoCaptureObserver(AutomationProvider* automation,
+                       IPC::Message* reply_message);
+  virtual ~PhotoCaptureObserver();
+
+  // TakePhotoDialog::Observer overrides
+  virtual void OnCaptureSuccess(
+      chromeos::TakePhotoDialog* dialog,
+      chromeos::TakePhotoView* take_photo_view) OVERRIDE;
+  virtual void OnCaptureFailure(
+      chromeos::TakePhotoDialog* dialog,
+      chromeos::TakePhotoView* take_photo_view) OVERRIDE;
+  virtual void OnCapturingStopped(
+      chromeos::TakePhotoDialog* dialog,
+      chromeos::TakePhotoView* take_photo_view) OVERRIDE;
+
+  // UserManager::Observer overrides
+  virtual void LocalStateChanged(
+      chromeos::UserManager* user_manager) OVERRIDE;
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(PhotoCaptureObserver);
+};
+
 #endif  // defined(OS_CHROMEOS)
 
 // Waits for the bookmark model to load.

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "content/common/notification_observer.h"
@@ -162,6 +163,22 @@ class UserManager : public UserImageLoader::Delegate,
   // Returns true if we're logged in as a Guest.
   bool IsLoggedInAsGuest() const;
 
+  // Interface that observers of UserManager must implement in order
+  // to receive notification when local state preferences is changed
+  class Observer {
+   public:
+    // Called when the local state preferences is changed
+    virtual void LocalStateChanged(UserManager* user_manager) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
+  void NotifyLocalStateChanged();
+
  protected:
   UserManager();
   virtual ~UserManager();
@@ -202,6 +219,8 @@ class UserManager : public UserImageLoader::Delegate,
   NotificationRegistrar registrar_;
 
   friend struct base::DefaultLazyInstanceTraits<UserManager>;
+
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

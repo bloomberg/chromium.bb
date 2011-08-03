@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
@@ -377,4 +378,66 @@ const chromeos::WifiNetwork* SSIDConnectObserver::GetWifiNetwork(
       return wifi;
   }
   return NULL;
+}
+
+PhotoCaptureObserver::PhotoCaptureObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+}
+
+PhotoCaptureObserver::~PhotoCaptureObserver() {
+  // TODO(frankf): Currently, we do not destroy TakePhotoDialog
+  // or any of its children.
+}
+
+void PhotoCaptureObserver::OnCaptureSuccess(
+    chromeos::TakePhotoDialog* take_photo_dialog,
+    chromeos::TakePhotoView* take_photo_view) {
+  take_photo_view->FlipCapturingState();
+}
+
+void PhotoCaptureObserver::OnCaptureFailure(
+    chromeos::TakePhotoDialog* take_photo_dialog,
+    chromeos::TakePhotoView* take_photo_view) {
+  AutomationJSONReply(automation_,
+                      reply_message_.release()).SendError("Capture failure");
+  delete this;
+}
+
+void PhotoCaptureObserver::OnCapturingStopped(
+    chromeos::TakePhotoDialog* take_photo_dialog,
+    chromeos::TakePhotoView* take_photo_view) {
+  take_photo_dialog->Accept();
+  const SkBitmap& photo = take_photo_view->GetImage();
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  if(!user_manager) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendError(
+                            "No user manager");
+    delete this;
+    return;
+  }
+
+  const chromeos::UserManager::User& user = user_manager->logged_in_user();
+  if(user.email().empty()) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendError(
+                            "User email is not set");
+    delete this;
+    return;
+  }
+
+  // Set up an observer for UserManager (it will delete itself).
+  user_manager->AddObserver(this);
+  user_manager->SetLoggedInUserImage(photo);
+  user_manager->SaveUserImage(user.email(), photo);
+}
+
+void PhotoCaptureObserver::LocalStateChanged(
+    chromeos::UserManager* user_manager) {
+  user_manager->RemoveObserver(this);
+  AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
+  delete this;
 }

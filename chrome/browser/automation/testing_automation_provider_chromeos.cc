@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
+#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -32,8 +33,11 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
+#include "views/widget/widget.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -1085,4 +1089,21 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
   audio_handler->SetMuted(mute);
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::CaptureProfilePhoto(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  chromeos::TakePhotoDialog* take_photo_dialog =
+      new chromeos::TakePhotoDialog(NULL);
+
+  // Set up an observer (it will delete itself).
+  take_photo_dialog->AddObserver(new PhotoCaptureObserver(
+      this, reply_message));
+
+  views::Widget* window = browser::CreateViewsWindow(
+      browser->window()->GetNativeHandle(), take_photo_dialog);
+  window->SetAlwaysOnTop(true);
+  window->Show();
 }

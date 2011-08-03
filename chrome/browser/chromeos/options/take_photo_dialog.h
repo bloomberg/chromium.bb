@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/camera_controller.h"
 #include "chrome/browser/chromeos/login/take_photo_view.h"
 #include "content/common/notification_observer.h"
@@ -57,6 +58,34 @@ class TakePhotoDialog : public views::DialogDelegateView,
   virtual void OnCaptureSuccess();
   virtual void OnCaptureFailure();
 
+  // Interface that observers of this dialog must implement in order
+  // to receive notification for capture success/failure.
+  class Observer {
+   public:
+    // Called when image is captured and is displayed
+    virtual void OnCaptureSuccess(
+        TakePhotoDialog* dialog,
+        TakePhotoView* view) = 0;
+    // Called when capture fails and error image is displayed
+    virtual void OnCaptureFailure(
+        TakePhotoDialog* dialog,
+        TakePhotoView* view) = 0;
+    // Called when capture is stopped and image is not being updated
+    virtual void OnCapturingStopped(
+        TakePhotoDialog* dialog,
+        TakePhotoView* view) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
+  void NotifyOnCaptureSuccess();
+  void NotifyOnCaptureFailure();
+  void NotifyOnCapturingStopped();
+
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -79,6 +108,8 @@ class TakePhotoDialog : public views::DialogDelegateView,
   NotificationRegistrar registrar_;
 
   Delegate* delegate_;
+
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TakePhotoDialog);
 };

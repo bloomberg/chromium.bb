@@ -2272,6 +2272,7 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["GetVolumeInfo"] = &TestingAutomationProvider::GetVolumeInfo;
   handler_map["SetVolume"] = &TestingAutomationProvider::SetVolume;
   handler_map["SetMute"] = &TestingAutomationProvider::SetMute;
+
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, BrowserJsonHandler> browser_handler_map;
@@ -2436,6 +2437,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["SetAppLaunchType"] =
       &TestingAutomationProvider::SetAppLaunchType;
 #if defined(OS_CHROMEOS)
+  browser_handler_map["CaptureProfilePhoto"] =
+      &TestingAutomationProvider::CaptureProfilePhoto;
   browser_handler_map["GetTimeInfo"] = &TestingAutomationProvider::GetTimeInfo;
 #endif  // defined(OS_CHROMEOS)
 

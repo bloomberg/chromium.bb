@@ -75,6 +75,7 @@ void SavePathToLocalState(const std::string& username,
   images_update->SetWithoutPathExpansion(username, new StringValue(image_path));
   DVLOG(1) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
+  UserManager::Get()->NotifyLocalStateChanged();
 }
 
 // Saves image to file with specified path. Runs on FILE thread.
@@ -688,6 +689,21 @@ bool UserManager::current_user_is_owner() const {
 void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
   base::AutoLock lk(current_user_is_owner_lock_);
   current_user_is_owner_ = current_user_is_owner;
+}
+
+void UserManager::AddObserver(Observer* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void UserManager::RemoveObserver(Observer* obs) {
+  observer_list_.RemoveObserver(obs);
+}
+
+void UserManager::NotifyLocalStateChanged() {
+ FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    LocalStateChanged(this));
 }
 
 }  // namespace chromeos
