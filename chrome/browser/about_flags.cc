@@ -344,7 +344,18 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableShortcutsProvider)
   },
-};
+  {
+    "memory-widget",
+    IDS_FLAGS_MEMORY_WIDGET_NAME,
+    IDS_FLAGS_MEMORY_WIDGET_DESCRIPTION,
+    kOsCrOS,
+#if defined(OS_CHROMEOS)
+    // This switch exists only on Chrome OS.
+    SINGLE_VALUE_TYPE(switches::kMemoryWidget)
+#else
+    SINGLE_VALUE_TYPE("")
+#endif
+  },};
 
 const Experiment* experiments = kExperiments;
 size_t num_experiments = arraysize(kExperiments);

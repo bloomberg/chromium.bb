@@ -7,6 +7,7 @@
 #include "base/process_util.h"  // GetSystemMemoryInfo
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/memory_purger.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget.h"
@@ -20,6 +21,7 @@ enum {
   MEM_BUFFERS_ITEM,
   MEM_CACHE_ITEM,
   SHMEM_ITEM,
+  PURGE_MEMORY_ITEM,
 };
 
 }  // namespace
@@ -78,16 +80,31 @@ std::wstring MemoryMenuButton::GetLabel(int id) const {
       return StringPrintf(L"%d MB cache", mem_cache_ / 1024);
     case SHMEM_ITEM:
       return StringPrintf(L"%d MB shmem", shmem_ / 1024);
+    case PURGE_MEMORY_ITEM:
+      return L"Purge memory";
     default:
       return std::wstring();
   }
 }
 
 bool MemoryMenuButton::IsCommandEnabled(int id) const {
-  return false;
+  switch (id) {
+    case PURGE_MEMORY_ITEM:
+      return true;
+    default:
+      return false;
+  }
 }
 
 void MemoryMenuButton::ExecuteCommand(int id) {
+  switch (id) {
+    case PURGE_MEMORY_ITEM:
+      MemoryPurger::PurgeAll();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 int MemoryMenuButton::horizontal_padding() {
@@ -124,7 +141,9 @@ void MemoryMenuButton::EnsureMenu() {
   menu_->AppendDelegateMenuItem(MEM_BUFFERS_ITEM);
   menu_->AppendDelegateMenuItem(MEM_CACHE_ITEM);
   menu_->AppendDelegateMenuItem(SHMEM_ITEM);
-  // TODO(jamescook): Add items to run memory_purger, dump heap profiles.
+  // TODO(jamescook): Dump heap profiles?
+  menu_->AppendSeparator();
+  menu_->AppendDelegateMenuItem(PURGE_MEMORY_ITEM);
 }
 
 }  // namespace chromeos

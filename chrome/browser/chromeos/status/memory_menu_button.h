@@ -37,7 +37,7 @@ class MemoryMenuButton : public StatusAreaButton,
   void UpdateText();
 
  protected:
-  virtual int horizontal_padding();
+  virtual int horizontal_padding() OVERRIDE;
 
  private:
   // views::ViewMenuDelegate implementation.

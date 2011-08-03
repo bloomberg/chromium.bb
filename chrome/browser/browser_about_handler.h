@@ -14,6 +14,7 @@
 
 #include "base/process.h"
 #include "base/stringprintf.h"
+#include "build/build_config.h"  // USE_TCMALLOC
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
