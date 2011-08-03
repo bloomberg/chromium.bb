@@ -95,7 +95,7 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
   }
 
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE {
-    controller_->SelectionHandleDragged(event.x());
+    controller_->SelectionHandleDragged(event.location());
     return true;
   }
 
@@ -202,7 +202,8 @@ void TouchSelectionControllerImpl::ClientViewLostFocus() {
   selection_handle_2_->SetVisible(false);
 }
 
-void TouchSelectionControllerImpl::SelectionHandleDragged(int x) {
+void TouchSelectionControllerImpl::SelectionHandleDragged(
+    const gfx::Point& drag_pos) {
   if (client_view_->GetWidget()) {
     DCHECK(dragging_handle_);
     // Find the stationary selection handle.
@@ -211,10 +212,10 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(int x) {
       fixed_handle = selection_handle_2_.get();
 
     // Find selection end points in client_view's coordinate system.
-    gfx::Point p1(x + kSelectionHandleRadius, -1);
+    gfx::Point p1(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
     ConvertPointToClientView(dragging_handle_, &p1);
 
-    gfx::Point p2(kSelectionHandleRadius, -1);
+    gfx::Point p2(kSelectionHandleRadius, 0);
     ConvertPointToClientView(fixed_handle, &p2);
 
     // Instruct client_view to select the region between p1 and p2. The position

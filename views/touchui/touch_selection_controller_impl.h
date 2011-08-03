@@ -32,7 +32,7 @@ class TouchSelectionControllerImpl : public TouchSelectionController {
 
   // Callback to inform the client view that the selection handle has been
   // dragged, hence selection may need to be updated.
-  void SelectionHandleDragged(int x);
+  void SelectionHandleDragged(const gfx::Point& drag_pos);
 
   // Convenience method to convert a point from a selection handle's coordinate
   // system to that of the client view.
