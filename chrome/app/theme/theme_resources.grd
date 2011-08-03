@@ -206,32 +206,27 @@
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
            you're doing! -->
-      <include name="IDR_PROFILE_AVATAR_0" file="profile_avatar_generic.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_1" file="profile_avatar_generic_aqua.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_2" file="profile_avatar_generic_blue.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_3" file="profile_avatar_generic_green.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_4" file="profile_avatar_generic_orange.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_5" file="profile_avatar_generic_purple.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_6" file="profile_avatar_generic_red.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_7" file="profile_avatar_generic_yellow.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_8" file="profile_avatar_secret_agent.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_9" file="profile_avatar_superhero.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_10" file="profile_avatar_volley_ball.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_11" file="profile_avatar_businessman.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_12" file="profile_avatar_ninja.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_13" file="profile_avatar_alien.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_14" file="profile_avatar_awesome.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_15" file="profile_avatar_flower.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_16" file="profile_avatar_pizza.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_17" file="profile_avatar_soccer.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_18" file="profile_avatar_burger.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_19" file="profile_avatar_cat.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_20" file="profile_avatar_cupcake.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_21" file="profile_avatar_dog.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_22" file="profile_avatar_horse.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note.png" type="BINDATA" />
-      <include name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_0" file="profile_avatar_generic_male.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_1" file="profile_avatar_generic_female.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_2" file="profile_avatar_secret_agent.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_3" file="profile_avatar_superhero.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_4" file="profile_avatar_volley_ball.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_5" file="profile_avatar_businessman.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_6" file="profile_avatar_ninja.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_7" file="profile_avatar_alien.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_8" file="profile_avatar_awesome.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_9" file="profile_avatar_flower.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_10" file="profile_avatar_pizza.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_11" file="profile_avatar_soccer.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_12" file="profile_avatar_burger.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_13" file="profile_avatar_cat.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_14" file="profile_avatar_cupcake.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_15" file="profile_avatar_dog.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_16" file="profile_avatar_horse.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_17" file="profile_avatar_margarita.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_18" file="profile_avatar_note.png" type="BINDATA" />
+      <include name="IDR_PROFILE_AVATAR_19" file="profile_avatar_sun_cloud.png" type="BINDATA" />
+
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" type="BINDATA" />

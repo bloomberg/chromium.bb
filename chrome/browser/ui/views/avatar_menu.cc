@@ -28,8 +28,8 @@
 
 namespace {
 
-const int kCellWidth = 38;
-const int kCellHeight = 31;
+const int kCellWidth = 32;
+const int kCellHeight = 32;
 const int kCellPaddingX = 5;
 const int kCellPaddingY = 5;
 const int kGridMaxCol = 3;
