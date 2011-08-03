@@ -363,5 +363,21 @@ var util = {
     }
 
     entry.createWriter(truncate, onError);
+  },
+
+  createElement: function (document, elementName, var_arg) { // children
+    var logger = console;
+    var element = document.createElement(elementName);
+
+    for (var i = 2; i < arguments.length; i++) {
+      var arg = arguments[i];
+      if (typeof(arg) == 'string') {
+        element.appendChild(document.createTextNode(arg));
+      } else {
+        element.appendChild(arg);
+      }
+    }
+
+    return element;
   }
 };

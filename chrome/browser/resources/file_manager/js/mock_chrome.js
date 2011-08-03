@@ -279,6 +279,30 @@ chrome.fileBrowserPrivate = {
 
       CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
       CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
+
+      ID3_ALBUM: 'Album',  // TALB
+      ID3_BPM: 'BPM ',  // TBPM
+      ID3_COMPOSER: 'Composer',  // TCOM
+      ID3_COPYRIGHT_MESSAGE: 'Copyright message',  // TCOP
+      ID3_DATE: 'Date',  // TDAT
+      ID3_PLAYLIST_DELAY: 'Playlist delay',  // TDLY
+      ID3_ENCODED_BY: 'Encoded by',  // TENC
+      ID3_LYRICIST: 'Lyricist',  // TEXT
+      ID3_FILE_TYPE: 'File type',  // TFLT
+      ID3_TIME: 'Time',  // TIME
+      ID3_TITLE: 'Title',  // TIT2
+      ID3_LENGTH: 'Length',  // TLEN
+      ID3_FILE_OWNER: 'File owner',  // TOWN
+      ID3_LEAD_PERFORMER: 'Artist',  // TPE1
+      ID3_BAND: 'Band',  // TPE2
+      ID3_TRACK_NUMBER: 'Track number',  // TRCK
+      ID3_YEAR: 'Year',  // TYER
+      ID3_COPYRIGHT: 'Copyright',  // WCOP
+      ID3_OFFICIAL_AUDIO_FILE_WEBPAGE: 'Official audio file webpage',  // WOAF
+      ID3_OFFICIAL_ARTIST: 'Official artist',  // WOAR
+      ID3_OFFICIAL_AUDIO_SOURCE_WEBPAGE: 'Official audio source webpage', //WOAS
+      ID3_PUBLISHERS_OFFICIAL_WEBPAGE: 'Publishers official webpage',  // WPUB
+      ID3_USER_DEFINED_URL_LINK_FRAME: 'User defined URL link frame'  // WXXX
     });
   }
 };

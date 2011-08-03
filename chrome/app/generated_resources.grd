@@ -9095,6 +9095,75 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_PLAYBACK_ERROR" desc="Error playing back.">
         Error playing back
       </message>
+      <message name="IDS_FILE_BROWSER_ID3_ALBUM" desc="Album">
+        Album
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_BPM" desc="BPM ">
+        BPM 
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_COMPOSER" desc="Composer">
+        Composer
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_COPYRIGHT_MESSAGE" desc="Copyright message">
+        Copyright message
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_DATE" desc="Date">
+        Date
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_PLAYLIST_DELAY" desc="Playlist delay">
+        Playlist delay
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_ENCODED_BY" desc="Encoded by">
+        Encoded by
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_LYRICIST" desc="Lyricist">
+        Lyricist
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_FILE_TYPE" desc="File type">
+        File type
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_TIME" desc="Time">
+        Time
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_TITLE" desc="Title">
+        Title
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_LENGTH" desc="Length">
+        Length
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_FILE_OWNER" desc="File owner">
+        File owner
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_LEAD_PERFORMER" desc="Artist">
+        Artist
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_BAND" desc="Band">
+        Band
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_TRACK_NUMBER" desc="Track number">
+        Track number
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_YEAR" desc="Year">
+        Year
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_COPYRIGHT" desc="Copyright">
+        Copyright
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_OFFICIAL_AUDIO_FILE_WEBPAGE" desc="Official audio file webpage">
+        Official audio file webpage
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_OFFICIAL_ARTIST" desc="Official artist">
+        Official artist
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_OFFICIAL_AUDIO_SOURCE_WEBPAGE" desc="Official audio source webpage">
+        Official audio source webpage
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_PUBLISHERS_OFFICIAL_WEBPAGE" desc="Publishers official webpage">
+        Publishers official webpage
+      </message>
+      <message name="IDS_FILE_BROWSER_ID3_USER_DEFINED_URL_LINK_FRAME" desc="User defined URL link frame">
+        User defined URL link frame
+      </message>
 
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
@@ -10312,9 +10381,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
     <message name="IDS_FILEBROWSER_SCANNING" desc="Notification to the user that we have detected a device and are now mounting it">
       Scanning Device...
-    </message>
-    <message name="IDS_FILEBROWSER_CONFIRM_DELETE" desc="Asks the user if they are sure they want to delete a file.">
-      Are you sure?
     </message>
     <message name="IDS_FILEBROWSER_CONFIRM_YES" desc="Confirm yes to a previous question.">
       Yes

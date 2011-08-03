@@ -563,6 +563,9 @@ FileManager.prototype = {
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
+    this.descriptionTable_ =
+        this.dialogDom_.querySelector('.preview-metadata-table');
+
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
 
@@ -1725,6 +1728,9 @@ FileManager.prototype = {
     // instead we use empty 1x1 gif
     this.previewImage_.src = EMPTY_IMAGE_URI;
 
+    // Also clear description in case metadata takes some time to load
+    this.clearDescription_();
+
     // The thumbnail class styles the preview for image thumbnails, which are
     // treated a little differently than the stock icons for non-thumbnail
     // preview images.
@@ -1754,19 +1760,6 @@ FileManager.prototype = {
     var self = this;
     var leadEntry = this.selection.leadEntry;
 
-    if (this.selection.totalCount == this.selection.fileCount == 1) {
-      this.cacheMetadata_(leadEntry, function (metadata) {
-          if (leadEntry != self.selection.leadEntry) {
-            // Selection has changed since we asked for the metadata, nevermind.
-            return;
-          }
-
-          self.setPreviewMetadata(metadata);
-        });
-    } else {
-      self.setPreviewMetadata(null);
-    }
-
     this.getThumbnailURL(leadEntry, function(iconType, url) {
       if (self.selection.leadEntry != leadEntry) {
         // Selection has changed since we asked, nevermind.
@@ -1781,6 +1774,69 @@ FileManager.prototype = {
         self.previewImage_.src = previewArt['unknown'];
       }
     });
+
+    this.getDescription(this.selection.leadEntry, function(desc){
+      self.clearDescription_();
+
+      if (self.selection.leadEntry != leadEntry) {
+        return;
+      }
+
+      if (desc) {
+
+        var descriptionBody =
+            self.descriptionTable_.ownerDocument.createElement('tbody');
+
+        var doc = self.descriptionTable_.ownerDocument;
+
+        for (var key in desc) {
+          descriptionBody.appendChild(
+            util.createElement(doc, 'tr',
+                util.createElement(doc, 'th', str(desc[key].key)),
+                util.createElement(doc, 'td',
+                                   self.formatMetadataValue_(desc[key]))
+            )
+          );
+        }
+
+        self.descriptionTable_.appendChild(descriptionBody);
+      }
+    });
+  };
+
+  FileManager.prototype.formatMetadataValue_ = function(obj) {
+    if (typeof obj.type == 'undefined') {
+      return obj.value;
+    } else if (obj.type == 'duration') {
+
+
+      var totalSeconds = Math.floor(obj.value / 1000);
+      var hours = Math.floor(totalSeconds / 60 / 60);
+
+      var fmtSkeleton;
+
+      // Print hours if available
+      //TODO: dzvorygin use better skeletons when documentation become available
+      if (hours > 0) {
+        fmtSkeleton = 'hh:mm:ss';
+      } else {
+        fmtSkeleton = 'mm:ss';
+      }
+
+      // Convert duration to milliseconds since time start
+      var date = new Date(parseInt(obj.value));
+
+      var fmt = this.locale_.createDateTimeFormat({skeleton:fmtSkeleton});
+
+      return fmt.format(date);
+    }
+  };
+
+
+  FileManager.prototype.clearDescription_ = function() {
+    while (this.descriptionTable_.hasChildNodes()) {
+      this.descriptionTable_.removeChild(this.descriptionTable_.firstChild);
+    }
   };
 
   FileManager.prototype.cacheMetadata_ = function(entry, callback) {
@@ -1865,6 +1921,15 @@ FileManager.prototype = {
       }
 
       callback(iconType, url);
+    });
+  };
+
+  FileManager.prototype.getDescription = function(entry, callback) {
+    if (!entry)
+      return;
+
+    this.cacheMetadata_(entry, function(metadata) {
+      callback(metadata.description);
     });
   };
 

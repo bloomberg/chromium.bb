@@ -472,3 +472,22 @@ li.thumbnail-item[selected] .file-checkbox {
   -webkit-box-flex: 1;
   display: -webkit-box;
 }
+
+.preview-metadata {
+    text-align:center;
+}
+
+.preview-metadata-table tbody tr th {
+    text-align: right;
+    color: #666;
+    font-size: 12px;
+    font-weight: normal;
+    padding-left:10px;
+}
+
+.preview-metadata-table tbody tr td {
+    text-align: left;
+    color:#000;
+    font-size: 12px;
+    font-weight: normal;
+}
