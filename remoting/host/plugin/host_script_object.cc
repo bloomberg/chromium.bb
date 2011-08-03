@@ -23,6 +23,7 @@ namespace remoting {
 // Supported Javascript interface:
 // readonly attribute string accessCode;
 // readonly attribute int accessCodeLifetime;
+// readonly attribute string client;
 // readonly attribute int state;
 //
 // state: {
@@ -46,6 +47,7 @@ namespace {
 
 const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
+const char* kAttrNameClient = "client";
 const char* kAttrNameState = "state";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnStateChanged = "onStateChanged";
@@ -150,6 +152,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (property_name == kAttrNameAccessCode ||
           property_name == kAttrNameAccessCodeLifetime ||
+          property_name == kAttrNameClient ||
           property_name == kAttrNameState ||
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnStateChanged ||
@@ -184,6 +187,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return true;
   } else if (property_name == kAttrNameAccessCodeLifetime) {
     INT32_TO_NPVARIANT(access_code_lifetime_.InSeconds(), *result);
+    return true;
+  } else if (property_name == kAttrNameClient) {
+    *result = NPVariantFromString(client_username_);
     return true;
   } else if (property_name == kAttrNameDisconnected) {
     INT32_TO_NPVARIANT(kDisconnected, *result);
@@ -295,9 +301,21 @@ void HostNPScriptObject::OnAccessDenied() {
     DisconnectInternal();
 }
 
-void HostNPScriptObject::OnAuthenticatedClientsChanged(int clients_connected) {
+void HostNPScriptObject::OnClientAuthenticated(
+    remoting::protocol::ConnectionToClient* client) {
   DCHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
-  OnStateChanged(clients_connected ? kConnected : kDisconnected);
+  client_username_ = client->session()->jid();
+  size_t pos = client_username_.find('/');
+  if (pos != std::string::npos)
+    client_username_.replace(pos, std::string::npos, "");
+  LOG(INFO) << "Client " << client_username_ << " connected.";
+  OnStateChanged(kConnected);
+}
+
+void HostNPScriptObject::OnClientDisconnected(
+    remoting::protocol::ConnectionToClient* client) {
+  client_username_.clear();
+  OnStateChanged(kDisconnected);
 }
 
 void HostNPScriptObject::OnShutdown() {

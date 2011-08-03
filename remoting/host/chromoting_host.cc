@@ -402,7 +402,7 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   if (old_authenticated_clients != authenticated_clients) {
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
-      (*it)->OnAuthenticatedClientsChanged(authenticated_clients);
+      (*it)->OnClientDisconnected(connection);
     }
   }
 
@@ -518,7 +518,7 @@ void ChromotingHost::LocalLoginSucceeded(
   // Notify observers that there is at least one authenticated client.
   for (StatusObserverList::iterator it = status_observers_.begin();
        it != status_observers_.end(); ++it) {
-    (*it)->OnAuthenticatedClientsChanged(AuthenticatedClientsCount());
+    (*it)->OnClientAuthenticated(connection);
   }
 }
 

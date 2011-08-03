@@ -112,8 +112,14 @@
     "description": "Message displayed when the client has (been) disconnected"
   },
   "messageShared": {
-    "message": "Your desktop is currently being shared.",
-    "description": "Message shown on the host computer while a session is active"
+    "message": "Your desktop is currently being shared with $USER$.",
+    "description": "Message shown on the host computer while a session is active",
+    "placeholders": {
+      "user": {
+        "content": "$1",
+        "example": "user@domain.com"
+      }
+    }
   },
   "modeShare": {
     "message": "Share",

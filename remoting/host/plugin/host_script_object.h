@@ -68,7 +68,10 @@ class HostNPScriptObject : public HostStatusObserver {
                                      const std::string& full_jid) OVERRIDE;
   virtual void OnSignallingDisconnected() OVERRIDE;
   virtual void OnAccessDenied() OVERRIDE;
-  virtual void OnAuthenticatedClientsChanged(int clients_connected) OVERRIDE;
+  virtual void OnClientAuthenticated(
+      remoting::protocol::ConnectionToClient* client) OVERRIDE;
+  virtual void OnClientDisconnected(
+      remoting::protocol::ConnectionToClient* client) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -128,6 +131,7 @@ class HostNPScriptObject : public HostStatusObserver {
   NPObject* parent_;
   int state_;
   std::string access_code_;
+  std::string client_username_;
   base::TimeDelta access_code_lifetime_;
   NPObject* log_debug_info_func_;
   NPObject* on_state_changed_func_;

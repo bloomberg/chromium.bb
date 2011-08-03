@@ -332,6 +332,9 @@ function onStateChanged_() {
       remoting.cancelShare();
     }
   } else if (state == plugin.CONNECTED) {
+    var element = document.getElementById('host-shared-message');
+    var client = plugin.client;
+    l10n.localizeElement(element, client);
     remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
   } else if (state == plugin.DISCONNECTED) {
