@@ -1179,7 +1179,8 @@ void RenderView::UpdateURL(WebFrame* frame) {
 }
 
 // Tell the embedding application that the title of the active page has changed
-void RenderView::UpdateTitle(WebFrame* frame, const string16& title,
+void RenderView::UpdateTitle(WebFrame* frame,
+                             const string16& title,
                              WebTextDirection title_direction) {
   // Ignore all but top level navigations.
   if (frame->parent())
@@ -2606,8 +2607,8 @@ void RenderView::didNavigateWithinPage(
 
   didCommitProvisionalLoad(frame, is_new_navigation);
 
-  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle(),
-              frame->view()->mainFrame()->dataSource()->pageTitleDirection());
+  WebDataSource* datasource = frame->view()->mainFrame()->dataSource();
+  UpdateTitle(frame, datasource->pageTitle(), datasource->pageTitleDirection());
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {
