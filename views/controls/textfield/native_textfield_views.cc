@@ -113,9 +113,11 @@ bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
         break;
       case 1:
         model_->SelectWord();
+        OnCaretBoundsChanged();
         break;
       case 2:
         model_->SelectAll();
+        OnCaretBoundsChanged();
         break;
       default:
         NOTREACHED();
@@ -335,6 +337,7 @@ string16 NativeTextfieldViews::GetSelectedText() const {
 void NativeTextfieldViews::SelectAll() {
   OnBeforeUserAction();
   model_->SelectAll();
+  OnCaretBoundsChanged();
   SchedulePaint();
   OnAfterUserAction();
 }
@@ -342,6 +345,7 @@ void NativeTextfieldViews::SelectAll() {
 void NativeTextfieldViews::ClearSelection() {
   OnBeforeUserAction();
   model_->ClearSelection();
+  OnCaretBoundsChanged();
   SchedulePaint();
   OnAfterUserAction();
 }
