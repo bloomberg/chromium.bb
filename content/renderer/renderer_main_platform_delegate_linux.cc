@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/common/content_switches.h"
-
-// This #ifdef logic must be kept in sync with zygote_main_linux.cc.
-// TODO(evan): this file doesn't do anything anyway, we should delete it.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
-  !defined(__clang__) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
-#define SECCOMP_SANDBOX
-#include "seccompsandbox/sandbox.h"
-#endif
+#include "content/common/seccomp_sandbox.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)
@@ -45,8 +38,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // N.b. SupportsSeccompSandbox() returns a cached result, as we already
   // called it earlier in the zygote. Thus, it is OK for us to not pass in
   // a file descriptor for "/proc".
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSeccompSandbox) && SupportsSeccompSandbox(-1))
+  if (SeccompSandboxEnabled() && SupportsSeccompSandbox(-1))
     StartSeccompSandbox();
 #endif
   return true;

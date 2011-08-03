@@ -35,6 +35,7 @@
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
 #include "content/common/sandbox_methods_linux.h"
+#include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/common/zygote_fork_delegate_linux.h"
@@ -62,30 +63,9 @@ static const int kMagicSandboxIPCDescriptor = 5;
 static const int kZygoteIdDescriptor = 7;
 static bool g_suid_sandbox_active = false;
 
-// Seccomp enable/disable logic is centralized here.
-// - We define SECCOMP_SANDBOX if seccomp is compiled in at all: currently,
-//   on non-views (non-ChromeOS) non-ARM non-Clang Linux only.
-// - If we have SECCOMP_SANDBOX, we provide SeccompEnabled() as a
-//   run-time test to determine whether to turn on seccomp: currently
-//   it's behind an --enable-seccomp-sandbox switch.
-
-// This #ifdef logic must be kept in sync with
-// renderer_main_platform_delegate_linux.cc.  See TODO in that file.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
-  !defined(__clang__) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
-#define SECCOMP_SANDBOX
-#include "seccompsandbox/sandbox.h"
-#endif
-
 #if defined(SECCOMP_SANDBOX)
-static bool SeccompEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSeccompSandbox) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSeccompSandbox);
-}
 static int g_proc_fd = -1;
-#endif  // SECCOMP_SANDBOX
+#endif
 
 #if defined(CHROMIUM_SELINUX)
 static void SELinuxTransitionToTypeOrDie(const char* type) {
@@ -431,7 +411,7 @@ class Zygote {
 
     if (!child) {
 #if defined(SECCOMP_SANDBOX)
-      if (SeccompEnabled() && g_proc_fd >= 0) {
+      if (SeccompSandboxEnabled() && g_proc_fd >= 0) {
         // Try to open /proc/self/maps as the seccomp sandbox needs access to it
         int proc_self_maps = openat(g_proc_fd, "self/maps", O_RDONLY);
         if (proc_self_maps >= 0) {
@@ -741,7 +721,7 @@ static bool EnterSandbox() {
       }
     }
 #if defined(SECCOMP_SANDBOX)
-  } else if (SeccompEnabled()) {
+  } else if (SeccompSandboxEnabled()) {
     PreSandboxInit();
     SkiaFontConfigSetImplementation(
         new FontConfigIPC(kMagicSandboxIPCDescriptor));
@@ -769,7 +749,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 #endif
 
 #if defined(SECCOMP_SANDBOX)
-  if (SeccompEnabled()) {
+  if (SeccompSandboxEnabled()) {
     // The seccomp sandbox needs access to files in /proc, which might be denied
     // after one of the other sandboxes have been started. So, obtain a suitable
     // file handle in advance.
@@ -809,7 +789,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
   // print one error message for the entire browser session.
-  if (g_proc_fd >= 0 && SeccompEnabled()) {
+  if (g_proc_fd >= 0 && SeccompSandboxEnabled()) {
     if (!SupportsSeccompSandbox(g_proc_fd)) {
       // There are a good number of users who cannot use the seccomp sandbox
       // (e.g. because their distribution does not enable seccomp mode by
@@ -819,7 +799,7 @@ bool ZygoteMain(const MainFunctionParams& params,
                     "Seccomp sandbox. Running renderers with Seccomp "
                     "sandboxing disabled.";
     } else {
-      VLOG(1) << "Enabling experimental Seccomp sandbox.";
+      LOG(WARNING) << "Enabling experimental Seccomp sandbox.";
       sandbox_flags |= ZygoteHost::kSandboxSeccomp;
     }
   }
