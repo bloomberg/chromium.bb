@@ -13,21 +13,15 @@
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 
+#include "native_client/src/third_party/ppapi/c/dev/ppb_console_dev.h"
+#include "native_client/src/third_party/ppapi/c/ppb_var.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
 #include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
 #include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
 using nacl::assert_cast;
 
 namespace plugin {
-
-namespace {
-
-pp::VarPrivate GetWindow(plugin::InstanceIdentifier instance_id) {
-  pp::InstancePrivate* instance = InstanceIdentifierToPPInstance(instance_id);
-  return instance->GetWindowObject();
-}
-
-}  // namespace
 
 uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
   StringToIdentifierMap::iterator iter = string_to_identifier_map_.find(str);
@@ -48,44 +42,30 @@ nacl::string BrowserInterfacePpapi::IdentifierToString(uintptr_t ident) {
 }
 
 
-bool BrowserInterfacePpapi::Alert(InstanceIdentifier instance_id,
-                                  const nacl::string& text) {
-  pp::Var exception;
-  GetWindow(instance_id).Call("alert", text, &exception);
-  return exception.is_undefined();
-}
-
-bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
+void BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
                                          const nacl::string& text) {
-  pp::Var exception;
-  pp::VarPrivate window = GetWindow(instance_id);
-  window.GetProperty("console", &exception).Call("log", text, &exception);
-  return exception.is_undefined();
-}
-
-bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
-                                       const nacl::string& expression) {
-  pp::Var exception;
-  GetWindow(instance_id).Call("eval", expression, &exception);
-  return exception.is_undefined();
-}
-
-
-bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
-                                       nacl::string* full_url) {
-  *full_url = NACL_NO_URL;
-  pp::VarPrivate location = GetWindow(instance_id).GetProperty("location");
-  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
-                 location.DebugString().c_str()));
-  pp::VarPrivate href = location.GetProperty("href");
-  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
-                 href.DebugString().c_str()));
-  if (href.is_string()) {
-    *full_url = href.AsString();
-  }
-  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (full_url='%s')\n",
-                 full_url->c_str()));
-  return (NACL_NO_URL != *full_url);
+  pp::InstancePrivate* instance = InstanceIdentifierToPPInstance(instance_id);
+  pp::Module* module = pp::Module::Get();
+  const PPB_Var* var_interface =
+      static_cast<const struct PPB_Var*>(
+          module->GetBrowserInterface(PPB_VAR_INTERFACE));
+  nacl::string prefix_string("NativeClient");
+  PP_Var prefix =
+      var_interface->VarFromUtf8(module->pp_module(),
+                                 prefix_string.c_str(),
+                                 static_cast<uint32_t>(prefix_string.size()));
+  PP_Var str = var_interface->VarFromUtf8(module->pp_module(),
+                                          text.c_str(),
+                                          static_cast<uint32_t>(text.size()));
+  const PPB_Console_Dev* console_interface =
+      static_cast<const struct PPB_Console_Dev*>(
+          module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE));
+  console_interface->LogWithSource(instance->pp_instance(),
+                                   PP_LOGLEVEL_LOG,
+                                   prefix,
+                                   str);
+  var_interface->Release(prefix);
+  var_interface->Release(str);
 }
 
 
