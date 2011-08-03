@@ -276,6 +276,8 @@ cr.define('options', function() {
         if (items[i].value == value)
           items[i].checked = true;
       }
+
+      this.updateCustomStartupPageControlStates_();
     },
 
     /**
