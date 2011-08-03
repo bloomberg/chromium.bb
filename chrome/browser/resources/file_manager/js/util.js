@@ -340,5 +340,28 @@ var util = {
       callback(file, new ByteReader(fileReader.result))
     };
     fileReader.readAsArrayBuffer(file.webkitSlice(begin, end));
+  },
+
+  /**
+   * Write a blob to a file.
+   * Truncates the file first, so the previous content is fully overwritten.
+   * @param {FileEntry} entry
+   * @param {Blob} blob
+   * @param {Function} onSuccess completion callback
+   * @param {Function} onError error handler
+   */
+  writeBlobToFile: function(entry, blob, onSuccess, onError) {
+    function truncate(writer) {
+      writer.onerror = onError;
+      writer.onwriteend = write.bind(null, writer);
+      writer.truncate(0);
+    }
+
+    function write(writer) {
+      writer.onwriteend = onSuccess;
+      writer.write(blob);
+    }
+
+    entry.createWriter(truncate, onError);
   }
 };

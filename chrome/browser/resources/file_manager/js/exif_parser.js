@@ -101,12 +101,13 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
 
       var metadata = {
         metadataType: 'exif',
+        littleEndian: (order == EXIF_ALIGN_LITTLE),
         ifd: {
           image: {},
           thumbnail: {},
           exif: {},
-          gps: {},
-        },
+          gps: {}
+        }
       };
 
       var directoryOffset = br.readScalar(4);

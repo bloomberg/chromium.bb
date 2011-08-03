@@ -16,10 +16,8 @@ function load(source) {
 }
 
 function save(canvas) {
-  var data = canvas.toDataURL('image/jpeg');
-  getUrlField().value = data;
-  console.log('Data URL: ' + data.length + ' bytes');
-  console.log(data);
+  var blob = ImageEncoder.getBlob(canvas, 'image/jpeg');
+  console.log('Blob size: ' + blob.size + ' bytes');
 }
 
 function close() {

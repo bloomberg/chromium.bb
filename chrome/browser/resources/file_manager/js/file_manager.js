@@ -1621,7 +1621,7 @@ FileManager.prototype = {
       this.imageEditorFrame_.style.display = 'block';
       this.imageEditor_ = new ImageEditor(
           this.imageEditorFrame_,
-          this.onImageEditorSave.bind(this),
+          this.onImageEditorSave.bind(this, details.entries[0]),
           this.onImageEditorClose.bind(this));
       this.imageEditor_.getBuffer().load(urls[0]);
     } else if (id == 'play' || id == 'enqueue') {
@@ -1653,8 +1653,19 @@ FileManager.prototype = {
     return true;
   };
 
-  FileManager.prototype.onImageEditorSave = function(canvas) {
-    console.warn('Saving images not implemented');
+  FileManager.prototype.onImageEditorSave = function(entry, canvas) {
+    var self = this;
+    this.cacheMetadata_(entry, function(metadata) {
+      // The code below modifies the metadata parameter. We assume that this is
+      // the master copy, otherwise other cacheMetadata_ callers would not
+      // see our changes.
+      // The mime type is hardcoded as the editor only works with jpeg for now.
+      var blob = ImageEncoder.getBlob(canvas, 'image/jpeg', metadata)
+      // TODO(kaznacheev): Notify user properly about write failures.
+      util.writeBlobToFile(entry, blob, function(){},
+          util.flog('Error writing to ' + entry.fullPath));
+      self.updatePreview_();  // Metadata may have changed.
+    });
   };
 
   FileManager.prototype.onImageEditorClose = function() {

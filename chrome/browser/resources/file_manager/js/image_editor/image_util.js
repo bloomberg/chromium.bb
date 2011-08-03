@@ -157,7 +157,7 @@ Rect.prototype.moveTo = function(x, y) {
  */
 Rect.prototype.inflate = function(dx, dy) {
   return new Rect(
-      this.left - dx, this.top - dx, this.width + 2 * dx, this.height + 2 * dy);
+      this.left - dx, this.top - dy, this.width + 2 * dx, this.height + 2 * dy);
 };
 
 /**
