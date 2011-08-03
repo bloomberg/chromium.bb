@@ -16,6 +16,7 @@
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/drag_controller.h"
 #include "views/ime/text_input_client.h"
+#include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 
 namespace base {
@@ -41,11 +42,10 @@ class MenuModelAdapter;
 // * X selection (only if we want to support).
 // Once completed, this will replace Textfield, NativeTextfieldWin and
 // NativeTextfieldGtk.
-class VIEWS_API NativeTextfieldViews : public View,
+class VIEWS_API NativeTextfieldViews : public TouchSelectionClientView,
                                        public ContextMenuController,
                                        public DragController,
                                        public NativeTextfieldWrapper,
-                                       public ui::SimpleMenuModel::Delegate,
                                        public TextInputClient,
                                        public TextfieldViewsModel::Delegate {
  public:
@@ -69,6 +69,10 @@ class VIEWS_API NativeTextfieldViews : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+
+  // TouchSelectionClientView overrides:
+  virtual void SelectRect(const gfx::Point& start,
+                          const gfx::Point& end) OVERRIDE;
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
@@ -245,6 +249,8 @@ class VIEWS_API NativeTextfieldViews : public View,
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::MenuModelAdapter> context_menu_delegate_;
   scoped_ptr<views::MenuItemView> context_menu_menu_;
+
+  scoped_ptr<TouchSelectionController> touch_selection_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);
 };

@@ -15,12 +15,11 @@
         ['include', '/win_[^/]*\\.cc$'],
         ['exclude', 'touchui/touch_factory.cc'],
       ]}],
-      ['touchui==0', {'sources/': [
-        ['exclude', 'native_menu_x.cc$'],
-        ['exclude', 'native_menu_x.h$'],
-        ['exclude', '_(touch)\\.cc$'],
-        ['exclude', 'widget/tooltip_manager_views.cc$'],
-      ]}],
+      ['touchui==0', {
+        'sources/': [
+          ['exclude', '_(touch)\\.cc$'],
+        ],
+      }],
     ],
   },
   'targets': [
@@ -293,6 +292,10 @@
         'touchui/gesture_manager.h',
         'touchui/touch_factory.cc',
         'touchui/touch_factory.h',
+        'touchui/touch_selection_controller.cc',
+        'touchui/touch_selection_controller.h',
+        'touchui/touch_selection_controller_impl.cc',
+        'touchui/touch_selection_controller_impl.h',
         'view.cc',
         'view.h',
         'view_constants.cc',
@@ -395,6 +398,15 @@
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
             ['exclude', 'widget/tooltip_manager_gtk.cc'],
+          ],
+        }],
+        ['touchui==0', {
+          'sources!': [
+            'native_menu_x.cc',
+            'native_menu_x.h',
+            'widget/tooltip_manager_views.cc',
+            'touchui/touch_selection_controller_impl.cc',
+            'touchui/touch_selection_controller_impl.h',
           ],
         }],
         ['use_ibus==1', {

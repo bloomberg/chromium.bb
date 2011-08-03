@@ -61,8 +61,10 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       initiating_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       aggregated_clicks_(0),
-      last_click_time_(base::Time::FromInternalValue(0)),
-      last_click_location_(0, 0) {
+      last_click_time_(),
+      last_click_location_(),
+      ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
+          TouchSelectionController::create(this))) {
   set_border(text_border_);
 
   // Lowercase is not supported.
@@ -247,6 +249,13 @@ void NativeTextfieldViews::OnBlur() {
   NOTREACHED();
 }
 
+void NativeTextfieldViews::SelectRect(const gfx::Point& start,
+                                      const gfx::Point& end) {
+  size_t start_pos = GetRenderText()->FindCursorPosition(start);
+  size_t end_pos = GetRenderText()->FindCursorPosition(end);
+  SetSelectionRange(ui::Range(start_pos, end_pos));
+}
+
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
@@ -324,13 +333,17 @@ string16 NativeTextfieldViews::GetSelectedText() const {
 }
 
 void NativeTextfieldViews::SelectAll() {
+  OnBeforeUserAction();
   model_->SelectAll();
   SchedulePaint();
+  OnAfterUserAction();
 }
 
 void NativeTextfieldViews::ClearSelection() {
+  OnBeforeUserAction();
   model_->ClearSelection();
   SchedulePaint();
+  OnAfterUserAction();
 }
 
 void NativeTextfieldViews::UpdateBorder() {
@@ -476,6 +489,9 @@ void NativeTextfieldViews::HandleBlur() {
     is_cursor_visible_ = false;
     RepaintCursor();
   }
+
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->ClientViewLostFocus();
 }
 
 TextInputClient* NativeTextfieldViews::GetTextInputClient() {
@@ -945,6 +961,23 @@ void NativeTextfieldViews::OnCaretBoundsChanged() {
   // TODO(suzhe): changed from DCHECK. See http://crbug.com/81320.
   if (textfield_->GetInputMethod())
     textfield_->GetInputMethod()->OnCaretBoundsChanged(textfield_);
+
+  // Notify selection controller
+  if (!touch_selection_controller_.get())
+    return;
+  gfx::RenderText* render_text = GetRenderText();
+  ui::Range range = render_text->GetSelection();
+  gfx::Rect start_cursor = render_text->GetCursorBounds(range.start(), false);
+  gfx::Rect end_cursor = render_text->GetCursorBounds(range.end(), false);
+  gfx::Rect display_rect = render_text->display_rect();
+  int total_offset_x = display_rect.x() + render_text->display_offset().x();
+  int total_offset_y = display_rect.y() + render_text->display_offset().y() +
+                       (display_rect.height() - start_cursor.height()) / 2;
+  gfx::Point start(start_cursor.x() + total_offset_x,
+                   start_cursor.bottom() + total_offset_y);
+  gfx::Point end(end_cursor.x() + total_offset_x,
+                 end_cursor.bottom() + total_offset_y);
+  touch_selection_controller_->SelectionChanged(start, end);
 }
 
 void NativeTextfieldViews::OnBeforeUserAction() {

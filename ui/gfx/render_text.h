@@ -91,6 +91,8 @@ class UI_API RenderText {
   const Rect& display_rect() const { return display_rect_; }
   void set_display_rect(const Rect& r) { display_rect_ = r; }
 
+  const gfx::Point& display_offset() const { return display_offset_; }
+
   size_t GetCursorPosition() const;
   void SetCursorPosition(const size_t position);
 
@@ -159,8 +161,6 @@ class UI_API RenderText {
   RenderText();
 
   const StyleRanges& style_ranges() const { return style_ranges_; }
-
-  const Point& display_offset() const { return display_offset_; }
 
   // Get the cursor position that visually neighbors |position|.
   // If |move_by_word| is true, return the neighboring word delimiter position.
