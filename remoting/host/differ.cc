@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,10 @@ Differ::Differ(int width, int height, int bpp, int stride) {
 
   // Calc number of blocks (full and partial) required to cover entire image.
   // One additional row/column is added as a boundary on the right & bottom.
-  diff_info_width_ = (width_ + kBlockSize - 1) / kBlockSize + 1;
-  diff_info_height_ = (height_ + kBlockSize - 1) / kBlockSize + 1;
+  diff_info_width_ = ((width_ + kBlockSize - 1) / kBlockSize) + 1;
+  diff_info_height_ = ((height_ + kBlockSize - 1) / kBlockSize) + 1;
   diff_info_size_ = diff_info_width_ * diff_info_height_ * sizeof(DiffInfo);
-  diff_info_.reset(new uint8[diff_info_size_]);
+  diff_info_.reset(new DiffInfo[diff_info_size_]);
 }
 
 Differ::~Differ() {}
@@ -65,28 +65,28 @@ void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
 
   const uint8* prev_block_row_start = static_cast<const uint8*>(prev_buffer);
   const uint8* curr_block_row_start = static_cast<const uint8*>(curr_buffer);
-  uint8* diff_info_row_start = static_cast<uint8*>(diff_info_.get());
+  DiffInfo* diff_info_row_start = static_cast<DiffInfo*>(diff_info_.get());
 
   for (int y = 0; y < y_full_blocks; y++) {
     const uint8* prev_block = prev_block_row_start;
     const uint8* curr_block = curr_block_row_start;
-    uint8* diff_info = diff_info_row_start;
+    DiffInfo* diff_info = diff_info_row_start;
 
     for (int x = 0; x < x_full_blocks; x++) {
-      DiffInfo diff = BlockDifference(prev_block, curr_block, bytes_per_row_);
-      if (diff != 0) {
-        // Mark this block as being modified so that it gets incorporated into
-        // a dirty rect.
-        *diff_info = diff;
-      }
+      // Mark this block as being modified so that it gets incorporated into
+      // a dirty rect.
+      *diff_info = BlockDifference(prev_block, curr_block, bytes_per_row_);
       prev_block += block_x_offset;
       curr_block += block_x_offset;
       diff_info += sizeof(DiffInfo);
     }
 
     // If there is a partial column at the end, handle it.
+    // This condition should rarely, if ever, occur.
     if (partial_column_width != 0) {
-      // TODO(garykac): Handle last partial column.
+      *diff_info = DiffPartialBlock(prev_block, curr_block, bytes_per_row_,
+                                    partial_column_width, kBlockSize);
+      diff_info += sizeof(DiffInfo);
     }
 
     // Update pointers for next row.
@@ -94,29 +94,39 @@ void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
     curr_block_row_start += block_y_stride;
     diff_info_row_start += diff_info_stride;
   }
+
+  // If the screen height is not a multiple of the block size, then this
+  // handles the last partial row. This situation is far more common than the
+  // 'partial column' case.
   if (partial_row_height != 0) {
-    // TODO(garykac): Handle last partial row.
+    const uint8* prev_block = prev_block_row_start;
+    const uint8* curr_block = curr_block_row_start;
+    DiffInfo* diff_info = diff_info_row_start;
+    for (int x = 0; x < x_full_blocks; x++) {
+      *diff_info = DiffPartialBlock(prev_block, curr_block,
+                                    bytes_per_row_,
+                                    kBlockWidth, partial_row_height);
+      prev_block += block_x_offset;
+      curr_block += block_x_offset;
+      diff_info += sizeof(DiffInfo);
+    }
+    if (partial_column_width != 0) {
+      *diff_info = DiffPartialBlock(prev_block, curr_block, bytes_per_row_,
+                                    partial_column_width, partial_row_height);
+      diff_info += sizeof(DiffInfo);
+    }
   }
 }
 
 DiffInfo Differ::DiffPartialBlock(const uint8* prev_buffer,
                                   const uint8* curr_buffer,
                                   int stride, int width, int height) {
-  const uint8* prev_row_start = prev_buffer;
-  const uint8* curr_row_start = curr_buffer;
-
+  int width_bytes = width * bytes_per_pixel_;
   for (int y = 0; y < height; y++) {
-    const uint8* prev = prev_row_start;
-    const uint8* curr = curr_row_start;
-    for (int x = 0; x < width; x++) {
-      for (int b = 0; b < bytes_per_pixel_; b++) {
-        if (*prev++ != *curr++) {
-          return 1;
-        }
-      }
-    }
-    prev_row_start += bytes_per_row_;
-    curr_row_start += bytes_per_row_;
+    if (memcmp(prev_buffer, curr_buffer, width_bytes) != 0)
+      return 1;
+    prev_buffer += bytes_per_row_;
+    curr_buffer += bytes_per_row_;
   }
   return 0;
 }

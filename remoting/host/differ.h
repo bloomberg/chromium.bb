@@ -40,16 +40,6 @@ class Differ {
   // Identify all of the blocks that contain changed pixels.
   void MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer);
 
-  // Diff a small block of image and return non-zero if there is a diff.
-  // This checks only the part of the block specified by the width and
-  // height parameters.
-  // This is much slower than DiffBlock() since it cannot assume that the
-  // full block is being checked.
-  // If we force the capturer to always return images whose width/height are
-  // multiples of kBlockSize, then this will never be called.
-  DiffInfo DiffPartialBlock(const uint8* prev_buffer, const uint8* curr_buffer,
-                            int stride, int width, int height);
-
   // After the dirty blocks have been identified, this routine merges adjacent
   // blocks into larger rectangular units.
   // The goal is to minimize the number of rects that cover the dirty blocks,
@@ -60,6 +50,14 @@ class Differ {
   friend class DifferTest;
 
  private:
+
+  // Check for diffs in upper-left portion of the block. The size of the portion
+  // to check is specified by the |width| and |height| values.
+  // Note that if we force the capturer to always return images whose width and
+  // height are multiples of kBlockSize, then this will never be called.
+  DiffInfo DiffPartialBlock(const uint8* prev_buffer, const uint8* curr_buffer,
+                            int stride, int width, int height);
+
   // Dimensions of screen.
   int width_;
   int height_;

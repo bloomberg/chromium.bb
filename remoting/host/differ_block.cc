@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,23 +11,11 @@
 namespace remoting {
 
 int BlockDifference_C(const uint8* image1, const uint8* image2, int stride) {
-  // Number of uint64s in each row of the block.
-  // This must be an integral number.
-  int int64s_per_row = (kBlockWidth * kBytesPerPixel) / sizeof(uint64);
+  int width_bytes = kBlockWidth * kBytesPerPixel;
 
   for (int y = 0; y < kBlockHeight; y++) {
-    const uint64* prev = reinterpret_cast<const uint64*>(image1);
-    const uint64* curr = reinterpret_cast<const uint64*>(image2);
-
-    // Check each row in uint64-sized chunks.
-    // Note that this check may straddle multiple pixels. This is OK because
-    // we're interested in identifying whether or not there was change - we
-    // don't care what the actual change is.
-    for (int x = 0; x < int64s_per_row; x++) {
-      if (*prev++ != *curr++) {
-        return 1;
-      }
-    }
+    if (memcmp(image1, image2, width_bytes) != 0)
+      return 1;
     image1 += stride;
     image2 += stride;
   }
