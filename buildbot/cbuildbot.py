@@ -26,6 +26,8 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import cbuildbot_background as background
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
 from chromite.buildbot import tee
@@ -166,7 +168,7 @@ def RunBuildStages(bot_id, options, build_config):
 
   if options.resume and os.path.exists(completed_stages_file):
     with open(completed_stages_file, 'r') as load_file:
-      stages.Results.RestoreCompletedStages(load_file)
+      results_lib.Results.RestoreCompletedStages(load_file)
 
   # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
   if build_config['chromeos_official']: os.environ['CHROMEOS_OFFICIAL'] = '1'
@@ -204,14 +206,18 @@ def RunBuildStages(bot_id, options, build_config):
 
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
-  bg = stages.BackgroundSteps()
+  bg = background.BackgroundSteps()
   bg_started = False
   archive_stage = None
   archive_url = None
+  version = None
 
   try:
     if options.sync:
       sync_stage_class(bot_id, options, build_config).Run()
+      manifest_manager = stages.ManifestVersionedSyncStage.manifest_manager
+      if manifest_manager:
+        version = manifest_manager.current_version
 
     if options.gerrit_patches or options.local_patches:
       stages.PatchChangesStage(bot_id, options, build_config, gerrit_patches,
@@ -223,8 +229,8 @@ def RunBuildStages(bot_id, options, build_config):
     if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       stages.TestSDKStage(bot_id, options, build_config).Run()
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
-      stages.Results.Report(sys.stdout)
-      return stages.Results.Success()
+      results_lib.Results.Report(sys.stdout, current_version=version)
+      return results_lib.Results.Success()
 
     if options.uprev:
       stages.UprevStage(bot_id, options, build_config).Run()
@@ -281,9 +287,17 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
 
+  publish_changes = (options.buildbot and build_config['master'] and
+                     build_and_test_success)
+
   if completion_stage:
     # Wait for slave builds to complete.
     completion_stage.Run()
+
+    # Don't publish changes if a slave build failed.
+    name = completion_stage.name
+    if not results_lib.Results.WasStageSuccessfulOrSkipped(name):
+      publish_changes = False
 
   # Wait for remaining stages to finish. Ignore any errors.
   if bg_started:
@@ -291,21 +305,19 @@ def RunBuildStages(bot_id, options, build_config):
       bg.WaitForStep()
     bg.join()
 
-  if (options.buildbot and build_config['master'] and build_and_test_success
-      and (not completion_stage or
-           stages.Results.WasStageSuccessfulOrSkipped(completion_stage.name))):
+  if publish_changes:
     stages.PublishUprevChangesStage(bot_id, options, build_config).Run()
 
   if os.path.exists(options.buildroot):
     with open(completed_stages_file, 'w+') as save_file:
-      stages.Results.SaveCompletedStages(save_file)
+      results_lib.Results.SaveCompletedStages(save_file)
 
   # Tell the buildbot to break out the report as a final step
   print '\n\n\n@@@BUILD_STEP Report@@@\n'
 
-  stages.Results.Report(sys.stdout, archive_url)
+  results_lib.Results.Report(sys.stdout, archive_url, version)
 
-  return stages.Results.Success()
+  return results_lib.Results.Success()
 
 
 def _ConfirmBuildRoot(buildroot):

@@ -17,8 +17,10 @@ import unittest
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot
+from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
@@ -926,8 +928,8 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^/var/www'), ignore_errors=True)
 
-    self.mox.StubOutWithMock(stages, 'RunParallelSteps')
-    stages.RunParallelSteps(mox.IgnoreArg())
+    self.mox.StubOutWithMock(background, 'RunParallelSteps')
+    background.RunParallelSteps(mox.IgnoreArg())
 
     self.mox.StubOutWithMock(commands, 'UpdateIndex')
     commands.UpdateIndex(mox.IgnoreArg())
@@ -947,8 +949,8 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
 
-    self.mox.StubOutWithMock(stages, 'RunParallelSteps')
-    stages.RunParallelSteps(mox.IgnoreArg())
+    self.mox.StubOutWithMock(background, 'RunParallelSteps')
+    background.RunParallelSteps(mox.IgnoreArg())
 
     self.mox.StubOutWithMock(commands, 'UpdateIndex')
     commands.UpdateIndex(mox.IgnoreArg())
@@ -1125,19 +1127,19 @@ class BuildStagesResultsTest(unittest.TestCase):
 
   def _verifyRunResults(self, expectedResults):
 
-    actualResults = stages.Results.Get()
+    actualResults = results_lib.Results.Get()
 
     # Break out the asserts to be per item to make debugging easier
     self.assertEqual(len(expectedResults), len(actualResults))
     for i in xrange(len(expectedResults)):
       name, result, description, runtime = actualResults[i]
 
-      if result not in (stages.Results.SUCCESS,
-                         stages.Results.SKIPPED):
+      if result not in (results_lib.Results.SUCCESS,
+                        results_lib.Results.SKIPPED):
         self.assertTrue(isinstance(description, str))
 
       # Skipped stages take no time, all other test stages take a little time
-      if result == stages.Results.SKIPPED:
+      if result == results_lib.Results.SKIPPED:
         self.assertEqual(runtime, 0)
       else:
         self.assertTrue(runtime >= 0 and runtime < 2.0)
@@ -1147,15 +1149,15 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testRunStages(self):
     """Run some stages and verify the captured results"""
 
-    stages.Results.Clear()
-    self.assertEqual(stages.Results.Get(), [])
+    results_lib.Results.Clear()
+    self.assertEqual(results_lib.Results.Get(), [])
 
     self._runStages()
 
     # Verify that the results are what we expect.
     expectedResults = [
-        ('Pass', stages.Results.SUCCESS),
-        ('Pass2', stages.Results.SUCCESS),
+        ('Pass', results_lib.Results.SUCCESS),
+        ('Pass2', results_lib.Results.SUCCESS),
         ('Fail', self.failException)]
 
     self._verifyRunResults(expectedResults)
@@ -1163,18 +1165,18 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testSuccessTest(self):
     """Run some stages and verify the captured results"""
 
-    stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SKIPPED)
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED)
 
-    self.assertTrue(stages.Results.Success())
+    self.assertTrue(results_lib.Results.Success())
 
-    stages.Results.Record('Fail', self.failException, time=1)
+    results_lib.Results.Record('Fail', self.failException, time=1)
 
-    self.assertFalse(stages.Results.Success())
+    self.assertFalse(results_lib.Results.Success())
 
-    stages.Results.Record('Pass2', stages.Results.SUCCESS)
+    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
-    self.assertFalse(stages.Results.Success())
+    self.assertFalse(results_lib.Results.Success())
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
@@ -1183,16 +1185,16 @@ class BuildStagesResultsTest(unittest.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SKIPPED, time=1)
-    stages.Results.Record('Pass2', stages.Results.SUCCESS, time=2)
-    stages.Results.Record('Fail', self.failException, time=3)
-    stages.Results.Record(
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED, time=1)
+    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Fail', self.failException, time=3)
+    results_lib.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir'], error_code=2), time=4)
-    stages.Results.Record(
+    results_lib.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
@@ -1200,7 +1202,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    stages.Results.Report(results)
+    results_lib.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -1232,18 +1234,18 @@ class BuildStagesResultsTest(unittest.TestCase):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
-    stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SKIPPED, time=1)
-    stages.Results.Record('Pass2', stages.Results.SUCCESS, time=2)
-    stages.Results.Record('Fail', self.failException,
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Pass', results_lib.Results.SKIPPED, time=1)
+    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Fail', self.failException,
                                        'failException Msg\nLine 2', time=3)
-    stages.Results.Record(
+    results_lib.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
             'Command "/bin/false /nosuchdir" failed.\n',
             ['/bin/false', '/nosuchdir'], error_code=2),
         'FailRunCommand msg', time=4)
-    stages.Results.Record(
+    results_lib.Results.Record(
         'FailOldRunCommand',
         cros_lib.RunCommandException(
             'Command "[\'/bin/false\', \'/nosuchdir\']" failed.\n',
@@ -1252,7 +1254,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    stages.Results.Report(results)
+    results_lib.Results.Report(results)
 
     expectedResults = (
         "************************************************************\n"
@@ -1285,19 +1287,16 @@ class BuildStagesResultsTest(unittest.TestCase):
   def testStagesReportReleaseTag(self):
     """Tests Release Tag entry in stages report."""
 
-    manifest_manager = mox.MockAnything()
-    manifest_manager.current_version = "release_tag_string"
-    stages.ManifestVersionedSyncStage.manifest_manager = manifest_manager
-
+    current_version = "release_tag_string"
     archive_url = 'result_url'
 
     # Store off a known set of results and generate a report
-    stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SUCCESS, time=1)
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
 
     results = StringIO.StringIO()
 
-    stages.Results.Report(results, archive_url)
+    results_lib.Results.Report(results, archive_url, current_version)
 
     expectedResults = (
         "************************************************************\n"
@@ -1323,38 +1322,38 @@ class BuildStagesResultsTest(unittest.TestCase):
     """Tests that we can save out completed stages."""
 
     # Run this again to make sure we have the expected results stored
-    stages.Results.Clear()
-    stages.Results.Record('Pass', stages.Results.SUCCESS)
-    stages.Results.Record('Fail', self.failException)
-    stages.Results.Record('Pass2', stages.Results.SUCCESS)
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Pass', results_lib.Results.SUCCESS)
+    results_lib.Results.Record('Fail', self.failException)
+    results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
     saveFile = StringIO.StringIO()
-    stages.Results.SaveCompletedStages(saveFile)
+    results_lib.Results.SaveCompletedStages(saveFile)
     self.assertEqual(saveFile.getvalue(), 'Pass\n')
 
   def testRestoreCompletedStages(self):
     """Tests that we can read in completed stages."""
 
-    stages.Results.Clear()
-    stages.Results.RestoreCompletedStages(
+    results_lib.Results.Clear()
+    results_lib.Results.RestoreCompletedStages(
         StringIO.StringIO('Pass\n'))
 
-    self.assertEqual(stages.Results.GetPrevious(), ['Pass'])
+    self.assertEqual(results_lib.Results.GetPrevious(), ['Pass'])
 
   def testRunAfterRestore(self):
     """Tests that we skip previously completed stages."""
 
-    # Fake stages.Results.RestoreCompletedStages
-    stages.Results.Clear()
-    stages.Results.RestoreCompletedStages(
+    # Fake results_lib.Results.RestoreCompletedStages
+    results_lib.Results.Clear()
+    results_lib.Results.RestoreCompletedStages(
         StringIO.StringIO('Pass\n'))
 
     self._runStages()
 
     # Verify that the results are what we expect.
     expectedResults = [
-        ('Pass', stages.Results.SKIPPED),
-        ('Pass2', stages.Results.SUCCESS),
+        ('Pass', results_lib.Results.SKIPPED),
+        ('Pass2', results_lib.Results.SUCCESS),
         ('Fail', self.failException)]
 
     self._verifyRunResults(expectedResults)

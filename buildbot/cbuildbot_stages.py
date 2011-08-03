@@ -4,11 +4,8 @@
 
 """Module containing the various stages that a builder runs."""
 
-import datetime
-import math
 import multiprocessing
 import os
-import Queue
 import re
 import shutil
 import socket
@@ -17,6 +14,8 @@ import tempfile
 import time
 import traceback
 
+from chromite.buildbot import cbuildbot_background as background
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
@@ -35,203 +34,6 @@ _PRINT_INTERVAL = 1
 
 class BuildException(Exception):
   pass
-
-class Results:
-  """Static class that collects the results of our BuildStages as they run."""
-
-  # List of results for all stages that's built up as we run. Members are of
-  #  the form ('name', SUCCESS | SKIPPED | Exception, None | description)
-  _results_log = []
-
-  # Stages run in a previous run and restored. Stored as a list of
-  # stage names.
-  _previous = []
-
-  # Stored in the results log for a stage skipped because it was previously
-  # completed successfully.
-  SUCCESS = "Stage was successful"
-  SKIPPED = "Stage skipped because successful on previous run"
-  FORGIVEN = "Stage failed but was optional"
-
-  @classmethod
-  def Clear(cls):
-    """Clear existing stage results."""
-    cls._results_log = []
-    cls._previous = []
-
-  @classmethod
-  def PreviouslyCompleted(cls, name):
-    """Check to see if this stage was previously completed.
-
-       Returns:
-         A boolean showing the stage was successful in the previous run.
-    """
-    return name in cls._previous
-
-  @classmethod
-  def Success(cls):
-    """Return true if all stages so far have passed.
-
-    This method returns true if all was successful or forgiven.
-    """
-    for entry in cls._results_log:
-      _, result, _, _ = entry
-
-      if not result in (cls.SUCCESS, cls.SKIPPED, cls.FORGIVEN):
-        return False
-
-    return True
-
-  @classmethod
-  def WasStageSuccessfulOrSkipped(cls, name):
-    """Return true stage passed."""
-    for entry in cls._results_log:
-      entry, result, _, _ = entry
-
-      if entry == name:
-        if result not in (cls.SUCCESS, cls.SKIPPED):
-          return False
-        else:
-          return True
-
-    return False
-
-  @classmethod
-  def Record(cls, name, result, description=None, time=0):
-    """Store off an additional stage result.
-
-       Args:
-         name: The name of the stage
-         result:
-           Result should be one of:
-             Results.SUCCESS if the stage was successful.
-             Results.SKIPPED if the stage was completed in a previous run.
-             The exception the stage errored with.
-         description:
-           The textual backtrace of the exception, or None
-    """
-    cls._results_log.append((name, result, description, time))
-
-  @classmethod
-  def UpdateResult(cls, name, result, description=None):
-    """Updates a stage result.with a different result.
-
-       Args:
-         name: The name of the stage
-         result:
-           Result should be one of:
-             Results.SUCCESS if the stage was successful.
-             Results.SKIPPED if the stage was completed in a previous run.
-             The exception the stage errored with.
-          description:
-           The textual backtrace of the exception, or None
-    """
-    for index in range(len(cls._results_log)):
-      if cls._results_log[index][0] == name: break
-    else:
-      return
-
-    _, _, _, run_time = cls._results_log[index]
-    cls._results_log[index] = name, result, description, run_time
-
-  @classmethod
-  def Get(cls):
-    """Fetch stage results.
-
-       Returns:
-         A list with one entry per stage run with a result.
-    """
-    return cls._results_log
-
-  @classmethod
-  def GetPrevious(cls):
-    """Fetch stage results.
-
-       Returns:
-         A list of stages names that were completed in a previous run.
-    """
-    return cls._previous
-
-  @classmethod
-  def SaveCompletedStages(cls, file):
-    """Save out the successfully completed stages to the provided file."""
-    for name, result, _, _ in cls._results_log:
-      if result != cls.SUCCESS and result != cls.SKIPPED: break
-      file.write(name)
-      file.write('\n')
-
-  @classmethod
-  def RestoreCompletedStages(cls, file):
-    """Load the successfully completed stages from the provided file."""
-    # Read the file, and strip off the newlines
-    cls._previous = [line.strip() for line in file.readlines()]
-
-  @classmethod
-  def Report(cls, file, archive_url=None):
-    """Generate a user friendly text display of the results data."""
-    results = cls._results_log
-
-    line = '*' * 60 + '\n'
-    edge = '*' * 2
-
-    if ManifestVersionedSyncStage.manifest_manager:
-      file.write(line)
-      file.write(edge +
-                 ' RELEASE VERSION: ' +
-                 ManifestVersionedSyncStage.manifest_manager.current_version +
-                 '\n')
-
-    file.write(line)
-    file.write(edge + ' Stage Results\n')
-
-    first_exception = None
-
-    for name, result, description, run_time in results:
-      timestr = datetime.timedelta(seconds=math.ceil(run_time))
-
-      file.write(line)
-
-      if result == cls.SUCCESS:
-        # These was no error
-        file.write('%s PASS %s (%s)\n' % (edge, name, timestr))
-
-      elif result == cls.SKIPPED:
-        # The stage was executed previously, and skipped this time
-        file.write('%s %s previously completed\n' %
-                   (edge, name))
-      elif result == cls.FORGIVEN:
-        # The stage was executed previously, and skipped this time
-        file.write('%s FAILED BUT FORGIVEN %s (%s)\n' %
-                   (edge, name, timestr))
-      else:
-        if type(result) in (cros_lib.RunCommandException,
-                            cros_lib.RunCommandError):
-          # If there was a RunCommand error, give just the command that
-          # failed, not it's full argument list, since those are usually
-          # too long.
-          file.write('%s FAIL %s (%s) in %s\n' %
-                     (edge, name, timestr, result.cmd[0]))
-        else:
-          # There was a normal error, give the type of exception
-          file.write('%s FAIL %s (%s) with %s\n' %
-                     (edge, name, timestr, type(result).__name__))
-
-        if not first_exception:
-          first_exception = description
-
-    file.write(line)
-
-    if archive_url:
-      file.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      file.write('%s  %s\n' % (edge, archive_url))
-      file.write(line)
-
-    if first_exception:
-      file.write('\n')
-      file.write('Build failed with:\n')
-      file.write('\n')
-      file.write(first_exception)
-
 
 class BuilderStage(object):
   """Parent class for stages to be performed by a builder."""
@@ -421,15 +223,15 @@ class BuilderStage(object):
   def Run(self):
     """Have the builder execute the stage."""
 
-    if Results.PreviouslyCompleted(self.name):
+    if results_lib.Results.PreviouslyCompleted(self.name):
       self._PrintLoudly('Skipping Stage %s' % self.name)
-      Results.Record(self.name, Results.SKIPPED)
+      results_lib.Results.Record(self.name, results_lib.Results.SKIPPED)
       return
 
     start_time = time.time()
 
     # Set default values
-    result = Results.SUCCESS
+    result = results_lib.Results.SUCCESS
     description = None
 
     self._Begin()
@@ -441,7 +243,8 @@ class BuilderStage(object):
       raise BuildException()
     finally:
       elapsed_time = time.time() - start_time
-      Results.Record(self.name, result, description, time=elapsed_time)
+      results_lib.Results.Record(self.name, result, description,
+                                 time=elapsed_time)
       self._Finish()
 
 
@@ -461,121 +264,7 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
     print '@@@STEP_WARNINGS@@@'
     description = traceback.format_exc()
     print >> sys.stderr, description
-    return Results.FORGIVEN, None
-
-class BackgroundSteps(multiprocessing.Process):
-  """Run a list of functions in sequence in the background.
-
-  These functions may be the 'Run' functions from buildbot stages or just plain
-  functions. They will be run in the background. Output from these functions
-  is saved to a temporary file and is printed when the 'WaitForStep' function
-  is called.
-  """
-
-  def __init__(self):
-    multiprocessing.Process.__init__(self)
-    self._steps = []
-    self._queue = multiprocessing.Queue()
-
-  def AddStep(self, step):
-    """Add a step to the list of steps to run in the background."""
-    output = tempfile.NamedTemporaryFile(delete=False)
-    self._steps.append((step, output))
-
-  def WaitForStep(self):
-    """Wait for the next step to complete.
-
-    Output from the step is printed as the step runs.
-
-    If an exception occurs, return a string containing the traceback.
-    """
-    assert not self.Empty()
-    step, output = self._steps.pop(0)
-    pos = 0
-    more_output = True
-    while more_output:
-      # Check whether the process is finished.
-      try:
-        error, results = self._queue.get(True, _PRINT_INTERVAL)
-        more_output = False
-      except Queue.Empty:
-        more_output = True
-
-      # Print output so far.
-      output.seek(pos)
-      for line in output:
-        sys.stdout.write(line)
-      pos = output.tell()
-
-    # Cleanup temp file.
-    output.close()
-    os.unlink(output.name)
-
-    # Propagate any results.
-    for result in results:
-      Results.Record(*result)
-
-    # If a traceback occurred, return it.
-    return error
-
-  def Empty(self):
-    """Return True if there are any steps left to run."""
-    return len(self._steps) == 0
-
-  def run(self):
-    """Run the list of steps."""
-
-    # Be nice so that foreground processes get CPU if they need it.
-    os.nice(10)
-
-    stdout_fileno = sys.stdout.fileno()
-    stderr_fileno = sys.stderr.fileno()
-    for step, output in self._steps:
-      # Send all output to a named temporary file.
-      os.dup2(output.fileno(), stdout_fileno)
-      os.dup2(output.fileno(), stderr_fileno)
-      error = None
-      try:
-        Results.Clear()
-        step()
-      except Exception:
-        traceback.print_exc(file=output)
-        error = traceback.format_exc()
-
-      output.close()
-      results = Results.Get()
-      self._queue.put((error, results))
-
-
-def RunParallelSteps(steps):
-  """Run a list of functions in parallel.
-
-  The output from the functions is saved to a temporary file and printed as if
-  they were run in sequence.
-
-  If exceptions occur in the steps, we join together the tracebacks and print
-  them after all parallel steps have finished running.
-  """
-  # First, start all the steps.
-  bg_steps = []
-  for step in steps:
-    bg = BackgroundSteps()
-    bg.AddStep(step)
-    bg.start()
-    bg_steps.append(bg)
-
-  # Wait for each step to complete.
-  tracebacks = []
-  for bg in bg_steps:
-    while not bg.Empty():
-      error = bg.WaitForStep()
-      if error:
-        tracebacks.append(error)
-    bg.join()
-
-  # Propagate any exceptions.
-  if tracebacks:
-    raise BuildException('\n' + ''.join(tracebacks))
+    return results_lib.Results.FORGIVEN, None
 
 
 class CleanUpStage(BuilderStage):
@@ -1160,9 +849,9 @@ class ArchiveStage(NonHaltingBuilderStage):
           self._set_version, self._local_archive_path, debug)
 
     try:
-      RunParallelSteps([UploadTestResults,
-                        ArchiveDebugSymbols,
-                        LegacyArchiveBuild])
+      background.RunParallelSteps([UploadTestResults,
+                                   ArchiveDebugSymbols,
+                                   LegacyArchiveBuild])
     finally:
       # Update the _index.html file with the test artifacts and build artifacts
       # uploaded above.
