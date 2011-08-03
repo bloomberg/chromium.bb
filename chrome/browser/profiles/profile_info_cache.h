@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile_info_interface.h"
 
 namespace gfx {
 class Image;
@@ -27,21 +29,25 @@ class PrefService;
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
 // actually load the profiles from disk.
-class ProfileInfoCache {
+class ProfileInfoCache : public ProfileInfoInterface {
  public:
   ProfileInfoCache(PrefService* prefs, const FilePath& user_data_dir);
-  ~ProfileInfoCache();
+  virtual ~ProfileInfoCache();
 
   void AddProfileToCache(const FilePath& profile_path,
                          const string16& name,
                          size_t icon_index);
   void DeleteProfileFromCache(const FilePath& profile_path);
 
-  size_t GetNumberOfProfiles() const;
-  size_t GetIndexOfProfileWithPath(const FilePath& profile_path) const;
-  string16 GetNameOfProfileAtIndex(size_t index) const;
-  FilePath GetPathOfProfileAtIndex(size_t index) const;
-  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const;
+  // ProfileInfoInterface:
+  virtual size_t GetNumberOfProfiles() const OVERRIDE;
+  virtual size_t GetIndexOfProfileWithPath(
+      const FilePath& profile_path) const OVERRIDE;
+  virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
+      size_t index) const OVERRIDE;
+
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   void SetNameOfProfileAtIndex(size_t index, const string16& name);
