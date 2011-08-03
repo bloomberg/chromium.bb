@@ -716,16 +716,12 @@
         'test/automation/extension_proxy_uitest.cc',
         'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/base/chrome_process_util_uitest.cc',
-        'test/ui/dom_checker_uitest.cc',  # moving to performance_ui_tests
-        'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/ppapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
-        'test/ui/sunspider_uitest.cc',
-        'test/ui/v8_benchmark_uitest.cc',
         '../content/browser/appcache/appcache_ui_test.cc',
         '../content/browser/in_process_webkit/dom_storage_uitest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
@@ -2932,85 +2928,6 @@
       ],
     },  # target safe_browsing_tests
     {
-      # TODO(darin): Remove in favor of performance_ui_tests.
-      'target_name': 'startup_tests',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'browser',
-        'common',
-        'chrome_resources',
-        'chrome_strings',
-        'test_support_ui',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'sources': [
-        'test/startup/feature_startup_test.cc',
-        'test/startup/shutdown_test.cc',
-        'test/startup/startup_test.cc',
-      ],
-      'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          'configurations': {
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'WholeProgramOptimization': 'false',
-                },
-              },
-            },
-          },
-        },],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
-        }],
-        ['OS=="win"', {
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        },],
-        ['os_posix == 1 and OS != "mac"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
-        }],
-      ],
-    },
-    {
       # To run the tests from page_load_test.cc on Linux, we need to:
       #
       #   a) Build with Breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
@@ -3069,49 +2986,6 @@
             '../build/linux/system.gyp:gtk',
           ],
         },],
-      ],
-    },
-    {
-      # TODO(darin): Remove in favor of performance_ui_tests.
-      'target_name': 'page_cycler_tests',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'chrome_resources',
-        'chrome_strings',
-        'debugger',
-        'test_support_common',
-        'test_support_ui',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'sources': [
-        'test/page_cycler/page_cycler_test.cc',
-      ],
-      'conditions': [
-        ['OS=="win" and buildtype=="Official"', {
-          'configurations': {
-            'Release': {
-              'msvs_settings': {
-                'VCCLCompilerTool': {
-                  'WholeProgramOptimization': 'false',
-                },
-              },
-            },
-          },
-        },],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../views/views.gyp:views',
-          ],
-        }],
       ],
     },
     {
@@ -3201,110 +3075,6 @@
           ],
         }],
       ],
-    },
-    {
-      # TODO(darin): Remove in favor of performance_ui_tests.
-      'target_name': 'tab_switching_test',
-      'type': 'executable',
-      'run_as': {
-        'action': ['$(TargetPath)', '--gtest_print_time'],
-      },
-      'dependencies': [
-        'chrome',
-        'debugger',
-        'test_support_common',
-        'test_support_ui',
-        'theme_resources',
-        'theme_resources_standard',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/tab_switching/tab_switching_test.cc',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '<(allocator_target)',
-          ],
-        },],
-      ],
-    },
-    {
-      # TODO(darin): Remove in favor of performance_ui_tests.
-      'target_name': 'memory_test',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'debugger',
-        'test_support_common',
-        'test_support_ui',
-        'theme_resources',
-        'theme_resources_standard',
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/memory_test/memory_test.cc',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'url_fetch_test',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'debugger',
-        'test_support_common',
-        'test_support_ui',
-        'theme_resources',
-        'theme_resources_standard',
-        '../base/base.gyp:base',
-        '../net/net.gyp:net',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/url_fetch_test/url_fetch_test.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-        }], # OS="win"
-      ], # conditions
     },
     {
       'target_name': 'sync_unit_tests',
