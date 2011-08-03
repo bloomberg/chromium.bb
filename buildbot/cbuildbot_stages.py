@@ -849,9 +849,10 @@ class ArchiveStage(NonHaltingBuilderStage):
           self._set_version, self._local_archive_path, debug)
 
     try:
-      background.RunParallelSteps([UploadTestResults,
-                                   ArchiveDebugSymbols,
-                                   LegacyArchiveBuild])
+      # TODO(davidjames): Run these steps in parallel.
+      ArchiveDebugSymbols()
+      LegacyArchiveBuild()
+      UploadTestResults()
     finally:
       # Update the _index.html file with the test artifacts and build artifacts
       # uploaded above.

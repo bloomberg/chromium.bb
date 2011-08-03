@@ -923,7 +923,7 @@ class ArchiveStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
-  def testArchive(self):
+  def disabledTestArchive(self):
     """Simple did-it-run test."""
     self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^/var/www'), ignore_errors=True)
@@ -944,7 +944,7 @@ class ArchiveStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
-  def testTrybotArchive(self):
+  def disabledTestTrybotArchive(self):
     self.options.buildbot = False
     self.mox.StubOutWithMock(shutil, 'rmtree')
     shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
