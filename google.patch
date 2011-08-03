@@ -155,6 +155,43 @@ Index: jdmarker.c
        if (! get_sos(cinfo))
  	return JPEG_SUSPENDED;
        cinfo->unread_marker = 0;	/* processed the marker */
+Index: jmorecfg.h
+===================================================================
+--- jmorecfg.h	(revision 677)
++++ jmorecfg.h	(working copy)
+@@ -153,14 +153,18 @@
+ /* INT16 must hold at least the values -32768..32767. */
+ 
+ #ifndef XMD_H			/* X11/xmd.h correctly defines INT16 */
++#ifndef _BASETSD_H_		/* basetsd.h correctly defines INT32 */
+ typedef short INT16;
+ #endif
++#endif
+ 
+ /* INT32 must hold at least signed 32-bit values. */
+ 
+ #ifndef XMD_H			/* X11/xmd.h correctly defines INT32 */
++#ifndef _BASETSD_H_		/* basetsd.h correctly defines INT32 */
+ typedef long INT32;
+ #endif
++#endif
+ 
+ /* Datatype used for image dimensions.  The JPEG standard only supports
+  * images up to 64K*64K due to 16-bit fields in SOF markers.  Therefore
+@@ -210,11 +214,13 @@
+  * explicit coding is needed; see uses of the NEED_FAR_POINTERS symbol.
+  */
+ 
++#ifndef FAR
+ #ifdef NEED_FAR_POINTERS
+ #define FAR  far
+ #else
+ #define FAR
+ #endif
++#endif
+ 
+ 
+ /*
 Index: jpeglib.h
 ===================================================================
 --- jpeglib.h	(revision 677)
