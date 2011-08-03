@@ -17,8 +17,10 @@ enum {
   kRoundedTopRightCorner = 1 << 1,
   kRoundedBottomLeftCorner = 1 << 2,
   kRoundedBottomRightCorner = 1 << 3,
-  kRoundedAllCorners = kRoundedTopLeftCorner & kRoundedTopRightCorner &
-      kRoundedBottomLeftCorner & kRoundedBottomRightCorner
+  kRoundedAllCorners = kRoundedTopLeftCorner |
+                       kRoundedTopRightCorner |
+                       kRoundedBottomLeftCorner |
+                       kRoundedBottomRightCorner
 };
 
 // Constants that affect where the text is positioned within the view. They

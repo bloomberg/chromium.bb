@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -283,7 +284,9 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
                           mouse_pos.y() - NSMaxY(window_frame));
 
   // If the mouse is in a position where we think it would move the
-  // status bubble, figure out where and how the bubble should be moved.
+  // status bubble, figure out where and how the bubble should be moved, and
+  // what sorts of corners it should have.
+  unsigned long corner_flags;
   if (relative_pos.y() < kMousePadding &&
       relative_pos.x() < kMousePadding) {
     int offset = kMousePadding - relative_pos.y();
@@ -314,14 +317,13 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
       // and mate to the edges of the tab content).
       if (offset >= NSHeight(window_frame)) {
         offset = NSHeight(window_frame);
-        [[window_ contentView] setCornerFlags:
-            kRoundedBottomLeftCorner | kRoundedBottomRightCorner];
+        corner_flags = kRoundedBottomLeftCorner | kRoundedBottomRightCorner;
       } else if (offset > 0) {
-        [[window_ contentView] setCornerFlags:
-            kRoundedTopRightCorner | kRoundedBottomLeftCorner |
-            kRoundedBottomRightCorner];
+        corner_flags = kRoundedTopRightCorner |
+                       kRoundedBottomLeftCorner |
+                       kRoundedBottomRightCorner;
       } else {
-        [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
+        corner_flags = kRoundedTopRightCorner;
       }
 
       // Place the bubble on the left, but slightly lower.
@@ -329,13 +331,17 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
     } else {
       // Cannot move the bubble down without obscuring other content.
       // Move it to the far right instead.
-      [[window_ contentView] setCornerFlags:kRoundedTopLeftCorner];
+      corner_flags = kRoundedTopLeftCorner;
       window_frame.origin.x += NSWidth(base_rect) - NSWidth(window_frame);
     }
   } else {
     // Use the default position in the lower left corner of the content area.
-    [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
+    corner_flags = kRoundedTopRightCorner;
   }
+
+  corner_flags |= OSDependentCornerFlags(window_frame);
+
+  [[window_ contentView] setCornerFlags:corner_flags];
   [window_ setFrame:window_frame display:YES];
 }
 
@@ -643,6 +649,14 @@ void StatusBubbleMac::ExpandBubble() {
   if (NSPointInRect(NSMakePoint(p.x(), p.y()), actual_window_frame))
     return;
 
+  // Get the current corner flags and see what needs to change based on the
+  // expansion. This is only needed on Lion, which has rounded window bottoms.
+  if (base::mac::IsOSLionOrLater()) {
+    unsigned long corner_flags = [[window_ contentView] cornerFlags];
+    corner_flags |= OSDependentCornerFlags(actual_window_frame);
+    [[window_ contentView] setCornerFlags:corner_flags];
+  }
+
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:kExpansionDuration];
   [[window_ animator] setFrame:actual_window_frame display:YES];
@@ -689,4 +703,32 @@ NSRect StatusBubbleMac::CalculateWindowFrame(bool expanded_width) {
 
   screenRect.size = size;
   return screenRect;
+}
+
+unsigned long StatusBubbleMac::OSDependentCornerFlags(NSRect window_frame) {
+  unsigned long corner_flags = 0;
+
+  if (base::mac::IsOSLionOrLater()) {
+    NSRect parent_frame = [parent_ frame];
+
+    // Round the bottom corners when they're right up against the
+    // corresponding edge of the parent window, or when below the parent
+    // window.
+    if (NSMinY(window_frame) <= NSMinY(parent_frame)) {
+      if (NSMinX(window_frame) == NSMinX(parent_frame)) {
+        corner_flags |= kRoundedBottomLeftCorner;
+      }
+
+      if (NSMaxX(window_frame) == NSMaxX(parent_frame)) {
+        corner_flags |= kRoundedBottomRightCorner;
+      }
+    }
+
+    // Round the top corners when the bubble is below the parent window.
+    if (NSMinY(window_frame) < NSMinY(parent_frame)) {
+      corner_flags |= kRoundedTopLeftCorner | kRoundedTopRightCorner;
+    }
+  }
+
+  return corner_flags;
 }

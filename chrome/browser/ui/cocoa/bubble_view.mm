@@ -9,8 +9,9 @@
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
-// The roundedness of the edges of our bubble.
-const int kBubbleCornerRadius = 4.0f;
+// The roundedness of the edges of the bubble. This matches the value used on
+// Lion for window corners.
+const int kBubbleCornerRadius = 3;
 const float kWindowEdge = 0.7f;
 
 @implementation BubbleView

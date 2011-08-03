@@ -129,6 +129,17 @@ class StatusBubbleMac : public StatusBubble {
   // |expanded_width|, use entire width of parent frame.
   NSRect CalculateWindowFrame(bool expanded_width);
 
+  // Returns the flags to be used to round the corners of the status bubble.
+  // Before 10.7, windows have square bottom corners, but in 10.7, the bottom
+  // corners are rounded. This method considers the bubble's placement (as
+  // proposed in window_frame) relative to its parent window in determining
+  // which flags to return. This function may choose to round any corner,
+  // including top corners. Note that there may be other reasons that a
+  // status bubble's corner may be rounded in addition to those dependent on
+  // OS version, and flags will be set or unset elsewhere to address these
+  // concerns.
+  unsigned long OSDependentCornerFlags(NSRect window_frame);
+
   // The window we attach ourselves to.
   NSWindow* parent_;  // WEAK
 
