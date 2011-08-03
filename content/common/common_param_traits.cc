@@ -127,6 +127,9 @@ void ParamTraits<ResourceType::Type>::Log(const param_type& p, std::string* l) {
     case ResourceType::FAVICON:
       type = "FAVICON";
       break;
+    case ResourceType::XHR:
+      type = "XHR";
+      break;
     default:
       type = "UNKNOWN";
       break;

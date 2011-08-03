@@ -26,6 +26,7 @@ class ResourceType {
     PREFETCH,        // an explicitly requested prefetch
     PRERENDER,       // an explicitly requested prerender
     FAVICON,         // a favicon
+    XHR,             // a XMLHttpRequest
     LAST_TYPE        // Place holder so we don't need to change ValidType
                      // everytime.
   };
@@ -54,7 +55,8 @@ class ResourceType {
            type == IMAGE ||
            type == FONT_RESOURCE ||
            type == SUB_RESOURCE ||
-           type == WORKER;
+           type == WORKER ||
+           type == XHR;
   }
 
  private:
