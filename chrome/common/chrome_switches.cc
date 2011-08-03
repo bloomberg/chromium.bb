@@ -1101,12 +1101,12 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // Enables Advanced File System.
 const char kEnableAdvancedFileSystem[]      = "enable-advanced-fs";
 
+// Enables overriding the path for the default authentication extension.
+const char kAuthExtensionPath[]             = "auth-ext-path";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
-
-// Enables overriding the path for the default authentication extension.
-const char kAuthExtensionPath[]             = "auth-ext-path";
 
 // Enables overriding the path off file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";

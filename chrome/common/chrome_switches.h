@@ -304,9 +304,9 @@ extern const char kGuestSession[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
+extern const char kAuthExtensionPath[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];
-extern const char kAuthExtensionPath[];
 extern const char kFileManagerExtensionPath[];
 #endif
 #endif

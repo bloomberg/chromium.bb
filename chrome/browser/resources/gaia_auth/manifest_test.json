@@ -1,0 +1,18 @@
+{
+  // chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/
+  "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQC4L17nAfeTd6Xhtx96WhQ6DSr8KdHeQmfzgCkieKLCgUkWdwB9G1DCuh0EPMDn1MdtSwUAT7xE36APEzi0X/UpKjOVyX8tCC3aQcLoRAE0aJAvCcGwK7qIaQaczHmHKvPC2lrRdzSoMMTC5esvHX+ZqIBMi123FOL0dGW6OPKzIwIBIw==",
+  "name": "GaiaTestAuthExtension",
+  "version": "0.0.1",
+  "description": "GAIA Test Component Extension",
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/accounts/*"],
+      "js": ["content.js"],
+      "all_frames": true
+    }
+  ],
+  "permissions": [
+      "https://www.google.com/accounts/*",
+      "chrome://oobe/"
+  ]
+}
