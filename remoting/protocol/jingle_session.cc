@@ -34,8 +34,6 @@ namespace {
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
-const char kVideoRtpChannelName[] = "videortp";
-const char kVideoRtcpChannelName[] = "videortcp";
 
 const int kMasterKeyLength = 16;
 const int kChannelKeyLength = 16;
@@ -163,8 +161,6 @@ void JingleSession::CloseInternal(int result, bool failed) {
     control_channel_socket_.reset();
     event_channel_socket_.reset();
     video_channel_socket_.reset();
-    video_rtp_channel_socket_.reset();
-    video_rtcp_channel_socket_.reset();
     STLDeleteContainerPairSecondPointers(channel_connectors_.begin(),
                                          channel_connectors_.end());
 
@@ -235,12 +231,14 @@ net::Socket* JingleSession::video_channel() {
 
 net::Socket* JingleSession::video_rtp_channel() {
   DCHECK(CalledOnValidThread());
-  return video_rtp_channel_socket_.get();
+  NOTREACHED();
+  return NULL;
 }
 
 net::Socket* JingleSession::video_rtcp_channel() {
   DCHECK(CalledOnValidThread());
-  return video_rtcp_channel_socket_.get();
+  NOTREACHED();
+  return NULL;
 }
 
 const std::string& JingleSession::jid() {
@@ -427,7 +425,7 @@ bool JingleSession::InitializeConfigFromDescription(
   }
 
   scoped_ptr<SessionConfig> config(
-    content_description->config()->GetFinalConfig());
+      content_description->config()->GetFinalConfig());
   if (!config.get()) {
     LOG(ERROR) << "Connection response does not specify configuration";
     return false;
@@ -515,12 +513,6 @@ void JingleSession::CreateChannels() {
   CreateStreamChannel(kControlChannelName, stream_callback);
   CreateStreamChannel(kEventChannelName, stream_callback);
   CreateStreamChannel(kVideoChannelName, stream_callback);
-
-  DatagramChannelCallback datagram_callback(
-      base::Bind(&JingleSession::OnChannelConnected,
-                 base::Unretained(this)));
-  CreateDatagramChannel(kVideoRtpChannelName, datagram_callback);
-  CreateDatagramChannel(kVideoRtcpChannelName, datagram_callback);
 }
 
 void JingleSession::OnStreamChannelConnected(const std::string& name,
@@ -543,17 +535,12 @@ void JingleSession::OnChannelConnected(const std::string& name,
     event_channel_socket_.reset(socket);
   } else if (name == kVideoChannelName) {
     video_channel_socket_.reset(socket);
-  } else if (name == kVideoRtpChannelName) {
-    video_rtp_channel_socket_.reset(socket);
-  } else if (name == kVideoRtcpChannelName) {
-    video_rtcp_channel_socket_.reset(socket);
   } else {
     NOTREACHED();
   }
 
   if (control_channel_socket_.get() && event_channel_socket_.get() &&
-      video_channel_socket_.get() && video_rtp_channel_socket_.get() &&
-      video_rtcp_channel_socket_.get()) {
+      video_channel_socket_.get()) {
     // TODO(sergeyu): State should be set to CONNECTED in OnAccept
     // independent of the channels state.
     SetState(CONNECTED);

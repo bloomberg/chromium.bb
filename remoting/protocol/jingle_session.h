@@ -186,8 +186,6 @@ class JingleSession : public protocol::Session,
   scoped_ptr<net::Socket> control_channel_socket_;
   scoped_ptr<net::Socket> event_channel_socket_;
   scoped_ptr<net::Socket> video_channel_socket_;
-  scoped_ptr<net::Socket> video_rtp_channel_socket_;
-  scoped_ptr<net::Socket> video_rtcp_channel_socket_;
 
   ScopedRunnableMethodFactory<JingleSession> task_factory_;
 

@@ -723,7 +723,8 @@ TEST_F(JingleSessionTest, TestEventChannel) {
 }
 
 // Verify that data can be transmitted over the video RTP channel.
-TEST_F(JingleSessionTest, TestVideoRtpChannel) {
+// Disabled because RTP support is disabled, see crbug.com/91538 .
+TEST_F(JingleSessionTest, DISABLED_TestVideoRtpChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<UDPChannelTester> tester(
