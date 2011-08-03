@@ -354,8 +354,10 @@ def _DetermineDefaultBuildRoot(internal_build):
 def _RunBuildStagesWrapper(bot_id, options, build_config):
   """Helper function that wraps RunBuildStages()."""
   # Start tee-ing output to file.
-  cros_lib.Info('Saving output to %s file' % _BUILDBOT_LOG_FILE)
-  tee_proc = tee.Tee(_BUILDBOT_LOG_FILE)
+  log_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          _BUILDBOT_LOG_FILE)
+  cros_lib.Info('Saving output to %s' % log_file)
+  tee_proc = tee.Tee(log_file)
   tee_proc.start()
 
   try:
