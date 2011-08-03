@@ -799,7 +799,10 @@ bool ZygoteMain(const MainFunctionParams& params,
                     "Seccomp sandbox. Running renderers with Seccomp "
                     "sandboxing disabled.";
     } else {
-      LOG(WARNING) << "Enabling experimental Seccomp sandbox.";
+      // TODO(evan): switch to VLOG once we shake out all the sandbox bugs.
+      LOG(WARNING) << "Enabling experimental Seccomp sandbox; if you encounter "
+                   << "any problems, please try running with "
+                   << "--disable-seccomp-sandbox and file bugs.";
       sandbox_flags |= ZygoteHost::kSandboxSeccomp;
     }
   }

@@ -29,11 +29,16 @@ static bool SeccompSandboxEnabled() {
   // TODO(evan): turn on for release too once we've flushed out all the bugs,
   // allowing us to delete this file entirely and just rely on the "disabled"
   // switch.
+#ifdef NDEBUG
+  // Off by default; allow turning on with a switch.
   return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSeccompSandbox) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSeccompSandbox);
+      switches::kEnableSeccompSandbox);
+#else
+  // On by default; allow turning off with a switch.
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSeccompSandbox);
+#endif  // NDEBUG
 }
-#endif
+#endif  // SECCOMP_SANDBOX
 
 #endif  // CONTENT_COMMON_SECCOMP_SANDBOX_H_
