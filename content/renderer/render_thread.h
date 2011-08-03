@@ -236,6 +236,9 @@ class RenderThread : public RenderThreadBase,
   // Returns true iff the extension is registered.
   bool IsRegisteredExtension(const std::string& v8_extension_name) const;
 
+  // We initialize WebKit as late as possible.
+  void EnsureWebKitInitialized();
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
@@ -250,9 +253,6 @@ class RenderThread : public RenderThreadBase,
   void OnPurgePluginListCache(bool reload_pages);
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
-
-  // We initialize WebKit as late as possible.
-  void EnsureWebKitInitialized();
 
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;

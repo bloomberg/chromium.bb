@@ -138,6 +138,20 @@ class RenderViewZoomer : public RenderViewVisitor {
 
 }  // namespace
 
+static void* CreateHistogram(
+    const char *name, int min, int max, size_t buckets) {
+  if (min <= 0)
+    min = 1;
+  base::Histogram* histogram = base::Histogram::FactoryGet(
+      name, min, max, buckets, base::Histogram::kUmaTargetedHistogramFlag);
+  return histogram;
+}
+
+static void AddHistogramSample(void* hist, int sample) {
+  base::Histogram* histogram = static_cast<base::Histogram*>(hist);
+  histogram->Add(sample);
+}
+
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
 RenderThread::RenderThread() {
@@ -400,6 +414,103 @@ void RenderThread::OnDOMStorageEvent(
       params.storage_type == DOM_STORAGE_LOCAL);
 }
 
+void RenderThread::EnsureWebKitInitialized() {
+  if (webkit_client_.get())
+    return;
+
+  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
+  v8::V8::SetCreateHistogramFunction(CreateHistogram);
+  v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
+
+  webkit_client_.reset(new RendererWebKitClientImpl);
+  WebKit::initialize(webkit_client_.get());
+
+  WebScriptController::enableV8SingleThreadMode();
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  webkit_glue::EnableWebCoreLogChannels(
+      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
+
+  if (command_line.HasSwitch(switches::kEnableBenchmarking))
+    RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
+
+  if (command_line.HasSwitch(switches::kPlaybackMode) ||
+      command_line.HasSwitch(switches::kRecordMode) ||
+      command_line.HasSwitch(switches::kNoJsRandomness)) {
+    RegisterExtension(extensions_v8::PlaybackExtension::Get());
+  }
+
+  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
+
+  WebRuntimeFeatures::enableSockets(
+      !command_line.HasSwitch(switches::kDisableWebSockets));
+
+  WebRuntimeFeatures::enableDatabase(
+      !command_line.HasSwitch(switches::kDisableDatabases));
+
+  WebRuntimeFeatures::enableDataTransferItems(
+      !command_line.HasSwitch(switches::kDisableDataTransferItems));
+
+  WebRuntimeFeatures::enableApplicationCache(
+      !command_line.HasSwitch(switches::kDisableApplicationCache));
+
+  WebRuntimeFeatures::enableNotifications(
+      !command_line.HasSwitch(switches::kDisableDesktopNotifications));
+
+  WebRuntimeFeatures::enableLocalStorage(
+      !command_line.HasSwitch(switches::kDisableLocalStorage));
+  WebRuntimeFeatures::enableSessionStorage(
+      !command_line.HasSwitch(switches::kDisableSessionStorage));
+
+  WebRuntimeFeatures::enableIndexedDatabase(
+      !command_line.HasSwitch(switches::kDisableIndexedDatabase));
+
+  WebRuntimeFeatures::enableGeolocation(
+      !command_line.HasSwitch(switches::kDisableGeolocation));
+
+  WebKit::WebRuntimeFeatures::enableMediaStream(
+      command_line.HasSwitch(switches::kEnableMediaStream));
+
+#if defined(OS_CHROMEOS)
+  // TODO(crogers): enable once Web Audio has been tested and optimized.
+  WebRuntimeFeatures::enableWebAudio(false);
+#else
+  WebRuntimeFeatures::enableWebAudio(
+      !command_line.HasSwitch(switches::kDisableWebAudio));
+#endif
+
+  WebRuntimeFeatures::enablePushState(true);
+
+#ifdef TOUCH_UI
+  WebRuntimeFeatures::enableTouch(true);
+  WebKit::WebPopupMenu::setMinimumRowHeight(kPopupListBoxMinimumRowHeight);
+#else
+  // TODO(saintlou): in the future touch should always be enabled
+  WebRuntimeFeatures::enableTouch(false);
+#endif
+
+  WebRuntimeFeatures::enableDeviceMotion(
+      command_line.HasSwitch(switches::kEnableDeviceMotion));
+
+  WebRuntimeFeatures::enableDeviceOrientation(
+      !command_line.HasSwitch(switches::kDisableDeviceOrientation));
+
+  WebRuntimeFeatures::enableSpeechInput(
+      !command_line.HasSwitch(switches::kDisableSpeechInput));
+
+  WebRuntimeFeatures::enableFileSystem(
+      !command_line.HasSwitch(switches::kDisableFileSystem));
+
+  WebRuntimeFeatures::enableJavaScriptI18NAPI(
+      !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
+
+  WebRuntimeFeatures::enableQuota(true);
+
+  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
+}
+
 bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;
@@ -549,117 +660,6 @@ GpuChannelHost* RenderThread::GetGpuChannel() {
     return NULL;
 
   return gpu_channel_.get();
-}
-
-static void* CreateHistogram(
-    const char *name, int min, int max, size_t buckets) {
-  if (min <= 0)
-    min = 1;
-  base::Histogram* histogram = base::Histogram::FactoryGet(
-      name, min, max, buckets, base::Histogram::kUmaTargetedHistogramFlag);
-  return histogram;
-}
-
-static void AddHistogramSample(void* hist, int sample) {
-  base::Histogram* histogram = static_cast<base::Histogram*>(hist);
-  histogram->Add(sample);
-}
-
-void RenderThread::EnsureWebKitInitialized() {
-  if (webkit_client_.get())
-    return;
-
-  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
-  v8::V8::SetCreateHistogramFunction(CreateHistogram);
-  v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
-
-  webkit_client_.reset(new RendererWebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
-
-  WebScriptController::enableV8SingleThreadMode();
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  webkit_glue::EnableWebCoreLogChannels(
-      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
-
-  if (command_line.HasSwitch(switches::kEnableBenchmarking))
-    RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
-
-  if (command_line.HasSwitch(switches::kPlaybackMode) ||
-      command_line.HasSwitch(switches::kRecordMode) ||
-      command_line.HasSwitch(switches::kNoJsRandomness)) {
-    RegisterExtension(extensions_v8::PlaybackExtension::Get());
-  }
-
-  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
-  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
-
-  WebRuntimeFeatures::enableSockets(
-      !command_line.HasSwitch(switches::kDisableWebSockets));
-
-  WebRuntimeFeatures::enableDatabase(
-      !command_line.HasSwitch(switches::kDisableDatabases));
-
-  WebRuntimeFeatures::enableDataTransferItems(
-      !command_line.HasSwitch(switches::kDisableDataTransferItems));
-
-  WebRuntimeFeatures::enableApplicationCache(
-      !command_line.HasSwitch(switches::kDisableApplicationCache));
-
-  WebRuntimeFeatures::enableNotifications(
-      !command_line.HasSwitch(switches::kDisableDesktopNotifications));
-
-  WebRuntimeFeatures::enableLocalStorage(
-      !command_line.HasSwitch(switches::kDisableLocalStorage));
-  WebRuntimeFeatures::enableSessionStorage(
-      !command_line.HasSwitch(switches::kDisableSessionStorage));
-
-  WebRuntimeFeatures::enableIndexedDatabase(
-      !command_line.HasSwitch(switches::kDisableIndexedDatabase));
-
-  WebRuntimeFeatures::enableGeolocation(
-      !command_line.HasSwitch(switches::kDisableGeolocation));
-
-  WebKit::WebRuntimeFeatures::enableMediaStream(
-      command_line.HasSwitch(switches::kEnableMediaStream));
-
-#if defined(OS_CHROMEOS)
-  // TODO(crogers): enable once Web Audio has been tested and optimized.
-  WebRuntimeFeatures::enableWebAudio(false);
-#else
-  WebRuntimeFeatures::enableWebAudio(
-      !command_line.HasSwitch(switches::kDisableWebAudio));
-#endif
-
-  WebRuntimeFeatures::enablePushState(true);
-
-#ifdef TOUCH_UI
-  WebRuntimeFeatures::enableTouch(true);
-  WebKit::WebPopupMenu::setMinimumRowHeight(kPopupListBoxMinimumRowHeight);
-#else
-  // TODO(saintlou): in the future touch should always be enabled
-  WebRuntimeFeatures::enableTouch(false);
-#endif
-
-  WebRuntimeFeatures::enableDeviceMotion(
-      command_line.HasSwitch(switches::kEnableDeviceMotion));
-
-  WebRuntimeFeatures::enableDeviceOrientation(
-      !command_line.HasSwitch(switches::kDisableDeviceOrientation));
-
-  WebRuntimeFeatures::enableSpeechInput(
-      !command_line.HasSwitch(switches::kDisableSpeechInput));
-
-  WebRuntimeFeatures::enableFileSystem(
-      !command_line.HasSwitch(switches::kDisableFileSystem));
-
-  WebRuntimeFeatures::enableJavaScriptI18NAPI(
-      !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
-
-  WebRuntimeFeatures::enableQuota(true);
-
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
 void RenderThread::IdleHandler() {
