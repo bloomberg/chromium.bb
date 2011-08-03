@@ -1737,3 +1737,9 @@
    fun:::ReadManifest
    fun:ComponentUnpacker::ComponentUnpacker
 }
+{
+   bug_91491
+   Heapcheck:Leak
+   ...
+   fun:CrxUpdateService::ProcessPendingItems
+}

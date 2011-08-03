@@ -5204,6 +5204,12 @@
    ...
    fun:_ZN17ComponentUnpackerC1ERKSt6vectorIhSaIhEERK8FilePathP18ComponentInstaller
 }
+{
+   bug_91491
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
