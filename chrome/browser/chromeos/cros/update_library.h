@@ -18,7 +18,6 @@ namespace chromeos {
 // This interface defines interaction with the ChromeOS update library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: chromeos::CrosLibrary::Get()->GetUpdateLibrary()
-
 class UpdateLibrary {
  public:
   // TODO(seanparent): Should make the UpdateProgress type copyable.
@@ -26,7 +25,6 @@ class UpdateLibrary {
   // Modifying the cros library just for that, for a single use case,
   // isn't worth it. Instead we define this a local Status struct that
   // is copyable.
-
   struct Status {
     Status()
         : status(UPDATE_STATUS_IDLE),
@@ -52,13 +50,13 @@ class UpdateLibrary {
 
   class Observer {
    public:
-    virtual ~Observer() { }
+    virtual ~Observer() {}
+
     virtual void UpdateStatusChanged(UpdateLibrary* library) = 0;
   };
 
-//  static UpdateLibrary* GetStubImplementation();
-
   virtual ~UpdateLibrary() {}
+
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(Observer* observer) = 0;
