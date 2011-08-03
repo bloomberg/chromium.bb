@@ -6,11 +6,9 @@
 
 /*
  * This is a linker script installed as "libppapi.a" so that "-lppapi"
- * in a linking command will find it.  We link in the link_segment_gap.o
- * object that makes sure the layout is compatible with IRT loading, and
- * also supply the ppapi_stub library that defines a main function for
- * PPAPI-based programs.  That library requires libpthread, so we link
- * to it here as well.
+ * in a linking command will find it.  We link in the ppapi_stub library
+ * that defines a main function for PPAPI-based programs.
+ * That library requires libpthread, so we link to it here as well.
  */
 
-INPUT ( link_segment_gap.o libppapi_stub.a libpthread.a )
+INPUT ( libppapi_stub.a libpthread.a )

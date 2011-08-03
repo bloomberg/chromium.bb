@@ -2529,6 +2529,11 @@ for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
     nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
 
+# Since the default linking layout is compatible with IRT loading now,
+# we should not need anything special here.
+# TODO(mcgrathr): Perhaps remove the variable entirely at some point.
+nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
+
 if nacl_env.Bit('irt'):
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
   # Even non-PPAPI nexes need this for IRT-compatible linking.
@@ -2536,9 +2541,7 @@ if nacl_env.Bit('irt'):
   # the non-IRT case under dynamic linking, that tries to link
   # in libppruntime.so with its undefined symbols and fails
   # for nexes that aren't actually PPAPI users.
-  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=nacl_env['PPAPI_LIBS'])
 else:
-  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely
   # on individual libraries like 'platform' being included by default.
