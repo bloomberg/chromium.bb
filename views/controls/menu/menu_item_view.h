@@ -322,10 +322,7 @@ class VIEWS_API MenuItemView : public View {
 
   // Set top and bottom margins in pixels.  If no margin is set or a
   // negative margin is specified then MenuConfig values are used.
-  void set_margins(int top_margin, int bottom_margin) {
-    top_margin_ = top_margin;
-    bottom_margin_ = bottom_margin;
-  }
+  void SetMargins(int top_margin, int bottom_margin);
 
   // Set the position of the menu with respect to the bounds (top
   // level only).

@@ -33,6 +33,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -40,7 +41,6 @@ namespace {
 
 // Offsets for views menu ids (main menu and submenu ids use the same
 // namespace).
-const int kItemIndexMask = 0x0fff;
 const int kMainIndexMask = 0x1000;
 const int kVPNIndexMask  = 0x2000;
 const int kMoreIndexMask = 0x4000;
@@ -64,11 +64,28 @@ std::string EscapeAmpersands(const std::string& input) {
   return str;
 }
 
+// Set vertical menu margins for entire menu hierarchy.
+void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
+  menu_item_view->SetMargins(top, bottom);
+  if (menu_item_view->HasSubmenu()) {
+    views::SubmenuView* submenu = menu_item_view->GetSubmenu();
+    for (int i = 0; i < submenu->child_count(); ++i) {
+      // Must skip separators.
+      views::View* item = submenu->child_at(i);
+      if (item->id() == views::MenuItemView::kMenuItemViewID) {
+        views::MenuItemView* menu_item =
+            static_cast<views::MenuItemView*>(item);
+        SetMenuMargins(menu_item, top, bottom);
+      }
+    }
+  }
+}
+
 }  // namespace
 
 namespace chromeos {
 
-class NetworkMenuModel : public views::MenuDelegate {
+class NetworkMenuModel : public ui::MenuModel {
  public:
   struct NetworkInfo {
     NetworkInfo() : need_passphrase(false),
@@ -142,26 +159,30 @@ class NetworkMenuModel : public views::MenuDelegate {
   virtual void InitMenuItems(bool is_browser_mode,
                              bool should_open_button_options) = 0;
 
-  // PopulateMenu() clears and reinstalls the menu items defined in this
-  // instance by calling PopulateMenuItem() on each one.  Subclasses override
-  // PopulateMenuItem(), transform command_id into the correct range for
-  // the menu, and call the base class PopulateMenuItem().
-  virtual void PopulateMenu(views::MenuItemView* menu);
-  virtual void PopulateMenuItem(views::MenuItemView* menu,
-                                int index,
-                                int command_id);
-
   // Menu item field accessors.
   const MenuItemVector& menu_items() const { return menu_items_; }
-  int GetItemCount() const;
-  ui::MenuModel::ItemType GetTypeAt(int index) const;
-  string16 GetLabelAt(int index) const;
-  const gfx::Font* GetLabelFontAt(int index) const;
-  bool IsItemCheckedAt(int index) const;
-  bool GetIconAt(int index, SkBitmap* icon);
-  bool IsEnabledAt(int index) const;
-  NetworkMenuModel* GetSubmenuModelAt(int index) const;
-  void ActivatedAt(int index);
+
+  // ui::MenuModel implementation
+  // GetCommandIdAt() must be implemented by subclasses.
+  virtual bool HasIcons() const OVERRIDE;
+  virtual int GetItemCount() const OVERRIDE;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual string16 GetLabelAt(int index) const OVERRIDE;
+  virtual bool IsItemDynamicAt(int index) const OVERRIDE;
+  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
+  virtual bool GetAcceleratorAt(int index,
+                                ui::Accelerator* accelerator) const OVERRIDE;
+  virtual bool IsItemCheckedAt(int index) const OVERRIDE;
+  virtual int GetGroupIdAt(int index) const OVERRIDE;
+  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
+      int index) const OVERRIDE;
+  virtual bool IsEnabledAt(int index) const OVERRIDE;
+  virtual bool IsVisibleAt(int index) const OVERRIDE;
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const OVERRIDE;
+  virtual void HighlightChangedTo(int index) OVERRIDE;
+  virtual void ActivatedAt(int index) OVERRIDE;
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
 
  protected:
   enum MenuItemFlags {
@@ -217,9 +238,9 @@ class MoreMenuModel : public NetworkMenuModel {
   // NetworkMenuModel implementation.
   virtual void InitMenuItems(bool is_browser_mode,
                              bool should_open_button_options) OVERRIDE;
-  virtual void PopulateMenuItem(views::MenuItemView* menu,
-                                int index,
-                                int command_id) OVERRIDE;
+
+  // ui::MenuModel implementation
+  virtual int GetCommandIdAt(int index) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MoreMenuModel);
@@ -233,9 +254,9 @@ class VPNMenuModel : public NetworkMenuModel {
   // NetworkMenuModel implementation.
   virtual void InitMenuItems(bool is_browser_mode,
                              bool should_open_button_options) OVERRIDE;
-  virtual void PopulateMenuItem(views::MenuItemView* menu,
-                                int index,
-                                int command_id) OVERRIDE;
+
+  // ui::MenuModel implementation
+  virtual int GetCommandIdAt(int index) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VPNMenuModel);
@@ -253,19 +274,11 @@ class MainMenuModel : public NetworkMenuModel {
   // NetworkMenuModel implementation.
   virtual void InitMenuItems(bool is_browser_mode,
                              bool should_open_button_options) OVERRIDE;
-  virtual void PopulateMenuItem(views::MenuItemView* menu,
-                                int index,
-                                int command_id) OVERRIDE;
 
-  // views::MenuDelegate implementation.
-  virtual const gfx::Font& GetLabelFont(int id) const OVERRIDE;
-  virtual bool IsItemChecked(int id) const OVERRIDE;
-  virtual bool IsCommandEnabled(int id) const OVERRIDE;
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  // ui::MenuModel implementation
+  virtual int GetCommandIdAt(int index) const OVERRIDE;
 
  private:
-  const NetworkMenuModel* GetMenuItemModel(int id) const;
-
   scoped_ptr<NetworkMenuModel> vpn_menu_model_;
   scoped_ptr<MoreMenuModel> more_menu_model_;
 
@@ -274,59 +287,6 @@ class MainMenuModel : public NetworkMenuModel {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, public methods:
-
-void NetworkMenuModel::PopulateMenu(views::MenuItemView* menu) {
-  if (menu->HasSubmenu()) {
-    const int old_count = menu->GetSubmenu()->child_count();
-    for (int i = 0; i < old_count; ++i)
-      menu->RemoveMenuItemAt(0);
-  }
-
-  const int menu_items_count = GetItemCount();
-  for (int i = 0; i < menu_items_count; ++i)
-    PopulateMenuItem(menu, i, i);
-}
-
-void NetworkMenuModel::PopulateMenuItem(
-    views::MenuItemView* menu, int index, int command_id) {
-  DCHECK_GT(GetItemCount(), index);
-  switch (GetTypeAt(index)) {
-    case ui::MenuModel::TYPE_SEPARATOR:
-      menu->AppendSeparator();
-      break;
-    case ui::MenuModel::TYPE_COMMAND: {
-      views::MenuItemView* item = NULL;
-      SkBitmap icon;
-      if (GetIconAt(index, &icon)) {
-        item = menu->AppendMenuItemWithIcon(command_id,
-                                            UTF16ToWide(GetLabelAt(index)),
-                                            icon);
-      } else {
-        item = menu->AppendMenuItemWithLabel(command_id,
-                                             UTF16ToWide(GetLabelAt(index)));
-      }
-      item->set_margins(kTopMargin, kBottomMargin);
-      break;
-    }
-    case ui::MenuModel::TYPE_SUBMENU: {
-      views::MenuItemView* submenu = NULL;
-      SkBitmap icon;
-      if (GetIconAt(index, &icon)) {
-        submenu = menu->AppendSubMenuWithIcon(command_id,
-                                              UTF16ToWide(GetLabelAt(index)),
-                                              icon);
-      } else {
-        submenu = menu->AppendSubMenu(command_id,
-                                      UTF16ToWide(GetLabelAt(index)));
-      }
-      submenu->set_margins(kTopMargin, kBottomMargin);
-      GetSubmenuModelAt(index)->PopulateMenu(submenu);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
 
 void NetworkMenuModel::ConnectToNetworkAt(int index,
                                           const std::string& passphrase,
@@ -416,6 +376,10 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, ui::MenuModel implementation:
 
+bool NetworkMenuModel::HasIcons() const {
+  return true;
+}
+
 int NetworkMenuModel::GetItemCount() const {
   return static_cast<int>(menu_items_.size());
 }
@@ -426,6 +390,10 @@ ui::MenuModel::ItemType NetworkMenuModel::GetTypeAt(int index) const {
 
 string16 NetworkMenuModel::GetLabelAt(int index) const {
   return menu_items_[index].label;
+}
+
+bool NetworkMenuModel::IsItemDynamicAt(int index) const {
+  return false;
 }
 
 const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
@@ -439,9 +407,18 @@ const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
   return font;
 }
 
+bool NetworkMenuModel::GetAcceleratorAt(int index,
+                                        ui::Accelerator* accelerator) const {
+  return false;
+}
+
 bool NetworkMenuModel::IsItemCheckedAt(int index) const {
   // All ui::MenuModel::TYPE_CHECK menu items are checked.
   return true;
+}
+
+int NetworkMenuModel::GetGroupIdAt(int index) const {
+  return 0;
 }
 
 bool NetworkMenuModel::GetIconAt(int index, SkBitmap* icon) {
@@ -452,12 +429,24 @@ bool NetworkMenuModel::GetIconAt(int index, SkBitmap* icon) {
   return false;
 }
 
+ui::ButtonMenuItemModel* NetworkMenuModel::GetButtonMenuItemAt(
+    int index) const {
+  return NULL;
+}
+
 bool NetworkMenuModel::IsEnabledAt(int index) const {
   return !(menu_items_[index].flags & FLAG_DISABLED);
 }
 
-NetworkMenuModel* NetworkMenuModel::GetSubmenuModelAt(int index) const {
+bool NetworkMenuModel::IsVisibleAt(int index) const {
+  return true;
+}
+
+ui::MenuModel* NetworkMenuModel::GetSubmenuModelAt(int index) const {
   return menu_items_[index].sub_menu_model;
+}
+
+void NetworkMenuModel::HighlightChangedTo(int index) {
 }
 
 void NetworkMenuModel::ActivatedAt(int index) {
@@ -506,6 +495,9 @@ void NetworkMenuModel::ActivatedAt(int index) {
   }
 }
 
+void NetworkMenuModel::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, private methods:
 
@@ -535,16 +527,6 @@ void NetworkMenuModel::ShowOther(ConnectionType type) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // MainMenuModel
-
-const NetworkMenuModel* MainMenuModel::GetMenuItemModel(int id) const {
-  if (id & kMoreIndexMask)
-    return more_menu_model_.get();
-  else if (id & kVPNIndexMask)
-    return vpn_menu_model_.get();
-  else if (id & kMainIndexMask)
-    return this;
-  return NULL;
-}
 
 void MainMenuModel::InitMenuItems(bool is_browser_mode,
                                   bool should_open_button_options) {
@@ -864,45 +846,8 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
   }
 }
 
-void MainMenuModel::PopulateMenuItem(
-    views::MenuItemView* menu, int index, int command_id) {
-  int main_command_id = command_id | kMainIndexMask;
-  NetworkMenuModel::PopulateMenuItem(menu, index, main_command_id);
-}
-
-// views::MenuDelegate implementation.
-
-const gfx::Font& MainMenuModel::GetLabelFont(int id) const {
-  const NetworkMenuModel* model = GetMenuItemModel(id);
-  const gfx::Font* font = NULL;
-  if (model)
-    font = model->GetLabelFontAt(id & kItemIndexMask);
-  return font ? *font : views::MenuDelegate::GetLabelFont(id);
-}
-
-bool MainMenuModel::IsItemChecked(int id) const {
-  const NetworkMenuModel* model = GetMenuItemModel(id);
-  if (model)
-    return model->IsItemCheckedAt(id & kItemIndexMask);
-  return views::MenuDelegate::IsItemChecked(id);
-}
-
-bool MainMenuModel::IsCommandEnabled(int id) const {
-  const NetworkMenuModel* model = GetMenuItemModel(id);
-  if (model)
-    return model->IsEnabledAt(id & kItemIndexMask);
-  return views::MenuDelegate::IsCommandEnabled(id);
-}
-
-// Not const, so can not use GetMenuItemModel().
-void MainMenuModel::ExecuteCommand(int id) {
-  int index = id & kItemIndexMask;
-  if (id & kMoreIndexMask)
-    return more_menu_model_->ActivatedAt(index);
-  else if (id & kVPNIndexMask)
-    return vpn_menu_model_->ActivatedAt(index);
-  else if (id & kMainIndexMask)
-    return ActivatedAt(index);
+int MainMenuModel::GetCommandIdAt(int index) const {
+  return index + kMainIndexMask;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -974,10 +919,8 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
   }
 }
 
-void VPNMenuModel::PopulateMenuItem(
-      views::MenuItemView* menu, int index, int command_id) {
-  int vpn_command_id = command_id | kVPNIndexMask;
-  NetworkMenuModel::PopulateMenuItem(menu, index, vpn_command_id);
+int VPNMenuModel::GetCommandIdAt(int index) const {
+  return index + kVPNIndexMask;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1059,10 +1002,8 @@ void MoreMenuModel::InitMenuItems(
       address_items.begin(), address_items.end());
 }
 
-void MoreMenuModel::PopulateMenuItem(
-      views::MenuItemView* menu, int index, int command_id) {
-  int more_command_id = command_id | kMoreIndexMask;
-  NetworkMenuModel::PopulateMenuItem(menu, index, more_command_id);
+int MoreMenuModel::GetCommandIdAt(int index) const {
+  return index + kMoreIndexMask;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1074,13 +1015,19 @@ NetworkMenu::NetworkMenu(Delegate* delegate, bool is_browser_mode)
       refreshing_menu_(false),
       min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
-  menu_item_view_.reset(new views::MenuItemView(main_menu_model_.get()));
+  menu_model_adapter_.reset(
+      new views::MenuModelAdapter(main_menu_model_.get()));
+  menu_item_view_.reset(new views::MenuItemView(menu_model_adapter_.get()));
   menu_item_view_->set_has_icons(true);
   menu_item_view_->set_menu_position(
       views::MenuItemView::POSITION_BELOW_BOUNDS);
 }
 
 NetworkMenu::~NetworkMenu() {
+}
+
+ui::MenuModel* NetworkMenu::GetMenuModel() {
+  return main_menu_model_.get();
 }
 
 void NetworkMenu::CancelMenu() {
@@ -1093,8 +1040,11 @@ void NetworkMenu::UpdateMenu() {
   refreshing_menu_ = true;
   main_menu_model_->InitMenuItems(
       is_browser_mode(), delegate_->ShouldOpenButtonOptions());
-  main_menu_model_->PopulateMenu(menu_item_view_.get());
+
+  menu_model_adapter_->BuildMenu(menu_item_view_.get());
+  SetMenuMargins(menu_item_view_.get(), kTopMargin, kBottomMargin);
   menu_item_view_->ChildrenChanged();
+
   refreshing_menu_ = false;
 }
 

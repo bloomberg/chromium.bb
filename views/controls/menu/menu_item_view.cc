@@ -516,6 +516,14 @@ int MenuItemView::GetAcceleratorTextWidth() {
   return text.empty() ? 0 : GetFont().GetStringWidth(text);
 }
 
+void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
+  top_margin_ = top_margin;
+  bottom_margin_ = bottom_margin;
+
+  // invalidate GetPreferredSize() cache
+  pref_size_.SetSize(0,0);
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type)

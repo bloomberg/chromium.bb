@@ -32,7 +32,11 @@ void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
       menu->RemoveMenuItemAt(0);
   }
 
-  menu_map_.clear();
+  // Leave entries in the map if the menu is being shown.  This
+  // allows the map to find the menu model of submenus being closed
+  // so ui::MenuModel::MenuClosed() can be called.
+  if (!menu->GetMenuController())
+    menu_map_.clear();
   menu_map_[menu] = menu_model_;
 
   // Repopulate the menu.

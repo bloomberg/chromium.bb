@@ -28,9 +28,14 @@ namespace gfx {
 class Canvas;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 namespace views {
 class MenuItemView;
 class MenuButton;
+class MenuModelAdapter;
 }
 
 namespace chromeos {
@@ -81,6 +86,9 @@ class NetworkMenu {
   NetworkMenu(Delegate* delegate, bool is_browser_mode);
   virtual ~NetworkMenu();
 
+  // Access to menu definition.
+  ui::MenuModel* GetMenuModel();
+
   // Cancels the active menu.
   void CancelMenu();
 
@@ -113,8 +121,9 @@ class NetworkMenu {
   bool refreshing_menu_;
 
   // The network menu.
-  scoped_ptr<views::MenuItemView> menu_item_view_;
   scoped_ptr<NetworkMenuModel> main_menu_model_;
+  scoped_ptr<views::MenuModelAdapter> menu_model_adapter_;
+  scoped_ptr<views::MenuItemView> menu_item_view_;
 
   // Holds minimum width of the menu.
   int min_width_;
