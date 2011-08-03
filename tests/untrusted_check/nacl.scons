@@ -23,7 +23,8 @@ else:
 node = env.CommandSelLdrTestNacl(
     'untrusted_check_test.out',
     nexe,
-    filter_regex = ('"(Fatal error in file[^/\\\\\\\\]*)'
+    # On Windows, PNaCl gives an absolute cygwin-style path
+    filter_regex = ('"(Fatal error in file ).*(untrusted_check_test.c)'
                     '|(LOG_FATAL.*)'
                     '|(Log output.*)"'),
     filter_group_only = 'true',

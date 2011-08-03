@@ -22,9 +22,9 @@ for src in TESTS:
    name = src.split('.')[0]
    node = env.ComponentObject(name + '.o', src)
    test = env.CommandTest(name + '.out',
-                          ['${DISASS} -o -', node],
+                          ['${DISASS}', '-o', '-', node],
                           stdout_golden=env.File(name + '.stdout'),
-                          filter_regex="'; ModuleID = '",
+                          filter_regex='"; ModuleID = "',
                           filter_inverse='true',
                           )
    env.AddNodeToTestSuite(test,

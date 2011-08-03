@@ -45,6 +45,10 @@ def normalize(syspath):
     if syspath.startswith('/cygdrive/'):
       return syspath
 
+    # Leave '-' alone since it represents stdout and not a real path.
+    if syspath == '-':
+      return syspath
+
     components = os.path.abspath(syspath).split('\\')
     drive = components[0]
     components = components[1:]

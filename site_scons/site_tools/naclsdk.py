@@ -215,21 +215,24 @@ def _SetEnvForPnacl(env, root):
   arch_flag = ' -arch %s' % arch
 
   binprefix = os.path.join(root, 'bin', 'pnacl-')
+  binext = ''
+  if env.Bit('host_windows'):
+    binext = '.bat'
 
   pnacl_lib = os.path.join(root, 'lib')
   pnacl_lib_arch = os.path.join(root, 'lib-%s' % arch)
 
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
   pnacl_include = os.path.join(root, 'sysroot', 'include')
-  pnacl_ar = binprefix + 'ar'
-  pnacl_nm = binprefix + 'nm'
-  pnacl_ranlib = binprefix + 'ranlib'
+  pnacl_ar = binprefix + 'ar' + binext
+  pnacl_nm = binprefix + 'nm' + binext
+  pnacl_ranlib = binprefix + 'ranlib' + binext
 
-  pnacl_cc = binprefix + 'gcc'
-  pnacl_cxx = binprefix + 'g++'
-  pnacl_ld = binprefix + 'ld'
-  pnacl_disass = binprefix + 'dis'
-  pnacl_strip = binprefix + 'strip'
+  pnacl_cc = binprefix + 'gcc' + binext
+  pnacl_cxx = binprefix + 'g++' + binext
+  pnacl_ld = binprefix + 'ld' + binext
+  pnacl_disass = binprefix + 'dis' + binext
+  pnacl_strip = binprefix + 'strip' + binext
 
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
