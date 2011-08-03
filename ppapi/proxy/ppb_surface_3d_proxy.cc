@@ -177,11 +177,19 @@ void PPB_Surface3D_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_Surface3D_Proxy::OnMsgSwapBuffers(const HostResource& surface_3d) {
-  EnterHostFromHostResourceForceCallback<PPB_Surface3D_API> enter(
-      surface_3d, callback_factory_,
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Surface3D_Proxy::SendSwapBuffersACKToPlugin, surface_3d);
+
+  EnterHostFromHostResource<PPB_Surface3D_API> enter(surface_3d);
+  int32_t result = PP_ERROR_BADRESOURCE;
   if (enter.succeeded())
-    enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
+    result = enter.object()->SwapBuffers(callback.pp_completion_callback());
+  if (result != PP_OK_COMPLETIONPENDING) {
+    // There was some error, so we won't get a flush callback. We need to now
+    // issue the ACK to the plugin hears about the error. This will also clean
+    // up the data associated with the callback.
+    callback.Run(result);
+  }
 }
 
 void PPB_Surface3D_Proxy::OnMsgSwapBuffersACK(const HostResource& resource,

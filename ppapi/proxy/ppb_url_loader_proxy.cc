@@ -517,12 +517,21 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBody(
   // TODO(brettw) have a way to check for out-of-memory.
   info->read_buffer.resize(bytes_to_read);
 
-  EnterHostFromHostResourceForceCallback<PPB_URLLoader_API> enter(
-      loader, callback_factory_, &PPB_URLLoader_Proxy::OnReadCallback, info);
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+      &PPB_URLLoader_Proxy::OnReadCallback, info);
+
+  EnterHostFromHostResource<PPB_URLLoader_API> enter(loader);
+  int32_t result = PP_ERROR_BADRESOURCE;
   if (enter.succeeded()) {
-    enter.SetResult(enter.object()->ReadResponseBody(
+    result = enter.object()->ReadResponseBody(
         const_cast<char*>(info->read_buffer.c_str()),
-        bytes_to_read, enter.callback()));
+        bytes_to_read, callback.pp_completion_callback());
+  }
+  if (result != PP_OK_COMPLETIONPENDING) {
+    // Send error (or perhaps success for synchronous reads) back to plugin.
+    // The callback function is already set up to do this and also delete the
+    // callback info.
+    callback.Run(result);
   }
 }
 

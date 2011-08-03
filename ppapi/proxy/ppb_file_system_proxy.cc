@@ -174,11 +174,16 @@ void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
 
 void PPB_FileSystem_Proxy::OnMsgOpen(const HostResource& host_resource,
                                      int64_t expected_size) {
-  EnterHostFromHostResourceForceCallback<PPB_FileSystem_API> enter(
-      host_resource, callback_factory_,
+  EnterHostFromHostResource<PPB_FileSystem_API> enter(host_resource);
+  if (enter.failed())
+    return;
+
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_FileSystem_Proxy::OpenCompleteInHost, host_resource);
-  if (enter.succeeded())
-    enter.SetResult(enter.object()->Open(expected_size, enter.callback()));
+  int32_t result = enter.object()->Open(expected_size,
+                                        callback.pp_completion_callback());
+  if (result != PP_OK_COMPLETIONPENDING)
+    callback.Run(result);
 }
 
 // Called in the plugin to handle the open callback.

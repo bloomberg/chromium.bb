@@ -587,11 +587,19 @@ void PPB_Graphics3D_Proxy::OnMsgGetTransferBuffer(
 }
 
 void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context) {
-  EnterHostFromHostResourceForceCallback<PPB_Graphics3D_API> enter(
-      context, callback_factory_,
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin, context);
+
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  int32_t result = PP_ERROR_BADRESOURCE;
   if (enter.succeeded())
-    enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
+    result = enter.object()->SwapBuffers(callback.pp_completion_callback());
+  if (result != PP_OK_COMPLETIONPENDING) {
+    // There was some error, so we won't get a flush callback. We need to now
+    // issue the ACK to the plugin hears about the error. This will also clean
+    // up the data associated with the callback.
+    callback.Run(result);
+  }
 }
 
 void PPB_Graphics3D_Proxy::OnMsgSwapBuffersACK(const HostResource& resource,

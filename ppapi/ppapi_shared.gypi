@@ -70,6 +70,7 @@
         'thunk/ppb_audio_config_api.h',
         'thunk/ppb_audio_config_thunk.cc',
         'thunk/ppb_audio_thunk.cc',
+        'thunk/ppb_audio_trusted_api.h',
         'thunk/ppb_audio_trusted_thunk.cc',
         'thunk/ppb_broker_api.h',
         'thunk/ppb_broker_thunk.cc',

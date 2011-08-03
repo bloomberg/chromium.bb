@@ -162,13 +162,21 @@ void PPB_Flash_Menu_Proxy::OnMsgShow(const HostResource& menu,
                                      const PP_Point& location) {
   ShowRequest* request = new ShowRequest;
   request->menu = menu;
+  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+      &PPB_Flash_Menu_Proxy::SendShowACKToPlugin, request);
 
-  EnterHostFromHostResourceForceCallback<PPB_Flash_Menu_API> enter(
-      menu, callback_factory_, &PPB_Flash_Menu_Proxy::SendShowACKToPlugin,
-      request);
+  EnterHostFromHostResource<PPB_Flash_Menu_API> enter(menu);
+  int32_t result = PP_ERROR_BADRESOURCE;
   if (enter.succeeded()) {
-    enter.SetResult(enter.object()->Show(&location, &request->selected_id,
-                                         enter.callback()));
+    result = enter.object()->Show(&location,
+                                  &request->selected_id,
+                                  callback.pp_completion_callback());
+  }
+  if (result != PP_OK_COMPLETIONPENDING) {
+    // There was some error, so we won't get a callback. We need to now issue
+    // the ACK to the plugin so that it hears about the error. This will also
+    // clean up the data associated with the callback.
+    callback.Run(result);
   }
 }
 
