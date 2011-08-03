@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.14",
+  "version": "1.15",
   "entries": [
     {
       "id": 1,
@@ -268,6 +268,66 @@
       "blacklist": [
         "accelerated_2d_canvas",
         "accelerated_compositing"
+      ]
+    },
+    {
+      "id": 20,
+      "description": "NVIDIA driver 260.19.06 on linux is crash-prone.",
+      "cr_bugs": [82232, 82541],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "=",
+        "number": "260.19.6"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 21,
+      "description": "NVIDIA driver 195.36.24 on linux is buggy for certain Quadro FX series cards.",
+      "cr_bugs": [87680,90091],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x00cd", "0x00ce"],
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "=",
+        "number": "195.36.24"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 22,
+      "description": "NVIDIA linux drivers older than 195.36.24 are assumed to be buggy.",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "driver_version": {
+        "op": "<",
+        "number": "195.36.24"
+      },
+      "blacklist": [
+        "all"
       ]
     }
   ]
