@@ -281,24 +281,28 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
+        'chrome_rev': None,
     }
     test_config['test2'] = {
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
+        'chrome_rev': None,
     }
     test_config['test3'] = {
         'manifest_version': True,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': False,
+        'chrome_rev': None,
     }
     test_config['test4'] = {
         'manifest_version': False,
         'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
+        'chrome_rev': None,
     }
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
 
