@@ -2984,18 +2984,6 @@ nacl_irt_test_env = nacl_env.Clone(
 nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')
 
-nacl_irt_test_env.Append(_LIBFLAGS=['-lppapi'])
-# tests/glibc_static_test needs the .a even when everything else uses the .so.
-nacl_env['BROWSER_LIBS'] = ['libppapi.a']
-if not nacl_env.Bit('nacl_static_link'):
-  nacl_env['BROWSER_LIBS'].append('libppapi.so')
-if 'IMPLICIT_LIBS' not in nacl_irt_test_env:
-  nacl_irt_test_env['IMPLICIT_LIBS'] = []
-nacl_irt_test_env['IMPLICIT_LIBS'] += [
-    nacl_env.File(os.path.join('${LIB_DIR}', lib))
-    for lib in nacl_env['BROWSER_LIBS']
-    ]
-
 # If a tests/.../nacl.scons file builds a library, we will just use
 # the one already built in nacl_env instead.
 def IrtTestDummyLibrary(*args, **kwargs):
