@@ -219,11 +219,13 @@ class ScopedFrameBufferBinder {
 
 // Temporarily changes a decoder's bound frame buffer to a resolved version of
 // the multisampled offscreen render buffer if that buffer is multisampled, and,
-// if it is bound or enforce_internal_framebuffer is true.
+// if it is bound or enforce_internal_framebuffer is true. If internal is
+// true, the resolved framebuffer is not visible to the parent.
 class ScopedResolvedFrameBufferBinder {
  public:
   ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
-                                  bool enforce_internal_framebuffer);
+                                  bool enforce_internal_framebuffer,
+                                  bool internal);
   ~ScopedResolvedFrameBufferBinder();
 
  private:
@@ -1285,10 +1287,13 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   GLuint copy_texture_to_parent_texture_fb_;
 
-  // The copy that is saved when SwapBuffers is called.  It is also
-  // used as the destination for multi-sample resolves.
+  // The copy that is saved when SwapBuffers is called.
   scoped_ptr<FrameBuffer> offscreen_saved_frame_buffer_;
   scoped_ptr<Texture> offscreen_saved_color_texture_;
+
+  // The copy that is used as the destination for multi-sample resolves.
+  scoped_ptr<FrameBuffer> offscreen_resolved_frame_buffer_;
+  scoped_ptr<Texture> offscreen_resolved_color_texture_;
   GLenum offscreen_saved_color_format_;
 
   scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
@@ -1380,7 +1385,7 @@ ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
 }
 
 ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
-    GLES2DecoderImpl* decoder, bool enforce_internal_framebuffer)
+    GLES2DecoderImpl* decoder, bool enforce_internal_framebuffer, bool internal)
     : decoder_(decoder) {
   resolve_and_bind_ = (decoder_->offscreen_target_frame_buffer_.get() &&
                        decoder_->IsOffscreenBufferMultisampled() &&
@@ -1392,8 +1397,33 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
   ScopedGLErrorSuppressor suppressor(decoder_);
   glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT,
                        decoder_->offscreen_target_frame_buffer_->id());
-  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT,
-                       decoder_->offscreen_saved_frame_buffer_->id());
+  GLuint targetid;
+  if (internal) {
+    if (!decoder_->offscreen_resolved_frame_buffer_.get()) {
+      decoder_->offscreen_resolved_frame_buffer_.reset(
+          new FrameBuffer(decoder_));
+      decoder_->offscreen_resolved_frame_buffer_->Create();
+      decoder_->offscreen_resolved_color_texture_.reset(new Texture(decoder_));
+      decoder_->offscreen_resolved_color_texture_->Create();
+
+      DCHECK(decoder_->offscreen_saved_color_format_);
+      decoder_->offscreen_resolved_color_texture_->AllocateStorage(
+          decoder_->offscreen_size_, decoder_->offscreen_saved_color_format_);
+
+      decoder_->offscreen_resolved_frame_buffer_->AttachRenderTexture(
+          decoder_->offscreen_resolved_color_texture_.get());
+      if (decoder_->offscreen_resolved_frame_buffer_->CheckStatus() !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        LOG(ERROR) << "ScopedResolvedFrameBufferBinder failed "
+                   << "because offscreen resolved FBO was incomplete.";
+        return;
+      }
+    }
+    targetid = decoder_->offscreen_resolved_frame_buffer_->id();
+  } else {
+    targetid = decoder_->offscreen_saved_frame_buffer_->id();
+  }
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, targetid);
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
   glDisable(GL_SCISSOR_TEST);
@@ -1404,8 +1434,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
     glBlitFramebufferEXT(0, 0, width, height, 0, 0, width, height,
                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
   }
-  glBindFramebufferEXT(GL_FRAMEBUFFER,
-                       decoder_->offscreen_saved_frame_buffer_->id());
+  glBindFramebufferEXT(GL_FRAMEBUFFER, targetid);
 }
 
 ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
@@ -2315,6 +2344,14 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
+  // Destroy the offscreen resolved framebuffers.
+  if (offscreen_resolved_frame_buffer_.get())
+    offscreen_resolved_frame_buffer_->Destroy();
+  if (offscreen_resolved_color_texture_.get())
+    offscreen_resolved_color_texture_->Destroy();
+  offscreen_resolved_color_texture_.reset();
+  offscreen_resolved_frame_buffer_.reset();
+
   // Clear the offscreen color texture.
   {
     ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
@@ -2434,6 +2471,10 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_saved_frame_buffer_->Destroy();
     if (offscreen_saved_color_texture_.get())
       offscreen_saved_color_texture_->Destroy();
+    if (offscreen_resolved_frame_buffer_.get())
+      offscreen_resolved_frame_buffer_->Destroy();
+    if (offscreen_resolved_color_texture_.get())
+      offscreen_resolved_color_texture_->Destroy();
 
     // must release the ContextGroup before destroying the context as its
     // destructor uses GL.
@@ -2453,6 +2494,10 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_saved_frame_buffer_->Invalidate();
     if (offscreen_saved_color_texture_.get())
       offscreen_saved_color_texture_->Invalidate();
+    if (offscreen_resolved_frame_buffer_.get())
+      offscreen_resolved_frame_buffer_->Invalidate();
+    if (offscreen_resolved_color_texture_.get())
+      offscreen_resolved_color_texture_->Invalidate();
   }
 
   if (context_.get()) {
@@ -2468,6 +2513,8 @@ void GLES2DecoderImpl::Destroy() {
   offscreen_target_stencil_render_buffer_.reset();
   offscreen_saved_frame_buffer_.reset();
   offscreen_saved_color_texture_.reset();
+  offscreen_resolved_frame_buffer_.reset();
+  offscreen_resolved_color_texture_.reset();
 }
 
 bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
@@ -5115,7 +5162,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
 
   CopyRealGLErrorsToWrapper();
 
-  ScopedResolvedFrameBufferBinder binder(this, false);
+  ScopedResolvedFrameBufferBinder binder(this, false, true);
 
   // Get the size of the current fbo or backbuffer.
   gfx::Size max_size = GetBoundReadFrameBufferSize();
@@ -5902,7 +5949,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
 
   CopyRealGLErrorsToWrapper();
-  ScopedResolvedFrameBufferBinder binder(this, false);
+  ScopedResolvedFrameBufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFrameBufferSize();
 
   if (info->IsAttachedToFramebuffer()) {
@@ -5990,7 +6037,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  ScopedResolvedFrameBufferBinder binder(this, false);
+  ScopedResolvedFrameBufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFrameBufferSize();
   GLint copyX = 0;
   GLint copyY = 0;
@@ -6533,7 +6580,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     if (IsOffscreenBufferMultisampled()) {
       // For multisampled buffers, bind the resolved frame buffer so that
       // callbacks can call ReadPixels or CopyTexImage2D.
-      ScopedResolvedFrameBufferBinder binder(this, true);
+      ScopedResolvedFrameBufferBinder binder(this, true, false);
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
