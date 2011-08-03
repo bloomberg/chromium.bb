@@ -19,6 +19,7 @@ function pluginLostFocus_() {
 
 /** @enum {string} */
 remoting.AppMode = {
+  UNAUTHENTICATED: 'auth',
   CLIENT: 'client',
     CLIENT_UNCONNECTED: 'client.unconnected',
     CLIENT_CONNECTING: 'client.connecting',
@@ -83,7 +84,8 @@ function retrieveEmail_(access_token) {
   var onResponse = function(xhr) {
     if (xhr.status != 200) {
       // TODO(ajwong): Have a better way of showing an error.
-      window.alert('Unable to get e-mail');
+      remoting.debug.log('Unable to get email');
+      document.getElementById('current-email').innerText = '???';
       return;
     }
 
@@ -102,40 +104,9 @@ function refreshEmail_() {
   }
 }
 
-// This code moved into this subroutine (instead of being inlined in
-// updateAuthStatus_() because of bug in V8.
-// http://code.google.com/p/v8/issues/detail?id=1423
-function updateControls_(disable) {
-  var authStatusControls =
-      document.getElementsByClassName('auth-status-control');
-  for (var i = 0; i < authStatusControls.length; ++i) {
-    authStatusControls[i].disabled = disable;
-  }
-}
-
-function updateAuthStatus_() {
-  var oauthValid = remoting.oauth2.isAuthenticated();
-  document.getElementById('oauth2-token-button').hidden = oauthValid;
-  document.getElementById('oauth2-clear-button').hidden = !oauthValid;
-
-  var loginName = getEmail();
-  document.getElementById('current-email').innerText = loginName || '';
-
-  var disableControls = !(loginName && oauthValid);
-  var controlPanel = document.getElementById('control-panel');
-  // TODO(ajwong): Do this via a style, or remove if the new auth flow is
-  // implemented.
-  if (disableControls) {
-    controlPanel.style.backgroundColor = 'rgba(204, 0, 0, 0.15)';
-  } else {
-    controlPanel.style.backgroundColor = 'rgba(0, 204, 102, 0.15)';
-  }
-  updateControls_(disableControls);
-}
-
 function setEmail(value) {
   window.localStorage.setItem(KEY_EMAIL_, value);
-  updateAuthStatus_();
+  document.getElementById('current-email').innerText = value;
 }
 
 /**
@@ -151,14 +122,13 @@ function exchangedCodeForToken_() {
   }
   remoting.oauth2.callWithToken(function(token) {
       retrieveEmail_(token);
-      updateAuthStatus_();
   });
 }
 
 remoting.clearOAuth2 = function() {
   remoting.oauth2.clear();
   window.localStorage.removeItem(KEY_EMAIL_);
-  updateAuthStatus_();
+  remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 }
 
 remoting.toggleDebugLog = function() {
@@ -177,8 +147,11 @@ remoting.init = function() {
   remoting.debug =
       new remoting.DebugLog(document.getElementById('debug-messages'));
 
-  updateAuthStatus_();
   refreshEmail_();
+  var email = getEmail();
+  if (email) {
+    document.getElementById('current-email').innerText = email;
+  }
   remoting.setMode(getAppStartupMode());
   if (isHostModeSupported()) {
     var unsupported = document.getElementById('client-footer-text-cros');
@@ -569,6 +542,9 @@ remoting.setAppMode = function(mode) {
  * @return {remoting.AppMode} The mode (client or host) to start in.
  */
 function getAppStartupMode() {
+  if (!remoting.oauth2.isAuthenticated()) {
+    return remoting.AppMode.UNAUTHENTICATED;
+  }
   if (isHostModeSupported()) {
     var mode = window.localStorage.getItem(KEY_APP_MODE_);
     if (mode == remoting.AppMode.CLIENT) {

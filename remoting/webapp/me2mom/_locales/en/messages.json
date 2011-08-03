@@ -7,10 +7,6 @@
     "message": "This access code will expire in",
     "description": "Text preceding the access code timer"
   },
-  "authenticateButton": {
-    "message": "Get OAuth2 Token…",
-    "description": "Label for the authenticate button"
-  },
   "cancel": {
     "message": "Cancel",
     "description": "Label for general-purpose Cancel buttons"
@@ -18,6 +14,10 @@
   "connectButton": {
     "message": "Connect",
     "description": "Label for the connect button"
+  },
+  "continueButton": {
+    "message": "Continue",
+    "description": "Label for the continue button on the pre-authorization page"
   },
   "debugButton": {
     "message": "Debug Log",
@@ -33,11 +33,7 @@
   },
   "disconnectButton": {
     "message": "Disconnect",
-    "description": "Label for the debug log button"
-  },
-  "emailLabel": {
-    "message": "Email:",
-    "description": "Label to the left of the user's email address"
+    "description": "Label for the disconnect button"
   },
   "errorGeneric": {
     "message": "An error occurred.",
@@ -56,7 +52,7 @@
     "description": "Error displayed if an XHR request comes back empty"
   },
   "errorOAuthFailed": {
-    "message": "Unable to fetch OAuth2 token. Try revoking the token and authenticating again.",
+    "message": "Unable to fetch OAuth2 token. Try logging out and re-authorizing.",
     "description": "Error displayed if the OAuth2 token cannot be refreshed"
   },
   "footerClient1": {
@@ -103,6 +99,14 @@
     "message": "Connected:",
     "description": "String displayed in front of the host in the in-session toolbar"
   },
+  "logoutButton": {
+    "message": "Logout",
+    "description": "Logout button, visible if the user has authenticated"
+  },
+  "messageAuthorize": {
+    "message": "In order to use IT2Me you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
+    "description": "Text shown when the app first starts, or if the access token is invalidated"
+  },
   "messageGenerating": {
     "message": "Generating access code…",
     "description": "Text shown while generating an access code"
@@ -121,17 +125,17 @@
       }
     }
   },
-  "modeShare": {
-    "message": "Share",
-    "description": "Sub-title for the host app"
+  "modeAuthorize": {
+    "message": "Authorize",
+    "description": "Sub-title for the one-time authorization step"
   },
   "modeConnect": {
     "message": "Connect",
     "description": "Sub-title for the client app"
   },
-  "oauth2TokenLabel": {
-    "message": "OAuth2 Token:",
-    "description": "Label to the left of the authenticate/revoke button"
+  "modeShare": {
+    "message": "Share",
+    "description": "Sub-title for the host app"
   },
   "ok": {
     "message": "OK",
@@ -140,10 +144,6 @@
   "pageTitle": {
     "message": "Chromoting",
     "description": "Title of the main page"
-  },
-  "revokeButton": {
-    "message": "Revoke",
-    "description": "Label for the revoke button"
   },
   "scaleButton": {
     "message": "Fit Screen",

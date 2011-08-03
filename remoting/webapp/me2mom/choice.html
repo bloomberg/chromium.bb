@@ -37,28 +37,20 @@ found in the LICENSE file.
       <em>Loading&hellip;</em>
     </section> <!-- loading-mode -->
 
-    <div id="control-panel" data-ui-mode="client host" hidden>
+    <div class="top-left"
+         data-ui-mode="client.unconnected host.unshared"
+         hidden>
       <span id="email-status">
-        <span class="auth-status-label" i18n-content="emailLabel"></span>
         <span id="current-email"></span>
-      </span> <!-- email-status -->
+        (<a href="#" onclick="remoting.clearOAuth2();"
+                i18n-content="logoutButton"></a>)
+      </span>
+    </div>
 
-      <span id="oauth2-entry">
-        <span class="auth-status-label"
-              i18n-content="oauth2TokenLabel"></span>
-        <button id="oauth2-token-button" type="button"
-                onclick="remoting.oauth2.doAuthRedirect();"
-                i18n-content="authenticateButton"></button>
-        <button id="oauth2-clear-button" type="button"
-                onclick="remoting.clearOAuth2();"
-                i18n-content="revokeButton"></button>
-      </span> <!-- oauth2-entry -->
-
-      <span id="debug-enable">
-        <button type="button" onclick="remoting.toggleDebugLog();"
-                i18n-content="debugButton"></button>
-      </span> <!-- debug-enable -->
-    </div> <!-- control-panel -->
+    <div class="top-right" data-ui-mode="auth client host">
+      <a href="#" onclick="remoting.toggleDebugLog();"
+         i18n-content="debugButton"></a>
+    </div>
 
     <div id="session-toolbar"
          data-ui-mode="in-session"
@@ -81,27 +73,36 @@ found in the LICENSE file.
       </div>
     </div> <!-- session-toolbar -->
 
-    <section id="choice-mode" data-ui-mode="host client" hidden>
+    <div id="main" data-ui-mode="auth host client" hidden>
+
       <header class="choice-header">
         <img id="icon" src="chromoting128.png">
-        <h1 data-ui-mode="host" class="icon-label">
+        <h1 class="icon-label">
           <span i18n-content="pageTitle">
-          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="modeShare">
-          </span>
-        </h1>
-        <h1 data-ui-mode="client" class="icon-label">
-          <span i18n-content="pageTitle">
-          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="modeConnect">
+          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="modeAuthorize"
+                                           data-ui-mode="auth">
+          </span><span i18n-content="modeConnect" data-ui-mode="client">
+          </span><span i18n-content="modeShare" data-ui-mode="host">
           </span>
         </h1>
         <img id="divider-top" src="dividertop.png">
       </header>
 
+      <div id="auth-panel" data-ui-mode="auth">
+        <div class="description" i18n-content="messageAuthorize"></div>
+        <div class="centered-button">
+          <button id="auth-button" class="big-button"
+                  type="button" onclick="remoting.oauth2.doAuthRedirect();"
+                  i18n-content="continueButton"></button>
+        </div>
+      </div> <!-- auth-panel -->
+
       <div id="host-panel" data-ui-mode="host">
+
         <div data-ui-mode="host.unshared">
           <div class="description" i18n-content="descriptionShare"></div>
           <div class="centered-button">
-            <button id="share-button" class="auth-status-control big-button"
+            <button id="share-button" class="big-button"
                     type="button" onclick="remoting.tryShare();"
                     i18n-content="shareButton"></button>
           </div>
@@ -145,6 +146,9 @@ found in the LICENSE file.
             </button>
           </div>
         </div> <!-- host.share-failed -->
+
+        <div id="host-plugin-container"></div>
+
       </div> <!-- host-panel -->
 
       <div id="client-panel" data-ui-mode="client">
@@ -152,11 +156,9 @@ found in the LICENSE file.
           <div class="description" i18n-content="descriptionConnect"></div>
           <div id="access-code-entry-row">
             <form action="" onsubmit="remoting.tryConnect(); return false;">
-              <label class="auth-status-control" for="access-code-entry"
-                     i18n-content="accessCode"></label>
-              <input id="access-code-entry" class="auth-status-control"
-                     type="text"/>
-              <button id="connect-button" class="auth-status-control big-button"
+              <label for="access-code-entry" i18n-content="accessCode"></label>
+              <input id="access-code-entry" type="text"/>
+              <button id="connect-button" class="big-button"
                       type="submit" i18n-content="connectButton"></button>
             </form>
           </div> <!-- code-entry-row -->
@@ -187,6 +189,7 @@ found in the LICENSE file.
                                remoting.AppMode.CLIENT_UNCONNECTED);">
           </button>
         </div>
+
       </div> <!-- client-panel -->
 
       <footer class="choice-footer">
@@ -220,13 +223,11 @@ found in the LICENSE file.
           </button>
         </div> <!-- waiting-footer -->
       </footer>
-    </section> <!-- choice-mode -->
 
-    <section id="session-mode" data-ui-mode="in-session client" hidden>
-    </section> <!-- session-mode -->
+    </div> <!-- main -->
 
-    <div id="host-plugin-container" data-ui-mode="host" hidden>
-    </div> <!-- host-plugin-container -->
+    <div id="session-mode" data-ui-mode="in-session client" hidden>
+    </div> <!-- session-mode -->
 
     <section id="debug-log" hidden>
       <div id="statistics">

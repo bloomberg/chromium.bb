@@ -72,15 +72,6 @@ label {
   padding: 0px 6px;
 }
 
-.auth-status-control {
-  /* Class used to denote controls that affect authorization status. */
-}
-
-.auth-status-label {
-  color: black;
-  font-weight: bold;
-}
-
 .big-button {
   height: 2em;
   font-size: 16px;
@@ -147,16 +138,25 @@ label {
   margin-bottom: 10px;
 }
 
+.top-left {
+  font-size: 14px;
+  position: absolute;
+  top: 0.5em;
+  left: 0.5em;
+}
+
+.top-right {
+  font-size: 14px;
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+}
+
 .waiting {
   color: rgb(180, 180, 180);
 }
 
 /* Ids */
-#control-panel {
-  border-bottom: 2px solid gray;
-  padding: 5px 10px;
-}
-
 #access-code-countdown-container {
   height: 50px;
   text-align: center;
@@ -181,14 +181,6 @@ label {
 
 #access-code-entry-row {
   text-align: center;
-}
-
-#choice-mode {
-  color: rgb(115, 115, 115);
-  font-size: 16px;
-  margin: 100px auto 0 auto;
-  padding: 10px;
-  width: 640px;
 }
 
 #cancel-button {
@@ -220,8 +212,12 @@ label {
   width: 64px;
 }
 
-#oauth2-entry {
-  width: 400px;
+#main {
+  color: rgb(115, 115, 115);
+  font-size: 16px;
+  margin: 100px auto 0 auto;
+  padding: 10px;
+  width: 640px;
 }
 
 #session-mode {
