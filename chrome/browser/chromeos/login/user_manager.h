@@ -65,7 +65,7 @@ class UserManager : public UserImageLoader::Delegate,
     const SkBitmap& image() const { return image_; }
 
     // OAuth token status for this user.
-    OAuthTokenStatus oauth_token_status() { return oauth_token_status_; }
+    OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
     void set_oauth_token_status(OAuthTokenStatus status) {
       oauth_token_status_ = status;
     }

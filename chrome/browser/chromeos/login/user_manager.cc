@@ -286,17 +286,19 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
       if ((*it)->GetAsString(&email)) {
         User user;
         user.set_email(email);
+
+        // Get OAuth token status.
+        int oauth_token_status;
+        if (prefs_oauth_status &&
+            prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
+                &oauth_token_status)) {
+          user.set_oauth_token_status(
+              static_cast<OAuthTokenStatus>(oauth_token_status));
+        }
+
         UserImages::const_iterator image_it = user_images_.find(email);
         std::string image_path;
         if (image_it == user_images_.end()) {
-          // Get OAuth token status.
-          int oauth_token_status;
-          if (prefs_oauth_status &&
-              prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
-                  &oauth_token_status)) {
-            user.set_oauth_token_status(
-                static_cast<OAuthTokenStatus>(oauth_token_status));
-          }
           // Get account image path.
           if (prefs_images &&
               prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {

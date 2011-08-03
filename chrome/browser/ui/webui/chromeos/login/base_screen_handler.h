@@ -8,6 +8,10 @@
 
 #include "content/browser/webui/web_ui.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 // Base class for the OOBE/Login WebUI handlers.
@@ -30,7 +34,7 @@ class BaseScreenHandler : public WebUIMessageHandler {
 
   // Show selected WebUI |screen|. Optionally it can pass screen initialization
   // data via |data| parameter.
-  void ShowScreen(const char* screen, const char* data);
+  void ShowScreen(const char* screen, const base::DictionaryValue* data);
 
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }

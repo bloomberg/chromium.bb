@@ -36,6 +36,7 @@ const char kKeyName[] = "name";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyImageUrl[] = "imageUrl";
+const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
 // Sanitize emails. Currently, it only ensures all emails have a domain.
 std::string SanitizeEmail(const std::string& email) {
@@ -214,10 +215,18 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
-  if (extension_driven_)
-    ShowScreen(kGaiaSigninScreen, kGaiaExtStartPage);
-  else
+  if (extension_driven_) {
+    DictionaryValue params;
+    params.SetString("startUrl", kGaiaExtStartPage);
+
+    std::string email;
+    if (args->GetString(0, &email))
+      params.SetString("email", email);
+
+    ShowScreen(kGaiaSigninScreen, &params);
+  } else {
     ShowScreen(kSigninScreen, NULL);
+  }
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen(
@@ -252,6 +261,7 @@ void SigninScreenHandler::SendUserList() {
     DictionaryValue* user_dict = new DictionaryValue();
     user_dict->SetString(kKeyName, it->GetDisplayName());
     user_dict->SetString(kKeyEmailAddress, email);
+    user_dict->SetInteger(kKeyOauthTokenStatus, it->oauth_token_status());
 
     // Single user check here is necessary because owner info might not be
     // available when running into login screen on first boot.
@@ -283,6 +293,8 @@ void SigninScreenHandler::SendUserList() {
   guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
   guest_dict->SetString(kKeyEmailAddress, "");
   guest_dict->SetBoolean(kKeyCanRemove, false);
+  guest_dict->SetInteger(kKeyOauthTokenStatus,
+                         UserManager::OAUTH_TOKEN_STATUS_UNKNOWN);
   std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
       std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
   guest_dict->SetString(kKeyImageUrl, image_url);

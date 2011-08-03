@@ -55,8 +55,9 @@ cr.define('login', function() {
       frame.addEventListener('load', function(e) {
         console.log('Frame loaded: ' + data);
       });
-      frame.contentWindow.location.href = data;
-      this.extension_url_ = data;
+      frame.contentWindow.location.href = data.startUrl;
+      this.extension_url_ = data.startUrl;
+      // TODO(xiyuan): Pre-populate Gaia with data.email (if any).
     },
 
     /**

@@ -488,7 +488,7 @@ body.login-display #oobe.gaia-signin hr {
 
 body.login-display #inner-container {
   height: 262px;
-  padding: 20px 0;
+  padding: 0;
   width: 1000px;
 }
 

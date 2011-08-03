@@ -140,7 +140,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Show screen of given screen id.
-     * @param {string} screenId Id of the screen to show.
+     * @param {Object} screen Screen params dict,
+     *                        e.g. {id: screenId, data: data}
      */
     showScreen: function(screen) {
       var screenId = screen.id;
@@ -283,9 +284,7 @@ cr.define('cr.ui', function() {
     });
     $('add-user-button').addEventListener('click', function(e) {
       if (window.navigator.onLine) {
-        this.hidden = true;
-        $('cancel-add-user-button').hidden = false;
-        chrome.send('showAddUser');
+        Oobe.showSigninUI();
       } else {
         $('bubble').showTextForElement($('add-user-button'),
             localStrings.getString('addUserOfflineMessage'));
@@ -306,10 +305,10 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows the given screen.
-   * @param {string} screenId Id of the screen to show.
+   * @param {Object} screen Screen params dict, e.g. {id: screenId, data: data}
    */
-  Oobe.showScreen = function(screenId) {
-    Oobe.getInstance().showScreen(screenId);
+  Oobe.showScreen = function(screen) {
+    Oobe.getInstance().showScreen(screen);
   };
 
   /**
@@ -434,6 +433,16 @@ cr.define('cr.ui', function() {
    */
   Oobe.isOobeUI = function() {
     return !document.body.classList.contains('login-display');
+  };
+
+  /**
+   * Shows signin UI.
+   * @param {string} opt_email An optional email for signin UI.
+   */
+  Oobe.showSigninUI = function(opt_email) {
+    $('add-user-button').hidden = true;
+    $('cancel-add-user-button').hidden = false;
+    chrome.send('showAddUser', [opt_email]);
   };
 
   /**

@@ -10,6 +10,11 @@ cr.define('login', function() {
   // Pod width. 170px Pod + 10px padding + 10px margin on both sides.
   const POD_WIDTH = 170 + 2 * (10 + 10);
 
+  // Oauth token status. These must match UserManager::OAuthTokenStatus.
+  const OAUTH_TOKEN_STATUS_UNKNOWN = 0;
+  const OAUTH_TOKEN_STATUS_INVALID = 1;
+  const OAUTH_TOKEN_STATUS_VALID = 2;
+
   /**
    * Helper function to remove a class from given element.
    * @param {!HTMLElement} el Element whose class list to change.
@@ -44,16 +49,9 @@ cr.define('login', function() {
      * Initializes the pod after its properties set and added to a pod row.
      */
     initialize: function() {
-      if (this.isGuest) {
-        this.imageElement.title = this.name;
-        this.enterButtonElement.hidden = false;
-        this.passwordElement.hidden = true;
-      } else {
-        this.imageElement.title = this.email;
+      if (!this.isGuest) {
         this.passwordElement.addEventListener('keydown',
             this.parentNode.handleKeyDown.bind(this.parentNode));
-        this.passwordElement.hidden = false;
-        this.enterButtonElement.hidden = true;
       }
     },
 
@@ -98,58 +96,36 @@ cr.define('login', function() {
     },
 
     /**
-     * User email of this pod.
-     * @type {string}
+     * The user that this pod represents.
+     * @type {!Object}
      */
-    email_ : '',
-    get email() {
-      return this.email_;
+    user_: undefined,
+    get user() {
+      return this.user_;
     },
-    set email(email) {
-      this.email_ = email;
-    },
+    set user(userDict) {
+      this.user_ = userDict;
 
-    /**
-     * User name.
-     * @type {string}
-     */
-    get name() {
-      return this.nameElement.textContent;
-    },
-    set name(name) {
-      this.nameElement.textContent = name;
-    },
+      this.nameElement.textContent = userDict.name;
+      this.imageElement.src = userDict.imageUrl;
+      this.removeUserButtonElement.hidden = !userDict.canRemove;
 
-    /**
-     * User image url.
-     * @type {string}
-     */
-    get imageUrl()  {
-      return this.imageElement.src;
-    },
-    set imageUrl(url) {
-      this.imageElement.src = url;
+      if (this.isGuest) {
+        this.imageElement.title = userDict.name;
+        this.enterButtonElement.hidden = false;
+        this.passwordElement.hidden = true;
+      } else {
+        this.imageElement.title = userDict.emailAddress;
+        this.passwordElement.hidden = false;
+        this.enterButtonElement.hidden = true;
+      }
     },
 
     /**
      * Whether we are a guest pod or not.
      */
     get isGuest() {
-      return !this.email_;
-    },
-
-    /**
-     * Whether the user can be removed.
-     * @type {boolean}
-     */
-    get canRemove() {
-      return !this.removeUserButtonElement.hidden;
-    },
-    set canRemove(canRemove) {
-      if (this.canRemove == canRemove)
-        return;
-
-      this.removeUserButtonElement.hidden = !canRemove;
+      return !this.user.emailAddress;
     },
 
     /**
@@ -182,7 +158,7 @@ cr.define('login', function() {
           return false;
 
         chrome.send('authenticateUser',
-            [this.email_, this.passwordElement.value]);
+            [this.user.emailAddress, this.passwordElement.value]);
       }
 
       return true;
@@ -260,12 +236,7 @@ cr.define('login', function() {
      * @param {string} email User's email.
      */
     createUserPod: function(user) {
-      var userPod = new UserPod({
-        email: user.emailAddress,
-        name: user.name,
-        imageUrl: user.imageUrl,
-        canRemove: user.canRemove
-      });
+      var userPod = new UserPod({user: user});
       userPod.hidden = false;
       return userPod;
     },
@@ -337,7 +308,7 @@ cr.define('login', function() {
      */
     loadPods: function(users) {
       // Clear existing pods.
-      this.textContent = '';
+      this.innerHTML = '';
       this.focusedPod_ = undefined;
 
       // Popoulate the pod row.
@@ -357,21 +328,31 @@ cr.define('login', function() {
       }
 
       if (pod) {
-        pod.classList.remove("faded");
-        pod.classList.add("focused");
-        pod.focusInput();
+        if (pod.isGuest ||
+            localStrings.getString('authType') != 'ext' ||
+            pod.user.oauthTokenStatus == OAUTH_TOKEN_STATUS_VALID) {
+          // Focus current pod if it is guest pod, or
+          // we are not using gaia ext for signin or
+          // the user has a valid oauth token.
+          pod.classList.remove("faded");
+          pod.classList.add("focused");
+          pod.focusInput();
 
-        this.focusedPod_ = pod;
-        this.scrollPodIntoView(pod);
-
-        // TODO(xiyuan): Put this in a proper place.
-        $('bubble').hide();
+          this.focusedPod_ = pod;
+          this.scrollPodIntoView(pod);
+        } else {
+          // Otherwise, switch to Gaia signin.
+          Oobe.showSigninUI(pod.user.emailAddress);
+        }
       } else {
         for (var i = 0; i < this.pods.length; ++i) {
           this.pods[i].classList.remove('faded');
         }
         this.focusedPod_ = undefined;
       }
+
+      // TODO(xiyuan): Put this in a proper place.
+      $('bubble').hide();
     },
 
     /**
