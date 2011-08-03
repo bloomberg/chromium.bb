@@ -7,17 +7,19 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into gcl.
 """
 
+import re
+
 def CheckChange(input_api, output_api):
   """Checks the heapcheck suppressions files for bad data."""
+  sup_regex = re.compile('suppressions.*\.txt$')
   suppressions = {}
   errors = []
   check_for_heapcheck = False
   skip_next_line = False
-  for f in filter(lambda x: x.LocalPath().endswith('.txt'),
+  for f in filter(lambda x: sup_regex.search(x.LocalPath()),
                   input_api.AffectedFiles()):
     for line, line_num in zip(f.NewContents(),
                               xrange(1, len(f.NewContents()) + 1)):
-
       line = line.lstrip()
       if line.startswith('#') or not line:
         continue
