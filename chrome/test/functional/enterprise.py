@@ -115,6 +115,14 @@ class EnterpriseTest(pyauto.PyUITest):
                      msg='Default value of the preference is wrong.')
     self.assertRaises(pyauto.JSONInterfaceError,
                       lambda: self.SetPrefs(key, newval))
+  def _GetPluginPID(self, plugin_name):
+    """Fetch the pid of the plugin process with name |plugin_name|."""
+    child_processes = self.GetBrowserInfo()['child_processes']
+    plugin_type = 'Plug-in'
+    for x in child_processes:
+      if x['type'] == plugin_type and re.search(plugin_name, x['name']):
+        return x['pid']
+    return None
 
   # Tests for options in Basics
   def testStartupPages(self):
@@ -306,6 +314,16 @@ class EnterpriseTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.assertFalse(self.GetHistoryInfo().History(),
                      msg='History is being saved.')
+
+  def testAlwaysAuthorizePlugins(self):
+    """Verify plugins are always allowed to run when policy is set."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    url = self.GetFileURLForDataPath('plugin', 'java_new.html')
+    self.NavigateToURL(url)
+    self.assertFalse(self.WaitForInfobarCount(1))
+    pid = self._GetPluginPID('Java')
+    self.assertTrue(pid, 'No plugin process for java')
 
 
 if __name__ == '__main__':
