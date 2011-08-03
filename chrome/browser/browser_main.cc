@@ -57,7 +57,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
-#include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -647,9 +646,6 @@ MetricsService* BrowserMainParts::InitializeMetrics(
 
 void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
                                         bool proxy_policy_is_set) {
-  if (metrics_recording_enabled)
-    chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
-
   // Note: make sure to call ConnectionFieldTrial() before
   // ProxyConnectionsFieldTrial().
   ConnectionFieldTrial();
@@ -2103,8 +2099,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parameters.ui_task == NULL && translate_manager != NULL)
     translate_manager->CleanupPendingUlrFetcher();
 
-
-  chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 
   process_singleton.Cleanup();
 

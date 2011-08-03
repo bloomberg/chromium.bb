@@ -20,10 +20,6 @@ namespace base {
 class Time;
 }
 
-namespace chrome_browser_net_websocket_experiment {
-class WebSocketExperimentTask;
-}
-
 namespace chromeos {
 class LibCrosServiceLibraryImpl;
 class ResetDefaultProxyConfigServiceTask;
@@ -153,8 +149,6 @@ class Profile : public content::BrowserContext {
     friend class SdchDictionaryFetcher;
     friend class Toolbar5Importer;
     friend class TranslateManager;
-    friend class
-        chrome_browser_net_websocket_experiment::WebSocketExperimentTask;
     friend class chromeos::LibCrosServiceLibraryImpl;
     friend class chromeos::ResetDefaultProxyConfigServiceTask;
     friend class speech_input::SpeechRecognizer;
