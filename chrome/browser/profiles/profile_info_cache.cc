@@ -49,9 +49,27 @@ const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_17,
   IDR_PROFILE_AVATAR_18,
   IDR_PROFILE_AVATAR_19,
+  IDR_PROFILE_AVATAR_20,
+  IDR_PROFILE_AVATAR_21,
+  IDR_PROFILE_AVATAR_22,
+  IDR_PROFILE_AVATAR_23,
+  IDR_PROFILE_AVATAR_24,
+  IDR_PROFILE_AVATAR_25,
 };
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
+
+// Returns true if the resource ID belongs to a generic avatar icon.
+bool IsAvatarIconGeneric(int icon_id) {
+  return icon_id == IDR_PROFILE_AVATAR_0 ||
+         icon_id == IDR_PROFILE_AVATAR_1 ||
+         icon_id == IDR_PROFILE_AVATAR_2 ||
+         icon_id == IDR_PROFILE_AVATAR_3 ||
+         icon_id == IDR_PROFILE_AVATAR_4 ||
+         icon_id == IDR_PROFILE_AVATAR_5 ||
+         icon_id == IDR_PROFILE_AVATAR_6 ||
+         icon_id == IDR_PROFILE_AVATAR_7;
+}
 
 } // namespace
 
@@ -195,6 +213,10 @@ int ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() {
        ++icon_index) {
     size_t rand_icon_index =
         (icon_index + rand_start_index) % GetDefaultAvatarIconCount();
+    if (IsAvatarIconGeneric(GetDefaultAvatarIconResourceIDAtIndex(
+        rand_icon_index)))
+      continue;
+
     bool icon_found = false;
     for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
       if (GetAvatarIconIndexOfProfileAtIndex(i) == rand_icon_index) {
