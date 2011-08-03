@@ -126,12 +126,13 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
                               Plugin::kUnknownBytes,
                               Plugin::kUnknownBytes);
   } else {
-    // For reasons unknown, the message is garbled on windows.
-    // TODO(sehr): know the reasons, and fix this.
     error_info.PrependMessage("__launchExecutableFromFd failed: ");
     plugin->ReportLoadError(error_info);
   }
-  return was_successful;
+  pp::VarPrivate* continuation =
+      reinterpret_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
+  continuation->Call(pp::Var(), was_successful);
+  return true;
 }
 
 const char* const kTypeAttribute = "type";
@@ -598,7 +599,7 @@ void Plugin::LoadMethods() {
   // Experimental methods supported by Plugin.
   // These methods are explicitly not included in shipping versions of Chrome.
   AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
-  AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "h", "");
+  AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "ho", "");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");

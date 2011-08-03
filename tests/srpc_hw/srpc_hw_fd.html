@@ -35,7 +35,7 @@ function loadAndTestMethods(tester, server) {
          }), true);
 
         // Start the load from the nexe file descriptor object.
-        server.__launchExecutableFromFd(fd);
+        server.__launchExecutableFromFd(fd, (function(s) { }));
       }),
 
       this.onfail = status.wrap(function(message) {

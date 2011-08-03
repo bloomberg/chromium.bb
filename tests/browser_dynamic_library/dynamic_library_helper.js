@@ -116,12 +116,15 @@ var startPluginInstance = function(plugin, libdir, log, args,
   try {
     var my_isa = plugin.__getSandboxISA();
     var dynamic_linker_url = libdir[my_isa] + '/runnable-ld.so';
+    var continuation = function(succeeded) {
+      if (succeeded)
+        handlePluginInstance(plugin, libdir[my_isa], log, args[my_isa],
+                             onload_callback);
+    }
 
     plugin.__urlAsNaClDesc(dynamic_linker_url, {
      onload: function(fd) {
-       plugin.__launchExecutableFromFd(fd);
-       handlePluginInstance(plugin, libdir[my_isa], log, args[my_isa],
-                            onload_callback);
+       plugin.__launchExecutableFromFd(fd, continuation);
      },
      onfail: function(error) {
        log('Failed to fetch dynamic linker, ' +
