@@ -43,6 +43,13 @@ irt_support_objs = [blob_env.ComponentObject(x) for x in
                     (irt_support_sources + irt_common_interfaces)]
 irt_support_libs = ['pthread']
 
+if env.Bit('target_arm'):
+  blob_env.Append(LINKFLAGS='--pnacl-allow-native')
+  native_env = blob_env.Clone()
+  native_env.PNaClForceNative()
+  irt_support_objs.append(native_env.ComponentObject('aeabi_read_tp.o',
+                                                     'aeabi_read_tp.S'))
+
 # These go into only one image or the other.
 irt_nonbrowser = ['irt_interfaces.c',
                   ]
