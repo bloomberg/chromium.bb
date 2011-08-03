@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -26,6 +27,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
@@ -44,7 +46,8 @@ static const char* const kWebRequestEvents[] = {
   keys::kOnCompleted,
   keys::kOnErrorOccurred,
   keys::kOnSendHeaders,
-  keys::kOnResponseStarted
+  keys::kOnAuthRequired,
+  keys::kOnResponseStarted,
 };
 
 static const char* kResourceTypeStrings[] = {
@@ -555,6 +558,47 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
   // TODO(battre): support "request line".
+  args.Append(dict);
+
+  DispatchEvent(profile, request, listeners, args);
+}
+
+void ExtensionWebRequestEventRouter::OnAuthRequired(
+    void* profile,
+    ExtensionInfoMap* extension_info_map,
+    net::URLRequest* request,
+    const net::AuthChallengeInfo& auth_info) {
+  if (!profile)
+    return;
+
+  base::Time time(base::Time::Now());
+
+  if (!HasWebRequestScheme(request->url()))
+    return;
+
+  int extra_info_spec = 0;
+  std::vector<const EventListener*> listeners =
+      GetMatchingListeners(profile, extension_info_map,
+                           keys::kOnAuthRequired, request, &extra_info_spec);
+  if (listeners.empty())
+    return;
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(keys::kRequestIdKey,
+                  base::Uint64ToString(request->identifier()));
+  dict->SetString(keys::kUrlKey, request->url().spec());
+  dict->SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
+  dict->SetString(keys::kSchemeKey, WideToUTF8(auth_info.scheme));
+  if (!auth_info.realm.empty())
+    dict->SetString(keys::kRealmKey, WideToUTF8(auth_info.realm));
+  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) {
+    dict->Set(keys::kResponseHeadersKey,
+              GetResponseHeadersList(request->response_headers()));
+  }
+  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
+    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);

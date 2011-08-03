@@ -137,3 +137,10 @@ void ChromeNetworkDelegate::OnPACScriptError(int line_number,
   ExtensionProxyEventRouter::GetInstance()->OnPACScriptError(
       event_router_.get(), profile_, line_number, error);
 }
+
+void ChromeNetworkDelegate::OnAuthRequired(
+    net::URLRequest* request,
+    const net::AuthChallengeInfo& auth_info) {
+  ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
+      profile_, extension_info_map_.get(), request, auth_info);
+}

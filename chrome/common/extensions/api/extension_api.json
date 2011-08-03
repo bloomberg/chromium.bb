@@ -4837,6 +4837,45 @@
         ]
       },
       {
+        "name": "onAuthRequired",
+        "type": "function",
+        "description": "Fired when an authentication failure was received. Depending on whether the user provides credentials, the request is either reissued or cancelled.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "string", "description": "The ID of the request."},
+              "url": {"type": "string"},
+              "scheme": {"type": "string", "description": "The authentication scheme, e.g. Basic or Digest."},
+              "realm": {"type": "string", "description": "The authentication realm provided by the server, if there is one.", "optional": true},
+              "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
+              "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
+              "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
+              "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
+            }
+          }
+        ],
+        "extraParameters": [
+          {
+            "$ref": "RequestFilter",
+            "optional": true,
+            "name": "filter",
+            "description": "A set of filters that restricts the events that will be sent to this listener."
+          },
+          {
+            "type": "array",
+            "optional": true,
+            "name": "extraInfoSpec",
+            "description": "Array of extra information that should be passed to the listener function.",
+            "items": {
+              "type": "string",
+              "enum": ["statusLine", "responseHeaders"]
+            }
+          }
+        ]
+      },
+      {
         "name": "onResponseStarted",
         "type": "function",
         "description": "Fired when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",

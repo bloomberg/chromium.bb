@@ -14,6 +14,8 @@ var URL_HTTP_SIMPLE_LOAD_REDIRECT =
     'http://www.a.com:PORT/server-redirect?'+URL_HTTP_SIMPLE_LOAD;
 var URL_ECHO_USER_AGENT =
     'http://www.a.com:PORT/echoheader?User-Agent';
+var URL_AUTH_REQUIRED =
+    'http://www.a.com:PORT/auth-basic';
 
 function runTests(tests) {
   chrome.tabs.getSelected(null, function(tab) {
@@ -25,6 +27,7 @@ function runTests(tests) {
       URL_HTTP_SIMPLE_LOAD = fixPort(URL_HTTP_SIMPLE_LOAD);
       URL_HTTP_SIMPLE_LOAD_REDIRECT = fixPort(URL_HTTP_SIMPLE_LOAD_REDIRECT);
       URL_ECHO_USER_AGENT = fixPort(URL_ECHO_USER_AGENT);
+      URL_AUTH_REQUIRED = fixPort(URL_AUTH_REQUIRED);
 
       chrome.test.runTests(tests);
     });
@@ -200,6 +203,10 @@ function initListeners(filter, extraInfoSpec) {
       function(details) {
     return captureEvent("onSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["requestHeaders"]));
+  chrome.experimental.webRequest.onAuthRequired.addListener(
+      function(details) {
+    return captureEvent("onAuthRequired", details);
+  }, filter, intersect(extraInfoSpec, ["responseHeaders", "statusLine"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);
@@ -230,6 +237,7 @@ function removeListeners() {
   }
   helper(chrome.experimental.webRequest.onBeforeRequest);
   helper(chrome.experimental.webRequest.onBeforeSendHeaders);
+  helper(chrome.experimental.webRequest.onAuthRequired);
   helper(chrome.experimental.webRequest.onSendHeaders);
   helper(chrome.experimental.webRequest.onResponseStarted);
   helper(chrome.experimental.webRequest.onBeforeRedirect);
@@ -752,6 +760,69 @@ runTests([
               "{pass: document.body.innerText.indexOf('FoobarUA') >= 0});"
         });
     });
+  },
+
+  // Loads a testserver page that requires authentication.
+  function authRequired() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: URL_AUTH_REQUIRED,
+            frameUrl: URL_AUTH_REQUIRED
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: URL_AUTH_REQUIRED,
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: URL_AUTH_REQUIRED,
+          }
+        },
+        { label: "onAuthRequired",
+          event: "onAuthRequired",
+          details: {
+            url: URL_AUTH_REQUIRED,
+            isProxy: false,
+            scheme: "basic",
+            realm: "testrealm",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: URL_AUTH_REQUIRED,
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1"
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: URL_AUTH_REQUIRED,
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1"
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onAuthRequired", "onResponseStarted", "onCompleted"]
+      ],
+      {}, []);
+    navigateAndWait(URL_AUTH_REQUIRED);
   },
 ]);
 </script>

@@ -5,8 +5,40 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_service.h"
 #include "net/base/mock_host_resolver.h"
+
+namespace {
+
+class CancelLoginDialog : public NotificationObserver {
+ public:
+  CancelLoginDialog() {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_AUTH_NEEDED,
+                   NotificationService::AllSources());
+  }
+
+  virtual ~CancelLoginDialog() {}
+
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    LoginHandler* handler =
+        Details<LoginNotificationDetails>(details).ptr()->handler();
+    handler->CancelAuth();
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+
+ DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
+};
+
+}  // namespace
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
@@ -28,6 +60,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequest) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestEvents) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
     switches::kEnableExperimentalExtensionApis);
+
+  CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(RunExtensionTest("webrequest/events")) << message_;
 }

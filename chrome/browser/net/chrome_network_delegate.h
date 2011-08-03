@@ -58,6 +58,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE;
   virtual void OnPACScriptError(int line_number,
                                 const string16& error) OVERRIDE;
+  virtual void OnAuthRequired(net::URLRequest* request,
+                              const net::AuthChallengeInfo& auth_info) OVERRIDE;
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;

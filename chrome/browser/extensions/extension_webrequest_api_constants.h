@@ -29,8 +29,12 @@ extern const char kResponseHeadersKey[];
 extern const char kHeadersKey[];
 extern const char kHeaderNameKey[];
 extern const char kHeaderValueKey[];
+extern const char kIsProxyKey[];
+extern const char kSchemeKey[];
+extern const char kRealmKey[];
 
 // Events.
+extern const char kOnAuthRequired[];
 extern const char kOnBeforeRedirect[];
 extern const char kOnBeforeRequest[];
 extern const char kOnBeforeSendHeaders[];

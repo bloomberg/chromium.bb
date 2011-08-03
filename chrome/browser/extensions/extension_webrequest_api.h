@@ -31,6 +31,7 @@ class StringValue;
 }
 
 namespace net {
+class AuthChallengeInfo;
 class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
@@ -48,9 +49,10 @@ class ExtensionWebRequestEventRouter {
     kOnBeforeSendHeaders = 1 << 1,
     kOnSendHeaders = 1 << 2,
     kOnBeforeRedirect = 1 << 3,
-    kOnResponseStarted = 1 << 4,
-    kOnErrorOccurred = 1 << 5,
-    kOnCompleted = 1 << 6,
+    kOnAuthRequired = 1 << 4,
+    kOnResponseStarted = 1 << 5,
+    kOnErrorOccurred = 1 << 6,
+    kOnCompleted = 1 << 7,
   };
 
   // Internal representation of the webRequest.RequestFilter type, used to
@@ -167,6 +169,12 @@ class ExtensionWebRequestEventRouter {
                      ExtensionInfoMap* extension_info_map,
                      net::URLRequest* request,
                      const net::HttpRequestHeaders& headers);
+
+  // Dispatches the onAuthRequired event.
+  void OnAuthRequired(void* profile,
+                     ExtensionInfoMap* extension_info_map,
+                     net::URLRequest* request,
+                     const net::AuthChallengeInfo& auth_info);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.

@@ -23,6 +23,9 @@ const char kRequestHeadersKey[] = "requestHeaders";
 const char kResponseHeadersKey[] = "responseHeaders";
 const char kHeaderNameKey[] = "name";
 const char kHeaderValueKey[] = "value";
+const char kIsProxyKey[] = "isProxy";
+const char kSchemeKey[] = "scheme";
+const char kRealmKey[] = "realm";
 
 const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
 const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";
@@ -32,6 +35,8 @@ const char kOnCompleted[] = "experimental.webRequest.onCompleted";
 const char kOnErrorOccurred[] = "experimental.webRequest.onErrorOccurred";
 const char kOnResponseStarted[] = "experimental.webRequest.onResponseStarted";
 const char kOnSendHeaders[] = "experimental.webRequest.onSendHeaders";
+const char kOnAuthRequired[] = "experimental.webRequest.onAuthRequired";
+
 
 const char kInvalidRedirectUrl[] = "redirectUrl '*' is not a valid URL.";
 const char kInvalidBlockingResponse[] =
