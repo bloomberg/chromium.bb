@@ -15,12 +15,13 @@
 // request to start a NaCl module.
 class NaClListener : public IPC::Channel::Listener {
  public:
-  NaClListener();
+  explicit NaClListener();
   virtual ~NaClListener();
   // Listen for a request to launch a NaCl module.
   void Listen();
-
+  void set_debug_enabled(bool value) {debug_enabled_ = value;}
  private:
+  bool debug_enabled_;
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
                      bool have_irt_file);
   virtual bool OnMessageReceived(const IPC::Message& msg);

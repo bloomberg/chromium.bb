@@ -119,7 +119,9 @@ int NaClMain(const MainFunctionParams& parameters) {
   bool sandbox_test_result = platform.RunSandboxTests();
 
   if (sandbox_test_result) {
+    bool debug = parsed_command_line.HasSwitch(switches::kEnableNaClDebug);
     NaClListener listener;
+    listener.set_debug_enabled(debug);
     listener.Listen();
   } else {
     // This indirectly prevents the test-harness-success-cookie from being set,

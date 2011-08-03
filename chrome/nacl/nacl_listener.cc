@@ -74,7 +74,7 @@ extern "C" void NaClMainForChromium(int handle_count,
                                     int debug);
 extern "C" void NaClSetIrtFileDesc(int fd);
 
-NaClListener::NaClListener() {}
+NaClListener::NaClListener() : debug_enabled_(false) {}
 
 NaClListener::~NaClListener() {}
 
@@ -131,6 +131,6 @@ void NaClListener::OnStartSelLdr(
     array[i] = nacl::ToNativeHandle(handles[i]);
   }
   NaClMainForChromium(static_cast<int>(handles.size()), array.get(),
-                      false /* debug */);
+                      debug_enabled_);
   NOTREACHED();
 }
