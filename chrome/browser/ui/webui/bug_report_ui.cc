@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
@@ -165,27 +166,6 @@ void ShowHtmlBugReportView(Browser* browser,
 
 }  // namespace browser
 
-
-class BugReportUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  explicit BugReportUIHTMLSource(base::StringPiece html);
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  base::StringPiece bug_report_html_;
-  ~BugReportUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(BugReportUIHTMLSource);
-};
-
 // The handler for Javascript messages related to the "bug report" dialog
 class BugReportHandler : public WebUIMessageHandler,
                          public base::SupportsWeakPtr<BugReportHandler> {
@@ -193,8 +173,8 @@ class BugReportHandler : public WebUIMessageHandler,
   explicit BugReportHandler(TabContents* tab);
   virtual ~BugReportHandler();
 
-  // Init work after Attach.
-  base::StringPiece Init();
+  // Init work after Attach.  Returns true on success.
+  bool Init();
 
   // WebUIMessageHandler implementation.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
@@ -230,80 +210,49 @@ class BugReportHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BugReportHandler);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// BugReportHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreateBugReportUIHTMLSource(bool successful_init) {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIBugReportHost);
 
-BugReportUIHTMLSource::BugReportUIHTMLSource(base::StringPiece html)
-    : DataSource(chrome::kChromeUIBugReportHost, MessageLoop::current()) {
-  bug_report_html_ = html;
-}
-
-void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
-                                             bool is_incognito,
-                                             int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString(std::string("title"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_TITLE));
-  localized_strings.SetString(std::string("page-title"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_REPORT_PAGE_TITLE));
-  localized_strings.SetString(std::string("issue-with"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_ISSUE_WITH));
-  localized_strings.SetString(std::string("page-url"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_REPORT_URL_LABEL));
-  localized_strings.SetString(std::string("description"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_DESCRIPTION_LABEL));
-  localized_strings.SetString(std::string("current-screenshot"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SCREENSHOT_LABEL));
-  localized_strings.SetString(std::string("saved-screenshot"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL));
+  source->AddLocalizedString("title", IDS_BUGREPORT_TITLE);
+  source->AddLocalizedString("page-title", IDS_BUGREPORT_REPORT_PAGE_TITLE);
+  source->AddLocalizedString("issue-with", IDS_BUGREPORT_ISSUE_WITH);
+  source->AddLocalizedString("page-url", IDS_BUGREPORT_REPORT_URL_LABEL);
+  source->AddLocalizedString("description", IDS_BUGREPORT_DESCRIPTION_LABEL);
+  source->AddLocalizedString("current-screenshot",
+                             IDS_BUGREPORT_SCREENSHOT_LABEL);
+  source->AddLocalizedString("saved-screenshot",
+                             IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL);
 #if defined(OS_CHROMEOS)
-  localized_strings.SetString(std::string("user-email"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_USER_EMAIL_LABEL));
-  localized_strings.SetString(std::string("sysinfo"),
-      l10n_util::GetStringUTF8(
-          IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
-
-  localized_strings.SetString(std::string("currentscreenshots"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_CURRENT_SCREENSHOTS));
-  localized_strings.SetString(std::string("savedscreenshots"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SAVED_SCREENSHOTS));
-
-  localized_strings.SetString(std::string("choose-different-screenshot"),
-      l10n_util::GetStringUTF8(
-          IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT));
-  localized_strings.SetString(std::string("choose-original-screenshot"),
-      l10n_util::GetStringUTF8(
-          IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT));
+  source->AddLocalizedString("user-email", IDS_BUGREPORT_USER_EMAIL_LABEL);
+  source->AddLocalizedString("sysinfo",
+                             IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
+  source->AddLocalizedString("currentscreenshots",
+                             IDS_BUGREPORT_CURRENT_SCREENSHOTS);
+  source->AddLocalizedString("savedscreenshots",
+                             IDS_BUGREPORT_SAVED_SCREENSHOTS);
+  source->AddLocalizedString("choose-different-screenshot",
+                             IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT);
+  source->AddLocalizedString("choose-original-screenshot",
+                             IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT);
 #else
-  localized_strings.SetString(std::string("currentscreenshots"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE));
+  source->AddLocalizedString("currentscreenshots",
+                             IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE);
 #endif
-  localized_strings.SetString(std::string("noscreenshot"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT));
+  source->AddLocalizedString("noscreenshot",
+                             IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT);
 
-  localized_strings.SetString(std::string("send-report"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SEND_REPORT));
-  localized_strings.SetString(std::string("cancel"),
-      l10n_util::GetStringUTF8(IDS_CANCEL));
+  source->AddLocalizedString("send-report", IDS_BUGREPORT_SEND_REPORT);
+  source->AddLocalizedString("cancel", IDS_CANCEL);
 
   // Option strings for the "issue with" drop-down.
-  localized_strings.SetString(std::string("issue-choose"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_CHOOSE_ISSUE));
-
-  localized_strings.SetString(std::string("no-issue-selected"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_ISSUE_SELECTED));
-
-  localized_strings.SetString(std::string("no-description"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_DESCRIPTION));
-
-  localized_strings.SetString(std::string("no-saved-screenshots"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP));
-
-  localized_strings.SetString(std::string("privacy-note"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PRIVACY_NOTE));
+  source->AddLocalizedString("issue-choose", IDS_BUGREPORT_CHOOSE_ISSUE);
+  source->AddLocalizedString("no-issue-selected",
+                             IDS_BUGREPORT_NO_ISSUE_SELECTED);
+  source->AddLocalizedString("no-description", IDS_BUGREPORT_NO_DESCRIPTION);
+  source->AddLocalizedString("no-saved-screenshots",
+                             IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP);
+  source->AddLocalizedString("privacy-note", IDS_BUGREPORT_PRIVACY_NOTE);
 
   // TODO(rkc): Find some way to ensure this order of dropdowns is in sync
   // with the order in the userfeedback ChromeData proto buffer
@@ -320,24 +269,16 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   // General Feedback/Other
   // Autofill (hidden by default)
 
-  localized_strings.SetString(std::string("issue-connectivity"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_CONNECTIVITY));
-  localized_strings.SetString(std::string("issue-sync"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SYNC));
-  localized_strings.SetString(std::string("issue-crashes"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_CRASHES));
-  localized_strings.SetString(std::string("issue-page-formatting"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PAGE_FORMATTING));
-  localized_strings.SetString(std::string("issue-extensions"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_EXTENSIONS));
-  localized_strings.SetString(std::string("issue-standby"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_STANDBY_RESUME));
-  localized_strings.SetString(std::string("issue-phishing"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PHISHING_PAGE));
-  localized_strings.SetString(std::string("issue-other"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_GENERAL));
-  localized_strings.SetString(std::string("issue-autofill"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_AUTOFILL));
+  source->AddLocalizedString("issue-connectivity", IDS_BUGREPORT_CONNECTIVITY);
+  source->AddLocalizedString("issue-sync", IDS_BUGREPORT_SYNC);
+  source->AddLocalizedString("issue-crashes", IDS_BUGREPORT_CRASHES);
+  source->AddLocalizedString("issue-page-formatting",
+                             IDS_BUGREPORT_PAGE_FORMATTING);
+  source->AddLocalizedString("issue-extensions", IDS_BUGREPORT_EXTENSIONS);
+  source->AddLocalizedString("issue-standby", IDS_BUGREPORT_STANDBY_RESUME);
+  source->AddLocalizedString("issue-phishing", IDS_BUGREPORT_PHISHING_PAGE);
+  source->AddLocalizedString("issue-other", IDS_BUGREPORT_GENERAL);
+  source->AddLocalizedString("issue-autofill", IDS_BUGREPORT_AUTOFILL);
 #else
   // Dropdown for Chrome:
   //
@@ -352,37 +293,26 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   // Other
   // Autofill (hidden by default)
 
-  localized_strings.SetString(std::string("issue-page-formatting"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PAGE_FORMATTING));
-  localized_strings.SetString(std::string("issue-page-load"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PAGE_LOAD));
-  localized_strings.SetString(std::string("issue-plugins"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PLUGINS));
-  localized_strings.SetString(std::string("issue-tabs"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_TABS));
-  localized_strings.SetString(std::string("issue-sync"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_SYNC));
-  localized_strings.SetString(std::string("issue-crashes"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_CRASHES));
-  localized_strings.SetString(std::string("issue-extensions"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_EXTENSIONS));
-  localized_strings.SetString(std::string("issue-phishing"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_PHISHING_PAGE));
-  localized_strings.SetString(std::string("issue-other"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_OTHER));
-  localized_strings.SetString(std::string("issue-autofill"),
-      l10n_util::GetStringUTF8(IDS_BUGREPORT_AUTOFILL));
-
+  source->AddLocalizedString("issue-page-formatting",
+                             IDS_BUGREPORT_PAGE_FORMATTING);
+  source->AddLocalizedString("issue-page-load", IDS_BUGREPORT_PAGE_LOAD);
+  source->AddLocalizedString("issue-plugins", IDS_BUGREPORT_PLUGINS);
+  source->AddLocalizedString("issue-tabs", IDS_BUGREPORT_TABS);
+  source->AddLocalizedString("issue-sync", IDS_BUGREPORT_SYNC);
+  source->AddLocalizedString("issue-crashes", IDS_BUGREPORT_CRASHES);
+  source->AddLocalizedString("issue-extensions", IDS_BUGREPORT_EXTENSIONS);
+  source->AddLocalizedString("issue-phishing", IDS_BUGREPORT_PHISHING_PAGE);
+  source->AddLocalizedString("issue-other", IDS_BUGREPORT_OTHER);
+  source->AddLocalizedString("issue-autofill", IDS_BUGREPORT_AUTOFILL);
 #endif
 
-  SetFontAndTextDirection(&localized_strings);
+  source->set_json_path("strings.js");
+  source->add_resource_path("bug_report.js", IDR_BUGREPORT_JS);
+  source->set_default_resource(
+      successful_init ? IDR_BUGREPORT_HTML : IDR_BUGREPORT_HTML_INVALID);
 
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      bug_report_html_, &localized_strings);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  return source;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -484,7 +414,7 @@ WebUIMessageHandler* BugReportHandler::Attach(WebUI* web_ui) {
   return WebUIMessageHandler::Attach(web_ui);
 }
 
-base::StringPiece BugReportHandler::Init() {
+bool BugReportHandler::Init() {
   std::string page_url;
   if (tab_->controller().GetActiveEntry()) {
      page_url = tab_->controller().GetActiveEntry()->url().spec();
@@ -500,19 +430,14 @@ base::StringPiece BugReportHandler::Init() {
     params.erase(params.begin() + additional_params_pos, params.end());
 
   int index = 0;
-  if (!base::StringToInt(params, &index)) {
-    return base::StringPiece(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_BUGREPORT_HTML_INVALID));
-  }
+  if (!base::StringToInt(params, &index))
+    return false;
 
   Browser* browser = BrowserList::GetLastActive();
   // Sanity checks.
   if (((index == 0) && (params != "0")) || !browser ||
       index >= browser->tab_count()) {
-    return base::StringPiece(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_BUGREPORT_HTML_INVALID));
+    return false;
   }
 
   TabContents* target_tab = browser->GetTabContentsAt(index);
@@ -523,9 +448,7 @@ base::StringPiece BugReportHandler::Init() {
   // Setup the screenshot source after we've verified input is legit.
   SetupScreenshotsSource();
 
-  return base::StringPiece(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BUGREPORT_HTML));
+  return true;
 }
 
 void BugReportHandler::RegisterMessages() {
@@ -748,10 +671,10 @@ BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
   BugReportHandler* handler = new BugReportHandler(tab);
   AddMessageHandler((handler)->Attach(this));
 
-  // The handler's init will specify which html
-  // resource we'll display to the user
-  BugReportUIHTMLSource* html_source =
-      new BugReportUIHTMLSource(handler->Init());
+  // The handler's init will determine whether we show the error html page.
+  ChromeWebUIDataSource* html_source =
+      CreateBugReportUIHTMLSource(handler->Init());
+
   // Set up the chrome://bugreport/ source.
   Profile* profile = Profile::FromBrowserContext(tab->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(html_source);

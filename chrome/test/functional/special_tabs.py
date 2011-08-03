@@ -34,18 +34,10 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   special_url_tabs = {
     'chrome://about': { 'title': 'Chrome URLs' },
-    'chrome://appcache-internals': {
-      'title': 'AppCache Internals',
-      'CSP': False
-    },
-    'chrome://blob-internals': {
-      'title': 'Blob Storage Internals',
-      'CSP': False
-    },
-    'chrome://bugreport': {
-      'title': 'Whoops. Let\'s fix that.',
-      'CSP': False
-    },
+    'chrome://appcache-internals': { 'title': 'AppCache Internals' },
+    'chrome://blob-internals': { 'title': 'Blob Storage Internals' },
+    'chrome://bugreport': {},
+    'chrome://bugreport/#0': { 'title': 'Feedback' },
     'chrome://chrome-urls': { 'title': 'Chrome URLs' },
     'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
