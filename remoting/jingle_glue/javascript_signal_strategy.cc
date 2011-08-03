@@ -89,8 +89,9 @@ void JavascriptSignalStrategy::OnIq(const std::string& stanza_str) {
     return;
   }
 
-  if (listener_)
-    listener_->OnIncomingStanza(stanza.get());
+  if (listener_ && listener_->OnIncomingStanza(stanza.get()))
+    return;
+
   iq_registry_.OnIncomingStanza(stanza.get());
 }
 

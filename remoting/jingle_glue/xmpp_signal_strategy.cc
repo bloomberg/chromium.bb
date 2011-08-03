@@ -53,7 +53,7 @@ void XmppSignalStrategy::Init(StatusObserver* observer) {
   xmpp_client_->Connect(settings, "", socket, CreatePreXmppAuth(settings));
   xmpp_client_->SignalStateChange.connect(
       this, &XmppSignalStrategy::OnConnectionStateChanged);
-  xmpp_client_->engine()->AddStanzaHandler(this, buzz::XmppEngine::HL_PEEK);
+  xmpp_client_->engine()->AddStanzaHandler(this, buzz::XmppEngine::HL_TYPE);
   xmpp_client_->Start();
 }
 
@@ -87,7 +87,7 @@ IqRequest* XmppSignalStrategy::CreateIqRequest() {
 
 bool XmppSignalStrategy::HandleStanza(const buzz::XmlElement* stanza) {
   if (listener_)
-    listener_->OnIncomingStanza(stanza);
+    return listener_->OnIncomingStanza(stanza);
   return false;
 }
 

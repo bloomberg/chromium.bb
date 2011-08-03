@@ -32,7 +32,7 @@ JingleSignalingConnector::~JingleSignalingConnector() {
   signal_strategy_->SetListener(NULL);
 }
 
-void JingleSignalingConnector::OnIncomingStanza(
+bool JingleSignalingConnector::OnIncomingStanza(
     const buzz::XmlElement* stanza) {
   // TODO(ajwong): Techncially, when SessionManager sends IQ packets, it
   // actually expects a response in SessionSendTask(). However, if you look in
@@ -46,7 +46,10 @@ void JingleSignalingConnector::OnIncomingStanza(
 
   if (session_manager_->IsSessionMessage(stanza)) {
     session_manager_->OnIncomingMessage(stanza);
+    return true;
   }
+
+  return false;
 }
 
 void JingleSignalingConnector::OnOutgoingMessage(

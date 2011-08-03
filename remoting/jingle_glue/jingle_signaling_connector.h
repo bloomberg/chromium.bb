@@ -42,7 +42,7 @@ class JingleSignalingConnector : public SignalStrategy::Listener,
   virtual ~JingleSignalingConnector();
 
   // SignalStrategy::Listener interface.
-  virtual void OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
+  virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   void OnResponse(const buzz::XmlElement* stanza);

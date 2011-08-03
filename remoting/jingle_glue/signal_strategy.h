@@ -35,7 +35,8 @@ class SignalStrategy {
 
   class Listener {
    public:
-    virtual void OnIncomingStanza(const buzz::XmlElement* stanza) = 0;
+    // Must return true if the stanza was handled, false otherwise.
+    virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) = 0;
   };
 
   SignalStrategy() {}
