@@ -85,6 +85,7 @@
 #include "ppapi/proxy/ppp_input_event_proxy.h"
 #include "ppapi/proxy/ppp_instance_private_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
+#include "ppapi/proxy/ppp_messaging_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
 namespace pp {
@@ -171,6 +172,7 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_Instance_Proxy::GetInfo1_0());
+  AddPPP(PPP_Messaging_Proxy::GetInfo());
 }
 
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {

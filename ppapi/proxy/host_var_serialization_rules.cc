@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/proxy/host_var_serialization_rules.h"
 
 #include "base/logging.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/ppb_var.h"
 
 namespace pp {
 namespace proxy {
 
 HostVarSerializationRules::HostVarSerializationRules(
-    const PPB_Var_Deprecated* var_interface,
+    const PPB_Var* var_interface,
     PP_Module pp_module)
     : var_interface_(var_interface),
       pp_module_(pp_module) {

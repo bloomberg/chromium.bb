@@ -42,21 +42,14 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-  IPC::SyncMessage* msg = new PpapiHostMsg_PPBTesting_RunMessageLoop(
-        INTERFACE_ID_PPB_TESTING, instance);
-  msg->EnableMessagePumping();
-  dispatcher->Send(msg);
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void QuitMessageLoop(PP_Instance instance) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-  dispatcher->Send(new PpapiHostMsg_PPBTesting_QuitMessageLoop(
-        INTERFACE_ID_PPB_TESTING, instance));
+  MessageLoop::current()->QuitNow();
 }
 
 uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
@@ -109,10 +102,6 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PPB_Testing_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_ReadImageData,
                         OnMsgReadImageData)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_RunMessageLoop,
-                        OnMsgRunMessageLoop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_QuitMessageLoop,
-                        OnMsgQuitMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                         OnMsgGetLiveObjectsForInstance)
     IPC_MESSAGE_UNHANDLED(handled = false)

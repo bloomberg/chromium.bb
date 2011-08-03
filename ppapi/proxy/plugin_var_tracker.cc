@@ -75,6 +75,10 @@ PluginVarTracker::VarID PluginVarTracker::MakeString(const char* str,
     iter_success_pair =
         var_id_to_string_.insert(VarIDStringMap::value_type(new_id, str_ptr));
   }
+  // Release the local pointer.
+  str_ptr = NULL;
+  // Now the map should have the only reference.
+  DCHECK(iter_success_pair.first->second->HasOneRef());
   iter_success_pair.first->second->AddRef();
   return new_id;
 }

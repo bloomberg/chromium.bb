@@ -303,6 +303,11 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
                            PP_Instance /* instance */,
                            pp::proxy::SerializedVar /* result */)
 
+// PPP_Messaging.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
+                    PP_Instance /* instance */,
+                    pp::proxy::SerializedVar /* message */)
+
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPBURLLoader_UpdateProgress,
@@ -744,10 +749,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
     pp::proxy::HostResource /* image */,
     PP_Point /* top_left */,
     PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBTesting_RunMessageLoop,
-                           PP_Instance /* instance */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBTesting_QuitMessageLoop,
-                           PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                            PP_Instance /* instance */,
                            uint32 /* result */)

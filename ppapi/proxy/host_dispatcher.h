@@ -13,7 +13,6 @@
 #include "base/process.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
-#include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/function_group_base.h"
 
 struct PPB_Proxy_Private;

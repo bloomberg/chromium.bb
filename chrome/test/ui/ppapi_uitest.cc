@@ -202,9 +202,12 @@ TEST_PPAPI_IN_PROCESS(VarDeprecated)
 // Disabled because it times out: http://crbug.com/89961
 //TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 
+// Windows defines 'PostMessage', so we have to undef it.
+#ifdef PostMessage
+#undef PostMessage
+#endif
 TEST_PPAPI_IN_PROCESS(PostMessage)
-// Disabled because it times out: http://crbug.com/89961
-//TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
+TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
-struct PPB_Var_Deprecated;
+struct PPB_Var;
 
 namespace pp {
 namespace proxy {
@@ -19,7 +19,7 @@ class VarTracker;
 // Implementation of the VarSerializationRules interface for the host side.
 class HostVarSerializationRules : public VarSerializationRules {
  public:
-  HostVarSerializationRules(const PPB_Var_Deprecated* var_interface,
+  HostVarSerializationRules(const PPB_Var* var_interface,
                             PP_Module pp_module);
   ~HostVarSerializationRules();
 
@@ -41,7 +41,7 @@ class HostVarSerializationRules : public VarSerializationRules {
   // string object.
   void VarToString(const PP_Var& var, std::string* str);
 
-  const PPB_Var_Deprecated* var_interface_;
+  const PPB_Var* var_interface_;
   PP_Module pp_module_;
 
   DISALLOW_COPY_AND_ASSIGN(HostVarSerializationRules);

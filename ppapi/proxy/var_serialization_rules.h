@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,10 @@ class VarSerializationRules {
                                          Dispatcher* dispatcher) = 0;
   virtual void EndReceiveCallerOwned(const PP_Var& var) = 0;
 
-  // Passinag refs -------------------------------------------------------------
+  // Passing refs -------------------------------------------------------------
   //
   // A pass-ref transfer is when ownership of a reference is passed from
-  // onen side to the other. Normally, this happens via return values and
+  // one side to the other. Normally, this happens via return values and
   // output arguments, as for exceptions. The code generating the value
   // (the function returning it in the case of a return value) will AddRef
   // the var on behalf of the consumer of the value. Responsibility for

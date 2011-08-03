@@ -136,6 +136,8 @@
         'proxy/ppp_instance_private_proxy.h',
         'proxy/ppp_instance_proxy.cc',
         'proxy/ppp_instance_proxy.h',
+        'proxy/ppp_messaging_proxy.cc',
+        'proxy/ppp_messaging_proxy.h',
         'proxy/proxy_channel.cc',
         'proxy/proxy_channel.h',
         'proxy/proxy_module.cc',
