@@ -402,8 +402,8 @@
         }],
         ['touchui==0', {
           'sources!': [
-            'native_menu_x.cc',
-            'native_menu_x.h',
+            'controls/menu/native_menu_x.cc',
+            'controls/menu/native_menu_x.h',
             'widget/tooltip_manager_views.cc',
             'touchui/touch_selection_controller_impl.cc',
             'touchui/touch_selection_controller_impl.h',
