@@ -693,8 +693,8 @@ ComponentUpdateService* BrowserProcessImpl::component_updater() {
     component_updater_.reset(ComponentUpdateServiceFactory(configurator));
   }
   return component_updater_.get();
-}
 #endif
+}
 
 void BrowserProcessImpl::CreateResourceDispatcherHost() {
   DCHECK(!created_resource_dispatcher_host_ &&
