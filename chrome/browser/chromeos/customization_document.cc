@@ -236,8 +236,7 @@ ServicesCustomizationDocument::CarrierDeal::CarrierDeal(
   deal_dict->GetInteger(kNotificationCountAttr, &notification_count_);
   std::string date_string;
   if (deal_dict->GetString(kDealExpireDateAttr, &date_string)) {
-    if (!base::Time::FromString(ASCIIToWide(date_string).c_str(),
-                                &expire_date_))
+    if (!base::Time::FromString(date_string.c_str(), &expire_date_))
       LOG(ERROR) << "Error parsing deal_expire_date: " << date_string;
   }
   deal_dict->GetDictionary(kLocalizedContentAttr, &localized_strings_);
