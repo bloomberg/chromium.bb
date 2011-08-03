@@ -211,7 +211,7 @@ hr.bottomshadow {
 #oobe.eula #eula-dot,
 #oobe.signin #signin-dot,
 #oobe.enrollment #signin-dot,
-#oobe.user-image #photo-dot {
+#oobe.user-image #user-image-dot {
   opacity: 0.4;
 }
 

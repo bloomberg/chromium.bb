@@ -69,7 +69,7 @@ SigninScreenHandler::~SigninScreenHandler() {
 void SigninScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("signinScreenTitle",
-      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE));
+      l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_TITLE));
   localized_strings->SetString("emailHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
   localized_strings->SetString("passwordHint",
@@ -220,7 +220,8 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     params.SetString("startUrl", kGaiaExtStartPage);
 
     std::string email;
-    if (args->GetString(0, &email))
+    // |args| can be null if it's OOBE.
+    if (args && args->GetString(0, &email))
       params.SetString("email", email);
 
     ShowScreen(kGaiaSigninScreen, &params);

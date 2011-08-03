@@ -10593,6 +10593,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
         Update
       </message>
+      <message name="IDS_SIGNIN_SCREEN_TITLE" desc="Title of OOBE/Add User sign in screen">
+        Sign in
+      </message>
       <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
         Let's get started
       </message>
