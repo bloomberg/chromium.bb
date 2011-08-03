@@ -23,7 +23,7 @@ namespace remoting {
 PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
   : instance_(instance),
     context_(context),
-    pending_flush_(false),
+    flush_blocked_(false),
     is_static_fill_(false),
     static_fill_color_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
@@ -164,10 +164,20 @@ void PepperView::BlankRect(pp::ImageData& image_data, const pp::Rect& rect) {
 }
 
 void PepperView::FlushGraphics(base::Time paint_start) {
-  int error = graphics2d_.Flush(
-      TaskToCompletionCallback(
-          task_factory_.NewRunnableMethod(&PepperView::OnPaintDone,
-                                          paint_start)));
+  scoped_ptr<Task> task(
+      task_factory_.NewRunnableMethod(&PepperView::OnPaintDone, paint_start));
+
+  // Flag needs to be set here in order to get a proper error code for Flush().
+  // Otherwise Flush() will always return PP_OK_COMPLETIONPENDING and the error
+  // would be hidden.
+  //
+  // Note that we can also handle this by providing an actual callback which
+  // takes the result code. Right now everything goes to the task that doesn't
+  // result value.
+  pp::CompletionCallback pp_callback(&CompletionCallbackTaskAdapter,
+                                     task.get(),
+                                     PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
+  int error = graphics2d_.Flush(pp_callback);
 
   // There is already a flush in progress so set this flag to true so that we
   // can flush again later.
@@ -175,9 +185,13 @@ void PepperView::FlushGraphics(base::Time paint_start) {
   // for precise measurement of timing, otherwise we need to keep a list of
   // queued start time(s).
   if (error == PP_ERROR_INPROGRESS)
-    pending_flush_ = true;
+    flush_blocked_ = true;
   else
-    pending_flush_ = false;
+    flush_blocked_ = false;
+
+  // If Flush() returns asynchronously then release the task.
+  if (error == PP_OK_COMPLETIONPENDING)
+    ignore_result(task.release());
 }
 
 void PepperView::SetSolidFill(uint32 color) {
@@ -326,7 +340,7 @@ void PepperView::OnPaintDone(base::Time paint_start) {
 
   // If the last flush failed because there was already another one in progress
   // then we perform the flush now.
-  if (pending_flush_)
+  if (flush_blocked_)
     FlushGraphics(base::Time::Now());
   return;
 }

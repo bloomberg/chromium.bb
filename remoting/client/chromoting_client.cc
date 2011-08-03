@@ -107,6 +107,14 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
     return;
   }
 
+  // If the video packet is empty then drop it. Empty packets are used to
+  // maintain activity on the network.
+  if (!packet->has_data() || packet->data().size() == 0) {
+    done->Run();
+    delete done;
+    return;
+  }
+
   // Record size of the packet for statistics.
   stats_.video_bandwidth()->Record(packet->data().size());
 

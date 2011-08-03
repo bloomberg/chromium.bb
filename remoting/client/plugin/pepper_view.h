@@ -96,7 +96,7 @@ class PepperView : public ChromotingView,
 
   // True if there is pending paint commands in Pepper's queue. This is set to
   // true if the last flush returns a PP_ERROR_INPROGRESS error.
-  bool pending_flush_;
+  bool flush_blocked_;
 
   // The size of the plugin element.
   gfx::Size plugin_size_;
