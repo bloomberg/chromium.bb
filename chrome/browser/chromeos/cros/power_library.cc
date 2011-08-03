@@ -22,8 +22,6 @@ class PowerLibraryImpl : public PowerLibrary {
       : power_status_connection_(NULL),
         resume_status_connection_(NULL),
         status_(chromeos::PowerStatus()) {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      Init();
   }
 
   virtual ~PowerLibraryImpl() {
@@ -38,6 +36,15 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   // Begin PowerLibrary implementation.
+  virtual void Init() OVERRIDE {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      power_status_connection_ =
+          chromeos::MonitorPowerStatus(&PowerStatusChangedHandler, this);
+      resume_status_connection_ =
+          chromeos::MonitorResume(&SystemResumedHandler, this);
+    }
+  }
+
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
@@ -109,13 +116,6 @@ class PowerLibraryImpl : public PowerLibrary {
     power->SystemResumed();
   }
 
-  void Init() {
-    power_status_connection_ = chromeos::MonitorPowerStatus(
-        &PowerStatusChangedHandler, this);
-    resume_status_connection_ =
-        chromeos::MonitorResume(&SystemResumedHandler, this);
-  }
-
   void UpdatePowerStatus(const chromeos::PowerStatus& status) {
     // Make sure we run on UI thread.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -166,6 +166,9 @@ class PowerLibraryStubImpl : public PowerLibrary {
  public:
   PowerLibraryStubImpl() {}
   virtual ~PowerLibraryStubImpl() {}
+
+  // Begin PowerLibrary implementation.
+  virtual void Init() OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual bool line_power_on() const OVERRIDE { return false; }
@@ -181,14 +184,18 @@ class PowerLibraryStubImpl : public PowerLibrary {
   virtual void EnableScreenLock(bool enable) OVERRIDE {}
   virtual void RequestRestart() OVERRIDE {}
   virtual void RequestShutdown() OVERRIDE {}
+  // End PowerLibrary implementation.
 };
 
 // static
 PowerLibrary* PowerLibrary::GetImpl(bool stub) {
+  PowerLibrary* impl;
   if (stub)
-    return new PowerLibraryStubImpl();
+    impl = new PowerLibraryStubImpl();
   else
-    return new PowerLibraryImpl();
+    impl = new PowerLibraryImpl();
+  impl->Init();
+  return impl;
 }
 
 }  // namespace chromeos

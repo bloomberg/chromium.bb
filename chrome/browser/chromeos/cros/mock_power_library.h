@@ -17,6 +17,8 @@ class MockPowerLibrary : public PowerLibrary {
   MockPowerLibrary();
   virtual ~MockPowerLibrary();
 
+  MOCK_METHOD0(Init, void(void));
+
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
