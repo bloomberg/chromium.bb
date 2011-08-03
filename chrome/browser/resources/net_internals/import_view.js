@@ -5,23 +5,24 @@
 /**
  * This view displays options for importing data from a log file.
  */
-
 var ImportView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in import_view.html
-  const MAIN_BOX_ID = 'import-view-tab-content';
-  const LOADED_DIV_ID = 'import-view-loaded-div';
-  const LOAD_LOG_FILE_ID = 'import-view-load-log-file';
-  const LOAD_STATUS_TEXT_ID = 'import-view-load-status-text';
-  const RELOAD_LINK_ID = 'import-view-reloaded-link';
-  const LOADED_INFO_EXPORT_DATE_ID = 'import-view-export-date';
-  const LOADED_INFO_BUILD_NAME_ID = 'import-view-build-name';
-  const LOADED_INFO_OS_TYPE_ID = 'import-view-os-type';
-  const LOADED_INFO_COMMAND_LINE_ID = 'import-view-command-line';
-  const LOADED_INFO_USER_COMMENTS_ID = 'import-view-user-comments';
+  var MAIN_BOX_ID = 'import-view-tab-content';
+  var LOADED_DIV_ID = 'import-view-loaded-div';
+  var LOAD_LOG_FILE_ID = 'import-view-load-log-file';
+  var LOAD_STATUS_TEXT_ID = 'import-view-load-status-text';
+  var RELOAD_LINK_ID = 'import-view-reloaded-link';
+  var LOADED_INFO_EXPORT_DATE_ID = 'import-view-export-date';
+  var LOADED_INFO_BUILD_NAME_ID = 'import-view-build-name';
+  var LOADED_INFO_OS_TYPE_ID = 'import-view-os-type';
+  var LOADED_INFO_COMMAND_LINE_ID = 'import-view-command-line';
+  var LOADED_INFO_USER_COMMENTS_ID = 'import-view-user-comments';
 
   // This is defined in index.html, but for all intents and purposes is part
   // of this view.
-  const LOAD_LOG_FILE_DROP_TARGET_ID = 'import-view-drop-target';
+  var LOAD_LOG_FILE_DROP_TARGET_ID = 'import-view-drop-target';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -30,6 +31,8 @@ var ImportView = (function() {
    * @constructor
    */
   function ImportView() {
+    assertFirstConstructorCall(ImportView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

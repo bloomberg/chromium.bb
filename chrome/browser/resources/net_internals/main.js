@@ -92,12 +92,13 @@ onLoaded = function() {
   categoryTabSwitcher.addTab('tab-handle-service-providers',
                              ServiceProvidersView.getInstance(),
                              false, cr.isWindows);
-  categoryTabSwitcher.addTab('tab-handle-tests', new TestView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-tests', TestView.getInstance(),
+                             false, true);
   categoryTabSwitcher.addTab('tab-handle-hsts', HSTSView.getInstance(),
                              false, true);
   categoryTabSwitcher.addTab('tab-handle-http-throttling',
                              HttpThrottlingView.getInstance(), false, true);
-  categoryTabSwitcher.addTab('tab-handle-logs', new LogsView(), false,
+  categoryTabSwitcher.addTab('tab-handle-logs', LogsView.getInstance(), false,
                              cr.isChromeOS);
   categoryTabSwitcher.addTab('tab-handle-prerender',
                              PrerenderView.getInstance(), false, true);

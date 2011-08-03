@@ -11,16 +11,17 @@
  *   - Shows the list of proxy hostnames that are cached as "bad".
  *   - Has a button to clear the cached bad proxies.
  */
-
 var ProxyView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in proxy_view.html
-  const MAIN_BOX_ID = 'proxy-view-tab-content';
-  const ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
-  const EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
-  const RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
-  const BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
-  const CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
-  const PROXY_RESOLVER_LOG_PRE_ID = 'proxy-view-resolver-log';
+  var MAIN_BOX_ID = 'proxy-view-tab-content';
+  var ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
+  var EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
+  var RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
+  var BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
+  var CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
+  var PROXY_RESOLVER_LOG_PRE_ID = 'proxy-view-resolver-log';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -29,6 +30,8 @@ var ProxyView = (function() {
    * @constructor
    */
   function ProxyView() {
+    assertFirstConstructorCall(ProxyView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

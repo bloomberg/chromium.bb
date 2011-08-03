@@ -5,13 +5,14 @@
 /**
  * This view displays information related to Prerendering.
  */
-
 var PrerenderView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in prerender_view.html
-  const MAIN_BOX_ID = 'prerender-view-tab-content';
-  const ENABLED_SPAN_ID = 'prerender-view-enabled-span';
-  const HISTORY_DIV_ID = 'prerender-view-history-div';
-  const ACTIVE_DIV_ID = 'prerender-view-active-div';
+  var MAIN_BOX_ID = 'prerender-view-tab-content';
+  var ENABLED_SPAN_ID = 'prerender-view-enabled-span';
+  var HISTORY_DIV_ID = 'prerender-view-history-div';
+  var ACTIVE_DIV_ID = 'prerender-view-active-div';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -20,6 +21,8 @@ var PrerenderView = (function() {
    * @constructor
    */
   function PrerenderView() {
+    assertFirstConstructorCall(PrerenderView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

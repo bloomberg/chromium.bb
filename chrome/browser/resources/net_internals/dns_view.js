@@ -13,16 +13,18 @@
  */
 
 var DnsView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in dns_view.html
-  const MAIN_BOX_ID = 'dns-view-tab-content';
-  const CACHE_TBODY_ID = 'dns-view-cache-tbody';
-  const CLEAR_CACHE_BUTTON_ID = 'dns-view-clear-cache';
-  const DEFAULT_FAMILY_SPAN_ID = 'dns-view-default-family';
-  const IPV6_DISABLED_SPAN_ID = 'dns-view-ipv6-disabled';
-  const ENABLE_IPV6_BUTTON_ID = 'dns-view-enable-ipv6';
-  const CAPACITY_SPAN_ID = 'dns-view-cache-capacity';
-  const TTL_SUCCESS_SPAN_ID = 'dns-view-cache-ttl-success';
-  const TTL_FAILURE_SPAN_ID = 'dns-view-cache-ttl-failure';
+  var MAIN_BOX_ID = 'dns-view-tab-content';
+  var CACHE_TBODY_ID = 'dns-view-cache-tbody';
+  var CLEAR_CACHE_BUTTON_ID = 'dns-view-clear-cache';
+  var DEFAULT_FAMILY_SPAN_ID = 'dns-view-default-family';
+  var IPV6_DISABLED_SPAN_ID = 'dns-view-ipv6-disabled';
+  var ENABLE_IPV6_BUTTON_ID = 'dns-view-enable-ipv6';
+  var CAPACITY_SPAN_ID = 'dns-view-cache-capacity';
+  var TTL_SUCCESS_SPAN_ID = 'dns-view-cache-ttl-success';
+  var TTL_FAILURE_SPAN_ID = 'dns-view-cache-ttl-failure';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -31,6 +33,8 @@ var DnsView = (function() {
    *  @constructor
    */
   function DnsView() {
+    assertFirstConstructorCall(DnsView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

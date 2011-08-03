@@ -143,6 +143,18 @@ function shallowCloneObject(object) {
 }
 
 /**
+ * Helper to make sure singleton classes are not instantiated more than once.
+ */
+function assertFirstConstructorCall(ctor) {
+  // This is the variable which is set by cr.addSingletonGetter().
+  if (ctor.hasCreateFirstInstance_) {
+    throw Error('The class ' + ctor.name + ' is a singleton, and should ' +
+                'only be accessed using ' + ctor.name + '.getInstance().');
+  }
+  ctor.hasCreateFirstInstance_ = true;
+}
+
+/**
  * TablePrinter is a helper to format a table as ascii art or an HTML table.
  *
  * Usage: call addRow() and addCell() repeatedly to specify the data.

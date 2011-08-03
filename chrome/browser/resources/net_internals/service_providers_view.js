@@ -10,14 +10,15 @@
  * information.  For each namespace provider, shows the name and
  * whether or not it's active.
  */
-
 var ServiceProvidersView = (function() {
-  const TAB_ID = 'tab-handle-service-providers';
+  'use strict';
+
+  var TAB_ID = 'tab-handle-service-providers';
 
   // IDs for special HTML elements in service_providers_view.html
-  const MAIN_BOX_ID = 'service-providers-view-tab-content';
-  const SERVICE_PROVIDERS_TBODY_ID = 'service-providers-view-tbody';
-  const NAMESPACE_PROVIDERS_TBODY_ID =
+  var MAIN_BOX_ID = 'service-providers-view-tab-content';
+  var SERVICE_PROVIDERS_TBODY_ID = 'service-providers-view-tbody';
+  var NAMESPACE_PROVIDERS_TBODY_ID =
       'service-providers-view-namespace-providers-tbody';
 
   // We inherit from DivView.
@@ -27,6 +28,8 @@ var ServiceProvidersView = (function() {
    * @constructor
    */
   function ServiceProvidersView() {
+    assertFirstConstructorCall(ServiceProvidersView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

@@ -10,17 +10,19 @@
  */
 
 var HSTSView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in hsts_view.html
-  const MAIN_BOX_ID = 'hsts-view-tab-content';
-  const QUERY_INPUT_ID = 'hsts-view-query-input';
-  const FORM_ID = 'hsts-view-query-form';
-  const QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
-  const ADD_INPUT_ID = 'hsts-view-add-input';
-  const ADD_FORM_ID = 'hsts-view-add-form';
-  const ADD_CHECK_ID = 'hsts-view-check-input';
-  const ADD_PINS_ID = 'hsts-view-add-pins';
-  const DELETE_INPUT_ID = 'hsts-view-delete-input';
-  const DELETE_FORM_ID = 'hsts-view-delete-form';
+  var MAIN_BOX_ID = 'hsts-view-tab-content';
+  var QUERY_INPUT_ID = 'hsts-view-query-input';
+  var FORM_ID = 'hsts-view-query-form';
+  var QUERY_OUTPUT_DIV_ID = 'hsts-view-query-output';
+  var ADD_INPUT_ID = 'hsts-view-add-input';
+  var ADD_FORM_ID = 'hsts-view-add-form';
+  var ADD_CHECK_ID = 'hsts-view-check-input';
+  var ADD_PINS_ID = 'hsts-view-add-pins';
+  var DELETE_INPUT_ID = 'hsts-view-delete-input';
+  var DELETE_FORM_ID = 'hsts-view-delete-form';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -29,6 +31,8 @@ var HSTSView = (function() {
    * @constructor
    */
   function HSTSView() {
+    assertFirstConstructorCall(HSTSView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

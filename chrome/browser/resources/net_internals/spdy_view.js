@@ -6,20 +6,21 @@
  * This view displays a summary of the state of each SPDY sessions, and
  * has links to display them in the events tab.
  */
-
 var SpdyView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in spdy_view.html
-  const MAIN_BOX_ID = 'spdy-view-tab-content';
-  const ENABLED_SPAN_ID = 'spdy-view-enabled-span';
-  const USE_ALTERNATE_PROTOCOL_SPAN_ID = 'spdy-view-alternate-protocol-span';
-  const FORCE_ALWAYS_SPAN_ID = 'spdy-view-force-always-span';
-  const FORCE_OVER_SSL_SPAN_ID = 'spdy-view-force-over-ssl-span';
-  const NEXT_PROTOCOLS_SPAN_ID = 'spdy-view-next-protocols-span';
-  const ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID =
+  var MAIN_BOX_ID = 'spdy-view-tab-content';
+  var ENABLED_SPAN_ID = 'spdy-view-enabled-span';
+  var USE_ALTERNATE_PROTOCOL_SPAN_ID = 'spdy-view-alternate-protocol-span';
+  var FORCE_ALWAYS_SPAN_ID = 'spdy-view-force-always-span';
+  var FORCE_OVER_SSL_SPAN_ID = 'spdy-view-force-over-ssl-span';
+  var NEXT_PROTOCOLS_SPAN_ID = 'spdy-view-next-protocols-span';
+  var ALTERNATE_PROTOCOL_MAPPINGS_DIV_ID =
       'spdy-view-alternate-protocol-mappings-div';
-  const SESSION_NONE_SPAN_ID = 'spdy-view-session-none-span';
-  const SESSION_LINK_SPAN_ID = 'spdy-view-session-link-span';
-  const SESSION_DIV_ID = 'spdy-view-session-div';
+  var SESSION_NONE_SPAN_ID = 'spdy-view-session-none-span';
+  var SESSION_LINK_SPAN_ID = 'spdy-view-session-link-span';
+  var SESSION_DIV_ID = 'spdy-view-session-div';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -28,6 +29,8 @@ var SpdyView = (function() {
    * @constructor
    */
   function SpdyView() {
+    assertFirstConstructorCall(SpdyView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

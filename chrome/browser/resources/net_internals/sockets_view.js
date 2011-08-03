@@ -9,14 +9,15 @@
  *   - For each pool with allocated sockets or connect jobs, shows all its
  *     groups with any allocated sockets.
  */
-
 var SocketsView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in sockets_view.html
-  const MAIN_BOX_ID = 'sockets-view-tab-content';
-  const SOCKET_POOL_DIV_ID = 'sockets-view-pool-div';
-  const SOCKET_POOL_GROUPS_DIV_ID = 'sockets-view-pool-groups-div';
-  const CLOSE_IDLE_SOCKETS_BUTTON_ID = 'sockets-view-close-idle-button';
-  const SOCKET_POOL_FLUSH_BUTTON_ID = 'sockets-view-flush-button';
+  var MAIN_BOX_ID = 'sockets-view-tab-content';
+  var SOCKET_POOL_DIV_ID = 'sockets-view-pool-div';
+  var SOCKET_POOL_GROUPS_DIV_ID = 'sockets-view-pool-groups-div';
+  var CLOSE_IDLE_SOCKETS_BUTTON_ID = 'sockets-view-close-idle-button';
+  var SOCKET_POOL_FLUSH_BUTTON_ID = 'sockets-view-flush-button';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -25,6 +26,8 @@ var SocketsView = (function() {
    * @constructor
    */
   function SocketsView() {
+    assertFirstConstructorCall(SocketsView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

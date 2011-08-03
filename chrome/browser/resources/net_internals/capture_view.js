@@ -5,16 +5,17 @@
 /**
  * This view displays controls for capturing network events.
  */
-
 var CaptureView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in capture_view.html
-  const MAIN_BOX_ID = 'capture-view-tab-content';
-  const BYTE_LOGGING_CHECKBOX_ID = 'capture-view-byte-logging-checkbox';
-  const PASSIVELY_CAPTURED_COUNT_ID = 'capture-view-passively-captured-count';
-  const ACTIVELY_CAPTURED_COUNT_ID = 'capture-view-actively-captured-count';
-  const DELETE_ALL_ID = 'capture-view-delete-all';
-  const TIP_ANCHOR_ID = 'capture-view-tip-anchor';
-  const TIP_DIV_ID = 'capture-view-tip-div';
+  var MAIN_BOX_ID = 'capture-view-tab-content';
+  var BYTE_LOGGING_CHECKBOX_ID = 'capture-view-byte-logging-checkbox';
+  var PASSIVELY_CAPTURED_COUNT_ID = 'capture-view-passively-captured-count';
+  var ACTIVELY_CAPTURED_COUNT_ID = 'capture-view-actively-captured-count';
+  var DELETE_ALL_ID = 'capture-view-delete-all';
+  var TIP_ANCHOR_ID = 'capture-view-tip-anchor';
+  var TIP_DIV_ID = 'capture-view-tip-div';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -23,6 +24,8 @@ var CaptureView = (function() {
    * @constructor
    */
   function CaptureView() {
+    assertFirstConstructorCall(CaptureView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

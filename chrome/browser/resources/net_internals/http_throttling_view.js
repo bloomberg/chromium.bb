@@ -5,16 +5,22 @@
 /**
  * This view displays information related to HTTP throttling.
  */
-
 var HttpThrottlingView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in http_throttling_view.html
-  const MAIN_BOX_ID = 'http-throttling-view-tab-content';
-  const ENABLE_CHECKBOX_ID = 'http-throttling-view-enable-checkbox';
+  var MAIN_BOX_ID = 'http-throttling-view-tab-content';
+  var ENABLE_CHECKBOX_ID = 'http-throttling-view-enable-checkbox';
 
   // We inherit from DivView.
   var superClass = DivView;
 
+  /**
+   * @constructor
+   */
   function HttpThrottlingView() {
+    assertFirstConstructorCall(HttpThrottlingView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

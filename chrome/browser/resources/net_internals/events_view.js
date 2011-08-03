@@ -23,38 +23,41 @@
  *  |      action bar      ||                |
  *  +----------------------++----------------+
  */
-
 var EventsView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in events_view.html
-  const TBODY_ID = 'events-view-source-list-tbody';
-  const FILTER_INPUT_ID = 'events-view-filter-input';
-  const FILTER_COUNT_ID = 'events-view-filter-count';
-  const DELETE_SELECTED_ID = 'events-view-delete-selected';
-  const DELETE_ALL_ID = 'events-view-delete-all';
-  const SELECT_ALL_ID = 'events-view-select-all';
-  const SORT_BY_ID_ID = 'events-view-sort-by-id';
-  const SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
-  const SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
-  const TAB_HANDLES_CONTAINER_ID = 'events-view-details-tab-handles';
-  const LOG_TAB_ID = 'events-view-details-log-tab';
-  const TIMELINE_TAB_ID = 'events-view-details-timeline-tab';
-  const DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
-  const DETAILS_TIMELINE_BOX_ID = 'events-view-details-timeline-box';
-  const TOPBAR_ID = 'events-view-filter-box';
-  const MIDDLE_BOX_ID = 'events-view-source-list';
-  const BOTTOM_BAR_ID = 'events-view-action-box';
-  const SIZER_ID = 'events-view-splitter-box';
+  var TBODY_ID = 'events-view-source-list-tbody';
+  var FILTER_INPUT_ID = 'events-view-filter-input';
+  var FILTER_COUNT_ID = 'events-view-filter-count';
+  var DELETE_SELECTED_ID = 'events-view-delete-selected';
+  var DELETE_ALL_ID = 'events-view-delete-all';
+  var SELECT_ALL_ID = 'events-view-select-all';
+  var SORT_BY_ID_ID = 'events-view-sort-by-id';
+  var SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
+  var SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
+  var TAB_HANDLES_CONTAINER_ID = 'events-view-details-tab-handles';
+  var LOG_TAB_ID = 'events-view-details-log-tab';
+  var TIMELINE_TAB_ID = 'events-view-details-timeline-tab';
+  var DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
+  var DETAILS_TIMELINE_BOX_ID = 'events-view-details-timeline-box';
+  var TOPBAR_ID = 'events-view-filter-box';
+  var MIDDLE_BOX_ID = 'events-view-source-list';
+  var BOTTOM_BAR_ID = 'events-view-action-box';
+  var SIZER_ID = 'events-view-splitter-box';
 
   // How soon after updating the filter list the counter should be updated.
-  const REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
+  var REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
 
   // We inherit from View.
   var superClass = View;
 
-  /**
+  /*
    * @constructor
    */
   function EventsView() {
+    assertFirstConstructorCall(EventsView);
+
     // Call superclass's constructor.
     superClass.call(this);
 
@@ -195,8 +198,8 @@ var EventsView = (function() {
       // Adding a leading space allows a single regexp to be used, regardless of
       // whether or not the directive is at the start of the string.
       sourceText = ' ' + sourceText;
-      regExp = new RegExp('\\s+' + directive + ':(\\S*)\\s*', 'i');
-      matchInfo = regExp.exec(sourceText);
+      var regExp = new RegExp('\\s+' + directive + ':(\\S*)\\s*', 'i');
+      var matchInfo = regExp.exec(sourceText);
       if (matchInfo == null)
         return null;
 
@@ -606,7 +609,7 @@ var EventsView = (function() {
   // Helper code for comparisons
   // ------------------------------------------------------------------------
 
-  COMPARISON_FUNCTION_TABLE = {
+  var COMPARISON_FUNCTION_TABLE = {
     // sort: and sort:- are allowed
     '': compareSourceId,
     'active': compareActive,

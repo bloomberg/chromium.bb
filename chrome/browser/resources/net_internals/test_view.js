@@ -10,13 +10,14 @@
  *   - Shows the set of experiments that have been run so far, and their
  *     result.
  */
-
 var TestView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in test_view.html
-  const MAIN_BOX_ID = 'test-view-tab-content';
-  const URL_INPUT_ID = 'test-view-url-input';
-  const FORM_ID = 'test-view-connection-tests-form';
-  const SUMMARY_DIV_ID = 'test-view-summary';
+  var MAIN_BOX_ID = 'test-view-tab-content';
+  var URL_INPUT_ID = 'test-view-url-input';
+  var FORM_ID = 'test-view-connection-tests-form';
+  var SUMMARY_DIV_ID = 'test-view-summary';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -25,6 +26,8 @@ var TestView = (function() {
    * @constructor
    */
   function TestView() {
+    assertFirstConstructorCall(TestView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

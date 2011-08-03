@@ -6,17 +6,20 @@
  * This class provides a "bridge" for communicating between the javascript and
  * the browser.
  */
-
 var BrowserBridge = (function() {
+  'use strict';
+
   /**
    * Delay in milliseconds between updates of certain browser information.
    */
-  const POLL_INTERVAL_MS = 5000;
+  var POLL_INTERVAL_MS = 5000;
 
   /**
    * @constructor
    */
   function BrowserBridge() {
+    assertFirstConstructorCall(BrowserBridge);
+
     // List of observers for various bits of browser state.
     this.connectionTestsObservers_ = [];
     this.hstsObservers_ = [];
@@ -481,7 +484,7 @@ var BrowserBridge = (function() {
      * runs updates with active observers.
      */
     checkForUpdatedInfo: function(force) {
-      for (name in this.pollableDataHelpers_) {
+      for (var name in this.pollableDataHelpers_) {
         var helper = this.pollableDataHelpers_[name];
         if (force || helper.hasActiveObserver())
           helper.startUpdate();
@@ -605,7 +608,7 @@ var BrowserBridge = (function() {
     this.observingCount_ = 0;
     this.updatedData_ = {};
 
-    for (name in pollableDataHelpers) {
+    for (var name in pollableDataHelpers) {
       ++this.observingCount_;
       var helper = pollableDataHelpers[name];
       helper.addObserver(this);

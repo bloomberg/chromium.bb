@@ -25,8 +25,10 @@
  * @param {!DivView} sizerView The widget that will serve as draggable divider.
  */
 var ResizableVerticalSplitView = (function() {
+  'use strict';
+
   // Minimum width to size panels to, in pixels.
-  const MIN_PANEL_WIDTH = 50;
+  var MIN_PANEL_WIDTH = 50;
 
   // We inherit from View.
   var superClass = View;

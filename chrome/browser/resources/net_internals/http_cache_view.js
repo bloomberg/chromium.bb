@@ -5,11 +5,12 @@
 /**
  * This view displays information on the HTTP cache.
  */
-
 var HttpCacheView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in http_cache_view.html
-  const MAIN_BOX_ID = 'http-cache-view-tab-content';
-  const STATS_DIV_ID = 'http-cache-view-cache-stats';
+  var MAIN_BOX_ID = 'http-cache-view-tab-content';
+  var STATS_DIV_ID = 'http-cache-view-cache-stats';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -18,6 +19,8 @@ var HttpCacheView = (function() {
    *  @constructor
    */
   function HttpCacheView() {
+    assertFirstConstructorCall(HttpCacheView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

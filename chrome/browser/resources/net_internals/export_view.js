@@ -4,22 +4,28 @@
 
 /**
  * This view displays options for exporting the captured data.
- *  @constructor
  */
 var ExportView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in export_view.html
-  const MAIN_BOX_ID = 'export-view-tab-content';
-  const DOWNLOAD_IFRAME_ID = 'export-view-download-iframe';
-  const SAVE_FILE_BUTTON_ID = 'export-view-save-log-file';
-  const SAVE_STATUS_TEXT_ID = 'export-view-save-status-text';
-  const SECURITY_STRIPPING_CHECKBOX_ID =
+  var MAIN_BOX_ID = 'export-view-tab-content';
+  var DOWNLOAD_IFRAME_ID = 'export-view-download-iframe';
+  var SAVE_FILE_BUTTON_ID = 'export-view-save-log-file';
+  var SAVE_STATUS_TEXT_ID = 'export-view-save-status-text';
+  var SECURITY_STRIPPING_CHECKBOX_ID =
     'export-view-security-stripping-checkbox';
-  const USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
+  var USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
 
   // We inherit from DivView.
   var superClass = DivView;
 
+  /**
+   * @constructor
+   */
   function ExportView() {
+    assertFirstConstructorCall(ExportView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 

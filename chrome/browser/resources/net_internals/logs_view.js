@@ -8,20 +8,22 @@
  * keywords. Logs are not fetched until we actually need them.
  */
 var LogsView = (function() {
+  'use strict';
+
   // IDs for special HTML elements in logs_view.html
-  const MAIN_BOX_ID = 'logs-view-tab-content';
-  const TABLE_ID = 'logs-view-log-table';
-  const GLOBAL_SHOW_BUTTON_ID = 'logs-view-global-show-btn';
-  const GLOBAL_HIDE_BUTTON_ID = 'logs-view-global-hide-btn';
-  const REFRESH_LOGS_BUTTON_ID = 'logs-view-refresh-btn';
+  var MAIN_BOX_ID = 'logs-view-tab-content';
+  var TABLE_ID = 'logs-view-log-table';
+  var GLOBAL_SHOW_BUTTON_ID = 'logs-view-global-show-btn';
+  var GLOBAL_HIDE_BUTTON_ID = 'logs-view-global-hide-btn';
+  var REFRESH_LOGS_BUTTON_ID = 'logs-view-refresh-btn';
 
   // Special classes (defined in logs_view.css).
-  const LOG_ROW_COLLAPSED_CLASSNAME = 'logs-view-log-row-collapsed';
-  const LOG_ROW_EXPANDED_CLASSNAME = 'logs-view-log-row-expanded';
-  const LOG_CELL_TEXT_CLASSNAME = 'logs-view-log-cell-text';
-  const LOG_CELL_LOG_CLASSNAME = 'logs-view-log-cell-log';
-  const LOG_TABLE_BUTTON_COLUMN_CLASSNAME = 'logs-view-log-table-button-column';
-  const LOG_BUTTON_CLASSNAME = 'logs-view-log-button';
+  var LOG_ROW_COLLAPSED_CLASSNAME = 'logs-view-log-row-collapsed';
+  var LOG_ROW_EXPANDED_CLASSNAME = 'logs-view-log-row-expanded';
+  var LOG_CELL_TEXT_CLASSNAME = 'logs-view-log-cell-text';
+  var LOG_CELL_LOG_CLASSNAME = 'logs-view-log-cell-log';
+  var LOG_TABLE_BUTTON_COLUMN_CLASSNAME = 'logs-view-log-table-button-column';
+  var LOG_BUTTON_CLASSNAME = 'logs-view-log-button';
 
   // We inherit from DivView.
   var superClass = DivView;
@@ -30,12 +32,14 @@ var LogsView = (function() {
    * @constructor
    */
   function LogsView() {
+    assertFirstConstructorCall(LogsView);
+
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 
     var tableDiv = $(TABLE_ID);
     this.rows = [];
-    this.populateTable(tableDiv, kLogFilterList);
+    this.populateTable(tableDiv, LOG_FILTER_LIST);
     $(GLOBAL_SHOW_BUTTON_ID).addEventListener('click',
         this.onGlobalChangeVisibleClick_.bind(this, true));
     $(GLOBAL_HIDE_BUTTON_ID).addEventListener('click',
@@ -44,10 +48,12 @@ var LogsView = (function() {
         this.onLogsRefresh_.bind(this));
   }
 
+  cr.addSingletonGetter(LogsView);
+
   /**
    * Contains log keys we are interested in.
    */
-  const kLogFilterList = [
+  var LOG_FILTER_LIST = [
     {
       key:'syslog',
     },
@@ -123,7 +129,7 @@ var LogsView = (function() {
 
     /**
      * Initializes |tableDiv| to represent data from |logList| which should be
-     * of type kLogFilterList.
+     * of type LOG_FILTER_LIST.
      */
     populateTable: function(tableDiv, logList) {
       for (var i = 0; i < logList.length; i++) {
