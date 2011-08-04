@@ -22,7 +22,7 @@
 
 namespace media {
 
-class FilterHost {
+class MEDIA_EXPORT FilterHost {
  public:
   // Stops execution of the pipeline due to a fatal error.  Do not call this
   // method with PIPELINE_OK.
