@@ -32,7 +32,6 @@ BASE_API FILE* OpenFile(const std::wstring& filename, const char* mode);
 BASE_API void AppendToPath(std::wstring* path, const std::wstring& new_ending);
 
 // Use FilePath::Extension instead.
-BASE_API FilePath::StringType GetFileExtensionFromPath(const FilePath& path);
 BASE_API std::wstring GetFileExtensionFromPath(const std::wstring& path);
 
 // Use version that takes a FilePath.
