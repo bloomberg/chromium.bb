@@ -143,7 +143,7 @@ def _RunSudoPeriodically(queue):
 
 
 def _LaunchSudoKeepAliveProcess():
-  """"Start the background process that avoids the 15 min sudo timeout.
+  """Start the background process that avoids the 15 min sudo timeout.
 
   Returns:
     A multiprocessing.Queue that can be used to stop the process.  Stop
