@@ -1352,6 +1352,12 @@
    fun:browser_sync::DataTypeManagerImpl::Configure
 }
 {
+    bug_80238
+    Heapcheck:Leak
+    ...
+    fun:sync_notifier::::InvalidationNotifierTest::SetUp
+}
+{
    bug_80467
    Heapcheck:Leak
    ...
