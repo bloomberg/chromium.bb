@@ -33,6 +33,7 @@ struct SyncConfiguration {
   syncable::ModelTypeSet data_types;
   bool use_secondary_passphrase;
   std::string secondary_passphrase;
+  std::string gaia_passphrase;
 };
 
 // The state machine used by SyncSetupWizard, exposed in its own header

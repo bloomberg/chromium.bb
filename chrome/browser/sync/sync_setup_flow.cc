@@ -273,6 +273,13 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
          !configuration.use_secondary_passphrase ||
          configuration.secondary_passphrase.length() > 0);
 
+  if (!configuration.gaia_passphrase.empty()) {
+    // Caller passed a gaia passphrase. This is illegal if we are currently
+    // using a secondary passphrase.
+    DCHECK(!service_->IsUsingSecondaryPassphrase());
+    service_->SetPassphrase(configuration.gaia_passphrase, false, false);
+  }
+
   if (configuration.use_secondary_passphrase) {
     if (!service_->IsUsingSecondaryPassphrase()) {
       service_->SetPassphrase(configuration.secondary_passphrase, true, true);
