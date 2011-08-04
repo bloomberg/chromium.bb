@@ -524,3 +524,14 @@ body.login-display #progress {
 html[dir=rtl] .error-message {
   background-position: right top;
 }
+
+#version-labels {
+  -webkit-transition: all .5s linear;
+  bottom: 10px;
+  color: #999;
+  font-size: 11px;
+  left: 10px;
+  opacity: 1.0;
+  position: absolute;
+  text-shadow: 0 1px 1px #fff;
+}

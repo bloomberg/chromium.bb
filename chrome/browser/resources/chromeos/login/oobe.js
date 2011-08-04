@@ -510,6 +510,15 @@ cr.define('cr.ui', function() {
     }
   };
 
+  /**
+   * Sets text content for a div with |labelId|.
+   * @param {string} labelId Id of the label div.
+   * @param {string} labelText Text for the label.
+   */
+  Oobe.setLabelText = function(labelId, labelText) {
+    $(labelId).textContent = labelText;
+  };
+
   // Export
   return {
     Oobe: Oobe

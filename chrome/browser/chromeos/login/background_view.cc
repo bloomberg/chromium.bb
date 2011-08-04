@@ -85,10 +85,13 @@ BackgroundView::BackgroundView()
 #else
       is_official_build_(false),
 #endif
-      background_area_(NULL) {
+      background_area_(NULL),
+      version_info_updater_(this) {
 }
 
-BackgroundView::~BackgroundView() {}
+BackgroundView::~BackgroundView() {
+  version_info_updater_.set_delegate(NULL);
+}
 
 void BackgroundView::Init(const GURL& background_url) {
   views::Painter* painter = CreateBackgroundPainter();
@@ -304,6 +307,16 @@ void BackgroundView::OnLocaleChanged() {
   SchedulePaint();
 }
 
+void BackgroundView::OnOSVersionLabelTextUpdated(
+    const std::string& os_version_label_text) {
+  os_version_label_->SetText(ASCIIToWide(os_version_label_text));
+}
+
+void BackgroundView::OnBootTimesLabelTextUpdated(
+    const std::string& boot_times_label_text) {
+  boot_times_label_->SetText(ASCIIToWide(boot_times_label_text));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BackgroundView private:
 
@@ -342,39 +355,7 @@ void BackgroundView::InitInfoLabels() {
       AddChildViewAt(boot_times_label_, idx);
   }
 
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    version_loader_.EnablePlatformVersions(true);
-    version_loader_.GetVersion(
-        &version_consumer_,
-        NewCallback(this, &BackgroundView::OnVersion),
-        is_official_build_ ?
-            VersionLoader::VERSION_SHORT_WITH_DATE :
-            VersionLoader::VERSION_FULL);
-    if (!is_official_build_) {
-      boot_times_loader_.GetBootTimes(
-          &boot_times_consumer_,
-          NewCallback(this, &BackgroundView::OnBootTimes));
-    }
-  } else {
-    UpdateVersionLabel();
-  }
-
-  policy::CloudPolicySubsystem* cloud_policy =
-      g_browser_process->browser_policy_connector()->
-          device_cloud_policy_subsystem();
-  if (cloud_policy) {
-    // Two-step reset because we want to construct new ObserverRegistrar after
-    // destruction of old ObserverRegistrar to avoid DCHECK violation because
-    // of adding existing observer.
-    cloud_policy_registrar_.reset();
-    cloud_policy_registrar_.reset(
-        new policy::CloudPolicySubsystem::ObserverRegistrar(
-            cloud_policy, this));
-
-    // Ensure that we have up-to-date enterprise info in case enterprise policy
-    // is already fetched and has finished initialization.
-    UpdateEnterpriseInfo();
-  }
+  version_info_updater_.StartUpdate(is_official_build_);
 }
 
 void BackgroundView::InitProgressBar() {
@@ -399,132 +380,6 @@ void BackgroundView::UpdateWindowType() {
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_BACKGROUND,
       &params);
-}
-
-void BackgroundView::UpdateVersionLabel() {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    os_version_label_->SetText(
-        ASCIIToWide(CrosLibrary::Get()->load_error_string()));
-    return;
-  }
-
-  if (version_text_.empty())
-    return;
-
-  chrome::VersionInfo version_info;
-  std::string label_text = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
-  label_text += ' ';
-  label_text += version_info.Version();
-  label_text += " (";
-  // TODO(rkc): Fix this for RTL.
-  // http://code.google.com/p/chromium-os/issues/detail?id=17621
-  label_text += l10n_util::GetStringUTF8(IDS_PLATFORM_LABEL);
-  label_text += ' ';
-  label_text += version_text_;
-  label_text += ')';
-
-  if (!enterprise_domain_text_.empty()) {
-    label_text += ' ';
-    if (enterprise_status_text_.empty()) {
-      label_text += l10n_util::GetStringFUTF8(
-          IDS_LOGIN_MANAGED_BY_LABEL_FORMAT,
-          UTF8ToUTF16(enterprise_domain_text_));
-    } else {
-      label_text += l10n_util::GetStringFUTF8(
-          IDS_LOGIN_MANAGED_BY_WITH_STATUS_LABEL_FORMAT,
-          UTF8ToUTF16(enterprise_domain_text_),
-          UTF8ToUTF16(enterprise_status_text_));
-    }
-  }
-
-  // Workaround over incorrect width calculation in old fonts.
-  // TODO(glotov): remove the following line when new fonts are used.
-  label_text += ' ';
-
-  os_version_label_->SetText(UTF8ToWide(label_text));
-}
-
-void BackgroundView::UpdateEnterpriseInfo() {
-  policy::BrowserPolicyConnector* policy_connector =
-      g_browser_process->browser_policy_connector();
-
-  std::string status_text;
-  policy::CloudPolicySubsystem* cloud_policy_subsystem =
-      policy_connector->device_cloud_policy_subsystem();
-  if (cloud_policy_subsystem) {
-    switch (cloud_policy_subsystem->state()) {
-      case policy::CloudPolicySubsystem::UNENROLLED:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_PENDING);
-        break;
-      case policy::CloudPolicySubsystem::UNMANAGED:
-      case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
-      case policy::CloudPolicySubsystem::LOCAL_ERROR:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_LOST_CONNECTION);
-        break;
-      case policy::CloudPolicySubsystem::NETWORK_ERROR:
-        status_text = l10n_util::GetStringUTF8(
-            IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR);
-        break;
-      case policy::CloudPolicySubsystem::TOKEN_FETCHED:
-      case policy::CloudPolicySubsystem::SUCCESS:
-        break;
-    }
-  }
-
-  SetEnterpriseInfo(policy_connector->GetEnterpriseDomain(), status_text);
-}
-
-void BackgroundView::SetEnterpriseInfo(const std::string& domain_name,
-                                       const std::string& status_text) {
-  if (domain_name != enterprise_domain_text_ ||
-      status_text != enterprise_status_text_) {
-    enterprise_domain_text_ = domain_name;
-    enterprise_status_text_ = status_text;
-    UpdateVersionLabel();
-  }
-}
-
-void BackgroundView::OnVersion(
-    VersionLoader::Handle handle, std::string version) {
-  version_text_.swap(version);
-  UpdateVersionLabel();
-}
-
-void BackgroundView::OnBootTimes(
-    BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
-  const char* kBootTimesNoChromeExec =
-      "Non-firmware boot took %.2f seconds (kernel %.2fs, system %.2fs)";
-  const char* kBootTimesChromeExec =
-      "Non-firmware boot took %.2f seconds "
-      "(kernel %.2fs, system %.2fs, chrome %.2fs)";
-  std::string boot_times_text;
-
-  if (boot_times.chrome > 0) {
-    boot_times_text =
-        base::StringPrintf(
-            kBootTimesChromeExec,
-            boot_times.total,
-            boot_times.pre_startup,
-            boot_times.system,
-            boot_times.chrome);
-  } else {
-    boot_times_text =
-        base::StringPrintf(
-            kBootTimesNoChromeExec,
-            boot_times.total,
-            boot_times.pre_startup,
-            boot_times.system);
-  }
-  // Use UTF8ToWide once this string is localized.
-  boot_times_label_->SetText(ASCIIToWide(boot_times_text));
-}
-
-void BackgroundView::OnPolicyStateChanged(
-    policy::CloudPolicySubsystem::PolicySubsystemState state,
-    policy::CloudPolicySubsystem::ErrorDetails error_details) {
-  UpdateEnterpriseInfo();
 }
 
 }  // namespace chromeos

@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
