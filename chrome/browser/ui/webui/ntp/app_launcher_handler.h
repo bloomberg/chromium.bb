@@ -107,6 +107,11 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Callback for the "generateAppForLink" message.
   void HandleGenerateAppForLink(const base::ListValue* args);
 
+  // Callback for the "recordAppLaunchByURL" message. Takes an escaped URL and a
+  // launch source (integer), and if the URL represents an app, records the
+  // action for UMA.
+  void HandleRecordAppLaunchByURL(const base::ListValue* args);
+
   // Register app launcher preferences.
   static void RegisterUserPrefs(PrefService* pref_service);
 

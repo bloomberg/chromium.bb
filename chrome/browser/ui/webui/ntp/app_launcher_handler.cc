@@ -166,6 +166,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   }
 }
 
+// TODO(estade): remove this. We record app launches via js calls rather than
+// pings for ntp4.
 // static
 bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
   std::vector<std::string> params;
@@ -208,7 +210,6 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
 }
 
 WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
-  // TODO(arv): Add initialization code to the Apps store etc.
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -235,6 +236,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleSaveAppPageName));
   web_ui_->RegisterMessageCallback("generateAppForLink",
       NewCallback(this, &AppLauncherHandler::HandleGenerateAppForLink));
+  web_ui_->RegisterMessageCallback("recordAppLaunchByURL",
+      NewCallback(this, &AppLauncherHandler::HandleRecordAppLaunchByURL));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -496,6 +499,9 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(promo_active_, launch_bucket);
     extension_service_->apps_promo()->ExpireDefaultApps();
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNewTabPage4)) {
+    RecordWebStoreLaunch(promo_active_);
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
@@ -703,6 +709,20 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
       launch_url, history::FAVICON, &favicon_consumer_,
       NewCallback(this, &AppLauncherHandler::OnFaviconForApp));
   favicon_consumer_.SetClientData(favicon_service, h, web_app.release());
+}
+
+void AppLauncherHandler::HandleRecordAppLaunchByURL(
+    const base::ListValue* args) {
+  std::string url;
+  CHECK(args->GetString(0, &url));
+  double source;
+  CHECK(args->GetDouble(1, &source));
+
+  extension_misc::AppLaunchBucket bucket =
+      static_cast<extension_misc::AppLaunchBucket>(source);
+  CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+
+  RecordAppLaunchByURL(web_ui_->GetProfile(), url, bucket);
 }
 
 void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,

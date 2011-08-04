@@ -90,8 +90,13 @@ cr.define('ntp4', function() {
       }
 
       function onActivate(e) {
+        chrome.send('recordAppLaunchByURL',
+                    [encodeURIComponent(data.url),
+                     ntp4.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
         // TODO(estade): don't convert to string.
         chrome.send('reopenTab', [String(data.sessionId)]);
+        // We are likely deleted by this point!
+
         e.preventDefault();
       }
       a.addEventListener('activate', onActivate);

@@ -118,6 +118,14 @@ cr.define('ntp4', function() {
         this.blacklist_();
         e.preventDefault();
       } else {
+        // Records an app launch from the most visited page (Chrome will decide
+        // whether the url is an app). TODO(estade): this only works for clicks;
+        // other actions like "open in new tab" from the context menu won't be
+        // recorded. Can this be fixed?
+        chrome.send('recordAppLaunchByURL',
+                    [encodeURIComponent(this.href),
+                     ntp4.APP_LAUNCH.NTP_MOST_VISITED]);
+        // Records the index of this tile.
         chrome.send('recordInHistogram', ['NTP_MostVisited', this.index, 8]);
       }
     },

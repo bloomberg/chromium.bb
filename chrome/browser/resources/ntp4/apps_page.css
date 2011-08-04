@@ -9,6 +9,7 @@
 }
 
 .app-contents > span {
+  cursor: pointer;
   display: block;
   overflow: hidden;
   text-decoration: none;

@@ -194,6 +194,7 @@ cr.define('ntp4', function() {
 
       var appSpan = this.ownerDocument.createElement('span');
       appSpan.textContent = this.appData_.name;
+      appSpan.addEventListener('click', this.onClick_.bind(this));
       appContents.appendChild(appSpan);
       this.appendChild(appContents);
 
@@ -436,6 +437,7 @@ cr.define('ntp4', function() {
   };
 
   return {
+    APP_LAUNCH: APP_LAUNCH,
     AppsPage: AppsPage,
   };
 });
