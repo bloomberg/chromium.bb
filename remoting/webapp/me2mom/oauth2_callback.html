@@ -11,9 +11,6 @@ found in the LICENSE file.
     <script src="xhr.js"></script>
   </head>
   <body>
-    <div id="error" style="display:none;">
-      Something went wrong getting OAuth2 token.
-    </div>
     <script>
       function retrieveRefreshToken(query) {
         var parts = query.split('&');
@@ -28,7 +25,7 @@ found in the LICENSE file.
             window.location.replace(chrome.extension.getURL('choice.html'));
           });
         } else {
-          document.getElementById('error').style.display = 'block';
+          window.location.replace(chrome.extension.getURL('choice.html'));
         }
       }
 
