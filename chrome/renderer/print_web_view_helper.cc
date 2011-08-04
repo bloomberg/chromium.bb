@@ -507,7 +507,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     store_print_pages_params = false;
     int cookie = print_pages_params_->params.document_cookie;
     Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
-    print_preview_context_.Abort();
+    print_preview_context_.Failed();
   } else if (result == ABORT_PREVIEW) {
     DCHECK(is_preview_);
     store_print_pages_params = false;
@@ -1051,6 +1051,12 @@ void PrintWebViewHelper::PrintPreviewContext::FinalizePreviewDocument() {
 
 void PrintWebViewHelper::PrintPreviewContext::Finished() {
   DCHECK_EQ(DONE, state_);
+  ClearContext();
+}
+
+void PrintWebViewHelper::PrintPreviewContext::Failed() {
+  DCHECK(IsBusy());
+  state_ = INITIALIZED;
   ClearContext();
 }
 

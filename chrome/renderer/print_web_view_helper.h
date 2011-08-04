@@ -331,6 +331,9 @@ class PrintWebViewHelper : public RenderViewObserver,
     // Cleanup after print preview finishes.
     void Finished();
 
+    // Cleanup after print preview fails.
+    void Failed();
+
     // Abort the print preview.
     void Abort();
 
