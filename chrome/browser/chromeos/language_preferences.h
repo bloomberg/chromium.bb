@@ -90,12 +90,17 @@ const size_t kNumChewingMultipleChoicePrefs = 2;
 extern const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType;
 
 // ---------------------------------------------------------------------------
-// For Korean input method (ibus-hangul)
+// For Korean input method (ibus-mozc-hangul)
 // ---------------------------------------------------------------------------
 extern const char kHangulSectionName[];
 extern const char kHangulKeyboardConfigName[];
 extern const char kHangulHanjaKeysConfigName[];
 extern const char kHangulHanjaKeys[];
+
+// Following configuration is for mozc-hangul and same meaning of
+// kHangulHanjaKeys.
+extern const char kHangulHanjaBindingKeysConfigName[];
+extern const char kHangulHanjaBindingKeys[];
 
 struct HangulKeyboardNameIDPair {
   int message_id;

@@ -102,6 +102,7 @@ class Preferences : public NotificationObserver {
   IntegerPrefMember language_chewing_integer_prefs_[
       language_prefs::kNumChewingIntegerPrefs];
   StringPrefMember language_hangul_keyboard_;
+  StringPrefMember language_hangul_hanja_binding_keys_;
   StringPrefMember language_hangul_hanja_keys_;
   BooleanPrefMember language_pinyin_boolean_prefs_[
       language_prefs::kNumPinyinBooleanPrefs];

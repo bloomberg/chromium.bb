@@ -114,6 +114,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             language_prefs::kHangulHanjaKeys,
                             // Don't sync the pref as it's not user-configurable
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kLanguageHangulHanjaBindingKeys,
+                            language_prefs::kHangulHanjaBindingKeys,
+                            // Don't sync the pref as it's not user-configurable
+                            PrefService::UNSYNCABLE_PREF);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kPinyinBooleanPrefs[i].pref_name,
@@ -232,6 +236,8 @@ void Preferences::Init(PrefService* prefs) {
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
   language_hangul_hanja_keys_.Init(
       prefs::kLanguageHangulHanjaKeys, prefs, this);
+  language_hangul_hanja_binding_keys_.Init(
+      prefs::kLanguageHangulHanjaBindingKeys, prefs, this);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     language_pinyin_boolean_prefs_[i].Init(
         language_prefs::kPinyinBooleanPrefs[i].pref_name, prefs, this);
@@ -398,6 +404,11 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     SetLanguageConfigString(language_prefs::kHangulSectionName,
                             language_prefs::kHangulHanjaKeysConfigName,
                             language_hangul_hanja_keys_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kLanguageHangulHanjaBindingKeys) {
+    SetLanguageConfigString(language_prefs::kHangulSectionName,
+                            language_prefs::kHangulHanjaBindingKeysConfigName,
+                            language_hangul_hanja_binding_keys_.GetValue());
   }
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     if (!pref_name ||

@@ -26,7 +26,7 @@ const char kHotkeyNextEngineInMenu[] =
 const char kHotkeyPreviousEngine[] = "Control+space";
 
 // ---------------------------------------------------------------------------
-// For Traditional Chinese input method (ibus-chewing)
+// For Traditional Chinese input method (ibus-mozc-chewing)
 // ---------------------------------------------------------------------------
 const char kChewingSectionName[] = "engine/Chewing";
 
@@ -139,7 +139,7 @@ const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType = {
 };
 
 // ---------------------------------------------------------------------------
-// For Korean input method (ibus-hangul)
+// For Korean input method (ibus-mozc-hangul)
 // ---------------------------------------------------------------------------
 const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
@@ -147,6 +147,10 @@ const char kHangulHanjaKeysConfigName[] = "HanjaKeys";
 // We add Control+9 since F9 key is reserved by the window manager.
 // TODO: HanjaKeys are not configurable yet (and we're not sure if it should.)
 const char kHangulHanjaKeys[] = "F9,Hangul_Hanja,Control+9";
+
+// Mozc-hangul treats Hangul_Hanja key as hanja key event even if it is not set.
+const char kHangulHanjaBindingKeysConfigName[] = "HanjaKeyBindings";
+const char kHangulHanjaBindingKeys[] = "F9,Ctrl 9";
 
 const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[] = {
   // We have to sync the |keyboard_id|s with those in
