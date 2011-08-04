@@ -282,7 +282,7 @@ function __sched_update() {
         __t_last = new Date().getTime();
     }
     __sched_update();
-  });
+  }, document.body);
 }
 
 function __start_recording() {
