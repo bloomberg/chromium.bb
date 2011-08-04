@@ -98,6 +98,16 @@ void JingleStreamConnector::Connect(bool initiator,
 }
 
 bool JingleStreamConnector::EstablishTCPConnection(net::Socket* socket) {
+  // Set options for the raw socket layer.
+  // Send buffer size is set to match the PseudoTcp layer so that it can fit
+  // all the data submitted by the PseudoTcp layer.
+  socket->SetSendBufferSize(kTcpSendBufferSize);
+  // TODO(hclam): We should also set the receive buffer size once we can detect
+  // the underlying socket is a TCP socket. We should also investigate what
+  // value would gurantee that Windows's UDP socket doesn't return a EWOULDBLOCK
+  // error.
+
+  // Set options for the TCP layer.
   jingle_glue::PseudoTcpAdapter* adapter =
       new jingle_glue::PseudoTcpAdapter(socket);
   adapter->SetAckDelay(kTcpAckDelayMilliseconds);

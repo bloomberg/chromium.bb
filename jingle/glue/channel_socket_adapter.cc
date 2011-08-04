@@ -90,14 +90,12 @@ int TransportChannelSocketAdapter::Write(
 
 bool TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  NOTIMPLEMENTED();
-  return false;
+  return channel_->SetOption(talk_base::Socket::OPT_RCVBUF, size) == 0;
 }
 
 bool TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  NOTIMPLEMENTED();
-  return false;
+  return channel_->SetOption(talk_base::Socket::OPT_SNDBUF, size) == 0;
 }
 
 void TransportChannelSocketAdapter::Close(int error_code) {
