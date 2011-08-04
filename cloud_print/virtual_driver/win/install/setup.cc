@@ -20,12 +20,12 @@
 
 namespace {
 
-HRESULT GetGpdPath(FilePath* path) {
+HRESULT GetPpdPath(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path)) {
     LOG(ERROR) << "Unable to get install path.";
     return ERROR_PATH_NOT_FOUND;
   }
-  *path = path->Append(L"gcp.gpd");
+  *path = path->Append(L"GCP-driver.ppd");
   return S_OK;
 }
 
@@ -143,7 +143,7 @@ DWORDLONG GetVersionNumber() {
   return retval;
 }
 
-HRESULT InstallGpd() {
+HRESULT InstallPpd() {
   DRIVER_INFO_6 driver_info = {0};
   HRESULT result = S_OK;
 
@@ -152,9 +152,9 @@ HRESULT InstallGpd() {
   FilePath driver_dir;
   cloud_print::GetPrinterDriverDir(&driver_dir);
   FilePath xps_path = driver_dir.Append(L"mxdwdrv.dll");
-  FilePath ui_path = driver_dir.Append(L"unidrvui.dll");
+  FilePath ui_path = driver_dir.Append(L"ps5ui.dll");
   FilePath ui_help_path = driver_dir.Append(L"unidrv.hlp");
-  result = GetGpdPath(&source_path);
+  result = GetPpdPath(&source_path);
   if (!SUCCEEDED(result)) {
     return result;
   }
@@ -192,7 +192,7 @@ HRESULT InstallGpd() {
   return S_OK;
 }
 
-HRESULT UninstallGpd() {
+HRESULT UninstallPpd() {
   int tries = 10;
   string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
   while (!DeletePrinterDriverEx(NULL,
@@ -270,9 +270,9 @@ HRESULT InstallVirtualDriver(void) {
     LOG(ERROR) << "Unable to register port monitor.";
     return result;
   }
-  result = InstallGpd();
+  result = InstallPpd();
   if (!SUCCEEDED(result)) {
-    LOG(ERROR) << "Unable to install gpd.";
+    LOG(ERROR) << "Unable to install Ppd.";
     return result;
   }
   result = InstallPrinter();
@@ -287,12 +287,12 @@ HRESULT UninstallVirtualDriver(void) {
   HRESULT result = S_OK;
   result = UninstallPrinter();
   if (!SUCCEEDED(result)) {
-    LOG(ERROR) << "Unable to uninstall gpd.";
+    LOG(ERROR) << "Unable to uninstall Ppd.";
     return result;
   }
-  result = UninstallGpd();
+  result = UninstallPpd();
   if (!SUCCEEDED(result)) {
-    LOG(ERROR) << "Unable to remove gpd.";
+    LOG(ERROR) << "Unable to remove Ppd.";
     return result;
   }
   result = RegisterPortMonitor(false);
