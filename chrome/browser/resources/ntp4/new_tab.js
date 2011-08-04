@@ -102,6 +102,14 @@ cr.define('ntp4', function() {
   var localStrings = new LocalStrings;
 
   /**
+   * If non-null, this is the ID of the app to highlight to the user the next
+   * time getAppsCallback runs. "Highlight" in this case means to switch to
+   * the page and run the new tile animation.
+   * @type {String}
+   */
+  var highlightAppId = null;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -126,6 +134,16 @@ cr.define('ntp4', function() {
 
     shownPage = templateData['shown_page_type'];
     shownPageIndex = templateData['shown_page_index'];
+
+    // When a new app has been installed, we will be opened with a hash value
+    // that corresponds to the new app ID.
+    var hash = location.hash;
+    if (hash && hash.indexOf('#app-id=') == 0) {
+      highlightAppId = hash.split('=')[1];
+      // Clear the hash so if the user bookmarks this page, they'll just get
+      // chrome://newtab/.
+      window.history.replaceState({}, '', '/');
+    }
 
     document.querySelector('#notification button').onclick = function(e) {
       hideNotification();
@@ -257,6 +275,9 @@ cr.define('ntp4', function() {
       return a.app_launch_index - b.app_launch_index;
     });
 
+    // An app to animate (in case it was just installed).
+    var highlightApp;
+
     // Add the apps, creating pages as necessary
     for (var i = 0; i < apps.length; i++) {
       var app = apps[i];
@@ -273,13 +294,21 @@ cr.define('ntp4', function() {
         assert(appsPages.length == origPageCount + 1, 'expected new page');
       }
 
-      appsPages[pageIndex].appendApp(app);
+      if (app.id == highlightAppId) {
+        highlightApp = app;
+        highlightAppId = null;
+      } else {
+        appsPages[pageIndex].appendApp(app);
+      }
     }
 
     ntp4.AppsPage.setPromo(data.showPromo ? data : null);
 
     // Tell the slider about the pages
     updateSliderCards();
+
+    if (highlightApp)
+      appAdded(highlightApp);
 
     // Mark the current page
     dots[cardSlider.currentCard].classList.add('selected');

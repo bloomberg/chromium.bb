@@ -21,7 +21,6 @@
 
 class ExtensionPrefs;
 class ExtensionService;
-class NotificationRegistrar;
 class PrefChangeRegistrar;
 class PrefsService;
 class Profile;
@@ -60,8 +59,8 @@ class AppLauncherHandler : public WebUIMessageHandler,
 
   // NotificationObserver
   virtual void Observe(int type,
-                      const NotificationSource& source,
-                      const NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
