@@ -151,6 +151,9 @@ cr.define('options', function() {
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
+          if (this.isPlaceholder)
+            this.parentNode.focusPlaceholder = true;
+
           this.updateStaticValues_();
           cr.dispatchSimpleEvent(this, 'commitedit', true);
         } else {
@@ -242,7 +245,19 @@ cr.define('options', function() {
       if (!this.isPlaceholder) {
         inputEl.setAttribute('displaymode', 'edit');
         inputEl.staticVersion = textEl;
+      } else {
+        // At this point |this| is not attached to the parent list yet, so give
+        // a short timeout in order for the attachment to occur.
+        var self = this;
+        window.setTimeout(function() {
+          var list = self.parentNode;
+          if (list && list.focusPlaceholder) {
+            list.focusPlaceholder = false;
+            inputEl.focus();
+          }
+        }, 50);
       }
+
       inputEl.addEventListener('focus', this.handleFocus_.bind(this));
       container.appendChild(inputEl);
       this.editFields_.push(inputEl);
@@ -261,6 +276,7 @@ cr.define('options', function() {
         var staticLabel = editFields[i].staticVersion;
         if (!staticLabel && !this.isPlaceholder)
           continue;
+
         if (editFields[i].tagName == 'INPUT') {
           editFields[i].value =
             this.isPlaceholder ? '' : staticLabel.textContent;
@@ -283,6 +299,7 @@ cr.define('options', function() {
         var staticLabel = editFields[i].staticVersion;
         if (!staticLabel)
           continue;
+
         if (editFields[i].tagName == 'INPUT')
           staticLabel.textContent = editFields[i].value;
         // Add more tag types here as new createEditable* methods are added.
@@ -360,6 +377,12 @@ cr.define('options', function() {
 
   InlineEditableItemList.prototype = {
     __proto__: DeletableItemList.prototype,
+
+    /**
+     * Focuses the input element of the placeholder if true.
+     * @type {boolean}
+     */
+    focusPlaceholder: false,
 
     /** @inheritDoc */
     decorate: function() {
