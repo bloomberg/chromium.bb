@@ -66,6 +66,9 @@ class SyncSetupFlow {
   // if a handler has already been attached.
   bool AttachSyncSetupHandler(SyncSetupFlowHandler* handler);
 
+  // Returns true if a handler is attached to this flow.
+  bool IsAttached() const;
+
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);
 

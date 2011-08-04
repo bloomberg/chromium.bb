@@ -191,6 +191,10 @@ bool SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
   return true;
 }
 
+bool SyncSetupFlow::IsAttached() const {
+  return flow_handler_ != NULL;
+}
+
 void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
   if (!ShouldAdvance(advance_state)) {
     LOG(WARNING) << "Invalid state change from "
@@ -198,7 +202,8 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
     return;
   }
 
-  ActivateState(advance_state);
+  if (flow_handler_)
+    ActivateState(advance_state);
 }
 
 void SyncSetupFlow::Focus() {

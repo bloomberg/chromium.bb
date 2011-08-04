@@ -87,7 +87,8 @@ void SyncSetupWizard::Step(State advance_state) {
 }
 
 bool SyncSetupWizard::IsVisible() const {
-  return flow_container_->get_flow() != NULL;
+  return flow_container_->get_flow() != NULL &&
+         flow_container_->get_flow()->IsAttached();
 }
 
 // static
