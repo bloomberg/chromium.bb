@@ -13271,57 +13271,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </ph> wants to permanently store large data on your local computer.
     </message>
 
-    <!-- New Profile Setup messages -->
-    <if expr="pp_ifdef('use_titlecase')">
-      <message name="IDS_NEW_PROFILE_SETUP_TITLE" desc="In Title Case: Title of the new profile setup page.">
-        New Profile
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_CREATE_PROFILE" desc="In Title Case: Label on button finish creating a profile.">
-        Create
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_CANCEL_PROFILE" desc="In Title Case: Label on button to cancel creating a profile.">
-        Cancel
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_NAME_LABEL" desc="In Title Case: Label next to the profile name text field.">
-        Profile Name
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_ICON_LABEL" desc="In Title Case: Label next to the profile avatar icon chooser.">
-        Profile Icon
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_SUMMARY_TITLE" desc="In Title Case: Title for summary at the top of the page that describes what a profile is.">
-        Create a New <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Profile
-      </message>
-    </if>
-    <if expr="not pp_ifdef('use_titlecase')">
-      <message name="IDS_NEW_PROFILE_SETUP_TITLE" desc="Title of the new profile setup page.">
-        New profile
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_CREATE_PROFILE" desc="Label on button finish creating a profile.">
-        Create
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_CANCEL_PROFILE" desc="Label on button to cancel creating a profile.">
-        Cancel
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_NAME_LABEL" desc="Label next to the profile name text field.">
-        Profile name
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
-        Profile icon
-      </message>
-      <message name="IDS_NEW_PROFILE_SETUP_SUMMARY_TITLE" desc="Title for summary at the top of the page that describes what a profile is.">
-        Create a new <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> profile
-      </message>
-    </if>
-    <message name="IDS_NEW_PROFILE_SETUP_SUMMARY_BODY" desc="Main body of text that describes what a profile is.">
-      A <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> profile contains
-      a set of bookmarks, browsing history, saved passwords, and themes. You
-      can create multiple profiles if you need to manage separate settings.
-      For example, you can use one profile, and your friend can use another."
-    </message>
-    <message name="IDS_NEW_PROFILE_SETUP_SUMMARY_CONCLUSION" desc="Text at the end of the summary that describes what to do next.">
-      Choose a name and an avatar, then click Create to create a new profile.
-    </message>
-
     <!-- Manage Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">

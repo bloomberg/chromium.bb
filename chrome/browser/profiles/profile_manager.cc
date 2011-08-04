@@ -68,7 +68,7 @@ class NewProfileLauncher : public ProfileManagerObserver {
     if (status == STATUS_INITIALIZED) {
       DCHECK(profile);
       Browser* browser = Browser::Create(profile);
-      browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewProfile),
+      browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
                                      PageTransition::LINK);
       browser->window()->Show();
     }
