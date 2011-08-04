@@ -5,37 +5,78 @@
 /**
  * ImageEditor is the top level object that holds together and connects
  * everything needed for image editing.
- * @param {HTMLElement} parent
+ * @param {HTMLElement} container
  * @param {Function} saveCallback
  * @param {Function} closeCallback
  */
-function ImageEditor(parent, saveCallback, closeCallback) {
-  this.parent_ = parent;
+function ImageEditor(container, saveCallback, closeCallback) {
+  this.container_ = container;
   this.saveCallback_ = saveCallback;
   this.closeCallback_ = closeCallback;
 
-  var document = this.parent_.ownerDocument;
+  this.container_.innerHTML = '';
 
-  var wrapper = document.createElement('div');
-  wrapper.className = 'canvas-wrapper';
-  parent.appendChild(wrapper);
+  var document = this.container_.ownerDocument;
+
+  this.canvasWrapper_ = document.createElement('div');
+  this.canvasWrapper_.className = 'canvas-wrapper';
+  container.appendChild(this.canvasWrapper_);
 
   var canvas = document.createElement('canvas');
-  wrapper.appendChild(canvas);
-  canvas.width = wrapper.clientWidth;
-  canvas.height = wrapper.clientHeight;
+  this.canvasWrapper_.appendChild(canvas);
+  canvas.width = this.canvasWrapper_.clientWidth;
+  canvas.height = this.canvasWrapper_.clientHeight;
 
   this.buffer_ = new ImageBuffer(canvas);
   this.buffer_.addOverlay(new ImageBuffer.Overview());
 
-  this.scaleControl_ = new ImageEditor.ScaleControl(wrapper, this.buffer_);
+  this.scaleControl_ =
+      new ImageEditor.ScaleControl(this.canvasWrapper_, this.buffer_);
 
   this.panControl_ = new ImageEditor.MouseControl(canvas, this.buffer_);
 
   this.toolbar_ =
-      new ImageEditor.Toolbar(parent, this.onOptionsChange.bind(this));
+      new ImageEditor.Toolbar(container, this.onOptionsChange.bind(this));
   this.initToolbar();
 }
+
+/**
+ * Create an ImageEditor instance bound to a current web page, load the content.
+ *
+ * Use this method when image_editor.html is loaded into an iframe.
+ *
+ * @param {Function} saveCallback
+ * @param {Function} closeCallback
+ * @param {HTMLCanvasElement|HTMLImageElement|String} source
+ * @param {Object} opt_metadata
+ * @return {ImageEditor}
+ */
+ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
+  var container = document.getElementsByClassName('image-editor')[0];
+  var editor = new ImageEditor(container, saveCallback, closeCallback);
+  window.addEventListener('resize', editor.resizeFrame.bind(editor), false);
+  editor.load(source, opt_metadata);
+  return editor;
+}
+
+/**
+ * Loads a new image and its metadata.
+ * @param {HTMLCanvasElement|HTMLImageElement|String} source
+ * @param {Object} opt_metadata
+ */
+ImageEditor.prototype.load = function(source, opt_metadata) {
+  this.onModeCancel();
+  this.getBuffer().load(source);
+  this.metadata_ = opt_metadata;
+};
+
+/**
+ * Window resize handler.
+ */
+ImageEditor.prototype.resizeFrame = function() {
+  this.getBuffer().resizeScreen(
+      this.canvasWrapper_.clientWidth, this.canvasWrapper_.clientHeight, true);
+};
 
 /**
  * @return {ImageBuffer}
@@ -48,15 +89,16 @@ ImageEditor.prototype.getBuffer = function () {
  * Destroys the UI and calls the close callback.
  */
 ImageEditor.prototype.close = function() {
-  this.parent_.innerHTML = '';
+  this.container_.innerHTML = '';
   this.closeCallback_();
 };
 
 /**
- * Passes the image canvas to the save callback.
+ * Encode the current image into a blob and pass it to the save callback.
  */
 ImageEditor.prototype.save = function() {
-  this.saveCallback_(this.getBuffer().getImageCanvas());
+  this.saveCallback_(ImageEncoder.getBlob(
+      this.getBuffer().getImageCanvas(), 'image/jpeg', this.metadata_));
 };
 
 ImageEditor.prototype.onOptionsChange = function(options) {

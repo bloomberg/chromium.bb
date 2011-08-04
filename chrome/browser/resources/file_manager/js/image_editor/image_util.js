@@ -14,11 +14,12 @@ ImageUtil.trace = (function() {
     this.container_ = null;
   }
 
+  PerformanceTrace.prototype.bindToDOM = function(container) {
+    this.container_ = container;
+  };
+
   PerformanceTrace.prototype.report_ = function(key, value) {
-    if (!this.container_) {
-      this.container_ = document.getElementById('debug-output');
-      if (!this.container_) return;
-    }
+    if (!this.container_) return;
     if (!(key in this.lines_)) {
       var div = this.lines_[key] = document.createElement('div');
       this.container_.appendChild(div);

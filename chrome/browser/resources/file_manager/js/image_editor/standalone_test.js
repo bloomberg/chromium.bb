@@ -2,37 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var editor;
-
-function createEditor() {
-  editor = new ImageEditor(document.getElementById('frame'), save, close);
-  window.addEventListener('resize', resize);
-  load(createTestGrid());
-}
-
 function load(source) {
-  editor.onModeCancel();
-  editor.getBuffer().load(source);
+  var editorWindow =
+        document.getElementsByClassName('editor-frame')[0].contentWindow;
+
+  // ImageEditor makes extensive use of Function.prototype.bind.
+  // Add it if it does not exist (as in Safari 5).
+  if (!editorWindow.Function.prototype.bind) {
+    editorWindow.Function.prototype.bind = bindToObject;
+  }
+
+  editorWindow.ImageUtil.trace.bindToDOM(
+      document.getElementsByClassName('debug-output')[0]);
+
+  editorWindow.ImageEditor.open(save, close, source);
 }
 
-function save(canvas) {
-  var blob = ImageEncoder.getBlob(canvas, 'image/jpeg');
-  console.log('Blob size: ' + blob.size + ' bytes');
+function save(blob) {
+  console.log('Saving ' + blob.size + ' bytes');
 }
 
 function close() {
   document.body.innerHTML = 'Editor closed, hit reload';
 }
 
-function resize() {
-  var wrapper = document.getElementsByClassName('canvas-wrapper')[0];
-  editor.getBuffer().resizeScreen(
-      wrapper.clientWidth, wrapper.clientHeight, true);
-}
-
-
 function getUrlField() {
-  return document.getElementById('imageUrl');
+  return document.getElementsByClassName('image-url')[0];
 }
 
 function createTestGrid() {
@@ -59,9 +54,10 @@ function fillGradient(imageData) {
   var maxX = width - 1;
   var maxY = height - 1;
   var maxDist = maxX + maxY;
-  var values = ImageUtil.precomputeByteFunction( function(dist) {
-    return Math.round(dist/maxDist*255);
-  }, maxDist);
+  var values = [];
+  for (var i = 0; i <= maxDist; i++) {
+    values.push(Math.max(0, Math.min(0xFF, Math.round(i/maxDist*255))));
+  }
 
   var index = 0;
   for (var y = 0; y != height; y++)
@@ -88,9 +84,7 @@ function drawTestGrid(context) {
   }
 }
 
-// It is nice to be able to test on Safari.
-// Safari 5 does not have Function.bind, so we are adding that just in case.
-Function.prototype.bind = function(thisObject) {
+function bindToObject(thisObject) {
   var func = this;
   var args = Array.prototype.slice.call(arguments, 1);
   function bound() {

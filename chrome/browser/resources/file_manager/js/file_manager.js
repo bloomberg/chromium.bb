@@ -569,11 +569,6 @@ FileManager.prototype = {
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
 
-    this.imageEditorFrame_ = this.document_.createElement('div');
-    this.imageEditorFrame_.className = 'image-editor';
-    this.imageEditorFrame_.style.display = 'none';
-    this.dialogDom_.appendChild(this.imageEditorFrame_);
-
     this.renameInput_.addEventListener(
         'keydown', this.onRenameInputKeyDown_.bind(this));
     this.renameInput_.addEventListener(
@@ -1621,12 +1616,7 @@ FileManager.prototype = {
       g_slideshow_data = urls;
       chrome.tabs.create({url: "slideshow.html"});
     } else if (id == 'edit') {
-      this.imageEditorFrame_.style.display = 'block';
-      this.imageEditor_ = new ImageEditor(
-          this.imageEditorFrame_,
-          this.onImageEditorSave.bind(this, details.entries[0]),
-          this.onImageEditorClose.bind(this));
-      this.imageEditor_.getBuffer().load(urls[0]);
+      this.openImageEditor_(details.entries[0]);
     } else if (id == 'play' || id == 'enqueue') {
       chrome.fileBrowserPrivate.viewFiles(urls, id);
     } else if (id == 'mount-archive') {
@@ -1656,24 +1646,33 @@ FileManager.prototype = {
     return true;
   };
 
-  FileManager.prototype.onImageEditorSave = function(entry, canvas) {
+  FileManager.prototype.openImageEditor_ = function(entry) {
     var self = this;
-    this.cacheMetadata_(entry, function(metadata) {
-      // The code below modifies the metadata parameter. We assume that this is
-      // the master copy, otherwise other cacheMetadata_ callers would not
-      // see our changes.
-      // The mime type is hardcoded as the editor only works with jpeg for now.
-      var blob = ImageEncoder.getBlob(canvas, 'image/jpeg', metadata)
-      // TODO(kaznacheev): Notify user properly about write failures.
-      util.writeBlobToFile(entry, blob, function(){},
-          util.flog('Error writing to ' + entry.fullPath));
-      self.updatePreview_();  // Metadata may have changed.
-    });
+
+    var editorFrame = this.document_.createElement('iframe');
+    editorFrame.className = 'overlay-pane';
+    editorFrame.scrolling = 'no';
+
+    editorFrame.onload = function() {
+      self.cacheMetadata_(entry, function(metadata) {
+        editorFrame.contentWindow.ImageEditor.open(
+            self.onImageEditorSave_.bind(self, entry),
+            function () { self.dialogDom_.removeChild(editorFrame) },
+            entry.toURL(),
+            metadata);
+      });
+    };
+
+    editorFrame.src = 'js/image_editor/image_editor.html';
+
+    this.dialogDom_.appendChild(editorFrame);
   };
 
-  FileManager.prototype.onImageEditorClose = function() {
-    this.imageEditorFrame_.style.display = 'none';
-    this.imageEditor_ = null;
+  FileManager.prototype.onImageEditorSave_ = function(entry, blob) {
+    // TODO(kaznacheev): Notify user properly about write failures.
+    util.writeBlobToFile(entry, blob, function(){},
+        util.flog('Error writing to ' + entry.fullPath));
+    this.updatePreview_();  // Metadata may have changed.
   };
 
   /**

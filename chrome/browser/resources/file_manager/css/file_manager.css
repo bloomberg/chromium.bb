@@ -491,3 +491,14 @@ li.thumbnail-item[selected] .file-checkbox {
     font-size: 12px;
     font-weight: normal;
 }
+
+/* Overlay pane covering the entire file manager window (e.g. image editor)*/
+.overlay-pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 100;
+}
