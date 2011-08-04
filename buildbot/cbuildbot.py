@@ -163,6 +163,17 @@ def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
 
+  tracking_branch = _GetChromiteTrackingBranch()
+  stages.BuilderStage.SetTrackingBranch(tracking_branch)
+
+  # Process patches ASAP, before the clean stage.
+  gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
+                                                     options.local_patches,
+                                                     tracking_branch)
+  # Check branch matching early.
+  if _IsIncrementalBuild(options.buildroot, options.clobber):
+    _CheckBuildRootBranch(options.buildroot, tracking_branch)
+
   if options.clean: stages.CleanUpStage(bot_id, options, build_config).Run()
 
   if options.resume and os.path.exists(completed_stages_file):
@@ -198,16 +209,6 @@ def RunBuildStages(bot_id, options, build_config):
       sync_stage_class = stages.ManifestVersionedSyncStage
       completion_stage_class = stages.ManifestVersionedSyncCompletionStage
 
-  tracking_branch = _GetChromiteTrackingBranch()
-  stages.BuilderStage.SetTrackingBranch(tracking_branch)
-
-  gerrit_patches, local_patches = _PreProcessPatches(options.gerrit_patches,
-                                                     options.local_patches,
-                                                     tracking_branch)
-
-  if _IsIncrementalBuild(options.buildroot, options.clobber):
-    _CheckBuildRootBranch(options.buildroot, tracking_branch)
-
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
   bg = background.BackgroundSteps()
@@ -223,7 +224,7 @@ def RunBuildStages(bot_id, options, build_config):
       if manifest_manager:
         version = manifest_manager.current_version
 
-    if options.gerrit_patches or options.local_patches:
+    if gerrit_patches or local_patches:
       stages.PatchChangesStage(bot_id, options, build_config, gerrit_patches,
                                local_patches).Run()
 
