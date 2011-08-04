@@ -109,7 +109,10 @@ def UploadIrtBinary(status, context, branch):
                '-o', stripped_irt_path])
 
         irt_dir = 'nativeclient-archive2/irt'
-        if branch != 'native_client':
+        # The branch is set to native_client on the main bots,
+        # on the trybots its set to ''. Otherwise, we should assume a
+        # particular branch is being used.
+        if branch not in ['native_client', '']:
           irt_dir = '%s/branches/%s' % (irt_dir, branch)
         gsdview = 'http://gsdview.appspot.com'
         rev = os.environ['BUILDBOT_GOT_REVISION']
