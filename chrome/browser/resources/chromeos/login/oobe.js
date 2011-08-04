@@ -450,7 +450,8 @@ cr.define('cr.ui', function() {
    */
   Oobe.resetSigninUI = function() {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
-    $('signin').reset(currentScreenId == SCREEN_SIGNIN);
+    if (localStrings.getString('authType') == 'webui')
+      $('signin').reset(currentScreenId == SCREEN_SIGNIN);
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
 

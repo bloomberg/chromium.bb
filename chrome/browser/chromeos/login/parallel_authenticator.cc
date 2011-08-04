@@ -549,19 +549,28 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
     return NEED_OLD_PW;
   if (key_checker_.get())
     return LOGIN_FAILED;
-  if (current_state_->cryptohome_code() ==
-      chromeos::kCryptohomeMountErrorKeyFailure) {
-    // If we tried a mount but they used the wrong key, we may need to
-    // ask the user for her old password.  We'll only know once we've
-    // done the online check.
-    return POSSIBLE_PW_CHANGE;
+
+  // Return intermediate states in the following cases:
+  // 1. When there is a parallel online attempt to resolve them later;
+  //    This is the case with legacy ClientLogin flow;
+  // 2. When there is an online result to use;
+  //    This is the case after user finishes Gaia login;
+  if (current_online_.get() || current_state_->online_complete()) {
+    if (current_state_->cryptohome_code() ==
+        chromeos::kCryptohomeMountErrorKeyFailure) {
+      // If we tried a mount but they used the wrong key, we may need to
+      // ask the user for her old password.  We'll only know once we've
+      // done the online check.
+      return POSSIBLE_PW_CHANGE;
+    }
+    if (current_state_->cryptohome_code() ==
+        chromeos::kCryptohomeMountErrorUserDoesNotExist) {
+      // If we tried a mount but the user did not exist, then we should wait
+      // for online login to succeed and try again with the "create" flag set.
+      return NO_MOUNT;
+    }
   }
-  if (current_state_->cryptohome_code() ==
-      chromeos::kCryptohomeMountErrorUserDoesNotExist) {
-    // If we tried a mount but the user did not exist, then we should wait
-    // for online login to succeed and try again with the "create" flag set.
-    return NO_MOUNT;
-  }
+
   return FAILED_MOUNT;
 }
 

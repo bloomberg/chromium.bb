@@ -206,6 +206,11 @@ class ParallelAuthenticator : public Authenticator,
     current_state_.reset(new_state);
   }
 
+  // Sets an online attemp for testing.
+  void set_online_attempt(OnlineAttempt* attempt) {
+    current_online_ = attempt;
+  }
+
   // Resets |current_state_| and then posts a task to the UI thread to
   // Initiate() |to_initiate|.
   // Call this method on the IO thread.

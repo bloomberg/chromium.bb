@@ -45,6 +45,7 @@ using ::testing::SetArgumentPointee;
 using ::testing::_;
 
 namespace chromeos {
+
 class ResolveChecker : public base::ThreadTestHelper {
  public:
   ResolveChecker(TestAttemptState* state,
@@ -67,6 +68,14 @@ class ResolveChecker : public base::ThreadTestHelper {
   TestAttemptState* state_;
   ParallelAuthenticator* auth_;
   ParallelAuthenticator::AuthState expected_;
+};
+
+class TestOnlineAttempt : public OnlineAttempt {
+ public:
+  TestOnlineAttempt(AuthAttemptState* state,
+                    AuthAttemptStateResolver* resolver)
+      : OnlineAttempt(false, state, resolver) {
+  }
 };
 
 class ParallelAuthenticatorTest : public ::testing::Test {
@@ -213,6 +222,10 @@ class ParallelAuthenticatorTest : public ::testing::Test {
     auth->set_attempt_state(state);
   }
 
+  void FakeOnlineAttempt() {
+    auth_->set_online_attempt(new TestOnlineAttempt(state_.get(), auth_.get()));
+  }
+
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
@@ -300,6 +313,9 @@ TEST_F(ParallelAuthenticatorTest, ResolveNothingDone) {
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
+  // Set a fake online attempt so that we return intermediate cryptohome state.
+  FakeOnlineAttempt();
+
   // Set up state as though a cryptohome mount attempt has occurred
   // and been rejected.
   state_->PresetCryptohomeStatus(false,
@@ -308,6 +324,37 @@ TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
       new ResolveChecker(state_.release(),
                          auth_.get(),
                          ParallelAuthenticator::POSSIBLE_PW_CHANGE));
+  EXPECT_TRUE(checker->Run());
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChangeToFailedMount) {
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and been rejected.
+  state_->PresetCryptohomeStatus(false,
+                                 chromeos::kCryptohomeMountErrorKeyFailure);
+
+  // When there is no online attempt and online results, POSSIBLE_PW_CHANGE
+  // will be resolved to FAILED_MOUNT.
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::FAILED_MOUNT));
+  EXPECT_TRUE(checker->Run());
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolveNeedOldPw) {
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and been rejected because of unmatched key; additionally,
+  // an online auth attempt has completed successfully.
+  state_->PresetCryptohomeStatus(
+      false,
+      chromeos::kCryptohomeMountErrorKeyFailure);
+  state_->PresetOnlineLoginStatus(GaiaAuthConsumer::ClientLoginResult(),
+                                 LoginFailure::None());
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::NEED_OLD_PW));
   EXPECT_TRUE(checker->Run());
 }
 
@@ -396,7 +443,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
   ExpectPasswordChange();
 
   state_->PresetCryptohomeStatus(false,
-                                chromeos::kCryptohomeMountErrorKeyFailure);
+                                 chromeos::kCryptohomeMountErrorKeyFailure);
   state_->PresetOnlineLoginStatus(result_, LoginFailure::None());
   SetAttemptState(auth_, state_.release());
 
@@ -447,6 +494,9 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
+  // Set a fake online attempt so that we return intermediate cryptohome state.
+  FakeOnlineAttempt();
+
   // Set up state as though a cryptohome mount attempt has occurred
   // and been rejected because the user doesn't exist.
   state_->PresetCryptohomeStatus(
@@ -456,6 +506,22 @@ TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
       new ResolveChecker(state_.release(),
                          auth_.get(),
                          ParallelAuthenticator::NO_MOUNT));
+  EXPECT_TRUE(checker->Run());
+}
+
+TEST_F(ParallelAuthenticatorTest, ResolveNoMountToFailedMount) {
+  // Set up state as though a cryptohome mount attempt has occurred
+  // and been rejected because the user doesn't exist.
+  state_->PresetCryptohomeStatus(
+      false,
+      chromeos::kCryptohomeMountErrorUserDoesNotExist);
+
+  // When there is no online attempt and online results, NO_MOUNT will be
+  // resolved to FAILED_MOUNT.
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::FAILED_MOUNT));
   EXPECT_TRUE(checker->Run());
 }
 
