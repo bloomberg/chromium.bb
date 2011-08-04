@@ -15,7 +15,7 @@ namespace {
 
 // Caller takes ownership of the returned dictionary.
 DictionaryValue* ExtractPrefs(const FilePath& path,
-                              ValueSerializer* serializer) {
+                              base::ValueSerializer* serializer) {
   std::string error_msg;
   Value* extensions = serializer->Deserialize(NULL, &error_msg);
   if (!extensions) {

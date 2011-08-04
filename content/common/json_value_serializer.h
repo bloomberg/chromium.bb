@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/values.h"
 
-class JSONStringValueSerializer : public ValueSerializer {
+class JSONStringValueSerializer : public base::ValueSerializer {
  public:
   // json_string is the string that will be source of the deserialization
   // or the destination of the serialization.  The caller of the constructor
@@ -66,7 +66,7 @@ class JSONStringValueSerializer : public ValueSerializer {
   DISALLOW_COPY_AND_ASSIGN(JSONStringValueSerializer);
 };
 
-class JSONFileValueSerializer : public ValueSerializer {
+class JSONFileValueSerializer : public base::ValueSerializer {
  public:
   // json_file_patch is the path of a file that will be source of the
   // deserialization or the destination of the serialization.
