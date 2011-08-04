@@ -8,8 +8,8 @@ set_variable INSTANCE i(5555)
 # NOTE: you need to customize this for you own app.
 #       width and height must match the image_data and
 #       graphic_2d object requests by the nexe
-set_variable WIDTH  1000
-set_variable HEIGHT 700
+set_variable WIDTH  640
+set_variable HEIGHT 480
 
 # NOTE: you need to customize this for you own app.
 #       These are the argument passed to the Init() function of the nexe
@@ -28,7 +28,9 @@ echo
 echo "*** CREATE UPCALL SERVICE"
 # advertise the registered rpcs to the nexe
 install_upcalls service_string pepper_desc
-# the variable service string is very long and might change so we suppress it
+# the variable service string is very long and might change so we suppress it in
+# the output, it will replaced by th string "@LENGTHY_SERVICE_STRING" from now
+# on. If you a curios what it really looks like just comment out the next line
 nondeterministic s("${service_string}") @LENGTHY_SERVICE_STRING
 
 echo
@@ -47,7 +49,9 @@ rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,${WIDTH},${HEIGHT}) I(4,0,0,
 echo
 echo "*** ENTER EVENT LOOP"
 # wait for sdl events and forward them to PPP_Instance_HandleInputEvent
-pepper_emu_event_loop
+set_variable RUN_FOREVER 10000000
+set_variable NO_POLLING 0
+pepper_emu_event_loop ${NO_POLLING} ${RUN_FOREVER}
 
 ######################################################################
 ## EPILOG

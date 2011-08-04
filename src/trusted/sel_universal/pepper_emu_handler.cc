@@ -22,7 +22,10 @@
 #include "native_client/src/third_party/ppapi/c/pp_size.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
 
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
@@ -81,11 +84,8 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   return true;
 }
 
-// Uncomment the line below if you want to use a non-blocking
-// event processing loop.
-// This can be sometime useful for debugging but is wasting cycles
-// #define USE_POLLING
-UserEvent* GetNextEvent() {
+
+static UserEvent* GetNextEvent(bool poll) {
   UserEvent* event = NULL;
   if (Global.event_replay_stream.is_open()) {
     if (Global.events_ready_to_go.size() > 0) {
@@ -137,11 +137,11 @@ UserEvent* GetNextEvent() {
       }
     }
   } else {
-#if defined(USE_POLLING)
-    return Global.sdl_engine->EventPoll();
-#else
-    return Global.sdl_engine->EventGet();
-#endif
+    if (poll) {
+      return Global.sdl_engine->EventPoll();
+    } else {
+      return Global.sdl_engine->EventGet();
+    }
   }
 }
 
@@ -217,7 +217,6 @@ static bool HandleSynthesizedEvent(NaClCommandLoop* ncl, UserEvent* event) {
 #endif
       InvokeAudioStreamCreatedCallback(ncl, event);
       return true;
-
     case EVENT_TYPE_INPUT:
     case EVENT_TYPE_INVALID:
     default:
@@ -238,13 +237,24 @@ static bool HandleSynthesizedEvent(NaClCommandLoop* ncl, UserEvent* event) {
 // case.
 bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
                                const vector<string>& args) {
-  NaClLog(LOG_INFO, "HandlerSDLEventLoop\n");
-  UNREFERENCED_PARAMETER(args);
+  NaClLog(LOG_INFO, "HandlerPepperEmuEventLoop\n");
   UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
+    return false;
+  }
+
+  const bool poll = ExtractInt32(args[1]) != 0;
+  const int msecs = ExtractInt32(args[2]);
+
+  NaClLog(LOG_INFO, "Entering event loop. Polling: %d  duration_ms: %d\n",
+          poll, msecs);
+
+  int64_t termination_time = NaClGetTimeOfDayMicroseconds() + msecs * 1000;
   bool keep_going = true;
-  while (keep_going) {
-    NaClLog(1, "Pepper emu event loop wait\n");
-    UserEvent* event = GetNextEvent();
+  while (keep_going && NaClGetTimeOfDayMicroseconds() < termination_time) {
+    NaClLog(2, "Pepper emu event loop wait\n");
+    UserEvent* event = GetNextEvent(poll);
     if (event == NULL) {
       continue;
     }
@@ -263,7 +273,9 @@ bool HandlerPepperEmuEventLoop(NaClCommandLoop* ncl,
     // NOTE: this is the global event sink where all events get deleted.
     delete event;
   }
-  NaClLog(LOG_INFO, "Exiting event loop\n");
+
+  NaClLog(LOG_INFO, "Exiting event loop (%s)\n",
+          keep_going ? "timeout" : "termination");
   return true;
 }
 

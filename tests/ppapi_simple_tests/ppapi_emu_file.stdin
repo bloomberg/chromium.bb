@@ -44,8 +44,8 @@ pepper_emu_set_quit_message "5555: COMPLETE"
 
 echo
 echo "*** ENTER EVENT LOOP"
-# wait for sdl events and forward them via PPP_Instance_HandleInputEvent
-pepper_emu_event_loop
+# wait for events and handle them until we see the "quit_message"
+pepper_emu_event_loop 0 100000
 
 ######################################################################
 ## EPILOG
