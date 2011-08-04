@@ -72,5 +72,8 @@ void ConstructAboutInformation(ProfileSyncService* service,
 void AddIntSyncDetail(base::ListValue* details,
                       const std::string& stat_name,
                       int64 stat_value);
+
+void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
+                          const std::string& stat_value);
 }  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_

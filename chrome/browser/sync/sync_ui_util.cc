@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -425,6 +426,21 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(details,
                                    "Useful Sync Cycles",
                                    full_status.useful_sync_cycles);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Explicit Passphrase",
+                                    service->IsUsingSecondaryPassphrase());
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Passphrase Required",
+                                    service->IsPassphraseRequired());
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Cryptographer Ready",
+                                    full_status.cryptographer_ready);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Cryptographer Has Pending Keys",
+                                    full_status.crypto_has_pending_keys);
+    sync_ui_util::AddStringSyncDetails(details,
+        "Encrypted Types",
+        syncable::ModelTypeSetToString(full_status.encrypted_types));
 
     const browser_sync::sessions::SyncSessionSnapshot* snapshot =
         service->sync_initialized() ?

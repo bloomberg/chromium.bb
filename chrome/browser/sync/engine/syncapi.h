@@ -702,6 +702,9 @@ class SyncManager {
       SUMMARY_STATUS_COUNT,
     };
 
+    Status();
+    ~Status();
+
     Summary summary;
     bool authenticated;      // Successfully authenticated via GAIA.
     bool server_up;          // True if we have received at least one good
@@ -747,6 +750,11 @@ class SyncManager {
     // Count of useless and useful syncs we perform.
     int useless_sync_cycles;
     int useful_sync_cycles;
+
+    // Encryption related.
+    syncable::ModelTypeSet encrypted_types;
+    bool cryptographer_ready;
+    bool crypto_has_pending_keys;
   };
 
   // An interface the embedding application implements to receive notifications

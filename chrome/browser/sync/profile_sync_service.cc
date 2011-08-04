@@ -830,8 +830,8 @@ SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetDetailedStatus();
   } else {
-    SyncBackendHost::Status status =
-        { SyncBackendHost::Status::OFFLINE_UNUSABLE };
+    SyncBackendHost::Status status;
+    status.summary = SyncBackendHost::Status::OFFLINE_UNUSABLE;
     return status;
   }
 }

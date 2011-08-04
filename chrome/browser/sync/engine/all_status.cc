@@ -12,15 +12,16 @@
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {
 
-static const sync_api::SyncManager::Status init_status =
-  { sync_api::SyncManager::Status::OFFLINE };
-
-AllStatus::AllStatus() : status_(init_status) {
+AllStatus::AllStatus() {
+  status_.summary = sync_api::SyncManager::Status::OFFLINE;
   status_.initial_sync_ended = true;
   status_.notifications_enabled = false;
+  status_.cryptographer_ready = false;
+  status_.crypto_has_pending_keys = false;
 }
 
 AllStatus::~AllStatus() {
@@ -163,6 +164,21 @@ void AllStatus::IncrementNotifiableCommits() {
 void AllStatus::IncrementNotificationsReceived() {
   ScopedStatusLock lock(this);
   ++status_.notifications_received;
+}
+
+void AllStatus::SetEncryptedTypes(const syncable::ModelTypeSet& types) {
+  ScopedStatusLock lock(this);
+  status_.encrypted_types = types;
+}
+
+void AllStatus::SetCryptographerReady(bool ready) {
+  ScopedStatusLock lock(this);
+  status_.cryptographer_ready = ready;
+}
+
+void AllStatus::SetCryptoHasPendingKeys(bool has_pending_keys) {
+  ScopedStatusLock lock(this);
+  status_.crypto_has_pending_keys = has_pending_keys;
 }
 
 ScopedStatusLock::ScopedStatusLock(AllStatus* allstatus)

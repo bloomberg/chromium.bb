@@ -22,8 +22,8 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   // Will be released when the dictionary is destroyed
   string16 str(ASCIIToUTF16("none"));
 
-  browser_sync::SyncBackendHost::Status status =
-      { browser_sync::SyncBackendHost::Status::OFFLINE_UNUSABLE };
+  browser_sync::SyncBackendHost::Status status;
+  status.summary = browser_sync::SyncBackendHost::Status::OFFLINE_UNUSABLE;
 
   EXPECT_CALL(service, HasSyncSetupCompleted())
               .WillOnce(Return(true));
