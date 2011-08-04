@@ -19,7 +19,7 @@
 
 #include "cloud_print/virtual_driver/posix/printer_driver_util_posix.h"
 
-int WriteToTemp(FILE* input_pdf, FilePath output_path) {
+void WriteToTemp(FILE* input_pdf, FilePath output_path) {
   FILE* output_pdf;
   char buffer[128];
   output_pdf = fopen(output_path.value().c_str(), "w");
@@ -78,8 +78,6 @@ int main(int argc, const char* argv[]) {
 
   // AtExitManager is necessary to use the path service.
   base::AtExitManager aemanager;
-  // File handler for the temporary PDF we pass onto Chrome.
-  FILE* output_pdf;
   // CommandLine is only setup to enable logging, never used subseqeuently.
   CommandLine::Init(argc, argv);
   // Location for the log file.
