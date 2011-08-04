@@ -136,7 +136,6 @@ static void PrintUsage() {
           " -F fuzz testing; quit after loading NaCl app\n"
           " -S enable signal handling.  Not secure on x86-64 Windows.\n"
           " -g enable gdb debug stub.  Not secure on x86-64 Windows.\n"
-          " -I disable ELF ABI version number check (safe)\n"
           " -l <file>  write log output to the given file\n"
           " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
