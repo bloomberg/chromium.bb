@@ -4,8 +4,6 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
-#include <limits>
-
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -29,18 +27,18 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 16;
+const int kThemePackVersion = 15;
 
 // IDs that are in the DataPack won't clash with the positive integer
-// uint16. kHeaderID should always have the maximum value because we want the
+// int32_t. kHeaderID should always have the maximum value because we want the
 // "header" to be written last. That way we can detect whether the pack was
 // successfully written and ignore and regenerate if it was only partially
 // written (i.e. chrome crashed on a different thread while writing the pack).
-const int kHeaderID = std::numeric_limits<uint16>::max() - 1;
-const int kTintsID = std::numeric_limits<uint16>::max() - 2;
-const int kColorsID = std::numeric_limits<uint16>::max() - 3;
-const int kDisplayPropertiesID = std::numeric_limits<uint16>::max() - 4;
-const int kSourceImagesID = std::numeric_limits<uint16>::max() - 5;
+const int kHeaderID = UINT_MAX - 1;
+const int kTintsID = UINT_MAX - 2;
+const int kColorsID = UINT_MAX - 3;
+const int kDisplayPropertiesID = UINT_MAX - 4;
+const int kSourceImagesID = UINT_MAX - 5;
 
 // Static size of the tint/color/display property arrays that are mmapped.
 const int kTintArraySize = 6;

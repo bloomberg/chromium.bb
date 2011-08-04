@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,9 +15,9 @@ from grit.format import data_pack
 
 class FormatDataPackUnittest(unittest.TestCase):
   def testWriteDataPack(self):
-    expected = ('\x02\x00\x00\x00\x04\x00\x00\x00\x01\x000\x00\x00'
-        '\x00\x00\x00\x00\x00\x04\x000\x00\x00\x00\x0c\x00\x00\x00'
-        '\x06\x00<\x00\x00\x00\x0c\x00\x00\x00\n\x00H\x00'
+    expected = ('\x01\x00\x00\x00\x04\x00\x00\x00\x01\x00\x00\x008\x00\x00'
+        '\x00\x00\x00\x00\x00\x04\x00\x00\x008\x00\x00\x00\x0c\x00\x00\x00'
+        '\x06\x00\x00\x00D\x00\x00\x00\x0c\x00\x00\x00\n\x00\x00\x00P\x00'
         '\x00\x00\x00\x00\x00\x00this is id 4this is id 6')
     input = { 1: "", 4: "this is id 4", 6: "this is id 6", 10: "" }
     output = data_pack.DataPack.WriteDataPack(input)

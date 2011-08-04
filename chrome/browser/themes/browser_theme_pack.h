@@ -103,8 +103,8 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // The raw PNG memory associated with a certain id.
   typedef std::map<int, scoped_refptr<RefCountedMemory> > RawImages;
 
-  // The type passed to ui::DataPack::WritePack.
-  typedef std::map<uint16, base::StringPiece> RawDataForWriting;
+  // The type passed to base::DataPack::WritePack.
+  typedef std::map<uint32, base::StringPiece> RawDataForWriting;
 
   // An association between an id and the FilePath that has the image data.
   typedef std::map<int, FilePath> FilePathMap;

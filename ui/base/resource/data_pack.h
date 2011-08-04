@@ -40,16 +40,16 @@ class UI_API DataPack {
   // Get resource by id |resource_id|, filling in |data|.
   // The data is owned by the DataPack object and should not be modified.
   // Returns false if the resource id isn't found.
-  bool GetStringPiece(uint16 resource_id, base::StringPiece* data) const;
+  bool GetStringPiece(uint32 resource_id, base::StringPiece* data) const;
 
   // Like GetStringPiece(), but returns a reference to memory. This interface
   // is used for image data, while the StringPiece interface is usually used
   // for localization strings.
-  RefCountedStaticMemory* GetStaticMemory(uint16 resource_id) const;
+  RefCountedStaticMemory* GetStaticMemory(uint32 resource_id) const;
 
   // Writes a pack file containing |resources| to |path|.
   static bool WritePack(const FilePath& path,
-                        const std::map<uint16, base::StringPiece>& resources);
+                        const std::map<uint32, base::StringPiece>& resources);
 
  private:
   // The memory-mapped data.

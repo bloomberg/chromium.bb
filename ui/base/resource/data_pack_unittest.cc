@@ -48,7 +48,7 @@ TEST(DataPackTest, Write) {
   std::string four("four");
   std::string fifteen("fifteen");
 
-  std::map<uint16, base::StringPiece> resources;
+  std::map<uint32, base::StringPiece> resources;
   resources.insert(std::make_pair(1, base::StringPiece(one)));
   resources.insert(std::make_pair(2, base::StringPiece(two)));
   resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
