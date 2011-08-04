@@ -64,6 +64,7 @@ class GerritPatch(Patch):
     self.ref = patch_dict['currentPatchSet']['ref']
     # revision - The CL's SHA1 hash.
     self.revision = patch_dict['currentPatchSet']['revision']
+    self.patch_number = patch_dict['currentPatchSet']['number']
 
   def Apply(self, buildroot):
     """Implementation of Patch.Apply()."""
@@ -88,9 +89,19 @@ class GerritPatch(Patch):
     except cros_lib.RunCommandError as e:
       raise ApplyPatchException(e)
 
+  def Submit(self, helper, debug=False):
+    """Submits patch using Gerrit Review."""
+    cmd = helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
+        self.id, self.patch_number)])
+
+    if debug:
+      cros_lib.Info('Would have run: ' + ' '.join(cmd))
+    else:
+      cros_lib.RunCommand(cmd)
+
   def __str__(self):
     """Returns custom string to identify this patch."""
-    return '%s:%s' % (self.project, self.id)
+    return '%s:%s,%s' % (self.project, self.id, self.patch_number)
 
 
 
@@ -228,14 +239,8 @@ def PrepareLocalPatches(patches, manifest_branch):
       tracking_branch = _GetRemoteTrackingBranch(project_dir, branch)
     except cros_lib.NoTrackingBranchException:
       raise PatchException('%s:%s needs to track a remote branch!'
-                           % (project,branch))
+                           % (project, branch))
 
     patch_info.append(LocalPatch(project, tracking_branch, patch_dir, branch))
 
   return patch_info
-
-
-
-
-
-

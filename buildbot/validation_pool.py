@@ -8,57 +8,10 @@ The validation pool is the set of commits that are ready to be validated i.e.
 ready for the commit queue to try.
 """
 
-import constants
-import json
 import logging
 
+from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
-from chromite.lib import cros_build_lib
-
-
-class _GerritServer():
-  """Helper class to manage interaction with Gerrit server."""
-  def __init__(self, branch, internal):
-    """Initializes variables for interaction with a gerrit server."""
-    self.internal = internal
-    if self.internal:
-      ssh_port = constants.GERRIT_INT_PORT
-      ssh_host = constants.GERRIT_INT_HOST
-    else:
-      ssh_port = constants.GERRIT_PORT
-      ssh_host = constants.GERRIT_HOST
-
-    ssh_prefix = ['ssh', '-p', ssh_port, ssh_host]
-    ready_for_commit_query = ('gerrit query --format=json status:open '
-                              'AND CodeReview=+2 AND Verified=1 AND '
-                              'branch:%s' % branch).split()
-    self.ssh_query_cmd = ssh_prefix + ready_for_commit_query
-
-  def GrabChangesReadyForCommit(self):
-    """Returns the list of changes to try.
-
-    This methods returns an array of GerritPatch's that are ready to be
-    committed.
-    """
-    changes_to_commit = []
-    raw_results = cros_build_lib.RunCommand(self.ssh_query_cmd,
-                                            redirect_stdout=True)
-
-    # Each line return is a json dict.
-    for raw_result in raw_results.output.splitlines():
-      result_dict = json.loads(raw_result)
-      if not 'number' in result_dict:
-        logging.debug('No change number found in %s' % result_dict)
-        continue
-
-      change_number = result_dict['number']
-      logging.info('Found change %s ready and pending' % change_number)
-      if self.internal:
-        changes_to_commit.append('*' + change_number)
-      else:
-        changes_to_commit.append(change_number)
-
-    return cros_patch.GetGerritPatchInfo(changes_to_commit)
 
 
 class ValidationPool(object):
@@ -78,6 +31,7 @@ class ValidationPool(object):
     method.
     """
     self._changes = None
+    self._gerrit_helper = None
 
   @classmethod
   def _IsTreeOpen(cls):
@@ -95,8 +49,10 @@ class ValidationPool(object):
     """
     if cls._IsTreeOpen():
       pool = ValidationPool()
-      pool._changes = _GerritServer(
-          branch, internal).GrabChangesReadyForCommit()
+      pool._gerrit_helper = gerrit_helper.GerritHelper(internal)
+      raw_changes = pool._gerrit_helper.GrabChangesReadyForCommit(branch)
+      pool._changes = pool._gerrit_helper.FilterProjectsNotInSourceTree(
+          raw_changes)
       return pool
     else:
       return None
@@ -117,9 +73,9 @@ class ValidationPool(object):
 
   def SubmitPool(self):
     """Commits changes to Gerrit from Pool."""
-    # TODO(sosa): crosbug.com/17707.
     for change in self._changes:
       logging.info('Change %s will be submitted' % change)
+      change.Submit(gerrit_helper)
 
   def HandleApplicationFailure(self, changes):
     """Handles changes that were not able to be applied cleanly."""

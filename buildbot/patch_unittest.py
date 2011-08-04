@@ -14,8 +14,9 @@ import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.buildbot.patch as cros_patch
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import gerrit_helper
 
 
 class GerritQueryTests(mox.MoxTestBase):
@@ -44,7 +45,8 @@ class GerritQueryTests(mox.MoxTestBase):
 
     output_obj = cros_lib.CommandResult()
     output_obj.returncode = 0
-    output_obj.output='{"type":"error","message":"Unsupported query:5S2D4D2D4"}'
+    output_obj.output = ('{"type":"error",'
+                         '"message":"Unsupported query:5S2D4D2D4"}')
 
     cros_lib.RunCommand(mox.In('gerrit.chromium.org'),
                         redirect_stdout=True).AndReturn(output_obj)
@@ -107,6 +109,38 @@ class GerritQueryTests(mox.MoxTestBase):
     self.assertEquals(patch_info[0].project, 'chromiumos/chromite')
     self.assertEquals(patch_info[0].ref, 'refs/changes/44/2144/3')
 
+    self.mox.VerifyAll()
+
+
+class GerritPatchTest(mox.MoxTestBase):
+  FAKE_PATCH_JSON = {
+    "project":"tacos/chromite", "branch":"master",
+    "id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",
+    "currentPatchSet": {
+      "number":"2", "ref":"refs/changes/72/5172/1",
+      "revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef",
+    },
+    "number":"1112",
+    "subject":"chromite commit",
+    "owner":{"name":"Chromite Master", "email":"chromite@chromium.org"},
+    "url":"http://gerrit.chromium.org/gerrit/1112",
+    "lastUpdated":1311024529,
+    "sortKey":"00166e8700001052",
+    "open": True,
+    "status":"NEW",
+  }
+
+  def testGerritSubmit(self):
+    """Tests submission review string looks correct."""
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    helper = gerrit_helper.GerritHelper(False)
+    cros_lib.RunCommand(
+        'ssh -p 29418 gerrit.chromium.org gerrit review '
+        '--submit Iee5c89d929f1850d7d4e1a4ff5f21adda800025f,2'.split())
+
+    self.mox.ReplayAll()
+    my_patch.Submit(helper, False)
     self.mox.VerifyAll()
 
 

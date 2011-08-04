@@ -402,6 +402,15 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
     self.projects = {}
     pass
 
+  @classmethod
+  def ParseManifest(cls, manifest_path):
+    """Returns a handler with the parsed results of the manifest."""
+    parser = xml.sax.make_parser()
+    handler = cls()
+    parser.setContentHandler(handler)
+    parser.parse(manifest_path)
+    return handler
+
   def startElement(self, name, attributes):
     """Stores the default manifest properties and per-project overrides."""
     if name == 'default':
@@ -421,12 +430,9 @@ def GetProjectManifestBranch(buildroot, project):
     A tuple of the remote and ref name specified in the manifest - i.e.,
     ('cros', 'refs/heads/master').
   """
-  parser = xml.sax.make_parser()
-  handler = ManifestHandler()
-  parser.setContentHandler(handler)
   # We can't use .repo/manifest.xml since it may be overwritten by sync stage
   manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-  parser.parse(manifest_path)
+  handler = ManifestHandler.ParseManifest(manifest_path)
 
   project_branch = {}
   for key in ['remote', 'revision']:
