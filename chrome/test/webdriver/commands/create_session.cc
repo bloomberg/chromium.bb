@@ -161,7 +161,7 @@ void CreateSession::ExecutePost(Response* const response) {
       }
       FilePath extension_file(
           extensions_dir.path().AppendASCII("extension" +
-                                            base::IntToString(i)));
+                                            base::IntToString(i) + ".crx"));
       std::string message;
       if (!WriteBase64DataToFile(extension_file, base64_extension, &message)) {
         response->SetError(new Error(kBadRequest, message));

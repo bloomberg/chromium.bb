@@ -272,7 +272,7 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     capabilities = {'chrome.binary': binary_path}
     self.GetNewDriver(capabilities)
 
-  def DISABLED_testUserProfile(self):
+  def testUserProfile(self):
     """Test starting WebDriver session with custom profile."""
 
     # Open a new session and save the user profile.
@@ -288,13 +288,15 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     driver.add_cookie(cookie_dict)
     driver.quit()
 
-    user_profile_zip = archive_util.make_archive('profile', 'zip',
-                                                 root_dir=profile_dir,
-                                                 base_dir='Default')
-    f = open(user_profile_zip, 'r')
+    profile_zip = archive_util.make_archive(os.path.join(profile_dir,
+                                                         'profile'),
+                                            'zip',
+                                            root_dir=profile_dir,
+                                            base_dir='Default')
+    f = open(profile_zip, 'rb')
     base64_user_profile = binascii.b2a_base64(f.read()).strip()
     f.close()
-    os.remove(user_profile_zip)
+    os.remove(profile_zip)
 
     # Start new session with the saved user profile.
     capabilities = {'chrome.profile': base64_user_profile}
@@ -305,12 +307,12 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     self.assertEqual(cookie_dict['value'], 'chrome profile')
     driver.quit()
 
-  def DISABLED_testInstallExtensions(self):
+  def testInstallExtensions(self):
     """Test starting web driver with multiple extensions."""
     extensions = ['ext_test_1.crx', 'ext_test_2.crx']
     base64_extensions = []
     for ext in extensions:
-      f = open(os.path.join(test_paths.TestDir(), ext), 'r')
+      f = open(os.path.join(test_paths.TestDir(), ext), 'rb')
       base64_ext = (binascii.b2a_base64(f.read()).strip())
       base64_extensions.append(base64_ext)
       f.close()
