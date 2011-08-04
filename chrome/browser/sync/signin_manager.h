@@ -104,7 +104,8 @@ class SigninManager : public GaiaAuthConsumer,
                                         const std::string& token,
                                         const std::string& expires_in)
       OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(const GoogleServiceAuthError& error);
+  virtual void OnOAuthWrapBridgeFailure(const std::string& service_name,
+                                        const GoogleServiceAuthError& error);
   virtual void OnUserInfoSuccess(const std::string& email) OVERRIDE;
   virtual void OnUserInfoFailure(const GoogleServiceAuthError& error) OVERRIDE;
 

@@ -54,13 +54,11 @@ static const char kOAuthTokenCookie[] = "oauth_token";
 GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                                    net::URLRequestContextGetter* getter,
                                    Profile* profile,
-                                   const std::string& service_name,
                                    const std::string& service_scope)
     : consumer_(consumer),
       getter_(getter),
       profile_(profile),
       popup_(NULL),
-      service_name_(service_name),
       service_scope_(service_scope),
       fetch_pending_(false),
       auto_fetch_limit_(ALL_OAUTH_STEPS) {}
@@ -408,14 +406,13 @@ void GaiaOAuthFetcher::StartOAuthWrapBridge(
     const std::string& oauth1_access_token,
     const std::string& oauth1_access_token_secret,
     const std::string& wrap_token_duration,
-    const std::string& service_name,
     const std::string& service_scope) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  VLOG(1) << "Starting OAuthWrapBridge for: " << service_name;
+  VLOG(1) << "Starting OAuthWrapBridge for: " << service_scope;
   std::string combined_scope = service_scope + " " +
       kOAuthWrapBridgeUserInfoScope;
-  service_name_ = service_name;
+  service_scope_ = service_scope;
 
   // Must outlive fetcher_.
   request_body_ = MakeOAuthWrapBridgeBody(
@@ -595,7 +592,7 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
     if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
       StartOAuthWrapBridge(
-          token, secret, "3600", service_name_, service_scope_);
+          token, secret, GaiaConstants::kGaiaOAuthDuration, service_scope_);
   } else {
     consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status));
   }
@@ -610,11 +607,12 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     std::string token;
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
-    consumer_->OnOAuthWrapBridgeSuccess(service_name_, token, expires_in);
+    consumer_->OnOAuthWrapBridgeSuccess(service_scope_, token, expires_in);
     if (ShouldAutoFetch(USER_INFO))
       StartUserInfo(token);
   } else {
-    consumer_->OnOAuthWrapBridgeFailure(GenerateAuthError(data, status));
+    consumer_->OnOAuthWrapBridgeFailure(service_scope_,
+                                        GenerateAuthError(data, status));
   }
 }
 

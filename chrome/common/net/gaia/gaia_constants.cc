@@ -16,19 +16,28 @@ const char kChromeSource[] = "ChromiumBrowser";
 const char kGaiaService[] = "gaia";
 // Service name for Gaia Contacts API. API is used to get user's image.
 const char kContactsService[] = "cp";
-// Service name for sync.
+
+// Service/scope names for sync.
 const char kSyncService[] = "chromiumsync";
+const char kSyncServiceOAuth[] = "https://www.googleapis.com/auth/chromesync";
+
 // Service name for XMPP Google Talk.
 const char kTalkService[] = "talk";
 // Service name for remoting.
 const char kRemotingService[] = "chromoting";
 // Service name for cloud print.
 const char kCloudPrintService[] = "cloudprint";
-// Service name for device management (cloud-based policy) server.
+
+// Service/scope names for device management (cloud-based policy) server.
 const char kDeviceManagementService[] = "mobilesync";
+const char kDeviceManagementServiceOAuth[] =
+    "https://www.googleapis.com/auth/chromeosdevicemanagement";
 
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";
+extern const char kGaiaOAuthToken[] = "oauthToken";
+extern const char kGaiaOAuthSecret[] = "oauthSecret";
+extern const char kGaiaOAuthDuration[] = "3600";
 
 }  // namespace GaiaConstants

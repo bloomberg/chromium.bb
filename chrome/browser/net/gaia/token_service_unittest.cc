@@ -58,6 +58,8 @@ void TokenServiceTestHarness::SetUp() {
   credentials_.lsid = "lsid";
   credentials_.token = "token";
   credentials_.data = "data";
+  oauth_token_ = "oauth";
+  oauth_secret_ = "secret";
 
   ASSERT_TRUE(db_thread_.Start());
 
@@ -102,6 +104,7 @@ class TokenServiceTest : public TokenServiceTestHarness {
   virtual void SetUp() {
     TokenServiceTestHarness::SetUp();
     service_.UpdateCredentials(credentials_);
+    service_.UpdateOAuthCredentials(oauth_token_, oauth_secret_);
   }
 };
 
@@ -129,6 +132,20 @@ TEST_F(TokenServiceTest, NotificationSuccess) {
   EXPECT_EQ(details.token(), "token");
 }
 
+TEST_F(TokenServiceTest, NotificationSuccessOAuth) {
+  EXPECT_EQ(0U, success_tracker_.size());
+  EXPECT_EQ(0U, failure_tracker_.size());
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token", "3600");
+  EXPECT_EQ(1U, success_tracker_.size());
+  EXPECT_EQ(0U, failure_tracker_.size());
+
+  TokenService::TokenAvailableDetails details = success_tracker_.details();
+  // MSVC doesn't like this comparison as EQ.
+  EXPECT_TRUE(details.service() == GaiaConstants::kSyncServiceOAuth);
+  EXPECT_EQ(details.token(), "token");
+}
+
 TEST_F(TokenServiceTest, NotificationFailed) {
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
@@ -141,6 +158,21 @@ TEST_F(TokenServiceTest, NotificationFailed) {
 
   // MSVC doesn't like this comparison as EQ.
   EXPECT_TRUE(details.service() == GaiaConstants::kSyncService);
+  EXPECT_TRUE(details.error() == error);  // Struct has no print function.
+}
+
+TEST_F(TokenServiceTest, NotificationFailedOAuth) {
+  EXPECT_EQ(0U, success_tracker_.size());
+  EXPECT_EQ(0U, failure_tracker_.size());
+  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+  service_.OnOAuthWrapBridgeFailure(GaiaConstants::kSyncServiceOAuth, error);
+  EXPECT_EQ(0U, success_tracker_.size());
+  EXPECT_EQ(1U, failure_tracker_.size());
+
+  TokenService::TokenRequestFailedDetails details = failure_tracker_.details();
+
+  // MSVC doesn't like this comparison as EQ.
+  EXPECT_TRUE(details.service() == GaiaConstants::kSyncServiceOAuth);
   EXPECT_TRUE(details.error() == error);  // Struct has no print function.
 }
 
@@ -162,17 +194,20 @@ TEST_F(TokenServiceTest, OnTokenSuccess) {
   // Don't "start fetching", just go ahead and issue the callback.
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   // Gaia returns the entire result as the token so while this is a shared
   // result with ClientLogin, it doesn't matter, we should still get it back.
   EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncService), "token");
 
-  // Check the second service.
-  service_.OnIssueAuthTokenSuccess(GaiaConstants::kTalkService, "token2");
-  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kTalkService));
-  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kTalkService), "token2");
+  // Try the OAuth service.
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token2", "3600");
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncServiceOAuth),
+            "token2");
 
-  // It didn't change.
+  // First didn't change.
   EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncService), "token");
 }
 
@@ -197,10 +232,12 @@ TEST_F(TokenServiceTest, ResetComplex) {
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncService),
             "eraseme");
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
 
   service_.ResetCredentialsInMemory();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_FALSE(service_.HasLsid());
 
@@ -208,12 +245,18 @@ TEST_F(TokenServiceTest, ResetComplex) {
   service_.UpdateCredentials(credentials_);
   EXPECT_TRUE(service_.HasLsid());
   service_.StartFetchingTokens();
+  service_.UpdateOAuthCredentials(oauth_token_, oauth_secret_);
+  service_.StartFetchingOAuthTokens();
 
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
-  service_.OnIssueAuthTokenSuccess(GaiaConstants::kTalkService, "token2");
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token2", "3600");
+  service_.OnIssueAuthTokenSuccess(GaiaConstants::kTalkService, "token3");
 
   EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncService), "token");
-  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kTalkService), "token2");
+  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kSyncServiceOAuth),
+            "token2");
+  EXPECT_EQ(service_.GetTokenForService(GaiaConstants::kTalkService), "token3");
 }
 
 TEST_F(TokenServiceTest, FullIntegration) {
@@ -223,6 +266,7 @@ TEST_F(TokenServiceTest, FullIntegration) {
     MockFactory<MockFetcher> factory;
     factory.set_results(result);
     EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
+    EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
     EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
     service_.StartFetchingTokens();
   }
@@ -249,16 +293,16 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   EXPECT_TRUE(memory_tokens.empty());
   EXPECT_EQ(0U, success_tracker_.size());
 
-  db_tokens[GaiaConstants::kSyncService] = "token";
+  db_tokens[GaiaConstants::kSyncServiceOAuth] = "token";
   service_.LoadTokensIntoMemory(db_tokens, &memory_tokens);
   EXPECT_EQ(1U, success_tracker_.size());
 
   TokenService::TokenAvailableDetails details = success_tracker_.details();
   // MSVC doesn't like this comparison as EQ.
-  EXPECT_TRUE(details.service() == GaiaConstants::kSyncService);
+  EXPECT_TRUE(details.service() == GaiaConstants::kSyncServiceOAuth);
   EXPECT_EQ(details.token(), "token");
-  EXPECT_EQ(1U, memory_tokens.count(GaiaConstants::kSyncService));
-  EXPECT_EQ(memory_tokens[GaiaConstants::kSyncService], "token");
+  EXPECT_EQ(1U, memory_tokens.count(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_EQ(memory_tokens[GaiaConstants::kSyncServiceOAuth], "token");
 }
 
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {
@@ -282,12 +326,12 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {
   // SyncService token is already in memory. Pretend we got it off
   // the disk as well, but an older token.
   db_tokens[GaiaConstants::kSyncService] = "ignoreme";
-  db_tokens[GaiaConstants::kTalkService] = "tomato";
+  db_tokens[GaiaConstants::kSyncServiceOAuth] = "tomato";
   service_.LoadTokensIntoMemory(db_tokens, &memory_tokens);
 
   EXPECT_EQ(2U, memory_tokens.size());
-  EXPECT_EQ(1U, memory_tokens.count(GaiaConstants::kTalkService));
-  EXPECT_EQ(memory_tokens[GaiaConstants::kTalkService], "tomato");
+  EXPECT_EQ(1U, memory_tokens.count(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_EQ(memory_tokens[GaiaConstants::kSyncServiceOAuth], "tomato");
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_EQ(1U, memory_tokens.count(GaiaConstants::kSyncService));
   EXPECT_EQ(memory_tokens[GaiaConstants::kSyncService], "pepper");
@@ -301,18 +345,24 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
   // Should result in DB write.
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
   EXPECT_EQ(1U, success_tracker_.size());
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token2", "3600");
+  EXPECT_EQ(2U, success_tracker_.size());
 
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   // Clean slate.
   service_.ResetCredentialsInMemory();
   success_tracker_.Reset();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
 
   service_.LoadTokensFromDB();
   WaitForDBLoadCompletion();
 
-  EXPECT_EQ(1U, success_tracker_.size());
+  EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_.HasLsid());
 }
@@ -325,14 +375,22 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasLsid());
 
+  service_.OnOAuthWrapBridgeSuccess(
+      GaiaConstants::kSyncServiceOAuth, "token2", "3600");
+  service_.ResetCredentialsInMemory();
+  success_tracker_.Reset();
+  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
+  EXPECT_FALSE(service_.AreOAuthCredentialsValid());
+
   service_.LoadTokensFromDB();
   WaitForDBLoadCompletion();
 
   service_.LoadTokensFromDB();  // Should do nothing.
   WaitForDBLoadCompletion();
 
-  EXPECT_EQ(1U, success_tracker_.size());
+  EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
   EXPECT_TRUE(service_.HasLsid());
 
@@ -343,8 +401,9 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   service_.LoadTokensFromDB();
   WaitForDBLoadCompletion();
 
-  EXPECT_EQ(1U, success_tracker_.size());
+  EXPECT_EQ(2U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncServiceOAuth));
 }
 
 #ifndef NDEBUG
@@ -356,6 +415,7 @@ class TokenServiceCommandLineTest : public TokenServiceTestHarness {
         switches::kSetToken, "my_service:my_value");
     TokenServiceTestHarness::SetUp();
     service_.UpdateCredentials(credentials_);
+    service_.UpdateOAuthCredentials(oauth_token_, oauth_secret_);
 
     *CommandLine::ForCurrentProcess() = original_cl;
   }

@@ -76,6 +76,8 @@ class TokenServiceTestHarness : public TestingBrowserProcessTest {
   TokenAvailableTracker success_tracker_;
   TokenFailedTracker failure_tracker_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
+  std::string oauth_token_;
+  std::string oauth_secret_;
   scoped_ptr<TestingProfile> profile_;
 };
 

@@ -65,11 +65,12 @@ class MockGaiaOAuthConsumer : public GaiaOAuthConsumer {
                void(const GoogleServiceAuthError& error));
 
   MOCK_METHOD3(OnOAuthWrapBridgeSuccess,
-               void(const std::string& service_name,
+               void(const std::string& service_scope,
                     const std::string& token,
                     const std::string& expires_in));
-  MOCK_METHOD1(OnOAuthWrapBridgeFailure,
-               void(const GoogleServiceAuthError& error));
+  MOCK_METHOD2(OnOAuthWrapBridgeFailure,
+               void(const std::string& service_scope,
+                    const GoogleServiceAuthError& error));
 
   MOCK_METHOD1(OnUserInfoSuccess, void(const std::string& email));
   MOCK_METHOD1(OnUserInfoFailure, void(const GoogleServiceAuthError& error));
@@ -80,21 +81,19 @@ class MockGaiaOAuthFetcher : public GaiaOAuthFetcher {
   MockGaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                        net::URLRequestContextGetter* getter,
                        Profile* profile,
-                       const std::string& service_name,
                        const std::string& service_scope)
       : GaiaOAuthFetcher(
-          consumer, getter, profile, service_name, service_scope) {}
+          consumer, getter, profile, service_scope) {}
 
   ~MockGaiaOAuthFetcher() {}
 
   MOCK_METHOD1(StartOAuthGetAccessToken,
                void(const std::string& oauth1_request_token));
 
-  MOCK_METHOD5(StartOAuthWrapBridge,
+  MOCK_METHOD4(StartOAuthWrapBridge,
                void(const std::string& oauth1_access_token,
                     const std::string& oauth1_access_token_secret,
                     const std::string& wrap_token_duration,
-                    const std::string& service_name,
                     const std::string& oauth2_scope));
 
   MOCK_METHOD1(StartUserInfo, void(const std::string& oauth2_access_token));
@@ -151,8 +150,9 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 typedef TestingBrowserProcessTest GaiaOAuthFetcherTest;
 
 TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
-  const std::string oauth_token="1/OAuth1-Access_Token-1234567890abcdefghijklm";
-  const std::string oauth_token_secret="Dont_tell_the_secret-123";
+  const std::string oauth_token =
+      "1/OAuth1-Access_Token-1234567890abcdefghijklm";
+  const std::string oauth_token_secret = "Dont_tell_the_secret-123";
   const std::string data("oauth_token="
                          "1%2FOAuth1-Access_Token-1234567890abcdefghijklm"
                          "&oauth_token_secret=Dont_tell_the_secret-123");
@@ -166,13 +166,11 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile.GetRequestContext(),
                                      &profile,
-                                     "service_name-eKARPyky",
                                      "service_scope-JnG18MEE");
   EXPECT_CALL(oauth_fetcher,
               StartOAuthWrapBridge(oauth_token,
                                    oauth_token_secret,
                                    "3600",
-                                   "service_name-eKARPyky",
                                    "service_scope-JnG18MEE")).Times(1);
 
   net::ResponseCookies cookies;
@@ -186,8 +184,9 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
 }
 
 TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
-  const std::string wrap_token="1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
-  const std::string expires_in="3600";
+  const std::string wrap_token =
+      "1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
+  const std::string expires_in = "3600";
 
   const std::string data("wrap_access_token="
                          "1%2FOAuth2-Access_Token-nopqrstuvwxyz1234567890"
@@ -195,7 +194,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
 
   MockGaiaOAuthConsumer consumer;
   EXPECT_CALL(consumer,
-              OnOAuthWrapBridgeSuccess("service_name-62Ykg3K1",
+              OnOAuthWrapBridgeSuccess("service_scope-0fL85iOi",
                                        wrap_token,
                                        expires_in)).Times(1);
 
@@ -203,7 +202,6 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile .GetRequestContext(),
                                      &profile,
-                                     "service_name-62Ykg3K1",
                                      "service_scope-0fL85iOi");
   EXPECT_CALL(oauth_fetcher, StartUserInfo(wrap_token)).Times(1);
 
@@ -218,9 +216,10 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
 }
 
 TEST_F(GaiaOAuthFetcherTest, UserInfo) {
-  const std::string email_address="someone@somewhere.net";
-  const std::string wrap_token="1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
-  const std::string expires_in="3600";
+  const std::string email_address = "someone@somewhere.net";
+  const std::string wrap_token =
+      "1/OAuth2-Access_Token-nopqrstuvwxyz1234567890";
+  const std::string expires_in = "3600";
   const std::string data("{\n \"email\": \"someone@somewhere.net\",\n"
                          " \"verified_email\": true\n}\n");
   MockGaiaOAuthConsumer consumer;
@@ -231,7 +230,6 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   MockGaiaOAuthFetcher oauth_fetcher(&consumer,
                                      profile .GetRequestContext(),
                                      &profile,
-                                     "service_name-S2igVNUm",
                                      "service_scope-Nrj4LmgU");
 
   net::ResponseCookies cookies;

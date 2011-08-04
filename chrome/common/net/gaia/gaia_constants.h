@@ -18,13 +18,18 @@ extern const char kGaiaService[];  // uber token
 extern const char kContactsService[];
 extern const char kTalkService[];
 extern const char kSyncService[];
+extern const char kSyncServiceOAuth[];
 extern const char kRemotingService[];
 extern const char kCloudPrintService[];
 extern const char kDeviceManagementService[];
+extern const char kDeviceManagementServiceOAuth[];
 
-// Used to mint uber auth tokens when needed.
+// Used with uber auth tokens when needed.
 extern const char kGaiaSid[];
 extern const char kGaiaLsid[];
+extern const char kGaiaOAuthToken[];
+extern const char kGaiaOAuthSecret[];
+extern const char kGaiaOAuthDuration[];
 
 }  // namespace GaiaConstants
 

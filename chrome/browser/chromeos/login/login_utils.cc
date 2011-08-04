@@ -156,7 +156,6 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
       : oauth_fetcher_(this,
             user_profile->GetOffTheRecordProfile()->GetRequestContext(),
             user_profile->GetOffTheRecordProfile(),
-            GaiaConstants::kSyncService,
             kServiceScopeChromeOS),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
@@ -201,7 +200,6 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
       : oauth_fetcher_(this,
                        profile->GetRequestContext(),
                        profile,
-                       GaiaConstants::kDeviceManagementService,
                        kServiceScopeChromeOSDeviceManagement),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
@@ -211,8 +209,8 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
   virtual ~PolicyOAuthFetcher() {}
 
   void Start() {
-    oauth_fetcher_.StartOAuthWrapBridge(oauth1_token_, oauth1_secret_, "3600",
-        std::string(GaiaConstants::kDeviceManagementService),
+    oauth_fetcher_.StartOAuthWrapBridge(
+        oauth1_token_, oauth1_secret_, GaiaConstants::kGaiaOAuthDuration,
         std::string(kServiceScopeChromeOSDeviceManagement));
   }
 
@@ -227,8 +225,9 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
   }
 
   virtual void OnOAuthWrapBridgeFailure(
+      const std::string& service_name,
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed to get OAuth access token.";
+    LOG(WARNING) << "Failed to get OAuth access token for " << service_name;
   }
 
  private:
@@ -569,7 +568,6 @@ void LoginUtilsImpl::FetchOAuth1AccessToken(Profile* auth_profile) {
   oauth_fetcher_.reset(new GaiaOAuthFetcher(this,
                                             auth_profile->GetRequestContext(),
                                             auth_profile,
-                                            GaiaConstants::kSyncService,
                                             kServiceScopeChromeOS));
   // Let's first get the Oauth request token and OAuth1 token+secret.
   // One we get that, we will kick off individial requests for OAuth2 tokens for

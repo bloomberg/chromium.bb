@@ -18,8 +18,6 @@
 
 const char kGetInfoEmailKey[] = "email";
 
-const char kSyncOAuth2Scope[] = "https://www.googleapis.com/auth/chromesync";
-
 SigninManager::SigninManager()
     : profile_(NULL), had_two_factor_error_(false) {}
 
@@ -85,8 +83,7 @@ void SigninManager::StartOAuthSignIn() {
   oauth_login_.reset(new GaiaOAuthFetcher(this,
                                           profile_->GetRequestContext(),
                                           profile_,
-                                          GaiaConstants::kSyncService,
-                                          kSyncOAuth2Scope));
+                                          GaiaConstants::kSyncServiceOAuth));
   oauth_login_->StartGetOAuthToken();
 }
 
@@ -246,6 +243,7 @@ void SigninManager::OnOAuthWrapBridgeSuccess(const std::string& service_name,
 }
 
 void SigninManager::OnOAuthWrapBridgeFailure(
+    const std::string& service_scope,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "SigninManager::OnOAuthWrapBridgeFailure";
 }
