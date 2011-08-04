@@ -14,7 +14,7 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
-#include "skia/ext/vector_platform_device_emf_win.h"
+#include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
@@ -206,9 +206,8 @@ void PrintWebViewHelper::RenderPage(
     // PreviewMetafile (PDF) supports alpha blend, so we only hit this case
     // for NativeMetafile.
     DCHECK(!is_preview);
-    skia::VectorPlatformDeviceEmf* platform_device =
-        static_cast<skia::VectorPlatformDeviceEmf*>(device);
-    if (platform_device->alpha_blend_used()) {
+    skia::PlatformDevice* platform_device = skia::GetPlatformDevice(device);
+    if (platform_device && platform_device->AlphaBlendUsed()) {
       // Currently, we handle alpha blend transparency for a single page.
       // Therefore, expecting a metafile with page count 1.
       DCHECK_EQ(1U, (*metafile)->GetPageCount());

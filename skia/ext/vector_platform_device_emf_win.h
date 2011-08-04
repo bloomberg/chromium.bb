@@ -31,8 +31,10 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
   virtual ~VectorPlatformDeviceEmf();
 
   // PlatformDevice methods
-  virtual PlatformSurface BeginPlatformPaint();
-  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
+  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
+  virtual void DrawToNativeContext(HDC dc, int x, int y,
+                                   const RECT* src_rect) OVERRIDE;
+  virtual bool AlphaBlendUsed() const OVERRIDE { return alpha_blend_used_; }
 
   // SkDevice methods.
   virtual uint32_t getDeviceCapabilities();
@@ -70,15 +72,14 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
                           const SkPaint&) OVERRIDE;
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&);
+                             const SkClipStack&) OVERRIDE;
 
   void LoadClipRegion();
-  bool alpha_blend_used() const { return alpha_blend_used_; }
 
  protected:
   virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
                                              int height, bool isOpaque,
-                                             Usage usage);
+                                             Usage usage) OVERRIDE;
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if
