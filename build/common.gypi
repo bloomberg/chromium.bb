@@ -29,11 +29,6 @@
     # Currently ignored on Windows.
     'coverage%': 0,
 
-    # The version number of the Mac OS X SDK to use. This is named the
-    # same as the variable in Chromium's common.gypi so that NaCl's
-    # setting can be overridden with Chromium's, if desired.
-    'mac_sdk%': '10.5',
-
     # TODO(sgk): eliminate this if possible.
     # It would be nicer to support this via a setting in 'target_defaults'
     # in chrome/app/locales/locales.gypi overriding the setting in the
@@ -618,7 +613,6 @@
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
           'PREBINDING': 'NO',                       # No -Wl,-prebind
-          'SDKROOT': 'macosx<(mac_sdk)',            # -isysroot
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
@@ -629,6 +623,7 @@
               # If part of the Chromium build, use the Chromium default.
               # Otherwise, when building standalone, use this.
               'MACOSX_DEPLOYMENT_TARGET': '10.4',  # -mmacosx-version-min=10.4
+              'SDKROOT': 'macosx10.5',            # -isysroot
             }],
           ],
         },
