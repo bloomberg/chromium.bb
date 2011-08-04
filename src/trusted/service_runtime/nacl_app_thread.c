@@ -82,6 +82,9 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     goto cleanup_mutex;
   }
 
+  if (!NaClClosureResultCtor(&natp->result)) {
+    goto cleanup_cv;
+  }
   natp->sysret = 0;
   natp->nap = nap;
 
@@ -111,7 +114,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   if (rv != 0) {
     return rv; /* Success */
   }
-
+  NaClClosureResultDtor(&natp->result);
  cleanup_cv:
   NaClCondVarDtor(&natp->cv);
  cleanup_mutex:
@@ -140,6 +143,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   NaClSignalStackUnregister();
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;
+  NaClClosureResultDtor(&natp->result);
   NaClTlsFree(natp);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);

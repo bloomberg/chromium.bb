@@ -11,8 +11,8 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__ 1
 
-#include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
@@ -37,6 +37,8 @@ enum NaClThreadState {
 struct NaClAppThread {
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
+
+  struct NaClClosureResult  result;
 
   uint32_t                  sysret;
 

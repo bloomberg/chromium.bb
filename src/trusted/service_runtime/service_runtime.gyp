@@ -38,6 +38,7 @@
           'elf_util.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
+          'nacl_bottom_half.c',
           'nacl_closure.c',
           'nacl_desc_effector_ldr.c',
           'nacl_globals.c',
