@@ -48,12 +48,13 @@ bool SigninManager::IsInitialized() const {
 
 void SigninManager::CleanupNotificationRegistration() {
 #if !defined(OS_CHROMEOS)
+  Source<TokenService> token_service(profile_->GetTokenService());
   if (registrar_.IsRegistered(this,
                               chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                              NotificationService::AllSources())) {
+                              token_service)) {
     registrar_.Remove(this,
                       chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                      NotificationService::AllSources());
+                      token_service);
   }
 #endif
 }
@@ -115,7 +116,7 @@ void SigninManager::StartSignIn(const std::string& username,
   if (profile_->GetPrefs()->GetBoolean(prefs::kAutologinEnabled)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   NotificationService::AllSources());
+                   Source<TokenService>(profile_->GetTokenService()));
   }
 #endif
 }

@@ -70,13 +70,14 @@ AutoLoginRedirector::AutoLoginRedirector(
   // to be re-issued.  The token service guarantees to fire either
   // TOKEN_AVAILABLE or TOKEN_REQUEST_FAILED, so we will get at least one or
   // the other, allow AutoLoginRedirector to delete itself correctly.
+  TokenService* service = tab_contents_wrapper_->profile()->GetTokenService();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 NotificationService::AllSources());
+                 Source<TokenService>(service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 NotificationService::AllSources());
-  tab_contents_wrapper_->profile()->GetTokenService()->StartFetchingTokens();
+                 Source<TokenService>(service));
+  service->StartFetchingTokens();
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {
