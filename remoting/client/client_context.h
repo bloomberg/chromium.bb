@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/threading/thread.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 
 namespace remoting {
 
@@ -22,23 +21,20 @@ class ClientContext {
   void Start();
   void Stop();
 
-  JingleThread* jingle_thread();
-
   MessageLoop* main_message_loop();
   MessageLoop* decode_message_loop();
   MessageLoop* network_message_loop();
 
  private:
-  // A thread that handles Jingle network operations (used in
-  // JingleHostConnection).
-  JingleThread jingle_thread_;
-
   // A thread that handles capture rate control and sending data to the
   // HostConnection.
   base::Thread main_thread_;
 
   // A thread that handles all decode operations.
   base::Thread decode_thread_;
+
+  // A thread that handles all network IO.
+  base::Thread network_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientContext);
 };

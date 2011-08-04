@@ -40,7 +40,6 @@
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
-#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -209,7 +208,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   ChromotingScriptableObject* scriptable_object = GetScriptableObject();
   scoped_refptr<PepperXmppProxy> xmpp_proxy =
       new PepperXmppProxy(scriptable_object->AsWeakPtr(),
-                          context_.jingle_thread()->message_loop());
+                          context_.network_message_loop());
   scriptable_object->AttachXmppProxy(xmpp_proxy);
 
   // Kick off the connection.

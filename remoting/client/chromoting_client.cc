@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
@@ -45,6 +46,8 @@ void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
         NewRunnableMethod(this, &ChromotingClient::Start, xmpp_proxy));
     return;
   }
+
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, config_.access_code,
@@ -180,7 +183,7 @@ void ChromotingClient::OnConnectionFailed(protocol::ConnectionToHost* conn) {
 }
 
 MessageLoop* ChromotingClient::message_loop() {
-  return context_->jingle_thread()->message_loop();
+  return context_->network_message_loop();
 }
 
 void ChromotingClient::SetConnectionState(ConnectionState s) {

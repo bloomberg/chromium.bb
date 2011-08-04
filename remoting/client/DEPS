@@ -1,5 +1,6 @@
 include_rules = [
   "+ppapi",
+  "+jingle/glue",
   "+third_party/npapi",
   "+ui/gfx",
 
