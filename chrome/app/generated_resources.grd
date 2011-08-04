@@ -4255,12 +4255,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
         Renders a border around composited Render Layers to help debug and study layer compositing.
       </message>
-      <message name="IDS_FLAGS_ACCELERATED_DRAWING_NAME" desc="Title for the flag to enable accelerated drawing">
-        GPU Accelerated Drawing
-      </message>
-      <message name="IDS_FLAGS_ACCELERATED_DRAWING_DESCRIPTION" desc="Description for the flag to enable accelerated drawing">
-        Enable GPU accelerated drawing of page contents when compositing is enabled.
-      </message>
       <message name="IDS_FLAGS_SHOW_FPS_COUNTER" desc="Name of the 'Show FPS counter' lab.">
         FPS counter
       </message>
