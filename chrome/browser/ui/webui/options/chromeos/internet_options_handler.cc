@@ -704,7 +704,13 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
       (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
 
-  dictionary.SetBoolean("preferred", network->preferred());
+  if (network->profile_type() == chromeos::PROFILE_USER) {
+    dictionary.SetBoolean("showPreferred", true);
+    dictionary.SetBoolean("preferred", network->preferred());
+  } else {
+    dictionary.SetBoolean("showPreferred", false);
+    dictionary.SetBoolean("preferred", false);
+  }
   dictionary.SetBoolean("autoConnect", network->auto_connect());
 
   if (type == chromeos::TYPE_WIFI) {

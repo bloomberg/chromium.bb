@@ -1294,6 +1294,11 @@ class NetworkLibrary {
   // If nothing is changed, this method does nothing.
   virtual void SetIPConfig(const NetworkIPConfig& ipconfig) = 0;
 
+  // This will connect to a preferred network if the currently connected
+  // network is not preferred. This should be called when the active profile
+  // changes.
+  virtual void SwitchToPreferredNetwork() = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static NetworkLibrary* GetImpl(bool stub);

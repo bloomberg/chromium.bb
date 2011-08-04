@@ -153,6 +153,7 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                    std::string*,
                                                    HardwareAddressFormat));
   MOCK_METHOD1(SetIPConfig, void(const NetworkIPConfig&));
+  MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
 };
 
 }  // namespace chromeos

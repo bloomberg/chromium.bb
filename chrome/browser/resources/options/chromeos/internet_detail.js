@@ -94,6 +94,9 @@ cr.define('options.internet', function() {
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .shared-network'),
           !this.shared);
+      updateHidden(
+          cr.doc.querySelectorAll('#detailsInternetPage .prefer-network'),
+          !this.showPreferred);
     }
   };
 

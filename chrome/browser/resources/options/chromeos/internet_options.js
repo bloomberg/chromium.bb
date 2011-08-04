@@ -523,6 +523,7 @@ cr.define('options', function() {
       detailsPage.gsm = false;
       detailsPage.shared = data.shared;
       $('inetSsid').textContent = data.ssid;
+      detailsPage.showPreferred = data.showPreferred;
       $('preferNetworkWifi').checked = data.preferred;
       $('preferNetworkWifi').disabled = !data.remembered;
       $('autoConnectNetworkWifi').checked = data.autoConnect;

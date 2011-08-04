@@ -2676,6 +2676,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual EnableOfflineMode implemented in derived classes.
   // virtual GetIPConfigs implemented in derived classes.
   // virtual SetIPConfig implemented in derived classes.
+  virtual void SwitchToPreferredNetwork() OVERRIDE;
 
  protected:
   typedef ObserverList<NetworkObserver> NetworkObserverList;
@@ -3743,6 +3744,27 @@ void NetworkLibraryImplBase::EnableCellularNetworkDevice(bool enable) {
     return;
   CallEnableNetworkDeviceType(TYPE_CELLULAR, enable);
 }
+
+void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
+  // If current network (if any) is not preferred, check network service list to
+  // see if the first not connected network is preferred and set to autoconnect.
+  // If so, connect to it.
+  if (!wifi_enabled() || (active_wifi_ && active_wifi_->preferred()))
+    return;
+  for (WifiNetworkVector::const_iterator it = wifi_networks_.begin();
+      it != wifi_networks_.end(); ++it) {
+    WifiNetwork* wifi = *it;
+    if (wifi->connected() || wifi->connecting())  // Skip connected/connecting.
+      continue;
+    if (!wifi->preferred())  // All preferred networks are sorted in front.
+      break;
+    if (wifi->auto_connect()) {
+      ConnectToWifiNetwork(wifi);
+      break;
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 // Network list management functions.
@@ -4961,9 +4983,13 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       break;
     }
     case PROPERTY_INDEX_ACTIVE_PROFILE: {
+      std::string prev = active_profile_path_;
       DCHECK_EQ(value->GetType(), Value::TYPE_STRING);
       value->GetAsString(&active_profile_path_);
       VLOG(1) << "Active Profile: " << active_profile_path_;
+      if (active_profile_path_ != prev &&
+          active_profile_path_ != kSharedProfilePath)
+        SwitchToPreferredNetwork();
       break;
     }
     case PROPERTY_INDEX_PROFILES: {
