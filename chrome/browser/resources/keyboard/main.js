@@ -125,10 +125,11 @@ function initKeyboard(layout, element) {
   }
   var keyboardDiv = document.createElement('div');
   keyboardDiv.id = getKeyboardId(layout);
-  keyboardDiv.className = 'nodisplay';
+  keyboardDiv.className = 'keyboard';
   initRows(layout, keyboardDiv);
   initHandwritingCanvas(layout, keyboardDiv);
   keyboard['keyboardDiv'] = keyboardDiv;
+  window.onresize();
   element.appendChild(keyboardDiv);
 }
 
@@ -137,8 +138,7 @@ function initKeyboard(layout, element) {
  * @return {void}
  */
 window.onresize = function() {
-  var keyboardDiv = document.getElementById(getKeyboardId(
-      currentKeyboardLayout));
+  var keyboardDiv = KEYBOARDS[currentKeyboardLayout]['keyboardDiv'];
   var height = getKeyboardHeight();
   keyboardDiv.style.height = height + 'px';
   var mainDiv = document.getElementById('main');
