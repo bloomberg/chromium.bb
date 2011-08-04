@@ -249,7 +249,7 @@ void CapturerMac::ScreenConfigurationChanged() {
   int height = CGDisplayPixelsHigh(mainDevice);
   InvalidateScreen(gfx::Size(width, height));
 
-  if (CGDisplayIsBuiltin(mainDevice)) {
+  if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
     VLOG(3) << "OpenGL support not available.";
     return;
   }
