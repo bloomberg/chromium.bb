@@ -3548,6 +3548,7 @@
         {
           'action_name': 'generate_webgl_conformance_test_list',
           'inputs': [
+            'test/gpu/webgl_conformance_test_expectations.txt',
             'test/gpu/generate_webgl_conformance_test_list.py',
             '<!@(python test/gpu/generate_webgl_conformance_test_list.py --input)',
           ],

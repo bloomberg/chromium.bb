@@ -1,0 +1,31 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file contains a list of defective WebGL conformance tests. The expected
+// format is:
+//  {BUG#} {MAC,WIN,LINUX} : {TEST_NAME} = {FAIL,TIMEOUT}
+//
+// Examples:
+//  91530 MAC WIN LINUX : context_lost_restored = TIMEOUT
+//    This will mark the test as DISABLED_*.
+//
+//  91533 WIN : gl_min_uniforms = FAIL
+//    This will mark the test as FAILS_*.
+
+// -----------------------------------------------------------------------------
+// SLOW TESTS
+// -----------------------------------------------------------------------------
+
+91530 MAC WIN LINUX : context_lost_restored = TIMEOUT
+91530 LINUX MAC : conformance_quickCheckAPI = TIMEOUT
+91530 WIN : drawingbuffer_static_canvas_test = TIMEOUT
+
+// -----------------------------------------------------------------------------
+// FAILING TESTS
+// -----------------------------------------------------------------------------
+
+91532 LINUX : uniform_location = FAIL  // Probably a driver error.
+91533 WIN : gl_min_uniforms = FAIL
+91533 WIN : oes_standard_derivatives = FAIL
+91533 WIN : texture_npot = FAIL

@@ -11,8 +11,6 @@ for individual conformance tests (each on a new line). It recursively parses
 sent to the C++ header file.
 """
 
-__author__ = 'jrt@chromium.org (Joe Tessler)'
-
 import getopt
 import os
 import re
@@ -41,6 +39,27 @@ HEADER_GUARD_END = """
 # Assume this script is run from the src/chrome/ directory.
 INPUT_DIR = "../third_party/webgl_conformance"
 INPUT_FILE = "00_test_list.txt"
+EXPECTATION_FILE = "test/gpu/webgl_conformance_test_expectations.txt"
+EXPECTATION_REGEXP = re.compile(
+    r'^(?P<BUG>\S+)\s+'
+     '(?P<OS>(\s*(WIN|MAC|LINUX)\s*)+):'
+     '(?P<TEST>[^=]+)='
+     '(?P<OUTCOME>(\s*(PASS|FAIL|TIMEOUT)\s*)+)')
+
+def is_matching_os(expected_os_list):
+  """Returns true if the current OS is in the given list.
+
+  Given a list containing 'WIN', 'MAC' or 'LINUX', return true if the current
+  OS, represented as 'win32', 'darwin' or 'linux*', respectively, exists in the
+  list.
+  """
+  if sys.platform.startswith('linux') and 'LINUX' in expected_os_list:
+    return True;
+  if sys.platform == 'darwin' and 'MAC' in expected_os_list:
+    return True;
+  if sys.platform == 'win32' and 'WIN' in expected_os_list:
+    return True;
+  return False;
 
 def main(argv):
   """Main function for the WebGL conformance test list generator.
@@ -71,6 +90,27 @@ def main(argv):
   if not os.path.exists(os.path.join(INPUT_DIR, INPUT_FILE)):
     print >> sys.stderr, "ERROR: WebGL conformance tests do not exist."
     return 1
+
+  test_prefix = {}
+  if os.path.exists(EXPECTATION_FILE):
+    test_expectations = open(EXPECTATION_FILE)
+    for line in test_expectations:
+      line_match = EXPECTATION_REGEXP.match(line)
+      if line_match:
+        match_dict = line_match.groupdict()
+        os_list = match_dict['OS'].strip().split()
+        if not is_matching_os(os_list):
+          continue
+        test = match_dict['TEST'].strip()
+        outcome_list = match_dict['OUTCOME'].strip().split()
+        if 'TIMEOUT' in outcome_list:
+          test_prefix[test] = "DISABLED_"
+        elif 'FAIL' in outcome_list:
+          if 'PASS' in outcome_list:
+            test_prefix[test] = "FLAKY_"
+          else:
+            test_prefix[test] = "FAILS_"
+    test_expectations.close()
 
   output = open(output_file, "w")
   output.write(COPYRIGHT)
@@ -106,6 +146,9 @@ def main(argv):
         # is sent through javascript.
         url = "%s/%s" % (os.path.dirname(filename), url)
         if os.path.exists(os.path.join(INPUT_DIR, url)):
+          # Append "DISABLED_" or "FAILS_" if needed.
+          if name in test_prefix:
+            name = test_prefix[name] + name
           output.write('CONFORMANCE_TEST(%s,\n  "%s");\n' % (name, url))
         else:
           print >> sys.stderr, "WARNING: %s does not exist (skipped)." % url
