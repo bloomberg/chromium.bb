@@ -89,7 +89,14 @@ def SetupMacEnvironment(context):
   pass
 
 
-def UploadIrtBinary(status, context, branch):
+def SetupContextVars(context):
+  # The branch is set to native_client on the main bots, on the trybots it's
+  # set to ''.  Otherwise, we should assume a particular branch is being used.
+  context['branch'] = os.environ.get('BUILDBOT_BRANCH', 'native_client')
+  context['off_trunk'] = context['branch'] not in ['native_client', '']
+
+
+def UploadIrtBinary(status, context):
   if context.Linux():
     with Step('archive irt.nexe', status):
       # Upload the integrated runtime (IRT) library so that it can be pulled
@@ -109,11 +116,8 @@ def UploadIrtBinary(status, context, branch):
                '-o', stripped_irt_path])
 
         irt_dir = 'nativeclient-archive2/irt'
-        # The branch is set to native_client on the main bots,
-        # on the trybots its set to ''. Otherwise, we should assume a
-        # particular branch is being used.
-        if branch not in ['native_client', '']:
-          irt_dir = '%s/branches/%s' % (irt_dir, branch)
+        if context['off_trunk']:
+          irt_dir = '%s/branches/%s' % (irt_dir, context['branch'])
         gsdview = 'http://gsdview.appspot.com'
         rev = os.environ['BUILDBOT_GOT_REVISION']
         gs_path = '%s/r%s/irt_x86_%s.nexe' % (irt_dir, rev, context['bits'])
@@ -135,15 +139,15 @@ def UploadIrtBinary(status, context, branch):
 
 
 def BuildScript(status, context):
-  branch = os.environ.get('BUILDBOT_BRANCH', 'native_client')
   inside_toolchain = context['inside_toolchain']
-  do_integration_tests = (
-      not context['use_glibc'] and not inside_toolchain and
-      branch == 'native_client')
-  do_dso_tests = (
-      context['use_glibc'] and not inside_toolchain and
-      branch == 'native_client')
-
+  # When off the trunk, we don't have anywhere to get Chrome binaries
+  # from the appropriate branch, so we can't test the right Chrome.
+  do_integration_tests = (not context['use_glibc'] and
+                          not inside_toolchain and
+                          not context['off_trunk'])
+  do_dso_tests = (context['use_glibc'] and
+                  not inside_toolchain and
+                  not context['off_trunk'])
 
   # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
   # plugin.
@@ -231,7 +235,7 @@ def BuildScript(status, context):
   with Step('scons_compile', status):
     SCons(context, parallel=True, args=[])
 
-  UploadIrtBinary(status, context, branch)
+  UploadIrtBinary(status, context)
 
   if need_plugin_32:
     with Step('plugin_compile_32', status):
@@ -315,6 +319,7 @@ def Main():
   status = BuildStatus()
   context = BuildContext()
   ParseStandardCommandLine(context)
+  SetupContextVars(context)
   if context.Windows():
     SetupWindowsEnvironment(context)
   elif context.Linux():
