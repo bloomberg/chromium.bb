@@ -222,6 +222,19 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   msg_loop_.Run();  // EndFetchModel will quit the message loop.
   Mock::VerifyAndClearExpectations(&service);
 
+  // Model that points to hashes that don't exist.
+  model.set_version(10);
+  model.add_hashes("bla");
+  model.add_page_term(1);  // Should be 0 instead of 1.
+  SetModelFetchResponse(model.SerializePartialAsString(), true /* success */);
+  EXPECT_CALL(service, EndFetchModel(
+      ClientSideDetectionService::MODEL_BAD_HASH_IDS))
+      .WillOnce(QuitCurrentMessageLoop());
+  service.StartFetchModel();
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(&service);
+  model.set_page_term(0, 0);
+
   // Model version number is wrong.
   model.set_version(-1);
   SetModelFetchResponse(model.SerializeAsString(), true /* success */);
@@ -500,5 +513,50 @@ TEST_F(ClientSideDetectionServiceTest, IsBadIpAddress) {
   EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.255.0"));
   EXPECT_TRUE(csd_service_->IsBadIpAddress("192.1.255.255"));
   EXPECT_FALSE(csd_service_->IsBadIpAddress("192.2.0.0"));
+}
+
+TEST_F(ClientSideDetectionServiceTest, ModelHasValidHashIds) {
+  ClientSideModel model;
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.add_hashes("bla");
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.add_page_term(0);
+  model.add_page_word(0);
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  model.add_page_term(-1);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.set_page_term(1, 1);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.set_page_term(1, 0);
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  model.add_page_word(-2);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.set_page_word(1, 2);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+  model.set_page_word(1, 0);
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  // Test bad rules.
+  model.add_hashes("blu");
+  ClientSideModel::Rule* rule = model.add_rule();
+  rule->add_feature(0);
+  rule->add_feature(1);
+  rule->set_weight(0.1f);
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  rule = model.add_rule();
+  rule->add_feature(0);
+  rule->add_feature(1);
+  rule->add_feature(-1);
+  rule->set_weight(0.2f);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  rule->set_feature(2, 2);
+  EXPECT_FALSE(ClientSideDetectionService::ModelHasValidHashIds(model));
+
+  rule->set_feature(2, 1);
+  EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
 }
 }  // namespace safe_browsing

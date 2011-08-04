@@ -76,7 +76,7 @@ ClientSideDetectionService::~ClientSideDetectionService() {
   client_phishing_reports_.clear();
 }
 
-/* static */
+// static
 ClientSideDetectionService* ClientSideDetectionService::Create(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -299,6 +299,8 @@ void ClientSideDetectionService::HandleModelResponse(
     model_status = MODEL_PARSE_ERROR;
   } else if (!model->IsInitialized() || !model->has_version()) {
     model_status = MODEL_MISSING_FIELDS;
+  } else if (!ModelHasValidHashIds(*model)) {
+    model_status = MODEL_BAD_HASH_IDS;
   } else if (model->version() < 0 ||
              (model_.get() && model->version() < model_->version())) {
     model_status = MODEL_INVALID_VERSION_NUMBER;
@@ -433,7 +435,7 @@ bool ClientSideDetectionService::InitializePrivateNetworks() {
   return true;
 }
 
-/* static */
+// static
 void ClientSideDetectionService::SetBadSubnets(const ClientSideModel& model,
                                                BadSubnetMap* bad_subnets) {
   bad_subnets->clear();
@@ -458,5 +460,30 @@ void ClientSideDetectionService::SetBadSubnets(const ClientSideModel& model,
     }
     (*bad_subnets)[mask].insert(model.bad_subnet(i).prefix());
   }
+}
+
+// static
+bool ClientSideDetectionService::ModelHasValidHashIds(
+    const ClientSideModel& model) {
+  const int max_index = model.hashes_size() - 1;
+  for (int i = 0; i < model.rule_size(); ++i) {
+    for (int j = 0; j < model.rule(i).feature_size(); ++j) {
+      if (model.rule(i).feature(j) < 0 ||
+          model.rule(i).feature(j) > max_index) {
+        return false;
+      }
+    }
+  }
+  for (int i = 0; i < model.page_term_size(); ++i) {
+    if (model.page_term(i) < 0 || model.page_term(i) > max_index) {
+      return false;
+    }
+  }
+  for (int i = 0; i < model.page_word_size(); ++i) {
+    if (model.page_word(i) < 0 || model.page_word(i) > max_index) {
+      return false;
+    }
+  }
+  return true;
 }
 }  // namespace safe_browsing

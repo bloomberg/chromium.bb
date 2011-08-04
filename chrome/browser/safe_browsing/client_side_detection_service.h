@@ -130,6 +130,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
     MODEL_PARSE_ERROR,
     MODEL_MISSING_FIELDS,
     MODEL_INVALID_VERSION_NUMBER,
+    MODEL_BAD_HASH_IDS,
     MODEL_STATUS_MAX  // Always add new values before this one.
   };
 
@@ -148,6 +149,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, FetchModelTest);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetBadSubnets);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           ModelHasValidHashIds);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -223,6 +226,11 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // testing.
   static void SetBadSubnets(const ClientSideModel& model,
                             BadSubnetMap* bad_subnets);
+
+
+  // Returns true iff all the hash id's in the client-side model point to
+  // valid hashes in the model.
+  static bool ModelHasValidHashIds(const ClientSideModel& model);
 
   std::string model_str_;
   scoped_ptr<ClientSideModel> model_;
