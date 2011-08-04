@@ -17,20 +17,18 @@
 
 namespace {
 
-// A word is four bytes.
-static const size_t kWord = 4;
-
-static const uint32 kFileFormatVersion = 1;
+static const uint32 kFileFormatVersion = 2;
 // Length of file header: version and entry count.
 static const size_t kHeaderLength = 2 * sizeof(uint32);
 
+#pragma pack(push,2)
 struct DataPackEntry {
-  uint32 resource_id;
+  uint16 resource_id;
   uint32 file_offset;
   uint32 length;
 
   static int CompareById(const void* void_key, const void* void_entry) {
-    uint32 key = *reinterpret_cast<const uint32*>(void_key);
+    uint16 key = *reinterpret_cast<const uint16*>(void_key);
     const DataPackEntry* entry =
         reinterpret_cast<const DataPackEntry*>(void_entry);
     if (key < entry->resource_id) {
@@ -42,8 +40,9 @@ struct DataPackEntry {
     }
   }
 };
+#pragma pack(pop)
 
-COMPILE_ASSERT(sizeof(DataPackEntry) == 12, size_of_header_must_be_twelve);
+COMPILE_ASSERT(sizeof(DataPackEntry) == 10, size_of_header_must_be_ten);
 
 // We're crashing when trying to load a pak file on Windows.  Add some error
 // codes for logging.
@@ -119,7 +118,7 @@ bool DataPack::Load(const FilePath& path) {
   return true;
 }
 
-bool DataPack::GetStringPiece(uint32 resource_id,
+bool DataPack::GetStringPiece(uint16 resource_id,
                               base::StringPiece* data) const {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
@@ -143,7 +142,7 @@ bool DataPack::GetStringPiece(uint32 resource_id,
   return true;
 }
 
-RefCountedStaticMemory* DataPack::GetStaticMemory(uint32 resource_id) const {
+RefCountedStaticMemory* DataPack::GetStaticMemory(uint16 resource_id) const {
   base::StringPiece piece;
   if (!GetStringPiece(resource_id, &piece))
     return NULL;
@@ -154,12 +153,12 @@ RefCountedStaticMemory* DataPack::GetStaticMemory(uint32 resource_id) const {
 
 // static
 bool DataPack::WritePack(const FilePath& path,
-                         const std::map<uint32, base::StringPiece>& resources) {
+                         const std::map<uint16, base::StringPiece>& resources) {
   FILE* file = file_util::OpenFile(path, "wb");
   if (!file)
     return false;
 
-  if (fwrite(&kFileFormatVersion, 1, kWord, file) != kWord) {
+  if (fwrite(&kFileFormatVersion, sizeof(kFileFormatVersion), 1, file) != 1) {
     LOG(ERROR) << "Failed to write file version";
     file_util::CloseFile(file);
     return false;
@@ -168,33 +167,34 @@ bool DataPack::WritePack(const FilePath& path,
   // Note: the python version of this function explicitly sorted keys, but
   // std::map is a sorted associative container, we shouldn't have to do that.
   uint32 entry_count = resources.size();
-  if (fwrite(&entry_count, 1, kWord, file) != kWord) {
+  if (fwrite(&entry_count, sizeof(entry_count), 1, file) != 1) {
     LOG(ERROR) << "Failed to write entry count";
     file_util::CloseFile(file);
     return false;
   }
 
-  // Each entry is 3 uint32s.
-  uint32 index_length = entry_count * 3 * kWord;
+  // Each entry is 1 uint16 + 2 uint32s.
+  uint32 index_length = entry_count * sizeof(DataPackEntry);
   uint32 data_offset = kHeaderLength + index_length;
-  for (std::map<uint32, base::StringPiece>::const_iterator it =
+  for (std::map<uint16, base::StringPiece>::const_iterator it =
            resources.begin();
        it != resources.end(); ++it) {
-    if (fwrite(&it->first, 1, kWord, file) != kWord) {
-      LOG(ERROR) << "Failed to write id for " << it->first;
+    uint16 resource_id = it->first;
+    if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
+      LOG(ERROR) << "Failed to write id for " << resource_id;
       file_util::CloseFile(file);
       return false;
     }
 
-    if (fwrite(&data_offset, 1, kWord, file) != kWord) {
-      LOG(ERROR) << "Failed to write offset for " << it->first;
+    if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
+      LOG(ERROR) << "Failed to write offset for " << resource_id;
       file_util::CloseFile(file);
       return false;
     }
 
     uint32 len = it->second.length();
-    if (fwrite(&len, 1, kWord, file) != kWord) {
-      LOG(ERROR) << "Failed to write length for " << it->first;
+    if (fwrite(&len, sizeof(len), 1, file) != 1) {
+      LOG(ERROR) << "Failed to write length for " << resource_id;
       file_util::CloseFile(file);
       return false;
     }
@@ -202,7 +202,7 @@ bool DataPack::WritePack(const FilePath& path,
     data_offset += len;
   }
 
-  for (std::map<uint32, base::StringPiece>::const_iterator it =
+  for (std::map<uint16, base::StringPiece>::const_iterator it =
            resources.begin();
        it != resources.end(); ++it) {
     if (fwrite(it->second.data(), it->second.length(), 1, file) != 1) {

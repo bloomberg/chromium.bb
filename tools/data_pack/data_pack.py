@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,7 +9,7 @@ See base/pack_file* for details.
 
 import struct
 
-FILE_FORMAT_VERSION = 1
+FILE_FORMAT_VERSION = 2
 HEADER_LENGTH = 2 * 4  # Two uint32s. (file version and number of entries)
 
 class WrongFileVersion(Exception):
@@ -28,9 +28,9 @@ def ReadDataPack(input_file):
   resources = {}
   # Read the index and data.
   data = data[HEADER_LENGTH:]
-  kIndexEntrySize = 3 * 4  # Each entry is 3 uint32s.
+  kIndexEntrySize = 2 + 2 * 4  # Each entry is 1 uint16 and 2 uint32s.
   for _ in range(num_entries):
-    id, offset, length = struct.unpack("<III", data[:kIndexEntrySize])
+    id, offset, length = struct.unpack("<HII", data[:kIndexEntrySize])
     data = data[kIndexEntrySize:]
     resources[id] = original_data[offset:offset + length]
 
@@ -44,12 +44,13 @@ def WriteDataPack(resources, output_file):
   # Write file header.
   file.write(struct.pack("<II", FILE_FORMAT_VERSION, len(ids)))
 
-  index_length = len(ids) * 3 * 4   # Each entry is 3 uint32s.
+  # Each entry is 1 uint16 and 2 uint32s.
+  index_length = len(ids) * (2 + 2 * 4)
 
   # Write index.
   data_offset = HEADER_LENGTH + index_length
   for id in ids:
-    file.write(struct.pack("<III", id, data_offset, len(resources[id])))
+    file.write(struct.pack("<HII", id, data_offset, len(resources[id])))
     data_offset += len(resources[id])
 
   # Write data.
