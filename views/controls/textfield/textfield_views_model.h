@@ -134,10 +134,11 @@ class VIEWS_API TextfieldViewsModel {
   void MoveCursorLeft(gfx::BreakType break_type, bool select);
   void MoveCursorRight(gfx::BreakType break_type, bool select);
 
-  // Moves the cursor to the specified |position|.
-  // If |select| is true, it updates the selection accordingly.
-  // The current composition text will be confirmed.
-  bool MoveCursorTo(size_t position, bool select);
+  // Moves the selection to the specified selection in |selection|.
+  // If there is composition text, it will be confirmed, which will update the
+  // selection range, and it overrides the selection_start to which the
+  // selection will move to.
+  bool MoveCursorTo(const gfx::SelectionModel& selection);
 
   // Helper function to call MoveCursorTo on the TextfieldViewsModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
@@ -157,6 +158,10 @@ class VIEWS_API TextfieldViewsModel {
   // and ends with the range's end position, therefore
   // the cursor position becomes the end position.
   void SelectRange(const ui::Range& range);
+
+  // The current composition text will be confirmed.
+  // render_text_'s selection model is set to |sel|.
+  void SelectSelectionModel(const gfx::SelectionModel& sel);
 
   // Selects all text.
   // The current composition text will be confirmed.

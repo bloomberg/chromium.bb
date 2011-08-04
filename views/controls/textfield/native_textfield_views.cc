@@ -202,7 +202,7 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
   skip_input_method_cancel_composition_ = true;
 
   // TODO(msw): Remove final reference to FindCursorPosition.
-  size_t drop_destination =
+  gfx::SelectionModel drop_destination =
       GetRenderText()->FindCursorPosition(event.location());
   string16 text;
   event.data().GetString(&text);
@@ -214,13 +214,16 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
     ui::Range selected_range;
     model_->GetSelectedRange(&selected_range);
     // Adjust the drop destination if it is on or after the current selection.
-    if (selected_range.GetMax() <= drop_destination)
-      drop_destination -= selected_range.length();
-    else if (selected_range.GetMin() <= drop_destination)
-      drop_destination = selected_range.GetMin();
-    model_->DeleteSelectionAndInsertTextAt(text, drop_destination);
+    if (selected_range.GetMax() <= drop_destination.selection_end())
+      drop_destination.set_selection_end(
+          drop_destination.selection_end() - selected_range.length());
+    else if (selected_range.GetMin() <= drop_destination.selection_end())
+      drop_destination.set_selection_end(selected_range.GetMin());
+    model_->DeleteSelectionAndInsertTextAt(text,
+                                           drop_destination.selection_end());
   } else {
-    model_->MoveCursorTo(drop_destination, false);
+    drop_destination.set_selection_start(drop_destination.selection_end());
+    model_->MoveCursorTo(drop_destination);
     // Drop always inserts text even if the textfield is not in insert mode.
     model_->InsertText(text);
   }
@@ -253,9 +256,23 @@ void NativeTextfieldViews::OnBlur() {
 
 void NativeTextfieldViews::SelectRect(const gfx::Point& start,
                                       const gfx::Point& end) {
-  size_t start_pos = GetRenderText()->FindCursorPosition(start);
-  size_t end_pos = GetRenderText()->FindCursorPosition(end);
-  SetSelectionRange(ui::Range(start_pos, end_pos));
+  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  gfx::SelectionModel start_pos = GetRenderText()->FindCursorPosition(start);
+  gfx::SelectionModel end_pos = GetRenderText()->FindCursorPosition(end);
+
+  OnBeforeUserAction();
+  // Merge selection models of "start_pos" and "end_pos" so that
+  // selection start is the value from "start_pos", while selection end,
+  // caret position, and caret placement are values from "end_pos".
+  gfx::SelectionModel sel(end_pos);
+  sel.set_selection_start(start_pos.selection_start());
+  model_->SelectSelectionModel(sel);
+
+  OnCaretBoundsChanged();
+  SchedulePaint();
+  OnAfterUserAction();
 }
 
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
@@ -676,9 +693,7 @@ ui::TextInputType NativeTextfieldViews::GetTextInputType() {
 }
 
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {
-  gfx::RenderText* render_text = GetRenderText();
-  return render_text->GetCursorBounds(render_text->GetCursorPosition(),
-                                      render_text->insert_mode());
+  return GetRenderText()->CursorBounds();
 }
 
 bool NativeTextfieldViews::HasCompositionText() {
@@ -970,9 +985,11 @@ void NativeTextfieldViews::OnCaretBoundsChanged() {
   if (!touch_selection_controller_.get())
     return;
   gfx::RenderText* render_text = GetRenderText();
-  ui::Range range = render_text->GetSelection();
-  gfx::Rect start_cursor = render_text->GetCursorBounds(range.start(), false);
-  gfx::Rect end_cursor = render_text->GetCursorBounds(range.end(), false);
+  const gfx::SelectionModel& sel = render_text->selection_model();
+  gfx::SelectionModel start_sel(sel.selection_start(), sel.selection_start(),
+      sel.selection_start(), gfx::SelectionModel::LEADING);
+  gfx::Rect start_cursor = render_text->GetCursorBounds(start_sel, false);
+  gfx::Rect end_cursor = render_text->GetCursorBounds(sel, false);
   gfx::Rect display_rect = render_text->display_rect();
   int total_offset_x = display_rect.x() + render_text->display_offset().x();
   int total_offset_y = display_rect.y() + render_text->display_offset().y() +

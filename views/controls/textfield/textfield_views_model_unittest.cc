@@ -126,13 +126,18 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   EXPECT_EQ(5U, range.end());
 
   // Select and move cursor
-  model.MoveCursorTo(1U, false);
-  model.MoveCursorTo(3U, true);
+  gfx::SelectionModel selection(1U);
+  model.MoveCursorTo(selection);
+  selection.set_selection_end(3U);
+  model.MoveCursorTo(selection);
   EXPECT_STR_EQ("EL", model.GetSelectedText());
   model.MoveCursorLeft(gfx::CHARACTER_BREAK, false);
   EXPECT_EQ(1U, model.GetCursorPosition());
-  model.MoveCursorTo(1U, false);
-  model.MoveCursorTo(3U, true);
+  selection.set_selection_end(1U);
+  selection.set_selection_start(selection.selection_end());
+  model.MoveCursorTo(selection);
+  selection.set_selection_end(3U);
+  model.MoveCursorTo(selection);
   model.MoveCursorRight(gfx::CHARACTER_BREAK, false);
   EXPECT_EQ(3U, model.GetCursorPosition());
 
@@ -331,24 +336,31 @@ TEST_F(TextfieldViewsModelTest, SelectWordTest) {
   SelectWordTestVerifier(model, "  ", 2U);
 
   // Test when cursor is at the beginning of a word.
-  model.MoveCursorTo(2U, false);
+  gfx::SelectionModel selection(2U);
+  model.MoveCursorTo(selection);
   model.SelectWord();
   SelectWordTestVerifier(model, "HELLO", 7U);
 
   // Test when cursor is at the end of a word.
-  model.MoveCursorTo(15U, false);
+  selection.set_selection_end(15U);
+  selection.set_selection_start(selection.selection_end());
+  model.MoveCursorTo(selection);
   model.SelectWord();
   SelectWordTestVerifier(model, "WO", 15U);
 
   // Test when cursor is somewhere in a non-alph-numeric fragment.
   for (size_t cursor_pos = 8; cursor_pos < 13U; cursor_pos++) {
-    model.MoveCursorTo(cursor_pos, false);
+    selection.set_selection_end(cursor_pos);
+    selection.set_selection_start(selection.selection_end());
+    model.MoveCursorTo(selection);
     model.SelectWord();
     SelectWordTestVerifier(model, "  !!  ", 13U);
   }
 
   // Test when cursor is somewhere in a whitespace fragment.
-  model.MoveCursorTo(17U, false);
+  selection.set_selection_end(17U);
+  selection.set_selection_start(selection.selection_end());
+  model.MoveCursorTo(selection);
   model.SelectWord();
   SelectWordTestVerifier(model, "     ", 20U);
 
@@ -597,7 +609,9 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   EXPECT_STR_EQ("678", model.GetText());
 
   model.SetCompositionText(composition);
-  model.MoveCursorTo(0, true);
+  gfx::SelectionModel sel(0);
+  sel.set_selection_start(model.render_text()->GetSelectionStart());
+  model.MoveCursorTo(sel);
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("678678", model.GetText());
@@ -700,7 +714,8 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BasicTest) {
   // Delete ===============================
   model.SetText(ASCIIToUTF16("ABCDE"));
   model.ClearEditHistory();
-  model.MoveCursorTo(2, false);
+  gfx::SelectionModel sel(2);
+  model.MoveCursorTo(sel);
   EXPECT_TRUE(model.Delete());
   EXPECT_STR_EQ("ABDE", model.GetText());
   model.MoveCursorLeft(gfx::LINE_BREAK, false);
@@ -794,8 +809,10 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   model.SetText(ASCIIToUTF16("ABCDE"));
   EXPECT_FALSE(model.Redo());  // nothing to redo
   // Cut
-  model.MoveCursorTo(1, false);
-  model.MoveCursorTo(3, true);
+  gfx::SelectionModel sel(1);
+  model.MoveCursorTo(sel);
+  sel.set_selection_end(3);
+  model.MoveCursorTo(sel);
   model.Cut();
   EXPECT_STR_EQ("ADE", model.GetText());
   EXPECT_EQ(1U, model.GetCursorPosition());
@@ -881,8 +898,11 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   model.SetText(ASCIIToUTF16("12345"));
   EXPECT_STR_EQ("12345", model.GetText());
   EXPECT_EQ(0U, model.GetCursorPosition());
-  model.MoveCursorTo(1, false);
-  model.MoveCursorTo(3, true);
+  sel.set_selection_end(1);
+  sel.set_selection_start(sel.selection_end());
+  model.MoveCursorTo(sel);
+  sel.set_selection_end(3);
+  model.MoveCursorTo(sel);
   model.Copy();  // Copy "23"
   EXPECT_STR_EQ("12345", model.GetText());
   EXPECT_EQ(3U, model.GetCursorPosition());
@@ -1006,32 +1026,40 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_ReplaceTest) {
     SCOPED_TRACE("forward & insert by cursor");
     TextfieldViewsModel model(NULL);
     model.SetText(ASCIIToUTF16("abcd"));
-    model.MoveCursorTo(1, false);
-    model.MoveCursorTo(3, true);
+    gfx::SelectionModel sel(1);
+    model.MoveCursorTo(sel);
+    sel.set_selection_end(3);
+    model.MoveCursorTo(sel);
     RunInsertReplaceTest(model);
   }
   {
     SCOPED_TRACE("backward & insert by cursor");
     TextfieldViewsModel model(NULL);
     model.SetText(ASCIIToUTF16("abcd"));
-    model.MoveCursorTo(3, false);
-    model.MoveCursorTo(1, true);
+    gfx::SelectionModel sel(3);
+    model.MoveCursorTo(sel);
+    sel.set_selection_end(1);
+    model.MoveCursorTo(sel);
     RunInsertReplaceTest(model);
   }
   {
     SCOPED_TRACE("forward & overwrite by cursor");
     TextfieldViewsModel model(NULL);
     model.SetText(ASCIIToUTF16("abcd"));
-    model.MoveCursorTo(1, false);
-    model.MoveCursorTo(3, true);
+    gfx::SelectionModel sel(1);
+    model.MoveCursorTo(sel);
+    sel.set_selection_end(3);
+    model.MoveCursorTo(sel);
     RunOverwriteReplaceTest(model);
   }
   {
     SCOPED_TRACE("backward & overwrite by cursor");
     TextfieldViewsModel model(NULL);
     model.SetText(ASCIIToUTF16("abcd"));
-    model.MoveCursorTo(3, false);
-    model.MoveCursorTo(1, true);
+    gfx::SelectionModel sel(3);
+    model.MoveCursorTo(sel);
+    sel.set_selection_end(1);
+    model.MoveCursorTo(sel);
     RunOverwriteReplaceTest(model);
   }
   // By SelectRange API

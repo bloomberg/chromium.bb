@@ -380,10 +380,16 @@ void TextfieldViewsModel::MoveCursorRight(gfx::BreakType break_type,
   render_text_->MoveCursorRight(break_type, select);
 }
 
-bool TextfieldViewsModel::MoveCursorTo(size_t pos, bool select) {
-  if (HasCompositionText())
+bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& selection) {
+  if (HasCompositionText()) {
     ConfirmCompositionText();
-  return render_text_->MoveCursorTo(pos, select);
+    // ConfirmCompositionText() updates cursor position. Need to reflect it in
+    // the SelectionModel parameter of MoveCursorTo().
+    gfx::SelectionModel sel(selection);
+    sel.set_selection_start(render_text_->GetSelectionStart());
+    return render_text_->MoveCursorTo(sel);
+  }
+  return render_text_->MoveCursorTo(selection);
 }
 
 bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
@@ -393,22 +399,30 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
 }
 
 std::vector<gfx::Rect> TextfieldViewsModel::GetSelectionBounds() const {
-  return render_text_->GetSubstringBounds(render_text_->GetSelection());
+  return render_text_->GetSubstringBounds(render_text_->GetSelectionStart(),
+                                          render_text_->GetCursorPosition());
 }
 
 string16 TextfieldViewsModel::GetSelectedText() const {
-  ui::Range selection = render_text_->GetSelection();
-  return GetText().substr(selection.GetMin(), selection.length());
+  return GetText().substr(render_text_->MinOfSelection(),
+      (render_text_->MaxOfSelection() - render_text_->MinOfSelection()));
 }
 
 void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
-  *range = render_text_->GetSelection();
+  range->set_start(render_text_->GetSelectionStart());
+  range->set_end(render_text_->GetCursorPosition());
 }
 
 void TextfieldViewsModel::SelectRange(const ui::Range& range) {
+  gfx::SelectionModel selection(range.start(), range.end(),
+      range.end(), gfx::SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
+  SelectSelectionModel(selection);
+}
+
+void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->SetSelection(range);
+  render_text_->SetSelectionModel(sel);
 }
 
 void TextfieldViewsModel::SelectAll() {
@@ -492,8 +506,11 @@ bool TextfieldViewsModel::Cut() {
     // than beginning, unlike Delete/Backspace.
     // TODO(oshima): Change Delete/Backspace to use DeleteSelection,
     // update DeleteEdit and remove this trick.
-    ui::Range selection = render_text_->GetSelection();
-    render_text_->SetSelection(ui::Range(selection.end(), selection.start()));
+    gfx::SelectionModel sel(render_text_->GetCursorPosition(),
+                            render_text_->GetSelectionStart(),
+                            render_text_->GetSelectionStart(),
+                            gfx::SelectionModel::LEADING);
+    render_text_->SetSelectionModel(sel);
     DeleteSelection();
     return true;
   }
@@ -519,14 +536,14 @@ bool TextfieldViewsModel::Paste() {
 }
 
 bool TextfieldViewsModel::HasSelection() const {
-  return !render_text_->GetSelection().is_empty();
+  return !render_text_->EmptySelection();
 }
 
 void TextfieldViewsModel::DeleteSelection() {
   DCHECK(!HasCompositionText());
   DCHECK(HasSelection());
-  ui::Range selection = render_text_->GetSelection();
-  ExecuteAndRecordDelete(selection.start(), selection.end(), false);
+  ExecuteAndRecordDelete(render_text_->GetSelectionStart(),
+                         render_text_->GetCursorPosition(), false);
 }
 
 void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
@@ -567,12 +584,17 @@ void TextfieldViewsModel::SetCompositionText(
   render_text_->SetCompositionRange(range);
   // TODO(msw): Support multiple composition underline ranges.
 
-  if (composition.selection.IsValid())
-    render_text_->SetSelection(ui::Range(
-        std::min(range.start() + composition.selection.start(), range.end()),
-        std::min(range.start() + composition.selection.end(), range.end())));
-  else
+  if (composition.selection.IsValid()) {
+    size_t start =
+        std::min(range.start() + composition.selection.start(), range.end());
+    size_t end =
+        std::min(range.start() + composition.selection.end(), range.end());
+    gfx::SelectionModel sel(start, end, end,
+                            gfx::SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
+    render_text_->SetSelectionModel(sel);
+  } else {
     render_text_->SetCursorPosition(range.end());
+  }
 }
 
 void TextfieldViewsModel::ConfirmCompositionText() {
@@ -640,7 +662,9 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
     CancelCompositionText();
   } else if (!HasSelection()) {
     size_t cursor = GetCursorPosition();
-    render_text_->SetSelection(ui::Range(cursor + text.length(), cursor));
+    gfx::SelectionModel sel(render_text_->selection_model());
+    sel.set_selection_start(cursor + text.length());
+    render_text_->SetSelectionModel(sel);
   }
   // Edit history is recorded in InsertText.
   InsertTextInternal(text, mergeable);
@@ -671,7 +695,7 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(size_t from,
                                                  bool mergeable) {
   size_t old_text_start = std::min(from, to);
   const string16 text = GetText().substr(old_text_start,
-                                     std::abs(static_cast<long>(from - to)));
+      std::abs(static_cast<long>(from - to)));
   bool backward = from > to;
   Edit* edit = new DeleteEdit(mergeable, text, old_text_start, backward);
   bool delete_edit = AddOrMergeEditHistory(edit);
@@ -682,7 +706,7 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(size_t from,
 
 void TextfieldViewsModel::ExecuteAndRecordReplaceSelection(
     MergeType merge_type, const string16& new_text) {
-  size_t new_text_start = render_text_->GetSelection().GetMin();
+  size_t new_text_start = render_text_->MinOfSelection();
   size_t new_cursor_pos = new_text_start + new_text.length();
   ExecuteAndRecordReplace(merge_type,
                           GetCursorPosition(),
@@ -696,8 +720,9 @@ void TextfieldViewsModel::ExecuteAndRecordReplace(MergeType merge_type,
                                                   size_t new_cursor_pos,
                                                   const string16& new_text,
                                                   size_t new_text_start) {
-  size_t old_text_start = render_text_->GetSelection().GetMin();
-  bool backward = render_text_->GetSelection().is_reversed();
+  size_t old_text_start = render_text_->MinOfSelection();
+  bool backward =
+      render_text_->GetSelectionStart() > render_text_->GetCursorPosition();
   Edit* edit = new ReplaceEdit(merge_type,
                                GetSelectedText(),
                                old_cursor_pos,

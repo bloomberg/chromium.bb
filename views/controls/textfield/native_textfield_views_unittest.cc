@@ -220,7 +220,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   int GetCursorPositionX(int cursor_pos) {
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
-    return render_text->GetCursorBounds(cursor_pos, false).x();
+    return render_text->GetCursorBounds(
+        gfx::SelectionModel(cursor_pos), false).x();
   }
 
   // We need widget to populate wrapper class.
