@@ -82,7 +82,7 @@ class ThreadedWorkQueue {
   ~ThreadedWorkQueue() {
     // send terminator job to thread
     JobPut(NULL);
-    NaClThreadKill(&thread_);
+    NaClThreadJoin(&thread_);
     NaClSemDtor(&sem_);
   }
 
@@ -96,14 +96,13 @@ class ThreadedWorkQueue {
       }
       job->Run();
     }
-    NaClThreadExit(0);
   }
 
   void StartInAnotherThread() {
-    NaClThreadCtor(&thread_,
-                   ThreadedWorkQueue::Run,
-                   this,
-                   128 << 10);
+    NaClThreadCreateJoinable(&thread_,
+                             ThreadedWorkQueue::Run,
+                             this,
+                             128 << 10);
   }
 
   void JobPut(Job* job) {
