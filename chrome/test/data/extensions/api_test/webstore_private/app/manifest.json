@@ -1,0 +1,9 @@
+{
+  "name": "Test App",
+  "version": "0.5",
+  "app": {
+    "urls": [ "http://www.testapp.com" ],
+    "launch": { "web_url": "http://www.testapp.com" }
+  },
+  "icons": { "128": "icon.png" }
+}
