@@ -5,6 +5,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -50,6 +51,15 @@ const char* kAVExtensions[] = {
 */
 };
 
+// List of all extensions we want to be shown in histogram that keep track of
+// files that were unsuccessfully tried to be opened.
+// The list has to be synced with histogram values.
+const char* kUMATrackingExtensions[] = {
+  "other", ".doc", ".docx", ".odt", ".rtf", ".pdf", ".ppt", ".pptx", ".odp",
+  ".xls", ".xlsx", ".ods", ".csv", ".odf", ".rar", ".asf", ".wma", ".wmv",
+  ".mov", ".mpg", ".log"
+};
+
 bool IsSupportedBrowserExtension(const char* ext) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
     if (base::strcasecmp(ext, kBrowserSupportedExtensions[i]) == 0) {
@@ -71,6 +81,19 @@ bool IsSupportedAVExtension(const char* ext) {
 // static
 GURL FileManagerUtil::GetFileBrowserExtensionUrl() {
   return GURL(kFileBrowserExtensionUrl);
+}
+
+// Returns index |ext| has in the |array|. If there is no |ext| in |array|, last
+// element's index is return (last element should have irrelevant value).
+int UMAExtensionIndex(const char *ext,
+                      const char** array,
+                      size_t array_size) {
+  for (size_t i = 0; i < array_size; i++) {
+    if (base::strcasecmp(ext, array[i]) == 0) {
+      return i;
+    }
+  }
+  return 0;
 }
 
 // static
@@ -184,7 +207,14 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     return;
   }
 
-  // Unknown file type. Show an error message.
+  // Unknown file type. Record UMA and show an error message.
+  size_t extension_index = UMAExtensionIndex(ext.data(),
+                                             kUMATrackingExtensions,
+                                             arraysize(kUMATrackingExtensions));
+  UMA_HISTOGRAM_ENUMERATION("FileBrowser.OpeningFileType",
+                            extension_index,
+                            arraysize(kUMATrackingExtensions) - 1);
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
