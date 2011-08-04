@@ -181,17 +181,26 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
   std::string test_url_base_;
 };
 
+// TODO(asargent) I've added some extra logging to this test since we've seen a
+// few failures on the bots lately. See crbug.com/91753 for details.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest, BrowserLogin) {
+  LOG(INFO) << "Adding rule to host resolver";
   host_resolver()->AddRule(kTestUrlHostname, "127.0.0.1");
+
+  LOG(INFO) << "Starting test server";
   ASSERT_TRUE(test_server()->Start());
 
+  LOG(INFO) << "expect_nonempty.html";
   RunLoginTest("browser_login/expect_nonempty.html",
                "foo@bar.com", false, "");
 
+  LOG(INFO) << "prompt_no_preferred.html";
   RunLoginTest("browser_login/prompt_no_preferred.html", "", true, "");
 
+  LOG(INFO) << "prompt_preferred.html";
   RunLoginTest("browser_login/prompt_preferred.html", "", true, "foo@bar.com");
 
+  LOG(INFO) << "prompt_login_fails.html";
   RunLoginTest("browser_login/prompt_login_fails.html",
                "", false, "foo@bar.com");
 }
