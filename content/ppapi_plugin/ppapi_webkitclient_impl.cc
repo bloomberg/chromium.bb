@@ -33,8 +33,6 @@ class PpapiWebKitClientImpl::SandboxSupport : public WebSandboxSupport {
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
-   // TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
-  virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
   virtual bool loadFont(
       NSFont* srcFont, ATSFontContainerRef* out, uint32_t* fontID);
 #elif defined(OS_POSIX)
@@ -65,15 +63,6 @@ bool PpapiWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
 }
 
 #elif defined(OS_MACOSX)
-
-// TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
-bool PpapiWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
-    ATSFontContainerRef* out) {
-  // TODO(brettw) this should do the something similar to what
-  // RendererWebKitClientImpl does and request that the browser load the font.
-  NOTIMPLEMENTED();
-  return false;
-}
 
 bool PpapiWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
     ATSFontContainerRef* out, uint32_t* fontID) {

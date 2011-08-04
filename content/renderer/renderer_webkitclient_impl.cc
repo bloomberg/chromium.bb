@@ -115,8 +115,6 @@ class RendererWebKitClientImpl::SandboxSupport
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
-  // TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
-  virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
   virtual bool loadFont(
       NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID);
 #elif defined(OS_POSIX)
@@ -439,13 +437,6 @@ bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
 }
 
 #elif defined(OS_MACOSX)
-
-// TODO(jeremy): Remove once WebKit side of patch lands - crbug.com/72727 .
-bool RendererWebKitClientImpl::SandboxSupport::loadFont(
-    NSFont* srcFont, ATSFontContainerRef* out) {
-  uint32 temp;
-  return loadFont(srcFont, out, &temp);
-}
 
 bool RendererWebKitClientImpl::SandboxSupport::loadFont(
     NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID) {
