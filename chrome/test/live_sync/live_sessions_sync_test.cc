@@ -38,35 +38,54 @@ bool LiveSessionsSyncTest::SetupClients() {
   return true;
 }
 
+bool LiveSessionsSyncTest::GetLocalSession(int index,
+                                           const SyncedSession** session) {
+  return GetProfile(index)->GetProfileSyncService()->
+      GetSessionModelAssociator()->GetLocalSession(session);
+}
+
 bool LiveSessionsSyncTest::ModelAssociatorHasTabWithUrl(int index,
                                                         const GURL& url) {
   ui_test_utils::RunAllPendingInMessageLoop();
   const SyncedSession* local_session;
-  if (!GetProfile(index)->GetProfileSyncService()->
-          GetSessionModelAssociator()->GetLocalSession(&local_session)) {
-    return false;
-  }
-  if (local_session->windows.size() == 0 ||
-      local_session->windows[0]->tabs.size() == 0 ||
-      local_session->windows[0]->tabs[0]->navigations.size() == 0) {
-    VLOG(1) << "Bad vectors!";
+  if (!GetLocalSession(index, &local_session)) {
     return false;
   }
 
-  int nav_index =
-      local_session->windows[0]->tabs[0]->current_navigation_index;
-  TabNavigation nav =
-      local_session->windows[0]->tabs[0]->navigations[nav_index];
-  if (nav.virtual_url() != url) {
-    VLOG(1) << "Bad url!";
+  if (local_session->windows.size() == 0) {
+    VLOG(1) << "Empty windows vector";
     return false;
   }
-  if (nav.title().empty()) {
-    VLOG(1) << "No title!";
-    return false;
+
+  int nav_index;
+  TabNavigation nav;
+  for (std::vector<SessionWindow*>::const_iterator it =
+           local_session->windows.begin(); it != local_session->windows.end();
+           ++it) {
+    if ((*it)->tabs.size() == 0) {
+      VLOG(1) << "Empty tabs vector";
+      continue;
+    }
+    for (std::vector<SessionTab*>::const_iterator tab_it =
+             (*it)->tabs.begin(); tab_it != (*it)->tabs.end(); ++tab_it) {
+      if ((*tab_it)->navigations.size() == 0) {
+        VLOG(1) << "Empty navigations vector";
+        continue;
+      }
+      nav_index = (*tab_it)->current_navigation_index;
+      nav = (*tab_it)->navigations[nav_index];
+      if (nav.virtual_url() == url) {
+        VLOG(1) << "Found tab with url " << url.spec();
+        if (nav.title().empty()) {
+          VLOG(1) << "No title!";
+          continue;
+        }
+        return true;
+      }
+    }
   }
-  VLOG(1) << "Found tab with url " << url.spec();
-  return true;
+  VLOG(1) << "Could not find tab with url " << url.spec();
+  return false;
 }
 
 bool LiveSessionsSyncTest::OpenTab(int index, const GURL& url) {
@@ -97,8 +116,7 @@ std::vector<SessionWindow*>* LiveSessionsSyncTest::GetLocalWindows(int index) {
   // The local session provided by GetLocalSession is owned, and has lifetime
   // controlled, by the model associator, so we must make our own copy.
   const SyncedSession* local_session;
-  if (!GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
-          GetLocalSession(&local_session)) {
+  if (!GetLocalSession(index, &local_session)) {
     return NULL;
   }
   scoped_ptr<SyncedSession> session_copy(new SyncedSession());
@@ -142,8 +160,7 @@ bool LiveSessionsSyncTest::CheckInitialState(int index) {
 
 int LiveSessionsSyncTest::GetNumWindows(int index) {
   const SyncedSession* local_session;
-  if (!GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
-          GetLocalSession(&local_session)) {
+  if (!GetLocalSession(index, &local_session)) {
     return 0;
   }
   return local_session->windows.size();

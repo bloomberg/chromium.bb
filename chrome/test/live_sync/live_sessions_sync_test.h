@@ -115,6 +115,10 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   // has this url.
   bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
 
+  // Stores a pointer to the local session for a given profile in |session|.
+  // Returns true on success, false on failure.
+  bool GetLocalSession(int index, const SyncedSession** session);
+
   // Clean up our mess.
   virtual void CleanUpOnMainThread();
 
