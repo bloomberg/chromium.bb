@@ -8,10 +8,12 @@
 #include <functional>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -62,7 +64,7 @@ void CookieTreeCookieNode::DeleteStoredObjects() {
   // vector storing the cookies in-tact and not delete from there (that would
   // invalidate our pointers), and the fact that it contains semi out-of-date
   // data is not problematic as we don't re-build the model based on that.
-  GetModel()->cookie_monster_->DeleteCanonicalCookie(*cookie_);
+  GetModel()->cookie_helper_->DeleteCookie(*cookie_);
 }
 
 CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
@@ -551,7 +553,7 @@ void CookieTreeNode::AddChildSortedByTitle(CookieTreeNode* new_child) {
 // CookiesTreeModel, public:
 
 CookiesTreeModel::CookiesTreeModel(
-    net::CookieMonster* cookie_monster,
+    BrowsingDataCookieHelper* cookie_helper,
     BrowsingDataDatabaseHelper* database_helper,
     BrowsingDataLocalStorageHelper* local_storage_helper,
     BrowsingDataLocalStorageHelper* session_storage_helper,
@@ -561,8 +563,8 @@ CookiesTreeModel::CookiesTreeModel(
     bool use_cookie_source)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
-      cookie_monster_(cookie_monster),
       appcache_helper_(appcache_helper),
+      cookie_helper_(cookie_helper),
       database_helper_(database_helper),
       local_storage_helper_(local_storage_helper),
       session_storage_helper_(session_storage_helper),
@@ -570,7 +572,10 @@ CookiesTreeModel::CookiesTreeModel(
       file_system_helper_(file_system_helper),
       batch_update_(0),
       use_cookie_source_(use_cookie_source) {
-  LoadCookies();
+  DCHECK(cookie_helper_);
+  cookie_helper_->StartFetching(
+      base::Bind(&CookiesTreeModel::OnCookiesModelInfoLoaded,
+                 base::Unretained(this)));
   DCHECK(database_helper_);
   database_helper_->StartFetching(NewCallback(
       this, &CookiesTreeModel::OnDatabaseModelInfoLoaded));
@@ -601,6 +606,7 @@ CookiesTreeModel::CookiesTreeModel(
 }
 
 CookiesTreeModel::~CookiesTreeModel() {
+  cookie_helper_->CancelNotification();
   database_helper_->CancelNotification();
   local_storage_helper_->CancelNotification();
   if (session_storage_helper_)
@@ -656,42 +662,6 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
   return -1;
 }
 
-void CookiesTreeModel::LoadCookies() {
-  LoadCookiesWithFilter(std::wstring());
-}
-
-void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
-  // mmargh mmargh mmargh! delicious!
-
-  all_cookies_ = cookie_monster_->GetAllCookies();
-  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
-  for (CookieList::iterator it = all_cookies_.begin();
-       it != all_cookies_.end(); ++it) {
-    std::string source_string = it->Source();
-    if (source_string.empty() || !use_cookie_source_) {
-      std::string domain = it->Domain();
-      if (domain.length() > 1 && domain[0] == '.')
-        domain = domain.substr(1);
-
-      // We treat secure cookies just the same as normal ones.
-      source_string = std::string(chrome::kHttpScheme) +
-          chrome::kStandardSchemeSeparator + domain + "/";
-    }
-
-    GURL source(source_string);
-    if (!filter.size() ||
-        (CookieTreeOriginNode::TitleForUrl(source).find(filter) !=
-         std::string::npos)) {
-      CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(source);
-      CookieTreeCookiesNode* cookies_node =
-          origin_node->GetOrCreateCookiesNode();
-      CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
-      cookies_node->AddCookieNode(new_cookie);
-    }
-  }
-}
-
 void CookiesTreeModel::DeleteAllStoredObjects() {
   NotifyObserverBeginBatch();
   CookieTreeNode* root = GetRoot();
@@ -719,7 +689,7 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   NotifyObserverBeginBatch();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, root->GetChild(i));
-  LoadCookiesWithFilter(filter);
+  PopulateCookieInfoWithFilter(filter);
   PopulateDatabaseInfoWithFilter(filter);
   PopulateLocalStorageInfoWithFilter(filter);
   PopulateSessionStorageInfoWithFilter(filter);
@@ -778,6 +748,44 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
   }
   NotifyObserverTreeNodeChanged(root);
   NotifyObserverEndBatch();
+}
+
+void CookiesTreeModel::OnCookiesModelInfoLoaded(
+    const CookieList& cookie_list) {
+  cookie_list_ = cookie_list;
+  PopulateCookieInfoWithFilter(std::wstring());
+}
+
+void CookiesTreeModel::PopulateCookieInfoWithFilter(
+    const std::wstring& filter) {
+  // mmargh mmargh mmargh! delicious!
+
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  for (CookieList::iterator it = cookie_list_.begin();
+       it != cookie_list_.end(); ++it) {
+    std::string source_string = it->Source();
+    if (source_string.empty() || !use_cookie_source_) {
+      std::string domain = it->Domain();
+      if (domain.length() > 1 && domain[0] == '.')
+        domain = domain.substr(1);
+
+      // We treat secure cookies just the same as normal ones.
+      source_string = std::string(chrome::kHttpScheme) +
+          chrome::kStandardSchemeSeparator + domain + "/";
+    }
+
+    GURL source(source_string);
+    if (!filter.size() ||
+        (CookieTreeOriginNode::TitleForUrl(source).find(filter) !=
+         std::string::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(source);
+      CookieTreeCookiesNode* cookies_node =
+          origin_node->GetOrCreateCookiesNode();
+      CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
+      cookies_node->AddCookieNode(new_cookie);
+    }
+  }
 }
 
 void CookiesTreeModel::OnDatabaseModelInfoLoaded(
