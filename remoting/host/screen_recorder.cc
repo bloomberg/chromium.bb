@@ -47,6 +47,7 @@ ScreenRecorder::ScreenRecorder(
       encoder_(encoder),
       is_recording_(false),
       network_stopped_(false),
+      encoder_stopped_(false),
       recordings_(0),
       frame_skipped_(false),
       max_rate_(kDefaultCaptureRate),
@@ -387,6 +388,8 @@ void ScreenRecorder::DoEncode(
 void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
+  encoder_stopped_ = true;
+
   // When this method is being executed there are no more tasks on encode thread
   // for this object. We can then post a task to capture thread to finish the
   // stop sequence.
@@ -396,6 +399,9 @@ void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
 
 void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
+
+  if (encoder_stopped_)
+    return;
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {

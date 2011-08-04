@@ -180,9 +180,10 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // be used on the capture thread.
   bool is_recording_;
 
-  // Flag that indicates network is being stopped. This variable should only
-  // be used on the network thread.
+  // Per-thread flags that are set when the ScreenRecorder is
+  // stopped. They must be used on the corresponding threads only.
   bool network_stopped_;
+  bool encoder_stopped_;
 
   // Timer that calls DoCapture.
   base::RepeatingTimer<ScreenRecorder> capture_timer_;
