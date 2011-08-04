@@ -914,7 +914,7 @@ void BrowserProcessImpl::CreateIconManager() {
 void BrowserProcessImpl::CreateDevToolsManager() {
   DCHECK(devtools_manager_.get() == NULL);
   created_devtools_manager_ = true;
-  devtools_manager_ = new DevToolsManager();
+  devtools_manager_.reset(new DevToolsManager());
 }
 
 void BrowserProcessImpl::CreateSidebarManager() {

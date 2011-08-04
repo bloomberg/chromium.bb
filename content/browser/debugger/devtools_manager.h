@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -30,12 +29,12 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.
 class DevToolsManager : public DevToolsClientHost::CloseListener,
-                        public NotificationObserver,
-                        public base::RefCounted<DevToolsManager> {
+                        public NotificationObserver {
  public:
   static DevToolsManager* GetInstance();
 
   DevToolsManager();
+  virtual ~DevToolsManager();
 
   // Returns DevToolsClientHost registered for |inspected_rvh| or NULL if
   // there is no alive DevToolsClientHost registered for |inspected_rvh|.
@@ -81,10 +80,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void CloseAllClientHosts();
 
  private:
-  friend class base::RefCounted<DevToolsManager>;
-
-  virtual ~DevToolsManager();
-
   // DevToolsClientHost::CloseListener override.
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the

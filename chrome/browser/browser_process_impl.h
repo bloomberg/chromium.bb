@@ -223,7 +223,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<DevToolsProtocolHandler> devtools_legacy_handler_;
 
   bool created_devtools_manager_;
-  scoped_refptr<DevToolsManager> devtools_manager_;
+  scoped_ptr<DevToolsManager> devtools_manager_;
 
   bool created_sidebar_manager_;
   scoped_refptr<SidebarManager> sidebar_manager_;
