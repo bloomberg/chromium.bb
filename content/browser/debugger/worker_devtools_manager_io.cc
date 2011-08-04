@@ -146,6 +146,7 @@ class WorkerDevToolsManagerIO::InspectedWorkersList {
     while (it != map_.end()) {
       if (it->host->id() == host_id && it->route_id == route_id)
         break;
+      ++it;
     }
     return it;
   }
