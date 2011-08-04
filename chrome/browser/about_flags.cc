@@ -188,6 +188,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
   },
   {
+    "apps-new-install-bubble",
+    IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME,
+    IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kAppsNewInstallBubble)
+  },
+  {
     "click-to-play",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CLICK_TO_PLAY_NAME,
     IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION,

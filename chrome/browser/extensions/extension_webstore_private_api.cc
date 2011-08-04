@@ -37,6 +37,7 @@
 
 namespace {
 
+const char kAppInstallBubbleKey[] = "appInstallBubble";
 const char kIconDataKey[] = "iconData";
 const char kIdKey[] = "id";
 const char kLocalizedNameKey[] = "localizedName";
@@ -293,7 +294,8 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
   BeginInstallWithManifestFunction::ResultCode parse_error_;
 };
 
-BeginInstallWithManifestFunction::BeginInstallWithManifestFunction() {}
+BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()
+  : use_app_installed_bubble_(false) {}
 
 BeginInstallWithManifestFunction::~BeginInstallWithManifestFunction() {}
 
@@ -328,6 +330,10 @@ bool BeginInstallWithManifestFunction::RunImpl() {
   if (details->HasKey(kLocalizedNameKey))
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kLocalizedNameKey,
                                                    &localized_name_));
+
+  if (details->HasKey(kAppInstallBubbleKey))
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(
+        kAppInstallBubbleKey, &use_app_installed_bubble_));
 
   scoped_refptr<SafeBeginInstallHelper> helper =
       new SafeBeginInstallHelper(this, icon_data_, manifest_);
@@ -451,6 +457,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   CrxInstaller::WhitelistEntry* entry = new CrxInstaller::WhitelistEntry;
   entry->parsed_manifest.reset(parsed_manifest_.release());
   entry->localized_name = localized_name_;
+  entry->use_app_installed_bubble = use_app_installed_bubble_;
   CrxInstaller::SetWhitelistEntry(id_, entry);
   SetResult(ERROR_NONE);
   SendResponse(true);

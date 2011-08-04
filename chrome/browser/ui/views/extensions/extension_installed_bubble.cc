@@ -9,12 +9,14 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -28,6 +30,8 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
+#include "views/controls/link_listener.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
 
@@ -78,12 +82,16 @@ void ShowExtensionInstalledBubble(
 // ExtensionInstalledBubble. It displays the install icon and explanatory
 // text about the installed extension.
 class InstalledBubbleContent : public views::View,
-                               public views::ButtonListener {
+                               public views::ButtonListener,
+                               public views::LinkListener {
  public:
-  InstalledBubbleContent(const Extension* extension,
+  InstalledBubbleContent(Browser* browser,
+                         const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
                          SkBitmap* icon)
-      : bubble_(NULL),
+      : browser_(browser),
+        extension_id_(extension->id()),
+        bubble_(NULL),
         type_(type),
         info_(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -108,31 +116,49 @@ class InstalledBubbleContent : public views::View,
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
 
-    if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
-      info_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO)));
-      info_->SetFont(font);
-      info_->SetMultiLine(true);
-      info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      AddChildView(info_);
+    switch (type_) {
+      case ExtensionInstalledBubble::PAGE_ACTION: {
+        info_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO)));
+        info_->SetFont(font);
+        info_->SetMultiLine(true);
+        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(info_);
+        break;
+      }
+      case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
+        info_ = new views::Label(UTF16ToWide(l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
+            UTF8ToUTF16(extension->omnibox_keyword()))));
+        info_->SetFont(font);
+        info_->SetMultiLine(true);
+        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(info_);
+        break;
+      }
+      case ExtensionInstalledBubble::APP: {
+        views::Link* link = new views::Link(UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_APP_INFO)));
+        link->set_listener(this);
+        manage_ = link;
+        manage_->SetFont(font);
+        manage_->SetMultiLine(true);
+        manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(manage_);
+        break;
+      }
+      default:
+        break;
     }
 
-    if (type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
-      info_ = new views::Label(UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-          UTF8ToUTF16(extension->omnibox_keyword()))));
-      info_->SetFont(font);
-      info_->SetMultiLine(true);
-      info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      AddChildView(info_);
+    if (type_ != ExtensionInstalledBubble::APP) {
+      manage_ = new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO)));
+      manage_->SetFont(font);
+      manage_->SetMultiLine(true);
+      manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      AddChildView(manage_);
     }
-
-    manage_ = new views::Label(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO)));
-    manage_->SetFont(font);
-    manage_->SetMultiLine(true);
-    manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(manage_);
 
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -157,6 +183,12 @@ class InstalledBubbleContent : public views::View,
     }
   }
 
+  // Implements the views::LinkListener interface.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
+    GetWidget()->Close();
+    ExtensionInstallUI::OpenAppInstalledNTP(browser_, extension_id_);
+  }
+
  private:
   virtual gfx::Size GetPreferredSize() {
     int width = kHorizOuterMargin;
@@ -169,8 +201,7 @@ class InstalledBubbleContent : public views::View,
     int height = kVertOuterMargin;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
     height += kVertInnerMargin;
-    if (type_ == ExtensionInstalledBubble::PAGE_ACTION ||
-        type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
+    if (info_) {
       height += info_->GetHeightForWidth(kRightColumnWidth);
       height += kVertInnerMargin;
     }
@@ -195,8 +226,7 @@ class InstalledBubbleContent : public views::View,
     y += heading_->height();
     y += kVertInnerMargin;
 
-    if (type_ == ExtensionInstalledBubble::PAGE_ACTION ||
-        type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
+    if (info_) {
       info_->SizeToFit(kRightColumnWidth);
       info_->SetX(x);
       info_->SetY(y);
@@ -219,6 +249,12 @@ class InstalledBubbleContent : public views::View,
     // title text and bubble arrow.
     close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
   }
+
+  // The browser we're associated with.
+  Browser* browser_;
+
+  // The id of the extension just installed.
+  const std::string extension_id_;
 
   // The Bubble showing us.
   Bubble* bubble_;
@@ -248,7 +284,9 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       animation_wait_retries_(0) {
   AddRef();  // Balanced in BubbleClosing.
 
-  if (!extension_->omnibox_keyword().empty()) {
+  if (extension->is_app()) {
+    type_ = APP;
+  } else if (!extension_->omnibox_keyword().empty()) {
     type_ = OMNIBOX_KEYWORD;
   } else if (extension_->browser_action()) {
     type_ = BROWSER_ACTION;
@@ -298,7 +336,18 @@ void ExtensionInstalledBubble::ShowInternal() {
       browser_->window()->GetNativeHandle());
 
   const views::View* reference_view = NULL;
-  if (type_ == BROWSER_ACTION) {
+  if (type_ == APP) {
+    if (browser_view->IsTabStripVisible()) {
+      AbstractTabStripView* tabstrip = browser_view->tabstrip();
+      views::View* ntp_button = tabstrip->GetNewTabButton();
+      if (ntp_button && ntp_button->IsVisibleInRootView()) {
+        reference_view = ntp_button;
+      } else {
+        // Just have the bubble point at the tab strip.
+        reference_view = tabstrip;
+      }
+    }
+  } else if (type_ == BROWSER_ACTION) {
     BrowserActionsContainer* container =
         browser_view->GetToolbarView()->browser_actions();
     if (container->animating() &&
@@ -352,7 +401,8 @@ void ExtensionInstalledBubble::ShowInternal() {
     arrow_location = BubbleBorder::TOP_LEFT;
   }
 
-  bubble_content_ = new InstalledBubbleContent(extension_, type_, &icon_);
+  bubble_content_ = new InstalledBubbleContent(
+      browser_, extension_, type_, &icon_);
   Bubble* bubble = Bubble::Show(browser_view->GetWidget(), bounds,
                                 arrow_location, bubble_content_, this);
   bubble_content_->set_bubble(bubble);

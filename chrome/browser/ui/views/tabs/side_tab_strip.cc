@@ -155,6 +155,10 @@ bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
 void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
+views::View* SideTabStrip::GetNewTabButton() {
+  return newtab_button_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, BaseTabStrip implementation:
 

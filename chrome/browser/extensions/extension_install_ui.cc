@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -88,10 +89,8 @@ void ShowAppInstalledAnimation(Browser* browser, const std::string& app_id) {
     }
   }
 
-  // If there isn't an NTP, open one and pass it the ID of the installed app.
-  std::string url = base::StringPrintf(
-      "%s#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
-  browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
+  // If there isn't an NTP, open one.
+  ExtensionInstallUI::OpenAppInstalledNTP(browser, app_id);
 }
 
 }  // namespace
@@ -103,7 +102,8 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
       extension_(NULL),
       delegate_(NULL),
       prompt_type_(NUM_PROMPT_TYPES),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
+      use_app_installed_bubble_(false) {
   // Remember the current theme in case the user presses undo.
   if (profile_) {
     const Extension* previous_theme =
@@ -177,7 +177,15 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
     browser->AddBlankTab(true);
   browser->window()->Show();
 
-  if (extension->GetFullLaunchURL().is_valid()) {
+  bool use_bubble_for_apps = false;
+
+#if defined(TOOLKIT_VIEWS)
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  use_bubble_for_apps = (use_app_installed_bubble_ ||
+                         cmdline->HasSwitch(switches::kAppsNewInstallBubble));
+#endif
+
+  if (extension->is_app() && !use_bubble_for_apps) {
     ShowAppInstalledAnimation(browser, extension->id());
     return;
   }
@@ -237,6 +245,14 @@ void ExtensionInstallUI::OnImageLoaded(
       NOTREACHED() << "Unknown message";
       break;
   }
+}
+
+// static
+void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
+                                             const std::string& app_id) {
+  std::string url = base::StringPrintf(
+      "%s#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
+  browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
 }
 
 // static

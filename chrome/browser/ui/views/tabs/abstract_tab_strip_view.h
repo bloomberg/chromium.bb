@@ -32,7 +32,9 @@ class AbstractTabStripView : public views::View {
 
   // Set the background offset used by inactive tabs to match the frame image.
   virtual void SetBackgroundOffset(const gfx::Point& offset) = 0;
+
+  // Returns the new tab button, or NULL if there isn't one.
+  virtual views::View* GetNewTabButton() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_ABSTRACT_TAB_STRIP_VIEW_H_
-

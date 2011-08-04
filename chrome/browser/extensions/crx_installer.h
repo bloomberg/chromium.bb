@@ -61,6 +61,10 @@ class CrxInstaller
 
     scoped_ptr<base::DictionaryValue> parsed_manifest;
     std::string localized_name;
+
+    // Whether to use a bubble notification when an app is installed, instead of
+    // the default behavior of transitioning to the new tab page.
+    bool use_app_installed_bubble;
   };
 
   // Exempt the next extension install with |id| from displaying a confirmation

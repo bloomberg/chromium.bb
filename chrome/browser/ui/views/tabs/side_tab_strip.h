@@ -23,6 +23,7 @@ class SideTabStrip : public BaseTabStrip, public views::ButtonListener {
   // AbstractTabStripView implementation:
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE;
   virtual void SetBackgroundOffset(const gfx::Point& offset) OVERRIDE;
+  virtual views::View* GetNewTabButton() OVERRIDE;
 
   // BaseTabStrip implementation:
   virtual void StartHighlight(int model_index) OVERRIDE;

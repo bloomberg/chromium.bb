@@ -59,6 +59,10 @@ void TouchTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
     GetTabAtTabDataIndex(i)->set_background_offset(offset);
 }
 
+views::View* TouchTabStrip::GetNewTabButton() {
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTabStrip, BaseTabStrip implementation:
 

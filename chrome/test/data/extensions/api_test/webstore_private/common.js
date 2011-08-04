@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The id of the extension we're using for install tests.
+// The id of an extension we're using for install tests.
 var extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
+
+// The id of an app we're using for install tests.
+var appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
 
 var assertEq = chrome.test.assertEq;
 var assertNoLastError = chrome.test.assertNoLastError;

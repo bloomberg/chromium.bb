@@ -108,6 +108,7 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   std::string manifest_;
   std::string icon_data_;
   std::string localized_name_;
+  bool use_app_installed_bubble_;
 
   // The results of parsing manifest_ and icon_data_ go into these two.
   scoped_ptr<base::DictionaryValue> parsed_manifest_;

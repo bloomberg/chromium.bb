@@ -3879,6 +3879,10 @@ are declared in build/common.gypi.
         <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed.
       </message>
 
+      <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
+        Show me
+      </message>
+
       <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
         This icon will be visible when the extension can act on the current page.
       </message>
@@ -4309,6 +4313,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION" desc="Description of the 'Experimental Extension APIs' lab.">
         Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.
+      </message>
+      <message name="IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME" desc="Name of the 'New Apps Install Bubble' lab">
+        New Apps Install Bubble
+      </message>
+      <message name="IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION" desc="Description of the 'New Apps Install Bubble' lab">
+        When installing an app, always show a bubble pointing at the new tab page button on the tabstrip instead of opening a new tab page.
       </message>
       <message name="IDS_FLAGS_CLICK_TO_PLAY_NAME" desc="Name of the 'Click to play' lab.">
         Click to play

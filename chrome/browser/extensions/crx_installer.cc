@@ -52,7 +52,8 @@ static base::LazyInstance<Whitelist>
 
 }  // namespace
 
-CrxInstaller::WhitelistEntry::WhitelistEntry() {}
+CrxInstaller::WhitelistEntry::WhitelistEntry()
+  : use_app_installed_bubble(false) {}
 CrxInstaller::WhitelistEntry::~WhitelistEntry() {}
 
 // static
@@ -406,6 +407,8 @@ void CrxInstaller::ConfirmInstall() {
       return;
     }
     whitelisted = true;
+    if (entry->use_app_installed_bubble)
+      client_->set_use_app_installed_bubble(true);
   }
 
   if (client_ &&

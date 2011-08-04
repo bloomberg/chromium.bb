@@ -32,8 +32,9 @@ class TouchTabStrip : public BaseTabStrip {
   virtual ~TouchTabStrip();
 
   // AbstractTabStripView implementation:
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-  virtual void SetBackgroundOffset(const gfx::Point& offset);
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE;
+  virtual void SetBackgroundOffset(const gfx::Point& offset) OVERRIDE;
+  virtual views::View* GetNewTabButton() OVERRIDE;
 
   // BaseTabStrip implementation:
   virtual void PrepareForCloseAt(int model_index);

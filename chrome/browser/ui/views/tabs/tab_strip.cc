@@ -189,6 +189,10 @@ void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
     GetTabAtTabDataIndex(i)->set_background_offset(offset);
 }
 
+views::View* TabStrip::GetNewTabButton() {
+  return newtab_button_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabStrip, BaseTabStrip implementation:
 

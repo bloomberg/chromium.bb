@@ -24,6 +24,7 @@ class SkBitmap;
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the pageAction icon in the location
 //                      bar which is shown while the Bubble is shown.
+//    APP            -> The plus button in the tabstrip (for the New Tab Page).
 //    GENERIC        -> The wrench menu. This case includes pageActions that
 //                      don't specify a default icon.
 //
@@ -38,6 +39,7 @@ class ExtensionInstalledBubble
     OMNIBOX_KEYWORD,
     BROWSER_ACTION,
     PAGE_ACTION,
+    APP,
     GENERIC
   };
 

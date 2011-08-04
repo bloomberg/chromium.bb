@@ -70,6 +70,9 @@ const char kAppsGalleryURL[]                = "apps-gallery-url";
 // The update url used by gallery/webstore extensions.
 const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 
+// Whether to always use the new app install bubble when installing an app.
+const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
+
 // Disable throbber for extension apps.
 const char kAppsNoThrob[]                   = "apps-no-throb";
 

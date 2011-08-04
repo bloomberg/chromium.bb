@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class Extension;
 class ExtensionPermissionSet;
 class MessageLoop;
@@ -56,6 +57,14 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   explicit ExtensionInstallUI(Profile* profile);
   virtual ~ExtensionInstallUI();
 
+  // TODO(asargent) Normally we navigate to the new tab page when an app is
+  // installed, but we're experimenting with instead showing a bubble when
+  // an app is installed which points to the new tab button. This may become
+  // the default behavior in the future.
+  void set_use_app_installed_bubble(bool use_bubble) {
+    use_app_installed_bubble_ = use_bubble;
+  }
+
   // This is called by the installer to verify whether the installation should
   // proceed. This is declared virtual for testing.
   //
@@ -85,6 +94,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
       SkBitmap* image, const ExtensionResource& resource, int index);
+
+  // Opens a new tab page and animates the app icon for the app with id
+  // |app_id|.
+  static void OpenAppInstalledNTP(Browser* browser, const std::string& app_id);
 
  protected:
   friend class ExtensionWebstorePrivateApiTest;
@@ -145,6 +158,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Keeps track of extension images being loaded on the File thread for the
   // purpose of showing the install UI.
   ImageLoadingTracker tracker_;
+
+  // Whether to show an installed bubble on app install, or use the default
+  // action of opening a new tab page.
+  bool use_app_installed_bubble_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

@@ -106,3 +106,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
   observer.Wait();
 }
+
+// Tests that we can request an app installed bubble (instead of the default
+// UI when an app is installed).
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       AppInstallBubble) {
+  ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
+}

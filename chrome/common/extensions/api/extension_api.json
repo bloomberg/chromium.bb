@@ -6559,6 +6559,11 @@
                 "type": "string",
                 "optional": true,
                 "description": "The name of the locale used for generating localizedName. This should be the name of one of the directories in the _locales folder of the extension, or the default_locale setting from the manifest."
+              },
+              "appInstallBubble": {
+                "type": "boolean",
+                "optional": true,
+                "description": "A flag to change the UI we show when an app is installed - a value of true means to show a bubble pointing at the new tab button (instead of the default behavior of opening the new tab page and animating the app icon)."
               }
             }
           },
