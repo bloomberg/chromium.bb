@@ -58,8 +58,6 @@ function FileManager(dialogDom, filesystem, rootEntries, params) {
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
-  this.defaultPath_ = this.params_.defaultPath || '/';
-
   this.alert = new cr.ui.dialogs.AlertDialog(this.dialogDom_);
   this.confirm = new cr.ui.dialogs.ConfirmDialog(this.dialogDom_);
   this.prompt = new cr.ui.dialogs.PromptDialog(this.dialogDom_);
@@ -134,7 +132,7 @@ function FileManager(dialogDom, filesystem, rootEntries, params) {
   this.initCommands_();
   this.initDom_();
   this.initDialogType_();
-  this.initDefaultDirectory_();
+  this.initDefaultDirectory_(this.params_.defaultPath);
 
   this.summarizeSelection_();
   this.updatePreview_();
@@ -165,6 +163,11 @@ FileManager.prototype = {
    * Unicode codepoint for 'BLACK RIGHT-POINTING SMALL TRIANGLE'.
    */
   const RIGHT_TRIANGLE = '\u25b8';
+
+  /**
+   * The DirectoryEntry.fullPath value of the Downloads directory.
+   */
+  const DOWNLOADS_DIRECTORY = '/Downloads';
 
   /**
    * The DirectoryEntry.fullPath value of the directory containing externally
@@ -780,7 +783,7 @@ FileManager.prototype = {
         event.canExecute =
           (this.clipboard_ &&
            this.clipboard_.sourceDirEntry.fullPath !=
-           this.currentDirEntry_.fullPath_ &&
+           this.currentDirEntry_.fullPath &&
            !isSystemDirEntry(this.currentDirEntry_));
         if (this.pasteButton_)
           this.pasteButton_.disabled = !event.canExecute;
@@ -1031,9 +1034,33 @@ FileManager.prototype = {
                             errorCallback);
   };
 
-  FileManager.prototype.initDefaultDirectory_ = function() {
+  FileManager.prototype.initDefaultDirectory_ = function(path) {
+    if (!path) {
+      // No preset given, find a good place to start.
+      // Check for removable devices, if there are none, go to Downloads.
+      for (var i = 0; i != this.rootEntries_.length; i++) {
+        var rootEntry = this.rootEntries_[i];
+        if (rootEntry.fullPath == REMOVABLE_DIRECTORY) {
+          var foundRemovable = false;
+          var self = this;
+          util.forEachDirEntry(rootEntry, function(result) {
+            if (result) {
+              foundRemovable = true;
+            } else {  // Done enumerating, and we know the answer.
+              self.initDefaultDirectory_(
+                  foundRemovable ? '/' : DOWNLOADS_DIRECTORY);
+            }
+          });
+          return;
+        }
+      }
+
+      // Removable root directory is missing altogether.
+      path = DOWNLOADS_DIRECTORY;
+    }
+
     // Split the dirname from the basename.
-    var ary = this.defaultPath_.match(/^(.*?)(?:\/([^\/]+))?$/);
+    var ary = path.match(/^(.*?)(?:\/([^\/]+))?$/);
     if (!ary) {
       console.warn('Unable to split default path: ' + path);
       self.changeDirectory('/', CD_NO_HISTORY);
@@ -1074,7 +1101,7 @@ FileManager.prototype = {
         }
       }
 
-      self.resolvePath(self.defaultPath_, onLeafFound, onLeafError);
+      self.resolvePath(path, onLeafFound, onLeafError);
     }
 
     function onBaseError(err) {
