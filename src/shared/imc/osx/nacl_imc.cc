@@ -53,7 +53,7 @@
 
 #if SIGPIPE_ALT_FIX
 # include <signal.h>
-#endif  SIGPIPE_ALT_FIX
+#endif  // SIGPIPE_ALT_FIX
 
 #include <algorithm>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
