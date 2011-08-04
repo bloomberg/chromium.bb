@@ -43,10 +43,12 @@ using nacl::DescWrapper;
 // ======================================================================
 namespace {
 
+const int kFirstAudioHandle = 1300;
+const int kFirstAudioConfigHandle = 1400;
 const int kBytesPerSample = 4;  // 16-bit stereo
 
-const int kRecommendSampleFrameCount = 4 * 1024;
-const int kMaxAudioBufferSize = 64 * 1024;
+const int kRecommendSampleFrameCount = 2048;
+const int kMaxAudioBufferSize = 0x10000;
 
 IMultimedia* GlobalMultiMediaInterface = 0;
 
@@ -62,15 +64,17 @@ struct DataAudio {
   void* addr_audio;
 };
 
+Resource<DataAudio> GlobalAudioDataResources(
+  kFirstAudioHandle, "audio");
+
 
 struct DataAudioConfig {
   int sample_frequency;
   int sample_frame_count;
 };
 
-// For now we handle only one resource each which is sufficient for SDL
-Resource<DataAudio> GlobalAudioDataResources(1, "audio");
-Resource<DataAudioConfig> GlobalAudioConfigDataResources(1, "audio_config");
+Resource<DataAudioConfig> GlobalAudioConfigDataResources(
+  kFirstAudioConfigHandle, "audio_config");
 
 // ======================================================================
 void AudioCallBack(void* user_data, unsigned char* buffer, int length) {
@@ -80,6 +84,8 @@ void AudioCallBack(void* user_data, unsigned char* buffer, int length) {
   //       This introduces extra latency but simplifies the design
   //       as we do not have to wait for the nexe to generate the data.
   memcpy(buffer, data->addr_audio, length);
+
+  // ping sync socket
   int value = 0;
   data->desc_sync_in->Write(&value, sizeof value);
 }
@@ -95,6 +101,7 @@ void PPB_Audio_Create(SRPC_PARAMS) {
 
   const int handle = GlobalAudioDataResources.Alloc();
   // for now only support one audio resource
+  CHECK(handle == kFirstAudioHandle);
   DataAudio* data = GlobalAudioDataResources.GetDataForHandle(handle);
   data->handle_config = config_handle;
   DataAudioConfig* config_data =
@@ -292,7 +299,6 @@ void InvokeAudioStreamCreatedCallback(NaClCommandLoop* ncl,
   ins[3]->u.hval = data->desc_sync_out->desc();
   ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
 }
-
 
 #define TUPLE(a, b) #a #b, a
 void PepperEmuInitAudio(NaClCommandLoop* ncl, IMultimedia* im) {

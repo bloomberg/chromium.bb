@@ -8,67 +8,60 @@
 
 #include <string>
 
-// The classes below associate ranges of resource handles with
-// data structures containing actual information about
+const int kMaxIdsPerHandleType = 128;
+
+// This template class associates ranges of resource handles
+// actual data structures containing actual information about
 // the handle.
-// This is still quite primitive and will change over time.
-class ResourceBase {
+// For now this extremely primitive - just good enough to handle
+// url loader related task. It will likely signifantly change over time.
+template<class Data> class Resource {
  public:
-  ResourceBase(int num_handles, const char* type);
-  ~ResourceBase();
-  const char* GetType() { return type_; }
-  // Find a free handle (refcount == 0).
-  int Alloc();
-  // Get refcount for handle
-  int GetRefCount(int handle);
-  // Increment refcount of handle.
-  bool IncRefCount(int handle);
-  // Decrement refcount of handle,
-  bool DecRefCount(int handle);
+  Resource(int first_id, const std::string& name) :
+  first_id_(first_id), name_(name) {
+    // mark all as not used
+    for (int i = 0; i < kMaxIdsPerHandleType; ++i) {
+      used_[i] = false;
+    }
+  }
 
-  static ResourceBase* FindResource(int handle);
+  // Release the given resource handle
+  bool Release(int handle) {
+    const int pos = handle - first_id_;
+    if (pos < 0 || pos >= kMaxIdsPerHandleType) return false;
+    if (!used_[pos]) return false;
 
- private:
-  static ResourceBase* chain_;
-  // Last used handle. This maybe rounded up - so there can be gaps).
-  static int chain_handle_last_;
+    used_[pos] = false;
+    return true;
+  }
 
- protected:
-  // Next ResourceBase in chain starting with chain_
-  ResourceBase* next_;
-  // First handle in this range.
-  const int first_handle_;
-  // Width of the range.
-  const int num_handles_;
-  // Resource type respresent as a string.
-  const char* type_;
-  // Refcount for each handle in the range - zero means unused.
-  int* const used_;
-};
-
-
-template<class Data> class Resource : public ResourceBase {
- public:
-  Resource(int num_handles, const char* type)
-    : ResourceBase(num_handles, type), data_(new Data[num_handles]) {}
-
-  ~Resource() {
-    delete [] data_;
+  // Allocate the the next free resource handle in range
+  int Alloc() {
+    for (int i = 0; i < kMaxIdsPerHandleType; ++i) {
+      if (!used_[i]) {
+        used_[i] = true;
+        return first_id_ + i;
+      }
+    }
+    return -1;
   }
 
   // Get pointer to data structure associated with handle
   Data* GetDataForHandle(int handle) {
-    const int pos = handle - first_handle_;
-    if (pos < 0 || pos >= num_handles_) return NULL;
-    if (used_[pos] <= 0) {
-      NaClLog(LOG_FATAL, "using released resource of type %s\n", type_);
+    const int pos = handle - first_id_;
+    if (pos < 0 || pos >= kMaxIdsPerHandleType) return NULL;
+    if (!used_[pos]) {
+      NaClLog(LOG_FATAL, "using released resource of type %s\n", name_.c_str());
       return NULL;
     }
     return &data_[pos];
   }
 
  private:
-  Data* const data_;
+  Data data_[kMaxIdsPerHandleType];
+  bool used_[kMaxIdsPerHandleType];
+  int first_id_;
+  std::string name_;
 };
 
 
