@@ -10,6 +10,8 @@
 
 namespace remoting {
 
+std::string GetTimestampString();
+
 // TODO(sergeyu): Move these methods to media.
 int GetBytesPerPixel(media::VideoFrame::Format format);
 

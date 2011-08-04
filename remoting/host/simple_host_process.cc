@@ -34,7 +34,6 @@
 #include "crypto/nss_util.h"
 #include "media/base/media.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/logger.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -164,7 +163,6 @@ class SimpleHost {
     }
 
     // Construct a chromoting host.
-    logger_.reset(new remoting::Logger());
     scoped_ptr<DesktopEnvironment> desktop_environment;
     if (fake_) {
       remoting::Capturer* capturer =
@@ -188,8 +186,7 @@ class SimpleHost {
     }
 
     host_ = ChromotingHost::Create(&context, config, desktop_environment.get(),
-                                   access_verifier.release(), logger_.get(),
-                                   false);
+                                   access_verifier.release(), false);
     host_->set_it2me(is_it2me_);
 
     if (protocol_config_.get()) {
@@ -261,8 +258,6 @@ class SimpleHost {
 #endif
     return FilePath(home_path).Append(kDefaultConfigPath);
   }
-
-  scoped_ptr<remoting::Logger> logger_;
 
   FilePath config_path_;
   bool fake_;

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "remoting/base/logger.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
@@ -23,7 +22,6 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
-                                   Logger* logger,
                                    Task* client_done)
     : config_(config),
       context_(context),
@@ -31,7 +29,6 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
       view_(view),
       rectangle_decoder_(rectangle_decoder),
       input_handler_(input_handler),
-      logger_(logger),
       client_done_(client_done),
       state_(CREATED),
       packet_being_processed_(false),
@@ -167,18 +164,18 @@ void ChromotingClient::DispatchPacket() {
 }
 
 void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
-  logger_->VLog(1, "ChromotingClient::OnConnectionOpened");
+  VLOG(1) << "ChromotingClient::OnConnectionOpened";
   Initialize();
   SetConnectionState(CONNECTED);
 }
 
 void ChromotingClient::OnConnectionClosed(protocol::ConnectionToHost* conn) {
-  logger_->VLog(1, "ChromotingClient::OnConnectionClosed");
+  VLOG(1) << "ChromotingClient::OnConnectionClosed";
   SetConnectionState(DISCONNECTED);
 }
 
 void ChromotingClient::OnConnectionFailed(protocol::ConnectionToHost* conn) {
-  logger_->VLog(1, "ChromotingClient::OnConnectionFailed");
+  VLOG(1) << "ChromotingClient::OnConnectionFailed";
   SetConnectionState(FAILED);
 }
 
@@ -262,7 +259,7 @@ void ChromotingClient::BeginSessionResponse(
     return;
   }
 
-  logger_->Log(logging::LOG_INFO, "BeginSessionResponse received");
+  LOG(INFO) << "BeginSessionResponse received";
 
   // Inform the connection that the client has been authenticated. This will
   // enable the communication channels.

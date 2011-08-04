@@ -17,7 +17,6 @@
 #include "base/time.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/plugin/host_plugin_logger.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -60,9 +59,6 @@ class HostNPScriptObject : public HostStatusObserver {
   bool RemoveProperty(const std::string& property_name);
   bool Enumerate(std::vector<std::string>* values);
 
-  // Call LogDebugInfo handler if there is one.
-  void LogDebugInfo(const std::string& message);
-
   // remoting::HostStatusObserver implementation.
   virtual void OnSignallingConnected(remoting::SignalStrategy* signal_strategy,
                                      const std::string& full_jid) OVERRIDE;
@@ -74,6 +70,11 @@ class HostNPScriptObject : public HostStatusObserver {
       remoting::protocol::ConnectionToClient* client) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
+  // A Log Message Handler that is called after each LOG message has been
+  // processed. This must be of type LogMessageHandlerFunction defined in
+  // base/logging.h.
+  static bool LogToUI(int severity, const char* file, int line,
+                      size_t message_start, const std::string& str);
  private:
   enum State {
     kDisconnected,
@@ -94,6 +95,9 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Call OnStateChanged handler if there is one.
   void OnStateChanged(State state);
+
+  // Call LogDebugInfo handler if there is one.
+  void LogDebugInfo(const std::string& message);
 
   // Callbacks invoked during session setup.
   void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
@@ -136,8 +140,6 @@ class HostNPScriptObject : public HostStatusObserver {
   NPObject* log_debug_info_func_;
   NPObject* on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
-
-  scoped_ptr<HostPluginLogger> logger_;
 
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_refptr<MutableHostConfig> host_config_;

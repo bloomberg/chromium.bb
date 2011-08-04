@@ -12,7 +12,6 @@
 #include "remoting/base/encoder.h"
 #include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
-#include "remoting/base/logger.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/desktop_environment.h"
@@ -40,23 +39,20 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
                                        DesktopEnvironment* environment,
                                        AccessVerifier* access_verifier,
-                                       Logger* logger,
                                        bool allow_nat_traversal) {
   return new ChromotingHost(context, config, environment, access_verifier,
-                            logger, allow_nat_traversal);
+                            allow_nat_traversal);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
                                DesktopEnvironment* environment,
                                AccessVerifier* access_verifier,
-                               Logger* logger,
                                bool allow_nat_traversal)
     : context_(context),
       desktop_environment_(environment),
       config_(config),
       access_verifier_(access_verifier),
-      logger_(logger),
       allow_nat_traversal_(allow_nat_traversal),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
@@ -64,7 +60,6 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       is_it2me_(false) {
   DCHECK(desktop_environment_);
   desktop_environment_->set_host(this);
-  logger_->SetThread(MessageLoop::current());
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -77,7 +72,7 @@ void ChromotingHost::Start() {
     return;
   }
 
-  logger_->Log(logging::LOG_INFO, "Starting host");
+  LOG(INFO) << "Starting host";
   DCHECK(!signal_strategy_.get());
   DCHECK(access_verifier_.get());
 
@@ -96,8 +91,7 @@ void ChromotingHost::Start() {
   if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
       !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token) ||
       !config_->GetString(kXmppAuthServiceConfigPath, &xmpp_auth_service)) {
-    logger_->Log(logging::LOG_ERROR,
-                 "XMPP credentials are not defined in the config.");
+    LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return;
   }
 
@@ -159,7 +153,7 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 // protocol::ConnectionToClient::EventHandler implementations
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
-  logger_->VLog(1, "Connection to client established.");
+  VLOG(1) << "Connection to client established.";
   // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   if (is_it2me_) {
     context_->main_message_loop()->PostTask(
@@ -171,7 +165,7 @@ void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
 
-  logger_->VLog(1, "Connection to client closed.");
+  VLOG(1) << "Connection to client closed.";
   context_->main_message_loop()->PostTask(
       FROM_HERE, base::Bind(&ChromotingHost::OnClientDisconnected, this,
                             make_scoped_refptr(connection)));
@@ -180,7 +174,7 @@ void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
 void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
   DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
 
-  logger_->Log(logging::LOG_ERROR, "Connection failed unexpectedly.");
+  LOG(ERROR) << "Connection failed unexpectedly.";
   context_->main_message_loop()->PostTask(
       FROM_HERE, base::Bind(&ChromotingHost::OnClientDisconnected, this,
                             make_scoped_refptr(connection)));
@@ -207,7 +201,7 @@ void ChromotingHost::OnStateChange(
   DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
 
   if (state == SignalStrategy::StatusObserver::CONNECTED) {
-    logger_->Log(logging::LOG_INFO, "Host connected as %s", local_jid_.c_str());
+    LOG(INFO) << "Host connected as " << local_jid_;
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
@@ -231,7 +225,7 @@ void ChromotingHost::OnStateChange(
       (*it)->OnSignallingConnected(signal_strategy_.get(), local_jid_);
     }
   } else if (state == SignalStrategy::StatusObserver::CLOSED) {
-    logger_->Log(logging::LOG_INFO, "Host disconnected from talk network.");
+    LOG(INFO) << "Host disconnected from talk network.";
     for (StatusObserverList::iterator it = status_observers_.begin();
          it != status_observers_.end(); ++it) {
       (*it)->OnSignallingDisconnected();
@@ -294,9 +288,8 @@ void ChromotingHost::OnIncomingSession(
       session->candidate_config(), true /* force_host_resolution */);
 
   if (!config) {
-    logger_->Log(logging::LOG_WARNING,
-                 "Rejecting connection from %s because no compatible"
-                 " configuration has been found.", session->jid().c_str());
+    LOG(WARNING) << "Rejecting connection from " << session->jid()
+                 << " because no compatible configuration has been found.";
     *response = protocol::SessionManager::INCOMPATIBLE;
     return;
   }
@@ -310,8 +303,7 @@ void ChromotingHost::OnIncomingSession(
 
   *response = protocol::SessionManager::ACCEPT;
 
-  logger_->Log(logging::LOG_INFO, "Client connected: %s",
-               session->jid().c_str());
+  LOG(INFO) << "Client connected: " << session->jid();
 
   // We accept the connection, so create a connection object.
   ConnectionToClient* connection = new ConnectionToClient(

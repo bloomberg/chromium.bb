@@ -48,16 +48,15 @@ void PepperView::Paint() {
   TraceContext::tracer()->PrintString("Start Paint.");
 
   if (is_static_fill_) {
-    instance_->Log(logging::LOG_INFO,
-                   "Static filling %08x", static_fill_color_);
+    LOG(INFO) << "Static filling " << static_fill_color_;
     pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
                         pp::Size(graphics2d_.size().width(),
                                  graphics2d_.size().height()),
                         false);
     if (image.is_null()) {
-      instance_->Log(logging::LOG_ERROR,
-                     "Unable to allocate image of size: %dx%d",
-                     graphics2d_.size().width(), graphics2d_.size().height());
+      LOG(ERROR) << "Unable to allocate image of size: "
+                 << graphics2d_.size().width() << " x "
+                 << graphics2d_.size().height();
       return;
     }
 
@@ -100,7 +99,7 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   SetHostSize(gfx::Size(frame->width(), frame->height()));
 
   if (!backing_store_.get() || backing_store_->is_null()) {
-    instance_->Log(logging::LOG_ERROR, "Backing store is not available.");
+    LOG(ERROR) << "Backing store is not available.";
     return;
   }
 
@@ -255,7 +254,7 @@ bool PepperView::SetPluginSize(const gfx::Size& plugin_size) {
 
   graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
   if (!instance_->BindGraphics(graphics2d_)) {
-    instance_->Log(logging::LOG_ERROR, "Couldn't bind the device context.");
+    LOG(ERROR) << "Couldn't bind the device context.";
     return false;
   }
 
@@ -265,8 +264,8 @@ bool PepperView::SetPluginSize(const gfx::Size& plugin_size) {
   // Allocate the backing store to save the desktop image.
   if ((backing_store_.get() == NULL) ||
       (backing_store_->size() != pp_size)) {
-    instance_->Log(logging::LOG_INFO, "Allocate backing store: %d x %d",
-                   plugin_size.width(), plugin_size.height());
+    LOG(INFO) << "Allocate backing store: "
+              << plugin_size.width() << " x " << plugin_size.height();
     backing_store_.reset(
         new pp::ImageData(instance_, pp::ImageData::GetNativeImageDataFormat(),
                           pp_size, false));
@@ -314,7 +313,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
   DCHECK(CurrentlyOnPluginThread());
 
   if (frame) {
-    instance_->Log(logging::LOG_WARNING, "Frame released.");
+    LOG(WARNING) << "Frame released.";
     frame->Release();
   }
 }

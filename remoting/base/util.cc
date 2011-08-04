@@ -2,15 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
+#include "base/stringprintf.h"
+#include "base/time.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/util.h"
 
-#include "base/logging.h"
-
 using media::VideoFrame;
 
 namespace remoting {
+
+std::string GetTimestampString() {
+  base::Time t = base::Time::NowFromSystemTime();
+  base::Time::Exploded tex;
+  t.LocalExplode(&tex);
+  return StringPrintf("%02d%02d/%02d%02d%02d:",
+                      tex.month, tex.day_of_month,
+                      tex.hour, tex.minute, tex.second);
+}
 
 int GetBytesPerPixel(VideoFrame::Format format) {
   // Note: The order is important here for performance. This is sorted from the

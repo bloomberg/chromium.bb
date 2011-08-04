@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "remoting/base/auth_token_util.h"
+#include "remoting/base/util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
@@ -66,6 +67,13 @@ const int kMaxLoginAttempts = 5;
 
 }  // namespace
 
+// This flag blocks LOGs to the UI if we're already in the middle of logging
+// to the UI. This prevents a potential infinite loop if we encounter an error
+// while sending the log message to the UI.
+static bool g_logging_to_plugin = false;
+static HostNPScriptObject* g_logging_scriptable_object = NULL;
+static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
+
 HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
     : plugin_(plugin),
       parent_(parent),
@@ -75,8 +83,20 @@ HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
       np_thread_id_(base::PlatformThread::CurrentId()),
       failed_login_attempts_(0),
       disconnected_event_(true, false) {
-  logger_.reset(new HostPluginLogger(this));
-  logger_->VLog(2, "HostNPScriptObject");
+  // Set up log message handler.
+  // Note that this approach doesn't quite support having multiple instances
+  // of Chromoting running. In that case, the most recently opened tab will
+  // grab all the debug log messages, and when any Chromoting tab is closed
+  // the logging handler will go away.
+  // Since having multiple Chromoting tabs is not a primary use case, and this
+  // is just debug logging, we're punting improving debug log support for that
+  // case.
+  if (g_logging_old_handler == NULL)
+    g_logging_old_handler = logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(&LogToUI);
+  g_logging_scriptable_object = this;
+
+  VLOG(2) << "HostNPScriptObject";
   host_context_.SetUITaskPostFunction(base::Bind(
       &HostNPScriptObject::PostTaskToNPThread, base::Unretained(this)));
 }
@@ -87,6 +107,10 @@ HostNPScriptObject::~HostNPScriptObject() {
   // Shutdown DesktopEnvironment first so that it doesn't try to post
   // tasks on the UI thread while we are stopping the host.
   desktop_environment_->Shutdown();
+
+  logging::SetLogMessageHandler(g_logging_old_handler);
+  g_logging_old_handler = NULL;
+  g_logging_scriptable_object = NULL;
 
   // Disconnect synchronously. We cannot disconnect asynchronously
   // here because |host_context_| needs to be stopped on the plugin
@@ -109,14 +133,14 @@ HostNPScriptObject::~HostNPScriptObject() {
 }
 
 bool HostNPScriptObject::Init() {
-  logger_->VLog(2, "Init");
+  VLOG(2) << "Init";
   // TODO(wez): This starts a bunch of threads, which might fail.
   host_context_.Start();
   return true;
 }
 
 bool HostNPScriptObject::HasMethod(const std::string& method_name) {
-  logger_->VLog(2, "HasMethod %s", method_name.c_str());
+  VLOG(2) << "HasMethod " << method_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (method_name == kFuncNameConnect ||
           method_name == kFuncNameDisconnect);
@@ -125,7 +149,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
 bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
                                        uint32_t argCount,
                                        NPVariant* result) {
-  logger_->VLog(2, "InvokeDefault");
+  VLOG(2) << "InvokeDefault";
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   SetException("exception during default invocation");
   return false;
@@ -135,7 +159,7 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
                                 const NPVariant* args,
                                 uint32_t argCount,
                                 NPVariant* result) {
-  logger_->VLog(2, "Invoke %s", method_name.c_str());
+  VLOG(2) << "Invoke " << method_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (method_name == kFuncNameConnect) {
     return Connect(args, argCount, result);
@@ -148,7 +172,7 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
 }
 
 bool HostNPScriptObject::HasProperty(const std::string& property_name) {
-  logger_->VLog(2, "HasProperty %s", property_name.c_str());
+  VLOG(2) << "HasProperty " << property_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (property_name == kAttrNameAccessCode ||
           property_name == kAttrNameAccessCodeLifetime ||
@@ -166,7 +190,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
 
 bool HostNPScriptObject::GetProperty(const std::string& property_name,
                                      NPVariant* result) {
-  logger_->VLog(2, "GetProperty %s", property_name.c_str());
+  VLOG(2) << "GetProperty " << property_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   if (!result) {
     SetException("GetProperty: NULL result");
@@ -217,7 +241,7 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
 
 bool HostNPScriptObject::SetProperty(const std::string& property_name,
                                      const NPVariant* value) {
-  logger_->VLog(2, "SetProperty %s", property_name.c_str());
+  VLOG(2) <<  "SetProperty " << property_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
   if (property_name == kAttrNameOnStateChanged) {
@@ -258,13 +282,13 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
 }
 
 bool HostNPScriptObject::RemoveProperty(const std::string& property_name) {
-  logger_->VLog(2, "RemoveProperty %s", property_name.c_str());
+  VLOG(2) << "RemoveProperty " << property_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return false;
 }
 
 bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
-  logger_->VLog(2, "Enumerate");
+  VLOG(2) << "Enumerate";
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   const char* entries[] = {
     kAttrNameAccessCode,
@@ -330,7 +354,7 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
                                  NPVariant* result) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
-  LogDebugInfo("Connecting...");
+  LOG(INFO) << "Connecting...";
 
   if (arg_count != 2) {
     SetException("connect: bad number of arguments");
@@ -408,7 +432,7 @@ void HostNPScriptObject::ConnectInternal(
   // TODO(sergeyu): Use firewall traversal policy settings here.
   host_ = ChromotingHost::Create(
       &host_context_, host_config_, desktop_environment_.get(),
-      access_verifier.release(), logger_.get(), false);
+      access_verifier.release(), false);
   host_->AddStatusObserver(this);
   host_->AddStatusObserver(register_request_.get());
   host_->set_it2me(true);
@@ -500,10 +524,30 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
   state_ = state;
   if (on_state_changed_func_) {
-    logger_->VLog(2, "Calling state changed %s", state);
+    VLOG(2) << "Calling state changed " << state;
     bool is_good = InvokeAndIgnoreResult(on_state_changed_func_, NULL, 0);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
+}
+
+// static
+bool HostNPScriptObject::LogToUI(int severity, const char* file, int line,
+                                 size_t message_start,
+                                 const std::string& str) {
+  // The |g_logging_to_plugin| check is to prevent logging to the scriptable
+  // object if we're already in the middle of logging.
+  // This can occur if we try to log an error while we're in the scriptable
+  // object logging code.
+  if (g_logging_scriptable_object && !g_logging_to_plugin) {
+    g_logging_to_plugin = true;
+    std::string message = remoting::GetTimestampString();
+    message += (str.c_str() + message_start);
+    g_logging_scriptable_object->LogDebugInfo(message);
+    g_logging_to_plugin = false;
+  }
+  if (g_logging_old_handler)
+    return (g_logging_old_handler)(severity, file, line, message_start, str);
+  return false;
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
@@ -516,6 +560,7 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
                               base::Unretained(this), message));
     return;
   }
+
   if (log_debug_info_func_) {
     NPVariant* arg = new NPVariant();
     STRINGZ_TO_NPVARIANT(message.c_str(), *arg);
@@ -527,7 +572,7 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
 void HostNPScriptObject::SetException(const std::string& exception_string) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
-  LogDebugInfo(exception_string);
+  LOG(INFO) << exception_string;
 }
 
 bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,

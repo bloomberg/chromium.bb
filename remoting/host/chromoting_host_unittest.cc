@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "remoting/base/logger.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -87,8 +86,6 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
 
-    logger_.reset(new Logger());
-
     context_.SetUITaskPostFunction(base::Bind(
         static_cast<void(MessageLoop::*)(
             const tracked_objects::Location&,
@@ -109,7 +106,7 @@ class ChromotingHostTest : public testing::Test {
 
     host_ = ChromotingHost::Create(&context_, config_,
                                    desktop_environment_.get(),
-                                   access_verifier, logger_.get(), false);
+                                   access_verifier, false);
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
     credentials_.set_credential("password");
@@ -214,7 +211,6 @@ class ChromotingHostTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<Logger> logger_;
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;

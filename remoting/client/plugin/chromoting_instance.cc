@@ -27,11 +27,12 @@
 #include "ppapi/cpp/rect.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
+#include "remoting/base/task_thread_proxy.h"
+#include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
-#include "remoting/client/plugin/pepper_client_logger.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator_session.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -63,22 +64,51 @@ PPP_PolicyUpdate_Dev ChromotingInstance::kPolicyUpdatedInterface = {
   &ChromotingInstance::PolicyUpdatedThunk,
 };
 
+// This flag blocks LOGs to the UI if we're already in the middle of logging
+// to the UI. This prevents a potential infinite loop if we encounter an error
+// while sending the log message to the UI.
+static bool g_logging_to_plugin = false;
+static ChromotingInstance* g_logging_instance = NULL;
+static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
+
 const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
       scale_to_fit_(false),
-      logger_(this),
       enable_client_nat_traversal_(false),
       initial_policy_received_(false),
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
+
+  log_proxy_ = new TaskThreadProxy(MessageLoop::current());
+
+  // Set up log message handler.
+  // Note that this approach doesn't quite support having multiple instances
+  // of Chromoting running. In that case, the most recently opened tab will
+  // grab all the debug log messages, and when any Chromoting tab is closed
+  // the logging handler will go away.
+  // Since having multiple Chromoting tabs is not a primary use case, and this
+  // is just debug logging, we're punting improving debug log support for that
+  // case.
+  if (g_logging_old_handler == NULL)
+    g_logging_old_handler = logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(&LogToUI);
+  g_logging_instance = this;
 }
 
 ChromotingInstance::~ChromotingInstance() {
   DCHECK(CurrentlyOnPluginThread());
+
+  // Detach the log proxy so we don't log anything else to the UI.
+  log_proxy_->Detach();
+
+  // Remove log message handler.
+  logging::SetLogMessageHandler(g_logging_old_handler);
+  g_logging_old_handler = NULL;
+  g_logging_instance = NULL;
 
   if (client_.get()) {
     base::WaitableEvent done_event(true, false);
@@ -100,7 +130,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   CHECK(!initialized_);
   initialized_ = true;
 
-  logger_.VLog(1, "Started ChromotingInstance::Init");
+  VLOG(1) << "Started ChromotingInstance::Init";
 
   // Start all the threads.
   context_.Start();
@@ -126,8 +156,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // occurs before the enterprise policy is read.  We are guaranteed that the
   // enterprise policy is pushed at least once, we we delay the connect call.
   if (!initial_policy_received_) {
-    logger_.Log(logging::LOG_INFO,
-                "Delaying connect until initial policy is read.");
+    LOG(INFO) << "Delaying connect until initial policy is read.";
     delayed_connect_.reset(
         task_factory_.NewRunnableMethod(&ChromotingInstance::Connect,
                                           config));
@@ -148,7 +177,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // If we don't have socket dispatcher for IPC (e.g. P2P API is
   // disabled), then JingleSessionManager will try to use physical sockets.
   if (socket_dispatcher) {
-    logger_.VLog(1, "Creating IpcNetworkManager and IpcPacketSocketFactory.");
+    VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
     network_manager = new IpcNetworkManager(socket_dispatcher);
     socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
   }
@@ -162,9 +191,9 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
                                      view_proxy_, rectangle_decoder_.get(),
-                                     input_handler_.get(), &logger_, NULL));
+                                     input_handler_.get(), NULL));
 
-  logger_.Log(logging::LOG_INFO, "Connecting.");
+  LOG(INFO) << "Connecting.";
 
   // Setup the XMPP Proxy.
   ChromotingScriptableObject* scriptable_object = GetScriptableObject();
@@ -176,7 +205,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Kick off the connection.
   client_->Start(xmpp_proxy);
 
-  logger_.Log(logging::LOG_INFO, "Connection status: Initializing");
+  LOG(INFO) << "Connection status: Initializing";
   GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
                                            QUALITY_UNKNOWN);
 }
@@ -184,7 +213,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 void ChromotingInstance::Disconnect() {
   DCHECK(CurrentlyOnPluginThread());
 
-  logger_.Log(logging::LOG_INFO, "Disconnecting from host.");
+  LOG(INFO) << "Disconnecting from host.";
   if (client_.get()) {
     // TODO(sergeyu): Should we disconnect asynchronously?
     base::WaitableEvent done_event(true, false);
@@ -258,14 +287,14 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_KEYDOWN: {
       pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
-      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEYDOWN key=%d", key.GetKeyCode());
+      VLOG(3) << "PP_INPUTEVENT_TYPE_KEYDOWN" << " key=" << key.GetKeyCode();
       pih->HandleKeyEvent(true, key);
       return true;
     }
 
     case PP_INPUTEVENT_TYPE_KEYUP: {
       pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
-      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEYUP key=%d", key.GetKeyCode());
+      VLOG(3) << "PP_INPUTEVENT_TYPE_KEYUP" << " key=" << key.GetKeyCode();
       pih->HandleKeyEvent(false, key);
       return true;
     }
@@ -291,8 +320,7 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
     DCHECK(so != NULL);
     return static_cast<ChromotingScriptableObject*>(so);
   }
-  logger_.Log(logging::LOG_ERROR,
-               "Unable to get ScriptableObject for Chromoting plugin.");
+  LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
   return NULL;
 }
 
@@ -300,8 +328,7 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
                                          const std::string& password) {
   if (host_connection_->state() !=
       protocol::ConnectionToHost::STATE_CONNECTED) {
-    logger_.Log(logging::LOG_INFO,
-                 "Client not connected or already authenticated.");
+    LOG(INFO) << "Client not connected or already authenticated.";
     return;
   }
 
@@ -332,18 +359,32 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
   rectangle_decoder_->RefreshFullFrame();
 }
 
-void ChromotingInstance::Log(int severity, const char* format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  logger_.va_Log(severity, format, ap);
-  va_end(ap);
+// static
+bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
+                                 size_t message_start,
+                                 const std::string& str) {
+  if (g_logging_instance) {
+    std::string message = remoting::GetTimestampString();
+    message += (str.c_str() + message_start);
+    g_logging_instance->log_proxy_->Call(
+        base::Bind(&ChromotingInstance::ProcessLogToUI,
+                   base::Unretained(g_logging_instance), message));
+  }
+
+  if (g_logging_old_handler)
+    return (g_logging_old_handler)(severity, file, line, message_start, str);
+  return false;
 }
 
-void ChromotingInstance::VLog(int verboselevel, const char* format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  logger_.va_VLog(verboselevel, format, ap);
-  va_end(ap);
+void ChromotingInstance::ProcessLogToUI(const std::string& message) {
+  if (!g_logging_to_plugin) {
+    ChromotingScriptableObject* cso = GetScriptableObject();
+    if (cso) {
+      g_logging_to_plugin = true;
+      cso->LogDebugInfo(message);
+      g_logging_to_plugin = false;
+    }
+  }
 }
 
 pp::Var ChromotingInstance::GetInstanceObject() {
@@ -400,13 +441,13 @@ bool ChromotingInstance::IsNatTraversalAllowed(
       policy_json, true, &error_code, &error_message));
 
   if (!policy.get()) {
-    logger_.Log(logging::LOG_ERROR, "Error %d parsing policy: %s.",
-                error_code, error_message.c_str());
+    LOG(ERROR) << "Error " << error_code << " parsing policy: "
+               << error_message << ".";
     return false;
   }
 
   if (!policy->IsType(base::Value::TYPE_DICTIONARY)) {
-    logger_.Log(logging::LOG_ERROR, "Policy must be a dictionary");
+    LOG(ERROR) << "Policy must be a dictionary";
     return false;
   }
 

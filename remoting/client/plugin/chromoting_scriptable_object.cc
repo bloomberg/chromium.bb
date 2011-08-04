@@ -5,7 +5,6 @@
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/auth_token_util.h"
@@ -229,8 +228,7 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
   int status_index = property_names_[kStatusAttribute];
   int quality_index = property_names_[kQualityAttribute];
 
-  LogDebugInfo(
-      base::StringPrintf("Connection status is updated: %d.", status));
+  LOG(INFO) << "Connection status is updated: " << status;
 
   if (properties_[status_index].attribute.AsInt() != status ||
       properties_[quality_index].attribute.AsInt() != quality) {
@@ -268,8 +266,7 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
     SignalDesktopSizeChange();
   }
 
-  LogDebugInfo(base::StringPrintf("Update desktop size to: %d x %d.",
-                                  width, height));
+  LOG(INFO) << "Update desktop size to: " << width << " x " << height;
 }
 
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
@@ -293,8 +290,7 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
-    LogDebugInfo(
-        "Exception when invoking connectionInfoUpdate JS callback.");
+    LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";
 }
 
 void ChromotingScriptableObject::SignalDesktopSizeChange() {
@@ -306,8 +302,8 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when invoking JS callback"
-                 << exception.DebugString();
+    LOG(ERROR) << "Exception when invoking JS callback"
+               << exception.DebugString();
   }
 }
 
@@ -320,7 +316,7 @@ void ChromotingScriptableObject::SignalLoginChallenge() {
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
-    LogDebugInfo("Exception when invoking loginChallenge JS callback.");
+    LOG(ERROR) << "Exception when invoking loginChallenge JS callback.";
 }
 
 void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
@@ -336,7 +332,7 @@ void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
   cb.Call(Var(), Var(message_xml), &exception);
 
   if (!exception.is_undefined())
-    LogDebugInfo("Exception when invoking sendiq JS callback.");
+    LOG(ERROR) << "Exception when invoking sendiq JS callback.";
 }
 
 Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
@@ -379,7 +375,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     return Var();
   }
 
-  LogDebugInfo("Connecting to host.");
+  LOG(INFO) << "Connecting to host.";
   VLOG(1) << "client_jid: " << client_jid << ", host_jid: " << host_jid
           << ", access_code: " << access_code;
   ClientConfig config;
@@ -394,7 +390,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
 Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                              Var* exception) {
-  LogDebugInfo("Disconnecting from host.");
+  LOG(INFO) << "Disconnecting from host.";
 
   instance_->Disconnect();
   return Var();
@@ -419,7 +415,7 @@ Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
   }
   std::string password = args[1].AsString();
 
-  LogDebugInfo("Submitting login info to host.");
+  LOG(INFO) << "Submitting login info to host.";
   instance_->SubmitLoginInfo(username, password);
   return Var();
 }
@@ -436,7 +432,7 @@ Var ChromotingScriptableObject::DoSetScaleToFit(const std::vector<Var>& args,
     return Var();
   }
 
-  LogDebugInfo("Setting scale-to-fit.");
+  LOG(INFO) << "Setting scale-to-fit.";
   instance_->SetScaleToFit(args[0].AsBool());
   return Var();
 }

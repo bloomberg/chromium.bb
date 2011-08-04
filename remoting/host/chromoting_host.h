@@ -36,7 +36,6 @@ class Capturer;
 class ChromotingHostContext;
 class DesktopEnvironment;
 class Encoder;
-class Logger;
 class MutableHostConfig;
 class ScreenRecorder;
 
@@ -72,13 +71,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Factory methods that must be used to create ChromotingHost
   // instances.  Returned instance takes ownership of
   // |access_verifier|. It does NOT take ownership of |context|,
-  // |environment| and |logger|, but they should not be deleted until
+  // and |environment|, but they should not be deleted until
   // returned host is destroyed.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 DesktopEnvironment* environment,
                                 AccessVerifier* access_verifier,
-                                Logger* logger,
                                 bool allow_nat_traversal);
 
   // Asynchronously start the host process.
@@ -119,8 +117,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       scoped_refptr<protocol::ConnectionToClient> client);
   virtual void LocalLoginFailed(
       scoped_refptr<protocol::ConnectionToClient> client);
-
-  Logger* logger() { return logger_; }
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerInitialized() OVERRIDE;
@@ -168,7 +164,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                  MutableHostConfig* config,
                  DesktopEnvironment* environment,
                  AccessVerifier* access_verifier,
-                 Logger* logger,
                  bool allow_nat_traversal);
   virtual ~ChromotingHost();
 
@@ -197,7 +192,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   DesktopEnvironment* desktop_environment_;
   scoped_refptr<MutableHostConfig> config_;
   scoped_ptr<AccessVerifier> access_verifier_;
-  Logger* logger_;
   bool allow_nat_traversal_;
 
   // Connection objects.
