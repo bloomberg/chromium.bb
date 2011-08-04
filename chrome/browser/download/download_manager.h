@@ -93,24 +93,22 @@ class DownloadManager
     virtual ~Observer() {}
   };
 
+  typedef std::vector<DownloadItem*> DownloadVector;
+
   // Return all temporary downloads that reside in the specified directory.
-  void GetTemporaryDownloads(const FilePath& dir_path,
-                             std::vector<DownloadItem*>* result);
+  void GetTemporaryDownloads(const FilePath& dir_path, DownloadVector* result);
 
   // Return all non-temporary downloads in the specified directory that are
   // are in progress or have completed.
-  void GetAllDownloads(const FilePath& dir_path,
-                       std::vector<DownloadItem*>* result);
+  void GetAllDownloads(const FilePath& dir_path, DownloadVector* result);
 
   // Return all non-temporary downloads in the specified directory that are
   // in-progress (including dangerous downloads waiting for user confirmation).
-  void GetCurrentDownloads(const FilePath& dir_path,
-                           std::vector<DownloadItem*>* result);
+  void GetCurrentDownloads(const FilePath& dir_path, DownloadVector* result);
 
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.
-  void SearchDownloads(const string16& query,
-                       std::vector<DownloadItem*>* result);
+  void SearchDownloads(const string16& query, DownloadVector* result);
 
   // Returns true if initialized properly.
   bool Init(Profile* profile);
@@ -164,10 +162,6 @@ class DownloadManager
   // history and remove the download from |active_downloads_|.
   void DownloadCompleted(int32 download_id);
 
-  // Called when a Save Page As download is started. Transfers ownership
-  // of |download_item| to the DownloadManager.
-  void SavePageAsDownloadStarted(DownloadItem* download_item);
-
   // Download the object at the URL. Used in cases such as "Save Link As..."
   void DownloadUrl(const GURL& url,
                    const GURL& referrer,
@@ -205,6 +199,10 @@ class DownloadManager
   Profile* profile() { return profile_; }
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
+
+#if defined(UNIT_TEST)
+  DownloadHistory* download_history() { return download_history_.get(); }
+#endif
 
   // Creates the download item.  Must be called on the UI thread.
   void CreateDownloadItem(DownloadCreateInfo* info);
@@ -263,9 +261,25 @@ class DownloadManager
   // been removed from the active map, or was retrieved from the history DB.
   DownloadItem* GetDownloadItem(int id);
 
+  // Called when Save Page download starts. Transfers ownership of |download|
+  // to the DownloadManager.
+  void SavePageDownloadStarted(DownloadItem* download);
+
+  // Callback when Save Page As entry is commited to the history system.
+  void OnSavePageDownloadEntryAdded(int32 download_id, int64 db_handle);
+
+  // Called when Save Page download is done.
+  void SavePageDownloadFinished(DownloadItem* download);
+
+  // Download Id for next Save Page.
+  int32 GetNextSavePageId();
+
   DownloadManagerDelegate* delegate() const { return delegate_; }
 
  private:
+  typedef std::set<DownloadItem*> DownloadSet;
+  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
+
   // For testing.
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
@@ -352,6 +366,9 @@ class DownloadManager
   // Add a DownloadItem to history_downloads_.
   void AddDownloadItemToHistory(DownloadItem* item, int64 db_handle);
 
+  // Remove from internal maps.
+  int RemoveDownloadItems(const DownloadVector& pending_deletes);
+
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
   // this session, downloads initialized from the history system, and
@@ -388,16 +405,12 @@ class DownloadManager
   // Downloads from past sessions read from a persisted state from the
   // history system are placed directly into |history_downloads_| since
   // they have valid handles in the history system.
-  typedef std::set<DownloadItem*> DownloadSet;
-  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
 
   DownloadSet downloads_;
   DownloadMap history_downloads_;
   DownloadMap in_progress_;
   DownloadMap active_downloads_;
-#if !defined(NDEBUG)
-  DownloadSet save_page_as_downloads_;
-#endif
+  DownloadMap save_page_downloads_;
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
@@ -421,6 +434,9 @@ class DownloadManager
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.
   FilePath last_download_path_;
+
+  // Download Id for next Save Page.
+  int32 next_save_page_id_;
 
   scoped_ptr<OtherDownloadManagerObserver> other_download_manager_observer_;
 

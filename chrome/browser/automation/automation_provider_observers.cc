@@ -1854,12 +1854,12 @@ void OmniboxAcceptNotificationObserver::Observe(
 }
 
 SavePackageNotificationObserver::SavePackageNotificationObserver(
-    SavePackage* save_package,
+    DownloadManager* download_manager,
     AutomationProvider* automation,
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
-  Source<SavePackage> source(save_package);
+  Source<DownloadManager> source(download_manager);
   registrar_.Add(this, content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
                  source);
 }

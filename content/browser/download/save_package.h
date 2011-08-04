@@ -17,11 +17,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
-class DownloadItem;
-class DownloadManager;
 class GURL;
 class MessageLoop;
 class PrefService;
@@ -53,6 +52,7 @@ class Time;
 // saving job, and exist for the duration of one tab's life time.
 class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
                     public TabContentsObserver,
+                    public DownloadItem::Observer,
                     public base::SupportsWeakPtr<SavePackage> {
  public:
   enum SavePackageType {
@@ -160,7 +160,17 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void DoSavingProcess();
 
   // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // DownloadItem::Observer implementation.
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {}
+
+  // Update the download history of this item upon completion.
+  void FinalizeDownloadEntry();
+
+  // Detach from DownloadManager.
+  void StopObservation();
 
   // Return max length of a path for a specific base directory.
   // This is needed on POSIX, which restrict the length of file names in
@@ -210,10 +220,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void OnReceivedSerializedHtmlData(const GURL& frame_url,
                                     const std::string& data,
                                     int32 status);
-
-  // Convenience function.
-  DownloadManager* GetDownloadManager();
-
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
   // in_progress_items_ is map of all saving job in in-progress state.
@@ -265,8 +271,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;
 
-  // We use a fake DownloadItem here in order to reuse the DownloadItemView.
-  // This class owns the pointer.
+  // DownloadManager owns the DownloadItem and handles history and UI.
+  DownloadManager* download_manager_;
   DownloadItem* download_;
 
   // The URL of the page the user wants to save.

@@ -193,7 +193,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const FilePath& path,
                            const GURL& url,
                            bool is_otr)
-    : download_id_(1),
+    : download_id_(download_manager->GetNextSavePageId()),
       full_path_(path),
       url_chain_(1, url),
       referrer_url_(GURL()),

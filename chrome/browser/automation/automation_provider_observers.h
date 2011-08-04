@@ -1292,7 +1292,7 @@ class OmniboxAcceptNotificationObserver : public NotificationObserver {
 // Allows the automation provider to wait for a save package notification.
 class SavePackageNotificationObserver : public NotificationObserver {
  public:
-  SavePackageNotificationObserver(SavePackage* save_package,
+  SavePackageNotificationObserver(DownloadManager* download_manager,
                                   AutomationProvider* automation,
                                   IPC::Message* reply_message);
   virtual ~SavePackageNotificationObserver();

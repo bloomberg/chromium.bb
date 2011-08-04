@@ -7,7 +7,11 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/history/download_history_info.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
@@ -40,23 +44,28 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  GURL WaitForSavePackageToFinish() {
+  GURL WaitForSavePackageToFinish() const {
     ui_test_utils::TestNotificationObserver observer;
     ui_test_utils::RegisterAndWait(&observer,
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         NotificationService::AllSources());
-    return *Details<GURL>(observer.details()).ptr();
+    return Details<DownloadItem>(observer.details()).ptr()->original_url();
   }
 
-  void CheckDownloadUI(const FilePath& download_path) {
 #if defined(OS_CHROMEOS)
+  const ActiveDownloadsUI::DownloadList& GetDownloads() const {
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_TRUE(popup);
     ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
         popup->GetSelectedTabContents()->web_ui());
-    ASSERT_TRUE(downloads_ui);
-    const ActiveDownloadsUI::DownloadList& downloads =
-        downloads_ui->GetDownloads();
+    EXPECT_TRUE(downloads_ui);
+    return downloads_ui->GetDownloads();
+  }
+#endif
+
+  void CheckDownloadUI(const FilePath& download_path) const {
+#if defined(OS_CHROMEOS)
+    const ActiveDownloadsUI::DownloadList& downloads = GetDownloads();
     EXPECT_EQ(downloads.size(), 1U);
 
     bool found = false;
@@ -71,6 +80,69 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 #endif
   }
+
+  DownloadManager* GetDownloadManager() const {
+    DownloadManager* download_manager =
+        browser()->profile()->GetDownloadManager();
+    EXPECT_TRUE(download_manager);
+    return download_manager;
+  }
+
+  void QueryDownloadHistory() {
+    // Query the history system.
+    GetDownloadManager()->download_history()->Load(
+        NewCallback(this,
+                    &SavePageBrowserTest::OnQueryDownloadEntriesComplete));
+
+    // Run message loop until a quit message is sent from
+    // OnQueryDownloadEntriesComplete().
+    ui_test_utils::RunMessageLoop();
+  }
+
+  void OnQueryDownloadEntriesComplete(
+      std::vector<DownloadHistoryInfo>* entries) {
+    history_entries_ = *entries;
+
+    // Indicate thet we have received the history and can continue.
+    MessageLoopForUI::current()->Quit();
+  }
+
+  struct DownloadHistoryInfoMatch
+    : public std::unary_function<DownloadHistoryInfo, bool> {
+
+    DownloadHistoryInfoMatch(const GURL& url,
+                             const FilePath& path,
+                             int64 num_files)
+      : url_(url),
+        path_(path),
+        num_files_(num_files) {
+    }
+
+    bool operator() (const DownloadHistoryInfo& info) const {
+      return info.url == url_ &&
+        info.path == path_ &&
+        // For save packages, received bytes is actually the number of files.
+        info.received_bytes == num_files_ &&
+        info.total_bytes == 0 &&
+        info.state == DownloadItem::COMPLETE;
+    }
+
+    GURL url_;
+    FilePath path_;
+    int64 num_files_;
+  };
+
+  void CheckDownloadHistory(const GURL& url,
+                            const FilePath& path,
+                            int64 num_files_) {
+    QueryDownloadHistory();
+
+    EXPECT_NE(std::find_if(history_entries_.begin(), history_entries_.end(),
+        DownloadHistoryInfoMatch(url, path, num_files_)),
+        history_entries_.end());
+  }
+
+  std::vector<DownloadHistoryInfo> history_entries_;
 
   // Path to directory containing test data.
   FilePath test_dir_;
@@ -96,6 +168,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   CheckDownloadUI(full_file_name);
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -124,6 +197,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
   EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
 
   CheckDownloadUI(full_file_name);
+  CheckDownloadHistory(actual_page_url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -149,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   CheckDownloadUI(full_file_name);
+  CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -190,6 +265,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   CheckDownloadUI(full_file_name);
+  CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -204,4 +280,42 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
       dir.AppendASCII("1.css")));
 }
 
-}  // namespace
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
+  FilePath file_name(FILE_PATH_LITERAL("a.htm"));
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(kTestDir).Append(file_name));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContents* current_tab = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(current_tab);
+
+  FilePath full_file_name = save_dir_.path().Append(file_name);
+  FilePath dir = save_dir_.path().AppendASCII("a_files");
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_ONLY_HTML));
+
+  EXPECT_EQ(url, WaitForSavePackageToFinish());
+
+  CheckDownloadUI(full_file_name);
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
+
+  EXPECT_EQ(GetDownloadManager()->RemoveAllDownloads(), 1);
+
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(GetDownloads().size(), 0U);
+#endif
+
+  // Should not be in history.
+  QueryDownloadHistory();
+  EXPECT_EQ(std::find_if(history_entries_.begin(), history_entries_.end(),
+      DownloadHistoryInfoMatch(url, full_file_name, 1)),
+      history_entries_.end());
+
+  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(file_util::ContentsEqual(
+      test_dir_.Append(FilePath(kTestDir)).Append(file_name),
+      full_file_name));
+}
+
+}

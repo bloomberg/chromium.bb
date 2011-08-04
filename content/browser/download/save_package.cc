@@ -18,6 +18,7 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -34,8 +35,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_notification_types.h"
-#include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "net/base/io_buffer.h"
@@ -118,6 +117,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
                          const FilePath& directory_full_path)
     : TabContentsObserver(tab_contents),
       file_manager_(NULL),
+      download_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       saved_main_file_path_(file_full_path),
@@ -145,6 +145,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
 SavePackage::SavePackage(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
       file_manager_(NULL),
+      download_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       title_(tab_contents->GetTitle()),
@@ -169,6 +170,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
                          const FilePath& directory_full_path)
     : TabContentsObserver(tab_contents),
       file_manager_(NULL),
+      download_manager_(NULL),
       download_(NULL),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
@@ -190,6 +192,10 @@ SavePackage::~SavePackage() {
     Cancel(true);
   }
 
+  // We should no longer be observing the DownloadManager at this point.
+  CHECK(!download_manager_);
+  CHECK(!download_);
+
   DCHECK(all_save_items_count_ == (waiting_item_queue_.size() +
                                    completed_count() +
                                    in_process_count()));
@@ -204,9 +210,6 @@ SavePackage::~SavePackage() {
   STLDeleteValues(&saved_success_items_);
   STLDeleteValues(&in_progress_items_);
   STLDeleteValues(&saved_failed_items_);
-
-  // The DownloadItem is owned by DownloadManager.
-  download_ = NULL;
 
   file_manager_ = NULL;
 }
@@ -243,10 +246,10 @@ void SavePackage::InternalInit() {
   }
 
   file_manager_ = rdh->save_file_manager();
-  if (!file_manager_) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(file_manager_);
+
+  download_manager_ = tab_contents()->browser_context()->GetDownloadManager();
+  DCHECK(download_manager_);
 }
 
 bool SavePackage::Init() {
@@ -263,17 +266,16 @@ bool SavePackage::Init() {
     return false;
   }
 
-  // Create the fake DownloadItem and display the view.
-  download_ = new DownloadItem(GetDownloadManager(),
+  DCHECK(download_manager_);
+  // Create the download item, and add ourself as an observer.
+  download_ = new DownloadItem(download_manager_,
                                saved_main_file_path_,
                                page_url_,
                                browser_context->IsOffTheRecord());
+  download_->AddObserver(this);
 
-  // Transfer the ownership to the download manager. We need the DownloadItem
-  // to be alive as long as the Profile is alive.
-  GetDownloadManager()->SavePageAsDownloadStarted(download_);
-
-  tab_contents()->OnStartDownload(download_);
+  // Transfer ownership to the download manager.
+  download_manager_->SavePageDownloadStarted(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_AS_COMPLETE_HTML) {
@@ -635,7 +637,10 @@ void SavePackage::Stop() {
   wait_state_ = FAILED;
 
   // Inform the DownloadItem we have canceled whole save page job.
-  download_->Cancel(false);
+  if (download_) {
+    download_->Cancel(false);
+    FinalizeDownloadEntry();
+  }
 }
 
 void SavePackage::CheckFinish() {
@@ -688,13 +693,11 @@ void SavePackage::Finish() {
                         &SaveFileManager::RemoveSavedFileFromFileMap,
                         save_ids));
 
-  download_->OnAllDataSaved(all_save_items_count_);
-  download_->MarkAsComplete();
-
-  NotificationService::current()->Notify(
-      content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-      Source<SavePackage>(this),
-      Details<GURL>(&page_url_));
+  if (download_) {
+    download_->OnAllDataSaved(all_save_items_count_);
+    download_->MarkAsComplete();
+    FinalizeDownloadEntry();
+  }
 }
 
 // Called for updating end state.
@@ -714,7 +717,8 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
 
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
-  download_->Update(completed_count());
+  if (download_)
+    download_->Update(completed_count());
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
       save_item->url() == page_url_ && !save_item->received_bytes()) {
@@ -755,7 +759,8 @@ void SavePackage::SaveFailed(const GURL& save_url) {
 
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
-  download_->Update(completed_count());
+  if (download_)
+    download_->Update(completed_count());
 
   if (save_type_ == SAVE_AS_ONLY_HTML ||
       save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
@@ -1020,7 +1025,8 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
                            static_cast<int>(frames_list.size());
 
   // We use total bytes as the total number of files we want to save.
-  download_->set_total_bytes(all_save_items_count_);
+  if (download_)
+    download_->set_total_bytes(all_save_items_count_);
 
   if (all_save_items_count_) {
     // Put all sub-resources to wait list.
@@ -1155,7 +1161,8 @@ void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
-  GetDownloadManager()->delegate()->GetSaveDir(
+  DCHECK(download_manager_);
+  download_manager_->delegate()->GetSaveDir(
       tab_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = tab_contents()->contents_mime_type();
   std::string accept_languages =
@@ -1218,7 +1225,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (!tab_contents())
     return;
 
-  GetDownloadManager()->delegate()->ChooseSavePath(
+  download_manager_->delegate()->ChooseSavePath(
       AsWeakPtr(), suggested_path, can_save_as_complete);
 }
 
@@ -1264,6 +1271,29 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
          net::IsSupportedJavascriptMimeType(contents_mime_type.c_str());
 }
 
-DownloadManager* SavePackage::GetDownloadManager() {
-  return tab_contents()->browser_context()->GetDownloadManager();;
+void SavePackage::StopObservation() {
+  DCHECK(download_);
+  DCHECK(download_manager_);
+
+  download_->RemoveObserver(this);
+  download_ = NULL;
+  download_manager_ = NULL;
+}
+
+void SavePackage::OnDownloadUpdated(DownloadItem* download) {
+  DCHECK(download_);
+  DCHECK(download_ == download);
+  DCHECK(download_manager_);
+
+  // Check for removal.
+  if (download->state() == DownloadItem::REMOVING)
+    StopObservation();
+}
+
+void SavePackage::FinalizeDownloadEntry() {
+  DCHECK(download_);
+  DCHECK(download_manager_);
+
+  download_manager_->SavePageDownloadFinished(download_);
+  StopObservation();
 }

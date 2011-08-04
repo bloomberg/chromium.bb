@@ -3531,7 +3531,7 @@ void TestingAutomationProvider::SaveTabContents(
   }
   // The observer will delete itself when done.
   new SavePackageNotificationObserver(
-      tab_contents->save_package(), this, reply_message);
+      browser->profile()->GetDownloadManager(), this, reply_message);
 }
 
 // Refer to ImportSettings() in chrome/test/pyautolib/pyauto.py for sample
