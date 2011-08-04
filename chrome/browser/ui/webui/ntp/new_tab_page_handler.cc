@@ -43,7 +43,7 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
 // static
 void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
   // TODO(estade): should be syncable.
-  prefs->RegisterIntegerPref(prefs::kNTPShownPage, MOST_VISITED_PAGE_ID,
+  prefs->RegisterIntegerPref(prefs::kNTPShownPage, APPS_PAGE_ID,
                              PrefService::UNSYNCABLE_PREF);
 }
 
