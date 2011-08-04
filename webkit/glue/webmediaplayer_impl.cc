@@ -841,6 +841,8 @@ void WebMediaPlayerImpl::sourceEndOfStream(
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
   switch(status) {
+    case WebKit::WebMediaPlayer::EosNoError:
+      break;
     case WebKit::WebMediaPlayer::EosNetworkError:
       pipeline_status = media::PIPELINE_ERROR_NETWORK;
       break;
@@ -925,11 +927,14 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
       LOG(DFATAL) << "PIPELINE_OK isn't an error!";
       break;
 
+    case media::PIPELINE_ERROR_NETWORK:
+      SetNetworkState(WebMediaPlayer::NetworkError);
+      break;
+
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
     case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:
     case media::PIPELINE_ERROR_URL_NOT_FOUND:
-    case media::PIPELINE_ERROR_NETWORK:
     case media::PIPELINE_ERROR_READ:
     case media::DEMUXER_ERROR_COULD_NOT_OPEN:
     case media::DEMUXER_ERROR_COULD_NOT_PARSE:
