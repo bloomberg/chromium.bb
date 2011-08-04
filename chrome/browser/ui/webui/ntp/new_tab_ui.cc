@@ -204,14 +204,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   // thumbnails, but also clicks on recently bookmarked.
   link_transition_type_ = PageTransition::AUTO_BOOKMARK;
 
-  if (NewTabUI::FirstRunDisabled())
-    NewTabHTMLSource::set_first_run(false);
-
-  static bool first_view = true;
-  if (first_view) {
-    first_view = false;
-  }
-
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();
     if (!NewTabSyncSetupHandler::ShouldShowSyncPromo())
@@ -377,12 +369,6 @@ void NewTabUI::MigrateUserPrefs(PrefService* prefs, int old_pref_version,
 }
 
 // static
-bool NewTabUI::FirstRunDisabled() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kDisableNewTabFirstRun);
-}
-
-// static
 void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
                                        const string16& title,
                                        const GURL& gurl) {
@@ -434,8 +420,6 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabHTMLSource
-
-bool NewTabUI::NewTabHTMLSource::first_run_ = true;
 
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),

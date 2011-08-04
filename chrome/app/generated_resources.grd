@@ -8271,14 +8271,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="Tooltip text for the button that shows the menu that hides and shows different sections on the new tab page.">
         Change page layout
       </message>
-      <message name="IDS_NEW_TAB_FIRST_RUN_NOTIFICATION"
-         desc="Notification text to show in the banner at the top of the new tab page when the user first sees it.">
-        Over time, the area below will show your eight most visited sites.
-      </message>
-      <message name="IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION"
-         desc="Action text for link that closes the first run notification.">
-        Close
-      </message>
       <message name="IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION"
          desc="Notification text to show after the user has made the NTP his/her home page.">
         Welcome to your home page!

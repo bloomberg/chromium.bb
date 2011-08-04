@@ -46,10 +46,6 @@ class NewTabUIStartupTest : public UIPerfTest {
     // Install the location of the test profile file.
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
         profile_type));
-
-    // Disable the first run notification because it has an animation which
-    // masks any real performance regressions.
-    launch_arguments_.AppendSwitch(switches::kDisableNewTabFirstRun);
   }
 
   // Run the test, by bringing up a browser and timing the new tab startup.

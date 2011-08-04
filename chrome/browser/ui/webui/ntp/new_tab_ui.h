@@ -37,10 +37,6 @@ class NewTabUI : public ChromeWebUI,
   static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,
                                int new_pref_version);
 
-  // Whether we should disable the first run notification based on the command
-  // line switch.
-  static bool FirstRunDisabled();
-
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
   static void SetURLTitleAndDirection(base::DictionaryValue* dictionary,
@@ -64,15 +60,8 @@ class NewTabUI : public ChromeWebUI,
 
     virtual bool ShouldReplaceExistingSource() const;
 
-    // Setters and getters for first_run.
-    static void set_first_run(bool first_run) { first_run_ = first_run; }
-    static bool first_run() { return first_run_; }
-
    private:
     virtual ~NewTabHTMLSource() {}
-
-    // Whether this is the first run.
-    static bool first_run_;
 
     // Pointer back to the original profile.
     Profile* profile_;

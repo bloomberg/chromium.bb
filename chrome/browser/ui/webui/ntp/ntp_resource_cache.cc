@@ -324,8 +324,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
   localized_strings.SetString("pagedisplaytooltip",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString("closefirstrunnotification",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings.SetString("history",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_HISTORY));

@@ -274,10 +274,6 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
-// Whether we should prevent the new tab page from showing the first run
-// notification.
-const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
-
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
