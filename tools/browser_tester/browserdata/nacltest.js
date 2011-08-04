@@ -8,6 +8,22 @@ function $(id) {
 }
 
 
+function createNaClEmbed(args) {
+  var fallback = function(value, default_value) {
+    return value !== undefined ? value : default_value;
+  };
+  var embed = document.createElement('embed');
+  embed.id = args.id;
+  embed.src = args.src;
+  embed.type = fallback(args.type, 'application/x-nacl');
+  // JavaScript inconsistency: this is equivalent to class=... in HTML.
+  embed.className = fallback(args.className, 'naclModule');
+  embed.width = fallback(args.width, 0);
+  embed.height = fallback(args.height, 0);
+  return embed;
+}
+
+
 function exceptionToLogText(e) {
   if (typeof e == 'object' && 'message' in e && 'stack' in e) {
     return e.message + '\n' + e.stack.toString();
@@ -668,13 +684,12 @@ function TestStatus(tester, name, async) {
   this.expectMessageSequence = function(plugin, messages, callback) {
     this.assert(messages.length > 0, 'Must provide at least one message');
     var local_messages = messages.slice();
-    var listener = this.wrap(function(message) {
+    var listener = function(message) {
       // skip debug messages
       if (message.data.indexOf('@:') == 0) {
         this_.log('DEBUG: ' + message.data.substr(2));
         return;
       }
-      plugin.removeEventListener('message', listener, false);
       this_.assertEqual(message.data, local_messages.shift());
       if (callback !== undefined) {
         callback(message.data);
@@ -682,10 +697,18 @@ function TestStatus(tester, name, async) {
       if (local_messages.length == 0) {
         this_.pass();
       } else {
-        plugin.addEventListener('message', listener, false);
+        this_.expectEvent(plugin, 'message', listener);
       }
+    }
+    this.expectEvent(plugin, 'message', listener);
+  }
+
+  this.expectEvent = function(src, event_type, listener) {
+    var wrapper = this.wrap(function(e) {
+      src.removeEventListener(event_type, wrapper, false);
+      listener(e);
     });
-    plugin.addEventListener('message', listener, false);
+    src.addEventListener(event_type, wrapper, false);
   }
 }
 

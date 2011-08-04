@@ -1141,6 +1141,7 @@ def PPAPIBrowserTester(env,
                        files,
                        map_files=(),
                        extensions=(),
+                       timeout=20,
                        log_verbosity=2,
                        args=(),
                        # list of "--flag=value" pairs (no spaces!)
@@ -1153,7 +1154,6 @@ def PPAPIBrowserTester(env,
   env = env.Clone()
   SetupBrowserEnv(env)
 
-  timeout = 20
   if 'scale_timeout' in ARGUMENTS:
     timeout = timeout * int(ARGUMENTS['scale_timeout'])
 
@@ -2721,6 +2721,7 @@ nonvariant_tests = [
     'tests/ppapi_browser/ppp_input_event/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
+    'tests/ppapi_browser/stress_many_nexes/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
