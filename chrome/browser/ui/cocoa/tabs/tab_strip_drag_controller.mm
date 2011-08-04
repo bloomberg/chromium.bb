@@ -11,6 +11,27 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
+// Provide the forward-declarations of new 10.7 SDK symbols so they can be
+// called when building with the 10.5 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+enum {
+  NSWindowAnimationBehaviorDefault = 0,
+  NSWindowAnimationBehaviorNone = 2,
+  NSWindowAnimationBehaviorDocumentWindow = 3,
+  NSWindowAnimationBehaviorUtilityWindow = 4,
+  NSWindowAnimationBehaviorAlertPanel = 5
+};
+typedef NSInteger NSWindowAnimationBehavior;
+
+@interface NSWindow (LionSDKDeclarations)
+- (NSWindowAnimationBehavior)animationBehavior;
+- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
 
@@ -242,6 +263,15 @@ const NSTimeInterval kTearDuration = 0.333;
       sourceWindow_ = dragWindow_;
     }
 
+    // Disable window animation before calling |orderFront:| when detatching
+    // to a new window.
+    NSWindowAnimationBehavior savedAnimationBehavior = 0;
+    if ([dragWindow_ respondsToSelector:@selector(animationBehavior)] &&
+        [dragWindow_ respondsToSelector:@selector(setAnimationBehavior:)]) {
+      savedAnimationBehavior = [dragWindow_ animationBehavior];
+      [dragWindow_ setAnimationBehavior:NSWindowAnimationBehaviorNone];
+    }
+
     // If dragging the tab only moves the current window, do not show overlay
     // so that sheets stay on top of the window.
     // Bring the target window to the front and make sure it has a border.
@@ -255,6 +285,12 @@ const NSTimeInterval kTearDuration = 0.333;
     [draggedController_ showNewTabButton:NO];
     tearTime_ = [NSDate timeIntervalSinceReferenceDate];
     tearOrigin_ = sourceWindowFrame_.origin;
+
+    // Restore window animation behavior
+    if ([dragWindow_ respondsToSelector:@selector(animationBehavior)] &&
+        [dragWindow_ respondsToSelector:@selector(setAnimationBehavior:)]) {
+      [dragWindow_ setAnimationBehavior:savedAnimationBehavior];
+    }
   }
 
   // TODO(pinkerton): http://crbug.com/25682 demonstrates a way to get here by
