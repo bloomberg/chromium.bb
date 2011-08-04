@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_interceptor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -74,6 +75,7 @@ class TestInstaller : public ComponentInstaller {
   virtual bool Install(base::DictionaryValue* manifest,
                        const FilePath& unpack_path) OVERRIDE {
     ++install_count_;
+    delete manifest;
     return file_util::Delete(unpack_path, true);
   }
 
@@ -292,4 +294,3 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   delete com2.installer;
   xmlCleanupGlobals();
 }
-

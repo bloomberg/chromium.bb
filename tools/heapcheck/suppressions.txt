@@ -1701,13 +1701,6 @@
    fun:sync_api::SyncManager::SyncInternal::Init
 }
 {
-   bug_91486
-   Heapcheck:Leak
-   ...
-   fun:::ReadManifest
-   fun:ComponentUnpacker::ComponentUnpacker
-}
-{
    bug_91491
    Heapcheck:Leak
    ...
