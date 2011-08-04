@@ -68,7 +68,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
   DCHECK(delegate_);
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile_));

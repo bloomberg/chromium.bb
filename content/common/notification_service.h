@@ -46,6 +46,19 @@ class NotificationService {
   // (for the purpose of registering an observer for events from all sources).
   static Source<void> AllSources() { return Source<void>(NULL); }
 
+  // Returns the same value as AllSources(). This function has semantic
+  // differences to the programmer: We have checked that this AllSources()
+  // usage is safe in the face of multiple profiles. Objects that were
+  // singletons now will always have multiple instances, one per profile.
+  //
+  // Some usage is safe, where the Source is checked to see if it's a member of
+  // a container before use. But, we want the number of AllSources() calls to
+  // drop to almost nothing, because most usages are not multiprofile safe and
+  // were done because it was easier to listen to everything.
+  static Source<void> AllBrowserContextsAndSources() {
+    return Source<void>(NULL);
+  }
+
   // Returns a NotificationDetails object that represents a lack of details
   // associated with a notification.  (This is effectively a null pointer.)
   static Details<void> NoDetails() { return Details<void>(NULL); }

@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
@@ -213,12 +214,12 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   }
 
   // Listen for bookmark bar visibility changes and set the initial state.
+  Source<Profile> source(browser->profile());
   registrar_.Add(this,
                  chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
+                 source);
   Observe(chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-          NotificationService::AllSources(),
-          NotificationService::NoDetails());
+          source, NotificationService::NoDetails());
 }
 
 GlobalMenuBar::~GlobalMenuBar() {
@@ -232,13 +233,14 @@ void GlobalMenuBar::Disable() {
     browser_->command_updater()->RemoveCommandObserver(it->first, this);
   }
   id_to_menu_item_.clear();
+  Source<Profile> source(browser_->profile());
   if (registrar_.IsRegistered(this,
                     chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                    NotificationService::AllSources())) {
+                    source)) {
     registrar_.Remove(
         this,
         chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-        NotificationService::AllSources());
+        source);
   }
 }
 
@@ -318,7 +320,8 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
 void GlobalMenuBar::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
+  DCHECK_EQ(Source<Profile>(source).ptr(), browser_->profile());
 
   CommandIDMenuItemMap::iterator it =
       id_to_menu_item_.find(IDC_SHOW_BOOKMARK_BAR);

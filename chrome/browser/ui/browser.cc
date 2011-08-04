@@ -275,7 +275,7 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
@@ -3739,6 +3739,7 @@ void Browser::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
+      DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
 

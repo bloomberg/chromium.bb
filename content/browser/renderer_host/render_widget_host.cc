@@ -868,11 +868,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::OnMsgUpdateRect");
   TimeTicks paint_start = TimeTicks::Now();
 
-  NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_WILL_PAINT,
-      Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
-
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
   // Update our knowledge of the RenderWidget's scroll offset.

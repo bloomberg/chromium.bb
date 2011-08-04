@@ -173,16 +173,6 @@ enum {
   // selected (if any).
   NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
 
-  // Notification that a view was removed from a view hierarchy.  The source
-  // is the view, the details is the parent view.
-  NOTIFICATION_VIEW_REMOVED,
-
-  // This message is sent when the last window considered to be an
-  // "application window" has been closed. Dependent/dialog/utility windows
-  // can use this as a way to know that they should also close. No source or
-  // details are passed.
-  NOTIFICATION_ALL_APPWINDOWS_CLOSED,
-
 #if defined(OS_MACOSX)
   // This message is sent when the application is made active (Mac OS X only
   // at present). No source or details are passed.
@@ -322,10 +312,6 @@ enum {
   // This is sent when a RenderWidgetHost is being destroyed. The source is
   // the RenderWidgetHost, the details are not used.
   NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-
-  // Sent when the widget is about to paint. The source is the
-  // RenderWidgetHost, the details are not used.
-  NOTIFICATION_RENDER_WIDGET_HOST_WILL_PAINT,
 
   // Sent after the widget has painted. The source is the RenderWidgetHost,
   // the details are not used.

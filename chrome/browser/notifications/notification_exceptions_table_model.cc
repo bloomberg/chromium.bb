@@ -30,7 +30,7 @@ NotificationExceptionsTableModel::NotificationExceptionsTableModel(
       observer_(NULL) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                 Source<DesktopNotificationService>(service));
   LoadEntries();
 }
 
@@ -103,7 +103,8 @@ void NotificationExceptionsTableModel::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   if (!updates_disabled_) {
-    DCHECK(type == chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED);
+    DCHECK_EQ(type, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED);
+    DCHECK_EQ(Source<DesktopNotificationService>(source).ptr(), service_);
     entries_.clear();
     LoadEntries();
 
