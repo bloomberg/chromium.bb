@@ -220,6 +220,35 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AsUnextractableAndExportAgain) {
                                        &exported_data));
 }
 
+// Importing a PKCS#12 file with a certificate but no corresponding
+// private key should not mark an existing private key as unextractable.
+TEST_F(CertDatabaseNSSTest, ImportFromPKCS12OnlyMarkIncludedKey) {
+  std::string pkcs12_data = ReadTestFile("client.p12");
+  EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
+                                          pkcs12_data,
+                                          ASCIIToUTF16("12345"),
+                                          true));  // is_extractable
+
+  CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
+  ASSERT_EQ(1U, cert_list.size());
+
+  // Now import a PKCS#12 file with just a certificate but no private key.
+  pkcs12_data = ReadTestFile("client-nokey.p12");
+  EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(slot_,
+                                          pkcs12_data,
+                                          ASCIIToUTF16("12345"),
+                                          false));  // is_extractable
+
+  cert_list = ListCertsInSlot(slot_->os_module_handle());
+  ASSERT_EQ(1U, cert_list.size());
+
+  // Make sure the imported private key is still extractable.
+  std::string exported_data;
+  EXPECT_EQ(1, cert_db_.ExportToPKCS12(cert_list, ASCIIToUTF16("exportpw"),
+                                       &exported_data));
+  ASSERT_LT(0U, exported_data.size());
+}
+
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
   std::string pkcs12_data = "Foobarbaz";
 
