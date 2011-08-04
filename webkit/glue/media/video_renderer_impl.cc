@@ -176,6 +176,7 @@ void VideoRendererImpl::SlowPaint(media::VideoFrame* video_frame,
                              video_frame->stride(media::VideoFrame::kUPlane),
                              bitmap_.rowBytes(),
                              yuv_type);
+    bitmap_.notifyPixelsChanged();
     bitmap_.unlockPixels();
   }
 
