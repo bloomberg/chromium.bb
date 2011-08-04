@@ -168,7 +168,7 @@ class UI_API RenderText {
   void set_default_style(StyleRange style) { default_style_ = style; }
 
   const Rect& display_rect() const { return display_rect_; }
-  virtual void set_display_rect(const Rect& r) { display_rect_ = r; }
+  virtual void set_display_rect(const Rect& r);
 
   const Point& display_offset() const { return display_offset_; }
 

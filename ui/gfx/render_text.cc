@@ -130,6 +130,10 @@ void SelectionModel::Init(size_t start,
 RenderText::~RenderText() {
 }
 
+void RenderText::set_display_rect(const Rect& r) {
+  display_rect_ = r;
+}
+
 void RenderText::SetText(const string16& text) {
   size_t old_text_length = text_.length();
   text_ = text;
