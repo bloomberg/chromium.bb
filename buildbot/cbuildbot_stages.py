@@ -514,7 +514,6 @@ class BuildBoardStage(BuilderStage):
       env = {}
       if self._build_config['gcc_46']:
         env['GCC_PV'] = '4.6.0'
-        env['USE'] = 'svn_sources'
 
       latest_toolchain = self._build_config['latest_toolchain']
 
