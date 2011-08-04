@@ -244,7 +244,6 @@
         'common/thumbnail_score.h',
         'common/url_constants.cc',
         'common/url_constants.h',
-        'common/utility_messages.h',
         'common/visitedlink_common.cc',
         'common/visitedlink_common.h',
         'common/web_apps.cc',

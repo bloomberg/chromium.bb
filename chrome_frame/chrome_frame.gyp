@@ -712,8 +712,6 @@
         'register_bho.rgs',
         'stream_impl.cc',
         'stream_impl.h',
-        'third_party/active_doc/in_place_menu.h',
-        'third_party/active_doc/ole_document_impl.h',
         'urlmon_bind_status_callback.h',
         'urlmon_bind_status_callback.cc',
         'urlmon_moniker.h',
@@ -727,6 +725,8 @@
         'utils.cc',
         'vtable_patch_manager.cc',
         'vtable_patch_manager.h',
+        '../third_party/active_doc/in_place_menu.h',
+        '../third_party/active_doc/ole_document_impl.h',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)/../chrome_frame',

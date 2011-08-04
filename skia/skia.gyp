@@ -47,6 +47,7 @@
         '../third_party/skia/gpu/src/GrRenderTarget.cpp',
         '../third_party/skia/gpu/src/GrResource.cpp',
         '../third_party/skia/gpu/src/GrResourceCache.cpp',
+        '../third_party/skia/gpu/src/GrResourceCache.h',
         '../third_party/skia/gpu/src/GrStencil.cpp',
         '../third_party/skia/gpu/src/GrTesselatedPathRenderer.cpp',
         '../third_party/skia/gpu/src/GrTexture.cpp',
@@ -78,7 +79,6 @@
         '../third_party/skia/gpu/include/GrInstanceCounter.h',
         '../third_party/skia/gpu/include/GrKey.h',
         '../third_party/skia/gpu/include/GrMatrix.h',
-        '../third_party/skia/gpu/include/GrMemory.h',
         '../third_party/skia/gpu/include/GrMesh.h',
         '../third_party/skia/gpu/include/GrNoncopyable.h',
         '../third_party/skia/gpu/include/GrPaint.h',
@@ -90,7 +90,6 @@
         '../third_party/skia/gpu/include/GrRectanizer.h',
         '../third_party/skia/gpu/include/GrRefCnt.h',
         '../third_party/skia/gpu/include/GrRenderTarget.h',
-        '../third_party/skia/gpu/include/GrResourceCache.h',
         '../third_party/skia/gpu/include/GrSamplerState.h',
         '../third_party/skia/gpu/include/GrScalar.h',
         '../third_party/skia/gpu/include/GrStencil.h',
@@ -627,7 +626,6 @@
 
         '../third_party/skia/include/gpu/SkGpuCanvas.h',
         '../third_party/skia/include/gpu/SkGpuDevice.h',
-        '../third_party/skia/include/gpu/SkGpuDeviceFactory.h',
         '../third_party/skia/include/gpu/SkGr.h',
         '../third_party/skia/include/gpu/SkGrTexturePixelRef.h',
 
@@ -958,7 +956,7 @@
         '../third_party/skia/third_party/glu',
       ],
       'sources': [
-        '../third_party/skia/third_party/glu/internal_glu.h',
+        '../third_party/skia/third_party/glu/sk_glu.h',
         '../third_party/skia/third_party/glu/gluos.h',
         '../third_party/skia/third_party/glu/libtess/dict-list.h',
         '../third_party/skia/third_party/glu/libtess/dict.c',

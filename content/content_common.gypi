@@ -164,7 +164,6 @@
         'common/notification_service.h',
         'common/notification_source.cc',
         'common/notification_source.h',
-        'common/notification_type.h',
         'common/p2p_messages.h',
         'common/p2p_sockets.h',
         'common/page_transition_types.cc',
