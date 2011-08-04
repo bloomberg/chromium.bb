@@ -448,6 +448,10 @@ UNINITIALIZED READ
 *!browser_sync::Cryptographer::PackBootstrapToken
 *!browser_sync::Cryptographer::GetBootstrapToken
 
+UNINITIALIZED READ
+...
+*!Encrypt*
+
 # http://code.google.com/p/drmemory/issues/detail?id=513
 UNINITIALIZED READ
 *!v8*
