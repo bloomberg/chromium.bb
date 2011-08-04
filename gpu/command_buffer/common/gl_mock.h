@@ -135,6 +135,10 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD3(DrawArrays, void(GLenum mode, GLint first, GLsizei count));
 
+  MOCK_METHOD1(DrawBuffer, void(GLenum mode));
+
+  MOCK_METHOD2(DrawBuffersARB, void(GLsizei n, const GLenum* bufs));
+
   MOCK_METHOD4(DrawElements, void(
       GLenum mode, GLsizei count, GLenum type, const void* indices));
 
@@ -271,6 +275,8 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
 
   MOCK_METHOD2(PolygonOffset, void(GLfloat factor, GLfloat units));
+
+  MOCK_METHOD1(ReadBuffer, void(GLenum src));
 
   MOCK_METHOD7(ReadPixels, void(
       GLint x, GLint y, GLsizei width, GLsizei height, GLenum format,

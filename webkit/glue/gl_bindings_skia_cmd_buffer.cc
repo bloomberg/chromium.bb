@@ -53,6 +53,8 @@ void BindSkiaToCommandBufferGL() {
     NULL,  // glDisableClientState
     glDisableVertexAttribArray,
     glDrawArrays,
+    NULL,  // glDrawBuffer
+    NULL,  // glDrawBuffers
     glDrawElements,
     glEnable,
     NULL,  // glEnableClientState
@@ -76,6 +78,7 @@ void BindSkiaToCommandBufferGL() {
     NULL,  // glMatrixMode
     glPixelStorei,
     NULL,  // glPointSize
+    NULL,  // glReadBuffer
     glReadPixels,
     glScissor,
     NULL,  // glShadeModel

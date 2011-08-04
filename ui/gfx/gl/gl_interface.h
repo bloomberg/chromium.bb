@@ -168,6 +168,10 @@ class GLInterface {
 
   virtual void DrawArrays(GLenum mode, GLint first, GLsizei count) = 0;
 
+  virtual void DrawBuffer(GLenum mode) = 0;
+
+  virtual void DrawBuffersARB(GLsizei n, const GLenum* bufs) = 0;
+
   virtual void DrawElements(GLenum mode,
                             GLsizei count,
                             GLenum type,
@@ -345,6 +349,8 @@ class GLInterface {
   virtual void PixelStorei(GLenum pname, GLint param) = 0;
 
   virtual void PolygonOffset(GLfloat factor, GLfloat units) = 0;
+
+  virtual void ReadBuffer(GLenum src) = 0;
 
   virtual void ReadPixels(GLint x, GLint y,
                           GLsizei width, GLsizei height,

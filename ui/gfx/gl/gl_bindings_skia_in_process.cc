@@ -164,6 +164,14 @@ GLvoid StubGLDrawArrays(GLenum mode, GLint first, GLsizei count) {
   glDrawArrays(mode, first, count);
 }
 
+GLvoid StubGLDrawBuffer(GLenum mode) {
+  glDrawBuffer(mode);
+}
+
+GLvoid StubGLDrawBuffers(GLsizei n, const GLenum* bufs) {
+  glDrawBuffersARB(n, bufs);
+}
+
 GLvoid StubGLDrawElements(GLenum mode, GLsizei count, GLenum type,
                           const void* indices) {
   glDrawElements(mode, count, type, indices);
@@ -278,6 +286,10 @@ void* StubGLMapBuffer(GLenum target, GLenum access) {
 
 GLvoid StubGLPixelStorei(GLenum pname, GLint param) {
   glPixelStorei(pname, param);
+}
+
+GLvoid StubGLReadBuffer(GLenum src) {
+  glReadBuffer(src);
 }
 
 GLvoid StubGLReadPixels(GLint x, GLint y, GLsizei width, GLsizei height,
@@ -519,6 +531,8 @@ void BindSkiaToInProcessGL() {
       NULL,  // glDisableClientState
       StubGLDisableVertexAttribArray,
       StubGLDrawArrays,
+      StubGLDrawBuffer,
+      StubGLDrawBuffers,
       StubGLDrawElements,
       StubGLEnable,
       NULL,  // glEnableClientState
@@ -542,6 +556,7 @@ void BindSkiaToInProcessGL() {
       NULL,  // glMatrixMode
       StubGLPixelStorei,
       NULL,  // glPointSize
+      StubGLReadBuffer,
       StubGLReadPixels,
       StubGLScissor,
       NULL,  // glShadeModel

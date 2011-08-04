@@ -84,6 +84,8 @@ GL_FUNCTIONS = [
 ['void', ['glDisable'], 'GLenum cap'],
 ['void', ['glDisableVertexAttribArray'], 'GLuint index'],
 ['void', ['glDrawArrays'], 'GLenum mode, GLint first, GLsizei count'],
+['void', ['glDrawBuffer'], 'GLenum mode'],
+['void', ['glDrawBuffersARB'], 'GLsizei n, const GLenum* bufs'],
 ['void', ['glDrawElements'],
     'GLenum mode, GLsizei count, GLenum type, const void* indices'],
 ['void', ['glEGLImageTargetTexture2DOES'],
@@ -168,6 +170,7 @@ GL_FUNCTIONS = [
 ['void*', ['glMapBuffer'], 'GLenum target, GLenum access'],
 ['void', ['glPixelStorei'], 'GLenum pname, GLint param'],
 ['void', ['glPolygonOffset'], 'GLfloat factor, GLfloat units'],
+['void', ['glReadBuffer'], 'GLenum src'],
 ['void', ['glReadPixels'],
     'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
     'GLenum type, void* pixels'],
