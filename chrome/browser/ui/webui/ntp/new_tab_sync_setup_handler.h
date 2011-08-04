@@ -43,6 +43,9 @@ class NewTabSyncSetupHandler : public SyncSetupHandler {
   // Sends the sync login name to the page.
   void UpdateLogin();
 
+  // Saves the expanded state to preferences.
+  void SaveExpandedPreference(bool is_expanded);
+
   // Preference for the sync login name.
   StringPrefMember username_pref_;
 };

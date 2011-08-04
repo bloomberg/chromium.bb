@@ -82,17 +82,23 @@ void NewTabSyncSetupHandler::HandleInitializeSyncPromo(const ListValue* args) {
 
   // If the user has not signed into sync then expand the sync promo.
   // TODO(sail): Need to throttle this behind a server side flag.
-  if (!service->HasSyncSetupCompleted())
+  if (!service->HasSyncSetupCompleted() &&
+      web_ui_->GetProfile()->GetPrefs()->GetBoolean(
+          prefs::kSyncPromoExpanded)) {
     OpenSyncSetup();
+    SaveExpandedPreference(true);
+  }
 }
 
 void NewTabSyncSetupHandler::HandleCollapseSyncPromo(const ListValue* args) {
   CloseSyncSetup();
+  SaveExpandedPreference(false);
 }
 
 
 void NewTabSyncSetupHandler::HandleExpandSyncPromo(const ListValue* args) {
   OpenSyncSetup();
+  SaveExpandedPreference(true);
 }
 
 void NewTabSyncSetupHandler::UpdateLogin() {
@@ -101,4 +107,10 @@ void NewTabSyncSetupHandler::UpdateLogin() {
   StringValue string_value(username);
   web_ui_->CallJavascriptFunction("new_tab.NewTabSyncPromo.updateLogin",
                                   string_value);
+}
+
+void NewTabSyncSetupHandler::SaveExpandedPreference(bool is_expanded) {
+  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kSyncPromoExpanded,
+                                                is_expanded);
+  web_ui_->GetProfile()->GetPrefs()->ScheduleSavePersistentPrefs();
 }
