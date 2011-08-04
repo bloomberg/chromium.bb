@@ -2776,9 +2776,11 @@ sdk-libs() {
       libdir="$(PosixToSysPath "${PNACL_SDK_LIB}")"
 
   for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
+    # There are currently no platform libs in the glibc build.
+    if ${LIBMODE_GLIBC}; then
       continue
     fi
+
     StepBanner "SDK" "Make/Install ${platform} components"
     RunWithLog "sdk.libs.${platform}" \
       "${SCONS_COMMON[@]}" \
@@ -2802,7 +2804,8 @@ sdk-verify() {
   done
 
   for platform in arm x86-32 x86-64; do
-    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
+    # There are currently no platform libs in the glibc build.
+    if ${LIBMODE_GLIBC}; then
       continue
     fi
 
