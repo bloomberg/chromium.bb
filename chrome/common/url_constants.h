@@ -47,6 +47,8 @@ extern const char kChromeUIKillURL[];
 extern const char kChromeUIMemoryURL[];
 extern const char kChromeUIMemoryRedirectURL[];
 extern const char kChromeUINetworkViewCacheURL[];
+extern const char kChromeUINetInternalsURL[];
+extern const char kChromeUINewProfile[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];

@@ -1552,10 +1552,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  string16 expected_title = ASCIIToUTF16("Unloaded");
   ui_test_utils::TitleWatcher title_watcher(browser()->GetSelectedTabContents(),
-                                            ASCIIToUTF16("Unloaded"));
+                                            expected_title);
   NavigateToDestURL();
-  EXPECT_TRUE(title_watcher.Wait());
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 // Checks that when the history is cleared, prerendering is cancelled and

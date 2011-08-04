@@ -474,18 +474,16 @@ var currentTestCase = null;
   }
 
   /**
-   * This is the starting point for tests run by WebUIBrowserTest. It clears
-   * |errors|, runs the test surrounded by an expect to catch Errors. If
-   * |errors| is non-empty, it reports a failure and a message by joining
-   * |errors|.
+   * This is the starting point for tests run by WebUIBrowserTest.  If an error
+   * occurs, it reports a failure and a message created by joining individual
+   * error messages.
    * @param {string} testFunction The function name to call.
    * @param {Array} testArguments The arguments to call |testFunction| with.
    * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
    * @see errors
-   * @see createExpect
+   * @see runTestFunction
    **/
   function runTest(testFunction, testArguments) {
-    errors.splice(0, errors.length);
     // Avoid eval() if at all possible, since it will not work on pages
     // that have enabled content-security-policy.
     var testBody = this[testFunction];    // global object -- not a method.
@@ -496,6 +494,24 @@ var currentTestCase = null;
           testFunction.name ? testFunction.name : testBody.toString();
       console.log('Running test ' + testName);
     }
+    return runTestFunction(testFunction, testBody, testArguments);
+  }
+
+  /**
+   * This is the guts of WebUIBrowserTest. It clears |errors|, runs the
+   * test surrounded by an expect to catch Errors. If |errors| is
+   * non-empty, it reports a failure and a message by joining |errors|.
+   * Consumers can use this to use assert/expect functions asynchronously,
+   * but are then responsible for reporting errors to the browser themselves.
+   * @param {string} testFunction The function name to report on failure.
+   * @param {Function} testBody The function to call.
+   * @param {Array} testArguments The arguments to call |testBody| with.
+   * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
+   * @see errors
+   * @see createExpect
+   **/
+  function runTestFunction(testFunction, testBody, testArguments) {
+    errors.splice(0, errors.length);
     createExpect(testBody).apply(null, testArguments);
 
     var result = [true];
@@ -717,6 +733,7 @@ var currentTestCase = null;
   window.registerMessageCallback = registerMessageCallback;
   window.registerMockMessageCallbacks = registerMockMessageCallbacks;
   window.runTest = runTest;
+  window.runTestFunction = runTestFunction;
   window.SaveArgumentsMatcher = SaveArgumentsMatcher;
   window.TEST = TEST;
   window.TEST_F = TEST_F;

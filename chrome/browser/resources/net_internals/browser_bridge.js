@@ -69,6 +69,9 @@ var BrowserBridge = (function() {
     // and no messages will be sent to the browser, either.  Intended for use
     // when viewing log files.
     this.disabled_ = false;
+
+    // Interval id returned by window.setInterval for polling timer.
+    this.pollIntervalId_ = null;
   }
 
   cr.addSingletonGetter(BrowserBridge);
@@ -96,12 +99,26 @@ var BrowserBridge = (function() {
 
     sendReady: function() {
       this.send('notifyReady');
+      this.setPollInterval(POLL_INTERVAL_MS);
+    },
 
-      // Some of the data we are interested is not currently exposed as a
-      // stream, so we will poll the browser to find out when it changes and
-      // then notify the observers.
-      window.setInterval(this.checkForUpdatedInfo.bind(this, false),
-                         POLL_INTERVAL_MS);
+    /**
+     * Some of the data we are interested is not currently exposed as a
+     * stream.  This starts polling those with active observers (visible
+     * views) every |intervalMs|.  Subsequent calls override previous calls
+     * to this function.  If |intervalMs| is 0, stops polling.
+     */
+    setPollInterval: function(intervalMs) {
+      if (this.pollIntervalId_ !== null) {
+        window.clearInterval(this.pollIntervalId_);
+        this.pollIntervalId_ = null;
+      }
+
+      if (intervalMs > 0) {
+        this.pollIntervalId_ =
+            window.setInterval(this.checkForUpdatedInfo.bind(this, false),
+                               intervalMs);
+      }
     },
 
     sendGetProxySettings: function() {
@@ -312,6 +329,7 @@ var BrowserBridge = (function() {
      */
     disable: function() {
       this.disabled_ = true;
+      this.setPollInterval(0);
     },
 
     /**

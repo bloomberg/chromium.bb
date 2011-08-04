@@ -902,24 +902,28 @@ void WindowedNotificationObserver::Observe(int type,
 TitleWatcher::TitleWatcher(TabContents* tab_contents,
                            const string16& expected_title)
     : expected_tab_(tab_contents),
-      expected_title_(expected_title),
-      title_observed_(false),
+      expected_title_observed_(false),
       quit_loop_on_observation_(false) {
   EXPECT_TRUE(tab_contents != NULL);
+  expected_titles_.push_back(expected_title);
   notification_registrar_.Add(this,
                               content::NOTIFICATION_TAB_CONTENTS_TITLE_UPDATED,
                               Source<TabContents>(tab_contents));
 }
 
+void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
+  expected_titles_.push_back(expected_title);
+}
+
 TitleWatcher::~TitleWatcher() {
 }
 
-bool TitleWatcher::Wait() {
-  if (title_observed_)
-    return true;
+const string16& TitleWatcher::WaitAndGetTitle() {
+  if (expected_title_observed_)
+    return observed_title_;
   quit_loop_on_observation_ = true;
   ui_test_utils::RunMessageLoop();
-  return title_observed_;
+  return observed_title_;
 }
 
 void TitleWatcher::Observe(int type,
@@ -930,10 +934,14 @@ void TitleWatcher::Observe(int type,
 
   TabContents* source_contents = Source<TabContents>(source).ptr();
   ASSERT_EQ(expected_tab_, source_contents);
-  if (source_contents->GetTitle() != expected_title_)
+  std::vector<string16>::const_iterator it =
+      std::find(expected_titles_.begin(),
+                expected_titles_.end(),
+                source_contents->GetTitle());
+  if (it == expected_titles_.end())
     return;
-
-  title_observed_ = true;
+  observed_title_ = *it;
+  expected_title_observed_ = true;
   if (quit_loop_on_observation_)
     MessageLoopForUI::current()->Quit();
 }

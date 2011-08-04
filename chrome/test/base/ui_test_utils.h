@@ -10,6 +10,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -492,9 +493,13 @@ class TitleWatcher : public NotificationObserver {
   TitleWatcher(TabContents* tab_contents, const string16& expected_title);
   virtual ~TitleWatcher();
 
-  // Waits until the title for the tab is set to the |expected_title|
-  // passed into the constructor.
-  bool Wait() WARN_UNUSED_RESULT;
+  // Adds another title to watch for.
+  void AlsoWaitForTitle(const string16& expected_title);
+
+  // Waits until the title matches either expected_title or one of the titles
+  // added with  AlsoWaitForTitle.  Returns the value of the most recently
+  // observed matching title.
+  const string16& WaitAndGetTitle() WARN_UNUSED_RESULT;
 
  private:
   // NotificationObserver
@@ -503,9 +508,13 @@ class TitleWatcher : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
   TabContents* expected_tab_;
-  string16 expected_title_;
+  std::vector<string16> expected_titles_;
   NotificationRegistrar notification_registrar_;
-  bool title_observed_;
+
+  // The most recently observed expected title, if any.
+  string16 observed_title_;
+
+  bool expected_title_observed_;
   bool quit_loop_on_observation_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
