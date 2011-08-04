@@ -22,6 +22,7 @@
   box-sizing: border-box;
   cursor: pointer;
   max-width: 80px;
+  outline: none;
   text-align: left;
   -webkit-box-flex: 1;
   -webkit-margin-end: 10px;
