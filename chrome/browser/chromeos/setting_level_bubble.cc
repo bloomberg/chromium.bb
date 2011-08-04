@@ -9,6 +9,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -65,10 +66,10 @@ static views::Widget* GetToplevelWidget() {
       window = GTK_WINDOW(background->GetNativeWindow());
   }
 
-  if (!window)
-    return NULL;
-
-  return views::Widget::GetWidgetForNativeWindow(window);
+  if (window)
+    return views::Widget::GetWidgetForNativeWindow(window);
+  else
+    return WebUILoginDisplay::GetLoginWindow();
 }
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
@@ -102,8 +103,10 @@ void SettingLevelBubble::ShowBubble(int percent) {
 
   if (!bubble_) {
     views::Widget* parent_widget = GetToplevelWidget();
-    if (parent_widget == NULL)
+    if (parent_widget == NULL) {
+      LOG(WARNING) << "Unable to locate parent widget to display a bubble";
       return;
+    }
     DCHECK(view_ == NULL);
     view_ = new SettingLevelBubbleView;
     view_->Init(icon, previous_percent_);
