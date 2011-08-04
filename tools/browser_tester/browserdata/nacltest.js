@@ -685,14 +685,14 @@ function TestStatus(tester, name, async) {
     this.assert(messages.length > 0, 'Must provide at least one message');
     var local_messages = messages.slice();
     var listener = function(message) {
-      // skip debug messages
       if (message.data.indexOf('@:') == 0) {
+        // skip debug messages
         this_.log('DEBUG: ' + message.data.substr(2));
-        return;
-      }
-      this_.assertEqual(message.data, local_messages.shift());
-      if (callback !== undefined) {
-        callback(message.data);
+      } else {
+        this_.assertEqual(message.data, local_messages.shift());
+        if (callback !== undefined) {
+          callback(message.data);
+        }
       }
       if (local_messages.length == 0) {
         this_.pass();
