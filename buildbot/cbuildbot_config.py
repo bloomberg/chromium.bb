@@ -331,13 +331,14 @@ add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
   'important': False,
 }])
 
+# TODO(sosa): Remove x86-pineview bin.
 add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'important': True,
+  'important': False,
   'manifest_version': True,
 }])
 
