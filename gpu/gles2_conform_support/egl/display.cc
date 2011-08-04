@@ -7,6 +7,7 @@
 #include <vector>
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
@@ -108,10 +109,11 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
   using gpu::GpuScheduler;
   std::vector<int32> attribs;
+  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup());
   scoped_ptr<GpuScheduler> gpu_scheduler(
       GpuScheduler::Create(command_buffer_.get(),
                            NULL,
-                           NULL));
+                           group.get()));
   if (!gpu_scheduler->Initialize(
       win, gfx::Size(), false, gpu::gles2::DisallowedExtensions(), NULL,
       attribs, NULL))
