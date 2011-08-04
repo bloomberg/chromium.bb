@@ -171,7 +171,7 @@ static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
 static void SignalCatch(int sig, siginfo_t *info, void *uc) {
   struct NaClSignalContext sigCtx;
 
-  /* Preserve the handler's segment registerts just in case. */
+  /* Preserve the handler's segment registers just in case. */
   uint16_t gs = NaClGetGs();
   uint16_t es = NaClGetEs();
   uint16_t fs = NaClGetFs();
