@@ -40,11 +40,13 @@ AC_ARG_WITH(expat, [  --with-expat=<dir>      Use expat from here],
 		   [ expat=$withval
 		     CPPFLAGS="$CPPFLAGS -I$withval/include"
 		     LDFLAGS="$LDFLAGS -L$withval/lib" ] )
-AC_CHECK_HEADERS(expat.h, [AC_DEFINE(HAVE_EXPAT_H)], 
-		 [AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
-AC_CHECK_LIB(expat, XML_ParserCreate, [EXPAT_LIBS="-lexpat"],
-	     [AC_MSG_ERROR([Can't find expat library. Please install expat.])])
-AC_SUBST(EXPAT_LIBS)
+if test "x$enable_scanner" = "xyes"; then
+	AC_CHECK_HEADERS(expat.h, [AC_DEFINE(HAVE_EXPAT_H)],
+			 [AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
+	AC_CHECK_LIB(expat, XML_ParserCreate, [EXPAT_LIBS="-lexpat"],
+		     [AC_MSG_ERROR([Can't find expat library. Please install expat.])])
+	AC_SUBST(EXPAT_LIBS)
+fi
 
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
