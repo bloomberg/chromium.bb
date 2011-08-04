@@ -296,26 +296,10 @@ GQuark GetBrowserWindowQuarkKey() {
 }
 
 // Set a custom WM_CLASS for a window.
-// This would normally be a simple gtk_window_set_wmclass call but we have
-// an XFCE workaround.
 void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (base::nix::GetDesktopEnvironment(env.get()) ==
-      base::nix::DESKTOP_ENVIRONMENT_XFCE) {
-    // Workaround for XFCE. XFCE seems to treat the class as a user
-    // displayed title, which our app name certainly isn't. They don't have
-    // a dock or application based behaviour so do what looks good.
-    gtk_window_set_wmclass(window,
-                           wmclass.c_str(),
-                           gdk_get_program_class());
-  } else {
-    // Most everything else uses the wmclass_class to group windows
-    // together (docks, per application stuff, etc). Hopefully they won't
-    // display wmclassname to the user.
-    gtk_window_set_wmclass(window,
-                           g_get_prgname(),
-                           wmclass.c_str());
-  }
+  gtk_window_set_wmclass(window,
+                         wmclass.c_str(),
+                         gdk_get_program_class());
 
   // Set WM_WINDOW_ROLE for session management purposes.
   // See http://tronche.com/gui/x/icccm/sec-5.html .
