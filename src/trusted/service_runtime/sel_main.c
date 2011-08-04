@@ -144,11 +144,6 @@ static void PrintUsage() {
           );  /* easier to add new flags/lines */
 }
 
-/*
- * NB: do NOT return from main until our dependency on SDL is removed.
- * This is because the OSX version of SDL ignores main's return value
- * and always exits with an exit status of 0, breaking tests.
- */
 int main(int  argc,
          char **argv) {
   int                           opt;
