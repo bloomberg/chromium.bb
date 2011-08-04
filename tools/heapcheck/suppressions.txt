@@ -1352,12 +1352,6 @@
    fun:browser_sync::DataTypeManagerImpl::Configure
 }
 {
-   bug_80238
-   Heapcheck:Leak
-   ...
-   fun:sync_notifier::::InvalidationNotifierTest::SetUp
-}
-{
    bug_80467
    Heapcheck:Leak
    ...
@@ -1569,14 +1563,6 @@
    Heapcheck:Leak
    fun:TestingProfile::CreateRequestContext
    fun:ProfileSyncService*Test::SetUp
-}
-{
-   bug_88438
-   Heapcheck:Leak
-   fun:invalidation::NewPermanentCallback
-   fun:invalidation::InvalidationClientImpl::ScheduleStartAfterReadingStateBlob
-   fun:invalidation::InvalidationClientImpl::Start
-   fun:sync_notifier::ChromeInvalidationClient::Start
 }
 {
    bug_88640
