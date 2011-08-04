@@ -18,30 +18,16 @@ BubbleWindowViews::BubbleWindowViews(BubbleWindowStyle style)
     : style_(style) {
 }
 
-views::NonClientFrameView* BubbleWindowViews::CreateNonClientFrameView() {
-  return new BubbleFrameView(this, widget_delegate(), style_);
+void BubbleWindowViews::SetBackgroundColor() {
+  // TODO(saintlou): Once Views are truly pure the code below needs to be
+  // removed and replaced by the corresponding Views code.
+  GdkColor background_color =
+      gfx::SkColorToGdkColor(kBubbleWindowBackgroundColor);
+  gtk_widget_modify_bg(GetNativeView(), GTK_STATE_NORMAL, &background_color);
 }
 
-views::Widget* BubbleWindowViews::Create(
-    gfx::NativeWindow parent,
-    BubbleWindowStyle style,
-    views::WidgetDelegate* widget_delegate) {
-  BubbleWindowViews* window = new BubbleWindowViews(style);
-  views::Widget::InitParams params;
-  params.delegate = widget_delegate;
-  params.parent = GTK_WIDGET(parent);
-  params.bounds = gfx::Rect();
-  params.transparent = true;
-  window->Init(params);
-
-  // TODO(saintlou): After discussions with mazda we concluded that we could
-  // punt on an initial implementation of this style which is only used when
-  // displaying the keyboard overlay. Once we have implemented gradient and
-  // other missing features of Views we can address this.
-  if (style == STYLE_XSHAPE)
-    NOTIMPLEMENTED();
-
-  return window;
+views::NonClientFrameView* BubbleWindowViews::CreateNonClientFrameView() {
+  return new BubbleFrameView(this, widget_delegate(), style_);
 }
 
 }  // namespace chromeos

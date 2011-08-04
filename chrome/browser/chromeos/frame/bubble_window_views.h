@@ -19,15 +19,14 @@ namespace chromeos {
 // A window that uses BubbleFrameView as its frame.
 class BubbleWindowViews : public views::Widget {
  public:
-  static views::Widget* Create(gfx::NativeWindow parent,
-                               BubbleWindowStyle style,
-                               views::WidgetDelegate* widget_delegate);
+  void SetBackgroundColor();
 
  protected:
   explicit BubbleWindowViews(BubbleWindowStyle style);
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
  private:
+  friend class BubbleWindow;
   BubbleWindowStyle style_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWindowViews);

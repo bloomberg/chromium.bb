@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
+#include "chrome/browser/chromeos/frame/bubble_window_views.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #include "views/window/non_client_view.h"
 
@@ -115,6 +116,27 @@ views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
     BubbleWindowStyle style,
     views::WidgetDelegate* widget_delegate) {
+  // TODO(saintlou): Ultimately we do not want 2 classes for BubbleWindows.
+  // After discussions with mazda@chromium.org we concluded that we could
+  // punt on an initial implementation of the STYLE_XSHAPE style which is only
+  // used when displaying the keyboard overlay. Once we have implemented
+  // gradient and other missing features of Views we can address this.
+  // Furthermore the 2 other styles (STYLE_XBAR & STYLE_THROBBER) are only used
+  // in LoginHtmlDialog::Show() which will be deprecated soon.
+  if (views::Widget::IsPureViews()) {
+    if (style != STYLE_GENERIC)
+      NOTIMPLEMENTED();
+    BubbleWindowViews* window = new BubbleWindowViews(style);
+    views::Widget::InitParams params;
+    params.delegate = widget_delegate;
+    params.parent = GTK_WIDGET(parent);
+    params.bounds = gfx::Rect();
+    params.transparent = true;
+    window->Init(params);
+    window->SetBackgroundColor();
+    return window;
+  }
+
   views::Widget* window = new views::Widget;
   BubbleWindow* bubble_window = new BubbleWindow(window, style);
   views::Widget::InitParams params;
