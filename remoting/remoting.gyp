@@ -198,7 +198,15 @@
           'mac_bundle_resources!': [
             'host/plugin/host_plugin-Info.plist',
           ],
-        }],
+          'conditions': [
+            ['mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+            }],
+          ],  # conditions
+        }],  # OS=="mac"
         ['OS!="win"', {
           'sources!': [
             'host/plugin/host_plugin.def',

@@ -55,13 +55,14 @@ for SRC_NAME in "${SRC_APP_NAME}.app" \
                 "crash_inspector" \
                 "crash_report_sender.app" \
                 "ffmpegsumo.so" \
-                "libplugin_carbon_interpose.dylib" ; do
+                "libplugin_carbon_interpose.dylib" \
+                "remoting_host_plugin.plugin" ; do
   # SRC_STEM is the name of the file within the DWARF directory of the .dSYM
   # bundle, which comes from the on-disk name of an executable or dylib within
-  # its enclosing .app or .framework bundle.  This is the bundle name without
-  # .app or .framework appended.  For non-bundled types, the stem is just the
-  # name of the singular file on disk.
-  SRC_STEM=$(echo "${SRC_NAME}" | sed -Ee 's/^(.*)\.(app|framework)$/\1/')
+  # its enclosing .app, .framework or .plugin bundle.  This is the bundle name
+  # without .app, .framework or .plugin appended.  For non-bundled types, the
+  # stem is just the name of the singular file on disk.
+  SRC_STEM=$(echo "${SRC_NAME}" | sed -Ee 's/\.(app|framework|plugin)$//')
   DSYM_NAME="${SRC_NAME}.dSYM"
   DSYM_PATH="${BUILT_PRODUCTS_DIR}/${DSYM_NAME}"
   DWARF_PATH="${DSYM_PATH}/Contents/Resources/DWARF/${SRC_STEM}"
