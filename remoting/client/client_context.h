@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,13 @@
 namespace remoting {
 
 // A class that manages threads and running context for the chromoting client
-// process.
+// process. This class is not designed to be subclassed.
 class ClientContext {
  public:
   ClientContext();
-  virtual ~ClientContext();
+  ~ClientContext();
 
+  // Start and Stop must be called from the main plugin thread.
   void Start();
   void Stop();
 
@@ -39,6 +40,9 @@ class ClientContext {
 
   // A thread that handles all decode operations.
   base::Thread decode_thread_;
+
+  // True if Start() was called on the context.
+  bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientContext);
 };

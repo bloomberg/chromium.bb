@@ -21,6 +21,7 @@
 // crbug.com/74951
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
+#include "media/base/media.h"
 #include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
@@ -121,7 +122,9 @@ ChromotingInstance::~ChromotingInstance() {
   // before we can call Detach() on |view_proxy_|.
   context_.Stop();
 
-  view_proxy_->Detach();
+  if (view_proxy_.get()) {
+    view_proxy_->Detach();
+  }
 }
 
 bool ChromotingInstance::Init(uint32_t argc,
@@ -131,6 +134,13 @@ bool ChromotingInstance::Init(uint32_t argc,
   initialized_ = true;
 
   VLOG(1) << "Started ChromotingInstance::Init";
+
+  // Check to make sure the media library is initialized.
+  // http://crbug.com/91521.
+  if (!media::IsMediaLibraryInitialized()) {
+    logger_.Log(logging::LOG_ERROR, "Media library not initialized.");
+    return false;
+  }
 
   // Start all the threads.
   context_.Start();
