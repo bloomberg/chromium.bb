@@ -44,6 +44,9 @@ class NET_API AsyncHostResolver
                       CompletionCallback* callback,
                       RequestHandle* out_req,
                       const BoundNetLog& source_net_log) OVERRIDE;
+  virtual int ResolveFromCache(const RequestInfo& info,
+                               AddressList* addresses,
+                               const BoundNetLog& source_net_log) OVERRIDE;
   virtual void CancelRequest(RequestHandle req_handle) OVERRIDE;
   virtual void AddObserver(HostResolver::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(HostResolver::Observer* observer) OVERRIDE;

@@ -179,13 +179,10 @@ TEST_F(AsyncHostResolverTest, IPv6LiteralLookup) {
 }
 
 TEST_F(AsyncHostResolverTest, CachedLookup) {
-  info0_.set_only_use_cached_response(true);
-  int rv = resolver_->Resolve(info0_, &addrlist0_, NULL, NULL,
-                              BoundNetLog());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+  int rv = resolver_->ResolveFromCache(info0_, &addrlist0_, BoundNetLog());
+  EXPECT_EQ(ERR_DNS_CACHE_MISS, rv);
 
   // Cache the result of |info0_| lookup.
-  info0_.set_only_use_cached_response(false);
   rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
                           BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -195,9 +192,7 @@ TEST_F(AsyncHostResolverTest, CachedLookup) {
 
   // Now lookup |info0_| from cache only, store results in |addrlist1_|,
   // should succeed synchronously.
-  info0_.set_only_use_cached_response(true);
-  rv = resolver_->Resolve(info0_, &addrlist1_, NULL, NULL,
-                              BoundNetLog());
+  rv = resolver_->ResolveFromCache(info0_, &addrlist1_, BoundNetLog());
   EXPECT_EQ(OK, rv);
   VerifyAddressList(ip_addresses0_, kPortNum, addrlist1_);
 }

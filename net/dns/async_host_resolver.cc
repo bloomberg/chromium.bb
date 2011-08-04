@@ -37,8 +37,6 @@ class RequestParameters : public NetLog::EventParameters {
     dict->SetInteger("address_family",
                      static_cast<int>(info_.address_family()));
     dict->SetBoolean("allow_cached_response", info_.allow_cached_response());
-    dict->SetBoolean("only_use_cached_response",
-                     info_.only_use_cached_response());
     dict->SetBoolean("is_speculative", info_.is_speculative());
     dict->SetInteger("priority", info_.priority());
 
@@ -114,7 +112,7 @@ class AsyncHostResolver::Request {
   int id() const { return id_; }
   int result() const { return result_; }
   const Key& key() const {
-    DCHECK(IsValidKey());
+    DCHECK(IsValid());
     return key_;
   }
   const HostResolver::RequestInfo& info() const { return info_; }
@@ -122,29 +120,49 @@ class AsyncHostResolver::Request {
   const BoundNetLog& source_net_log() const { return source_net_log_; }
   const BoundNetLog& request_net_log() const { return request_net_log_; }
 
-  bool ResolveSynchronously() {
-    bool resolve_succeeded = true;
+  bool ResolveAsIp() {
     IPAddressNumber ip_number;
-    if (info_.hostname().empty())
+    if (!ParseIPLiteralToNumber(info_.hostname(), &ip_number))
+      return false;
+
+    if (ip_number.size() != kIPv4AddressSize) {
       result_ = ERR_NAME_NOT_RESOLVED;
-    else if (ParseIPLiteralToNumber(info_.hostname(), &ip_number))
-      result_ = ServeAsIp(ip_number);
-    else if (!IsValidKey())
-      result_ = ERR_NAME_NOT_RESOLVED;
-    else if (ServeFromCache())
+    } else {
+      *addresses_ = AddressList::CreateFromIPAddressWithCname(
+          ip_number,
+          info_.port(),
+          info_.host_resolver_flags() & HOST_RESOLVER_CANONNAME);
       result_ = OK;
-    else if (info_.only_use_cached_response())
-      result_ = ERR_NAME_NOT_RESOLVED;
-    else
-      resolve_succeeded = false;
-    return resolve_succeeded;
+    }
+    return true;
+  }
+
+  bool ServeFromCache() {
+    HostCache* cache = resolver_->cache_.get();
+    if (!cache || !info_.allow_cached_response())
+      return false;
+
+    HostCache::Key key(info_.hostname(), info_.address_family(),
+                       info_.host_resolver_flags());
+    const HostCache::Entry* cache_entry = cache->Lookup(
+        key, base::TimeTicks::Now());
+    if (cache_entry) {
+      request_net_log_.AddEvent(
+          NetLog::TYPE_ASYNC_HOST_RESOLVER_CACHE_HIT, NULL);
+      DCHECK_EQ(OK, cache_entry->error);
+      result_ = cache_entry->error;
+      *addresses_ =
+        CreateAddressListUsingPort(cache_entry->addrlist, info_.port());
+      return true;
+    }
+    return false;
   }
 
   // Called when a request completes synchronously; we do not have an
   // AddressList argument, since in case of a successful synchronous
-  // completion, ResolveSynchronously would set the |addresses_| and in
-  // case of an unsuccessful synchronous completion, we do not touch
-  // |addresses_|.
+  // completion, either ResolveAsIp or ServerFromCache would set the
+  // |addresses_| and in case of an unsuccessful synchronous completion, we
+  // do not touch |addresses_|.
   void OnSyncComplete(int result) {
     callback_ = NULL;
     resolver_->OnFinish(this, result);
@@ -161,43 +179,12 @@ class AsyncHostResolver::Request {
     callback->Run(result);
   }
 
+  // Returns true if request has a validly formed hostname.
+  bool IsValid() const {
+    return !info_.hostname().empty() && !key_.first.empty();
+  }
+
  private:
-  bool IsValidKey() const { return !key_.first.empty(); }
-
-  int ServeAsIp(const IPAddressNumber& ip_number) {
-    if (ip_number.size() != kIPv4AddressSize)
-      return ERR_NAME_NOT_RESOLVED;
-    *addresses_ = AddressList::CreateFromIPAddressWithCname(
-        ip_number,
-        info_.port(),
-        info_.host_resolver_flags() & HOST_RESOLVER_CANONNAME);
-    return OK;
-  }
-
-  bool ServeFromCache() {
-    // Sanity check -- it shouldn't be the case that allow_cached_response is
-    // false while only_use_cached_response is true.
-    DCHECK(info_.allow_cached_response() || !info_.only_use_cached_response());
-
-    HostCache* cache = resolver_->cache_.get();
-    if (!cache || !info_.allow_cached_response())
-      return false;
-
-    HostCache::Key key(info_.hostname(), info_.address_family(),
-                       info_.host_resolver_flags());
-    const HostCache::Entry* cache_entry = cache->Lookup(
-        key, base::TimeTicks::Now());
-    if (cache_entry) {
-      request_net_log_.AddEvent(
-          NetLog::TYPE_ASYNC_HOST_RESOLVER_CACHE_HIT, NULL);
-      DCHECK_EQ(OK, cache_entry->error);
-      *addresses_ =
-        CreateAddressListUsingPort(cache_entry->addrlist, info_.port());
-      return true;
-    }
-    return false;
-  }
-
   AsyncHostResolver* resolver_;
   BoundNetLog source_net_log_;
   BoundNetLog request_net_log_;
@@ -246,11 +233,15 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
                                CompletionCallback* callback,
                                RequestHandle* out_req,
                                const BoundNetLog& source_net_log) {
+  DCHECK(addresses);
+  DCHECK(callback);
   scoped_ptr<Request> request(
       CreateNewRequest(info, callback, addresses, source_net_log));
 
   int rv = ERR_UNEXPECTED;
-  if (request->ResolveSynchronously())
+  if (!request->IsValid())
+    rv = ERR_NAME_NOT_RESOLVED;
+  else if (request->ResolveAsIp() || request->ServeFromCache())
     rv = request->result();
   else if (AttachToRequestList(request.get()))
     rv = ERR_IO_PENDING;
@@ -266,6 +257,22 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
     if (out_req)
       *out_req = reinterpret_cast<RequestHandle>(req);
   }
+  return rv;
+}
+
+int AsyncHostResolver::ResolveFromCache(const RequestInfo& info,
+                                        AddressList* addresses,
+                                        const BoundNetLog& source_net_log) {
+  scoped_ptr<Request> request(
+      CreateNewRequest(info, NULL, addresses, source_net_log));
+  int rv = ERR_UNEXPECTED;
+  if (!request->IsValid())
+    rv = ERR_NAME_NOT_RESOLVED;
+  else if (request->ResolveAsIp() || request->ServeFromCache())
+    rv = request->result();
+  else
+    rv = ERR_DNS_CACHE_MISS;
+  request->OnSyncComplete(rv);
   return rv;
 }
 
