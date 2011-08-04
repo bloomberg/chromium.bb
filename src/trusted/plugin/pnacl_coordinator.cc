@@ -309,11 +309,13 @@ void WINAPI DoTranslateThread(void* arg) {
     if (p->should_die) {
       NaClThreadExit(1);
     }
-    if (!PnaclSrpcLib::InvokeSrpcMethodNoOutput(p->browser,
-                                                llc_subprocess,
-                                                "AddArg",
-                                                "C",
-                                                llc_args[i])) {
+    SrpcParams dummy_params;
+    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+                                        llc_subprocess,
+                                        "AddArg",
+                                        "C",
+                                        &dummy_params,
+                                        llc_args[i])) {
       AbortTranslateThread(p,
                            "PnaclCoordinator::TranslateThread AddArg(" +
                            nacl::string(llc_args[i]) + ") failed\n");
@@ -468,11 +470,13 @@ void WINAPI DoLinkThread(void* arg) {
     if (p->should_die) {
       NaClThreadExit(1);
     }
-    if (!PnaclSrpcLib::InvokeSrpcMethodNoOutput(p->browser,
-                                                ld_subprocess,
-                                                "AddArg",
-                                                "C",
-                                                flag.c_str())) {
+    SrpcParams dummy_params;
+    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+                                        ld_subprocess,
+                                        "AddArg",
+                                        "C",
+                                        &dummy_params,
+                                        flag.c_str())) {
       AbortLinkThread(p,
                       "PnaclCoordinator::LinkThread AddArg(" + flag +
                       ") failed\n");
@@ -489,36 +493,42 @@ void WINAPI DoLinkThread(void* arg) {
       NaClThreadExit(1);
     }
     // Add as argument.
-    if (!PnaclSrpcLib::InvokeSrpcMethodNoOutput(p->browser,
-                                                ld_subprocess,
-                                                "AddArg",
-                                                "C",
-                                                link_file.c_str())) {
+    SrpcParams dummy_params;
+    if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+                                        ld_subprocess,
+                                        "AddArg",
+                                        "C",
+                                        &dummy_params,
+                                        link_file.c_str())) {
       AbortLinkThread(p,
                       "PnaclCoordinator::LinkThread AddArg(" +
                       link_file + ") failed\n");
     }
     // Also map the file name to descriptor.
     if (i->compare(kGeneratedObjectFileName) == 0) {
-      if (!PnaclSrpcLib::InvokeSrpcMethodNoOutput(p->browser,
-                                                  ld_subprocess,
-                                                  "AddFileWithSize",
-                                                  "Chi",
-                                                  link_file.c_str(),
-                                                  p->obj_fd->desc(),
-                                                  p->obj_len)) {
+      SrpcParams dummy_params2;
+      if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+                                          ld_subprocess,
+                                          "AddFileWithSize",
+                                          "Chi",
+                                          &dummy_params2,
+                                          link_file.c_str(),
+                                          p->obj_fd->desc(),
+                                          p->obj_len)) {
         AbortLinkThread(p,
                         "PnaclCoordinator::LinkThread AddFileWithSize"
                         "(" + link_file + ") failed\n");
       }
     } else {
-      if (!PnaclSrpcLib::InvokeSrpcMethodNoOutput(p->browser,
-                                                  ld_subprocess,
-                                                  "AddFile",
-                                                  "Ch",
-                                                  link_file.c_str(),
-                                                  pnacl->GetLinkerResourceFD(
-                                                      link_file))) {
+      SrpcParams dummy_params2;
+      if (!PnaclSrpcLib::InvokeSrpcMethod(p->browser,
+                                          ld_subprocess,
+                                          "AddFile",
+                                          "Ch",
+                                          &dummy_params2,
+                                          link_file.c_str(),
+                                          pnacl->GetLinkerResourceFD(
+                                            link_file))) {
         AbortLinkThread(p,
                         "PnaclCoordinator::LinkThread AddFile(" + link_file +
                         ") failed\n");

@@ -4,6 +4,8 @@
 
 #include "native_client/src/trusted/plugin/pnacl_srpc_lib.h"
 
+#include <stdarg.h>
+
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
@@ -23,24 +25,6 @@ bool PnaclSrpcLib::InvokeSrpcMethod(BrowserInterface* browser_interface,
                                   method_name,
                                   input_signature,
                                   params,
-                                  vl);
-  va_end(vl);
-  return result;
-}
-
-bool PnaclSrpcLib::InvokeSrpcMethodNoOutput(BrowserInterface* browser_interface,
-                                            const NaClSubprocess* subprocess,
-                                            const nacl::string& method_name,
-                                            const nacl::string& input_signature,
-                                            ...) {
-  SrpcParams params;
-  va_list vl;
-  va_start(vl, input_signature);
-  bool result = VInvokeSrpcMethod(browser_interface,
-                                  subprocess,
-                                  method_name,
-                                  input_signature,
-                                  &params,
                                   vl);
   va_end(vl);
   return result;
@@ -83,7 +67,8 @@ bool PnaclSrpcLib::VInvokeSrpcMethod(BrowserInterface* browser_interface,
       }
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY: {
         // SrpcParam's destructor *should* free the dup'ed string.
-        char* input = strdup(va_arg(vl, char*));
+        const char* orig_str = va_arg(vl, const char*);
+        char* input = strdup(orig_str);
         params->ins()[i]->arrays.str = input;
         break;
       }

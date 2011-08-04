@@ -26,26 +26,18 @@ class SrpcParams;
 class PnaclSrpcLib {
  public:
   // Invoke an Srpc Method on the NaCl subprocess |subprocess|.
-  // |params| must be allocated and cleaned up outside of this function,
+  // |out_params| must be allocated and cleaned up outside of this function,
   // but it will be initialized by this function, and on success
-  // any out-params (if any) will be placed in |params|.
-  // Input types must be listed in |signature|, with the actual
+  // any out-params (if any) will be placed in |out_params|.
+  // Input types must be listed in |input_signature|, with the actual
   // arguments passed in as var-args.
   // Returns |true| on success.
   static bool InvokeSrpcMethod(BrowserInterface* browser_interface,
                                const NaClSubprocess* subprocess,
                                const nacl::string& method_name,
-                               const nacl::string& signature,
-                               SrpcParams* params,
+                               const nacl::string& input_signature,
+                               SrpcParams* out_params,
                                ...);
-
-  // Same as InvokeSrpcMethod but for input-only (no output) methods.
-  // Thus, SrpcParams can be / are managed internally.
-  static bool InvokeSrpcMethodNoOutput(BrowserInterface* browser_interface,
-                                       const NaClSubprocess* subprocess,
-                                       const nacl::string& method_name,
-                                       const nacl::string& signature,
-                                       ...);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclSrpcLib);
