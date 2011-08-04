@@ -192,10 +192,20 @@ bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
     const string& path, const string& auth_token,
     ScopedServerStatusWatcher* watcher) {
   DCHECK(watcher != NULL);
+
+  if (auth_token.empty()) {
+    params->response->server_status = HttpResponse::SYNC_AUTH_ERROR;
+    return false;
+  }
+
   scoped_ptr<Post> post(MakePost());
   post->set_timing_info(params->timing_info);
   bool ok = post->Init(path.c_str(), auth_token, params->buffer_in,
                        params->response);
+
+  if (params->response->server_status == HttpResponse::SYNC_AUTH_ERROR) {
+    InvalidateAndClearAuthToken();
+  }
 
   if (!ok || RC_REQUEST_OK != params->response->response_code) {
     IncrementErrorCount();

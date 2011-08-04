@@ -241,14 +241,17 @@ void SyncScheduler::StartImpl(Mode mode, ModeChangeCallback* callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
+  Mode old_mode = mode_;
   mode_ = mode;
   AdjustPolling(NULL);  // Will kick start poll timer if needed.
   if (scoped_callback.get())
     scoped_callback->Run();
 
-  // We just changed our mode. See if there are any pending jobs that we could
-  // execute in the new mode.
-  DoPendingJobIfPossible(false);
+  if (old_mode != mode_) {
+    // We just changed our mode. See if there are any pending jobs that we could
+    // execute in the new mode.
+    DoPendingJobIfPossible(false);
+  }
 }
 
 SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
@@ -278,9 +281,11 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
 
     // If we already had one nudge then just drop this nudge. We will retry
     // later when the timer runs out.
-    return wait_interval_->had_nudge ? DROP : CONTINUE;
+    if (!job.is_canary_job)
+      return wait_interval_->had_nudge ? DROP : CONTINUE;
+    else // We are here because timer ran out. So retry.
+      return CONTINUE;
   }
-  // This is a config job.
   return job.is_canary_job ? CONTINUE : SAVE;
 }
 
@@ -805,19 +810,29 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
     return;
   }
 
-  if (old_job.session->source().updates_source ==
-      GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION) {
-    SVLOG(2) << "Job failed with source continuation";
-    // We don't seem to have made forward progress. Start or extend backoff.
-    HandleConsecutiveContinuationError(old_job);
-  } else if (IsBackingOff()) {
+  // We are in backoff mode and our time did not run out. That means we had
+  // a local change, notification from server or a network connection change
+  // notification. In any case set had_nudge = true so we dont retry next
+  // nudge. Note: we will keep retrying network connection changes though as
+  // they are treated as canary jobs. Also we check the mode here because
+  // we want to do this only in normal mode. For config mode jobs we dont
+  // have anything similar to had_nudge.
+  if (IsBackingOff() && wait_interval_->timer.IsRunning() &&
+      mode_ == NORMAL_MODE) {
     SVLOG(2) << "A nudge during backoff failed";
     // We weren't continuing but we're in backoff; must have been a nudge.
     DCHECK_EQ(SyncSessionJob::NUDGE, old_job.purpose);
     DCHECK(!wait_interval_->had_nudge);
     wait_interval_->had_nudge = true;
+    // Old job did not finish. So make it the pending job.
+    InitOrCoalescePendingJob(old_job);
     // Resume waiting.
     RestartWaiting();
+  } else if (old_job.session->source().updates_source ==
+             GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION) {
+    SVLOG(2) << "Job failed with source continuation";
+    // We don't seem to have made forward progress. Start or extend backoff.
+    HandleConsecutiveContinuationError(old_job);
   } else {
     SVLOG(2) << "Failed. Schedule a job with continuation as source";
     // We weren't continuing and we aren't in backoff.  Schedule a normal

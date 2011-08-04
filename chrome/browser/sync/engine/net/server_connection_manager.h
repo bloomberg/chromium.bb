@@ -277,10 +277,25 @@ class ServerConnectionManager {
     client_id_.assign(client_id);
   }
 
-  void set_auth_token(const std::string& auth_token) {
+  // Returns true if the auth token is succesfully set and false otherwise.
+  bool set_auth_token(const std::string& auth_token) {
     // TODO(chron): Consider adding a message loop check here.
     base::AutoLock lock(auth_token_mutex_);
-    auth_token_.assign(auth_token);
+    if (previously_invalidated_token != auth_token) {
+      auth_token_.assign(auth_token);
+      previously_invalidated_token = std::string();
+      return true;
+    }
+    return false;
+  }
+
+  void InvalidateAndClearAuthToken() {
+    // Copy over the token to previous invalid token.
+    base::AutoLock lock(auth_token_mutex_);
+    if (!auth_token_.empty()) {
+      previously_invalidated_token.assign(auth_token_);
+      auth_token_ = std::string();
+    }
   }
 
   const std::string auth_token() const {
@@ -337,6 +352,9 @@ class ServerConnectionManager {
   mutable base::Lock auth_token_mutex_;
   // The auth token to use in authenticated requests. Set by the AuthWatcher.
   std::string auth_token_;
+
+  // The previous auth token that is invalid now.
+  std::string previously_invalidated_token;
 
   base::Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
