@@ -46,8 +46,7 @@ select.exception-setting {
   margin-top: 4px;
 }
 
-#plugins-tab {
-  display: block;
+#disable-plugins-container {
   margin: 7px 0px;
 }
 

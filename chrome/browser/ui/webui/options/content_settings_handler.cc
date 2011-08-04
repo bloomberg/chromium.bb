@@ -238,7 +238,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "plugins_ask", IDS_PLUGIN_ASK_RADIO },
     { "plugins_allow", IDS_PLUGIN_LOAD_RADIO },
     { "plugins_block", IDS_PLUGIN_NOLOAD_RADIO },
-    { "disable_individual_plugins", IDS_PLUGIN_SELECTIVE_DISABLE },
+    { "disableIndividualPlugins", IDS_PLUGIN_SELECTIVE_DISABLE },
     // Pop-ups filter.
     { "popups_tab_label", IDS_POPUP_TAB_LABEL },
     { "popups_header", IDS_POPUP_HEADER },
