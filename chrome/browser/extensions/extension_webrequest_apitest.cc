@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequest) {
 
 // http://crbug.com/91715
 #if defined(OS_MACOSX)
-#define MAYBE_WebRequestEvents FLAKY_WebRequestEvents
+#define MAYBE_WebRequestEvents DISABLED_WebRequestEvents
 #else
 #define MAYBE_WebRequestEvents WebRequestEvents
 #endif
