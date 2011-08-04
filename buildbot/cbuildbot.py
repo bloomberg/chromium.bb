@@ -56,10 +56,6 @@ def _GetConfig(config_name, options):
 
   result = cbuildbot_config.config[config_name]
 
-  # Use the config specific url, if not given on command line.
-  if options.url:
-    result['git_url'] = options.url
-
   return result
 
 
@@ -559,9 +555,6 @@ def _CreateParser():
   group.add_option('--resume', action='store_true',
                     default=False,
                     help='Skip stages already successfully completed.')
-  group.add_option('--url', dest='url',
-                   default=None,
-                   help='Override the GIT repo URL from the build config.')
   group.add_option('--version', dest='force_version', default=None,
                    help='Used with manifest logic.  Forces use of this version '
                         'rather than create or get latest.')

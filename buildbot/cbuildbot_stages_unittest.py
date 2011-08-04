@@ -1090,7 +1090,6 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.options.debug = False
     self.options.prebuilts = False
     self.options.clobber = False
-    self.options.url = self.url
     self.options.buildnumber = 1234
     self.options.chrome_rev = None
 
