@@ -42,6 +42,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
@@ -267,6 +268,11 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_separator_,
                      FALSE, FALSE, 0);
 
+  // Newer versions of Gtk default to not showing images on buttons if a label
+  // is set. Override that here.
+  GtkSettings* default_settings = gtk_settings_get_default();
+  g_object_set(default_settings, "gtk-button-images", TRUE, NULL);
+
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_service_->BuildChromeButton();
@@ -283,6 +289,12 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   sync_error_button_ = theme_service_->BuildChromeButton();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gtk_widget_set_tooltip_text(
+      sync_error_button_,
+      l10n_util::GetStringUTF8(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC).c_str());
+  gtk_button_set_label(
+      GTK_BUTTON(sync_error_button_),
+      l10n_util::GetStringUTF8(IDS_SYNC_BOOKMARK_BAR_ERROR).c_str());
   gtk_button_set_image(
       GTK_BUTTON(sync_error_button_),
       gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(IDR_WARNING)));
