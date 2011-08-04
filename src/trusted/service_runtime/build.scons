@@ -508,10 +508,10 @@ if env.Bit('windows') and env.Bit('target_x86_64'):
                                    'win/patch_exception_dispatcher_test.c',
                                    EXTRA_LIBS=['sel', 'platform', 'gio'])
   node = env.CommandTest(
-      'patch_exception_dispatcher_test',
+      'patch_exception_dispatcher_test.out',
       command=[test_prog],
       exit_status='trusted_segfault',
-      stdout=env.File('win/patch_exception_dispatcher_test.stdout'))
+      stdout_golden=env.File('win/patch_exception_dispatcher_test.stdout'))
   env.AddNodeToTestSuite(node, ['small_tests'],
                          'run_patch_exception_dispatcher_test')
 

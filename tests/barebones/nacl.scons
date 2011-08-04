@@ -21,8 +21,7 @@ if env.Bit('build_x86') and not env.Bit('bitcode'):
   elif env.Bit('build_x86_64'):
     LINK_FLAGS_MULTILIB.append('-m64')
   else:
-    print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
-    assert 0
+    raise Exception("ERROR: unknown BUILD_SUBARCH: " + env['BUILD_SUBARCH'])
 
 env.Replace(LIBS=[],
             EXTRA_LIBS=[],

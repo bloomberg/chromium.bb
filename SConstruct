@@ -188,7 +188,7 @@ def BitFromArgument(env, name, default, desc, arg_name=None):
     arg_name = name
 
   DeclareBit(name, desc)
-  assert arg_name not in ACCEPTABLE_ARGUMENTS, arg_name
+  assert arg_name not in ACCEPTABLE_ARGUMENTS, repr(arg_name)
   ACCEPTABLE_ARGUMENTS.add(arg_name)
 
   if GetBinaryArgumentValue(arg_name, default):
@@ -772,17 +772,15 @@ def GetPlatform(name):
   elif ARGUMENTS.get('platform') is None:
     return platform
   else:
-    Banner("Can't specify both %s and %s on the command line"
-           % ('platform', name))
-    assert 0
+    raise Exception('Can\'t specify both %s and %s on the command line'
+                    % ('platform', name))
 
 
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
 def DecodePlatform(platform):
   if platform in AVAILABLE_PLATFORMS:
     return AVAILABLE_PLATFORMS[platform]
-  Banner("Unrecognized platform: %s" % ( platform ))
-  assert 0
+  raise Exception('Unrecognized platform: %s' % platform)
 
 
 DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
@@ -1575,9 +1573,8 @@ pre_base_env.AddMethod(GetPerfEnvDescription)
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
                 **extra):
-  if not  name.endswith('.out') or name.startswith('$'):
-    print "ERROR: bad test filename for test output ", name
-    assert 0
+  if not name.endswith('.out') or name.startswith('$'):
+    raise Exception('ERROR: bad test filename for test output %r' % name)
 
   if (env.IsRunningUnderValgrind() and
       extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS):
@@ -1616,7 +1613,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   extra['subarch'] = env['BUILD_SUBARCH']
 
   for flag_name, flag_value in extra.iteritems():
-    assert flag_name in TEST_EXTRA_ARGS
+    assert flag_name in TEST_EXTRA_ARGS, repr(flag_name)
     if isinstance(flag_value, list):
       # Options to command_tester.py which are actually lists must not be
       # separated by whitespace. This stringifies the lists with a separator
@@ -3094,8 +3091,8 @@ def SanityCheckEnvironments(all_envs):
   # simple completeness check
   for env in all_envs:
     for tag in RELEVANT_CONFIG:
-      assert tag in env
-      assert env[tag]
+      assert tag in env, repr(tag)
+      assert env[tag], repr(env[tag])
 
 
 def LinkTrustedEnv(selected_envs):
@@ -3106,17 +3103,12 @@ def LinkTrustedEnv(selected_envs):
     if family not in family_map:
       family_map[family] = env
     else:
-      print '\n\n\n\n'
-      print 'You are using incompatible environments simultaneously'
-      print
-      print '%s vs %s' % (env['BUILD_TYPE'],
-                         family_map[family]['BUILD_TYPE'])
-      print """
-      Please specfy the exact environments you require, e.g.
-      MODE=dbg-host,nacl
-
-      """
-      assert 0
+      msg = 'You are using incompatible environments simultaneously\n'
+      msg += '%s vs %s\n' % (env['BUILD_TYPE'],
+                             family_map[family]['BUILD_TYPE'])
+      msg += ('Please specfy the exact environments you require, e.g. '
+              'MODE=dbg-host,nacl')
+      raise Exception(msg)
 
   # Set TRUSTED_ENV so that tests of untrusted code can locate sel_ldr
   # etc.  We set this on trusted envs too because some tests on
@@ -3134,7 +3126,7 @@ def DumpEnvironmentInfo(selected_envs):
     Banner("The following environments have been configured")
     for env in selected_envs:
       for tag in RELEVANT_CONFIG:
-        assert tag in env
+        assert tag in env, repr(tag)
         print "%s:  %s" % (tag, env.subst(env.get(tag)))
       for tag in MAYBE_RELEVANT_CONFIG:
         print "%s:  %s" % (tag, env.subst(env.get(tag)))

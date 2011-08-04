@@ -89,12 +89,10 @@ elif env.Bit('target_x86'):
     elif trusted_env.Bit('windows'):
       high_thread_count_nthreads = 900
     else:
-      print 'Unknown host OS: threading limit unknown'
-      assert 0
+      raise Exception('Unknown host OS: threading limit unknown')
 else:
-  print 'Unknown target architecture -- architecture/host OS thread'
-  print 'limits are unknown'
-  assert 0
+  raise Exception('Unknown target architecture -- architecture/host OS thread '
+                  'limits are unknown')
 
 if not platform_limits_known:
   Return()

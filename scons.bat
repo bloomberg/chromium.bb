@@ -26,6 +26,6 @@ set PATH=%~dp0..\third_party\python_26;%PATH%
 set CYGWIN=nodosfilewarning %CYGWIN%
 
 :: Run the included copy of scons.
-python -OO "%~dp0\scons.py" %*
+python "%~dp0\scons.py" %*
 
 :end

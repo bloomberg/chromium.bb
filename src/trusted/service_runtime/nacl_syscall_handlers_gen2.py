@@ -190,8 +190,7 @@ def GetProtoArgs(s, fin):
       if "{" in line:
         break
     else:
-      # broken input
-      assert 0
+      raise Exception('broken input')
   pos = s.rfind(")")
   assert pos >= 0
   # prune stuff after )
@@ -240,7 +239,7 @@ def main(argv):
     elif opt == '-s':
       subarch = val
     else:
-      assert 0
+      raise Exception('Unknown option: %s' % opt)
 
   print 'arch =', arch, 'subarch =', subarch
   if subarch != '':
@@ -248,7 +247,7 @@ def main(argv):
 
   print 'arch =', arch
   if not ARG_REGISTERS.has_key(arch):
-    assert 0
+    raise Exception()
 
   data = input_src.read()
   protos = ParseFileToBeWrapped(StringIO.StringIO(data))

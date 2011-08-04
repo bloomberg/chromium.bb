@@ -480,8 +480,8 @@ def generate(env):
     elif env.Bit('target_x86'):
       _SetEnvForX86Sdk(env, root)
     else:
-      print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
-      assert 0
+      raise Exception('ERROR: unknown TARGET_ARCHITECTURE: %s'
+                      % env['TARGET_ARCHITECTURE'])
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 
