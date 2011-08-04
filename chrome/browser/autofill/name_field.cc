@@ -150,9 +150,9 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
   // Allow name fields to appear in any order.
   while (!scanner->IsEnd()) {
     // Skip over any unrelated fields, e.g. "username" or "nickname".
-    if (ParseField(scanner,
+    if (ParseFieldSpecifics(scanner,
                    l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_IGNORED_RE),
-                   NULL)) {
+                   MATCH_DEFAULT | MATCH_SELECT, NULL)) {
           continue;
     }
 

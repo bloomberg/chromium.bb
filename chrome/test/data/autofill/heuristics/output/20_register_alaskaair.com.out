@@ -1,0 +1,31 @@
+UNKNOWN_TYPE | FormUserControl$_mileagePlanNumber$_loyaltyNumber$_loyaltyNumber | Mileage Plan Number | 
+NAME_FIRST | FormUserControl$_personalIdentification$_firstName$_name | Legal First Name* | 
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_title$_title | Title | 
+NAME_MIDDLE | FormUserControl$_personalIdentification$_middleName$_middleName | Middle Name (if on ID) | 
+NAME_LAST | FormUserControl$_personalIdentification$_lastName$_name | Legal Last Name* | 
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_suffix$_suffix | Suffix | 
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_birthDate$_birthDate$_month | Month | 
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_birthDate$_birthDate$_day | Day | 
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_birthDate$_birthDate$_yearTextBox | Year | Year
+UNKNOWN_TYPE | FormUserControl$_personalIdentification$_gender$_gender | Gender* | 
+NAME_FIRST | FormUserControl$_guardianInformation$_firstName$_name | First Name* | 
+NAME_LAST | FormUserControl$_guardianInformation$_lastName$_name | Last Name* | 
+EMAIL_ADDRESS | FormUserControl$_guardianInformation$_email$_emailAddressTextBox | Email Address* | 
+ADDRESS_HOME_COUNTRY | FormUserControl$_mailingAddress$_country | Country* | US
+COMPANY_NAME | FormUserControl$_mailingAddress$_company | Company | 
+ADDRESS_HOME_LINE1 | FormUserControl$_mailingAddress$_addr1 | Address* | 
+ADDRESS_HOME_LINE2 | FormUserControl$_mailingAddress$_addr2 | Second Address Line | 
+ADDRESS_HOME_CITY | FormUserControl$_mailingAddress$_city | Zip/Postal Code | 
+ADDRESS_HOME_STATE | FormUserControl$_mailingAddress$_stateUS | State/Province* | 
+ADDRESS_HOME_STATE | FormUserControl$_mailingAddress$_stateCA | Canadian Provinces | 
+ADDRESS_HOME_STATE | FormUserControl$_mailingAddress$_stateMX | Mexican States | 
+ADDRESS_HOME_STATE | FormUserControl$_mailingAddress$_stateXX | State/Province Other | 
+ADDRESS_HOME_ZIP | FormUserControl$_mailingAddress$_zip | Zip/Postal Code* | 
+ADDRESS_HOME_COUNTRY | FormUserControl$_contactInformation$_phoneNumber$_countryCode | Country Code | 1
+PHONE_HOME_WHOLE_NUMBER | FormUserControl$_contactInformation$_phoneNumber$_phoneNumberTextBox | Country Code | 
+UNKNOWN_TYPE | FormUserControl$_contactInformation$_phoneNumber$_extensionTextBox | Ext. | 
+EMAIL_ADDRESS | FormUserControl$_contactInformation$_emailAddress$_emailAddressTextBox | Email Address* | 
+UNKNOWN_TYPE | FormUserControl$_userIdPassword$_userId$_userId | Create a User ID* | 
+UNKNOWN_TYPE | FormUserControl$_secretQuestion$_question | Secret Question* | 
+UNKNOWN_TYPE | FormUserControl$_secretQuestion$_answer | Please choose a secret question and provide the answer. You will need to answer the question again in case you forget your password. Make sure you choose a question and answer that are easy for you to remember, but difficult for other people to know.Secret Question* Answer* | 
+ADDRESS_HOME_CITY | FormUserControl$_subscriptionsOffers$_primaryDepartureCity$_primaryDepartureCity$_city | Primary Departure City | 
