@@ -684,7 +684,7 @@ class SessionRestoreImpl : public NotificationObserver {
                  static_cast<int>(tab.navigations.size() - 1)));
 
     // Record an app launch, if applicable.
-    GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
+    GURL url = tab.navigations.at(selected_index).virtual_url();
     if (
 #if defined(OS_CHROMEOS)
         browser->profile()->GetExtensionService() &&
