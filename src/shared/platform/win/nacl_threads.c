@@ -82,10 +82,6 @@ void NaClThreadExit(int exit_code) {
   _endthreadex((unsigned int) exit_code);
 }
 
-void NaClThreadKill(struct NaClThread *target) {
-  TerminateThread(target->tid, 0);
-}
-
 uint32_t NaClThreadId(void) {
   return GetCurrentThreadId();
 }

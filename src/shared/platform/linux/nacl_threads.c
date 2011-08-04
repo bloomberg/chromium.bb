@@ -126,7 +126,3 @@ void NaClThreadJoin(struct NaClThread *ntp) {
 void NaClThreadExit(int exit_code) {
   pthread_exit((void *) (uintptr_t) exit_code);
 }
-
-void NaClThreadKill(struct NaClThread *target) {
-  pthread_kill(target->tid, SIGKILL);
-}

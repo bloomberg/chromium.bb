@@ -65,12 +65,6 @@ void NaClThreadJoin(struct NaClThread *ntp);
  */
 void NaClThreadExit(int exit_code);
 
-/*
- * NaClThreadKill will be used to attempt to clean up after a badly
- * behaving NaClApp.
- */
-void NaClThreadKill(struct NaClThread *target);
-
 uint32_t NaClThreadId(void);
 
 EXTERN_C_END
