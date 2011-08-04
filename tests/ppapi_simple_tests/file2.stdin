@@ -30,7 +30,7 @@ set_variable ERROR R(48,${JS_STR},4:33,"5555: Error: Finish unexpected rv",7:0)
 
 ######################################################################
 
-# These replays are too common to list them seperately
+# These replays are too common to list them separately
 # TODO(robertm): make the counts tight, eliminate PPB_Var ASAP
 
 replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;1.0") * i(1)

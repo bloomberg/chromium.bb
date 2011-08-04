@@ -117,7 +117,7 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   /*
    * There appears to be a race on Windows where the process can sometimes
    * return a thread exit status instead of the process exit status when
-   * they occur near simultaneously on two seperate threads.  Since this is
+   * they occur near simultaneously on two separate threads.  Since this is
    * non-deterministic, we always exit a thread with the current value of the
    * process exit status to mitigate the possibility of exiting with an
    * incorrect value.  See BUG= nacl1715

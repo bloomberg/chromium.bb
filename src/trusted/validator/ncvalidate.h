@@ -99,7 +99,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     Bool local_cpu);
 
 /* Applies the validator, as used in a command-line tool to report issues.
- * Note: This is intentionally seperated from ApplyValidator, since it need
+ * Note: This is intentionally separated from ApplyValidator, since it need
  * not be performance critical.
  * Parameters are:
  *    kind - The way the validator should be applied.

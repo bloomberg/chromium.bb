@@ -30,7 +30,7 @@ set_variable COMPLETE R(24,${JS_STR},4:14,"5555: COMPLETE",2:0)
 
 ######################################################################
 
-# These replays are too common to list them seperately
+# These replays are too common to list them separately
 # TODO(robertm): make the counts tight, eliminate PPB_Var ASAP
 
 replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;1.0") * i(1)

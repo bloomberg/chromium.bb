@@ -47,7 +47,7 @@ using gdb_rsp::Target;
  * These macro wraps all debugging stub calls to prevent C++ code called
  * by the debugging stub to throw and exception past the C API.  We use
  * this technique to allow the use of STL templates.   We catch bad_alloc
- * seperately purely to provide information for debugging purposes.
+ * separately purely to provide information for debugging purposes.
  */
 #define DBG_CATCH_ALL                                                       \
   catch(std::bad_alloc) {                                                  \
