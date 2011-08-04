@@ -124,15 +124,14 @@ ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
  */
-ByteReader.readImage = function(dataView, pos, size,
-                                opt_littleEndian, opt_end) {
+ByteReader.readImage = function(dataView, pos, size, opt_end) {
   opt_end = opt_end || dataView.byteLength;
   ByteReader.validateRead(pos, size, opt_end);
 
   var format;
   if (ByteReader.readString(dataView, pos, 4, opt_end) == '\x89PNG') {
     format = 'png';
-  } else if (dataView.getUint16(pos, opt_littleEndian) == 0xFFD8) {
+  } else if (dataView.getUint16(pos, false) == 0xFFD8) {  // Always big endian.
     format = 'jpeg';
   } else {
     format = 'unknown';
@@ -290,8 +289,7 @@ ByteReader.prototype.readBase64 = function(size, opt_end) {
  * read would go past the end of the buffer.
  */
 ByteReader.prototype.readImage = function(size, opt_end) {
-  var rv = ByteReader.readImage(
-      this.view_, this.pos_, size, this.littleEndian_, opt_end);
+  var rv = ByteReader.readImage(this.view_, this.pos_, size, opt_end);
   this.pos_ += size;
   return rv;
 };
