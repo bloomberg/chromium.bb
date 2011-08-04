@@ -213,10 +213,12 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
 
   this.sendIqWithParameters_(parameters);
 
-  var action = jingleNode.getAttribute('action');
-  if (jingleNode.nodeName == 'jingle' && action == 'session-initiate') {
-    // The session id is needed in order to close the session later.
-    this.sessionId = jingleNode.getAttribute('sid');
+  if (jingleNode) {
+    var action = jingleNode.getAttribute('action');
+    if (jingleNode.nodeName == 'jingle' && action == 'session-initiate') {
+      // The session id is needed in order to close the session later.
+      this.sessionId = jingleNode.getAttribute('sid');
+    }
   }
 };
 
