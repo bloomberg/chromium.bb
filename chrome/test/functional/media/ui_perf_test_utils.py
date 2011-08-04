@@ -7,7 +7,7 @@
 
 Ref: http://code.google.com/p/psutil/wiki/Documentation
 
-Most part of this module is from chrome/test/startup/startup_test.cc and
+Most part of this module is from chrome/test/perf/startup_test.cc and
 chrome/test/ui/ui_perf_test.[h,cc] So, we try to preserve the original C++ code
 here in case when there is change in original C++ code, it is easy to update
 this.
