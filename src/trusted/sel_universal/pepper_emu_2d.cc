@@ -50,11 +50,6 @@ const int kBytesPerPixel = 4;
 
 IMultimedia* GlobalMultiMediaInterface = 0;
 
-// NOTE: even though this code suggests it can handle multiple
-//       ImageData and Graphics2D objects it really cannot at this time.
-const int kFirstImageDataHandle = 1100;
-const int kFirstGraphics2dHandle = 1200;
-
 struct DataImageData {
   int size;
   int width;
@@ -63,17 +58,17 @@ struct DataImageData {
   void* addr_video;
 };
 
-Resource<DataImageData> GlobalImageDataResources(
-  kFirstImageDataHandle, "image_data");
-
 struct DataGraphics2D {
   int image_data;
   int width;
   int height;
 };
 
-Resource<DataGraphics2D> GlobalGraphics2dResources(
-  kFirstGraphics2dHandle, "graphics2d");
+// NOTE: even though this code suggests it can handle multiple
+//       ImageData and Graphics2D objects it really cannot at this time.
+Resource<DataGraphics2D> GlobalGraphics2dResources(100, "graphics2d");
+Resource<DataImageData> GlobalImageDataResources(100, "image_data");
+
 
 
 // From the ImageData API

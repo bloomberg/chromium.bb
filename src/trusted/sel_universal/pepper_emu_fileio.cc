@@ -18,23 +18,19 @@
 #include "native_client/src/third_party/ppapi/c/ppb_url_request_info.h"
 #include "native_client/src/third_party/ppapi/c/ppb_url_response_info.h"
 
-#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
 #include "native_client/src/trusted/sel_universal/pepper_emu_helper.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
-
 namespace {
 
 // This will be used to invoke the call backs
 IMultimedia* GlobalMultiMediaInterface = 0;
-
-const int kFirstLoader = 1000;
-const int kFirstRequestInfoHandle = 1100;
-const int kFirstResponseInfoHandle = 1200;
 
 using std::map;
 using std::string;
@@ -42,6 +38,7 @@ using std::string;
 struct DataLoader {
   int dummy;
   FILE* fp;
+  int request_info;
 };
 
 struct DataRequestInfo {
@@ -54,12 +51,9 @@ struct DataResponseInfo {
   int dummy;
 };
 
-Resource<DataLoader> GlobalLoaderResources(
-  kFirstLoader, "loader");
-Resource<DataResponseInfo> GlobalResponseInfoResources(
-  kFirstResponseInfoHandle, "response_info");
-Resource<DataRequestInfo> GlobalRequestInfoResources(
-  kFirstRequestInfoHandle, "request_info");
+Resource<DataLoader> GlobalLoaderResources(500, "loader");
+Resource<DataResponseInfo> GlobalResponseInfoResources(500, "response_info");
+Resource<DataRequestInfo> GlobalRequestInfoResources(500, "request_info");
 
 
 map<string, string> GlobalUrlToFilenameMap;
@@ -146,6 +140,7 @@ static void PPB_URLLoader_Open(SRPC_PARAMS) {
   DataRequestInfo* request_info =
     GlobalRequestInfoResources.GetDataForHandle(request_info_handle);
   DataLoader* loader = GlobalLoaderResources.GetDataForHandle(handle_loader);
+  loader->request_info = request_info_handle;
   string filename = request_info->url;
   NaClLog(1, "PPB_URLLoader_Open opening url: [%s]\n", filename.c_str());
   if (GlobalUrlToFilenameMap.find(filename) != GlobalUrlToFilenameMap.end()) {
@@ -153,10 +148,10 @@ static void PPB_URLLoader_Open(SRPC_PARAMS) {
     NaClLog(1, "Using Alias: [%s]\n", filename.c_str());
   }
   loader->fp = fopen(filename.c_str(), "rb");
-  if (!loader->fp) {
-    NaClLog(1, "PPB_URLLoader_Open could not open file\n");
+  if (loader->fp == NULL) {
+    NaClLog(LOG_WARNING, "PPB_URLLoader_Open could not open file\n");
   }
-  int result = loader->fp ? PP_OK : PP_ERROR_FAILED;
+  int result = (loader->fp == NULL) ? PP_ERROR_FAILED : PP_OK;
   UserEvent* event =
     MakeUserEvent(EVENT_TYPE_OPEN_CALLBACK, callback, result, 0, 0);
   GlobalMultiMediaInterface->PushUserEvent(event);
@@ -166,6 +161,7 @@ static void PPB_URLLoader_Open(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
+
 
 static void PPB_URLResponseInfo_GetProperty(SRPC_PARAMS) {
   int handle = ins[0]->u.ival;
@@ -186,24 +182,27 @@ static void PPB_URLResponseInfo_GetProperty(SRPC_PARAMS) {
   done->Run(done);
 }
 
-
+// PPB_URLLoader_ReadResponseBody:iii:Ci
 static void PPB_URLLoader_ReadResponseBody(SRPC_PARAMS) {
   int handle_loader = ins[0]->u.ival;
   int size = ins[1]->u.ival;
   int callback = ins[2]->u.ival;
-  NaClLog(1, "PPB_URLLoader_ReadResponseBody(%d, %d, %d)\n",
-          handle_loader, size, callback);
   DataLoader* loader = GlobalLoaderResources.GetDataForHandle(handle_loader);
+  DataRequestInfo* request_info = GlobalRequestInfoResources.
+                                  GetDataForHandle(loader->request_info);
+  NaClLog(1, "PPB_URLLoader_ReadResponseBody(%d (%s), %d, %d)\n",
+          handle_loader, request_info->url.c_str(), size, callback);
   char* buffer = static_cast<char*>(malloc(size));
   const int n = (int) fread(buffer, 1, size, loader->fp);
   UserEvent* event =
-    MakeUserEvent(EVENT_TYPE_READ_CALLBACK, callback, n, buffer, n);
-  NaClLog(1, "PPB_URLLoader_ReadResponseBody: push event\n");
+    MakeUserEvent(EVENT_TYPE_READ_CALLBACK, callback, n, buffer, size);
+  if (n < size) {
+    NaClLog(1, "PPB_URLLoader_ReadResponseBody reached eof\n");
+  }
   GlobalMultiMediaInterface->PushUserEvent(event);
   outs[0]->u.count = 0;
   outs[1]->u.ival = PP_OK_COMPLETIONPENDING;
   rpc->result = NACL_SRPC_RESULT_OK;
-  NaClLog(1, "PPB_URLLoader_ReadResponseBody: push event\n");
   done->Run(done);
 }
 
