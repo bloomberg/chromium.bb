@@ -194,6 +194,9 @@
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
+      # crbug.com/91617
+      '-omnibox.OmniboxTest.testContentHistory',
+      '-omnibox.OmniboxTest.testOmniboxSearchHistory',      
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
       # crbug.com/79263
