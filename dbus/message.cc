@@ -261,7 +261,13 @@ void MessageWriter::AppendByte(uint8 value) {
 }
 
 void MessageWriter::AppendBool(bool value) {
-  AppendBasic(DBUS_TYPE_BOOLEAN, &value);
+  // The size of dbus_bool_t and the size of bool are different. The
+  // former is always 4 per dbus-types.h, whereas the latter is usually 1.
+  // dbus_message_iter_append_basic() used in AppendBasic() expects four
+  // bytes for DBUS_TYPE_BOOLEAN, so we must pass a dbus_bool_t, instead
+  // of a bool, to AppendBasic().
+  dbus_bool_t dbus_value = value;
+  AppendBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
 }
 
 void MessageWriter::AppendInt16(int16 value) {
@@ -390,7 +396,9 @@ void MessageWriter::AppendVariantOfByte(uint8 value) {
 }
 
 void MessageWriter::AppendVariantOfBool(bool value) {
-  AppendVariantOfBasic(DBUS_TYPE_BOOLEAN, &value);
+  // See the comment at MessageWriter::AppendBool().
+  dbus_bool_t dbus_value = value;
+  AppendVariantOfBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
 }
 
 void MessageWriter::AppendVariantOfInt16(int16 value) {
@@ -473,7 +481,13 @@ bool MessageReader::PopByte(uint8* value) {
 }
 
 bool MessageReader::PopBool(bool* value) {
-  return PopBasic(DBUS_TYPE_BOOLEAN, value);
+  // Like MessageWriter::AppendBool(), we should copy |value| to
+  // dbus_bool_t, as dbus_message_iter_get_basic() used in PopBasic()
+  // expects four bytes for DBUS_TYPE_BOOLEAN.
+  dbus_bool_t dbus_value = FALSE;
+  const bool success = PopBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
+  *value = static_cast<bool>(dbus_value);
+  return success;
 }
 
 bool MessageReader::PopInt16(int16* value) {
@@ -569,7 +583,11 @@ bool MessageReader::PopVariantOfByte(uint8* value) {
 }
 
 bool MessageReader::PopVariantOfBool(bool* value) {
-  return PopVariantOfBasic(DBUS_TYPE_BOOLEAN, value);
+  // See the comment at MessageReader::PopBool().
+  dbus_bool_t dbus_value = FALSE;
+  const bool success = PopVariantOfBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
+  *value = static_cast<bool>(dbus_value);
+  return success;
 }
 
 bool MessageReader::PopVariantOfInt16(int16* value) {
