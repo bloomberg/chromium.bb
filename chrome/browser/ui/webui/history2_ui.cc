@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -46,69 +47,38 @@
 // eventually remove this.
 static const int kMaxSearchResults = 100;
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// HistoryHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
+namespace {
 
-HistoryUIHTMLSource2::HistoryUIHTMLSource2()
-    : DataSource(chrome::kChromeUIHistory2Host, MessageLoop::current()) {
-}
+ChromeWebUIDataSource* CreateHistory2UIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIHistory2Host);
 
-void HistoryUIHTMLSource2::StartDataRequest(const std::string& path,
-                                            bool is_incognito,
-                                            int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("loading",
-      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_HISTORY_TITLE));
-  localized_strings.SetString("loading",
-      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
-  localized_strings.SetString("newest",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NEWEST));
-  localized_strings.SetString("newer",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NEWER));
-  localized_strings.SetString("older",
-      l10n_util::GetStringUTF16(IDS_HISTORY_OLDER));
-  localized_strings.SetString("searchresultsfor",
-      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCHRESULTSFOR));
-  localized_strings.SetString("history",
-      l10n_util::GetStringUTF16(IDS_HISTORY_BROWSERESULTS));
-  localized_strings.SetString("cont",
-      l10n_util::GetStringUTF16(IDS_HISTORY_CONTINUED));
-  localized_strings.SetString("searchbutton",
-      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCH_BUTTON));
-  localized_strings.SetString("noresults",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NO_RESULTS));
-  localized_strings.SetString("noitems",
-      l10n_util::GetStringUTF16(IDS_HISTORY_NO_ITEMS));
-  localized_strings.SetString("edithistory",
-      l10n_util::GetStringUTF16(IDS_HISTORY_START_EDITING_HISTORY));
-  localized_strings.SetString("doneediting",
-      l10n_util::GetStringUTF16(IDS_HISTORY_STOP_EDITING_HISTORY));
-  localized_strings.SetString("removeselected",
-      l10n_util::GetStringUTF16(IDS_HISTORY_REMOVE_SELECTED_ITEMS));
-  localized_strings.SetString("clearallhistory",
-      l10n_util::GetStringUTF16(IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG));
-  localized_strings.SetString("deletewarning",
-      l10n_util::GetStringUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING));
+  source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  source->AddLocalizedString("title", IDS_HISTORY_TITLE);
+  source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);
+  source->AddLocalizedString("newer", IDS_HISTORY_NEWER);
+  source->AddLocalizedString("older", IDS_HISTORY_OLDER);
+  source->AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
+  source->AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
+  source->AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
+  source->AddLocalizedString("searchbutton", IDS_HISTORY_SEARCH_BUTTON);
+  source->AddLocalizedString("noresults", IDS_HISTORY_NO_RESULTS);
+  source->AddLocalizedString("noitems", IDS_HISTORY_NO_ITEMS);
+  source->AddLocalizedString("edithistory", IDS_HISTORY_START_EDITING_HISTORY);
+  source->AddLocalizedString("doneediting", IDS_HISTORY_STOP_EDITING_HISTORY);
+  source->AddLocalizedString("removeselected",
+                             IDS_HISTORY_REMOVE_SELECTED_ITEMS);
+  source->AddLocalizedString("clearallhistory",
+                             IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
+  source->AddLocalizedString("deletewarning",
+                             IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING);
+  source->set_json_path("strings.js");
+  source->add_resource_path("history2.js", IDR_HISTORY2_JS);
+  source->set_default_resource(IDR_HISTORY2_HTML);
+  return source;
+};
 
-  SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece history_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HISTORY2_HTML));
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      history_html, &localized_strings);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
-}
-
-std::string HistoryUIHTMLSource2::GetMimeType(const std::string&) const {
-  return "text/html";
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -391,11 +361,10 @@ void BrowsingHistoryHandler2::Observe(int type,
 HistoryUI2::HistoryUI2(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new BrowsingHistoryHandler2())->Attach(this));
 
-  HistoryUIHTMLSource2* html_source = new HistoryUIHTMLSource2();
-
   // Set up the chrome://history2/ source.
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(
+      CreateHistory2UIHTMLSource());
 }
 
 // static
