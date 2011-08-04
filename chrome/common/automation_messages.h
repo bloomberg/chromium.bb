@@ -264,14 +264,6 @@ struct ParamTraits<AutomationMsg_NavigationResponseValues> {
 };
 
 template <>
-struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
-  typedef AutomationMsg_ExtensionResponseValues param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<AutomationMsg_ExtensionProperty> {
   typedef AutomationMsg_ExtensionProperty param_type;
   static void Write(Message* m, const param_type& p);
@@ -416,4 +408,3 @@ struct ParamTraits<AttachExternalTabParams> {
 // Keep this internal message file unchanged to preserve line numbering
 // (and hence the dubious __LINE__-based message numberings) across versions.
 #include "chrome/common/automation_messages_internal.h"
-

@@ -80,11 +80,6 @@ enum AutomationMsg_NavigationResponseValues {
   AUTOMATION_MSG_NAVIGATION_BLOCKED_BY_MODAL_DIALOG,
 };
 
-enum AutomationMsg_ExtensionResponseValues {
-  AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED = 0,
-  AUTOMATION_MSG_EXTENSION_INSTALL_FAILED
-};
-
 // Used in the AutomationMsg_GetExtensionProperty to identify which extension
 // property should be retrieved, instead of having separate messages for each
 // property.

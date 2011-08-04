@@ -1128,10 +1128,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetMetricEventDuration,
 IPC_MESSAGE_ROUTED1(AutomationMsg_RequestGoToHistoryEntryOffset,
                     int)   // numbers of entries (negative or positive)
 
-// Silently install the extension in the given crx file.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_InstallExtension,
+// DEPRECATED MESSAGE.
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_InstallExtension,
                             FilePath /* full path to crx file */,
-                            AutomationMsg_ExtensionResponseValues)
+                            int)
 
 // DEPRECATED MESSAGE - But we must leave this comment and message so as
 // not to perturb line numbers (see comment at top of file re __LINE__).
@@ -1300,12 +1300,12 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequest,
                             std::string /* JSON response */,
                             bool /* success */)
 
-// Installs an extension from the crx file and returns its id.
-// On error, |extension handle| will be 0.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_InstallExtensionAndGetHandle,
-                            FilePath     /* full path to crx file */,
-                            bool         /* with UI */,
-                            int          /* extension handle */)
+// Installs an extension from a crx file or unpacked extension folder
+// and returns its id. On error, |extension handle| will be 0.
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_InstallExtension,
+                            FilePath /* full path to crx or unpacked dir */,
+                            bool     /* with UI */,
+                            int      /* extension handle */)
 
 // Waits for the next extension test result. Sets |test result| as the
 // received result and |message| as any accompanying message with the

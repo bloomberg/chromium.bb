@@ -464,61 +464,6 @@ bool DidExtensionHostsStopLoading(ExtensionProcessManager* manager) {
   return true;
 }
 
-ExtensionInstallNotificationObserver::ExtensionInstallNotificationObserver(
-    AutomationProvider* automation, int id, IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      id_(id),
-      reply_message_(reply_message) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 NotificationService::AllSources());
-}
-
-ExtensionInstallNotificationObserver::~ExtensionInstallNotificationObserver() {
-}
-
-void ExtensionInstallNotificationObserver::Observe(
-    int type, const NotificationSource& source,
-    const NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-      SendResponse(AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED);
-      break;
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
-    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
-      SendResponse(AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  delete this;
-}
-
-void ExtensionInstallNotificationObserver::SendResponse(
-    AutomationMsg_ExtensionResponseValues response) {
-  if (!automation_ || !reply_message_.get()) {
-    delete this;
-    return;
-  }
-
-  switch (id_) {
-    case AutomationMsg_InstallExtension::ID:
-      AutomationMsg_InstallExtension::WriteReplyParams(reply_message_.get(),
-                                                       response);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  automation_->Send(reply_message_.release());
-}
-
 ExtensionUninstallObserver::ExtensionUninstallObserver(
     AutomationProvider* automation,
     IPC::Message* reply_message,
@@ -626,12 +571,12 @@ void ExtensionReadyNotificationObserver::Observe(
       break;
   }
 
-  if (id_ == AutomationMsg_InstallExtensionAndGetHandle::ID) {
+  if (id_ == AutomationMsg_InstallExtension::ID) {
     // A handle of zero indicates an error.
     int extension_handle = 0;
     if (extension_)
       extension_handle = automation_->AddExtension(extension_);
-    AutomationMsg_InstallExtensionAndGetHandle::WriteReplyParams(
+    AutomationMsg_InstallExtension::WriteReplyParams(
         reply_message_.get(), extension_handle);
   } else if (id_ == AutomationMsg_EnableExtension::ID) {
     AutomationMsg_EnableExtension::WriteReplyParams(reply_message_.get(), true);

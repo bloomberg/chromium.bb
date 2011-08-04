@@ -259,45 +259,6 @@ void ParamTraits<AutomationMsg_NavigationResponseValues>::Log(
 }
 
 // static
-void ParamTraits<AutomationMsg_ExtensionResponseValues>::Write(
-    Message* m,
-    const param_type& p) {
-  m->WriteInt(p);
-}
-
-// static
-bool ParamTraits<AutomationMsg_ExtensionResponseValues>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  int type;
-  if (!m->ReadInt(iter, &type))
-    return false;
-  *p = static_cast<AutomationMsg_ExtensionResponseValues>(type);
-  return true;
-}
-
-// static
-void ParamTraits<AutomationMsg_ExtensionResponseValues>::Log(
-    const param_type& p,
-    std::string* l) {
-  std::string control;
-  switch (p) {
-    case AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED:
-      control = "AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED";
-      break;
-    case AUTOMATION_MSG_EXTENSION_INSTALL_FAILED:
-      control = "AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
-      break;
-    default:
-      control = "UNKNOWN";
-      break;
-  }
-
-  LogParam(control, l);
-}
-
-// static
 void ParamTraits<AutomationMsg_ExtensionProperty>::Write(Message* m,
                                                          const param_type& p) {
   m->WriteInt(p);

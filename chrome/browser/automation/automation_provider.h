@@ -250,14 +250,11 @@ class AutomationProvider
   // for information on the arguments.
   void JavaScriptStressTestControl(int handle, int cmd, int param);
 
-  void InstallExtension(const FilePath& crx_path,
-                        IPC::Message* reply_message);
-
   void WaitForExtensionTestResult(IPC::Message* reply_message);
 
-  void InstallExtensionAndGetHandle(const FilePath& crx_path,
-                                    bool with_ui,
-                                    IPC::Message* reply_message);
+  void InstallExtension(const FilePath& extension_path,
+                        bool with_ui,
+                        IPC::Message* reply_message);
 
   void UninstallExtension(int extension_handle,
                           bool* success);

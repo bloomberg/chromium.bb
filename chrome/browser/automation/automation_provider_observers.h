@@ -283,32 +283,6 @@ class TabCountChangeObserver : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TabCountChangeObserver);
 };
 
-// Observes when an extension has finished installing or possible install
-// errors. This does not guarantee that the extension is ready for use.
-class ExtensionInstallNotificationObserver : public NotificationObserver {
- public:
-  ExtensionInstallNotificationObserver(AutomationProvider* automation,
-                                       int id,
-                                       IPC::Message* reply_message);
-  virtual ~ExtensionInstallNotificationObserver();
-
-  // Implementation of NotificationObserver.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  // Send |response| back to the provider's client.
-  void SendResponse(AutomationMsg_ExtensionResponseValues response);
-
-  NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  int id_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallNotificationObserver);
-};
-
 // Observes when an extension has been uninstalled.
 class ExtensionUninstallObserver : public NotificationObserver {
  public:

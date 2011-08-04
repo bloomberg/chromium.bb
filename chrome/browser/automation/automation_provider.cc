@@ -325,13 +325,10 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
-                                    InstallExtension)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForExtensionTestResult,
                                     WaitForExtensionTestResult)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_InstallExtensionAndGetHandle,
-        InstallExtensionAndGetHandle)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
+                                    InstallExtension)
     IPC_MESSAGE_HANDLER(AutomationMsg_UninstallExtension,
                         UninstallExtension)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_EnableExtension,
@@ -763,26 +760,6 @@ RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
   return NULL;
 }
 
-void AutomationProvider::InstallExtension(const FilePath& crx_path,
-                                          IPC::Message* reply_message) {
-  ExtensionService* service = profile_->GetExtensionService();
-  if (service) {
-    // The observer will delete itself when done.
-    new ExtensionInstallNotificationObserver(this,
-                                             AutomationMsg_InstallExtension::ID,
-                                             reply_message);
-
-    // Pass NULL for a silent install with no UI.
-    scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(NULL));
-    installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
-    installer->InstallCrx(crx_path);
-  } else {
-    AutomationMsg_InstallExtension::WriteReplyParams(
-        reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
-    Send(reply_message);
-  }
-}
-
 void AutomationProvider::WaitForExtensionTestResult(
     IPC::Message* reply_message) {
   DCHECK(!reply_message_);
@@ -792,8 +769,9 @@ void AutomationProvider::WaitForExtensionTestResult(
   extension_test_result_observer_->MaybeSendResult();
 }
 
-void AutomationProvider::InstallExtensionAndGetHandle(
-    const FilePath& crx_path, bool with_ui, IPC::Message* reply_message) {
+void AutomationProvider::InstallExtension(
+    const FilePath& extension_path, bool with_ui,
+    IPC::Message* reply_message) {
   ExtensionService* service = profile_->GetExtensionService();
   ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
   if (service && manager) {
@@ -801,23 +779,22 @@ void AutomationProvider::InstallExtensionAndGetHandle(
     new ExtensionReadyNotificationObserver(
         manager,
         this,
-        AutomationMsg_InstallExtensionAndGetHandle::ID,
+        AutomationMsg_InstallExtension::ID,
         reply_message);
 
-    if (crx_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
+    if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
       ExtensionInstallUI* client =
           (with_ui ? new ExtensionInstallUI(profile_) : NULL);
       scoped_refptr<CrxInstaller> installer(service->MakeCrxInstaller(client));
       if (!with_ui)
         installer->set_allow_silent_install(true);
       installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
-      installer->InstallCrx(crx_path);
+      installer->InstallCrx(extension_path);
     } else {
-      service->LoadExtension(crx_path, with_ui);
+      service->LoadExtension(extension_path, with_ui);
     }
   } else {
-    AutomationMsg_InstallExtensionAndGetHandle::WriteReplyParams(
-        reply_message, 0);
+    AutomationMsg_InstallExtension::WriteReplyParams(reply_message, 0);
     Send(reply_message);
   }
 }

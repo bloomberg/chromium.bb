@@ -370,9 +370,8 @@ class NTPTest(pyauto.PyUITest):
     Returns:
       The string ID of the installed app.
     """
-    app_crx_file = pyauto.FilePath(
-        os.path.abspath(os.path.join(self.DataDir(), 'pyauto_private', 'apps',
-                                     'countdown.crx')))
+    app_crx_file = os.path.abspath(os.path.join(
+        self.DataDir(), 'pyauto_private', 'apps', 'countdown.crx'))
     installed_app_id = self.InstallApp(app_crx_file)
     self.assertTrue(installed_app_id, msg='App install failed.')
     return installed_app_id
@@ -397,14 +396,12 @@ class NTPTest(pyauto.PyUITest):
   def testGetAppsWhenInstallNonApps(self):
     """Ensures installed non-apps are not reflected in the NTP app info."""
     # Install a regular extension and a theme.
-    ext_crx_file = pyauto.FilePath(
-        os.path.abspath(os.path.join(self.DataDir(), 'extensions',
-                                     'page_action.crx')))
+    ext_crx_file = os.path.abspath(os.path.join(self.DataDir(), 'extensions',
+                                                'page_action.crx'))
     self.assertTrue(self.InstallExtension(ext_crx_file, False),
                     msg='Extension install failed.')
-    theme_crx_file = pyauto.FilePath(
-        os.path.abspath(os.path.join(self.DataDir(), 'extensions',
-                                     'theme.crx')))
+    theme_crx_file = os.path.abspath(os.path.join(self.DataDir(), 'extensions',
+                                                  'theme.crx'))
     self.assertTrue(self.SetTheme(theme_crx_file), msg='Theme install failed.')
     # Verify that no apps are listed on the NTP except for the Web Store.
     app_info = self.GetNTPApps()

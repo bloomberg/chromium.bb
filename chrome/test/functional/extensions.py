@@ -64,7 +64,7 @@ class ExtensionsTest(pyauto.PyUITest):
       group_end = curr_extension + group_size
       for extension in extensions[curr_extension:group_end]:
         logging.debug('Installing extension: %s' % extension)
-        self.InstallExtension(pyauto.FilePath(extension), False)
+        self.InstallExtension(extension, False)
 
       for url in top_urls:
         self.NavigateToURL(url)
@@ -157,7 +157,7 @@ class ExtensionsTest(pyauto.PyUITest):
     """Test setting different extension states."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'google_talk.crx'))
-    ext_id = self.InstallExtension(pyauto.FilePath(crx_file_path), False);
+    ext_id = self.InstallExtension(crx_file_path, False);
     self.assertTrue(ext_id, 'Failed to install extension.')
 
     # Verify extension is in default state.

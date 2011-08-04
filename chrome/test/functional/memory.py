@@ -40,9 +40,8 @@ class MemoryTest(pyauto.PyUITest):
   RENDERER_PROCESS_OUTPUT_FILE = 'renderer_process_mem.txt'
 
   # Constants for testExtensionProcessMemoryUsage.
-  EXTENSION_LOCATION = pyauto.FilePath(
-      os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(), 'extensions',
-                                   'google_talk.crx')))
+  EXTENSION_LOCATION = os.path.abspath(os.path.join(
+      pyauto.PyUITest.DataDir(), 'extensions', 'google_talk.crx'))
   EXTENSION_PROCESS_NAME = 'Google Talk'
   EXTENSION_PROCESS_OUTPUT_FILE = 'extension_process_mem.txt'
 

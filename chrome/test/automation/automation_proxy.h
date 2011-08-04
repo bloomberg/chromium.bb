@@ -197,11 +197,11 @@ class AutomationProxy : public IPC::Channel::Listener,
   // sent.
   bool SavePackageShouldPromptUser(bool should_prompt) WARN_UNUSED_RESULT;
 
-  // Installs the extension crx. If |with_ui| is true an install confirmation
+  // Installs the extension. If |with_ui| is true an install confirmation
   // and notification UI is shown, otherwise the install is silent. Returns the
   // ExtensionProxy for the installed extension, or NULL on failure.
   // Note: Overinstalls and downgrades will return NULL.
-  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& crx_file,
+  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& extension_path,
                                                  bool with_ui);
 
   // Asserts that the next extension test result is true.

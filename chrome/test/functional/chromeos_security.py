@@ -170,10 +170,9 @@ class ChromeosSecurity(pyauto.PyUITest):
         self.assertTrue(
             file_name in [x['crx_file'] for x in self._bundled_crx_baseline],
             msg='Unexpected CRX file: ' + file_name)
-        crx_file = pyauto.FilePath(
-            os.path.join(self._bundled_crx_directory, file_name))
+        crx_file = os.path.join(self._bundled_crx_directory, file_name)
         self.assertTrue(self.InstallExtension(crx_file, False),
-                        msg='Extension install failed: %s' % crx_file.value())
+                        msg='Extension install failed: %s' % crx_file)
 
     # Verify that the permissions information in the baseline matches the
     # permissions associated with the installed bundled CRX extensions.
@@ -184,10 +183,9 @@ class ChromeosSecurity(pyauto.PyUITest):
     # Install all bundled extensions on the device.
     for file_name in os.listdir(self._bundled_crx_directory):
       if file_name.endswith('.crx'):
-        crx_file = pyauto.FilePath(
-            os.path.join(self._bundled_crx_directory, file_name))
+        crx_file = os.path.join(self._bundled_crx_directory, file_name)
         self.assertTrue(self.InstallExtension(crx_file, False),
-                        msg='Extension install failed: %s' % crx_file.value())
+                        msg='Extension install failed: %s' % crx_file)
 
     # Ensure that the set of installed extension names precisely matches the
     # baseline.

@@ -235,10 +235,10 @@ bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
 }
 
 scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
-    const FilePath& crx_file, bool with_ui) {
+    const FilePath& extension_path, bool with_ui) {
   int handle = 0;
-  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(crx_file, with_ui,
-                                                           &handle)))
+  if (!Send(new AutomationMsg_InstallExtension(extension_path,
+                                               with_ui, &handle)))
     return NULL;
 
   return ProxyObjectFromHandle<ExtensionProxy>(handle);
