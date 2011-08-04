@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.15",
+  "version": "1.16",
   "entries": [
     {
       "id": 1,
@@ -325,6 +325,24 @@
       "driver_version": {
         "op": "<",
         "number": "195.36.24"
+      },
+      "blacklist": [
+        "all"
+      ]
+    },
+    {
+      "id": 23,
+      "description": "Mesa drivers in linux older than 7.11 are assumed to be buggy.",
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": {
+        "op": "=",
+        "value": "Mesa"
+      },
+      "driver_version": {
+        "op": "<",
+        "number": "7.11"
       },
       "blacklist": [
         "all"
