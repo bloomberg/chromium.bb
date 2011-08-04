@@ -733,6 +733,7 @@ class DrMemory(BaseTool):
     # tcmalloc (http://code.google.com/p/drmemory/issues/detail?id=314)
     add_env = {
       "CHROME_ALLOCATOR" : "WINHEAP",
+      "JSIMD_FORCEMMX"   : "0",  # http://code.google.com/p/drmemory/issues/detail?id=540
     }
     for k,v in add_env.iteritems():
       logging.info("export %s=%s", k, v)
