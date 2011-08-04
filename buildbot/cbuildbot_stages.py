@@ -59,10 +59,10 @@ class BuilderStage(object):
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._ExtractVariables()
     repo_dir = os.path.join(self._build_root, '.repo')
-    if self._options.chrome_rev:
-      self._chrome_rev = self._options.chrome_rev
-    else:
-      self._chrome_rev = self._build_config['chrome_rev']
+
+    # Determine correct chrome_rev.
+    self._chrome_rev = self._build_config['chrome_rev']
+    if self._options.chrome_rev: self._chrome_rev = self._options.chrome_rev
 
     if not self._options.clobber and os.path.isdir(repo_dir):
       self._ExtractOverlays()
@@ -176,7 +176,7 @@ class BuilderStage(object):
     use_manifest_version = self._build_config['manifest_version']
     for build_name, config in config.iteritems():
       if (config['important'] and config['build_type'] == build_type and
-          config['chrome_rev'] == self._options.chrome_rev and
+          config['chrome_rev'] == self._chrome_rev and
           config['overlays'] == overlay_config and
           config['manifest_version'] == use_manifest_version):
         builders.append(build_name)

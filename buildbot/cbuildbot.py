@@ -178,12 +178,17 @@ def RunBuildStages(bot_id, options, build_config):
   # Determine the stages to use for syncing and completion.
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
+
+  # Determine proper chrome_rev.  Options override config.
+  chrome_rev = build_config['chrome_rev']
+  if options.chrome_rev: chrome_rev = options.chrome_rev
+
   # Trybots will sync to TOT for now unless --lkgm option is specified.
   # TODO(rcui): have trybots default to patch to LKGM.
   if options.lkgm or (options.buildbot and build_config['use_lkgm']):
     sync_stage_class = stages.LKGMSyncStage
   elif (options.buildbot and build_config['manifest_version']
-        and options.chrome_rev != 'tot'):
+        and chrome_rev != 'tot'):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in (constants.PFQ_TYPE,
                                       constants.CHROME_PFQ_TYPE):
