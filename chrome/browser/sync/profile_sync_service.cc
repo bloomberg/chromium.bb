@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -808,8 +809,14 @@ void ProfileSyncService::ShowConfigure(bool sync_everything) {
 
 void ProfileSyncService::ShowSyncSetup(SyncSetupWizard::State state) {
   wizard_.Step(state);
-  BrowserList::GetLastActiveWithProfile(profile())->ShowOptionsTab(
-      chrome::kSyncSetupSubPage);
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
+  if (!browser) {
+    browser = Browser::Create(profile());
+    browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+    browser->window()->Show();
+  } else {
+    browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+  }
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
