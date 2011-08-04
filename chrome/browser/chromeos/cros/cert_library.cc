@@ -81,11 +81,9 @@ class CertLibraryImpl
   }
 
   ~CertLibraryImpl() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (request_task_) {
-      request_task_->Cancel();
-      request_task_ = NULL;
-    }
+    // CertLibraryImpl is a singleton, so do not attempt to cleanup
+    // request_task_ on destruction.
+    DCHECK(request_task_ == NULL);
     net::CertDatabase::RemoveObserver(this);
   }
 
