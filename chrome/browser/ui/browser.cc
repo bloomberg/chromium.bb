@@ -1634,6 +1634,13 @@ void Browser::ToggleFullscreenMode() {
 #endif
 }
 
+#if defined(OS_MACOSX)
+void Browser::TogglePresentationMode() {
+  window_->SetPresentationMode(!window_->InPresentationMode());
+  WindowFullscreenStateChanged();
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 void Browser::Search() {
   // If the NTP is showing, close it.
@@ -2381,6 +2388,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();           break;
+#if defined(OS_MACOSX)
+    case IDC_PRESENTATION_MODE:     TogglePresentationMode();         break;
+#endif
     case IDC_EXIT:                  Exit();                           break;
     case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
     case IDC_COMPACT_NAVBAR:        ToggleUseCompactNavigationBar();  break;
@@ -3939,6 +3949,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
 
   // Window management commands
+  // TODO(rohitrao): Disable fullscreen on non-Lion?
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN,
       !(is_type_panel() && is_app()));
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
@@ -3957,6 +3968,8 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
 #if defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
+      !(is_type_panel() && is_app()));
 #endif
 
   // Clipboard commands

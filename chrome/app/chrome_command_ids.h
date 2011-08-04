@@ -59,6 +59,7 @@
 #define IDC_TABPOSE                     34036
 #define IDC_COMPACT_NAVBAR              34037
 #define IDC_DEBUG_FRAME_TOGGLE          34038
+#define IDC_PRESENTATION_MODE           34039
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

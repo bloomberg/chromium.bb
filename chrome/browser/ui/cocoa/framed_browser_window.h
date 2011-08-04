@@ -42,6 +42,9 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 // Returns the desired spacing between window control views.
 - (CGFloat)windowButtonsInterButtonSpacing;
 
+// Calls the superclass's implementation of |-toggleFullScreen:|.
+- (void)toggleSystemFullScreen;
+
 @end
 
 @interface NSWindow (UndocumentedAPI)

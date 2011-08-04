@@ -742,6 +742,11 @@ const char kEnableHyperlinkAuditing[] = "enable_a_ping";
 // Whether to enable sending referrers.
 const char kEnableReferrers[] = "enable_referrers";
 
+#if defined(OS_MACOSX)
+// Whether presentation mode is enabled for fullscreen (used on Lion only).
+const char kPresentationModeEnabled[] = "presentation_mode_enabled";
+#endif
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 const char kLocalProfileId[] = "profile.local_profile_id";

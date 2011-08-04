@@ -140,9 +140,10 @@ class ToolbarModel;
   // The default favicon, so we can use one copy for all buttons.
   scoped_nsobject<NSImage> defaultFavicon_;
 
-  // The amount by which to indent the tabs on the left (to make room for the
-  // red/yellow/green buttons).
-  CGFloat indentForControls_;
+  // The amount by which to indent the tabs on the sides (to make room for the
+  // red/yellow/green and incognito/fullscreen buttons).
+  CGFloat leftIndentForControls_;
+  CGFloat rightIndentForControls_;
 
   // Manages per-tab sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
@@ -154,7 +155,8 @@ class ToolbarModel;
   scoped_ptr<HoverTabSelector> hoverTabSelector_;
 }
 
-@property(nonatomic) CGFloat indentForControls;
+@property(nonatomic) CGFloat leftIndentForControls;
+@property(nonatomic) CGFloat rightIndentForControls;
 
 // Initialize the controller with a view and browser that contains
 // everything else we'll need. |switchView| is the view whose contents get
@@ -226,6 +228,7 @@ class ToolbarModel;
 
 // Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;
+- (void)layoutTabsWithoutAnimation;
 
 // Are we in rapid (tab) closure mode? I.e., is a full layout deferred (while
 // the user closes tabs)? Needed to overcome missing clicks during rapid tab
@@ -239,8 +242,8 @@ class ToolbarModel;
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
 
-// Default indentation for tabs (see |indentForControls_|).
-+ (CGFloat)defaultIndentForControls;
+// Default indentation for tabs (see |leftIndentForControls_|).
++ (CGFloat)defaultLeftIndentForControls;
 
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.

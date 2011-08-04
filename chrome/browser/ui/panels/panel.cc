@@ -383,6 +383,15 @@ void Panel::ToggleTabStripMode() {
 void Panel::OpenTabpose() {
   NOTIMPLEMENTED();
 }
+
+void Panel::SetPresentationMode(bool presentation_mode) {
+  NOTIMPLEMENTED();
+}
+
+bool Panel::InPresentationMode() {
+  NOTIMPLEMENTED();
+  return false;
+}
 #endif
 
 void Panel::PrepareForInstant() {

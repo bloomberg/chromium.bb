@@ -10048,6 +10048,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_EXIT_FULLSCREEN_MAC" desc="The Mac menu item to leave fullscreen mode in the view menu and also in the app menu.">
           Exit Full Screen
         </message>
+        <message name="IDS_ENTER_PRESENTATION_MAC" desc="The Mac menu item to go into presentation mode in the view menu.">
+          Enter Presentation Mode
+        </message>
+        <message name="IDS_EXIT_PRESENTATION_MAC" desc="The Mac menu item to leave presentation mode in the view menu.">
+          Exit Presentation Mode
+        </message>
         <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to zoom in on the page in the view menu.">
           Zoom In
         </message>

@@ -131,6 +131,8 @@ class Panel : public BrowserWindow {
   virtual void ToggleTabStripMode() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void OpenTabpose() OVERRIDE;
+  virtual void SetPresentationMode(bool presentation_mode) OVERRIDE;
+  virtual bool InPresentationMode() OVERRIDE;
 #endif
   virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;

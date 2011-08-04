@@ -66,6 +66,10 @@
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/ssl/ssl_manager.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -179,6 +183,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   NetPrefObserver::RegisterPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
   FirewallTraversalTabHelper::RegisterUserPrefs(user_prefs);
+#if defined(OS_MACOSX)
+  PresentationModePrefs::RegisterUserPrefs(user_prefs);
+#endif
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

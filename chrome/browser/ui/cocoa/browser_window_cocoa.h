@@ -107,6 +107,8 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ToggleTabStripMode();
   virtual void ToggleUseCompactNavigationBar() {}
   virtual void OpenTabpose();
+  virtual void SetPresentationMode(bool presentation_mode);
+  virtual bool InPresentationMode();
   virtual void PrepareForInstant();
   virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant(bool instant_is_active);

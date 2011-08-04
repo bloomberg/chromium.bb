@@ -97,10 +97,6 @@ const CGFloat kIconWidthAndHeight = 16.0;
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 8.0;
 
-// The amount by which to shrink the tab strip (on the right) when the
-// incognito badge is present.
-const CGFloat kAvatarTabStripShrink = 18;
-
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
 
@@ -309,7 +305,8 @@ private:
 
 @implementation TabStripController
 
-@synthesize indentForControls = indentForControls_;
+@synthesize leftIndentForControls = leftIndentForControls_;
+@synthesize rightIndentForControls = rightIndentForControls_;
 
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
@@ -337,7 +334,8 @@ private:
     defaultFavicon_.reset(
         [gfx::GetCachedImageWithName(@"nav.pdf") retain]);
 
-    [self setIndentForControls:[[self class] defaultIndentForControls]];
+    [self setLeftIndentForControls:[[self class] defaultLeftIndentForControls]];
+    [self setRightIndentForControls:0];
 
     // TODO(viettrungluu): WTF? "For some reason, if the view is present in the
     // nib a priori, it draws correctly. If we create it in code and add it to
@@ -469,7 +467,7 @@ private:
   return 25.0;
 }
 
-+ (CGFloat)defaultIndentForControls {
++ (CGFloat)defaultLeftIndentForControls {
   // Default indentation leaves enough room so tabs don't overlap with the
   // window controls.
   return 70.0;
@@ -790,8 +788,9 @@ private:
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   NSRect frame = [tab frame];
-  return NSMinX(frame) >= [self indentForControls] &&
-      NSMaxX(frame) <= NSMaxX([tabStripView_ frame]);
+  return NSMinX(frame) >= [self leftIndentForControls] &&
+      NSMaxX(frame) <= (NSMaxX([tabStripView_ frame]) -
+                        [self rightIndentForControls]);
 }
 
 - (void)showNewTabButton:(BOOL)show {
@@ -839,18 +838,11 @@ private:
     } else {
       availableSpace = NSWidth([tabStripView_ frame]);
 
-      BrowserWindowController* controller =
-          (BrowserWindowController*)[[tabStripView_ window] windowController];
-
-      // Account for the widths of the new tab button or the avatar, if any/all
-      // are present.
+      // Account for the width of the new tab button.
       availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
-      if ([controller respondsToSelector:@selector(shouldShowAvatar)] &&
-          [controller shouldShowAvatar]) {
-        availableSpace -= kAvatarTabStripShrink;
-      }
     }
-    availableSpace -= [self indentForControls];
+    availableSpace -= [self leftIndentForControls];
+    availableSpace -= [self rightIndentForControls];
   }
 
   // This may be negative, but that's okay (taken care of by |MAX()| when
@@ -880,7 +872,7 @@ private:
 
   BOOL visible = [[tabStripView_ window] isVisible];
 
-  CGFloat offset = [self indentForControls];
+  CGFloat offset = [self leftIndentForControls];
   bool hasPlaceholderGap = false;
   for (TabController* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
@@ -1040,6 +1032,10 @@ private:
 // except when it's the first time.
 - (void)layoutTabs {
   [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:YES];
+}
+
+- (void)layoutTabsWithoutAnimation {
+  [self layoutTabsWithAnimation:NO regenerateSubviews:YES];
 }
 
 // Handles setting the title of the tab based on the given |contents|. Uses

@@ -21,6 +21,10 @@
 // tabs are enabled. Replaces the current controller.
 - (void)createTabStripController;
 
+// Creates the button used to toggle presentation mode.  Must only be called on
+// Lion or later.  Does nothing if the button already exists.
+- (void)createAndInstallPresentationModeToggleButton;
+
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;
 
@@ -38,13 +42,19 @@
 // content area, download shelf (if any).
 - (void)layoutSubviews;
 
-// Find the total height of the floating bar (in fullscreen mode). Safe to call
-// even when not in fullscreen mode.
+// Find the total height of the floating bar (in presentation mode). Safe to
+// call even when not in presentation mode.
 - (CGFloat)floatingBarHeight;
 
+// Lays out the presentation mode toggle button at the top right corner of the
+// overlay.  Creates the button if needed, and removes it if it is not needed.
+// This method is safe to call on all OS versions.
+- (void)layoutPresentationModeToggleAtOverlayMaxX:(CGFloat)maxX
+                                      overlayMaxY:(CGFloat)maxY;
+
 // Lays out the tab strip at the given maximum y-coordinate, with the given
-// width, possibly for fullscreen mode; returns the new maximum y (below the tab
-// strip). This is safe to call even when there is no tab strip.
+// width, possibly for fullscreen mode; returns the new maximum y (below the
+// tab strip). This is safe to call even when there is no tab strip.
 - (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
                           width:(CGFloat)width
                      fullscreen:(BOOL)fullscreen;
@@ -70,10 +80,10 @@
                              width:(CGFloat)width;
 
 // Lay out the view which draws the background for the floating bar when in
-// fullscreen mode, with the given frame and fullscreen-mode-status. Should be
-// called even when not in fullscreen mode to hide the backing view.
+// presentation mode, with the given frame and presentation-mode-status. Should
+// be called even when not in presentation mode to hide the backing view.
 - (void)layoutFloatingBarBackingView:(NSRect)frame
-                          fullscreen:(BOOL)fullscreen;
+                    presentationMode:(BOOL)presentationMode;
 
 // Lays out the infobar at the given maximum y-coordinate, with the given width;
 // returns the new maximum y (below the infobar).
@@ -104,20 +114,56 @@
 // keep the total height of the two views constant.
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression;
 
-// Adjust the UI when entering or leaving fullscreen mode.
-- (void)adjustUIForFullscreen:(BOOL)fullscreen;
+// Gets and sets whether to default to presentation mode when entering
+// fullscreen on Lion or later.  On Leopard and Snow Leopard, this preference is
+// ignored (fullscreen mode always turns presentation mode on).  This method is
+// safe to call on all OS versions.
+- (BOOL)shouldUsePresentationModeWhenEnteringFullscreen;
+- (void)setShouldUsePresentationModeWhenEnteringFullscreen:(BOOL)flag;
+
+// Whether to show the presentation mode toggle button in the UI.  Returns YES
+// if in fullscreen mode on Lion or later.  This method is safe to call on all
+// OS versions.
+- (BOOL)shouldShowPresentationModeToggle;
+
+// Moves views between windows in preparation for fullscreen mode on Snow
+// Leopard or earlier.  (Lion and later reuses the original window for
+// fullscreen mode, so there is no need to move views around.)  This method does
+// not position views; callers must also call |-layoutSubviews|.  This method
+// must not be called on Lion or later.
+- (void)moveViewsForFullscreenForSnowLeopardOrEarlier:(BOOL)fullscreen
+    regularWindow:(NSWindow*)regularWindow
+    fullscreenWindow:(NSWindow*)fullscreenWindow;
+
+// Sets presentation mode, creating the PresentationModeController if needed and
+// forcing a relayout.  If |forceDropdown| is YES, this method will always
+// initially show the floating bar when entering presentation mode, even if the
+// floating bar does not have focus.  This method is safe to call on all OS
+// versions.
+- (void)setPresentationModeInternal:(BOOL)presentationMode
+                      forceDropdown:(BOOL)forceDropdown;
+
+// Called on Snow Leopard or earlier to enter or exit fullscreen.  These methods
+// are internal implementations of |-setFullscreen:|.  These methods must not be
+// called on Lion or later.
+- (void)enterFullscreenForSnowLeopardOrEarlier;
+- (void)exitFullscreenForSnowLeopardOrEarlier;
+
+// Register or deregister for content view resize notifications.  These
+// notifications are used while transitioning to fullscreen mode in Lion or
+// later.  This method is safe to call on all OS versions.
+- (void)registerForContentViewResizeNotifications;
+- (void)deregisterForContentViewResizeNotifications;
+
+// Adjust the UI when entering or leaving presentation mode.  This method is
+// safe to call on all OS versions.
+- (void)adjustUIForPresentationMode:(BOOL)fullscreen;
 
 // Allows/prevents bar visibility locks and releases from updating the visual
 // state. Enabling makes changes instantaneously; disabling cancels any
 // timers/animation.
 - (void)enableBarVisibilityUpdates;
 - (void)disableBarVisibilityUpdates;
-
-// For versions of Mac OS that provide an "enter fullscreen" button, make one
-// appear (in a rather hacky manner). http://crbug.com/74065 : When switching
-// the fullscreen implementation to the new API, revisit how much of this
-// hacky code is necessary.
-- (void)setUpOSFullScreenButton;
 
 @end  // @interface BrowserWindowController(Private)
 

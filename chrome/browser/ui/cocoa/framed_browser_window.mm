@@ -13,6 +13,18 @@
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/themes/theme_service.h"
 
+// Provide the forward-declarations of new 10.7 SDK symbols so they can be
+// called when building with the 10.5 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionSDKDeclarations)
+- (void)toggleFullScreen:(id)sender;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
+
 // Implementer's note: Moving the window controls is tricky. When altering the
 // code, ensure that:
 // - accessibility hit testing works
@@ -271,6 +283,21 @@ const CGFloat kWindowGradientHeight = 24.0;
     return frame;
 
   return [super constrainFrameRect:frame toScreen:screen];
+}
+
+// This method is overridden in order to send the toggle fullscreen message
+// through the cross-platform browser framework before going fullscreen.  The
+// message will eventually come back as a call to |-toggleSystemFullScreen|,
+// which in turn calls AppKit's |NSWindow -toggleFullScreen:|.
+- (void)toggleFullScreen:(id)sender {
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(handleLionToggleFullscreen)])
+    [delegate handleLionToggleFullscreen];
+}
+
+- (void)toggleSystemFullScreen {
+  if ([super respondsToSelector:@selector(toggleFullScreen:)])
+    [super toggleFullScreen:nil];
 }
 
 @end

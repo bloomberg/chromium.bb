@@ -35,10 +35,11 @@ class ConstrainedWindowMac;
 @class DevToolsController;
 @class DownloadShelfController;
 @class FindBarCocoaController;
-@class FullscreenController;
+@class FullscreenWindow;
 @class GTMWindowSheetController;
 @class InfoBarContainerController;
 class LocationBarViewMac;
+@class PresentationModeController;
 @class PreviewableContentsController;
 @class SidebarController;
 class StatusBubbleMac;
@@ -71,7 +72,7 @@ class TabContents;
   scoped_nsobject<DevToolsController> devToolsController_;
   scoped_nsobject<SidebarController> sidebarController_;
   scoped_nsobject<PreviewableContentsController> previewableContentsController_;
-  scoped_nsobject<FullscreenController> fullscreenController_;
+  scoped_nsobject<PresentationModeController> presentationModeController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same
@@ -111,21 +112,39 @@ class TabContents;
   // fullscreen window.
   scoped_nsobject<AvatarButton> avatarButton_;
 
+  // The view that shows the presentation mode toggle when in Lion fullscreen
+  // mode.  Nil if not in fullscreen mode or not on Lion.
+  scoped_nsobject<NSButton> presentationModeToggleButton_;
+
   // Lazily created view which draws the background for the floating set of bars
-  // in fullscreen mode (for window types having a floating bar; it remains nil
-  // for those which don't).
+  // in presentation mode (for window types having a floating bar; it remains
+  // nil for those which don't).
   scoped_nsobject<NSView> floatingBarBackingView_;
 
   // Tracks whether the floating bar is above or below the bookmark bar, in
   // terms of z-order.
   BOOL floatingBarAboveBookmarkBar_;
 
-  // The proportion of the floating bar which is shown (in fullscreen mode).
+  // The borderless window used in fullscreen mode.  Lion reuses the original
+  // window in fullscreen mode, so this is always nil on Lion.
+  scoped_nsobject<NSWindow> fullscreenWindow_;
+
+  // Tracks whether presentation mode was entered from fullscreen mode or
+  // directly from normal windowed mode.  Used to determine what to do when
+  // exiting presentation mode.
+  BOOL enteredPresentationModeFromFullscreen_;
+
+  // The size of the original (non-fullscreen) window.  This is saved just
+  // before entering fullscreen mode and is only valid when |-isFullscreen|
+  // returns YES.
+  NSRect savedRegularWindowFrame_;
+
+  // The proportion of the floating bar which is shown (in presentation mode).
   CGFloat floatingBarShownFraction_;
 
   // Various UI elements/events may want to ensure that the floating bar is
-  // visible (in fullscreen mode), e.g., because of where the mouse is or where
-  // keyboard focus is. Whenever an object requires bar visibility, it has
+  // visible (in presentation mode), e.g., because of where the mouse is or
+  // where keyboard focus is. Whenever an object requires bar visibility, it has
   // itself added to |barVisibilityLocks_|. When it no longer requires bar
   // visibility, it has itself removed.
   scoped_nsobject<NSMutableSet> barVisibilityLocks_;
@@ -299,7 +318,8 @@ class TabContents;
 
 
 // Methods having to do with the window type (normal/popup/app, and whether the
-// window has various features; fullscreen methods are separate).
+// window has various features; fullscreen and presentation mode methods are
+// separate).
 @interface BrowserWindowController(WindowType)
 
 // Determines whether this controller's window supports a given feature (i.e.,
@@ -334,32 +354,48 @@ class TabContents;
 @end  // @interface BrowserWindowController(WindowType)
 
 
-// Methods having to do with fullscreen mode.
+// Methods having to do with fullscreen and presentation mode.
 @interface BrowserWindowController(Fullscreen)
 
-// Enters fullscreen mode.
-- (IBAction)enterFullscreen:(id)sender;
+// Toggles fullscreen mode.  Meant to be called by Lion windows when they enter
+// or exit Lion fullscreen mode.  Must not be called on Snow Leopard or earlier.
+- (void)handleLionToggleFullscreen;
 
-// Enters (or exits) fullscreen mode.
+// Enters (or exits) fullscreen mode.  This method is safe to call on all OS
+// versions.
 - (void)setFullscreen:(BOOL)fullscreen;
 
-// Returns fullscreen state.
+// Returns fullscreen state.  This method is safe to call on all OS versions.
 - (BOOL)isFullscreen;
 
+// Toggles presentation mode without exiting fullscreen mode.  Should only be
+// called by the presentation mode toggle button.  This method should not be
+// called on Snow Leopard or earlier.
+- (void)togglePresentationModeForLionOrLater:(id)sender;
+
+// Enters (or exits) presentation mode.  Also enters fullscreen mode if this
+// window is not already fullscreen.  This method is safe to call on all OS
+// versions.
+- (void)setPresentationMode:(BOOL)presentationMode;
+
+// Returns presentation mode state.  This method is safe to call on all OS
+// versions.
+- (BOOL)inPresentationMode;
+
 // Resizes the fullscreen window to fit the screen it's currently on.  Called by
-// the FullscreenController when there is a change in monitor placement or
+// the PresentationModeController when there is a change in monitor placement or
 // resolution.
 - (void)resizeFullscreenWindow;
 
-// Gets or sets the fraction of the floating bar (fullscreen overlay) that is
-// shown.  0 is completely hidden, 1 is fully shown.
+// Gets or sets the fraction of the floating bar (presentation mode overlay)
+// that is shown.  0 is completely hidden, 1 is fully shown.
 - (CGFloat)floatingBarShownFraction;
 - (void)setFloatingBarShownFraction:(CGFloat)fraction;
 
 // Query/lock/release the requirement that the tab strip/toolbar/attached
 // bookmark bar bar cluster is visible (e.g., when one of its elements has
-// focus). This is required for the floating bar in fullscreen mode, but should
-// also be called when not in fullscreen mode; see the comments for
+// focus). This is required for the floating bar in presentation mode, but
+// should also be called when not in presentation mode; see the comments for
 // |barVisibilityLocks_| for more details. Double locks/releases by the same
 // owner are ignored. If |animate:| is YES, then an animation may be performed,
 // possibly after a small delay if |delay:| is YES. If |animate:| is NO,

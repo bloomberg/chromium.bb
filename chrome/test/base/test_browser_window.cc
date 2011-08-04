@@ -88,6 +88,12 @@ int TestBrowserWindow::GetExtraRenderViewHeight() const {
   return 0;
 }
 
+#if defined(OS_MACOSX)
+bool TestBrowserWindow::InPresentationMode() {
+  return false;
+}
+#endif
+
 gfx::Rect TestBrowserWindow::GetInstantBounds() {
   return gfx::Rect();
 }

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/fullscreen_controller.h"
+#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 
 #include <algorithm>
 
@@ -26,19 +26,19 @@ const NSTimeInterval kDropdownShowDelay = 0.3;
 const NSTimeInterval kDropdownHideDelay = 0.2;
 
 // The amount by which the floating bar is offset downwards (to avoid the menu)
-// in fullscreen mode. (We can't use |-[NSMenu menuBarHeight]| since it returns
-// 0 when the menu bar is hidden.)
+// in presentation mode. (We can't use |-[NSMenu menuBarHeight]| since it
+// returns 0 when the menu bar is hidden.)
 const CGFloat kFloatingBarVerticalOffset = 22;
 
 }  // end namespace
 
 
-// Helper class to manage animations for the fullscreen dropdown bar.  Calls
-// [FullscreenController changeFloatingBarShownFraction] once per animation
-// step.
+// Helper class to manage animations for the dropdown bar.  Calls
+// [PresentationModeController changeFloatingBarShownFraction] once per
+// animation step.
 @interface DropdownAnimation : NSAnimation {
  @private
-  FullscreenController* controller_;
+  PresentationModeController* controller_;
   CGFloat startFraction_;
   CGFloat endFraction_;
 }
@@ -52,7 +52,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (id)initWithFraction:(CGFloat)fromFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
-            controller:(FullscreenController*)controller;
+            controller:(PresentationModeController*)controller;
 
 @end
 
@@ -64,7 +64,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (id)initWithFraction:(CGFloat)toFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
-            controller:(FullscreenController*)controller {
+            controller:(PresentationModeController*)controller {
   // Calculate the effective duration, based on the current shown fraction.
   DCHECK(controller);
   CGFloat fromFraction = [controller floatingBarShownFraction];
@@ -91,9 +91,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 @end
 
 
-@interface FullscreenController (PrivateMethods)
+@interface PresentationModeController (PrivateMethods)
 
-// Returns YES if the fullscreen window is on the primary screen.
+// Returns YES if the window is on the primary screen.
 - (BOOL)isWindowOnPrimaryScreen;
 
 // Returns YES if it is ok to show and hide the menu bar in response to the
@@ -103,7 +103,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 // Returns |kFullScreenModeHideAll| when the overlay is hidden and
 // |kFullScreenModeHideDock| when the overlay is shown.
-- (base::mac::FullScreenMode)desiredFullscreenMode;
+- (base::mac::FullScreenMode)desiredSystemFullscreenMode;
 
 // Change the overlay to the given fraction, with or without animation. Only
 // guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
@@ -151,23 +151,22 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)cleanup;
 
 // Shows and hides the UI associated with this window being active (having main
-// status).  This includes hiding the menu bar and displaying the "Exit
-// Fullscreen" button.  These functions are called when the window gains or
-// loses main status as well as in |-cleanup|.
+// status).  This includes hiding the menu bar.  These functions are called when
+// the window gains or loses main status as well as in |-cleanup|.
 - (void)showActiveWindowUI;
 - (void)hideActiveWindowUI;
 
 @end
 
 
-@implementation FullscreenController
+@implementation PresentationModeController
 
-@synthesize isFullscreen = isFullscreen_;
+@synthesize inPresentationMode = inPresentationMode_;
 
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self = [super init])) {
     browserController_ = controller;
-    currentFullscreenMode_ = base::mac::kFullScreenModeNormal;
+    systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
   }
 
   // Let the world know what we're up to.
@@ -179,30 +178,37 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)dealloc {
-  DCHECK(!isFullscreen_);
+  DCHECK(!inPresentationMode_);
   DCHECK(!trackingArea_);
   [super dealloc];
 }
 
-- (void)enterFullscreenForContentView:(NSView*)contentView
-                         showDropdown:(BOOL)showDropdown {
-  DCHECK(!isFullscreen_);
-  isFullscreen_ = YES;
+- (void)enterPresentationModeForContentView:(NSView*)contentView
+                               showDropdown:(BOOL)showDropdown {
+  DCHECK(!inPresentationMode_);
+  enteringPresentationMode_ = YES;
+  inPresentationMode_ = YES;
   contentView_ = contentView;
   [self changeFloatingBarShownFraction:(showDropdown ? 1 : 0)];
 
   // Register for notifications.  Self is removed as an observer in |-cleanup|.
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   NSWindow* window = [browserController_ window];
-  [nc addObserver:self
-         selector:@selector(windowDidChangeScreen:)
-             name:NSWindowDidChangeScreenNotification
-           object:window];
 
-  [nc addObserver:self
-         selector:@selector(windowDidMove:)
-             name:NSWindowDidMoveNotification
-           object:window];
+  // Disable these notifications on Lion as they cause crashes.
+  // TODO(rohitrao): Figure out what happens if a fullscreen window changes
+  // monitors on Lion.
+  if (base::mac::IsOSSnowLeopardOrEarlier()) {
+    [nc addObserver:self
+           selector:@selector(windowDidChangeScreen:)
+               name:NSWindowDidChangeScreenNotification
+             object:window];
+
+    [nc addObserver:self
+           selector:@selector(windowDidMove:)
+               name:NSWindowDidMoveNotification
+             object:window];
+  }
 
   [nc addObserver:self
          selector:@selector(windowDidBecomeMain:)
@@ -213,15 +219,17 @@ const CGFloat kFloatingBarVerticalOffset = 22;
          selector:@selector(windowDidResignMain:)
              name:NSWindowDidResignMainNotification
            object:window];
+
+  enteringPresentationMode_ = NO;
 }
 
-- (void)exitFullscreen {
+- (void)exitPresentationMode {
   [[NSNotificationCenter defaultCenter]
     postNotificationName:kWillLeaveFullscreenNotification
                   object:nil];
-  DCHECK(isFullscreen_);
+  DCHECK(inPresentationMode_);
+  inPresentationMode_ = NO;
   [self cleanup];
-  isFullscreen_ = NO;
 }
 
 - (void)windowDidChangeScreen:(NSNotification*)notification {
@@ -245,7 +253,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {
-  if (!isFullscreen_)
+  if (!inPresentationMode_)
     return;
 
   // Make sure |trackingAreaBounds_| always reflects either the tracking area or
@@ -264,11 +272,17 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   if (currentAnimation_)
     return;
 
+  // If this is part of the initial setup, lock bar visibility if the mouse is
+  // within the tracking area bounds.
+  if (enteringPresentationMode_ && [self mouseInsideTrackingRect])
+    [browserController_ lockBarVisibilityForOwner:self
+                                    withAnimation:NO
+                                            delay:NO];
   [self setupTrackingArea];
 }
 
 - (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay {
-  if (!isFullscreen_)
+  if (!inPresentationMode_)
     return;
 
   if (animate) {
@@ -286,7 +300,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay {
-  if (!isFullscreen_)
+  if (!inPresentationMode_)
     return;
 
   if (animate) {
@@ -316,19 +330,19 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)changeFloatingBarShownFraction:(CGFloat)fraction {
   [browserController_ setFloatingBarShownFraction:fraction];
 
-  base::mac::FullScreenMode desiredMode = [self desiredFullscreenMode];
-  if (desiredMode != currentFullscreenMode_ && [self shouldToggleMenuBar]) {
-    if (currentFullscreenMode_ == base::mac::kFullScreenModeNormal)
+  base::mac::FullScreenMode desiredMode = [self desiredSystemFullscreenMode];
+  if (desiredMode != systemFullscreenMode_ && [self shouldToggleMenuBar]) {
+    if (systemFullscreenMode_ == base::mac::kFullScreenModeNormal)
       base::mac::RequestFullScreen(desiredMode);
     else
-      base::mac::SwitchFullScreenModes(currentFullscreenMode_, desiredMode);
-    currentFullscreenMode_ = desiredMode;
+      base::mac::SwitchFullScreenModes(systemFullscreenMode_, desiredMode);
+    systemFullscreenMode_ = desiredMode;
   }
 }
 
-// Used to activate the floating bar in fullscreen mode.
+// Used to activate the floating bar in presentation mode.
 - (void)mouseEntered:(NSEvent*)event {
-  DCHECK(isFullscreen_);
+  DCHECK(inPresentationMode_);
 
   // Having gotten a mouse entered, we no longer need to do exit checks.
   [self cancelMouseExitCheck];
@@ -341,9 +355,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   }
 }
 
-// Used to deactivate the floating bar in fullscreen mode.
+// Used to deactivate the floating bar in presentation mode.
 - (void)mouseExited:(NSEvent*)event {
-  DCHECK(isFullscreen_);
+  DCHECK(inPresentationMode_);
 
   NSTrackingArea* trackingArea = [event trackingArea];
   if (trackingArea == trackingArea_) {
@@ -393,7 +407,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 @end
 
 
-@implementation FullscreenController (PrivateMethods)
+@implementation PresentationModeController (PrivateMethods)
 
 - (BOOL)isWindowOnPrimaryScreen {
   NSScreen* screen = [[browserController_ window] screen];
@@ -402,11 +416,12 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (BOOL)shouldToggleMenuBar {
-  return [self isWindowOnPrimaryScreen] &&
+  return base::mac::IsOSSnowLeopardOrEarlier() &&
+         [self isWindowOnPrimaryScreen] &&
          [[browserController_ window] isMainWindow];
 }
 
-- (base::mac::FullScreenMode)desiredFullscreenMode {
+- (base::mac::FullScreenMode)desiredSystemFullscreenMode {
   if ([browserController_ floatingBarShownFraction] >= 1.0)
     return base::mac::kFullScreenModeHideDock;
   return base::mac::kFullScreenModeHideAll;
@@ -594,7 +609,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   [self removeTrackingAreaIfNecessary];
   contentView_ = nil;
 
-  // This isn't tracked when not in fullscreen mode.
+  // This isn't tracked when not in presentation mode.
   [browserController_ releaseBarVisibilityForOwner:self
                                      withAnimation:NO
                                              delay:NO];
@@ -609,23 +624,23 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)showActiveWindowUI {
-  DCHECK_EQ(currentFullscreenMode_, base::mac::kFullScreenModeNormal);
-  if (currentFullscreenMode_ != base::mac::kFullScreenModeNormal)
+  DCHECK_EQ(systemFullscreenMode_, base::mac::kFullScreenModeNormal);
+  if (systemFullscreenMode_ != base::mac::kFullScreenModeNormal)
     return;
 
   if ([self shouldToggleMenuBar]) {
-    base::mac::FullScreenMode desiredMode = [self desiredFullscreenMode];
+    base::mac::FullScreenMode desiredMode = [self desiredSystemFullscreenMode];
     base::mac::RequestFullScreen(desiredMode);
-    currentFullscreenMode_ = desiredMode;
+    systemFullscreenMode_ = desiredMode;
   }
 
   // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)hideActiveWindowUI {
-  if (currentFullscreenMode_ != base::mac::kFullScreenModeNormal) {
-    base::mac::ReleaseFullScreen(currentFullscreenMode_);
-    currentFullscreenMode_ = base::mac::kFullScreenModeNormal;
+  if (systemFullscreenMode_ != base::mac::kFullScreenModeNormal) {
+    base::mac::ReleaseFullScreen(systemFullscreenMode_);
+    systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
   }
 
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956

@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.SystemVersion">10K540</string>
 		<string key="IBDocument.InterfaceBuilderVersion">851</string>
-		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.AppKitVersion">1038.36</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -733,9 +733,19 @@
 								</object>
 								<object class="NSMenuItem" id="530225222">
 									<reference key="NSMenu" ref="466310130"/>
-									<string key="NSTitle">^IDS_ENTER_FULLSCREEN_MAC</string>
+									<string key="NSTitle">^IDS_ENTER_PRESENTATION_MAC</string>
 									<string key="NSKeyEquiv">F</string>
 									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="353210768"/>
+									<reference key="NSMixedImage" ref="549394948"/>
+									<int key="NSTag">34039</int>
+								</object>
+								<object class="NSMenuItem" id="210963491">
+									<reference key="NSMenu" ref="466310130"/>
+									<string key="NSTitle">^IDS_ENTER_FULLSCREEN_MAC</string>
+									<string key="NSKeyEquiv">f</string>
+									<int key="NSKeyEquivModMask">1310720</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
@@ -1825,6 +1835,14 @@
 					</object>
 					<int key="connectionID">690</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">commandDispatch:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="210963491"/>
+					</object>
+					<int key="connectionID">693</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2292,6 +2310,7 @@
 							<reference ref="350076160"/>
 							<reference ref="577314768"/>
 							<reference ref="902861825"/>
+							<reference ref="210963491"/>
 						</object>
 						<reference key="parent" ref="586577488"/>
 					</object>
@@ -2705,6 +2724,11 @@
 						<reference key="object" ref="657848419"/>
 						<reference key="parent" ref="649796088"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">692</int>
+						<reference key="object" ref="210963491"/>
+						<reference key="parent" ref="466310130"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2902,6 +2926,7 @@
 					<string>689.IBPluginDependency</string>
 					<string>689.ImportedFromIB2</string>
 					<string>691.IBPluginDependency</string>
+					<string>692.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -3119,6 +3144,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -3158,7 +3184,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">691</int>
+			<int key="maxID">693</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

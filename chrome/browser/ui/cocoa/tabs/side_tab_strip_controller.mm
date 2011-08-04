@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@
   if (self) {
     // Side tabs have no indent since they are not sharing space with the
     // window controls.
-    [self setIndentForControls:0.0];
+    [self setLeftIndentForControls:0.0];
     verticalLayout_ = YES;
   }
   return self;

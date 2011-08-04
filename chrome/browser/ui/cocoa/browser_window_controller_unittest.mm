@@ -644,7 +644,7 @@ TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
  @private
   // We release the window ourselves, so we don't have to rely on the unittest
   // doing it for us.
-  scoped_nsobject<NSWindow> fullscreenWindow_;
+  scoped_nsobject<NSWindow> testFullscreenWindow_;
 }
 @end
 
@@ -713,15 +713,15 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
 // whole screen. We have to return an actual window because |-layoutSubviews|
 // looks at the window's frame.
 - (NSWindow*)createFullscreenWindow {
-  if (fullscreenWindow_.get())
-    return fullscreenWindow_.get();
+  if (testFullscreenWindow_.get())
+    return testFullscreenWindow_.get();
 
-  fullscreenWindow_.reset(
+  testFullscreenWindow_.reset(
       [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,400,400)
                                   styleMask:NSBorderlessWindowMask
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
-  return fullscreenWindow_.get();
+  return testFullscreenWindow_.get();
 }
 @end
 

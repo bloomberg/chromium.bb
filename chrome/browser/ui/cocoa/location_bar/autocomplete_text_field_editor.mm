@@ -402,7 +402,7 @@ BOOL ThePasteboardIsTooDamnBig() {
   if (cmd == @selector(cancelOperation:)) {
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForView:self];
-    if ([windowController isFullscreen]) {
+    if ([windowController inPresentationMode]) {
       [windowController focusTabContents];
       return;
     }

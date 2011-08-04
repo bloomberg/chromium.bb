@@ -508,6 +508,9 @@ class Browser : public TabHandlerDelegate,
   void ConvertPopupToTabbedBrowser();
   // In kiosk mode, the first toggle is valid, the rest is discarded.
   void ToggleFullscreenMode();
+#if defined(OS_MACOSX)
+  void TogglePresentationMode();
+#endif
   void Exit();
 #if defined(OS_CHROMEOS)
   void Search();

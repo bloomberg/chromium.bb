@@ -556,6 +556,14 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
+void BrowserWindowCocoa::SetPresentationMode(bool presentation_mode) {
+  [controller_ setPresentationMode:presentation_mode];
+}
+
+bool BrowserWindowCocoa::InPresentationMode() {
+  return [controller_ inPresentationMode];
+}
+
 void BrowserWindowCocoa::PrepareForInstant() {
   // TODO: implement fade as done on windows.
 }

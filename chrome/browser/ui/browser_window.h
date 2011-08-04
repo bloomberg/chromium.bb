@@ -307,6 +307,11 @@ class BrowserWindow {
 #if defined(OS_MACOSX)
   // Opens the tabpose view.
   virtual void OpenTabpose() = 0;
+
+  // Sets the presentation mode for the window.  If the window is not already in
+  // fullscreen, also enters fullscreen mode.
+  virtual void SetPresentationMode(bool presentation_mode) = 0;
+  virtual bool InPresentationMode() = 0;
 #endif
 
   // See InstantDelegate for details.
