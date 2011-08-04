@@ -5170,15 +5170,6 @@
    fun:_ZN19URLRequestChromeJob10StartAsyncEv
 }
 {
-   bug_91462
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12browser_sync8internal14WeakHandleCoreINS_14JsEventHandlerEEC1ERKN4base7WeakPtrIS2_EE
-   fun:_ZN12browser_sync10WeakHandleINS_14JsEventHandlerEEC1ERKN4base7WeakPtrIS1_EE
-   fun:_ZN12browser_sync18MockJsEventHandler12AsWeakHandleEv
-   fun:_ZN12browser_sync*JsSyncManagerObserverTestC2Ev
-}
-{
    bug_91465
    Memcheck:Leak
    fun:_Znw*

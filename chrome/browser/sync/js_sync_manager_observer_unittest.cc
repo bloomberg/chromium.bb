@@ -33,15 +33,18 @@ class JsSyncManagerObserverTest : public testing::Test {
         mock_js_event_handler_.AsWeakHandle());
   }
 
+ private:
+  // This must be destroyed after the member variables below in order
+  // for WeakHandles to be destroyed properly.
+  MessageLoop message_loop_;
+
+ protected:
   StrictMock<MockJsEventHandler> mock_js_event_handler_;
   JsSyncManagerObserver js_sync_manager_observer_;
 
   void PumpLoop() {
     message_loop_.RunAllPending();
   }
-
- private:
-  MessageLoop message_loop_;
 };
 
 TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
