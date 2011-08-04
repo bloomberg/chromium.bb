@@ -719,7 +719,7 @@ void AppLauncherHandler::HandleRecordAppLaunchByURL(
   CHECK(args->GetDouble(1, &source));
 
   extension_misc::AppLaunchBucket bucket =
-      static_cast<extension_misc::AppLaunchBucket>(source);
+      static_cast<extension_misc::AppLaunchBucket>(static_cast<int>(source));
   CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   RecordAppLaunchByURL(web_ui_->GetProfile(), url, bucket);
