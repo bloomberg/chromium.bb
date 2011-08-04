@@ -231,9 +231,21 @@ cr.define('ntp4', function() {
       this.appsPromoHide_ =
           this.appsPromoExtras_.querySelector('.apps-promo-hide');
 
+      this.appsPromoHide_.addEventListener('click',
+                                           this.onHidePromoClicked_.bind(this));
+
       this.appendChild(this.appsPromoExtras_);
       this.appsPromoExtras_.hidden = false;
       // TODO(estade): A ping url needs to be set for the app icon.
+    },
+
+    /**
+     * Handles when the "No, thanks" promo link is clicked.
+     * @private
+     */
+    onHidePromoClicked_: function(e) {
+      chrome.send('hideAppsPromo');
+      this.setAppsPromoData(null);
     },
 
     /**

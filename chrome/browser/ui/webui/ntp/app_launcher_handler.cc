@@ -591,11 +591,20 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   // If the user has intentionally hidden the promotion, we'll uninstall all the
   // default apps (we know the user hasn't installed any apps on their own at
   // this point, or the promotion wouldn't have been shown).
-  ignore_changes_ = true;
-  UninstallDefaultApps();
-  extension_service_->apps_promo()->HidePromo();
-  ignore_changes_ = false;
-  HandleGetApps(NULL);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+    UninstallDefaultApps();
+    extension_service_->apps_promo()->HidePromo();
+  } else {
+    // TODO(estade): remove all this. NTP3 uninstalled all the default apps then
+    // refreshed the entire NTP, we don't have to jump through these hoops for
+    // NTP4 because each app uninstall is handled separately without reloading
+    // the entire page.
+    ignore_changes_ = true;
+    UninstallDefaultApps();
+    extension_service_->apps_promo()->HidePromo();
+    ignore_changes_ = false;
+    HandleGetApps(NULL);
+  }
 }
 
 void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
