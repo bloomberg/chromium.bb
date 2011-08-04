@@ -31,7 +31,9 @@
 #include "content/common/unix_domain_socket_posix.h"
 #include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebFontInfo.h"
+#include "webkit/glue/webkitclient_impl.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
@@ -68,6 +70,8 @@ class SandboxIPCProcess  {
     }
   }
 
+  ~SandboxIPCProcess();
+
   void Run() {
     struct pollfd pfds[2];
     pfds[0].fd = lifeline_fd_;
@@ -101,6 +105,8 @@ class SandboxIPCProcess  {
   }
 
  private:
+  void EnsureWebKitInitialized();
+
   // ---------------------------------------------------------------------------
   // Requests from the renderer...
 
@@ -245,6 +251,7 @@ class SandboxIPCProcess  {
       return;
     }
 
+    EnsureWebKitInitialized();
     scoped_array<WebUChar> chars(new WebUChar[num_chars]);
 
     for (int i = 0; i < num_chars; ++i) {
@@ -283,6 +290,7 @@ class SandboxIPCProcess  {
       return;
     }
 
+    EnsureWebKitInitialized();
     WebKit::WebFontRenderStyle style;
     WebFontInfo::renderStyleForStrike(family.c_str(), sizeAndStyle, &style);
 
@@ -637,7 +645,20 @@ class SandboxIPCProcess  {
   const int browser_socket_;
   FontConfigDirect* const font_config_;
   std::vector<std::string> sandbox_cmd_;
+  scoped_ptr<webkit_glue::WebKitClientImpl> webkit_client_;
 };
+
+SandboxIPCProcess::~SandboxIPCProcess() {
+  if (webkit_client_.get())
+    WebKit::shutdown();
+}
+
+void SandboxIPCProcess::EnsureWebKitInitialized() {
+  if (webkit_client_.get())
+    return;
+  webkit_client_.reset(new webkit_glue::WebKitClientImpl);
+  WebKit::initialize(webkit_client_.get());
+}
 
 // -----------------------------------------------------------------------------
 
