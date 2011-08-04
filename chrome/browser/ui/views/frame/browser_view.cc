@@ -478,9 +478,10 @@ bool BrowserView::ShouldShowAvatar() const {
     return true;
 
   if (ProfileManager::IsMultipleProfilesEnabled()) {
-    // TODO(sail): Once the multi-profile options UI is done we only want to
-    // show the avatar if the user has more than one profile.
-    return true;
+    // Show the profile avatar after the user has created more than one profile.
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    return cache.GetNumberOfProfiles() > 1;
   }
 
   return false;

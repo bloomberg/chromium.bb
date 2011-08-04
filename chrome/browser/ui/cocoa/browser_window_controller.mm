@@ -15,9 +15,11 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
@@ -1353,8 +1355,20 @@ typedef NSInteger NSWindowAnimationBehavior;
 }
 
 - (BOOL)shouldShowAvatar {
-  return [self hasTabStrip] && (browser_->profile()->IsOffTheRecord() ||
-                                ProfileManager::IsMultipleProfilesEnabled());
+  if (![self hasTabStrip])
+    return NO;
+
+  if (browser_->profile()->IsOffTheRecord())
+    return YES;
+
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
+    // Show the profile avatar after the user has created more than one profile.
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    return cache.GetNumberOfProfiles() > 1;
+  }
+
+  return NO;
 }
 
 - (BOOL)isBookmarkBarVisible {

@@ -16,8 +16,10 @@
 #include "base/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
@@ -310,7 +312,10 @@ void BrowserTitlebar::Init() {
 
   // If multi-profile is enabled set up profile button and login notifications.
   // The button lives in its own vbox in container_hbox_.
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   if (ProfileManager::IsMultipleProfilesEnabled() &&
+      cache.GetNumberOfProfiles() > 1 &&
       !browser_window_->browser()->profile()->IsOffTheRecord()) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     usernamePref_.Init(prefs::kGoogleServicesUsername, prefs, this);
