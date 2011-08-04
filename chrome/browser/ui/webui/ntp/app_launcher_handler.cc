@@ -105,9 +105,9 @@ bool AppLauncherHandler::IsAppExcludedFromList(const Extension* extension) {
   if (!extension->is_app() ||
       (ntp3 && extension->id() == extension_misc::kWebStoreAppId) ||
       (extension->id() == extension_misc::kCloudPrintAppId)) {
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
 void AppLauncherHandler::CreateAppInfo(const Extension* extension,
