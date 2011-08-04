@@ -22,12 +22,12 @@ void CreateHttpThrottlingTrial(PrefService* prefs) {
   if (!base::FieldTrialList::IsOneTimeRandomizationEnabled())
     return;
 
-  // Probability for each trial group (the experiment and the control) is 5%.
-  const base::FieldTrial::Probability kEachGroupProbability = 5;
+  // Probability for each trial group (the experiment and the control) is 25%.
+  const base::FieldTrial::Probability kEachGroupProbability = 25;
   const base::FieldTrial::Probability kTotalProbability = 100;
-  // Disable trial a couple of days before M14 branch point.
+  // Disable trial a couple of days before M15 branch point.
   scoped_refptr<base::FieldTrial> trial(new base::FieldTrial(
-      "HttpThrottlingEnabled", kTotalProbability, "Default", 2011, 7, 23));
+      "HttpThrottlingEnabled", kTotalProbability, "Default", 2011, 9, 20));
   trial->UseOneTimeRandomization();
 
   // If the user has touched the control for whether throttling is enabled
@@ -37,9 +37,13 @@ void CreateHttpThrottlingTrial(PrefService* prefs) {
     int experiment_group =
         trial->AppendGroup("Experiment", kEachGroupProbability);
 
-    // The behavior for the control group is the same as for the default group.
-    // The point of having the control group is that it's the same size as
-    // the experiment group and selected the same way, so we get an
+    // The behavior for the control group is mostly the same as for
+    // the default group, with the difference that we are guaranteed
+    // that none of the users in the control group have manually
+    // changed the setting (under chrome://net-internals/) for whether
+    // throttling should be turned on or not.  The other point of
+    // having the control group is that it's the same size as the
+    // experiment group and selected the same way, so we get an
     // apples-to-apples comparison of histograms.
     trial->AppendGroup("Control", kEachGroupProbability);
 
