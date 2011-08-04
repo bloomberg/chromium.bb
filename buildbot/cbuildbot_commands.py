@@ -431,6 +431,14 @@ def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
     return chrome_atom
 
 
+def CleanupChromeKeywordsFile(board, buildroot):
+  """Cleans chrome uprev artifact if it exists."""
+  keywords_path_in_chroot = CHROME_KEYWORDS_FILE % {'board': board}
+  keywords_file = '%s/chroot%s' % (buildroot, keywords_path_in_chroot)
+  if os.path.exists(keywords_file):
+    cros_lib.RunCommand(['sudo', 'rm', '-f', keywords_file])
+
+
 def UprevPackages(buildroot, board, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   cwd = os.path.join(buildroot, 'src', 'scripts')

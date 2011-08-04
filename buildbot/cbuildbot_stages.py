@@ -283,6 +283,8 @@ class CleanUpStage(BuilderStage):
       repository.ClearBuildRoot(self._build_root)
     else:
       commands.PreFlightRinse(self._build_root)
+      commands.CleanupChromeKeywordsFile(self._build_config['board'],
+                                         self._build_root)
 
 
 class SyncStage(BuilderStage):
