@@ -8360,55 +8360,45 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Multi-profile -->
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-        Profile
+        Users
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
-          New <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex> profile</ph>
+          New user
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title.">
-          New <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex> Profile</ph>
+          New User
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_MENU" desc="The title of the profiles submenu in the wrench menu.">
-          <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex> profiles</ph>
+          Users
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_MENU" desc="In Title Case. The title of the profiles submenu in the wrench menu.">
-          <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex> Profiles</ph>
+          Users
         </message>
       </if>
       <message name="IDS_DEFAULT_PROFILE_NAME" desc="The default name given to a profile. Displayed in wrench menu and settings UI.">
-        Default Profile
+        First user
       </message>
       <message name="IDS_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI.">
-        Profile <ph name="VALUE">$1<ex>1</ex></ph>
+        User <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
       <message name="IDS_NUMBERED_AVATAR_NAME" desc="The name for a profile avatar icon.">
         Icon <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_DELETE_PROFILE" desc="Delete profile menu item and button title.">
-          Delete profile...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_DELETE_PROFILE" desc="In Title Case. Delete profile menu item.">
-          Delete Profile...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="Customize profile menu item and button title.">
-          Customize profile...
+          Customize user...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="In Title Case. Customize profile menu item.">
-          Customize Profile...
+          Customize User...
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -8421,17 +8411,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable These Features...
         </message>
       </if>
-      <message name="IDS_PROFILES_CREATE_INFO" desc="The message that appears in the options dialog to explain why to create additional profiles.">
-        If you want to allow multiple people to use and customize Chrome, you can create additional profiles.
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Create new profile...
+          New user
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Create New Profile...
+          New User
         </message>
       </if>
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
@@ -13274,24 +13261,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- Manage Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
-        Manage Profile
+        Manage User
       </message>
       <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="In Title Case: Label next to the profile name text field.">
-        Profile Name:
+        Name:
       </message>
       <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="In Title Case: Label next to the profile avatar icon chooser.">
-        Profile Icon:
+        Icon:
       </message>
     </if>
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
-        Manage profile
+        Manage user
       </message>
       <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
-        Profile name:
+        Name:
       </message>
       <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
-        Profile icon:
+        Icon:
       </message>
     </if>
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
@@ -13301,7 +13288,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- Delete Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_DELETE_TITLE" desc="In Title Case: Title of the delete profile dialog">
-        Delete Profile
+        Delete User
       </message>
       <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="In Title Case: The text to display on the button to confirm deleting the profile.">
         Delete
@@ -13309,17 +13296,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
-        Delete profile
+        Delete user
       </message>
       <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
         Delete
       </message>
     </if>
     <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
-      Are you sure you want to delete profile "<ph name="PROFILE_NAME">$1<ex>Default Profile</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
+      Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
     </message>
     <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
-      <ph name="PROFILE_NAME">$1<ex>Default Profile</ex></ph> (current profile)
+      <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
     </message>
 
     </messages>

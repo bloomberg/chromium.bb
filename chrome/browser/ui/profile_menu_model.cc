@@ -74,11 +74,8 @@ SwitchProfileMenuModel::SwitchProfileMenuModel(
 
   AddSeparator();
 
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(ProfileMenuModel::COMMAND_CREATE_NEW_PROFILE,
-          l10n_util::GetStringFUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_OPTION,
-                                     short_product_name));
+  AddItemWithStringId(ProfileMenuModel::COMMAND_CREATE_NEW_PROFILE,
+                      IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
 }
 
 void SwitchProfileMenuModel::ExecuteCommand(int command_id) {
@@ -153,18 +150,15 @@ ProfileMenuModel::ProfileMenuModel(Browser* browser)
                       IDS_PROFILES_CUSTOMIZE_PROFILE);
   AddSeparator();
 
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   if (cache.GetNumberOfProfiles() > 1) {
     switch_profiles_sub_menu_model_.reset(
         new SwitchProfileMenuModel(this, browser_));
-    AddSubMenu(COMMAND_SWITCH_PROFILE_MENU, l10n_util::GetStringFUTF16(
-        IDS_PROFILES_MENU, short_product_name),
-        switch_profiles_sub_menu_model_.get());
+    AddSubMenuWithStringId(COMMAND_SWITCH_PROFILE_MENU, IDS_PROFILES_MENU,
+                           switch_profiles_sub_menu_model_.get());
   } else {
     switch_profiles_sub_menu_model_.reset();
-    AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
-        IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
+    AddItemWithStringId(COMMAND_CREATE_NEW_PROFILE,
+                        IDS_PROFILES_CREATE_NEW_PROFILE_OPTION);
   }
 }
 
