@@ -105,7 +105,7 @@ void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
     for (int x = 0; x < x_full_blocks; x++) {
       *diff_info = DiffPartialBlock(prev_block, curr_block,
                                     bytes_per_row_,
-                                    kBlockWidth, partial_row_height);
+                                    kBlockSize, partial_row_height);
       prev_block += block_x_offset;
       curr_block += block_x_offset;
       diff_info += sizeof(DiffInfo);

@@ -11,9 +11,9 @@
 namespace remoting {
 
 int BlockDifference_C(const uint8* image1, const uint8* image2, int stride) {
-  int width_bytes = kBlockWidth * kBytesPerPixel;
+  int width_bytes = kBlockSize * kBytesPerPixel;
 
-  for (int y = 0; y < kBlockHeight; y++) {
+  for (int y = 0; y < kBlockSize; y++) {
     if (memcmp(image1, image2, width_bytes) != 0)
       return 1;
     image1 += stride;
@@ -32,9 +32,9 @@ int BlockDifference(const uint8* image1, const uint8* image2, int stride) {
     diff_proc = &BlockDifference_C;
 #else
     // For x86 processors, check if SSE2 is supported.
-    if (media::hasSSE2() && kBlockWidth == 32)
+    if (media::hasSSE2() && kBlockSize == 32)
       diff_proc = &BlockDifference_SSE2_W32;
-    else if (media::hasSSE2() && kBlockWidth == 16)
+    else if (media::hasSSE2() && kBlockSize == 16)
       diff_proc = &BlockDifference_SSE2_W16;
     else
       diff_proc = &BlockDifference_C;

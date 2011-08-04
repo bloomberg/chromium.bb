@@ -20,7 +20,7 @@ extern int BlockDifference_SSE2_W16(const uint8* image1, const uint8* image2,
   __m128i v0;
   __m128i v1;
   __m128i sad;
-  for (int y = 0; y < kBlockHeight; ++y) {
+  for (int y = 0; y < kBlockSize; ++y) {
     const __m128i* i1 = reinterpret_cast<const __m128i*>(image1);
     const __m128i* i2 = reinterpret_cast<const __m128i*>(image2);
     v0 = _mm_loadu_si128(i1);
@@ -59,7 +59,7 @@ extern int BlockDifference_SSE2_W32(const uint8* image1, const uint8* image2,
   __m128i v0;
   __m128i v1;
   __m128i sad;
-  for (int y = 0; y < kBlockHeight; ++y) {
+  for (int y = 0; y < kBlockSize; ++y) {
     const __m128i* i1 = reinterpret_cast<const __m128i*>(image1);
     const __m128i* i2 = reinterpret_cast<const __m128i*>(image2);
     v0 = _mm_loadu_si128(i1);

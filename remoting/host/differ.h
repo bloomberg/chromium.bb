@@ -16,10 +16,6 @@ namespace remoting {
 
 typedef uint8 DiffInfo;
 
-// Size (in pixels) of each square block used for diffing.
-// This must be a multiple of sizeof(uint64).
-static const int kBlockSize = 32;
-
 class Differ {
  public:
   // Create a differ that operates on bitmaps with the specified width, height

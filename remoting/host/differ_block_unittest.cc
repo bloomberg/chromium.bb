@@ -25,7 +25,7 @@ class EncodeDoneHandler
 };
 
 // Memory buffer large enough for 2 blocks aligned to 16 bytes.
-static const int kSizeOfBlock = kBlockHeight * kBlockWidth * kBytesPerPixel;
+static const int kSizeOfBlock = kBlockSize * kBlockSize * kBytesPerPixel;
 uint8 block_buffer[kSizeOfBlock * 2 + 16];
 
 void PrepareBuffers(uint8* &block1, uint8* &block2) {
@@ -43,7 +43,7 @@ TEST(BlockDifferenceTestSame, BlockDifference) {
 
   // These blocks should match.
   for (int i = 0; i < kTimesToRun; ++i) {
-    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    int result = BlockDifference(block1, block2, kBlockSize * kBytesPerPixel);
     EXPECT_EQ(0, result);
   }
 }
@@ -55,7 +55,7 @@ TEST(BlockDifferenceTestLast, BlockDifference) {
   block2[kSizeOfBlock-2] += 1;
 
   for (int i = 0; i < kTimesToRun; ++i) {
-    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    int result = BlockDifference(block1, block2, kBlockSize * kBytesPerPixel);
     EXPECT_EQ(1, result);
   }
 }
@@ -67,7 +67,7 @@ TEST(BlockDifferenceTestMid, BlockDifference) {
   block2[kSizeOfBlock/2+1] += 1;
 
   for (int i = 0; i < kTimesToRun; ++i) {
-    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    int result = BlockDifference(block1, block2, kBlockSize * kBytesPerPixel);
     EXPECT_EQ(1, result);
   }
 }
@@ -79,7 +79,7 @@ TEST(BlockDifferenceTestFirst, BlockDifference) {
   block2[0] += 1;
 
   for (int i = 0; i < kTimesToRun; ++i) {
-    int result = BlockDifference(block1, block2, kBlockWidth * kBytesPerPixel);
+    int result = BlockDifference(block1, block2, kBlockSize * kBytesPerPixel);
     EXPECT_EQ(1, result);
   }
 }
