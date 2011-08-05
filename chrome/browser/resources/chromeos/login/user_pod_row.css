@@ -11,7 +11,6 @@ podrow {
   -webkit-transition: all .2s ease-in-out;
   display: -webkit-box;
   height: 225px;
-  outline: none;
   position: relative;
 }
 
@@ -19,6 +18,7 @@ podrow {
   -webkit-transition: all .23s ease;
   border-radius: 2px;
   margin: 0 10px;
+  outline: none;
   padding: 10px;
   position: relative;
   width: 170px;

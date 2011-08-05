@@ -470,14 +470,13 @@ body.login-display {
 }
 
 body.login-display #oobe {
-  -webkit-margin-start: -500px;
-  -webkit-transition: all .8s ease;
-  width: 1000px;
+  -webkit-margin-start: -550px;
+  width: 1100px;
 }
 
 body.login-display #oobe hr {
   -webkit-transition: all .8s ease;
-  width: 1000px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
+  width: 1100px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
                      from 640px to full width. */
 }
 
@@ -489,11 +488,11 @@ body.login-display #oobe.gaia-signin hr {
 body.login-display #inner-container {
   height: 262px;
   padding: 0;
-  width: 1000px;
+  width: 1100px;
 }
 
 body.login-display .step {
-  left: 180px;  /* (1000px - 640px) / 2, make it center in oobe div */
+  left: 230px;  /* (1100px - 640px) / 2, make it center in oobe div */
 }
 
 body.login-display #header {

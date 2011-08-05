@@ -38,11 +38,14 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      this.addEventListener('click', this.handleClick_.bind(this));
+      // Make this focusable
+      if (!this.hasAttribute('tabindex'))
+        this.tabIndex = 0;
+
+      this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
+
       this.enterButtonElement.addEventListener('click',
           this.activate.bind(this));
-      this.removeUserButtonElement.addEventListener('click',
-          this.handleRemoveUserClick_.bind(this));
     },
 
     /**
@@ -176,20 +179,15 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles click event on remove user button.
-     * @private
+     * Handles mousedown event.
      */
-    handleRemoveUserClick_: function(e) {
-      chrome.send('removeUser', [this.email]);
-      this.parentNode.removeChild(this);
-    },
+    handleMouseDown_: function(e) {
+      if (e.target == this.removeUserButtonElement) {
+        chrome.send('removeUser', [this.user.emailAddress]);
 
-    /**
-     * Handles click event.
-     */
-    handleClick_: function(e) {
-      this.parentNode.focusPod(this);
-      e.stopPropagation();
+        // Prevent default so that we don't trigger 'focus' event.
+        e.preventDefault();
+      }
     }
   };
 
@@ -212,11 +210,10 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      // Make this focusable
-      if (!this.hasAttribute('tabindex'))
-        this.tabIndex = 0;
-
       this.style.left = 0;
+
+      this.ownerDocument.addEventListener('focus',
+          this.handleFocus_.bind(this), true);
 
       this.ownerDocument.addEventListener('click',
           this.handleClick_.bind(this));
@@ -244,9 +241,15 @@ cr.define('login', function() {
     /**
      * Add an existing user pod to this pod row.
      * @param {!Object} user User info dictionary.
+     * @param {boolean} animated Whether to use init animation.
      */
-    addUserPod: function(user) {
+    addUserPod: function(user, animated) {
       var userPod = this.createUserPod(user);
+      if (animated) {
+        userPod.classList.add('init');
+        userPod.nameElement.classList.add('init');
+      }
+
       this.appendChild(userPod);
       userPod.initialize();
     },
@@ -305,15 +308,17 @@ cr.define('login', function() {
      * Populates pod row with given existing users and
      * kick start init animiation.
      * @param {array} users Array of existing user emails.
+     * @param {boolean} animated Whether to use init animation.
      */
-    loadPods: function(users) {
+    loadPods: function(users, animated) {
       // Clear existing pods.
       this.innerHTML = '';
       this.focusedPod_ = undefined;
+      this.activatedPod_ = undefined;
 
       // Popoulate the pod row.
       for (var i = 0; i < users.length; ++i) {
-        this.addUserPod(users[i]);
+        this.addUserPod(users[i], animated);
       }
     },
 
@@ -322,10 +327,8 @@ cr.define('login', function() {
      * @param {UserPod} pod User pod to focus or null to clear focus.
      */
     focusPod: function(pod) {
-      for (var i = 0; i < this.pods.length; ++i) {
-        this.pods[i].classList.remove('focused');
-        this.pods[i].classList.add('faded');
-      }
+      if (this.focusedPod_ == pod)
+        return;
 
       if (pod) {
         if (pod.isGuest ||
@@ -334,8 +337,15 @@ cr.define('login', function() {
           // Focus current pod if it is guest pod, or
           // we are not using gaia ext for signin or
           // the user has a valid oauth token.
-          pod.classList.remove("faded");
-          pod.classList.add("focused");
+          for (var i = 0; i < this.pods.length; ++i) {
+            if (this.pods[i] == pod) {
+              pod.classList.remove("faded");
+              pod.classList.add("focused");
+            } else {
+              this.pods[i].classList.remove('focused');
+              this.pods[i].classList.add('faded');
+            }
+          }
           pod.focusInput();
 
           this.focusedPod_ = pod;
@@ -343,16 +353,15 @@ cr.define('login', function() {
         } else {
           // Otherwise, switch to Gaia signin.
           Oobe.showSigninUI(pod.user.emailAddress);
+          this.focusPod();  // Clears current focus.
         }
       } else {
         for (var i = 0; i < this.pods.length; ++i) {
+          this.pods[i].classList.remove('focused');
           this.pods[i].classList.remove('faded');
         }
         this.focusedPod_ = undefined;
       }
-
-      // TODO(xiyuan): Put this in a proper place.
-      $('bubble').hide();
     },
 
     /**
@@ -413,8 +422,27 @@ cr.define('login', function() {
      * @private
      */
     handleClick_: function(e) {
-      // Clears focus.
-      this.focusPod();
+      // Clears focus if not clicked on a pod.
+      if (e.target.parentNode != this &&
+          e.target.parentNode.parentNode != this)
+        this.focusPod();
+    },
+
+    /**
+     * Handles focus event.
+     */
+    handleFocus_: function(e) {
+      if (e.target.parentNode == this) {
+        // Focus on a pod
+        if (e.target.classList.contains('focused'))
+          e.target.focusInput();
+        else
+          this.focusPod(e.target);
+      } else if (e.target.parentNode.parentNode != this) {
+        // Clears pod focus when we reach here. It means new focus is neither
+        // on a pod nor on a button/input for a pod.
+        this.focusPod();
+      }
     },
 
     /**
@@ -425,9 +453,6 @@ cr.define('login', function() {
       var editing = false;
       if (e.target.tagName == 'INPUT' && e.target.value)
         editing = true;
-
-      // TODO(xiyuan): Put this in a proper place.
-      $('bubble').hide();
 
       switch (e.keyIdentifier) {
         case 'Left':
@@ -451,8 +476,10 @@ cr.define('login', function() {
           }
           break;
         case 'Enter':
-          this.activatePod(this.focusedPod_);
-          e.stopPropagation();
+          if (this.focusedPod_) {
+            this.activatePod(this.focusedPod_);
+            e.stopPropagation();
+          }
           break;
       }
     }

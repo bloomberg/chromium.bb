@@ -293,7 +293,7 @@ cr.define('cr.ui', function() {
     $('cancel-add-user-button').addEventListener('click', function(e) {
       this.hidden = true;
       $('add-user-button').hidden = false;
-      Oobe.showScreen({id: 'account-picker'});
+      Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
     });
 
     document.addEventListener('keydown', function(e) {
@@ -457,11 +457,12 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows sign-in error bubble.
+   * @param {number} loginAttempts Number of login attemps tried.
    * @param {string} message Error message to show.
    * @param {string} link Text to use for help link.
    * @param {number} helpId Help topic Id associated with help link.
    */
-  Oobe.showSignInError = function(message, link, helpId) {
+  Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     var anchor = undefined;
     if (currentScreenId == SCREEN_SIGNIN) {
@@ -471,6 +472,12 @@ cr.define('cr.ui', function() {
       $('signin').reset(true);
     } else if (currentScreenId == SCREEN_ACCOUNT_PICKER &&
                $('pod-row').activated) {
+      const MAX_LOGIN_ATTEMMPTS_IN_POD = 3;
+      if (loginAttempts > MAX_LOGIN_ATTEMMPTS_IN_POD) {
+        Oobe.showSigninUI($('pod-row').activated.user.emailAddress);
+        return;
+      }
+
       anchor = $('pod-row').activated.mainInput;
     }
     if (!anchor) {

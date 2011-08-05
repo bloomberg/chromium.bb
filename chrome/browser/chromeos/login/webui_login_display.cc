@@ -50,7 +50,10 @@ void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
                              bool show_new_user) {
   // Testing that the delegate has been set.
   DCHECK(delegate_);
+
   users_ = users;
+  show_guest_ = show_guest;
+  show_new_user_ = show_new_user;
 }
 
 void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
@@ -64,8 +67,18 @@ void WebUILoginDisplay::OnUserImageChanged(UserManager::User* user) {
 }
 
 void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
-  // TODO(rharrison): Remove the user from the user vector
-  // TODO(rharrison): Push the change to WebUI Login screen
+  DCHECK(webui_handler_);
+
+  for (std::vector<UserManager::User>::iterator it = users_.begin();
+       it != users_.end();
+       ++it) {
+    if (it->email() == username) {
+      users_.erase(it);
+      break;
+    }
+  }
+
+  webui_handler_->OnUserRemoved(username);
 }
 
 void WebUILoginDisplay::OnFadeOut() {
@@ -126,19 +139,11 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
       break;
   }
 
-  webui_handler_->ShowError(error_text, help_link, help_topic_id);
+  webui_handler_->ShowError(login_attempts, error_text, help_link,
+                            help_topic_id);
 }
 
 // WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
-void WebUILoginDisplay::SetWebUIHandler(
-    LoginDisplayWebUIHandler* webui_handler) {
-  webui_handler_ = webui_handler;
-}
-
-void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
-  delegate_->OnStartEnterpriseEnrollment();
-}
-
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   DCHECK(delegate_);
@@ -156,12 +161,27 @@ void WebUILoginDisplay::LoginAsGuest() {
   delegate_->LoginAsGuest();
 }
 
+void WebUILoginDisplay::RemoveUser(const std::string& username) {
+  UserManager::Get()->RemoveUser(username, this);
+}
+
+void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
+  delegate_->OnStartEnterpriseEnrollment();
+}
+
+void WebUILoginDisplay::SetWebUIHandler(
+    LoginDisplayWebUIHandler* webui_handler) {
+  webui_handler_ = webui_handler;
+}
+
 // WebUILoginDisplay, private: -------------------------------------------------
 
 // Singleton implementation: ---------------------------------------------------
 
 WebUILoginDisplay::WebUILoginDisplay()
     : LoginDisplay(NULL, gfx::Rect()),
+      show_guest_(false),
+      show_new_user_(false),
       login_window_(NULL),
       webui_handler_(NULL) {
 }

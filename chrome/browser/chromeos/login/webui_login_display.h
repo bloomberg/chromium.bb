@@ -75,6 +75,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void RemoveUser(const std::string& username) OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
   virtual void SetWebUIHandler(
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
@@ -83,13 +84,31 @@ class WebUILoginDisplay : public LoginDisplay,
     login_window_ = login_window;
   }
 
+  const std::vector<UserManager::User>& users() const {
+    return users_;
+  }
+
+  bool show_guest() const {
+    return show_guest_;
+  }
+
+  bool show_new_user() const {
+    return show_new_user_;
+  }
+
  private:
   // Singleton implementation:
   friend struct DefaultSingletonTraits<WebUILoginDisplay>;
   WebUILoginDisplay();
 
-  // Set of Users in the systemvisible UserControllers.
+  // Set of Users that are visible.
   std::vector<UserManager::User> users_;
+
+  // Whether to show guest login.
+  bool show_guest_;
+
+  // Whether to show add new user.
+  bool show_new_user_;
 
   // Container of the screen we are displaying
   views::Widget* login_window_;

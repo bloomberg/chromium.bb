@@ -50,10 +50,11 @@ cr.define('login', function() {
      *        page.
      */
     onBeforeShow: function(data) {
-      console.log('Opening extension: ' + data);
+      console.log('Opening extension: ' + data.startUrl +
+                  ', opt_email=' + data.email);
       var frame = $('signin-frame');
       frame.addEventListener('load', function(e) {
-        console.log('Frame loaded: ' + data);
+        console.log('Frame loaded: ' + data.startUrl);
       });
       frame.contentWindow.location.href = data.startUrl;
       this.extension_url_ = data.startUrl;

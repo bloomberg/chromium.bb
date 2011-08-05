@@ -49,10 +49,11 @@ cr.define('login', function() {
   /**
    * Loads givens users in pod row.
    * @param {array} users Array of user.
+   * @param {boolean} animated Whether to use init animation.
    * @public
    */
-  AccountPickerScreen.loadUsers = function(users) {
-    $('pod-row').loadPods(users);
+  AccountPickerScreen.loadUsers = function(users, animated) {
+    $('pod-row').loadPods(users, animated);
   };
 
   return {

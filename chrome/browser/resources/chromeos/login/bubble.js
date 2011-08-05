@@ -24,7 +24,9 @@ cr.define('cr.ui', function() {
     /** @inheritDoc */
     decorate: function() {
       this.ownerDocument.addEventListener('click',
-                                          this.handleClick_.bind(this));
+                                          this.handleDocClick_.bind(this));
+      this.ownerDocument.addEventListener('keydown',
+                                          this.handleDocKeyDown_.bind(this));
       this.addEventListener('webkitTransitionEnd',
                             this.handleTransitionEnd_.bind(this));
     },
@@ -84,14 +86,23 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Handler of click event.
+     * Handler of document click event.
      * @private
      */
-    handleClick_: function(e) {
+    handleDocClick_: function(e) {
       // Ignore clicks on anchor element.
       if (e.target == this.anchor_)
         return;
 
+      if (!this.hidden)
+        this.hide();
+    },
+
+    /**
+     * Handle of document keydown event.
+     * @private
+     */
+    handleDocKeyDown_: function(e) {
       if (!this.hidden)
         this.hide();
     }

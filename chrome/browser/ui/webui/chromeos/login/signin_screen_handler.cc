@@ -38,6 +38,9 @@ const char kKeyCanRemove[] = "canRemove";
 const char kKeyImageUrl[] = "imageUrl";
 const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
+// Max number of users to show.
+const int kMaxUsers = 5;
+
 // Sanitize emails. Currently, it only ensures all emails have a domain.
 std::string SanitizeEmail(const std::string& email) {
   std::string sanitized(email);
@@ -108,9 +111,15 @@ void SigninScreenHandler::Show(bool oobe_ui) {
     // Shows new user sign-in for OOBE.
     HandleShowAddUser(NULL);
   } else {
-    // Populates and shows account picker for usual sign-in flow.
-    SendUserList();
-    ShowScreen(kAccountPickerScreen, NULL);
+    // Populates account picker. Animation is turned off for now until we
+    // figure out how to make it fast enough.
+    SendUserList(false);
+
+    // Show sign-in UI if there is no visible users.
+    if (WebUILoginDisplay::GetInstance()->users().empty())
+      HandleShowAddUser(NULL);
+    else
+      ShowScreen(kAccountPickerScreen, NULL);
   }
 }
 
@@ -145,7 +154,7 @@ void SigninScreenHandler::RegisterMessages() {
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
-  SendUserList();
+  SendUserList(false);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -157,13 +166,20 @@ void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
 }
 
-void SigninScreenHandler::ShowError(const std::string& error_text,
+void SigninScreenHandler::OnUserRemoved(const std::string& username) {
+  SendUserList(false);
+}
+
+void SigninScreenHandler::ShowError(int login_attempts,
+                                    const std::string& error_text,
                                     const std::string& help_link_text,
                                     HelpAppLauncher::HelpTopic help_topic_id) {
+  base::FundamentalValue login_attempts_value(login_attempts);
   base::StringValue error_message(error_text);
   base::StringValue help_link(help_link_text);
   base::FundamentalValue help_id(static_cast<int>(help_topic_id));
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.showSignInError",
+                                  login_attempts_value,
                                   error_message,
                                   help_link,
                                   help_id);
@@ -211,7 +227,7 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
     return;
   }
 
-  UserManager::Get()->RemoveUserFromList(email);
+  delegate_->RemoveUser(email);
 }
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
@@ -249,61 +265,74 @@ void SigninScreenHandler::HandleLaunchHelpApp(const base::ListValue* args) {
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
-void SigninScreenHandler::SendUserList() {
-  ListValue users_list;
+void SigninScreenHandler::SendUserList(bool animated) {
+  bool show_guest = WebUILoginDisplay::GetInstance()->show_guest();
 
-  // Grab the users from the user manager.
-  UserVector users = UserManager::Get()->GetUsers();
+  size_t max_non_owner_users = show_guest ? kMaxUsers - 2 : kMaxUsers - 1;
+  size_t non_owner_count = 0;
+
+  ListValue users_list;
+  UserVector users = WebUILoginDisplay::GetInstance()->users();
+
   bool single_user = users.size() == 1;
   for (UserVector::const_iterator it = users.begin();
        it != users.end(); ++it) {
     const std::string& email = it->email();
+    bool is_owner = email == UserCrosSettingsProvider::cached_owner();
 
-    DictionaryValue* user_dict = new DictionaryValue();
-    user_dict->SetString(kKeyName, it->GetDisplayName());
-    user_dict->SetString(kKeyEmailAddress, email);
-    user_dict->SetInteger(kKeyOauthTokenStatus, it->oauth_token_status());
+    if (non_owner_count < max_non_owner_users || is_owner) {
+      DictionaryValue* user_dict = new DictionaryValue();
+      user_dict->SetString(kKeyName, it->GetDisplayName());
+      user_dict->SetString(kKeyEmailAddress, email);
+      user_dict->SetInteger(kKeyOauthTokenStatus, it->oauth_token_status());
 
-    // Single user check here is necessary because owner info might not be
-    // available when running into login screen on first boot.
-    // See http://crosbug.com/12723
-    user_dict->SetBoolean(kKeyCanRemove,
-                          !single_user &&
-                          !email.empty() &&
-                          email != UserCrosSettingsProvider::cached_owner());
+      // Single user check here is necessary because owner info might not be
+      // available when running into login screen on first boot.
+      // See http://crosbug.com/12723
+      user_dict->SetBoolean(kKeyCanRemove,
+                            !single_user &&
+                            !email.empty() &&
+                            !is_owner);
 
-    if (!email.empty()) {
-      long long timestamp = base::TimeTicks::Now().ToInternalValue();
-      std::string image_url(
-          StringPrintf("%s%s?id=%lld",
-                       chrome::kChromeUIUserImageURL,
-                       email.c_str(),
-                       timestamp));
-      user_dict->SetString(kKeyImageUrl, image_url);
-    } else {
-      std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-          std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_DEFAULT_USER");
-      user_dict->SetString(kKeyImageUrl, image_url);
+      if (!email.empty()) {
+        long long timestamp = base::TimeTicks::Now().ToInternalValue();
+        std::string image_url(
+            StringPrintf("%s%s?id=%lld",
+                         chrome::kChromeUIUserImageURL,
+                         email.c_str(),
+                         timestamp));
+        user_dict->SetString(kKeyImageUrl, image_url);
+      } else {
+        std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
+            std::string(chrome::kChromeUIThemePath) +
+            "/IDR_LOGIN_DEFAULT_USER");
+        user_dict->SetString(kKeyImageUrl, image_url);
+      }
+
+      users_list.Append(user_dict);
+      if (!is_owner)
+        ++non_owner_count;
     }
-
-    users_list.Append(user_dict);
   }
 
-  // Add the Guest to the user list.
-  DictionaryValue* guest_dict = new DictionaryValue();
-  guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
-  guest_dict->SetString(kKeyEmailAddress, "");
-  guest_dict->SetBoolean(kKeyCanRemove, false);
-  guest_dict->SetInteger(kKeyOauthTokenStatus,
-                         UserManager::OAUTH_TOKEN_STATUS_UNKNOWN);
-  std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-      std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
-  guest_dict->SetString(kKeyImageUrl, image_url);
-  users_list.Append(guest_dict);
+  if (show_guest) {
+    // Add the Guest to the user list.
+    DictionaryValue* guest_dict = new DictionaryValue();
+    guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
+    guest_dict->SetString(kKeyEmailAddress, "");
+    guest_dict->SetBoolean(kKeyCanRemove, false);
+    guest_dict->SetInteger(kKeyOauthTokenStatus,
+                           UserManager::OAUTH_TOKEN_STATUS_UNKNOWN);
+    std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
+        std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
+    guest_dict->SetString(kKeyImageUrl, image_url);
+    users_list.Append(guest_dict);
+  }
 
   // Call the Javascript callback
+  base::FundamentalValue animated_value(animated);
   web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-                                  users_list);
+                                  users_list, animated_value);
 }
 
 }  // namespace chromeos

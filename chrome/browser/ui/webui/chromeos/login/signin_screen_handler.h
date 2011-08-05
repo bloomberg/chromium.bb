@@ -23,7 +23,9 @@ class LoginDisplayWebUIHandler {
  public:
   virtual void ClearAndEnablePassword() = 0;
   virtual void OnLoginSuccess(const std::string& username) = 0;
-  virtual void ShowError(const std::string& error_text,
+  virtual void OnUserRemoved(const std::string& username) = 0;
+  virtual void ShowError(int login_attempts,
+                         const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
 };
@@ -43,6 +45,9 @@ class SigninScreenHandlerDelegate {
 
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
+
+  // Attempts to remove given user.
+  virtual void RemoveUser(const std::string& username) = 0;
 
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
@@ -75,7 +80,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // BaseLoginUIHandler implementation.
   virtual void ClearAndEnablePassword() OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
-  virtual void ShowError(const std::string& error_text,
+  virtual void OnUserRemoved(const std::string& username) OVERRIDE;
+  virtual void ShowError(int login_attempts,
+                         const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
@@ -108,7 +115,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleLaunchHelpApp(const base::ListValue* args);
 
   // Sends user list to account picker.
-  void SendUserList();
+  void SendUserList(bool animated);
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
