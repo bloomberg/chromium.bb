@@ -153,3 +153,21 @@ node = env.CommandSelLdrTestNacl('second_tls_test.out',
                                  second_tls_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
                        is_broken=is_broken)
+
+many_threads_sequential_nexe = env.ComponentProgram(
+    'many_threads_sequential',
+    'many_threads_sequential.c',
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
+# This test should, in principle, be flaky, because of race conditions
+# in NaCl's thread exit/join.  See:
+# http://code.google.com/p/nativeclient/issues/detail?id=1027 (trusted stacks)
+# http://code.google.com/p/nativeclient/issues/detail?id=1028 (newlib)
+# http://code.google.com/p/nativeclient/issues/detail?id=2136 (TLS indexes)
+# If we find this test fails in practice, it should be disabled until
+# the races are fixed.
+node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
+                                 [many_threads_sequential_nexe])
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_many_threads_sequential_test',
+                       is_broken=is_broken)
