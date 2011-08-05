@@ -289,12 +289,18 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         user.set_email(email);
 
         // Get OAuth token status.
-        int oauth_token_status;
-        if (prefs_oauth_status &&
-            prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
-                &oauth_token_status)) {
-          user.set_oauth_token_status(
-              static_cast<OAuthTokenStatus>(oauth_token_status));
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSkipOAuthLogin)) {
+          // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
+          user.set_oauth_token_status(OAUTH_TOKEN_STATUS_VALID);
+        } else {
+          int oauth_token_status = OAUTH_TOKEN_STATUS_UNKNOWN;
+          if (prefs_oauth_status &&
+              prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
+                  &oauth_token_status)) {
+            user.set_oauth_token_status(
+                static_cast<OAuthTokenStatus>(oauth_token_status));
+          }
         }
 
         UserImages::const_iterator image_it = user_images_.find(email);
