@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
@@ -27,6 +26,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "net/base/cookie_monster.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace {
@@ -36,8 +36,8 @@ static base::LazyInstance<TabSpecificList> g_tab_specific(
 }
 
 bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
-  return appcaches_->empty() &&
-      cookies_->empty() &&
+  return cookies_->GetAllCookies().empty() &&
+      appcaches_->empty() &&
       databases_->empty() &&
       file_systems_->empty() &&
       indexed_dbs_->empty() &&
@@ -239,15 +239,24 @@ void TabSpecificContentSettings::OnCookiesRead(
     bool blocked_by_policy) {
   if (cookie_list.empty())
     return;
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->AddReadCookies(
-        url, cookie_list);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  } else {
-    allowed_local_shared_objects_.cookies()->AddReadCookies(
-        url, cookie_list);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+  LocalSharedObjectsContainer& container = blocked_by_policy ?
+      blocked_local_shared_objects_ : allowed_local_shared_objects_;
+  typedef net::CookieList::const_iterator cookie_iterator;
+  for (cookie_iterator cookie = cookie_list.begin();
+       cookie != cookie_list.end(); ++cookie) {
+    container.cookies()->SetCookieWithDetails(url,
+                                              cookie->Name(),
+                                              cookie->Value(),
+                                              cookie->Domain(),
+                                              cookie->Path(),
+                                              cookie->ExpiryDate(),
+                                              cookie->IsSecure(),
+                                              cookie->IsHttpOnly());
   }
+  if (blocked_by_policy)
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  else
+    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 void TabSpecificContentSettings::OnCookieChanged(
@@ -256,11 +265,11 @@ void TabSpecificContentSettings::OnCookieChanged(
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->AddChangedCookie(
+    blocked_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
-    allowed_local_shared_objects_.cookies()->AddChangedCookie(
+    allowed_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
@@ -477,13 +486,17 @@ void TabSpecificContentSettings::Observe(int type,
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
     LocalSharedObjectsContainer(Profile* profile)
-    : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
-      cookies_(new CannedBrowsingDataCookieHelper(profile)),
+    : cookies_(new net::CookieMonster(NULL, NULL)),
+      appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(profile)),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
+  cookies_->SetCookieableSchemes(
+      net::CookieMonster::kDefaultCookieableSchemes,
+      net::CookieMonster::kDefaultCookieableSchemesCount);
+  cookies_->SetKeepExpiredCookies();
 }
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
@@ -491,8 +504,12 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
 }
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
+  cookies_ = new net::CookieMonster(NULL, NULL);
+  cookies_->SetCookieableSchemes(
+      net::CookieMonster::kDefaultCookieableSchemes,
+      net::CookieMonster::kDefaultCookieableSchemesCount);
+  cookies_->SetKeepExpiredCookies();
   appcaches_->Reset();
-  cookies_->Reset();
   databases_->Reset();
   file_systems_->Reset();
   indexed_dbs_->Reset();
@@ -502,7 +519,7 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
 
 CookiesTreeModel*
 TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
-  return new CookiesTreeModel(cookies_->Clone(),
+  return new CookiesTreeModel(cookies_,
                               databases_->Clone(),
                               local_storages_->Clone(),
                               session_storages_->Clone(),

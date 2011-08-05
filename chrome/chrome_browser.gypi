@@ -306,8 +306,6 @@
         'browser/browser_util_win.h',
         'browser/browsing_data_appcache_helper.cc',
         'browser/browsing_data_appcache_helper.h',
-        'browser/browsing_data_cookie_helper.cc',
-        'browser/browsing_data_cookie_helper.h',
         'browser/browsing_data_database_helper.cc',
         'browser/browsing_data_database_helper.h',
         'browser/browsing_data_file_system_helper.cc',
