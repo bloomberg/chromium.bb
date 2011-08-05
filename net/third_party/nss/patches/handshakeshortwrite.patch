@@ -1,0 +1,54 @@
+Index: mozilla/security/nss/lib/ssl/sslsecur.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsecur.c,v
+retrieving revision 1.43.2.4
+diff -p -u -8 -r1.43.2.4 sslsecur.c
+--- mozilla/security/nss/lib/ssl/sslsecur.c	8 Apr 2011 05:25:21 -0000	1.43.2.4
++++ mozilla/security/nss/lib/ssl/sslsecur.c	4 Aug 2011 23:33:46 -0000
+@@ -383,16 +383,28 @@ SSL_ForceHandshake(PRFileDesc *fd)
+ 		 SSL_GETPID(), fd));
+ 	return rv;
+     }
+ 
+     /* Don't waste my time */
+     if (!ss->opt.useSecurity) 
+     	return SECSuccess;
+ 
++    if (!ssl_SocketIsBlocking(ss)) {
++	ssl_GetXmitBufLock(ss);
++	if (ss->pendingBuf.len != 0) {
++	    rv = ssl_SendSavedWriteData(ss);
++	    if ((rv < 0) && (PORT_GetError() != PR_WOULD_BLOCK_ERROR)) {
++		ssl_ReleaseXmitBufLock(ss);
++		return SECFailure;
++	    }
++	}
++	ssl_ReleaseXmitBufLock(ss);
++    }
++
+     ssl_Get1stHandshakeLock(ss);
+ 
+     if (ss->version >= SSL_LIBRARY_VERSION_3_0) {
+ 	int gatherResult;
+ 
+     	ssl_GetRecvBufLock(ss);
+ 	gatherResult = ssl3_GatherCompleteHandshake(ss, 0);
+ 	ssl_ReleaseRecvBufLock(ss);
+@@ -1132,17 +1144,16 @@ ssl_SecureRecv(sslSocket *ss, unsigned c
+     if (!ssl_SocketIsBlocking(ss) && !ss->opt.fdx) {
+ 	ssl_GetXmitBufLock(ss);
+ 	if (ss->pendingBuf.len != 0) {
+ 	    rv = ssl_SendSavedWriteData(ss);
+ 	    if ((rv < 0) && (PORT_GetError() != PR_WOULD_BLOCK_ERROR)) {
+ 		ssl_ReleaseXmitBufLock(ss);
+ 		return SECFailure;
+ 	    }
+-	    /* XXX short write? */
+ 	}
+ 	ssl_ReleaseXmitBufLock(ss);
+     }
+     
+     rv = 0;
+     /* If any of these is non-zero, the initial handshake is not done. */
+     if (!ss->firstHsDone) {
+ 	ssl_Get1stHandshakeLock(ss);
