@@ -636,6 +636,12 @@ LEAK
 *!sync_notifier::InvalidationNotifier::UpdateCredentials
 *!sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
 
+LEAK
+...
+*!TestURLRequestContext::TestURLRequestContext
+*!TestURLRequestContextGetter::GetURLRequestContext
+*!URLFetcher::Core::StartURLRequest
+
 ############################
 # Real issues in Chromium
 
@@ -728,7 +734,7 @@ LEAK
 *!generic_cpp_alloc
 *!operator new
 *!TestingProfile::CreateRequestContext
-*!ProfileSyncService*::SetUp
+*!*ProfileSyncService*::SetUp
 
 # http://crbug.com/81522
 LEAK
