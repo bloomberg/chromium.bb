@@ -83,6 +83,7 @@ cr.define('options.browser_options', function() {
       urlField.addEventListener('blur', function(event) {
         self.parentNode.autocompleteList.detach();
       });
+
       this.draggable = true;
     },
 
@@ -171,6 +172,12 @@ cr.define('options.browser_options', function() {
      * @private
      */
     handleDragStart_: function(e) {
+      // Prevent dragging if the list is disabled.
+      if (this.disabled) {
+        e.preventDefault();
+        return false;
+      }
+
       var target = e.target;
       // StartupPageListItem should be the only draggable element type in the
       // page but let's make sure.
