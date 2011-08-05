@@ -42,7 +42,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
  public:
 
    void SetUp() {
-     NSMenu *menu = [[NSMenu alloc] initWithTitle:@"test"];
+     NSMenu* menu = [[NSMenu alloc] initWithTitle:@"test"];
      bridge_.reset(new TestBookmarkMenuBridge(browser_test_helper_.profile(),
                    menu));
      EXPECT_TRUE(bridge_.get());
@@ -57,7 +57,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
   }
 
   void InvalidateMenu()  { bridge_->InvalidateMenu(); }
-  bool menu_is_valid()  { return bridge_->menuIsValid_; }
+  bool menu_is_valid()  { return bridge_->menu_is_valid_; }
 
   void AddNodeToMenu(BookmarkMenuBridge* bridge,
                      const BookmarkNode* root,
@@ -80,7 +80,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
   }
 
   NSMenuItem* AddTestMenuItem(NSMenu *menu, NSString *title, SEL selector) {
-    NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:title action:NULL
+    NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title action:NULL
                                             keyEquivalent:@""] autorelease];
     if (selector)
       [item setAction:selector];

@@ -4,6 +4,8 @@
 
 #import <AppKit/AppKit.h>
 
+#include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -11,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -23,7 +24,20 @@
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile,
                                        NSMenu *menu)
-    : menuIsValid_(false),
+    : menu_is_valid_(false),
+      root_node_(NULL),
+      profile_(profile),
+      controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
+                                                              andMenu:menu]) {
+  if (GetBookmarkModel())
+    ObserveBookmarkModel();
+}
+
+BookmarkMenuBridge::BookmarkMenuBridge(const BookmarkNode* root_node,
+                                       Profile* profile,
+                                       NSMenu* menu)
+    : menu_is_valid_(false),
+      root_node_(root_node),
       profile_(profile),
       controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
                                                               andMenu:menu]) {
@@ -35,7 +49,6 @@ BookmarkMenuBridge::~BookmarkMenuBridge() {
   BookmarkModel *model = GetBookmarkModel();
   if (model)
     model->RemoveObserver(this);
-  [controller_ release];
 }
 
 NSMenu* BookmarkMenuBridge::BookmarkMenu() {
@@ -57,7 +70,7 @@ void BookmarkMenuBridge::UpdateSubMenu(NSMenu* bookmark_menu) {
 void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
                                             bool is_submenu) {
   DCHECK(bookmark_menu);
-  if (menuIsValid_)
+  if (menu_is_valid_)
     return;
   BookmarkModel* model = GetBookmarkModel();
   if (!model || !model->IsLoaded())
@@ -71,27 +84,31 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
 
   ClearBookmarkMenu(bookmark_menu);
 
-  // Add bookmark bar items, if any.
-  const BookmarkNode* barNode = model->bookmark_bar_node();
-  CHECK(barNode);
-  if (!barNode->empty()) {
-    [bookmark_menu addItem:[NSMenuItem separatorItem]];
-    AddNodeToMenu(barNode, bookmark_menu, !is_submenu);
+  if (!root_node_) {
+    // Add bookmark bar items, if any.
+    const BookmarkNode* bar_node = model->bookmark_bar_node();
+    CHECK(bar_node);
+    if (!bar_node->empty()) {
+      [bookmark_menu addItem:[NSMenuItem separatorItem]];
+      AddNodeToMenu(bar_node, bookmark_menu, !is_submenu);
+    }
+
+    // If the "Other Bookmarks" folder has any content, make a submenu for it
+    // and fill it in.
+    if (!model->other_node()->empty()) {
+      NSString* other_items_title =
+          l10n_util::GetNSString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME);
+      [bookmark_menu addItem:[NSMenuItem separatorItem]];
+      AddNodeAsSubmenu(bookmark_menu,
+                       model->other_node(),
+                       other_items_title,
+                       !is_submenu);
+    }
+  } else {
+    AddNodeToMenu(root_node_, bookmark_menu, true);
   }
 
-  // If the "Other Bookmarks" folder has any content, make a submenu for it and
-  // fill it in.
-  if (!model->other_node()->empty()) {
-    NSString* other_items_title =
-        l10n_util::GetNSString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME);
-    [bookmark_menu addItem:[NSMenuItem separatorItem]];
-    AddNodeAsSubmenu(bookmark_menu,
-                     model->other_node(),
-                     other_items_title,
-                     !is_submenu);
-  }
-
-  menuIsValid_ = true;
+  menu_is_valid_ = true;
 }
 
 void BookmarkMenuBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {

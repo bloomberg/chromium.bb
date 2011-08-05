@@ -17,15 +17,17 @@
 
 class BookmarkNode;
 class BookmarkMenuBridge;
+@protocol BookmarkMenuDelegate;
 
 @interface BookmarkMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
   BookmarkMenuBridge* bridge_;  // weak; owns me
-  NSMenu *menu_;
+  NSMenu* menu_;
+  id<BookmarkMenuDelegate> delegate_;
 }
 
-// The Bookmarks menu
 @property(nonatomic, readonly) NSMenu* menu;
+@property(nonatomic, assign) id<BookmarkMenuDelegate> delegate;
 
 // Return an autoreleased string to be used as a menu title for the
 // given bookmark node.
@@ -46,6 +48,19 @@ class BookmarkMenuBridge;
 
 @end  // BookmarkMenuCocoaController
 
+////////////////////////////////////////////////////////////////////////////////
+
+// This protocol is used to forward relevant methods from NSMenuDelegate to
+// some other object.
+@protocol BookmarkMenuDelegate <NSObject>
+@optional
+
+- (void)bookmarkMenuWillOpen:(BookmarkMenuCocoaController*)controller;
+- (void)bookmarkMenuDidClose:(BookmarkMenuCocoaController*)controller;
+
+@end
+
+////////////////////////////////////////////////////////////////////////////////
 
 @interface BookmarkMenuCocoaController (ExposedForUnitTests)
 - (const BookmarkNode*)nodeForIdentifier:(int)identifier;
