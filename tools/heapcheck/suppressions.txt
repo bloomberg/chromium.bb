@@ -1920,3 +1920,24 @@
    fun:ScopedTempDir::CreateUniqueTempDir
    fun:BrowsingDataQuotaHelperTest::SetUp
 }
+{
+   bug_91845_a
+   Heapcheck:Leak
+   ...
+   fun:BrowserAccessibilityManager::CreateAccessibilityTree
+   ...
+   fun:BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test::TestBody
+}
+{
+   bug_91845_b
+   Heapcheck:Leak
+   fun:BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test::TestBody
+}
+{
+   bug_91845_c
+   Heapcheck:Leak
+   ...
+   fun:BrowserAccessibilityManager::Create
+   fun:BrowserAccessibilityManager::CreateEmptyDocument
+   fun:BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test::TestBody
+}

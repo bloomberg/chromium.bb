@@ -5362,6 +5362,15 @@
    fun:_ZN27BrowsingDataQuotaHelperTest14RegisterClientEPKN5quota14MockOriginDataEj
    fun:_ZN42BrowsingDataQuotaHelperTest_FetchData_Test8TestBodyEv
 }
+{
+   bug_91845
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN27BrowserAccessibilityManager23CreateAccessibilityTreeEP20BrowserAccessibilityRKN11webkit_glue16WebAccessibilityEi
+   ...
+   fun:_ZN60BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
