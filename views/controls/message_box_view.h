@@ -21,7 +21,7 @@ class Textfield;
 // This class displays the contents of a message box. It is intended for use
 // within a constrained window, and has options for a message, prompt, OK
 // and Cancel buttons.
-class VIEWS_API MessageBoxView : public View {
+class VIEWS_EXPORT MessageBoxView : public View {
  public:
   MessageBoxView(int dialog_flags,
                  const std::wstring& message,

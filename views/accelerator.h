@@ -17,11 +17,11 @@
 #include "base/string16.h"
 #include "ui/base/models/accelerator.h"
 #include "views/events/event.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
-class VIEWS_API Accelerator : public ui::Accelerator {
+class VIEWS_EXPORT Accelerator : public ui::Accelerator {
  public:
   Accelerator() : ui::Accelerator() {}
 
@@ -60,7 +60,7 @@ class VIEWS_API Accelerator : public ui::Accelerator {
 
 // An interface that classes that want to register for keyboard accelerators
 // should implement.
-class VIEWS_API AcceleratorTarget {
+class VIEWS_EXPORT AcceleratorTarget {
  public:
   // This method should return true if the accelerator was processed.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;

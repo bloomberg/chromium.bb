@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 // Windows-specific Event utilities. Add functionality here rather than adding
 // #ifdefs to event.h
@@ -24,7 +24,7 @@ int GetRepeatCount(const KeyEvent& event);
 // Returns true if the affected key is a Windows extended key. See documentation
 // for WM_KEYDOWN for explanation.
 // Valid only for KeyEvents constructed from a MSG.
-VIEWS_API bool IsExtendedKey(const KeyEvent& event);
+VIEWS_EXPORT bool IsExtendedKey(const KeyEvent& event);
 
 // Return a mask of windows key/button state flags for the event object.
 int GetWindowsFlags(const Event& event);

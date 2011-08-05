@@ -17,7 +17,7 @@ class NativeScrollBarWrapper;
 
 // The NativeScrollBar class is a scrollbar that uses platform's
 // native control.
-class VIEWS_API NativeScrollBar : public ScrollBar {
+class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
  public:
   // The scroll-bar's class name.
   static const char kViewClassName[];

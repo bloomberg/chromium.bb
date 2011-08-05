@@ -36,7 +36,7 @@ namespace internal {
 //             NativeWidget implementations. This file should not be included
 //             in code that does not fall into one of these use cases.
 //
-class VIEWS_API NativeWidgetPrivate : public NativeWidget {
+class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
  public:
   virtual ~NativeWidgetPrivate() {}
 

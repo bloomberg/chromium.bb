@@ -26,7 +26,7 @@ namespace views {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class VIEWS_API ScrollView : public View, public ScrollBarController {
+class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
  public:
   static const char* const kViewClassName;
 

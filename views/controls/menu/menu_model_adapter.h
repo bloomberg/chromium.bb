@@ -19,7 +19,7 @@ class MenuItemView;
 
 // This class wraps an instance of ui::MenuModel with the
 // views::MenuDelegate interface required by views::MenuItemView.
-class VIEWS_API MenuModelAdapter : public MenuDelegate {
+class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
  public:
   // The caller retains ownership of the ui::MenuModel instance and
   // must ensure it exists for the lifetime of the adapter.

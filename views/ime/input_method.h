@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/ime/text_input_type.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -31,7 +31,7 @@ class Widget;
 // And in Views control system, only the top-level NativeWidget has a native
 // window that can get keyboard focus. So this API is designed to be bound to
 // the top-level NativeWidget.
-class VIEWS_API InputMethod {
+class VIEWS_EXPORT InputMethod {
  public:
   virtual ~InputMethod() {}
 

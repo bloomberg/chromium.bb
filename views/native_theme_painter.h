@@ -25,7 +25,7 @@ class NativeThemeDelegate;
 // A Painter that uses NativeTheme to implement painting and sizing.  A
 // theme delegate must be given at construction time so that the appropriate
 // painting and sizing can be done.
-class VIEWS_API NativeThemePainter : public Painter {
+class VIEWS_EXPORT NativeThemePainter : public Painter {
  public:
   explicit NativeThemePainter(NativeThemeDelegate* delegate);
 

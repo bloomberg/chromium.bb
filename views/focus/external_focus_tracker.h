@@ -26,7 +26,7 @@ class ViewStorage;
 // when that view wants to return focus to the last focused view which is not
 // itself and not a descandant of itself, (usually when it is being closed)
 // it calls FocusLastFocusedExternalView.
-class VIEWS_API ExternalFocusTracker : public FocusChangeListener {
+class VIEWS_EXPORT ExternalFocusTracker : public FocusChangeListener {
  public:
   ExternalFocusTracker(View* parent_view, FocusManager* focus_manager);
 

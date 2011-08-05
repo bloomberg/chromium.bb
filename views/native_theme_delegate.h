@@ -8,7 +8,7 @@
 
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/rect.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -19,7 +19,7 @@ namespace views {
 // If animation is onging, the native theme border or painter will
 // composite the foreground state over the backgroud state using an alpha
 // between 0 and 255 based on the current value of the animation.
-class VIEWS_API NativeThemeDelegate {
+class VIEWS_EXPORT NativeThemeDelegate {
  public:
   virtual ~NativeThemeDelegate() {}
 

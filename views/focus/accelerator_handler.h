@@ -16,23 +16,23 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
 #if defined(TOUCH_UI)
 // Dispatch an XEvent to the RootView. Return true if the event was dispatched
 // and handled, false otherwise.
-bool VIEWS_API DispatchXEvent(XEvent* xevent);
+bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
 
 // Keep a list of touch devices so that it is possible to determine if a pointer
 // event is a touch-event or a mouse-event.
-void VIEWS_API SetTouchDeviceList(std::vector<unsigned int>& devices);
+void VIEWS_EXPORT SetTouchDeviceList(std::vector<unsigned int>& devices);
 #endif  // TOUCH_UI
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
-class VIEWS_API AcceleratorHandler : public MessageLoop::Dispatcher {
+class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
  public:
   AcceleratorHandler();
 

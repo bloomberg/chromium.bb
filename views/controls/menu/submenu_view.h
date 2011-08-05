@@ -32,7 +32,7 @@ class MenuScrollViewContainer;
 // MenuScrollViewContainer handles showing as much of the SubmenuView as the
 // screen allows. If the SubmenuView is taller than the screen, scroll buttons
 // are provided that allow the user to see all the menu items.
-class VIEWS_API SubmenuView : public View {
+class VIEWS_EXPORT SubmenuView : public View {
  public:
   // The submenu's class name.
   static const char kViewClassName[];

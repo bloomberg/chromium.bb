@@ -11,7 +11,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/timer.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 typedef unsigned long Cursor;
 typedef unsigned long Window;
@@ -21,7 +21,7 @@ typedef union _XEvent XEvent;
 namespace views {
 
 // Functions related to determining touch devices.
-class VIEWS_API TouchFactory {
+class VIEWS_EXPORT TouchFactory {
  public:
   // Define the touch params following the Multi-touch Protocol.
   enum TouchParam {

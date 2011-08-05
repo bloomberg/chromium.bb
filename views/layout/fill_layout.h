@@ -18,7 +18,7 @@ namespace views {
 //  sized to match the bounds of its parent.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_API FillLayout : public LayoutManager {
+class VIEWS_EXPORT FillLayout : public LayoutManager {
  public:
   FillLayout();
   virtual ~FillLayout();

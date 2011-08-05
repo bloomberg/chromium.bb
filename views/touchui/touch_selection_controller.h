@@ -13,7 +13,7 @@
 namespace views {
 
 // An interface implemented by a View that has text that can be selected.
-class VIEWS_API TouchSelectionClientView
+class VIEWS_EXPORT TouchSelectionClientView
     : public View,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -28,7 +28,7 @@ class VIEWS_API TouchSelectionClientView
 
 // This defines the callback interface for other code to be notified of changes
 // in the state of a TouchSelectionClientView.
-class VIEWS_API TouchSelectionController {
+class VIEWS_EXPORT TouchSelectionController {
  public:
   virtual ~TouchSelectionController() {}
 

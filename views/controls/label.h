@@ -23,7 +23,7 @@ namespace views {
 // A label is a view subclass that can display a string.
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_API Label : public View {
+class VIEWS_EXPORT Label : public View {
  public:
   enum Alignment { ALIGN_LEFT = 0,
                    ALIGN_CENTER,

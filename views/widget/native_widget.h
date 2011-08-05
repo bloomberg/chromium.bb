@@ -23,7 +23,7 @@ class NativeWidgetPrivate;
 //  Widget's native_widget() accessor, which code occasionally static_casts to
 //  a known implementation in platform-specific code.
 //
-class VIEWS_API NativeWidget {
+class VIEWS_EXPORT NativeWidget {
  public:
   virtual ~NativeWidget() {}
 

@@ -66,7 +66,7 @@ struct MenuConfig;
 //    and does NOT block the caller. Instead the delegate is notified when the
 //    menu closes via the DropMenuClosed method.
 
-class VIEWS_API MenuItemView : public View {
+class VIEWS_EXPORT MenuItemView : public View {
  public:
   friend class MenuController;
 

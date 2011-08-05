@@ -12,7 +12,7 @@ namespace views {
 
 class Widget;
 
-class VIEWS_API NativeFrameView : public NonClientFrameView {
+class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
  public:
   explicit NativeFrameView(Widget* frame);
   virtual ~NativeFrameView();

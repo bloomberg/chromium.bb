@@ -17,7 +17,7 @@ class SkBitmap;
 
 namespace views {
 
-class VIEWS_API Throbber : public View {
+class VIEWS_EXPORT Throbber : public View {
  public:
   // |frame_time_ms| is the amount of time that should elapse between frames
   //                 (in milliseconds)
@@ -59,7 +59,7 @@ class VIEWS_API Throbber : public View {
 // and nonoverlapping bursts of work.  SmoothedThrobber ignores small
 // pauses in the work stops and starts, and only starts its throbber after
 // a small amount of work time has passed.
-class VIEWS_API SmoothedThrobber : public Throbber {
+class VIEWS_EXPORT SmoothedThrobber : public Throbber {
  public:
   SmoothedThrobber(int frame_delay_ms);
   SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
@@ -97,7 +97,7 @@ class VIEWS_API SmoothedThrobber : public Throbber {
 //   2. working (which paints the throbber animation)
 //   3. completed (which paints a checkmark)
 //
-class VIEWS_API CheckmarkThrobber : public Throbber {
+class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
  public:
   CheckmarkThrobber();
 

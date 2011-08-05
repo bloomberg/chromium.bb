@@ -23,7 +23,7 @@ namespace views {
 // display a menu
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API ButtonDropDown : public ImageButton {
+class VIEWS_EXPORT ButtonDropDown : public ImageButton {
  public:
   // The button's class name.
   static const char kViewClassName[];

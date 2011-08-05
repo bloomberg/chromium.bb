@@ -6,7 +6,7 @@
 #define VIEWS_METRICS_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -17,11 +17,11 @@ namespace views {
 extern const int kDefaultMenuShowDelay;
 
 // Returns the amount of time between double clicks.
-VIEWS_API int GetDoubleClickInterval();
+VIEWS_EXPORT int GetDoubleClickInterval();
 
 // Returns the amount of time to wait from hovering over a menu button until
 // showing the menu.
-VIEWS_API int GetMenuShowDelay();
+VIEWS_EXPORT int GetMenuShowDelay();
 
 }  // namespace views
 

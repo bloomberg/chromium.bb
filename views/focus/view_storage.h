@@ -20,7 +20,7 @@
 
 namespace views {
 
-class VIEWS_API ViewStorage {
+class VIEWS_EXPORT ViewStorage {
  public:
   // Returns the global ViewStorage instance.
   // It is guaranted to be non NULL.

@@ -27,7 +27,7 @@ class View;
 //  certain events.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_API DialogDelegate : public WidgetDelegate {
+class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
   virtual DialogDelegate* AsDialogDelegate();
 
@@ -115,8 +115,8 @@ class VIEWS_API DialogDelegate : public WidgetDelegate {
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()
 // to call View's GetWidget() for the common case where a DialogDelegate
 // implementation is-a View.
-class VIEWS_API DialogDelegateView : public DialogDelegate,
-                                     public View {
+class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
+                                        public View {
  public:
   DialogDelegateView();
   virtual ~DialogDelegateView();

@@ -21,7 +21,7 @@ class Widget;
 //  such as non-client hit testing information, sizing etc. Sub-classes of
 //  ClientView are used to create more elaborate contents, e.g.
 //  "DialogClientView".
-class VIEWS_API ClientView : public View {
+class VIEWS_EXPORT ClientView : public View {
  public:
   // Internal class name
   static const char kViewClassName[];

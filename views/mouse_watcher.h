@@ -9,14 +9,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/insets.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
 class View;
 
 // MouseWatcherListener is notified when the mouse moves outside the view.
-class VIEWS_API MouseWatcherListener {
+class VIEWS_EXPORT MouseWatcherListener {
  public:
   virtual void MouseMovedOutOfView() = 0;
 
@@ -26,7 +26,7 @@ class VIEWS_API MouseWatcherListener {
 
 // MouseWatcher is used to watch mouse movement and notify its listener when the
 // mouse moves outside the bounds of a view.
-class VIEWS_API MouseWatcher {
+class VIEWS_EXPORT MouseWatcher {
  public:
   // Creates a new MouseWatcher. |hot_zone_insets| is added to the bounds of
   // the view to determine the active zone. For example, if

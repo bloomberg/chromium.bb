@@ -79,7 +79,7 @@ class Widget;
 
 // The FocusTraversable interface is used by components that want to process
 // focus traversal events (due to Tab/Shift-Tab key events).
-class VIEWS_API FocusTraversable {
+class VIEWS_EXPORT FocusTraversable {
  public:
   // Return a FocusSearch object that implements the algorithm to find
   // the next or previous focusable view.
@@ -101,7 +101,7 @@ class VIEWS_API FocusTraversable {
 // This interface should be implemented by classes that want to be notified when
 // the focus is about to change.  See the Add/RemoveFocusChangeListener methods.
 // No change to focus state has occurred yet when this function is called.
-class VIEWS_API FocusChangeListener {
+class VIEWS_EXPORT FocusChangeListener {
  public:
   virtual void FocusWillChange(View* focused_before, View* focused_now) = 0;
 
@@ -123,9 +123,9 @@ class WidgetFocusChangeListener {
   virtual ~WidgetFocusChangeListener() {}
 };
 
-class VIEWS_API FocusManager {
+class VIEWS_EXPORT FocusManager {
  public:
-  class VIEWS_API WidgetFocusManager {
+  class VIEWS_EXPORT WidgetFocusManager {
    public:
     // Returns the singleton instance.
     static WidgetFocusManager* GetInstance();

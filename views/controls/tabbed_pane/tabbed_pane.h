@@ -17,7 +17,7 @@ class TabbedPaneListener;
 
 // TabbedPane is a view that shows tabs. When the user clicks on a tab, the
 // associated view is displayed.
-class VIEWS_API TabbedPane : public View {
+class VIEWS_EXPORT TabbedPane : public View {
  public:
   TabbedPane();
   virtual ~TabbedPane();

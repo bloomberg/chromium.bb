@@ -16,7 +16,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Canvas;
@@ -52,12 +52,12 @@ enum MergeType {
 
 // A model that represents a text content for TextfieldViews.
 // It supports editing, selection and cursor manipulation.
-class VIEWS_API TextfieldViewsModel {
+class VIEWS_EXPORT TextfieldViewsModel {
  public:
 
   // Delegate interface implemented by the textfield view class to provided
   // additional functionalities required by the model.
-  class VIEWS_API Delegate {
+  class VIEWS_EXPORT Delegate {
    public:
     // Called when the current composition text is confirmed or cleared.
     virtual void OnCompositionTextConfirmedOrCleared() = 0;

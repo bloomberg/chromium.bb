@@ -6,7 +6,7 @@
 #define VIEWS_VIEW_CONSTANTS_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -21,7 +21,7 @@ extern const int kAutoscrollRowTimerMS;
 // Used to determine whether a drop is on an item or before/after it. If a drop
 // occurs kDropBetweenPixels from the top/bottom it is considered before/after
 // the item, otherwise it is on the item.
-VIEWS_API extern const int kDropBetweenPixels;
+VIEWS_EXPORT extern const int kDropBetweenPixels;
 
 }  // namespace views
 

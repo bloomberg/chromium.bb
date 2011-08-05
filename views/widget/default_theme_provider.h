@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "ui/base/theme_provider.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 class Profile;
 
@@ -21,7 +21,7 @@ using ui::ResourceBundle;
 
 namespace views {
 
-class VIEWS_API DefaultThemeProvider : public ui::ThemeProvider {
+class VIEWS_EXPORT DefaultThemeProvider : public ui::ThemeProvider {
  public:
   DefaultThemeProvider();
   virtual ~DefaultThemeProvider();

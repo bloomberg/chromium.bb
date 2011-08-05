@@ -43,7 +43,7 @@ namespace internal {
 //  TODO(beng): Clean up API further, make Widget a friend.
 //  TODO(sky): We don't really want to export this class.
 //
-class VIEWS_API RootView : public View, public FocusTraversable {
+class VIEWS_EXPORT RootView : public View, public FocusTraversable {
  public:
   static const char kViewClassName[];
 

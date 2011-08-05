@@ -25,7 +25,7 @@ namespace views {
 // provided image size.
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_API ImageView : public View {
+class VIEWS_EXPORT ImageView : public View {
  public:
   enum Alignment {
     LEADING = 0,

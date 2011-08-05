@@ -23,8 +23,8 @@ class NativeWidgetView;
 //
 //  A NativeWidget implementation that uses another View as its native widget.
 //
-class VIEWS_API NativeWidgetViews : public internal::NativeWidgetPrivate,
-                                    public internal::InputMethodDelegate {
+class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
+                                       public internal::InputMethodDelegate {
  public:
   explicit NativeWidgetViews(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();

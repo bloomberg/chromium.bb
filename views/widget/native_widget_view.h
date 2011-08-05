@@ -27,7 +27,7 @@ namespace internal {
 // View hierarchy. It is responsible for receiving relevant events from that
 // hierarchy and forwarding them to its NativeWidgetViews' delegate's hierarchy.
 //
-class VIEWS_API NativeWidgetView : public View {
+class VIEWS_EXPORT NativeWidgetView : public View {
  public:
   static const char kViewClassName[];
 

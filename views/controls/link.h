@@ -22,7 +22,7 @@ class LinkListener;
 // controller which is notified when a click occurs.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API Link : public Label {
+class VIEWS_EXPORT Link : public Label {
  public:
   Link();
   explicit Link(const std::wstring& title);

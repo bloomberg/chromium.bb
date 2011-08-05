@@ -6,7 +6,7 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_DELEGATE_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Canvas;
@@ -28,7 +28,7 @@ namespace internal {
 //  An interface implemented by the object that handles events sent by a
 //  NativeWidget implementation.
 //
-class VIEWS_API NativeWidgetDelegate {
+class VIEWS_EXPORT NativeWidgetDelegate {
  public:
   virtual ~NativeWidgetDelegate() {}
 

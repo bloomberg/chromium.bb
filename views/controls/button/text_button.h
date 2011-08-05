@@ -31,7 +31,7 @@ namespace views {
 // focus chain.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API TextButtonBorder : public Border {
+class VIEWS_EXPORT TextButtonBorder : public Border {
  public:
   TextButtonBorder();
   virtual ~TextButtonBorder();
@@ -90,7 +90,7 @@ class VIEWS_API TextButtonBorder : public Border {
 //  states, with possible animation between states.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API TextButtonNativeThemeBorder : public Border {
+class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
  public:
    TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
   virtual ~TextButtonNativeThemeBorder();
@@ -117,8 +117,8 @@ class VIEWS_API TextButtonNativeThemeBorder : public Border {
 //  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API TextButtonBase : public CustomButton,
-                                 public NativeThemeDelegate {
+class VIEWS_EXPORT TextButtonBase : public CustomButton,
+                                    public NativeThemeDelegate {
  public:
   // The menu button's class name.
   static const char kViewClassName[];
@@ -314,7 +314,7 @@ class VIEWS_API TextButtonBase : public CustomButton,
 //  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API TextButton : public TextButtonBase {
+class VIEWS_EXPORT TextButton : public TextButtonBase {
  public:
   // The button's class name.
   static const char kViewClassName[];
@@ -399,7 +399,7 @@ class VIEWS_API TextButton : public TextButtonBase {
 //  like ignore-minimize-size and text alignment minimum size.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API NativeTextButton : public TextButton {
+class VIEWS_EXPORT NativeTextButton : public TextButton {
  public:
   // The button's class name.
   static const char kViewClassName[];

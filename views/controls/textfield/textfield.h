@@ -42,7 +42,7 @@ class KeyEvent;
 class TextfieldController;
 
 // This class implements a View that wraps a native text (edit) field.
-class VIEWS_API Textfield : public View {
+class VIEWS_EXPORT Textfield : public View {
  public:
   // The button's class name.
   static const char kViewClassName[];

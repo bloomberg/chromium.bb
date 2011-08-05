@@ -19,8 +19,8 @@ class View;
 
 // A helper class providing functionalities shared among InputMethod
 // implementations.
-class VIEWS_API InputMethodBase : public InputMethod,
-                                  public FocusChangeListener {
+class VIEWS_EXPORT InputMethodBase : public InputMethod,
+                                     public FocusChangeListener {
  public:
   InputMethodBase();
   virtual ~InputMethodBase();

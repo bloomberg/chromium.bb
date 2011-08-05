@@ -34,7 +34,7 @@ class View;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class VIEWS_API Border {
+class VIEWS_EXPORT Border {
  public:
   Border();
   virtual ~Border();

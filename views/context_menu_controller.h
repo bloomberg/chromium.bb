@@ -6,7 +6,7 @@
 #define VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Point;
@@ -26,7 +26,7 @@ class View;
 // It is up to subclasses that do their own mouse processing to invoke
 // the appropriate ContextMenuController method, typically by invoking super's
 // implementation for mouse processing.
-class VIEWS_API ContextMenuController {
+class VIEWS_EXPORT ContextMenuController {
  public:
   // Invoked to show the context menu for the source view. If |is_mouse_gesture|
   // is true, |p| is the location of the mouse. If |is_mouse_gesture| is false,

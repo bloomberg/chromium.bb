@@ -6,7 +6,7 @@
 #define VIEWS_WIDGET_MONITOR_WIN_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Rect;
@@ -16,7 +16,7 @@ namespace views {
 
 // Returns the bounds for the monitor that contains the largest area of
 // intersection with the specified rectangle.
-VIEWS_API gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect);
+VIEWS_EXPORT gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect);
 
 }  // namespace views
 

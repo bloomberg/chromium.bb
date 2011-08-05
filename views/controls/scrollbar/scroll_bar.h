@@ -21,7 +21,7 @@ class ScrollBar;
 // receive notification from a scrollbar
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_API ScrollBarController {
+class VIEWS_EXPORT ScrollBarController {
  public:
 
   // Invoked by the scrollbar when the scrolling position changes
@@ -55,7 +55,7 @@ class VIEWS_API ScrollBarController {
 // A scrollbar is either horizontal or vertical
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_API ScrollBar : public View {
+class VIEWS_EXPORT ScrollBar : public View {
  public:
   virtual ~ScrollBar();
 

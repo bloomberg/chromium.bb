@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Font;
@@ -22,7 +22,7 @@ class View;
 // TooltipManager takes care of the wiring to support tooltips for Views. You
 // almost never need to interact directly with TooltipManager, rather look to
 // the various tooltip methods on View.
-class VIEWS_API TooltipManager {
+class VIEWS_EXPORT TooltipManager {
  public:
   // Returns the height of tooltips. This should only be invoked from within
   // GetTooltipTextOrigin.

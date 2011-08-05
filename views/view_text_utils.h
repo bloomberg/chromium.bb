@@ -12,7 +12,7 @@
 
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Canvas;
@@ -40,15 +40,15 @@ namespace view_text_utils {
 // NOTE: The reason why we need this function is because while Skia knows how
 // to wrap text appropriately, it doesn't tell us where it drew the last
 // character, which we need to position the URLs within the text.
-VIEWS_API void DrawTextAndPositionUrl(gfx::Canvas* canvas,
-                                      views::Label* label,
-                                      const std::wstring& text,
-                                      views::Link* link,
-                                      gfx::Rect* rect,
-                                      gfx::Size* position,
-                                      bool text_direction_is_rtl,
-                                      const gfx::Rect& bounds,
-                                      const gfx::Font& font);
+VIEWS_EXPORT void DrawTextAndPositionUrl(gfx::Canvas* canvas,
+                                         views::Label* label,
+                                         const std::wstring& text,
+                                         views::Link* link,
+                                         gfx::Rect* rect,
+                                         gfx::Size* position,
+                                         bool text_direction_is_rtl,
+                                         const gfx::Rect& bounds,
+                                         const gfx::Font& font);
 
 // A helper function for DrawTextAndPositionUrl, which simply draws the text
 // from a certain starting point |position| and wraps within bounds.

@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Canvas;
@@ -21,7 +21,7 @@ namespace views {
 // Painter, as the name implies, is responsible for painting in a particular
 // region. Think of Painter as a Border or Background that can be painted
 // in any region of a View.
-class VIEWS_API Painter {
+class VIEWS_EXPORT Painter {
  public:
   // A convenience method for painting a Painter in a particular region.
   // This translates the canvas to x/y and paints the painter.
@@ -52,7 +52,7 @@ class VIEWS_API Painter {
 // left and right images are drawn to size at the left/right edges of the
 // region. The center is tiled in the remaining space. All images must have the
 // same height.
-class VIEWS_API HorizontalPainter : public Painter {
+class VIEWS_EXPORT HorizontalPainter : public Painter {
  public:
   // Constructs a new HorizontalPainter loading the specified image names.
   // The images must be in the order left, right and center.

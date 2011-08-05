@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Point;
@@ -25,7 +25,7 @@ class MenuListener {
 };
 
 // An interface that wraps an object that implements a menu.
-class VIEWS_API MenuWrapper {
+class VIEWS_EXPORT MenuWrapper {
  public:
   // All of the possible actions that can result from RunMenuAt.
   enum MenuAction {

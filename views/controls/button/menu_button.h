@@ -26,7 +26,7 @@ class ViewMenuDelegate;
 //  A button that shows a menu when the left mouse button is pushed
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API MenuButton : public TextButton {
+class VIEWS_EXPORT MenuButton : public TextButton {
  public:
   // The menu button's class name.
   static const char kViewClassName[];

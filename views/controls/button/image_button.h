@@ -17,7 +17,7 @@ namespace views {
 // part of the focus chain.  Call set_focusable(true) to make it part of the
 // focus chain.
 
-class VIEWS_API ImageButton : public CustomButton {
+class VIEWS_EXPORT ImageButton : public CustomButton {
  public:
   explicit ImageButton(ButtonListener* listener);
   virtual ~ImageButton();
@@ -79,7 +79,7 @@ class VIEWS_API ImageButton : public CustomButton {
 // A toggle-able ImageButton.  It swaps out its graphics when toggled.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_API ToggleImageButton : public ImageButton {
+class VIEWS_EXPORT ToggleImageButton : public ImageButton {
  public:
   explicit ToggleImageButton(ButtonListener* listener);
   virtual ~ToggleImageButton();

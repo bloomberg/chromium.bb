@@ -20,7 +20,7 @@ using ui::ComboboxModel;
 namespace views {
 
 // A non-editable combo-box (aka a drop-down list)
-class VIEWS_API Combobox : public View {
+class VIEWS_EXPORT Combobox : public View {
  public:
   // The combobox's class name.
   static const char kViewClassName[];

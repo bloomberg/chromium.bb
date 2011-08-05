@@ -91,7 +91,7 @@ class RootView;
 //   accessed from the main thread.
 //
 /////////////////////////////////////////////////////////////////////////////
-class VIEWS_API View : public AcceleratorTarget {
+class VIEWS_EXPORT View : public AcceleratorTarget {
  public:
   typedef std::vector<View*> Views;
 

@@ -15,7 +15,7 @@ namespace views {
 // The Separator class is a view that shows a line used to visually separate
 // other views.  The current implementation is only horizontal.
 
-class VIEWS_API Separator : public View {
+class VIEWS_EXPORT Separator : public View {
  public:
   // The separator's class name.
   static const char kViewClassName[];

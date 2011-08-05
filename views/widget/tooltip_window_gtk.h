@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 typedef struct _GdkEventExpose GdkEventExpose;
 typedef struct _GtkLabel GtkLabel;
@@ -23,7 +23,7 @@ namespace views {
 // TooltipWindowGtk provides a customized tooltip window and gives us a
 // chance to apply RGBA colormap on it. This enables the GTK theme engine to
 // draw tooltip with nice shadow and rounded corner on ChromeOS.
-class VIEWS_API TooltipWindowGtk {
+class VIEWS_EXPORT TooltipWindowGtk {
  public:
   explicit TooltipWindowGtk(GtkWidget* widget);
   virtual ~TooltipWindowGtk();

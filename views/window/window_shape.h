@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_WINDOW_SHAPE_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Size;
@@ -17,8 +17,8 @@ namespace views {
 
 // Sets the window mask to a style that most likely matches
 // ui/resources/window_*
-VIEWS_API void GetDefaultWindowMask(const gfx::Size& size,
-                                    gfx::Path* window_mask);
+VIEWS_EXPORT void GetDefaultWindowMask(const gfx::Size& size,
+                                       gfx::Path* window_mask);
 
 } // namespace views
 

@@ -27,7 +27,7 @@ class Widget;
 
 // WidgetDelegate interface
 // Handles events on Widgets in context-specific ways.
-class VIEWS_API WidgetDelegate {
+class VIEWS_EXPORT WidgetDelegate {
  public:
   WidgetDelegate();
 
@@ -159,7 +159,7 @@ class VIEWS_API WidgetDelegate {
 // A WidgetDelegate implementation that is-a View. Used to override GetWidget()
 // to call View's GetWidget() for the common case where a WidgetDelegate
 // implementation is-a View.
-class VIEWS_API WidgetDelegateView : public WidgetDelegate, public View {
+class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
  public:
   WidgetDelegateView();
   virtual ~WidgetDelegateView();

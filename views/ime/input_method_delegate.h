@@ -6,7 +6,7 @@
 #define VIEWS_IME_INPUT_METHOD_DELEGATE_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -16,7 +16,7 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // InputMethod implementation.
-class VIEWS_API InputMethodDelegate {
+class VIEWS_EXPORT InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 

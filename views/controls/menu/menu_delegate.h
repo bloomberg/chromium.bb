@@ -33,7 +33,7 @@ class MenuButton;
 // Delegate for a menu. This class is used as part of MenuItemView, see it
 // for details.
 // TODO(sky): merge this with ui::MenuModel.
-class VIEWS_API MenuDelegate {
+class VIEWS_EXPORT MenuDelegate {
  public:
   // Used during drag and drop to indicate where the drop indicator should
   // be rendered.

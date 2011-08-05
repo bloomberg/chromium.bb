@@ -16,7 +16,7 @@ namespace views {
 // drag around to resize the views.
 // Observer's SplitHandleMoved notification helps to monitor user initiated
 // layout changes.
-class VIEWS_API SingleSplitView : public View {
+class VIEWS_EXPORT SingleSplitView : public View {
  public:
   enum Orientation {
     HORIZONTAL_SPLIT,

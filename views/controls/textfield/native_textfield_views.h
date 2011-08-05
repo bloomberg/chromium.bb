@@ -42,12 +42,12 @@ class MenuModelAdapter;
 // * X selection (only if we want to support).
 // Once completed, this will replace Textfield, NativeTextfieldWin and
 // NativeTextfieldGtk.
-class VIEWS_API NativeTextfieldViews : public TouchSelectionClientView,
-                                       public ContextMenuController,
-                                       public DragController,
-                                       public NativeTextfieldWrapper,
-                                       public TextInputClient,
-                                       public TextfieldViewsModel::Delegate {
+class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
+                                          public ContextMenuController,
+                                          public DragController,
+                                          public NativeTextfieldWrapper,
+                                          public TextInputClient,
+                                          public TextfieldViewsModel::Delegate {
  public:
   explicit NativeTextfieldViews(Textfield* parent);
   virtual ~NativeTextfieldViews();

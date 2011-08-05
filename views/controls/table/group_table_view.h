@@ -29,7 +29,7 @@ class GroupTableModel : public TableModel {
   virtual void GetGroupRangeForItem(int item, GroupRange* range) = 0;
 };
 
-class VIEWS_API GroupTableView : public TableView {
+class VIEWS_EXPORT GroupTableView : public TableView {
  public:
    // The view class name.
    static const char kViewClassName[];

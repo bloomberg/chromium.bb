@@ -14,7 +14,7 @@ class FocusTraversable;
 
 // FocusSearch is an object that implements the algorithm to find the
 // next view to focus.
-class VIEWS_API FocusSearch {
+class VIEWS_EXPORT FocusSearch {
  public:
   // The direction in which the focus traversal is going.
   // TODO (jcampan): add support for lateral (left, right) focus traversal. The

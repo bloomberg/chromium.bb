@@ -6,7 +6,7 @@
 #define VIEWS_EVENTS_DRAG_CONTROLLER_H_
 #pragma once
 
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Point;
@@ -22,7 +22,7 @@ class View;
 // DragController is responsible for writing drag data for a view, as well as
 // supplying the supported drag operations. Use DragController if you don't
 // want to subclass.
-class VIEWS_API DragController {
+class VIEWS_EXPORT DragController {
  public:
   // Writes the data for the drag.
   virtual void WriteDragDataForView(View* sender,

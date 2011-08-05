@@ -8,13 +8,13 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
-#include "views/views_api.h"
+#include "views/views_export.h"
 
 namespace views {
 
 // Layout type information for menu items. Use the instance() method to obtain
 // the MenuConfig for the current platform.
-struct VIEWS_API MenuConfig {
+struct VIEWS_EXPORT MenuConfig {
   MenuConfig();
   ~MenuConfig();
 
