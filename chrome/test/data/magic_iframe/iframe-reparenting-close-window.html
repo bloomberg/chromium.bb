@@ -1,0 +1,32 @@
+<html>
+<script>
+window.log = function(message)
+{
+  document.getElementById("log").innerText += message + "\n";
+}
+
+window.getLog = function()
+{
+  return document.getElementById("log").innerText;
+}
+
+window.finish = function()
+{
+  log("DONE");
+  // This navigation terminates the wait condition in the test code.
+  window.location.href = window.location.href + "#done";
+}
+
+function start()
+{
+  window.childWindow = window.open("iframe-reparenting-close-window-child.html",
+                                   "_blank");
+  window.childWindow.addEventListener("load", "log('Child window loaded.')",
+                                      false);
+}
+
+</script>
+<body onload="start()">
+<pre id="log"></pre>
+</body>
+</html>

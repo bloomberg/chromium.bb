@@ -1,0 +1,20 @@
+<html>
+<script>
+// Called from Iframe when it is loaded and initialized.
+window.transferIframeAndCloseWindow = function() {
+   var backgroundWin = window.opener;
+   backgroundWin.log("Transferring Iframe now.");
+
+   var xhrFrame = document.getElementById("iframe");
+
+   backgroundWin.document.adoptNode(xhrFrame);
+   backgroundWin.document.body.appendChild(xhrFrame);
+   window.close(); // This is what caused the XHR load to silently abort.
+}
+</script>
+
+<body>
+  <iframe id="iframe" src="iframe-reparenting-close-window-iframe.html">
+  </iframe>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<html>
+<head>
+<script>
+var logWin = window.parent.opener;
+logWin.log('Iframe is being loaded.');
+
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = function() {
+    logWin.log('xhr  onreadystatechange  state:' + xhr.readyState);
+    if (xhr.readyState == 4) {
+        var text = xhr.responseText;
+        // Report that the test is finished.
+        logWin.finish();
+    }
+}
+
+xhr.onerror = function() {
+    logWin.log('xhr  onerror:' + xhr.readyState);
+}
+
+// Timeout explanation:
+// To reproduce the issue, I need the XHR to start but not finish until the
+// iframe transfer is complete. If I just navigate to some file, the load
+// actually happens before the iframe is transferred and all the
+// onreadystatechange notifications are already queued and just fire in the new
+// page.
+// The bug, however, deals with XHR being still in progress in the browser
+// process, so when it is done and comes back with the routing_id of the closed
+// window, it has no way of finding the original iframe and firing
+// onreadystatechange. Because of this timeout the test can occasionally produce
+// false positive (if the reparenting takes longer then 1 second for example),
+// however this is very unlikely, and it won't make test flakey
+// (which is usually a false negative).
+xhr.open('GET', '/slow?1', true);
+xhr.send();
+window.parent.transferIframeAndCloseWindow();
+</script>
+</head>
+<body>
+</body>
+</html>
