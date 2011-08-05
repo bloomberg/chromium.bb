@@ -97,22 +97,23 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
   // Adjust content area as needed.  Set up the prompt text entry or
   // suppression check box.
   if (ui::MessageBoxFlags::kIsJavascriptPrompt == dialog_->dialog_flags()) {
-    // TODO(tc): Replace with gtk_dialog_get_content_area() when using GTK 2.14+
-    GtkWidget* contents_vbox = GTK_DIALOG(gtk_dialog_)->vbox;
+    GtkWidget* content_area =
+        gtk_dialog_get_content_area(GTK_DIALOG(gtk_dialog_));
     GtkWidget* text_box = gtk_entry_new();
     gtk_entry_set_text(GTK_ENTRY(text_box),
         UTF16ToUTF8(dialog_->default_prompt_text()).c_str());
-    gtk_box_pack_start(GTK_BOX(contents_vbox), text_box, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(content_area), text_box, TRUE, TRUE, 0);
     g_object_set_data(G_OBJECT(gtk_dialog_), kPromptTextId, text_box);
     gtk_entry_set_activates_default(GTK_ENTRY(text_box), TRUE);
   }
 
   if (dialog_->display_suppress_checkbox()) {
-    GtkWidget* contents_vbox = GTK_DIALOG(gtk_dialog_)->vbox;
+    GtkWidget* content_area =
+        gtk_dialog_get_content_area(GTK_DIALOG(gtk_dialog_));
     GtkWidget* check_box = gtk_check_button_new_with_label(
         l10n_util::GetStringUTF8(
         IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION).c_str());
-    gtk_box_pack_start(GTK_BOX(contents_vbox), check_box, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(content_area), check_box, TRUE, TRUE, 0);
     g_object_set_data(G_OBJECT(gtk_dialog_), kSuppressCheckboxId, check_box);
   }
 
