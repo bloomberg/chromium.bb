@@ -283,6 +283,7 @@
         'browser/browser_about_handler.cc',
         'browser/browser_about_handler.h',
         'browser/browser_main.cc',
+        'browser/browser_main.h',
         'browser/browser_main_gtk.cc',
         'browser/browser_main_gtk.h',
         'browser/browser_main_mac.mm',

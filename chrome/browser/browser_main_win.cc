@@ -90,12 +90,9 @@ void RecordBrowserStartupTime() {
   ::GetProcessTimes(::GetCurrentProcess(), &creation_time, &ignore, &ignore,
       &ignore);
 
-  base::TimeDelta elapsed_from_startup =
-      base::Time::Now() - base::Time::FromFileTime(creation_time);
-
-  // Record the time to present in a histogram.
-  UMA_HISTOGRAM_MEDIUM_TIMES("Startup.BrowserMessageLoopStartTime",
-                             elapsed_from_startup);
+  RecordPreReadExperimentTime(
+      "Startup.BrowserMessageLoopStartTime",
+      base::Time::Now() - base::Time::FromFileTime(creation_time));
 }
 
 int AskForUninstallConfirmation() {
