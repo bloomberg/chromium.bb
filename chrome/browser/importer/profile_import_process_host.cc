@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/profile_import_process_client.h"
@@ -79,7 +80,7 @@ FilePath ProfileImportProcessHost::GetProfileImportProcessCmd() {
 }
 
 bool ProfileImportProcessHost::StartProcess() {
-  set_name(L"profile import process");
+  set_name(ASCIIToUTF16("profile import process"));
 
   if (!CreateChannel())
     return false;

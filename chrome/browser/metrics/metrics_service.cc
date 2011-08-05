@@ -1503,7 +1503,7 @@ void MetricsService::LogChildProcessChange(
     const NotificationSource& source,
     const NotificationDetails& details) {
   Details<ChildProcessInfo> child_details(details);
-  const std::wstring& child_name = child_details->name();
+  const string16& child_name = child_details->name();
 
   if (child_process_stats_buffer_.find(child_name) ==
       child_process_stats_buffer_.end()) {
@@ -1605,12 +1605,13 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     }
 
     // TODO(viettrungluu): remove conversions
-    if (child_process_stats_buffer_.find(UTF8ToWide(plugin_name)) ==
-        child_process_stats_buffer_.end())
+    string16 name16 = UTF8ToUTF16(plugin_name);
+    if (child_process_stats_buffer_.find(name16) ==
+        child_process_stats_buffer_.end()) {
       continue;
+    }
 
-    ChildProcessStats stats =
-        child_process_stats_buffer_[UTF8ToWide(plugin_name)];
+    ChildProcessStats stats = child_process_stats_buffer_[name16];
     if (stats.process_launches) {
       int launches = 0;
       plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
@@ -1630,12 +1631,12 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
       plugin_dict->SetInteger(prefs::kStabilityPluginInstances, instances);
     }
 
-    child_process_stats_buffer_.erase(UTF8ToWide(plugin_name));
+    child_process_stats_buffer_.erase(name16);
   }
 
   // Now go through and add dictionaries for plugins that didn't already have
   // reports in Local State.
-  for (std::map<std::wstring, ChildProcessStats>::iterator cache_iter =
+  for (std::map<string16, ChildProcessStats>::iterator cache_iter =
            child_process_stats_buffer_.begin();
        cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
     ChildProcessStats stats = cache_iter->second;
@@ -1645,7 +1646,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
       continue;
 
     // TODO(viettrungluu): remove conversion
-    std::string plugin_name = WideToUTF8(cache_iter->first);
+    std::string plugin_name = UTF16ToUTF8(cache_iter->first);
 
     DictionaryValue* plugin_dict = new DictionaryValue;
 

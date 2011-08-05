@@ -402,7 +402,7 @@ class MetricsService : public NotificationObserver,
   // Buffer of child process notifications for quick access.  See
   // ChildProcessStats documentation above for more details.
   struct ChildProcessStats;
-  std::map<std::wstring, ChildProcessStats> child_process_stats_buffer_;
+  std::map<string16, ChildProcessStats> child_process_stats_buffer_;
 
   ScopedRunnableMethodFactory<MetricsService> log_sender_factory_;
   ScopedRunnableMethodFactory<MetricsService> state_saver_factory_;

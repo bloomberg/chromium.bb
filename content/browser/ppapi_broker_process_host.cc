@@ -25,8 +25,8 @@ PpapiBrokerProcessHost::~PpapiBrokerProcessHost() {
 
 bool PpapiBrokerProcessHost::Init(const PepperPluginInfo& info) {
   broker_path_ = info.path;
-  set_name(UTF8ToWide(info.name));
-  set_version(UTF8ToWide(info.version));
+  set_name(UTF8ToUTF16(info.name));
+  set_version(UTF8ToUTF16(info.version));
 
   if (!CreateChannel())
     return false;

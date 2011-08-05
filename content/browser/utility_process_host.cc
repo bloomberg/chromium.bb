@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "content/browser/content_browser_client.h"
 #include "content/common/content_switches.h"
 #include "content/common/utility_messages.h"
@@ -72,7 +73,7 @@ bool UtilityProcessHost::StartProcess() {
     return true;
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  set_name(L"utility process");
+  set_name(ASCIIToUTF16("utility process"));
 
   if (!CreateChannel())
     return false;

@@ -155,8 +155,8 @@ PluginProcessHost::~PluginProcessHost() {
 bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
                              const std::string& locale) {
   info_ = info;
-  set_name(UTF16ToWideHack(info_.name));
-  set_version(UTF16ToWideHack(info_.version));
+  set_name(info_.name);
+  set_version(info_.version);
 
   if (!CreateChannel())
     return false;

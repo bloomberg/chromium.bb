@@ -97,7 +97,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
 
     info.type = iter->type();
     info.renderer_type = iter->renderer_type();
-    info.titles.push_back(WideToUTF16Hack(iter->name()));
+    info.titles.push_back(iter->name());
     child_info.push_back(info);
   }
 

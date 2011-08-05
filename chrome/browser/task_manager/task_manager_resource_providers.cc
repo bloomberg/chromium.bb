@@ -772,14 +772,14 @@ void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
 }
 
 string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
-  string16 title = WideToUTF16Hack(child_process_.name());
+  string16 title = child_process_.name();
   if (child_process_.type() == ChildProcessInfo::PLUGIN_PROCESS &&
       title.empty()) {
     title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
   }
 
   // Explicitly mark name as LTR if there is no strong RTL character,
-  // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
+  // to avoid the wrong concatenation result similar to "!Yahoo Mail: the
   // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
   // or Arabic word for "plugin".
   base::i18n::AdjustStringForLocaleDirection(&title);
@@ -801,8 +801,7 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
     case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
     case ChildProcessInfo::PPAPI_BROKER_PROCESS: {
       return l10n_util::GetStringFUTF16(
-          IDS_TASK_MANAGER_PLUGIN_PREFIX, title,
-          WideToUTF16Hack(child_process_.version()));
+          IDS_TASK_MANAGER_PLUGIN_PREFIX, title, child_process_.version());
     }
 
     case ChildProcessInfo::NACL_LOADER_PROCESS:

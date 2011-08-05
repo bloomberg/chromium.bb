@@ -60,11 +60,11 @@ class ChildProcessInfo {
 
   // Returns the name of the process.  i.e. for plugins it might be Flash, while
   // for workers it might be the domain that it's from.
-  std::wstring name() const { return name_; }
+  const string16& name() const { return name_; }
 
   // Returns the version of the exe, this only appliest to plugins. Otherwise
   // the string is empty.
-  std::wstring version() const { return version_; }
+  const string16& version() const { return version_; }
 
   // Getter to the process handle.
   base::ProcessHandle handle() const { return process_.handle(); }
@@ -120,15 +120,15 @@ class ChildProcessInfo {
 
   void set_type(ProcessType type) { type_ = type; }
   void set_renderer_type(RendererProcessType type) { renderer_type_ = type; }
-  void set_name(const std::wstring& name) { name_ = name; }
-  void set_version(const std::wstring& ver) { version_ = ver; }
+  void set_name(const string16& name) { name_ = name; }
+  void set_version(const string16& ver) { version_ = ver; }
   void set_handle(base::ProcessHandle handle) { process_.set_handle(handle); }
 
  private:
   ProcessType type_;
   RendererProcessType renderer_type_;
-  std::wstring name_;
-  std::wstring version_;
+  string16 name_;
+  string16 version_;
   int id_;
 
   // The handle to the process.

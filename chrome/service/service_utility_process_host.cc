@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "ipc/ipc_switches.h"
@@ -94,7 +95,7 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
                                              const FilePath& exposed_dir) {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  set_name(L"utility process");
+  set_name(ASCIIToUTF16("utility process"));
 
   if (!CreateChannel())
     return false;
