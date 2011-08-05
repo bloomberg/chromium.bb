@@ -2705,7 +2705,7 @@
         }],
         ['internal_pdf', {
           'sources': [
-            'test/plugin/pdf_browsertest.cc',
+            'browser/pdf_browsertest.cc',
           ],
         }],
         ['OS!="linux" or toolkit_views==1', {
@@ -3650,7 +3650,7 @@
         '..',
       ],
       'sources': [
-        'test/plugin/plugin_test.cpp',
+        'browser/plugin_test.cc',
       ],
       'conditions': [
         ['OS=="win"', {
