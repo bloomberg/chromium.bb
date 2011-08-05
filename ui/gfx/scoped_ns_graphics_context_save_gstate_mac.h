@@ -4,23 +4,27 @@
 
 #ifndef UI_GFX_SCOPED_NS_GRAPHICS_CONTEXT_SAVE_GSTATE_MAC_H_
 #define UI_GFX_SCOPED_NS_GRAPHICS_CONTEXT_SAVE_GSTATE_MAC_H_
+#pragma once
 
-#include "ui/ui_api.h"
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "ui/ui_api.h"
 
+#if defined(__OBJC__)
 @class NSGraphicsContext;
+#else
+class NSGraphicsContext;
+#endif
 
 namespace gfx {
 
+// A class to save/restore the state of the current context.
 class UI_API ScopedNSGraphicsContextSaveGState {
  public:
-  // If |context| is nil, it will use the |+currentContext|.
-  explicit ScopedNSGraphicsContextSaveGState(NSGraphicsContext* context = nil);
+  ScopedNSGraphicsContextSaveGState();
   ~ScopedNSGraphicsContextSaveGState();
 
  private:
-  scoped_nsobject<NSGraphicsContext> context_;
+  NSGraphicsContext* context_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ScopedNSGraphicsContextSaveGState);
 };

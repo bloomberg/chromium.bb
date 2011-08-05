@@ -16,6 +16,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -250,6 +251,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   if (!image.get())
     return SkBitmap();
 
+  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
   [image setFlipped:YES];
   int width = [image size].width;
   int height = [image size].height;
@@ -265,7 +267,6 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
              fromRect:NSZeroRect
             operation:NSCompositeCopy
              fraction:1.0];
-    [NSGraphicsContext restoreGraphicsState];
   }
   return canvas.ExtractBitmap();
 }
