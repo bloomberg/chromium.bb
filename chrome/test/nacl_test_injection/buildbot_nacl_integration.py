@@ -31,6 +31,10 @@ def Main(args):
     # TODO(ncbray): Reenable when this issue is resolved.
     # http://code.google.com/p/nativeclient/issues/detail?id=2091
     tests_to_disable.append('run_ppapi_bad_browser_test')
+    # This thread safety stress test is flaky on at least Windows.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=2124
+    # TODO(mseaborn): Reenable when this issue is resolved.
+    tests_to_disable.append('run_ppapi_ppb_var_browser_test')
 
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
