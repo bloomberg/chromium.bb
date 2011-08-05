@@ -83,8 +83,8 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   virtual bool IsDialogModal() const OVERRIDE {
     return false;
   };
-  virtual std::wstring GetDialogTitle() const OVERRIDE {
-    return L"";
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return string16();
   }
   virtual GURL GetDialogContentURL() const OVERRIDE {
     return GURL("chrome://dialog/signin");

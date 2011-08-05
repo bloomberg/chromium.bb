@@ -79,7 +79,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
     Type type_;
 
     // The dialog title.
-    std::wstring title_;
+    string16 title_;
 
     // Default path of the file dialog.
     FilePath default_path_;
@@ -101,18 +101,19 @@ class SelectFileDialogImpl : public SelectFileDialog {
     ~FileBrowseDelegate();
 
     // Overridden from HtmlDialogUI::Delegate:
-    virtual bool IsDialogModal() const;
-    virtual std::wstring GetDialogTitle() const;
-    virtual GURL GetDialogContentURL() const;
+    virtual bool IsDialogModal() const OVERRIDE;
+    virtual string16 GetDialogTitle() const OVERRIDE;
+    virtual GURL GetDialogContentURL() const OVERRIDE;
     virtual void GetWebUIMessageHandlers(
-        std::vector<WebUIMessageHandler*>* handlers) const;
-    virtual void GetDialogSize(gfx::Size* size) const;
-    virtual std::string GetDialogArgs() const;
-    virtual void OnDialogClosed(const std::string& json_retval);
-    virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
+        std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+    virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+    virtual std::string GetDialogArgs() const OVERRIDE;
+    virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+    virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+        OVERRIDE {
     }
-    virtual bool ShouldShowDialogTitle() const { return true; }
-    virtual bool HandleContextMenu(const ContextMenuParams& params) {
+    virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
+    virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE {
       return true;
     }
 
@@ -301,7 +302,7 @@ SelectFileDialogImpl::FileBrowseDelegate::FileBrowseDelegate(
   : owner_(owner),
     parent_(parent),
     type_(type),
-    title_(title),
+    title_(WideToUTF16Hack(title)),
     default_path_(default_path),
     file_type_index_(file_type_index),
     default_extension_(default_extension),
@@ -319,7 +320,7 @@ bool SelectFileDialogImpl::FileBrowseDelegate::IsDialogModal() const {
   return true;
 }
 
-std::wstring SelectFileDialogImpl::FileBrowseDelegate::GetDialogTitle() const {
+string16 SelectFileDialogImpl::FileBrowseDelegate::GetDialogTitle() const {
   return title_;
 }
 

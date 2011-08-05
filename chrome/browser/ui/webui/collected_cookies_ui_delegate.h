@@ -33,16 +33,17 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   static void Show(TabContents* tab_contents);
 
   // HtmlDialogUIDelegate implementation:
-  virtual bool IsDialogModal() const;
-  virtual std::wstring GetDialogTitle() const;
-  virtual GURL GetDialogContentURL() const;
+  virtual bool IsDialogModal() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const;
-  virtual void GetDialogSize(gfx::Size* size) const;
-  virtual std::string GetDialogArgs() const;
-  virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {}
-  virtual bool ShouldShowDialogTitle() const;
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE {}
+  virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages();

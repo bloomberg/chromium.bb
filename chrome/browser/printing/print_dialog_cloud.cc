@@ -457,8 +457,8 @@ bool CloudPrintHtmlDialogDelegate::IsDialogModal() const {
     return modal_;
 }
 
-std::wstring CloudPrintHtmlDialogDelegate::GetDialogTitle() const {
-  return std::wstring();
+string16 CloudPrintHtmlDialogDelegate::GetDialogTitle() const {
+  return string16();
 }
 
 GURL CloudPrintHtmlDialogDelegate::GetDialogContentURL() const {

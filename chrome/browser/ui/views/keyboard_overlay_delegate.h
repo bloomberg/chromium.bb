@@ -26,20 +26,21 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
   virtual ~KeyboardOverlayDelegate();
 
   // Overridden from HtmlDialogUI::Delegate:
-  virtual bool IsDialogModal() const;
-  virtual std::wstring GetDialogTitle() const;
-  virtual GURL GetDialogContentURL() const;
+  virtual bool IsDialogModal() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const;
-  virtual void GetDialogSize(gfx::Size* size) const;
-  virtual std::string GetDialogArgs() const;
-  virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
-  virtual bool ShouldShowDialogTitle() const;
-  virtual bool HandleContextMenu(const ContextMenuParams& params);
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE;
+  virtual bool ShouldShowDialogTitle() const OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
 
   // The dialog title.
-  std::wstring title_;
+  string16 title_;
 
   // The view associated with this delegate.
   // This class does not own the pointer.

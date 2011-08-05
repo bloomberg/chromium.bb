@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -100,7 +101,7 @@ bool HtmlDialogView::IsModal() const {
 
 std::wstring HtmlDialogView::GetWindowTitle() const {
   if (delegate_)
-    return delegate_->GetDialogTitle();
+    return UTF16ToWideHack(delegate_->GetDialogTitle());
   return std::wstring();
 }
 
@@ -141,8 +142,8 @@ bool HtmlDialogView::IsDialogModal() const {
   return IsModal();
 }
 
-std::wstring HtmlDialogView::GetDialogTitle() const {
-  return GetWindowTitle();
+string16 HtmlDialogView::GetDialogTitle() const {
+  return WideToUTF16Hack(GetWindowTitle());
 }
 
 GURL HtmlDialogView::GetDialogContentURL() const {

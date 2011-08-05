@@ -170,8 +170,8 @@ bool CollectedCookiesUIDelegate::IsDialogModal() const {
   return false;
 }
 
-std::wstring CollectedCookiesUIDelegate::GetDialogTitle() const {
-  return std::wstring();
+string16 CollectedCookiesUIDelegate::GetDialogTitle() const {
+  return string16();
 }
 
 GURL CollectedCookiesUIDelegate::GetDialogContentURL() const {

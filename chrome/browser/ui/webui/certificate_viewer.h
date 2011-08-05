@@ -32,7 +32,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const OVERRIDE;
-  virtual std::wstring GetDialogTitle() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -51,7 +51,7 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   std::string json_args_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
-  std::wstring title_;
+  string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
 };

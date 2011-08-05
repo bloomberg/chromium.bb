@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "content/common/property_bag.h"
 #include "googleurl/src/gurl.h"
@@ -30,7 +31,7 @@ class HtmlDialogUIDelegate {
   virtual bool IsDialogModal() const = 0;
 
   // Returns the title of the dialog.
-  virtual std::wstring GetDialogTitle() const = 0;
+  virtual string16 GetDialogTitle() const = 0;
 
   // Get the HTML file path for the content to load in the dialog.
   virtual GURL GetDialogContentURL() const = 0;

@@ -103,7 +103,7 @@ class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
   MOCK_CONST_METHOD0(IsDialogModal,
       bool());
   MOCK_CONST_METHOD0(GetDialogTitle,
-      std::wstring());
+      string16());
   MOCK_CONST_METHOD0(GetDialogContentURL,
       GURL());
   MOCK_CONST_METHOD1(GetWebUIMessageHandlers,

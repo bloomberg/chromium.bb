@@ -48,8 +48,8 @@ bool ChooseMobileNetworkDialog::IsDialogModal() const {
   return true;
 }
 
-std::wstring ChooseMobileNetworkDialog::GetDialogTitle() const {
-  return std::wstring();
+string16 ChooseMobileNetworkDialog::GetDialogTitle() const {
+  return string16();
 }
 
 GURL ChooseMobileNetworkDialog::GetDialogContentURL() const {

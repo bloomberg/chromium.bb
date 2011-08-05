@@ -54,16 +54,15 @@ CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
   net::X509Certificate::OSCertHandles cert_chain;
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
       &cert_chain);
-  title_ = UTF16ToWide(l10n_util::GetStringFUTF16(
-      IDS_CERT_INFO_DIALOG_TITLE, UTF8ToUTF16(x509_certificate_model::GetTitle(
-          cert_chain.front()))));
+  title_ = l10n_util::GetStringFUTF16(IDS_CERT_INFO_DIALOG_TITLE,
+      UTF8ToUTF16(x509_certificate_model::GetTitle(cert_chain.front())));
 }
 
 bool CertificateViewerDialog::IsDialogModal() const {
   return false;
 }
 
-std::wstring CertificateViewerDialog::GetDialogTitle() const {
+string16 CertificateViewerDialog::GetDialogTitle() const {
   return title_;
 }
 

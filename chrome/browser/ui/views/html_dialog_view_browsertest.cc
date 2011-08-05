@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -33,30 +34,31 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
   virtual ~TestHtmlDialogUIDelegate() {}
 
   // HTMLDialogUIDelegate implementation:
-  virtual bool IsDialogModal() const {
+  virtual bool IsDialogModal() const OVERRIDE {
     return true;
   }
-  virtual std::wstring GetDialogTitle() const {
-    return std::wstring(L"Test");
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return ASCIIToUTF16("Test");
   }
-  virtual GURL GetDialogContentURL() const {
+  virtual GURL GetDialogContentURL() const OVERRIDE {
     return GURL(chrome::kChromeUIChromeURLsURL);
   }
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const { }
-  virtual void GetDialogSize(gfx::Size* size) const {
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE { }
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
     size->set_width(40);
     size->set_height(40);
   }
-  virtual std::string GetDialogArgs() const {
+  virtual std::string GetDialogArgs() const OVERRIDE {
     return std::string();
   }
-  virtual void OnDialogClosed(const std::string& json_retval) { }
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE { }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE {
     if (out_close_dialog)
       *out_close_dialog = true;
   }
-  virtual bool ShouldShowDialogTitle() const { return true; }
+  virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 };
 
 }  // namespace

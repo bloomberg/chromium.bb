@@ -34,7 +34,7 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
                                  Style style)
     : delegate_(delegate),
       parent_window_(parent_window),
-      title_(title),
+      title_(WideToUTF16Hack(title)),
       url_(url),
       style_(style),
       bubble_frame_view_(NULL),
@@ -84,7 +84,7 @@ bool LoginHtmlDialog::IsDialogModal() const {
   return true;
 }
 
-std::wstring LoginHtmlDialog::GetDialogTitle() const {
+string16 LoginHtmlDialog::GetDialogTitle() const {
   return title_;
 }
 

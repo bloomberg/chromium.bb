@@ -21,7 +21,7 @@ class ChooseMobileNetworkDialog : private HtmlDialogUIDelegate {
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const OVERRIDE;
-  virtual std::wstring GetDialogTitle() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;

@@ -11,6 +11,7 @@
 
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -27,7 +28,7 @@ namespace {
 class MockDelegate : public HtmlDialogUIDelegate {
 public:
   MOCK_CONST_METHOD0(IsDialogModal, bool());
-  MOCK_CONST_METHOD0(GetDialogTitle, std::wstring());
+  MOCK_CONST_METHOD0(GetDialogTitle, string16());
   MOCK_CONST_METHOD0(GetDialogContentURL, GURL());
   MOCK_CONST_METHOD1(GetWebUIMessageHandlers,
                      void(std::vector<WebUIMessageHandler*>*));
@@ -44,13 +45,13 @@ class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
     CocoaTest::BootstrapCocoa();
-    title_ = L"Mock Title";
+    title_ = ASCIIToUTF16("Mock Title");
     size_ = gfx::Size(50, 100);
     gurl_ = GURL("");
   }
 
  protected:
-  std::wstring title_;
+  string16 title_;
   gfx::Size size_;
   GURL gurl_;
 

@@ -35,16 +35,17 @@ public:
   void WindowControllerClosed();
 
   // HtmlDialogUIDelegate declarations.
-  virtual bool IsDialogModal() const;
-  virtual std::wstring GetDialogTitle() const;
-  virtual GURL GetDialogContentURL() const;
+  virtual bool IsDialogModal() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const;
-  virtual void GetDialogSize(gfx::Size* size) const;
-  virtual std::string GetDialogArgs() const;
-  virtual void OnDialogClosed(const std::string& json_retval);
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
-  virtual bool ShouldShowDialogTitle() const { return true; }
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE { }
+  virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // HtmlDialogTabContentsDelegate declarations.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
@@ -123,8 +124,8 @@ bool HtmlDialogWindowDelegateBridge::IsDialogModal() const {
   return false;
 }
 
-std::wstring HtmlDialogWindowDelegateBridge::GetDialogTitle() const {
-  return delegate_ ? delegate_->GetDialogTitle() : L"";
+string16 HtmlDialogWindowDelegateBridge::GetDialogTitle() const {
+  return delegate_ ? delegate_->GetDialogTitle() : string16();
 }
 
 GURL HtmlDialogWindowDelegateBridge::GetDialogContentURL() const {
@@ -254,7 +255,7 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
   }
   [window setWindowController:self];
   [window setDelegate:self];
-  [window setTitle:base::SysWideToNSString(delegate->GetDialogTitle())];
+  [window setTitle:base::SysUTF16ToNSString(delegate->GetDialogTitle())];
   [window center];
   delegate_.reset(new HtmlDialogWindowDelegateBridge(self, profile, delegate));
   return self;

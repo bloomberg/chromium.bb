@@ -22,7 +22,7 @@ static const int kHorizontalMargin = 28;
 
 KeyboardOverlayDelegate::KeyboardOverlayDelegate(
     const std::wstring& title)
-    : title_(title),
+    : title_(WideToUTF16Hack(title)),
       view_(NULL) {
 }
 
@@ -33,7 +33,7 @@ bool KeyboardOverlayDelegate::IsDialogModal() const {
   return true;
 }
 
-std::wstring KeyboardOverlayDelegate::GetDialogTitle() const {
+string16 KeyboardOverlayDelegate::GetDialogTitle() const {
   return title_;
 }
 

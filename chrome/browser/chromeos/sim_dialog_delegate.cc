@@ -71,8 +71,8 @@ bool SimDialogDelegate::IsDialogModal() const {
   return true;
 }
 
-std::wstring SimDialogDelegate::GetDialogTitle() const {
-  return std::wstring();
+string16 SimDialogDelegate::GetDialogTitle() const {
+  return string16();
 }
 
 GURL SimDialogDelegate::GetDialogContentURL() const {

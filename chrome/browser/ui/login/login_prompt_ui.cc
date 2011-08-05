@@ -86,8 +86,8 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
     return true;
   }
 
-  virtual std::wstring GetDialogTitle() const OVERRIDE {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE));
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE);
   }
 
   virtual GURL GetDialogContentURL() const OVERRIDE {

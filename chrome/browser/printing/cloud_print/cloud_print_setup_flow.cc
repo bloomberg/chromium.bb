@@ -186,9 +186,8 @@ void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
                                           bool* out_close_dialog) {
 }
 
-std::wstring CloudPrintSetupFlow::GetDialogTitle() const {
-  return UTF16ToWideHack(
-      l10n_util::GetStringUTF16(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE));
+string16 CloudPrintSetupFlow::GetDialogTitle() const {
+  return l10n_util::GetStringUTF16(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE);
 }
 
 bool CloudPrintSetupFlow::IsDialogModal() const {

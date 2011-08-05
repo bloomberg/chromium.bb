@@ -27,36 +27,37 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   void OnCloseDialog();
 
   // Overridden from HtmlDialogUIDelegate:
-  virtual bool IsDialogModal() const {
+  virtual bool IsDialogModal() const OVERRIDE {
     return false;
   }
-  virtual std::wstring GetDialogTitle() const {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE));
+  virtual string16 GetDialogTitle() const OVERRIDE {
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
   }
-  virtual GURL GetDialogContentURL() const {
+  virtual GURL GetDialogContentURL() const OVERRIDE {
     std::string url_string(chrome::kChromeUITaskManagerURL);
     return GURL(url_string);
   }
   virtual void GetWebUIMessageHandlers(
-      std::vector<WebUIMessageHandler*>* handlers) const {
+      std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE {
   }
-  virtual void GetDialogSize(gfx::Size* size) const {
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
     size->SetSize(640, 480);
   }
-  virtual std::string GetDialogArgs() const {
+  virtual std::string GetDialogArgs() const OVERRIDE {
     return std::string();
   }
-  virtual void OnDialogClosed(const std::string& json_retval) {
+  virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE {
     OnCloseDialog();
   }
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
+      OVERRIDE {
     *out_close_dialog = true;
     OnCloseDialog();
   }
-  virtual bool ShouldShowDialogTitle() const {
+  virtual bool ShouldShowDialogTitle() const OVERRIDE {
     return false;
   }
-  virtual bool HandleContextMenu(const ContextMenuParams& params) {
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE {
     return true;
   }
 

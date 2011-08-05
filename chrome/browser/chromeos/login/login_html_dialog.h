@@ -56,7 +56,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
  protected:
   // HtmlDialogUIDelegate implementation.
   virtual bool IsDialogModal() const OVERRIDE;
-  virtual std::wstring GetDialogTitle() const OVERRIDE;
+  virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -78,7 +78,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   Delegate* delegate_;
 
   gfx::NativeWindow parent_window_;
-  std::wstring title_;
+  string16 title_;
   GURL url_;
   Style style_;
   NotificationRegistrar notification_registrar_;
