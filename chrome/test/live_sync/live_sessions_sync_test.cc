@@ -89,27 +89,50 @@ bool LiveSessionsSyncTest::ModelAssociatorHasTabWithUrl(int index,
 }
 
 bool LiveSessionsSyncTest::OpenTab(int index, const GURL& url) {
-  static const int timeout_milli = TestTimeouts::action_max_timeout_ms();
-  VLOG(1) << "Opening tab: " << url.spec();
+  VLOG(1) << "Opening tab: " << url.spec() << " using profile " << index << ".";
   GetBrowser(index)->ShowSingletonTab(url);
+  return WaitForTabsToLoad(index, std::vector<GURL>(1, url));
+}
+
+bool LiveSessionsSyncTest::OpenMultipleTabs(int index,
+                                            const std::vector<GURL>& urls) {
+  Browser* browser = GetBrowser(index);
+  for (std::vector<GURL>::const_iterator it = urls.begin();
+       it != urls.end(); ++it) {
+    VLOG(1) << "Opening tab: " << it->spec() << " using profile " << index
+            << ".";
+    browser->ShowSingletonTab(*it);
+  }
+  return WaitForTabsToLoad(index, urls);
+}
+
+bool LiveSessionsSyncTest::WaitForTabsToLoad(
+    int index, const std::vector<GURL>& urls) {
   VLOG(1) << "Waiting for session to propagate to associator.";
+  static const int timeout_milli = TestTimeouts::action_max_timeout_ms();
   base::TimeTicks start_time = base::TimeTicks::Now();
   base::TimeTicks end_time = start_time +
                              base::TimeDelta::FromMilliseconds(timeout_milli);
-  do {
-    if (ModelAssociatorHasTabWithUrl(index, url))
-      return true;
-    GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
-        BlockUntilLocalChangeForTest(timeout_milli);
-    ui_test_utils::RunMessageLoop();
-  } while (base::TimeTicks::Now() < end_time);
-
-  if (ModelAssociatorHasTabWithUrl(index, url))
-    return true;
-
-  LOG(ERROR) << "Failed to find tab after " << timeout_milli/1000.0
-             << " seconds.";
-  return false;
+  bool found;
+  for (std::vector<GURL>::const_iterator it = urls.begin();
+       it != urls.end(); ++it) {
+    found = false;
+    while (!found) {
+      found = ModelAssociatorHasTabWithUrl(index, *it);
+      if (base::TimeTicks::Now() >= end_time) {
+        LOG(ERROR) << "Failed to find all tabs after " << timeout_milli/1000.0
+                   << " seconds.";
+        return false;
+      }
+      if (!found) {
+        GetProfile(index)->GetProfileSyncService()->
+            GetSessionModelAssociator()->
+            BlockUntilLocalChangeForTest(timeout_milli);
+        ui_test_utils::RunMessageLoop();
+      }
+    }
+  }
+  return true;
 }
 
 std::vector<SessionWindow*>* LiveSessionsSyncTest::GetLocalWindows(int index) {

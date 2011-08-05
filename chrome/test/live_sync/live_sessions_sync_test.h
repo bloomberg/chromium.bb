@@ -111,6 +111,14 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   // of it. Returns true upon success, false otherwise.
   bool OpenTab(int index, const GURL& url) WARN_UNUSED_RESULT;
 
+  // Open multiple tabs and block until the session model associator is aware
+  // of all of them.  Returns true on success, false on failure.
+  bool OpenMultipleTabs(int index, const std::vector<GURL>& urls);
+
+  // Wait for a session change to propagate to the model associator.  Will not
+  // return until each url in |urls| has been found.
+  bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls);
+
   // Check if the session model associator's knows that the current open tab
   // has this url.
   bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
