@@ -87,6 +87,8 @@
         'browser/mock_browsing_data_indexed_db_helper.h',
         'browser/mock_browsing_data_local_storage_helper.cc',
         'browser/mock_browsing_data_local_storage_helper.h',
+        'browser/mock_browsing_data_quota_helper.cc',
+        'browser/mock_browsing_data_quota_helper.h',
         'browser/notifications/notification_test_util.cc',
         'browser/notifications/notification_test_util.h',
         'browser/policy/mock_cloud_policy_data_store.cc',
@@ -1324,6 +1326,7 @@
         'browser/browsing_data_file_system_helper_unittest.cc',
         'browser/browsing_data_indexed_db_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
+        'browser/browsing_data_quota_helper_unittest.cc',
         'browser/browsing_data_remover_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chromeos/cros/network_library.cc',
@@ -2078,6 +2081,8 @@
         '../webkit/fileapi/file_writer_delegate_unittest.cc',
         '../webkit/fileapi/file_system_test_helper.cc',
         '../webkit/fileapi/file_system_test_helper.h',
+        '../webkit/quota/mock_storage_client.cc',
+        '../webkit/quota/mock_storage_client.h',
       ],
       'conditions': [
         ['p2p_apis==1', {

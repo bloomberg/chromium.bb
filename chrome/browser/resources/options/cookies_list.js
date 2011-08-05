@@ -119,6 +119,8 @@ cr.define('options', function() {
       this.siteChild.className = 'cookie-site';
       this.dataChild = this.ownerDocument.createElement('div');
       this.dataChild.className = 'cookie-data';
+      this.sizeChild = this.ownerDocument.createElement('div');
+      this.sizeChild.className = 'cookie-size';
       this.itemsChild = this.ownerDocument.createElement('div');
       this.itemsChild.className = 'cookie-items';
       this.infoChild = this.ownerDocument.createElement('div');
@@ -131,6 +133,7 @@ cr.define('options', function() {
       var content = this.contentElement;
       content.appendChild(this.siteChild);
       content.appendChild(this.dataChild);
+      content.appendChild(this.sizeChild);
       content.appendChild(this.itemsChild);
       this.itemsChild.appendChild(this.infoChild);
       if (this.origin && this.origin.data) {
@@ -250,6 +253,10 @@ cr.define('options', function() {
         else
           text = list[i];
       this.dataChild.textContent = text;
+      if (info.quota && info.quota.totalUsage) {
+        this.sizeChild.textContent = info.quota.totalUsage;
+      }
+
       if (this.expanded)
         this.updateItems_();
     },
@@ -430,18 +437,21 @@ cr.define('options', function() {
         for (var i = 0; i < this.children.length; ++i)
           this.children[i].collectSummaryInfo(info);
       } else if (this.data && !this.data.hasChildren) {
-        if (this.data.type == 'cookie')
+        if (this.data.type == 'cookie') {
           info.cookies++;
-        else if (this.data.type == 'database')
+        } else if (this.data.type == 'database') {
           info.database = true;
-        else if (this.data.type == 'local_storage')
+        } else if (this.data.type == 'local_storage') {
           info.localStorage = true;
-        else if (this.data.type == 'app_cache')
+        } else if (this.data.type == 'app_cache') {
           info.appCache = true;
-        else if (this.data.type == 'indexed_db')
+        } else if (this.data.type == 'indexed_db') {
           info.indexedDb = true;
-        else if (this.data.type == 'file_system')
+        } else if (this.data.type == 'file_system') {
           info.fileSystem = true;
+        } else if (this.data.type == 'quota') {
+          info.quota = this.data;
+        }
       }
     },
 
@@ -474,6 +484,8 @@ cr.define('options', function() {
             text = localStrings.getString('cookie_file_system');
             break;
         }
+        if (!text)
+          return;
         var div = item.ownerDocument.createElement('div');
         div.className = 'cookie-item';
         // Help out screen readers and such: this is a clickable thing.
