@@ -191,23 +191,36 @@ void TestOpenSuccess() {
   int32_t rv;
   TestableCallback callback(pp_instance(), true);
   PP_Resource loader;
+  PP_Resource response;
   PP_Resource request = MakeRequest(kExistingURL, "GET", kNoHeaders,
                                     kDontStreamToFile,
                                     kDownloadProgress,
                                     kFollowRedirects);
 
-  LOG_TO_BROWSER("open and read entire existing file");
+  LOG_TO_BROWSER("open and read entire existing file (all at once)");
   callback.Reset();
   loader = PPBURLLoader()->Create(pp_instance());
   rv = PPBURLLoader()->Open(loader, request, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
   rv = callback.WaitForResult();
   EXPECT(PP_OK == rv);
-  PP_Resource response = PPBURLLoader()->GetResponseInfo(loader);
+  response = PPBURLLoader()->GetResponseInfo(loader);
   CheckResponse(response, 200, "OK", NULL, NULL);
   ReadAndVerifyResponseBody(loader, 1024, kContentsOfExistingURL);
-
   PPBCore()->ReleaseResource(loader);
+
+  LOG_TO_BROWSER("open and read entire existing file (one byte at a time)");
+  callback.Reset();
+  loader = PPBURLLoader()->Create(pp_instance());
+  rv = PPBURLLoader()->Open(loader, request, callback.GetCallback());
+  EXPECT(PP_OK_COMPLETIONPENDING == rv);
+  rv = callback.WaitForResult();
+  EXPECT(PP_OK == rv);
+  response = PPBURLLoader()->GetResponseInfo(loader);
+  CheckResponse(response, 200, "OK", NULL, NULL);
+  ReadAndVerifyResponseBody(loader, 1, kContentsOfExistingURL);
+  PPBCore()->ReleaseResource(loader);
+
   PPBCore()->ReleaseResource(request);
 
   TEST_PASSED;
@@ -338,9 +351,9 @@ void TestOpenSimple() {
   int32_t rv;
   TestableCallback callback(pp_instance(), true);
   PP_Resource request = MakeDummyRequest();
-  PP_Resource loader = PPBURLLoader()->Create(pp_instance());
+  PP_Resource loader;
 
-  LOG_TO_BROWSER("open with with loader/request invalid");
+  LOG_TO_BROWSER("open with loader/request invalid");
   callback.Reset();
   rv = PPBURLLoader()->Open(
       kInvalidResource, kInvalidResource, callback.GetCallback());
@@ -354,7 +367,7 @@ void TestOpenSimple() {
   rv = callback.WaitForResult();
   EXPECT(PP_ERROR_BADRESOURCE == rv);
 
-  LOG_TO_BROWSER("open with with loader invalid");
+  LOG_TO_BROWSER("open with loader invalid");
   callback.Reset();
   rv = PPBURLLoader()->Open(kInvalidResource, request, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
@@ -371,40 +384,51 @@ void TestOpenSimple() {
   rv = callback.WaitForResult();
   EXPECT(PP_ERROR_BADRESOURCE == rv);
 
-  LOG_TO_BROWSER("open with with request invalid");
+  LOG_TO_BROWSER("open with request invalid");
+  loader = PPBURLLoader()->Create(pp_instance());
   callback.Reset();
-  rv = PPBURLLoader()->Open(
-      loader, kInvalidResource, callback.GetCallback());
+  rv = PPBURLLoader()->Open(loader, kInvalidResource, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
   rv = callback.WaitForResult();
   EXPECT(PP_ERROR_BADARGUMENT == rv);
   callback.Reset();
-  rv = PPBURLLoader()->Open(
-      loader, kNotAResource, callback.GetCallback());
+  rv = PPBURLLoader()->Open(loader, kNotAResource, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
   rv = callback.WaitForResult();
   EXPECT(PP_ERROR_BADARGUMENT == rv);
   callback.Reset();
-  rv = PPBURLLoader()->Open(
-      loader, loader, callback.GetCallback());
+  rv = PPBURLLoader()->Open(loader, loader, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
   rv = callback.WaitForResult();
   EXPECT(PP_ERROR_BADARGUMENT == rv);
+  PPBCore()->ReleaseResource(loader);
 
   LOG_TO_BROWSER("open (synchronous) with blocking callback on main thread");
+  loader = PPBURLLoader()->Create(pp_instance());
   // We are on the main thread, performing a sync call should fail
   rv = PPBURLLoader()->Open(loader, request, PP_BlockUntilComplete());
   EXPECT(PP_ERROR_BADARGUMENT == rv);
+  PPBCore()->ReleaseResource(loader);
 
   LOG_TO_BROWSER("open (asynchronous) normal");
+  loader = PPBURLLoader()->Create(pp_instance());
   callback.Reset();
   rv = PPBURLLoader()->Open(loader, request, callback.GetCallback());
   EXPECT(PP_OK_COMPLETIONPENDING == rv);
   rv = callback.WaitForResult();
   EXPECT(PP_OK == rv);
+  PPBCore()->ReleaseResource(loader);
+
+  LOG_TO_BROWSER("open with with released loader");
+  loader = PPBURLLoader()->Create(pp_instance());
+  PPBCore()->ReleaseResource(loader);
+  callback.Reset();
+  rv = PPBURLLoader()->Open(loader, request, callback.GetCallback());
+  EXPECT(PP_OK_COMPLETIONPENDING == rv);
+  rv = callback.WaitForResult();
+  EXPECT(PP_ERROR_BADRESOURCE == rv);
 
   PPBCore()->ReleaseResource(request);
-  PPBCore()->ReleaseResource(loader);
 
   TEST_PASSED;
 }
