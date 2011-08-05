@@ -58,8 +58,11 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       already_reported_success_(false),
       checked_for_localaccount_(false),
-      using_oauth_(CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUIGaiaLogin)) {
+      using_oauth_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kWebUIGaiaLogin) &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kSkipOAuthLogin)) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   // If not already owned, this is a no-op.  If it is, this loads the owner's
   // public key off of disk.

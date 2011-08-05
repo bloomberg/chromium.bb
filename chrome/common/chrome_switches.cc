@@ -1030,8 +1030,11 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // Enable WebUI based login screens.
 const char kWebUILogin[]                    = "webui-login";
 
+// Skips OAuth part of ChromeOS login process.
+const char kSkipOAuthLogin[]                = "skip-oauth-login";
+
 // Enable WebUI login screen hosted by GAIA authentication extension.
-const char kWebUIGaiaLogin[]                    = "webui-gaia-login";
+const char kWebUIGaiaLogin[]                = "webui-gaia-login";
 
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";

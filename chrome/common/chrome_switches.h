@@ -283,6 +283,7 @@ extern const char kWinHttpProxyResolver[];
 #if defined(OS_CHROMEOS)
 extern const char kWebUILogin[];
 extern const char kWebUIGaiaLogin[];
+extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];

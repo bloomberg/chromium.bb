@@ -50,8 +50,11 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
-      using_oauth_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebUIGaiaLogin)),
+      using_oauth_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kWebUIGaiaLogin) &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSkipOAuthLogin)),
       method_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
