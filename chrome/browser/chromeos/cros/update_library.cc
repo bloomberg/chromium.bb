@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chromeos/cros/update_library.h"
 
+#include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 
@@ -13,16 +14,15 @@ namespace chromeos {
 
 class UpdateLibraryImpl : public UpdateLibrary {
  public:
-  UpdateLibraryImpl()
-    : status_connection_(NULL) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+  UpdateLibraryImpl() : status_connection_(NULL) {
+    if (CrosLibrary::Get()->EnsureLoaded())
       Init();
-    }
   }
 
   virtual ~UpdateLibraryImpl() {
     if (status_connection_) {
-      DisconnectUpdateProgress(status_connection_);
+      chromeos::DisconnectUpdateProgress(status_connection_);
+      status_connection_ = NULL;
     }
   }
 
@@ -66,14 +66,13 @@ class UpdateLibraryImpl : public UpdateLibrary {
   }
 
  private:
-  static void ChangedHandler(void* object,
-      const UpdateProgress& status) {
-    UpdateLibraryImpl* updater = static_cast<UpdateLibraryImpl*>(object);
-    updater->UpdateStatus(Status(status));
+  static void ChangedHandler(void* object, const UpdateProgress& status) {
+    UpdateLibraryImpl* impl = static_cast<UpdateLibraryImpl*>(object);
+    impl->UpdateStatus(Status(status));
   }
 
   void Init() {
-    status_connection_ = MonitorUpdateStatus(&ChangedHandler, this);
+    status_connection_ = chromeos::MonitorUpdateStatus(&ChangedHandler, this);
     // Asynchronously load the initial state.
     RequestUpdateStatus(&ChangedHandler, this);
   }
