@@ -302,8 +302,8 @@ add_config('x86-generic-tot-chrome-pre-flight-queue', [chrome_pfq, {
   'board' : 'x86-generic',
   'master' : True,
   'push_overlays': 'public',
+  'hw_tests' : [('desktopui_PyAutoFunctionalTests', 'CONTINUOUS_PUBLIC')],
   'chrome_rev': constants.CHROME_REV_TOT,
-  'hw_tests' : [('desktopui_PyAutoFunctionalTests', 'CONTINUOUS')],
   'remote_ip' : '172.22.75.211',
 }])
 
