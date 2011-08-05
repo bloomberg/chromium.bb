@@ -52,7 +52,7 @@ class SSLManager : public NotificationObserver {
 
   // Called when SSL state for a host or tab changes.  Broadcasts the
   // SSL_INTERNAL_STATE_CHANGED notification.
-  static void NotifySSLInternalStateChanged(NavigationController* controller);
+  static void NotifySSLInternalStateChanged();
 
   // Convenience methods for serializing/deserializing the security info.
   static std::string SerializeSecurityInfo(int cert_id,

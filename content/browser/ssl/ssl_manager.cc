@@ -18,7 +18,6 @@
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 #include "net/base/cert_status_flags.h"
 
 // static
@@ -45,11 +44,10 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
 }
 
 // static
-void SSLManager::NotifySSLInternalStateChanged(
-    NavigationController* controller) {
+void SSLManager::NotifySSLInternalStateChanged() {
   NotificationService::current()->Notify(
       content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-      Source<content::BrowserContext>(controller->browser_context()),
+      NotificationService::AllSources(),
       NotificationService::NoDetails());
 }
 
@@ -107,8 +105,7 @@ SSLManager::SSLManager(NavigationController* controller)
   registrar_.Add(this, content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
                  Source<NavigationController>(controller_));
   registrar_.Add(this, content::NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-                 Source<content::BrowserContext>(
-                     controller_->browser_context()));
+                 NotificationService::AllSources());
 }
 
 SSLManager::~SSLManager() {

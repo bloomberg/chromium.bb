@@ -9,14 +9,13 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
-    : ssl_host_state_(controller->browser_context()->GetSSLHostState()),
-      controller_(controller) {
-  DCHECK(controller_);
+    : ssl_host_state_(controller->browser_context()->GetSSLHostState()) {
+  DCHECK(controller);
 }
 
 void SSLPolicyBackend::HostRanInsecureContent(const std::string& host, int id) {
   ssl_host_state_->HostRanInsecureContent(host, id);
-  SSLManager::NotifySSLInternalStateChanged(controller_);
+  SSLManager::NotifySSLInternalStateChanged();
 }
 
 bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,

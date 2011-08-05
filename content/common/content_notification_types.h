@@ -162,8 +162,8 @@ enum {
   // or a secure origin might have included some insecure content.  Listen to
   // this notifiation if you need to keep track of our internal SSL state.
   //
-  // The source will be the browser context. The details will be the navigation
-  // controller associated with the state change.
+  // The source will be the navigation controller associated with the state
+  // change.  There are no details.
   NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
 
   // The user accepted or dismissed a SSL client authentication request.
