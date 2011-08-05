@@ -26,7 +26,6 @@ namespace input_method {
 
 class VirtualKeyboard;
 
-
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
 // InputMethodManager::GetInstance().
@@ -169,6 +168,15 @@ class InputMethodManager {
   virtual void RegisterVirtualKeyboard(const GURL& launch_url,
                                        const std::set<std::string>& layouts,
                                        bool is_system) = 0;
+
+  // Sets user preference on virtual keyboard selection.
+  // See virtual_keyboard_selector.h for details.
+  virtual bool SetVirtualKeyboardPreference(const std::string& input_method_id,
+                                            const GURL& extention_url) = 0;
+
+  // Clears all preferences on virtual keyboard selection.
+  // See virtual_keyboard_selector.h for details.
+  virtual void ClearAllVirtualKeyboardPreferences() = 0;
 
   virtual input_method::InputMethodDescriptor previous_input_method() const = 0;
   virtual input_method::InputMethodDescriptor current_input_method() const = 0;

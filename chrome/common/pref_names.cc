@@ -480,6 +480,11 @@ const char kLanguageXkbAutoRepeatInterval[] =
 // "_r2" suffixes are added to the three prefs above when we change the
 // preferences not user-configurable, not to sync them with cloud.
 
+// A dictionary pref which determines a preferred virtual keyboard per layout.
+// e.g. { "us(dvorak)": "http://asdfg..yuiop/" }
+const char kLanguagePreferredVirtualKeyboard[] =
+    "settings.language.preferred_virtual_keyboard";
+
 // A boolean pref which determines whether accessibility is enabled.
 const char kAccessibilityEnabled[] = "settings.accessibility";
 

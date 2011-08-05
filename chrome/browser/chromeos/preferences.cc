@@ -174,6 +174,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              language_prefs::kXkbAutoRepeatIntervalInMs,
                              PrefService::UNSYNCABLE_PREF);
 
+  prefs->RegisterDictionaryPref(prefs::kLanguagePreferredVirtualKeyboard,
+                                PrefService::SYNCABLE_PREF);
+
   // Screen lock default to off.
   prefs->RegisterBooleanPref(prefs::kEnableScreenLock,
                              false,
@@ -279,6 +282,9 @@ void Preferences::Init(PrefService* prefs) {
 
   // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
+
+  // Initialize virtual keyboard settings to currently saved state.
+  UpdateVirturalKeyboardPreference(prefs);
 
   // If a guest is logged in, initialize the prefs as if this is the first
   // login.
@@ -568,6 +574,27 @@ void Preferences::UpdateAutoRepeatRate() {
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
   input_method::SetAutoRepeatRate(rate);
+}
+
+void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
+  const DictionaryValue* virtual_keyboard_pref =
+      prefs->GetDictionary(prefs::kLanguagePreferredVirtualKeyboard);
+  DCHECK(virtual_keyboard_pref);
+
+  input_method::InputMethodManager* input_method_manager =
+      input_method::InputMethodManager::GetInstance();
+  input_method_manager->ClearAllVirtualKeyboardPreferences();
+
+  std::string url;
+  for (DictionaryValue::key_iterator iter = virtual_keyboard_pref->begin_keys();
+       iter != virtual_keyboard_pref->end_keys();
+       ++iter) {
+    const std::string& input_method_id = *iter;
+    if (!virtual_keyboard_pref->GetString(input_method_id, &url))
+      continue;
+    input_method_manager->SetVirtualKeyboardPreference(
+        input_method_id, GURL(url));
+  }
 }
 
 }  // namespace chromeos

@@ -400,6 +400,40 @@ TEST(VirtualKeyboardSelectorTest, TestSetUserPreference2) {
   EXPECT_EQ(3U, selector.user_preference().size());
 }
 
+TEST(VirtualKeyboardSelectorTest, TestRemoveUserPreference) {
+  static const char* layouts[] = { "a", "b", "c" };
+
+  VirtualKeyboard user_virtual_keyboard_1(
+      GURL("http://user1"), CreateLayoutSet(layouts), false /* is_system */);
+  VirtualKeyboard user_virtual_keyboard_2(
+      GURL("http://user2"), CreateLayoutSet(layouts), false /* is_system */);
+
+  TestableVirtualKeyboardSelector selector;
+  EXPECT_TRUE(selector.AddVirtualKeyboard(
+      user_virtual_keyboard_1.url(),
+      user_virtual_keyboard_1.supported_layouts(),
+      user_virtual_keyboard_1.is_system()));
+  EXPECT_TRUE(selector.AddVirtualKeyboard(
+      user_virtual_keyboard_2.url(),
+      user_virtual_keyboard_2.supported_layouts(),
+      user_virtual_keyboard_2.is_system()));
+
+  EXPECT_TRUE(selector.SetUserPreference("a", GURL("http://user1")));
+  EXPECT_TRUE(selector.SetUserPreference("b", GURL("http://user1")));
+  EXPECT_TRUE(selector.SetUserPreference("c", GURL("http://user1")));
+  EXPECT_EQ(3U, selector.user_preference().size());
+
+  selector.RemoveUserPreference("b");
+  EXPECT_EQ(2U, selector.user_preference().size());
+  ASSERT_TRUE(selector.SelectVirtualKeyboardWithoutPreferences("b"));
+  // user_virtual_keyboard_2 should be selected here since the keyboard is
+  // added most recently and the user preference on "b" is already removed.
+  EXPECT_TRUE(user_virtual_keyboard_2 == *selector.SelectVirtualKeyboard("b"));
+
+  selector.ClearAllUserPreferences();
+  EXPECT_EQ(0U, selector.user_preference().size());
+}
+
 TEST(VirtualKeyboardSelectorTest, TestSetUserPreferenceUserSystemMixed) {
   static const char* ulayouts_1[] = { "a", "b", "c" };
   static const char* ulayouts_2[] = { "a", "c", "d" };
@@ -433,9 +467,10 @@ TEST(VirtualKeyboardSelectorTest, TestSetUserPreferenceUserSystemMixed) {
       system_virtual_keyboard_2.supported_layouts(),
       system_virtual_keyboard_2.is_system()));
 
-  // Set and then remove user pref (=NOP).
+  // Set and then remove user prefs (=NOP).
   EXPECT_TRUE(selector.SetUserPreference("a", GURL("http://system1")));
-  selector.RemoveUserPreference("a");
+  EXPECT_TRUE(selector.SetUserPreference("z", GURL("http://system2")));
+  selector.ClearAllUserPreferences();
 
   // At this point, user_virtual_keyboard_2 has the highest priority.
   ASSERT_TRUE(selector.SelectVirtualKeyboardWithoutPreferences("a"));

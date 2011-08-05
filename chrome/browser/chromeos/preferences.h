@@ -29,6 +29,10 @@ class Preferences : public NotificationObserver {
   // This method will register the prefs associated with Chrome OS settings.
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // This method is called when kLanguagePreferredVirtualKeyboard is updated to
+  // change the virtual keyboard settings to reflect the new value.
+  static void UpdateVirturalKeyboardPreference(PrefService* prefs);
+
   // This method will initialize Chrome OS settings to values in user prefs.
   void Init(PrefService* prefs);
 

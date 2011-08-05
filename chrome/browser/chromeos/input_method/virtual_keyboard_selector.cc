@@ -145,6 +145,10 @@ void VirtualKeyboardSelector::RemoveUserPreference(const std::string& layout) {
   user_preference_.erase(layout);
 }
 
+void VirtualKeyboardSelector::ClearAllUserPreferences() {
+  user_preference_.clear();
+}
+
 const VirtualKeyboard*
 VirtualKeyboardSelector::SelectVirtualKeyboardWithoutPreferences(
     const std::string& layout) {

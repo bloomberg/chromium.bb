@@ -310,6 +310,16 @@ class InputMethodManagerImpl : public InputMethodManager,
                                                   is_system);
   }
 
+  virtual bool SetVirtualKeyboardPreference(const std::string& input_method_id,
+                                            const GURL& extention_url) {
+    return virtual_keyboard_selector_.SetUserPreference(
+        input_method_id, extention_url);
+  }
+
+  virtual void ClearAllVirtualKeyboardPreferences() {
+    return virtual_keyboard_selector_.ClearAllUserPreferences();
+  }
+
   static InputMethodManagerImpl* GetInstance() {
     return Singleton<InputMethodManagerImpl,
         DefaultSingletonTraits<InputMethodManagerImpl> >::get();

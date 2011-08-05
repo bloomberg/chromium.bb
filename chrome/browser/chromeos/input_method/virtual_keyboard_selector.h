@@ -92,6 +92,9 @@ class VirtualKeyboardSelector {
   // Removes the preference for the |layout| added by SetUserPreference.
   void RemoveUserPreference(const std::string& layout);
 
+  // Removes all preferences added by SetUserPreference.
+  void ClearAllUserPreferences();
+
  protected:
   // Selects and returns the most suitable virtual keyboard extension for the
   // |layout|. Unlike SelectVirtualKeyboard(), this function only scans
