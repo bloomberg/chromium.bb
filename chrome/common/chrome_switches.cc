@@ -1104,9 +1104,6 @@ const char kScreenSaverUrl[]                = "screen-saver-url";
 // Flag to trigger ChromeOS system log compression during feedback submit.
 const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 
-// Enables Advanced File System.
-const char kEnableAdvancedFileSystem[]      = "enable-advanced-fs";
-
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
