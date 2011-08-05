@@ -159,7 +159,15 @@ TEST_PPAPI_IN_PROCESS(CursorControl)
 TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
 
 TEST_PPAPI_IN_PROCESS(Instance)
-TEST_PPAPI_OUT_OF_PROCESS(Instance)
+
+// http://crbug.com/91729
+#if defined(OS_LINUX)
+#define MAYBE_Instance FLAKY_Instance
+#else
+#define MAYBE_Instance Instance
+#endif
+
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Instance)
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 // Disabled because it times out: http://crbug.com/89961
