@@ -5215,6 +5215,153 @@
    fun:_Znw*
    fun:_ZN12_GLOBAL__N_141CookiesTreeModelTest_ContentSettings_Test8TestBodyEv
 }
+{
+   bug_91836_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5quota18ClientUsageTracker*DidGetHostUsage*
+   fun:_ZN5quota18ClientUsageTracker*GatherHostUsageTask9CompletedEv
+   fun:_ZN5quota9QuotaTask13CallCompletedEv
+   fun:_ZN5quota18ClientUsageTracker19GatherUsageTaskBase11DidGetUsageEx
+}
+{
+   bug_91836_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5quota18ClientUsageTracker*DidGetGlobalUsage*
+   fun:_ZN5quota18ClientUsageTracker*GatherGlobalUsage*
+   fun:_ZN5quota9QuotaTask13CallCompletedEv
+   fun:_ZN5quota18ClientUsageTracker19GatherUsageTaskBase11DidGetUsageEx
+}
+{
+   bug_91836_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5quota12QuotaManager13StartEvictionEv
+   fun:_ZN5quota12QuotaManager34InitializeTemporaryOriginsInfoTask21DatabaseTaskCompletedEv
+   fun:_ZN5quota12QuotaManager16DatabaseTaskBase9CompletedEv
+   fun:_ZN5quota9QuotaTask13CallCompletedEv
+   ...
+   fun:_ZN38BrowsingDataQuotaHelperTest_Empty_Test8TestBodyEv
+}
+{
+   bug_91836_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE14_M_create_nodeERKS4_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE10_M_insert_EPKSt18_Rb_tree_node_baseSD_RKS4_
+   ...
+   fun:_ZN5quota12QuotaManager12GetHostUsageERKSsNS_11StorageTypeEP14CallbackRunnerI6Tuple3IS2_S3_xEE
+}
+{
+   bug_91836_e
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareSetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8SetValueEPKci
+   fun:_ZN3sql9MetaTable16SetVersionNumberEi
+   fun:_ZN3sql9MetaTable4InitEPNS_10ConnectionEii
+   fun:_ZN5quota13QuotaDatabase12CreateSchemaEPN3sql10ConnectionEPNS1_9MetaTableEiiPKNS0_11TableSchemaEjPKNS0_11IndexSchemaEj
+   fun:_ZN5quota13QuotaDatabase21EnsureDatabaseVersionEv
+}
+{
+   bug_91836_f
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIPN3sql10Connection12StatementRefEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE14_M_create_nodeERKS3_
+   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE10_M_insert_EPKSt18_Rb_tree_node_baseSC_RKS3_
+   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE16_M_insert_uniqueERKS3_
+   fun:_ZNSt3setIPN3sql10Connection12StatementRefESt4lessIS3_ESaIS3_EE6insertERKS3_
+   fun:_ZN3sql10Connection19StatementRefCreatedEPNS0_12StatementRefE
+   fun:_ZN3sql10Connection12StatementRefC1EPS0_P12sqlite3_stmt
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN5quota13QuotaDatabase12CreateSchemaEPN3sql10ConnectionEPNS1_9MetaTableEiiPKNS0_11TableSchemaEjPKNS0_11IndexSchemaEj
+   fun:_ZN5quota13QuotaDatabase21EnsureDatabaseVersionEv
+}
+{
+   bug_91836_g
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEEEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE14_M_create_nodeERKS4_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_
+   ...
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN23BrowsingDataQuotaHelper9QuotaInfoEESt10_Select1stIS4_ESt4lessISsESaIS4_EE13insert_uniqueESt17_Rb_tree_iteratorIS4_ERKS4_
+   fun:_ZNSt3mapISsN23BrowsingDataQuotaHelper9QuotaInfoESt4lessISsESaISt4pairIKSsS1_EEE6insertESt17_Rb_tree_iteratorIS6_ERKS6_
+   fun:_ZNSt3mapISsN23BrowsingDataQuotaHelper9QuotaInfoESt4lessISsESaISt4pairIKSsS1_EEEixERS5_
+   fun:_ZN27BrowsingDataQuotaHelperImpl12GotHostUsageERKSsN5quota11StorageTypeEx
+   fun:_Z16DispatchToMethodI27BrowsingDataQuotaHelperImplMS0_FvRKSsN5quota11StorageTypeExES2_S4_xEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN4base21ScopedCallbackFactoryI27BrowsingDataQuotaHelperImplE12CallbackImplIMS1_FvRKSsN5quota11StorageTypeExE6Tuple3IS5_S7_xEE13RunWithParamsERKSB_
+   fun:_ZN14CallbackRunnerI6Tuple3IRKSsN5quota11StorageTypeExEE3RunISsS4_xEEvRKT_RKT0_RKT1_
+   fun:_ZN5quota14CallbackQueue3IP14CallbackRunnerI6Tuple3IRKSsNS_11StorageTypeExEES4_S5_xE3RunES4_S5_x
+   fun:_ZN5quota17CallbackQueueMap3IP14CallbackRunnerI6Tuple3IRKSsNS_11StorageTypeExEESsS4_S5_xE3RunES4_S4_S5_x
+   fun:_ZN5quota12UsageTracker21DidGetClientHostUsageERKSsNS_11StorageTypeEx
+   fun:_Z16DispatchToMethodIN5quota12UsageTrackerEMS1_FvRKSsNS0_11StorageTypeExES3_S4_xEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN4base21ScopedCallbackFactoryIN5quota12UsageTrackerEE12CallbackImplIMS2_FvRKSsNS1_11StorageTypeExE6Tuple3IS6_S7_xEE13RunWithParamsERKSB_
+   fun:_ZN14CallbackRunnerI6Tuple3IRKSsN5quota11StorageTypeExEE3RunISsS4_xEEvRKT_RKT0_RKT1_
+   fun:_ZN5quota18ClientUsageTracker12GetHostUsageERKSsP14CallbackRunnerI6Tuple3IS2_NS_11StorageTypeExEE
+   fun:_ZN5quota12UsageTracker12GetHostUsageERKSsP14CallbackRunnerI6Tuple3IS2_NS_11StorageTypeExEE
+   fun:_ZN5quota12QuotaManager12GetHostUsageERKSsNS_11StorageTypeEP14CallbackRunnerI6Tuple3IS2_S3_xEE
+}
+{
+   bug_91836_h
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN5quota12_GLOBAL__N_122PrepareCachedStatementEPN3sql10ConnectionERKNS1_11StatementIDEPKcPNS1_9StatementE
+   fun:_ZN5quota13QuotaDatabase23GetOriginsModifiedSinceENS_11StorageTypeEPSt3setI4GURLSt4lessIS3_ESaIS3_EEN4base4TimeE
+   fun:_ZN5quota12QuotaManager20GetModifiedSinceTask17RunOnTargetThreadEv
+   ...
+   fun:_ZN38BrowsingDataQuotaHelperTest_Empty_Test8TestBodyEv
+}
+{
+   bug_91836_i
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN27BrowsingDataQuotaHelperTest5SetUpEv
+}
+{
+   bug_91836_j
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3MallocZero
+   fun:sqlite3BtreeOpen
+   fun:openDatabase
+   fun:sqlite3_open
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection4OpenERK8FilePath
+   fun:_ZN5quota13QuotaDatabase8LazyOpenEb
+   fun:_ZN5quota13QuotaDatabase14SetGlobalQuotaENS_11StorageTypeEx
+   fun:_ZN5quota12QuotaManager14InitializeTask17RunOnTargetThreadEv
+}
+{
+   bug_91836_k
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5quota12UsageTrackerC1ERKSt4listIPNS_11QuotaClientESaIS3_EENS_11StorageTypeEPNS_20SpecialStoragePolicyE
+   fun:_ZN5quota12QuotaManager14LazyInitializeEv
+   fun:_ZN5quota12QuotaManager29NotifyStorageModifiedInternalENS_11QuotaClient2IDERK4GURLNS_11StorageTypeExN4base4TimeE
+   fun:_ZN5quota17MockStorageClient24TouchAllOriginsAndNotifyEv
+   fun:_ZN27BrowsingDataQuotaHelperTest14RegisterClientEPKN5quota14MockOriginDataEj
+   fun:_ZN42BrowsingDataQuotaHelperTest_FetchData_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
