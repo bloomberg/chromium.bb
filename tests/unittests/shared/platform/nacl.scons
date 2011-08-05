@@ -9,7 +9,7 @@ Import('env')
 atomic_ops_test_nexe = env.ComponentProgram(
     'atomic_ops_test_nexe',
     'atomic_ops_test.c',
-    EXTRA_LIBS=['platform', 'gio', 'pthread'])
+    EXTRA_LIBS=['platform', 'gio', '${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('atomic_ops_test.out',
                                  atomic_ops_test_nexe,
                                  args=['25'],

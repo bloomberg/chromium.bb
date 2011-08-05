@@ -1,8 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -20,7 +19,8 @@ if 'TRUSTED_ENV' not in env:
 stubout_tool = env['TRUSTED_ENV'].File(
     '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
 
-partly_invalid_nexe = env.ComponentProgram('partly_invalid', 'partly_invalid.c')
+partly_invalid_nexe = env.ComponentProgram('partly_invalid', 'partly_invalid.c',
+                                           EXTRA_LIBS=['${NONIRT_LIBS}'])
 partly_invalid_stubout_nexe = env.File('partly_invalid_stubout${PROGSUFFIX}')
 
 node = env.Command(

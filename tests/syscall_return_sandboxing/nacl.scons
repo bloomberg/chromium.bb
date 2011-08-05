@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -37,7 +37,8 @@ asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
 syscall_return_sandboxing_nexe = use_obj_env.ComponentProgram(
                                    'syscall_return_sandboxing',
-                                   ['syscall_return_sandboxing.c', asm_obj])
+                                   ['syscall_return_sandboxing.c', asm_obj],
+                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'syscall_return_sandboxing.out',
     syscall_return_sandboxing_nexe)
@@ -47,7 +48,8 @@ env.AddNodeToTestSuite(node,
 
 thread_create_bad_address_nexe = env.ComponentProgram(
     'thread_create_bad_address',
-    env.RawSyscallObjects(['thread_create_bad_address.c']))
+    env.RawSyscallObjects(['thread_create_bad_address.c']),
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'thread_create_bad_address.out',
     thread_create_bad_address_nexe)

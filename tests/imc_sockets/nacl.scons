@@ -14,7 +14,8 @@ else:
   test_args = []
 
 nexe = env.ComponentProgram('socket_transfer_test', 'socket_transfer_test.c',
-                            EXTRA_LIBS=['imc_syscalls', 'pthread'])
+                            EXTRA_LIBS=['imc_syscalls', '${PTHREAD_LIBS}',
+                                        '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
   'socket_transfer_test.out',

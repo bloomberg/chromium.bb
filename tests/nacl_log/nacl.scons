@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -9,10 +9,11 @@ Import('env')
 if env.Bit('bitcode'):
   Return()
 
-env.Replace(EXTRA_LIBS=['platform', 'gio', 'pthread'])
-
-nacl_log_nexe = env.ComponentProgram('nacl_log', 'nacl_log.c')
-
+nacl_log_nexe = env.ComponentProgram('nacl_log', 'nacl_log.c',
+                                     EXTRA_LIBS=['platform',
+                                                 'gio',
+                                                 '${PTHREAD_LIBS}',
+                                                 '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'nacl_log_test.out',

@@ -21,7 +21,8 @@ if sys.version_info < (2, 6):
 if env.Bit('bitcode'):
   Return()
 
-test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c')
+test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c',
+                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 env_vars = [

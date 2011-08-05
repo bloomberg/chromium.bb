@@ -24,7 +24,7 @@ if env.Bit('nacl_glibc'):
 thread_test_nexe = env.ComponentProgram(
     'thread_test',
     'thread_test.c',
-    EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS)
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'] + ANNOTATIONS_LIBS)
 
 node = env.CommandSelLdrTestNacl(
     'thread_test.out',
@@ -49,7 +49,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
 simple_thread_test_nexe = env.ComponentProgram(
     'simple_thread_test',
     'simple_thread_test.c',
-    EXTRA_LIBS=['pthread'])
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'simple_thread_test.out',
@@ -62,7 +62,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test',
 race_test_nexe = env.ComponentProgram(
     'race_test',
     'race_test.c',
-    EXTRA_LIBS=['pthread'] + ANNOTATIONS_LIBS)
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'] + ANNOTATIONS_LIBS)
 
 node = env.CommandSelLdrTestNacl(
     'race_test.out',
@@ -75,13 +75,13 @@ env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test',
 main_thread_pthread_exit_test_nexe = env.ComponentProgram(
     'main_thread_pthread_exit_test',
     'main_thread_pthread_exit_test.c',
-    EXTRA_LIBS=['pthread'],
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'],
     )
 
 main_thread_pthread_exit_test2_nexe = env.ComponentProgram(
     'main_thread_pthread_exit_test2',
     'main_thread_pthread_exit_test2.c',
-    EXTRA_LIBS=['pthread'],
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'],
     )
 
 node = env.CommandSelLdrTestNacl(
@@ -111,7 +111,7 @@ if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
 cond_wait_test_nexe = env.ComponentProgram(
     'cond_wait_test',
     'cond_wait_test.cc',
-    EXTRA_LIBS=['pthread'])
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'cond_wait_test.out',
@@ -123,7 +123,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_wait_test',
 
 thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
                                               'thread_stack_test.c',
-                                              EXTRA_LIBS=['pthread'])
+                                              EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                                          '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'thread_stack_test.out',
@@ -136,7 +137,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
 second_tls_test_nexe = env.ComponentProgram(
     'second_tls_test',
     env.RawSyscallObjects(['second_tls_test.c']),
-    EXTRA_LIBS=['pthread'])
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('second_tls_test.out',
                                  second_tls_test_nexe)

@@ -13,7 +13,8 @@ fib_array_nexe = env.ComponentProgram(
                                  'gio',
                                  'imc',
                                  'imc_syscalls',
-                                 'pthread'])
+                                 '${PTHREAD_LIBS}',
+                                 '${NONIRT_LIBS}'])
 node = env.SelUniversalTest(
     'fib_array_test.out',
     fib_array_nexe,
@@ -34,7 +35,8 @@ fib_scalar_nexe = env.ComponentProgram(
                                   'gio',
                                   'imc',
                                   'imc_syscalls',
-                                  'pthread'])
+                                  '${PTHREAD_LIBS}',
+                                  '${NONIRT_LIBS}'])
 node = env.SelUniversalTest(
     'fib_scalar_test.out',
     fib_scalar_nexe,

@@ -15,7 +15,8 @@ mandel_tiled_nexe = env.ComponentProgram(mandel_tiled_nexe_name,
                                              'gio',
                                              'imc',
                                              'imc_syscalls',
-                                             'pthread'])
+                                             '${PTHREAD_LIBS}',
+                                             '${NONIRT_LIBS}'])
 
 env.Publish(mandel_tiled_nexe_name, 'run', ['mandel_tiled.html',
                                             'mandel_tiled.nmf'])
@@ -29,7 +30,8 @@ mandel_nexe = env.ComponentProgram(mandel_nexe_name, 'mandel.c',
                                        'gio',
                                        'imc',
                                        'imc_syscalls',
-                                       'pthread'])
+                                       '${PTHREAD_LIBS}',
+                                       '${NONIRT_LIBS}'])
 
 env.Publish(mandel_nexe_name, 'run', [])
 

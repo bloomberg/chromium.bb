@@ -11,7 +11,8 @@ nexe = env.ComponentProgram('untrusted_check_test',
                             ['untrusted_check_test.c'],
                             EXTRA_LIBS=['platform',
                                         'gio',
-                                        'pthread'])
+                                        '${PTHREAD_LIBS}',
+                                        '${NONIRT_LIBS}'])
 
 # nacl-newlib and nacl-glibc's abort() implementations produce
 # different exit codes.

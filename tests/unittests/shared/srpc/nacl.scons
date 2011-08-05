@@ -13,7 +13,8 @@ simple_srpc_test_nexe = env.ComponentProgram(
                 'imc_syscalls',
                 'platform',
                 'gio',
-                'pthread'])
+                '${PTHREAD_LIBS}',
+                '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'simple_srpc_test_nexe.out',
     simple_srpc_test_nexe,
@@ -29,7 +30,8 @@ types_srpc_test_nexe = env.ComponentProgram(
                 'imc_syscalls',
                 'platform',
                 'gio',
-                'pthread'])
+                '${PTHREAD_LIBS}',
+                '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'types_srpc_test_nexe.out',
     types_srpc_test_nexe,

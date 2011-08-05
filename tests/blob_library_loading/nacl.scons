@@ -20,7 +20,8 @@ env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_DATA_REGION_START}')
 hw_o = env.ComponentObject('hello_world.o', '../hello_world/hello_world.c')
 user_executable = env.ComponentProgram(
     'hello_world_with_segment_gap',
-    hw_o)
+    hw_o,
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'blob_library_loading_test.out',

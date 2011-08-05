@@ -5,24 +5,32 @@
 
 Import('env')
 
+test_libs = ['testrunner',
+             'srpc',
+             'imc_syscalls',
+             'platform',
+             'gio']
+
+objs = env.ComponentObject('imc_shm_mmap_test', 'imc_shm_mmap_test.c')
+
 imc_shm_mmap_test_nexe_name = ('imc_shm_mmap_test_%s' %
                                env.get('TARGET_FULLARCH'))
 imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
-                                              'imc_shm_mmap_test.c',
-                                              EXTRA_LIBS=[
+                                              objs,
+                                              EXTRA_LIBS=test_libs + [
                                                   '${NON_PPAPI_BROWSER_LIBS}',
-                                                  'testrunner',
-                                                  'srpc',
-                                                  'imc_syscalls',
-                                                  'platform',
-                                                  'gio',
                                                   'pthread',
                                                   ])
 env.Publish(imc_shm_mmap_test_nexe_name, 'run', ['imc_shm_mmap_test.nmf'])
 
+imc_shm_mmap_test_nonbrowser = env.ComponentProgram(
+    'imc_shm_mmap_test_nonbrowser',
+    objs,
+    EXTRA_LIBS=test_libs + ['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
 node = env.CommandSelLdrTestNacl(
     'imc_shm_mmap_test.out',
-    imc_shm_mmap_test_nexe,
+    imc_shm_mmap_test_nonbrowser,
     # We need to set this because the test needs to behave
     # differently in the plugin, but the plugin does not provide a
     # way to distinguish itself.  TODO(mseaborn): Fix that.

@@ -9,7 +9,8 @@ import tempfile
 
 Import('env')
 
-redir_test_nexe = env.ComponentProgram('redir_test', 'redir_test.c')
+redir_test_nexe = env.ComponentProgram('redir_test', 'redir_test.c',
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 # windows builds swallow stdout and stderr, so we cannot check
 # against the golden files when stdout and stderr are not redirected

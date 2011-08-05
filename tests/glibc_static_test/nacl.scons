@@ -1,13 +1,15 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 # This is a simple smoke test for using nacl-glibc with static
 # linking.  It is also possible to run *all* the Scons-based tests
 # with static linking using the option nacl_static_link=1.
+if not env.Bit('nacl_glibc'):
+  Return()
 
 # Valgrind is not supported for statically linked GLibC.
 if env.IsRunningUnderValgrind():

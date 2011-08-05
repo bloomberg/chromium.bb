@@ -21,7 +21,7 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 nexe = env.ComponentProgram('nanosleep_test',
                             'nanosleep_test.c',
-                            EXTRA_LIBS=['pthread'])
+                            EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 # This is a timing test, so we only run on real hardware
 is_on_vm = env.Bit('running_on_vm')

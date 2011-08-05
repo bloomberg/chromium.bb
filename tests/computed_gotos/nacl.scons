@@ -8,7 +8,8 @@ Import('env')
 # We are testing a GNU C extension which is disallowed by "-pedantic" mode.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-prog = env.ComponentProgram('computed_goto', 'computed_goto.c')
+prog = env.ComponentProgram('computed_goto', 'computed_goto.c',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('computed_goto_test.out', prog)
 # TODO(mseaborn): Enable this for PNaCl when PNaCl is fixed to
 # generate correct code for this program.

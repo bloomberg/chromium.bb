@@ -49,12 +49,14 @@ dynamic_load_test_nexe = prog_env.ComponentProgram(
     template_obj],
     EXTRA_LIBS=[
         'testrunner',
-        'nacl_dyncode',
+        '${DYNCODE_LIBS}',
         'srpc',
         'imc_syscalls',
         'platform',
         'gio',
-        'pthread'])
+        '${PTHREAD_LIBS}',
+        '${NONIRT_LIBS}'
+        ])
 env.Publish(dynamic_load_test_nexe_name, 'run', ['dynamic_load_test.nmf'])
 
 dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s' %
@@ -65,31 +67,35 @@ dynamic_modify_test_nexe = prog_env.ComponentProgram(
     template_obj],
     EXTRA_LIBS=[
         'testrunner',
-        'nacl_dyncode',
+        '${DYNCODE_LIBS}',
         'srpc',
         'imc_syscalls',
         'platform',
         'gio',
-        'pthread'])
+        '${PTHREAD_LIBS}',
+        '${NONIRT_LIBS}'])
 env.Publish(dynamic_modify_test_nexe_name, 'run', ['dynamic_modify_test.nmf'])
 
-write_to_dyncode_nexe = prog_env.ComponentProgram('write_to_dyncode',
-                                                  ['write_to_dyncode.c'])
+write_to_dyncode_nexe = prog_env.ComponentProgram(
+    'write_to_dyncode',
+    ['write_to_dyncode.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 dyncode_disabled_test_nexe = prog_env.ComponentProgram(
     'dyncode_disabled_test',
     ['dyncode_disabled_test.c'],
-    EXTRA_LIBS=['nacl_dyncode'])
+    EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
 debug_mode_test_nexe = prog_env.ComponentProgram('debug_mode_test',
                                                  ['debug_mode_test.c',
                                                   template_obj],
-                                                 EXTRA_LIBS=['nacl_dyncode'])
+                                                 EXTRA_LIBS=['${DYNCODE_LIBS}',
+                                                             '${NONIRT_LIBS}'])
 
 dyncode_demand_alloc_test_nexe = prog_env.ComponentProgram(
     'dyncode_demand_alloc_test',
     ['dyncode_demand_alloc_test.c'],
-    EXTRA_LIBS=['nacl_dyncode'])
+    EXTRA_LIBS=['${DYNCODE_LIBS}', '${NONIRT_LIBS}'])
 
 tests = [
     prog_env.CommandSelLdrTestNacl(

@@ -1,13 +1,14 @@
 # -*- python -*-
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 mmap_test_nexe = env.ComponentProgram('mmap_test',
                                       'mmap_test.cc',
-                                      EXTRA_LIBS=['pthread'])
+                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                                  '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'mmap_test.out',
     mmap_test_nexe,

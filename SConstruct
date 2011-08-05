@@ -2400,6 +2400,13 @@ nacl_env = MakeArchSpecificEnv().Clone(
 
     LIBS = [],
     LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
+
+    # These are settings for in-tree, non-browser tests to use.
+    # TODO(mcgrathr): Later these will refer to private libraries,
+    # and be replaced with these settings only in nacl_irt_test_env.
+    NONIRT_LIBS = [],
+    PTHREAD_LIBS = ['pthread'],
+    DYNCODE_LIBS = ['nacl_dyncode'],
     )
 
 # This is the address at which a user executable is expected to place its

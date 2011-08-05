@@ -8,8 +8,12 @@ Import('env')
 nameservice_test_nexe = env.ComponentProgram(
                             'nameservice_test',
                             'nameservice_test.c',
-                            EXTRA_LIBS=['srpc', 'imc_syscalls',
-                                        'platform', 'gio', 'pthread'])
+                            EXTRA_LIBS=['srpc',
+                                        'imc_syscalls',
+                                        'platform',
+                                        'gio',
+                                        '${PTHREAD_LIBS}',
+                                        '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nameservice_test.out',
     nameservice_test_nexe)
@@ -27,7 +31,7 @@ srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                         'gio',
                                         'imc',
                                         'imc_syscalls',
-                                        'pthread',
+                                        '${PTHREAD_LIBS}',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 env.Publish(srpc_ns_nexe_name, 'run',
             ['srpc_nameservice_test.html',

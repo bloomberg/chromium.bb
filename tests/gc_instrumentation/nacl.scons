@@ -15,7 +15,9 @@ if not env.Bit('bitcode'):
   inputs += env_inst.ComponentObject('gc_instrumentation.c')
 
   nexe = env.ComponentProgram('gc_instrumentation', inputs,
-                              EXTRA_LIBS=['nacl_dyncode', 'pthread'])
+                              EXTRA_LIBS=['${DYNCODE_LIBS}',
+                                          '${PTHREAD_LIBS}',
+                                          '${NONIRT_LIBS}'])
 
   node = env.CommandSelLdrTestNacl('gc_instrumentation.out', nexe)
 

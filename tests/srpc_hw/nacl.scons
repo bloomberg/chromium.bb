@@ -5,16 +5,13 @@
 
 Import('env')
 
+srpc_hw_libs = ['srpc', 'platform', 'gio', 'imc', 'imc_syscalls']
+
 srpc_hw_obj = env.ComponentObject('srpc_hw.o', 'srpc_hw.c')
 srpc_hw_nexe_name = 'srpc_hw_%s' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
-                                    EXTRA_LIBS=[
-                                        'srpc',
-                                        'platform',
-                                        'gio',
-                                        'imc',
-                                        'imc_syscalls',
+                                    EXTRA_LIBS=srpc_hw_libs + [
                                         'pthread',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 # srpc_hw_undecorated is necessary because srpc_hw_fd.html makes use of
@@ -23,12 +20,7 @@ srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
 # file, but it is currently planned for obsoletion also.
 srpc_hw_undecorated = env.ComponentProgram('srpc_hw',
                                            srpc_hw_obj,
-                                           EXTRA_LIBS=[
-                                               'srpc',
-                                               'platform',
-                                               'gio',
-                                               'imc',
-                                               'imc_syscalls',
+                                           EXTRA_LIBS=srpc_hw_libs + [
                                                'pthread',
                                                '${NON_PPAPI_BROWSER_LIBS}'])
 
@@ -39,9 +31,15 @@ env.Publish(srpc_hw_nexe_name, 'run',
              'srpc_hw_fd.html',
              srpc_hw_undecorated])
 
+srpc_hw_nonbrowser = env.ComponentProgram('srpc_hw_nonbrowser',
+                                           srpc_hw_obj,
+                                           EXTRA_LIBS=srpc_hw_libs + [
+                                               '${PTHREAD_LIBS}',
+                                               '${NONIRT_LIBS}'])
+
 node = env.SelUniversalTest(
     'srpc_hw_test.out',
-    srpc_hw_nexe,
+    srpc_hw_nonbrowser,
     sel_universal_flags=['--command_file', env.File('srpc_hw_test.stdin')],
     stdout_golden=env.File('srpc_hw_test.stdout'),
     )

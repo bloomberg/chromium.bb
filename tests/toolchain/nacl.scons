@@ -55,7 +55,7 @@ for src, exit_status, golden_file, cond in TESTS_TO_RUN:
   if golden_file == True:
     golden_file = env.File(name + '.stdout')
 
-  nexe = env.ComponentProgram(name, src)
+  nexe = env.ComponentProgram(name, src, EXTRA_LIBS=['${NONIRT_LIBS}'])
   node = env.CommandSelLdrTestNacl(name + '.out',
                                    nexe,
                                    exit_status=exit_status,
@@ -80,7 +80,8 @@ sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
 if env.Bit('bitcode'):
   sloppy_env.FilterOut(LINKFLAGS=['-O3'])
 
-nexe = sloppy_env.ComponentProgram('return_address', 'return_address.c')
+nexe = sloppy_env.ComponentProgram('return_address', 'return_address.c',
+                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = sloppy_env.CommandSelLdrTestNacl('return_address.out',
                                         nexe,
                                         exit_status='55')
@@ -141,7 +142,7 @@ for tag, e in ENVIRONMENTS_TO_TRY:
 
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
-    nexe = e.ComponentProgram(name, nobj)
+    nexe = e.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
     node = e.CommandSelLdrTestNacl(name + '.out',
                                    nexe,
                                    exit_status='55')

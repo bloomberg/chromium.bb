@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -10,7 +10,7 @@ Import('env')
 float_math_obj = env.ComponentObject('float_math', 'float_math.c')
 float_math_nexe = env.ComponentProgram('float_math',
                                        float_math_obj,
-                                       EXTRA_LIBS=['m'])
+                                       EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
   'float_math.out',
   float_math_nexe,
@@ -31,7 +31,7 @@ float_math_noerrno_obj = noerrno_env.ComponentObject('float_math_noerrno',
 float_math_noerrno_nexe = noerrno_env.ComponentProgram(
                               'float_math_noerrno',
                               float_math_noerrno_obj,
-                              EXTRA_LIBS=['m'])
+                              EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
 node = noerrno_env.CommandSelLdrTestNacl(
   'float_math_noerrno.out',
   float_math_noerrno_nexe,

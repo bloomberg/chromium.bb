@@ -11,7 +11,8 @@ nacl_close_test_nexe = env.ComponentProgram(
                            EXTRA_LIBS=['imc',
                                        'imc_syscalls',
                                        'platform',
-                                       'gio'])
+                                       'gio',
+                                       '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nacl_close_test_nexe.out',
     nacl_close_test_nexe,
@@ -26,7 +27,8 @@ double_nacl_close_test_nexe = env.ComponentProgram(
                                   EXTRA_LIBS=['imc',
                                               'imc_syscalls',
                                               'platform',
-                                              'gio'])
+                                              'gio',
+                                              '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'double_nacl_close_test_nexe.out',
     double_nacl_close_test_nexe,
@@ -42,7 +44,8 @@ nacl_create_memory_object_test_nexe = env.ComponentProgram(
     EXTRA_LIBS=['imc',
                 'imc_syscalls',
                 'platform',
-                'gio'])
+                'gio',
+                '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nacl_create_memory_object_test_nexe.out',
     nacl_create_memory_object_test_nexe,

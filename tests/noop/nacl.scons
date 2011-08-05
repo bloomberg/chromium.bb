@@ -1,13 +1,14 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 noop_nexe = env.ComponentProgram('noop',
                                  'noop.c',
-                                 EXTRA_LIBS=['pthread'],
+                                 EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                             '${NONIRT_LIBS}'],
                                  )
 
 node = env.CommandSelLdrTestNacl(
@@ -22,7 +23,8 @@ env.AddNodeToTestSuite(node,
 
 noop2_nexe = env.ComponentProgram('noop2',
                                   'noop2.c',
-                                  EXTRA_LIBS=['pthread'],
+                                  EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                              '${NONIRT_LIBS}'],
                                   )
 node = env.CommandSelLdrTestNacl(
     'noop2_test.out',

@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
@@ -17,7 +17,8 @@ if env.Bit('nacl_glibc'):
 else:
   golden = env.File('memcheck_test.stderr.golden')
 
-memcheck_test_nexe = env.ComponentProgram('memcheck_test', 'memcheck_test.c')
+memcheck_test_nexe = env.ComponentProgram('memcheck_test', 'memcheck_test.c',
+                                          EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'memcheck_test.out',
     memcheck_test_nexe,
@@ -41,7 +42,7 @@ env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test')
 # Leak checker sanity test.
 if env.Bit('with_leakcheck'):
   leak_test_nexe = env.ComponentProgram('leak_test', 'leak_test.c',
-                                        EXTRA_LIBS=['pthread'])
+                                        EXTRA_LIBS=['${PTHREAD_LIBS}'])
   node = env.CommandSelLdrTestNacl(
       'leak_test.out',
       leak_test_nexe,

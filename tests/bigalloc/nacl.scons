@@ -5,6 +5,7 @@
 
 Import('env')
 
-bigalloc_nexe = env.ComponentProgram('bigalloc', 'bigalloc.c')
+bigalloc_nexe = env.ComponentProgram('bigalloc', 'bigalloc.c',
+                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('bigalloc.out', bigalloc_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_bigalloc_test')

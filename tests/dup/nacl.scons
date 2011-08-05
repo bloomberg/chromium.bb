@@ -9,7 +9,8 @@ Import('env')
 if env.Bit('nacl_glibc'):
    Return()
 
-nexe = env.ComponentProgram('dup_test', 'dup_test.c')
+nexe = env.ComponentProgram('dup_test', 'dup_test.c',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'dup_test.out',

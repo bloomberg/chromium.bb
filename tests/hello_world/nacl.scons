@@ -6,7 +6,8 @@
 Import('env')
 import os
 
-hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c')
+hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c',
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'hello_world_test.out',
     hello_nexe,
@@ -32,7 +33,8 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'performance_tests'],
                        'run_hello_world_size_test')
 
-at_exit_nexe = env.ComponentProgram('at_exit', 'at_exit.c')
+at_exit_nexe = env.ComponentProgram('at_exit', 'at_exit.c',
+                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'at_exit_test.out',
@@ -44,7 +46,8 @@ env.AddNodeToTestSuite(node,
                        'run_at_exit_test')
 
 
-exit_nexe = env.ComponentProgram('exit', 'exit.c')
+exit_nexe = env.ComponentProgram('exit', 'exit.c',
+                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'exit_test.out',
     exit_nexe,
@@ -55,7 +58,8 @@ env.AddNodeToTestSuite(node,
                        'run_exit_test')
 
 
-printf_nexe = env.ComponentProgram('printf', 'printf.c')
+printf_nexe = env.ComponentProgram('printf', 'printf.c',
+                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'printf_test.out',
     printf_nexe,
@@ -67,7 +71,8 @@ env.AddNodeToTestSuite(node,
                        'run_printf_test')
 
 
-float_nexe = env.ComponentProgram('float', 'float.c')
+float_nexe = env.ComponentProgram('float', 'float.c',
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
   'float_test.out',
   float_nexe,
@@ -78,7 +83,8 @@ env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
 
 
 # TODO(robertm): use a golden file
-dump_env_nexe = env.ComponentProgram('dump_env', 'dump_env.c')
+dump_env_nexe = env.ComponentProgram('dump_env', 'dump_env.c',
+                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'dump_env.out',
     dump_env_nexe,
@@ -89,7 +95,8 @@ env.AddNodeToTestSuite(node,
                        'run_dump_env_test')
 
 
-misc_math_nexe = env.ComponentProgram('misc_math', 'misc_math.c', EXTRA_LIBS=['m'])
+misc_math_nexe = env.ComponentProgram('misc_math', 'misc_math.c',
+                                      EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'misc_math_test.out',
     misc_math_nexe)
@@ -100,7 +107,8 @@ if env.Bit('bitcode'):
   env.Append(CPPDEFINES=['PNACL_ABI_TEST=1'])
 else:
   env.Append(CCFLAGS=['-std=c99'])
-abi_nexe = env.ComponentProgram('abi', 'abi.c')
+abi_nexe = env.ComponentProgram('abi', 'abi.c',
+                                EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'abi_test.out',
     abi_nexe)

@@ -7,10 +7,10 @@ import os
 
 Import('env')
 
-env.Replace(EXTRA_LIBS=['pthread'])
-
 egyptian_cotton_nexe = env.ComponentProgram('egyptian_cotton',
-                                            'egyptian_cotton.c')
+                                            'egyptian_cotton.c',
+                                            EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                                        '${NONIRT_LIBS}'])
 
 platform_limits_known = False
 

@@ -1,14 +1,13 @@
 # -*- python -*-
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 Import('env')
 
 nexe = env.ComponentProgram('gettimeofday_test',
                             'gettimeofday_test.c',
-                            EXTRA_LIBS=['pthread'])
+                            EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'gettimeofday_test.out',

@@ -40,7 +40,7 @@ runner = trusted_env.ComponentProgram(
 
 test_prog = env.ComponentProgram(
     'multidomain_test_guest', ['multidomain_test_guest.c'],
-    EXTRA_LIBS=['imc_syscalls'])
+    EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
 
 test_command = [runner, test_prog]
 if env.Bit('tests_use_irt'):
