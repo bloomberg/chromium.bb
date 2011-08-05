@@ -81,7 +81,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(
       NULL);
   importer_host_->set_parent_window(GTK_WINDOW(dialog_));
 
-  GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* control_group = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);

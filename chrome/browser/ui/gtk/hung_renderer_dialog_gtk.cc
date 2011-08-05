@@ -99,11 +99,11 @@ void HungRendererDialogGtk::Init() {
   // |                                   |
   // |         kill button    wait button|
   // ·-----------------------------------·
-  GtkWidget* contents_vbox = dialog_->vbox;
-  gtk_box_set_spacing(GTK_BOX(contents_vbox), gtk_util::kContentAreaSpacing);
+  GtkWidget* content_area = gtk_dialog_get_content_area(dialog_);
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 12);
-  gtk_box_pack_start(GTK_BOX(contents_vbox), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 0);
 
   // Wrap the icon in a vbox so it stays top aligned.
   GtkWidget* icon_vbox = gtk_vbox_new(FALSE, 0);

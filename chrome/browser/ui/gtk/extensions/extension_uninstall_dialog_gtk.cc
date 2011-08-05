@@ -53,7 +53,7 @@ void ShowUninstallDialogGtk(GtkWindow* parent,
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 
   // Create a two column layout.
-  GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* icon_hbox = gtk_hbox_new(FALSE, gtk_util::kContentAreaSpacing);

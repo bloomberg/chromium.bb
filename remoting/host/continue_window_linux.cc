@@ -62,7 +62,8 @@ void ContinueWindowLinux::CreateWindow() {
   g_signal_connect(continue_window_, "response",
                    G_CALLBACK(OnResponseThunk), this);
 
-  GtkWidget* content_area = GTK_DIALOG(continue_window_)->vbox;
+  GtkWidget* content_area =
+      gtk_dialog_get_content_area(GTK_DIALOG(continue_window_));
 
   GtkWidget* text_label = gtk_label_new(kMessage);
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);

@@ -343,7 +343,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   // +---------------------------------------------------------------+
   //
   // * The url and corresponding label are not shown if creating a new folder.
-  GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 12);

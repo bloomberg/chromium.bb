@@ -118,7 +118,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   GtkWidget* close_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
       GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE);
 
-  GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   // Use an event box to get the background painting correctly
   GtkWidget* ebox = gtk_event_box_new();

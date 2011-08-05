@@ -225,11 +225,11 @@ void NativeDialogHost::Init() {
       kDialogPadding, kDialogPadding);
 
   // Move dialog contents into our container.
-  GtkWidget* dialog_contents = GTK_DIALOG(dialog_)->vbox;
-  g_object_ref(dialog_contents);
-  gtk_container_remove(GTK_CONTAINER(dialog_), dialog_contents);
-  gtk_container_add(GTK_CONTAINER(contents), dialog_contents);
-  g_object_unref(dialog_contents);
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
+  g_object_ref(content_area);
+  gtk_container_remove(GTK_CONTAINER(dialog_), content_area);
+  gtk_container_add(GTK_CONTAINER(contents), content_area);
+  g_object_unref(content_area);
   gtk_widget_hide(dialog_);
 
   g_object_set_data(G_OBJECT(dialog_), kNativeDialogHost,

@@ -64,7 +64,8 @@ void DisconnectWindowLinux::CreateWindow() {
   g_signal_connect(disconnect_window_, "response",
                    G_CALLBACK(OnResponseThunk), this);
 
-  GtkWidget* content_area = GTK_DIALOG(disconnect_window_)->vbox;
+  GtkWidget* content_area =
+      gtk_dialog_get_content_area(GTK_DIALOG(disconnect_window_));
 
   GtkWidget* username_row = gtk_hbox_new(FALSE, 0);
   // TODO(lambroslambrou): Replace the magic number with an appropriate

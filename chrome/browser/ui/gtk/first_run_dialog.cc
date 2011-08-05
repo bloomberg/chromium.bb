@@ -268,7 +268,7 @@ void FirstRunDialog::ShowReportingDialog() {
   g_signal_connect(dialog_, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
-  GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
+  GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
 
   make_default_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER).c_str());

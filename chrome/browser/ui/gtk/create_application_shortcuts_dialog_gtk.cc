@@ -100,7 +100,8 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
-  GtkWidget* content_area = GTK_DIALOG(create_dialog_)->vbox;
+  GtkWidget* content_area =
+      gtk_dialog_get_content_area(GTK_DIALOG(create_dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -240,7 +241,8 @@ void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
       IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS,
       IDS_CREATE_SHORTCUTS_ERROR_DIALOG_HEIGHT_LINES,
       false);  // resizable
-  GtkWidget* content_area = GTK_DIALOG(error_dialog_)->vbox;
+  GtkWidget* content_area =
+      gtk_dialog_get_content_area(GTK_DIALOG(error_dialog_));
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
