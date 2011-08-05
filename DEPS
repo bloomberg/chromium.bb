@@ -24,7 +24,7 @@ vars = {
   "sfntly_revision": "36",
   "skia_revision": "2034",
   "v8_revision": "8765",
-  "webrtc_revision": "232",
+  "webrtc_revision": "242",
 
   # Note: On most bots, clang is not checked out via DEPS but by
   # tools/clang/scripts/update.sh. The script reads this line here.
