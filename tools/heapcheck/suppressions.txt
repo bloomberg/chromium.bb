@@ -1693,20 +1693,6 @@
    fun:??
 }
 {
-   bug_91465_a
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:sync_api::SyncManager::SyncInternal::Init
-}
-{
-   bug_91465_b
-   Heapcheck:Leak
-   fun:*WeakHandleCore
-   fun:*WeakHandle
-   fun:sync_api::SyncManager::SyncInternal::Init
-}
-{
    bug_91491
    Heapcheck:Leak
    ...

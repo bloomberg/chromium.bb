@@ -16,6 +16,8 @@
 namespace browser_sync {
 namespace {
 
+using ::testing::_;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 class Base {
@@ -35,6 +37,8 @@ class Base {
   MOCK_METHOD2(Test2, void(const int&, Base*));
   MOCK_METHOD3(Test3, void(const int&, Base*, float));
   MOCK_METHOD4(Test4, void(const int&, Base*, float, const char*));
+
+  MOCK_METHOD1(TestWithSelf, void(const WeakHandle<Base>&));
 
  private:
   base::WeakPtrFactory<Base> weak_ptr_factory_;
@@ -199,6 +203,34 @@ TEST_F(WeakHandleTest, DeleteOnOtherThread) {
   }
 
   PumpLoop();
+}
+
+void CallTestWithSelf(const WeakHandle<Base>& b1) {
+  StrictMock<Base> b2;
+  b1.Call(FROM_HERE, &Base::TestWithSelf, b2.AsWeakHandle());
+}
+
+TEST_F(WeakHandleTest, WithDestroyedThread) {
+  StrictMock<Base> b1;
+  WeakHandle<Base> b2;
+  EXPECT_CALL(b1, TestWithSelf(_)).WillOnce(SaveArg<0>(&b2));
+
+  {
+    base::Thread t("Test thread");
+    ASSERT_TRUE(t.Start());
+    t.message_loop()->PostTask(FROM_HERE,
+                               base::Bind(&CallTestWithSelf,
+                                          b1.AsWeakHandle()));
+  }
+
+  // Calls b1.TestWithSelf().
+  PumpLoop();
+
+  // Shouldn't do anything, since the thread is gone.
+  b2.Call(FROM_HERE, &Base::Test);
+
+  // |b2| shouldn't leak when it's destroyed, even if the original
+  // thread is gone.
 }
 
 TEST_F(WeakHandleTest, InitializedAcrossCopyAssign) {
