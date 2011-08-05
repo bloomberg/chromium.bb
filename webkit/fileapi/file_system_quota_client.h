@@ -65,13 +65,15 @@ class FileSystemQuotaClient : public quota::QuotaClient,
                                    TypeAndHostOrOrigin,
                                    int64
                                    > UsageCallbackMap;
-  typedef quota::CallbackQueueMap1<GetOriginsCallback*,
+  typedef quota::CallbackQueueMap2<GetOriginsCallback*,
                                    fileapi::FileSystemType,
-                                   const std::set<GURL>&
+                                   const std::set<GURL>&,
+                                   quota::StorageType
                                    > OriginsForTypeCallbackMap;
-  typedef quota::CallbackQueueMap1<GetOriginsCallback*,
+  typedef quota::CallbackQueueMap2<GetOriginsCallback*,
                                    TypeAndHostOrOrigin,
-                                   const std::set<GURL>&
+                                   const std::set<GURL>&,
+                                   quota::StorageType
                                    > OriginsForHostCallbackMap;
 
   void DidGetOriginUsage(fileapi::FileSystemType type,

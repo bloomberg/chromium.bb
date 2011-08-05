@@ -835,11 +835,11 @@ class QuotaManager::GetModifiedSinceTask
   }
 
   virtual void DatabaseTaskCompleted() OVERRIDE {
-    callback_->Run(origins_);
+    callback_->Run(origins_, type_);
   }
 
   virtual void Aborted() OVERRIDE {
-    callback_->Run(std::set<GURL>());
+    callback_->Run(std::set<GURL>(), type_);
   }
 
  private:

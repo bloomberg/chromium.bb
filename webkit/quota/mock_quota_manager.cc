@@ -22,24 +22,27 @@ class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
  public:
   GetModifiedSinceTask(MockQuotaManager* manager,
                        const std::set<GURL>& origins,
+                       StorageType type,
                        GetOriginsCallback* callback)
       : QuotaThreadTask(manager, manager->io_thread_),
         origins_(origins),
+        type_(type),
         callback_(callback) {}
 
  protected:
   virtual void RunOnTargetThread() OVERRIDE {}
 
   virtual void Completed() OVERRIDE {
-    callback_->Run(origins_);
+    callback_->Run(origins_, type_);
   }
 
   virtual void Aborted() OVERRIDE {
-    callback_->Run(std::set<GURL>());
+    callback_->Run(std::set<GURL>(), type_);
   }
 
  private:
   std::set<GURL> origins_;
+  StorageType type_;
   scoped_ptr<GetOriginsCallback> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetModifiedSinceTask);
@@ -116,7 +119,7 @@ void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
     if (current->type == type && current->modified >= modified_since)
       origins_to_return.insert(current->origin);
   }
-  make_scoped_refptr(new GetModifiedSinceTask(this, origins_to_return,
+  make_scoped_refptr(new GetModifiedSinceTask(this, origins_to_return, type,
       callback))->Start();
 }
 

@@ -53,20 +53,23 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
        GURL,  // origin
        int64
       > UsageForOriginCallbackMap;
-  typedef quota::CallbackQueue1
+  typedef quota::CallbackQueue2
       <GetOriginsCallback*,
-       const std::set<GURL>&
+       const std::set<GURL>&,
+       quota::StorageType
       > OriginsForTypeCallbackQueue;
-  typedef quota::CallbackQueueMap1
+  typedef quota::CallbackQueueMap2
       <GetOriginsCallback*,
        std::string,  // host
-       const std::set<GURL>&
+       const std::set<GURL>&,
+       quota::StorageType
       > OriginsForHostCallbackMap;
 
   void DidGetOriginUsage(const GURL& origin_url, int64 usage);
-  void DidGetAllOrigins(const std::set<GURL>& origins);
+  void DidGetAllOrigins(const std::set<GURL>& origins, quota::StorageType type);
   void DidGetOriginsForHost(
-      const std::string& host, const std::set<GURL>& origins);
+      const std::string& host, const std::set<GURL>& origins,
+          quota::StorageType type);
 
   scoped_refptr<base::MessageLoopProxy> webkit_thread_message_loop_;
   scoped_refptr<IndexedDBContext> indexed_db_context_;

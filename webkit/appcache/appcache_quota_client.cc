@@ -103,7 +103,7 @@ void AppCacheQuotaClient::GetOriginsForHost(
     GetOriginsCallback* callback_ptr) {
   DCHECK(callback_ptr);
   if (host.empty()) {
-    callback_ptr->Run(std::set<GURL>());
+    callback_ptr->Run(std::set<GURL>(), type);
     delete callback_ptr;
     return;
   }
@@ -166,7 +166,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
 
   scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   if (!service_) {
-    callback->Run(std::set<GURL>());
+    callback->Run(std::set<GURL>(), type);
     return;
   }
 
@@ -179,7 +179,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
   }
 
   if (type == quota::kStorageTypePersistent) {
-    callback->Run(std::set<GURL>());
+    callback->Run(std::set<GURL>(), type);
     return;
   }
 
@@ -190,7 +190,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
     if (opt_host.empty() || iter->first.host() == opt_host)
       origins.insert(iter->first);
   }
-  callback->Run(origins);
+  callback->Run(origins, type);
 }
 
 void AppCacheQuotaClient::ProcessPendingRequests() {
@@ -220,7 +220,8 @@ void AppCacheQuotaClient::AbortPendingRequests() {
     pending_usage_requests_.pop_front();
   }
   while (!pending_origins_requests_.empty()) {
-    pending_origins_requests_.front().callback->Run(std::set<GURL>());
+    pending_origins_requests_.front().callback->Run(std::set<GURL>(),
+        pending_origins_requests_.front().type);
     delete pending_origins_requests_.front().callback;
     pending_origins_requests_.pop_front();
   }

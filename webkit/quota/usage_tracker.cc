@@ -34,7 +34,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
   virtual ~GatherUsageTaskBase() {}
 
   // Get total usage for the given |origins|.
-  void GetUsageForOrigins(const std::set<GURL>& origins) {
+  void GetUsageForOrigins(const std::set<GURL>& origins, StorageType type) {
     DCHECK(original_message_loop()->BelongsToCurrentThread());
     std::set<GURL> origins_to_process;
     // We do not get usage for origins for which we have valid usage cache.

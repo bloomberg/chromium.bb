@@ -220,7 +220,7 @@ void FileSystemQuotaClient::GetOriginsForType(
   scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
-    callback->Run(origins);
+    callback->Run(origins, storage_type);
     return;
   }
 
@@ -242,7 +242,7 @@ void FileSystemQuotaClient::GetOriginsForHost(
   scoped_ptr<GetOriginsCallback> callback(callback_ptr);
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
-    callback->Run(origins);
+    callback->Run(origins, storage_type);
     return;
   }
 
@@ -280,13 +280,15 @@ void FileSystemQuotaClient::DidGetOriginUsage(
 void FileSystemQuotaClient::DidGetOriginsForType(
     FileSystemType type, const std::set<GURL>& origins) {
   DCHECK(pending_origins_for_type_callbacks_.HasCallbacks(type));
-  pending_origins_for_type_callbacks_.Run(type, origins);
+  pending_origins_for_type_callbacks_.Run(type, origins,
+      FileSystemTypeToQuotaStorageType(type));
 }
 
 void FileSystemQuotaClient::DidGetOriginsForHost(
     const TypeAndHostOrOrigin& type_and_host, const std::set<GURL>& origins) {
   DCHECK(pending_origins_for_host_callbacks_.HasCallbacks(type_and_host));
-  pending_origins_for_host_callbacks_.Run(type_and_host, origins);
+  pending_origins_for_host_callbacks_.Run(type_and_host, origins,
+      FileSystemTypeToQuotaStorageType(type_and_host.first));
 }
 
 }  // namespace fileapi

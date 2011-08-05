@@ -184,8 +184,10 @@ class DatabaseQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins) {
+  void OnGetOriginsComplete(const std::set<GURL>& origins,
+      quota::StorageType type) {
     origins_ = origins;
+    type_ = type;
   }
 
   void OnDeleteOriginDataComplete(quota::QuotaStatusCode status) {
@@ -194,6 +196,7 @@ class DatabaseQuotaClientTest : public testing::Test {
 
   int64 usage_;
   std::set<GURL> origins_;
+  quota::StorageType type_;
   quota::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
   base::ScopedCallbackFactory<DatabaseQuotaClientTest> callback_factory_;

@@ -56,8 +56,9 @@ class MockQuotaManagerTest : public testing::Test {
             &MockQuotaManagerTest::GotModifiedOrigins));
   }
 
-  void GotModifiedOrigins(const std::set<GURL>& origins) {
+  void GotModifiedOrigins(const std::set<GURL>& origins, StorageType type) {
     origins_ = origins;
+    type_ = type;
   }
 
   void DeleteOriginData(const GURL& origin, StorageType type) {
@@ -71,16 +72,20 @@ class MockQuotaManagerTest : public testing::Test {
     EXPECT_EQ(quota::kQuotaStatusOk, status);
   }
 
-  int GetDeletionCallbackCount() {
+  int deletion_callback_count() const {
     return deletion_callback_count_;
   }
 
-  MockQuotaManager* GetManager() {
+  MockQuotaManager* manager() const {
     return manager_.get();
   }
 
-  const std::set<GURL> GetOrigins() {
+  const std::set<GURL>& origins() const {
     return origins_;
+  }
+
+  const StorageType type() const {
+    return type_;
   }
 
  private:
@@ -92,45 +97,46 @@ class MockQuotaManagerTest : public testing::Test {
   int deletion_callback_count_;
 
   std::set<GURL> origins_;
+  StorageType type_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerTest);
 };
 
 TEST_F(MockQuotaManagerTest, BasicOriginManipulation) {
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin1, kStorageTypePersistent));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypePersistent));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kStorageTypePersistent));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypePersistent));
 
-  GetManager()->AddOrigin(kOrigin1, kStorageTypeTemporary, base::Time::Now());
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin1, kStorageTypePersistent));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypePersistent));
+  manager()->AddOrigin(kOrigin1, kStorageTypeTemporary, base::Time::Now());
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kStorageTypePersistent));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypePersistent));
 
-  GetManager()->AddOrigin(kOrigin1, kStorageTypePersistent, base::Time::Now());
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypePersistent));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypePersistent));
+  manager()->AddOrigin(kOrigin1, kStorageTypePersistent, base::Time::Now());
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypePersistent));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypePersistent));
 
-  GetManager()->AddOrigin(kOrigin2, kStorageTypeTemporary, base::Time::Now());
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypePersistent));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypePersistent));
+  manager()->AddOrigin(kOrigin2, kStorageTypeTemporary, base::Time::Now());
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypePersistent));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypePersistent));
 }
 
 TEST_F(MockQuotaManagerTest, OriginDeletion) {
-  GetManager()->AddOrigin(kOrigin1, kStorageTypeTemporary, base::Time::Now());
-  GetManager()->AddOrigin(kOrigin2, kStorageTypeTemporary, base::Time::Now());
+  manager()->AddOrigin(kOrigin1, kStorageTypeTemporary, base::Time::Now());
+  manager()->AddOrigin(kOrigin2, kStorageTypeTemporary, base::Time::Now());
 
   DeleteOriginData(kOrigin2, kStorageTypeTemporary);
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(1, GetDeletionCallbackCount());
-  EXPECT_TRUE(GetManager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
-  EXPECT_FALSE(GetManager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
+  EXPECT_EQ(1, deletion_callback_count());
+  EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kStorageTypeTemporary));
+  EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kStorageTypeTemporary));
 }
 
 TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
@@ -141,31 +147,34 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
 
   GetModifiedOrigins(kStorageTypeTemporary, then);
   MessageLoop::current()->RunAllPending();
-  EXPECT_TRUE(GetOrigins().empty());
+  EXPECT_TRUE(origins().empty());
 
-  GetManager()->AddOrigin(kOrigin1, kStorageTypeTemporary, now - an_hour);
-
-  GetModifiedOrigins(kStorageTypeTemporary, then);
-  MessageLoop::current()->RunAllPending();
-
-  EXPECT_EQ(1UL, GetOrigins().size());
-  EXPECT_EQ(1UL, GetOrigins().count(kOrigin1));
-  EXPECT_EQ(0UL, GetOrigins().count(kOrigin2));
-
-  GetManager()->AddOrigin(kOrigin2, kStorageTypeTemporary, now);
+  manager()->AddOrigin(kOrigin1, kStorageTypeTemporary, now - an_hour);
 
   GetModifiedOrigins(kStorageTypeTemporary, then);
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(2UL, GetOrigins().size());
-  EXPECT_EQ(1UL, GetOrigins().count(kOrigin1));
-  EXPECT_EQ(1UL, GetOrigins().count(kOrigin2));
+  EXPECT_EQ(kStorageTypeTemporary, type());
+  EXPECT_EQ(1UL, origins().size());
+  EXPECT_EQ(1UL, origins().count(kOrigin1));
+  EXPECT_EQ(0UL, origins().count(kOrigin2));
+
+  manager()->AddOrigin(kOrigin2, kStorageTypeTemporary, now);
+
+  GetModifiedOrigins(kStorageTypeTemporary, then);
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(kStorageTypeTemporary, type());
+  EXPECT_EQ(2UL, origins().size());
+  EXPECT_EQ(1UL, origins().count(kOrigin1));
+  EXPECT_EQ(1UL, origins().count(kOrigin2));
 
   GetModifiedOrigins(kStorageTypeTemporary, now - a_minute);
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(1UL, GetOrigins().size());
-  EXPECT_EQ(0UL, GetOrigins().count(kOrigin1));
-  EXPECT_EQ(1UL, GetOrigins().count(kOrigin2));
+  EXPECT_EQ(kStorageTypeTemporary, type());
+  EXPECT_EQ(1UL, origins().size());
+  EXPECT_EQ(0UL, origins().count(kOrigin1));
+  EXPECT_EQ(1UL, origins().count(kOrigin2));
 }
 }  // Namespace quota

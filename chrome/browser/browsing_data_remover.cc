@@ -465,7 +465,7 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
     // OnGotPersistentQuotaManagedOrigins.
     profile_->GetQuotaManager()->GetOriginsModifiedSince(
         quota::kStorageTypePersistent, delete_begin_, NewCallback(this,
-            &BrowsingDataRemover::OnGotPersistentQuotaManagedOrigins));
+            &BrowsingDataRemover::OnGotQuotaManagedOrigins));
   } else {
     // Otherwise, we don't need to deal with persistent storage.
     --quota_managed_storage_types_to_delete_count_;
@@ -475,13 +475,13 @@ void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
   // OnGotTemporaryQuotaManagedOrigins.
   profile_->GetQuotaManager()->GetOriginsModifiedSince(
       quota::kStorageTypeTemporary, delete_begin_, NewCallback(this,
-          &BrowsingDataRemover::OnGotTemporaryQuotaManagedOrigins));
+          &BrowsingDataRemover::OnGotQuotaManagedOrigins));
 }
 
-void BrowsingDataRemover::OnGotTemporaryQuotaManagedOrigins(
-    const std::set<GURL>& origins) {
+void BrowsingDataRemover::OnGotQuotaManagedOrigins(
+    const std::set<GURL>& origins, quota::StorageType type) {
   DCHECK_GT(quota_managed_storage_types_to_delete_count_, 0);
-  // Walk through the origins passed in, delete temporary quota from each that
+  // Walk through the origins passed in, delete quota of |type| from each that
   // isn't protected.
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
@@ -489,29 +489,8 @@ void BrowsingDataRemover::OnGotTemporaryQuotaManagedOrigins(
       continue;
     ++quota_managed_origins_to_delete_count_;
     quota_manager_->DeleteOriginData(origin->GetOrigin(),
-        quota::kStorageTypeTemporary, NewCallback(this,
-            &BrowsingDataRemover::OnQuotaManagedOriginDeletion));
-  }
-
-  --quota_managed_storage_types_to_delete_count_;
-  if (quota_managed_storage_types_to_delete_count_ == 0 &&
-      quota_managed_origins_to_delete_count_ == 0)
-    CheckQuotaManagedDataDeletionStatus();
-}
-
-void BrowsingDataRemover::OnGotPersistentQuotaManagedOrigins(
-    const std::set<GURL>& origins) {
-  DCHECK_GT(quota_managed_storage_types_to_delete_count_, 0);
-  // Walk through the origins passed in, delete persistent quota from each that
-  // isn't protected.
-  std::set<GURL>::const_iterator origin;
-  for (origin = origins.begin(); origin != origins.end(); ++origin) {
-    if (special_storage_policy_->IsStorageProtected(origin->GetOrigin()))
-      continue;
-    ++quota_managed_origins_to_delete_count_;
-    quota_manager_->DeleteOriginData(origin->GetOrigin(),
-        quota::kStorageTypePersistent, NewCallback(this,
-            &BrowsingDataRemover::OnQuotaManagedOriginDeletion));
+        type, NewCallback(this,
+                          &BrowsingDataRemover::OnQuotaManagedOriginDeletion));
   }
 
   --quota_managed_storage_types_to_delete_count_;

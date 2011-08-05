@@ -84,8 +84,10 @@ class IndexedDBQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
  public:
   GetAllOriginsTask(
       IndexedDBQuotaClient* client,
-      base::MessageLoopProxy* webkit_thread_message_loop)
-      : GetOriginsTaskBase(client, webkit_thread_message_loop) {
+      base::MessageLoopProxy* webkit_thread_message_loop,
+      quota::StorageType type)
+      : GetOriginsTaskBase(client, webkit_thread_message_loop),
+        type_(type) {
   }
 
  protected:
@@ -93,8 +95,11 @@ class IndexedDBQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
     return true;
   }
   virtual void Completed() OVERRIDE {
-    client_->DidGetAllOrigins(origins_);
+    client_->DidGetAllOrigins(origins_, type_);
   }
+
+ private:
+  quota::StorageType type_;
 };
 
 class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
@@ -102,9 +107,11 @@ class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
   GetOriginsForHostTask(
       IndexedDBQuotaClient* client,
       base::MessageLoopProxy* webkit_thread_message_loop,
-      const std::string& host)
+      const std::string& host,
+      quota::StorageType type)
       : GetOriginsTaskBase(client, webkit_thread_message_loop),
-        host_(host) {
+        host_(host),
+        type_(type) {
   }
 
  private:
@@ -112,9 +119,10 @@ class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
     return host_ == net::GetHostOrSpecFromURL(origin);
   }
   virtual void Completed() OVERRIDE {
-    client_->DidGetOriginsForHost(host_, origins_);
+    client_->DidGetOriginsForHost(host_, origins_, type_);
   }
   std::string host_;
+  quota::StorageType type_;
 };
 
 // IndexedDBQuotaClient --------------------------------------------------------
@@ -167,13 +175,13 @@ void IndexedDBQuotaClient::GetOriginsForType(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(std::set<GURL>());
+    callback->Run(std::set<GURL>(), type);
     return;
   }
 
   if (origins_for_type_callbacks_.Add(callback.release())) {
     scoped_refptr<GetAllOriginsTask> task(
-        new GetAllOriginsTask(this, webkit_thread_message_loop_));
+        new GetAllOriginsTask(this, webkit_thread_message_loop_, type));
     task->Start();
   }
 }
@@ -188,13 +196,14 @@ void IndexedDBQuotaClient::GetOriginsForHost(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback->Run(std::set<GURL>());
+    callback->Run(std::set<GURL>(), type);
     return;
   }
 
   if (origins_for_host_callbacks_.Add(host, callback.release())) {
     scoped_refptr<GetOriginsForHostTask> task(
-        new GetOriginsForHostTask(this, webkit_thread_message_loop_, host));
+        new GetOriginsForHostTask(
+            this, webkit_thread_message_loop_, host, type));
     task->Start();
   }
 }
@@ -213,13 +222,15 @@ void IndexedDBQuotaClient::DidGetOriginUsage(
   usage_for_origin_callbacks_.Run(origin_url, usage);
 }
 
-void IndexedDBQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins) {
+void IndexedDBQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins,
+    quota::StorageType type) {
   DCHECK(origins_for_type_callbacks_.HasCallbacks());
-  origins_for_type_callbacks_.Run(origins);
+  origins_for_type_callbacks_.Run(origins, type);
 }
 
 void IndexedDBQuotaClient::DidGetOriginsForHost(
-    const std::string& host, const std::set<GURL>& origins) {
+    const std::string& host, const std::set<GURL>& origins,
+    quota::StorageType type) {
   DCHECK(origins_for_host_callbacks_.HasCallbacks(host));
-  origins_for_host_callbacks_.Run(host, origins);
+  origins_for_host_callbacks_.Run(host, origins, type);
 }

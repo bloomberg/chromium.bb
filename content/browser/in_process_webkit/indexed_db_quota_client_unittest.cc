@@ -75,6 +75,7 @@ class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
       quota::QuotaClient* client,
       quota::StorageType type) {
     origins_.clear();
+    type_ = quota::kStorageTypeTemporary;
     client->GetOriginsForType(type,
         callback_factory_.NewCallback(
             &IndexedDBQuotaClientTest::OnGetOriginsComplete));
@@ -87,6 +88,7 @@ class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
       quota::StorageType type,
       const std::string& host) {
     origins_.clear();
+    type_ = quota::kStorageTypeTemporary;
     client->GetOriginsForHost(type, host,
         callback_factory_.NewCallback(
             &IndexedDBQuotaClientTest::OnGetOriginsComplete));
@@ -117,13 +119,16 @@ class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins) {
+  void OnGetOriginsComplete(const std::set<GURL>& origins,
+      quota::StorageType type) {
     origins_ = origins;
+    type_ = type_;
   }
 
   ScopedTempDir temp_dir_;
   int64 usage_;
   std::set<GURL> origins_;
+  quota::StorageType type_;
   scoped_refptr<IndexedDBContext> idb_context_;
   base::ScopedCallbackFactory<IndexedDBQuotaClientTest> callback_factory_;
   MessageLoop message_loop_;

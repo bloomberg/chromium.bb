@@ -23,7 +23,8 @@ namespace quota {
 class QuotaClient {
  public:
   typedef Callback1<int64>::Type GetUsageCallback;
-  typedef Callback1<const std::set<GURL>&>::Type GetOriginsCallback;
+  typedef Callback2<const std::set<GURL>&, StorageType>::Type
+      GetOriginsCallback;
   typedef Callback1<QuotaStatusCode>::Type DeletionCallback;
 
   virtual ~QuotaClient() {}

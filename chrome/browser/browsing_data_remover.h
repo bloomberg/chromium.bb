@@ -151,11 +151,8 @@ class BrowsingDataRemover : public NotificationObserver,
 
   // Callback to respond to QuotaManager::GetOriginsModifiedSince, which is the
   // core of 'ClearQuotaManagedDataOnIOThread'.
-  void OnGotTemporaryQuotaManagedOrigins(const std::set<GURL>&);
-
-  // Callback to respond to QuotaManager::GetOriginsModifiedSince, which is the
-  // core of `ClearQuotaManagedDataOnIOThread`
-  void OnGotPersistentQuotaManagedOrigins(const std::set<GURL>&);
+  void OnGotQuotaManagedOrigins(const std::set<GURL>& origins,
+                                quota::StorageType type);
 
   // Callback responding to deletion of a single quota managed origin's
   // persistent data
