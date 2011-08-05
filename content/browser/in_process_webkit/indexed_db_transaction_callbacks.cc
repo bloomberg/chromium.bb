@@ -23,6 +23,7 @@ void IndexedDBTransactionCallbacks::onAbort() {
 }
 
 void IndexedDBTransactionCallbacks::onComplete() {
+  dispatcher_host_->TransactionComplete(transaction_id_);
   dispatcher_host_->Send(
       new IndexedDBMsg_TransactionCallbacksComplete(transaction_id_));
 }

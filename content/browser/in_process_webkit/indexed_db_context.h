@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_H_
 #pragma once
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -53,16 +55,22 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
     clear_local_state_on_exit_ = clear_local_state;
   }
 
-  // Deletes a single indexed db file.
-  void DeleteIndexedDBFile(const FilePath& file_path);
-
   // Deletes all indexed db files for the given origin.
-  void DeleteIndexedDBForOrigin(const string16& origin_id);
+  void DeleteIndexedDBForOrigin(const GURL& origin_url);
 
   // Does a particular origin get unlimited storage?
   bool IsUnlimitedStorageGranted(const GURL& origin) const;
 
+  // Methods used in response to QuotaManager requests.
   void GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
+  int64 GetOriginDiskUsage(const GURL& origin_url);
+
+  // Methods called by IndexedDBDispatcherHost for quota support.
+  void ConnectionOpened(const GURL& origin_url);
+  void ConnectionClosed(const GURL& origin_url);
+  void TransactionComplete(const GURL& origin_url);
+  bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
+  bool IsOverQuota(const GURL& origin_url);
 
   quota::QuotaManagerProxy* quota_manager_proxy();
 
@@ -72,6 +80,16 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 #endif
 
  private:
+  typedef std::map<GURL, int64> OriginToSizeMap;
+  class IndexedDBGetUsageAndQuotaCallback;
+
+  int64 ReadUsageFromDisk(const GURL& origin_url) const;
+  void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
+  void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
+  void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
+  void QueryAvailableQuota(const GURL& origin_url);
+  int64 ResetDiskUsageCache(const GURL& origin_url);
+
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 
   // Path where the indexed db data is stored
@@ -83,6 +101,10 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+
+  OriginToSizeMap origin_size_map_;
+  OriginToSizeMap space_available_map_;
+  std::map<GURL, unsigned int> connection_count_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
 };

@@ -28,7 +28,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/quota/quota_manager.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -155,7 +154,8 @@ int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
     return 0;
   }
   int32 idb_database_id = database_dispatcher_host_->map_.Add(idb_database);
-  database_dispatcher_host_->url_map_[idb_database_id] = origin_url;
+  Context()->ConnectionOpened(origin_url);
+  database_dispatcher_host_->database_url_map_[idb_database_id] = origin_url;
   return idb_database_id;
 }
 
@@ -179,18 +179,21 @@ int32 IndexedDBDispatcherHost::Add(WebIDBObjectStore* idb_object_store) {
   return object_store_dispatcher_host_->map_.Add(idb_object_store);
 }
 
-int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
+int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction,
+                                   const GURL& url) {
   if (!transaction_dispatcher_host_.get()) {
     delete idb_transaction;
     return 0;
   }
   int32 id = transaction_dispatcher_host_->map_.Add(idb_transaction);
   idb_transaction->setCallbacks(new IndexedDBTransactionCallbacks(this, id));
+  transaction_dispatcher_host_->transaction_url_map_[id] = url;
   return id;
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   FilePath base_path = webkit_context_->data_path();
   FilePath indexed_db_path;
   if (!base_path.empty()) {
@@ -226,6 +229,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     backingStoreType = WebKit::WebIDBFactory::SQLiteBackingStore;
   }
 
+  // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
+  // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id,
@@ -253,6 +258,11 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id, url),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path));
+}
+
+void IndexedDBDispatcherHost::TransactionComplete(int32 transaction_id) {
+  Context()->TransactionComplete(
+      transaction_dispatcher_host_->transaction_url_map_[transaction_id]);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -301,6 +311,10 @@ IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
 }
 
 IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
+  for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
+       iter != database_url_map_.end(); iter++) {
+    parent_->Context()->ConnectionClosed(iter->second);
+  }
 }
 
 bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
@@ -371,6 +385,10 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
       params.name, params.key_path, params.auto_increment,
       *idb_transaction, *ec);
   *object_store_id = *ec ? 0 : parent_->Add(object_store);
+  if (parent_->Context()->IsOverQuota(
+      database_url_map_[params.idb_database_id])) {
+    idb_transaction->abort();
+  }
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
@@ -404,7 +422,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
   *ec = 0;
   idb_database->setVersion(
       version,
-      new IndexedDBCallbacks<WebIDBTransaction>(parent_, response_id),
+      new IndexedDBCallbacks<WebIDBTransaction>(parent_, response_id,
+          database_url_map_[idb_database_id]),
       *ec);
 }
 
@@ -430,7 +449,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
   WebIDBTransaction* transaction = database->transaction(
       object_stores, mode, timeout, *ec);
   DCHECK(!transaction != !*ec);
-  *idb_transaction_id = *ec ? 0 : parent_->Add(transaction);
+  *idb_transaction_id =
+      *ec ? 0 : parent_->Add(transaction, database_url_map_[idb_database_id]);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpen(
@@ -445,14 +465,12 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id);
   database->close();
-  parent_->Context()->quota_manager_proxy()->NotifyStorageAccessed(
-      quota::QuotaClient::kIndexedDatabase, url_map_[idb_database_id],
-      quota::kStorageTypeTemporary);
-  url_map_.erase(idb_database_id);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 object_id) {
+  parent_->Context()->ConnectionClosed(database_url_map_[object_id]);
+  database_url_map_.erase(object_id);
   parent_->DestroyObject(&map_, object_id);
 }
 
@@ -704,6 +722,12 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
       new IndexedDBCallbacks<WebIDBKey>(parent_, params.response_id));
   idb_object_store->put(params.serialized_value, params.key, params.put_mode,
                         callbacks.release(), *idb_transaction, *ec);
+  if (*ec)
+    return;
+  int64 size = UTF16ToUTF8(params.serialized_value.data()).size();
+  WebIDBTransactionIDToSizeMap* map =
+      &parent_->transaction_dispatcher_host_->transaction_size_map_;
+  (*map)[params.transaction_id] += size;
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
@@ -761,6 +785,12 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
   WebIDBIndex* index = idb_object_store->createIndex(
       params.name, params.key_path, params.unique, *idb_transaction, *ec);
   *index_id = *ec ? 0 : parent_->Add(index);
+  WebIDBObjectIDToURLMap* transaction_url_map =
+      &parent_->transaction_dispatcher_host_->transaction_url_map_;
+  if (parent_->Context()->IsOverQuota(
+      (*transaction_url_map)[params.transaction_id])) {
+    idb_transaction->abort();
+  }
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndex(
@@ -1033,10 +1063,19 @@ void IndexedDBDispatcherHost::
   if (!idb_transaction)
     return;
 
+  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
+  if (parent_->Context()->WouldBeOverQuota(
+      transaction_url_map_[transaction_id],
+      transaction_size_map_[transaction_id])) {
+    idb_transaction->abort();
+    return;
+  }
   idb_transaction->didCompleteTaskEvents();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
     int32 object_id) {
+  transaction_size_map_.erase(object_id);
+  transaction_url_map_.erase(object_id);
   parent_->DestroyObject(&map_, object_id);
 }

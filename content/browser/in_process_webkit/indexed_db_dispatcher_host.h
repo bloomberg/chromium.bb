@@ -45,6 +45,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
+  void TransactionComplete(int32 transaction_id);
+
   // A shortcut for accessing our context.
   IndexedDBContext* Context() {
     return webkit_context_->indexed_db_context();
@@ -56,7 +58,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32 Add(WebKit::WebIDBDatabase* idb_database, const GURL& origin_url);
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
-  int32 Add(WebKit::WebIDBTransaction* idb_transaction);
+  int32 Add(WebKit::WebIDBTransaction* idb_transaction, const GURL& origin_url);
 
  private:
   virtual ~IndexedDBDispatcherHost();
@@ -81,6 +83,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   template <typename ObjectType>
   void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map, int32 object_id);
+
+  // Used in nested classes.
+  typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
+  typedef std::map<int32, int64> WebIDBTransactionIDToSizeMap;
 
   class DatabaseDispatcherHost {
    public:
@@ -116,8 +122,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
-    typedef std::map<int32, GURL> WebIDBDatabaseIDToURLMap;
-    WebIDBDatabaseIDToURLMap url_map_;
+    WebIDBObjectIDToURLMap database_url_map_;
   };
 
   class IndexDispatcherHost {
@@ -254,6 +259,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     IndexedDBDispatcherHost* parent_;
     typedef IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> MapType;
     MapType map_;
+    WebIDBObjectIDToURLMap transaction_url_map_;
+    WebIDBTransactionIDToSizeMap transaction_size_map_;
   };
 
   // Data shared between renderer processes with the same profile.

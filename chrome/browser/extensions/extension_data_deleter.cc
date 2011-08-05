@@ -82,7 +82,8 @@ void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread() {
 
 void ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  webkit_context_->indexed_db_context()->DeleteIndexedDBForOrigin(origin_id_);
+  webkit_context_->indexed_db_context()->DeleteIndexedDBForOrigin(
+      extension_url_);
 }
 
 void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {

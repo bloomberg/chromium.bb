@@ -47,6 +47,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
   class GetOriginsTaskBase;
   class GetAllOriginsTask;
   class GetOriginsForHostTask;
+  class DeleteOriginTask;
 
   typedef quota::CallbackQueueMap1
       <GetUsageCallback*,

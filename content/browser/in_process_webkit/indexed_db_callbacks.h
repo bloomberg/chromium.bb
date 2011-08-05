@@ -25,9 +25,6 @@ template <class Type> struct WebIDBToMsgHelper { };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
   typedef IndexedDBMsg_CallbacksSuccessIDBIndex MsgType;
 };
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBTransaction MsgType;
-};
 
 // The code the following two classes share.
 class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
@@ -69,6 +66,25 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
   }
 
  private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+template <>
+class IndexedDBCallbacks<WebKit::WebIDBTransaction>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
+      const GURL& origin_url)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id),
+        origin_url_(origin_url) {
+  }
+
+  virtual void onSuccess(WebKit::WebIDBTransaction* idb_object);
+  const GURL& origin_url() const { return origin_url_; }
+
+ private:
+  const GURL& origin_url_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 

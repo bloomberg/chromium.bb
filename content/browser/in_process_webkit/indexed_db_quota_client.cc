@@ -31,6 +31,30 @@ class IndexedDBQuotaClient::HelperTask : public quota::QuotaThreadTask {
   scoped_refptr<IndexedDBContext> indexed_db_context_;
 };
 
+class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
+ public:
+  DeleteOriginTask(IndexedDBQuotaClient* client,
+                   base::MessageLoopProxy* webkit_thread_message_loop,
+                   const GURL& origin_url,
+                   DeletionCallback* callback)
+      : HelperTask(client, webkit_thread_message_loop),
+        origin_url_(origin_url), callback_(callback) {
+  }
+ private:
+  virtual void RunOnTargetThread() OVERRIDE {
+    indexed_db_context_->DeleteIndexedDBForOrigin(origin_url_);
+  }
+  virtual void Aborted() OVERRIDE {
+    callback_.reset();
+  }
+  virtual void Completed() OVERRIDE {
+    callback_->Run(quota::kQuotaStatusOk);
+    callback_.reset();
+  }
+  GURL origin_url_;
+  scoped_ptr<DeletionCallback> callback_;
+};
+
 class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
  public:
   GetOriginUsageTask(
@@ -43,12 +67,10 @@ class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
 
  private:
   virtual void RunOnTargetThread() OVERRIDE {
-    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url_);
-    FilePath file_path = indexed_db_context_->GetIndexedDBFilePath(origin_id);
-    usage_ = 0;
-    usage_ = file_util::ComputeDirectorySize(file_path);
+    usage_ = indexed_db_context_->GetOriginDiskUsage(origin_url_);
   }
   virtual void Completed() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     client_->DidGetOriginUsage(origin_url_, usage_);
   }
   GURL origin_url_;
@@ -211,9 +233,16 @@ void IndexedDBQuotaClient::GetOriginsForHost(
 void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
                                            quota::StorageType type,
                                            DeletionCallback* callback) {
-  // TODO(tzik): implement me
-  callback->Run(quota::kQuotaErrorNotSupported);
-  delete callback;
+  if (type != quota::kStorageTypeTemporary) {
+    callback->Run(quota::kQuotaErrorNotSupported);
+    return;
+  }
+  scoped_refptr<DeleteOriginTask> task(
+      new DeleteOriginTask(this,
+                           webkit_thread_message_loop_,
+                           origin,
+                           callback));
+  task->Start();
 }
 
 void IndexedDBQuotaClient::DidGetOriginUsage(

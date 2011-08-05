@@ -28,13 +28,16 @@ void IndexedDBCallbacksBase::onBlocked() {
 void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onSuccess(
     WebKit::WebIDBDatabase* idb_object) {
   int32 object_id = dispatcher_host()->Add(idb_object, origin_url());
-  if (dispatcher_host()->Context()->quota_manager_proxy()) {
-    dispatcher_host()->Context()->quota_manager_proxy()->NotifyStorageAccessed(
-        quota::QuotaClient::kIndexedDatabase, origin_url(),
-        quota::kStorageTypeTemporary);
-  }
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessIDBDatabase(response_id(), object_id));
+}
+
+void IndexedDBCallbacks<WebKit::WebIDBTransaction>::onSuccess(
+    WebKit::WebIDBTransaction* idb_object) {
+  int32 object_id = dispatcher_host()->Add(idb_object, origin_url());
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessIDBTransaction(response_id(),
+                                                      object_id));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
