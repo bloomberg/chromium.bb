@@ -28,6 +28,9 @@ void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername,
                                  "",
                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled,
+                                  true,
+                                  PrefService::UNSYNCABLE_PREF);
 }
 
 void SigninManager::Initialize(Profile* profile) {

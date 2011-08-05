@@ -134,12 +134,6 @@ void AutoLoginRedirector::RedirectToTokenAuth(const std::string& token) {
 }
 
 // static
-void AutoLoginInfoBarDelegate::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
-                                  PrefService::UNSYNCABLE_PREF);
-}
-
-// static
 void AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(
     net::URLRequest* request,
     int child_id,

@@ -28,9 +28,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   virtual ~AutoLoginInfoBarDelegate();
 
-  // Register preferences used by auto-login feature.
-  static void RegisterUserPrefs(PrefService* user_prefs);
-
   // Looks for the X-Auto-Login response header in the request, and if found,
   // displays an infobar in the tab contents identified by the child/route id
   // if possible.

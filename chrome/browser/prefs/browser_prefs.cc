@@ -53,7 +53,6 @@
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/ui/autologin_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -144,7 +143,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
   AppsPromo::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
-  AutoLoginInfoBarDelegate::RegisterUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   BookmarkModel::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
