@@ -71,9 +71,9 @@ void PPB_GetInterface(SRPC_PARAMS) {
 // void ReleaseResource(PP_Resource resource);
 // PPB_Core_ReleaseResource:i:
 void PPB_Core_ReleaseResource(SRPC_PARAMS) {
-  UNREFERENCED_PARAMETER(ins);
+  const int handle = ins[0]->u.ival;
   UNREFERENCED_PARAMETER(outs);
-  NaClLog(1, "PPB_Core_ReleaseResource\n");
+  NaClLog(1, "PPB_Core_ReleaseResource(%d)\n", handle);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -104,8 +104,7 @@ void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
 void PPB_Core_AddRefResource(SRPC_PARAMS) {
   UNREFERENCED_PARAMETER(outs);
   const int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_Core_AddRefResource(%d)\n",
-          handle);
+  NaClLog(1, "PPB_Core_AddRefResource(%d)\n", handle);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
