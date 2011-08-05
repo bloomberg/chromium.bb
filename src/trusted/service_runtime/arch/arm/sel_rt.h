@@ -13,7 +13,7 @@
 
 #include "native_client/src/include/portability.h"
 
-uint32_t NaClGetSp(void);
+uint32_t NaClGetStackPtr(void);
 
 typedef uint32_t nacl_reg_t;
 
