@@ -215,7 +215,8 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTestViewFailTwice) {
 
 // Prerender two pages and check PrerenderView behavior.  The first is expected
 // to fail, the second is expected to succeed.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderView) {
+// Test flaky on XP due to http://crbug.com/91799.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FLAKY_NetInternalsPrerenderView) {
   ASSERT_TRUE(test_server()->Start());
   RunTestAndWaitForTitle(
       "NetInternalsPrerenderView",
