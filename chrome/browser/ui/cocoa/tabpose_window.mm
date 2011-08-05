@@ -232,7 +232,7 @@ void ThumbnailLoader::LoadThumbnail() {
     // TODO(thakis|rsesek): This is not correct for background tabs with
     // infobars as the aspect ratio will be wrong. Fix that.
     topOffset += NSHeight([[infoBarContainer view] frame]) -
-        [infoBarContainer antiSpoofHeight];
+        [infoBarContainer overlappingTipHeight];
   }
 
   bool always_show_bookmark_bar =

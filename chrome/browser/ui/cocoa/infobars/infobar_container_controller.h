@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "content/common/notification_registrar.h"
 
+@class BrowserWindowController;
 @class InfoBarController;
 class InfoBar;
 class InfoBarDelegate;
@@ -25,13 +26,17 @@ class TabStripModel;
 @protocol InfoBarContainer
 - (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
+- (BrowserWindowController*)browserWindowController;
 @end
 
 
 namespace infobars {
 
-// How tall the tip is on a normal infobar.
+// The height of an infobar without the tip.
 const CGFloat kBaseHeight = 36.0;
+
+// The height of the infobar tip.
+const CGFloat kTipHeight = 12.0;
 
 };  // namespace infobars
 
@@ -95,7 +100,7 @@ const CGFloat kBaseHeight = 36.0;
 // Returns the amount of additional height the container view needs to draw the
 // anti-spoofing tip. This will return 0 if |-infobarCount| is 0. This is the
 // total amount of overlap for all infobars.
-- (CGFloat)antiSpoofHeight;
+- (CGFloat)overlappingTipHeight;
 
 @end
 

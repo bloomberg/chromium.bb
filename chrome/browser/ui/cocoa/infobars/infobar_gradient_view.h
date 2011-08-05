@@ -12,7 +12,14 @@
 #import <Cocoa/Cocoa.h>
 
 // A custom view that draws the background gradient for an infobar.
-@interface InfoBarGradientView : VerticalGradientView
+@interface InfoBarGradientView : VerticalGradientView {
+ @private
+  NSPoint tipApex_;
+}
+
+// The point, in this view's coordinates, at which the infobar tip is the
+// highest and pointing at the omnibox decoration.
+@property(assign, nonatomic) NSPoint tipApex;
 
 // Sets the infobar type. This will change the view's gradient.
 - (void)setInfobarType:(InfoBarDelegate::Type)infobarType;

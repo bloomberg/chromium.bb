@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.SystemVersion">10K540</string>
 		<string key="IBDocument.InterfaceBuilderVersion">851</string>
-		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.AppKitVersion">1038.36</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -51,7 +51,7 @@
 							<object class="NSTextField" id="293244832">
 								<reference key="NSNextResponder" ref="1005"/>
 								<int key="NSvFlags">290</int>
-								<string key="NSFrame">{{38, 9}, {208, 17}}</string>
+								<string key="NSFrame">{{38, 10}, {208, 17}}</string>
 								<reference key="NSSuperview" ref="1005"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSTextFieldCell" key="NSCell" id="963811960">
@@ -179,12 +179,12 @@
 								</object>
 							</object>
 						</object>
-						<string key="NSFrameSize">{480, 36}</string>
+						<string key="NSFrameSize">{480, 48}</string>
 						<reference key="NSSuperview" ref="374699732"/>
 						<string key="NSClassName">InfoBarGradientView</string>
 					</object>
 				</object>
-				<string key="NSFrameSize">{480, 36}</string>
+				<string key="NSFrameSize">{480, 48}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">AnimatableView</string>
 			</object>
@@ -471,7 +471,7 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{481, 787}, {480, 36}}</string>
+					<string>{{481, 775}, {480, 48}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

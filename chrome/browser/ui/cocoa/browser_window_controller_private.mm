@@ -494,7 +494,7 @@ willPositionSheet:(NSWindow*)sheet
   NSView* containerView = [infoBarContainerController_ view];
   NSRect containerFrame = [containerView frame];
   maxY -= NSHeight(containerFrame);
-  maxY += [infoBarContainerController_ antiSpoofHeight];
+  maxY += [infoBarContainerController_ overlappingTipHeight];
   containerFrame.origin.x = minX;
   containerFrame.origin.y = maxY;
   containerFrame.size.width = width;
@@ -789,7 +789,7 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarDest addSubview:[infoBarContainerController_ view]
                positioned:fullscreen ? NSWindowBelow : NSWindowAbove
                relativeTo:fullscreen ? nil
-                                     : [bookmarkBarController_ view]];
+                                     : [toolbarController_ view]];
 }
 
 - (void)contentViewDidResize:(NSNotification*)notification {

@@ -2237,7 +2237,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // browser chrome.
   activeArea.size.height +=
       NSHeight([[infoBarContainerController_ view] frame]) -
-          [infoBarContainerController_ antiSpoofHeight];
+          [infoBarContainerController_ overlappingTipHeight];
   if ([self isBookmarkBarVisible] && [self placeBookmarkBarBelowInfoBar]) {
     NSView* bookmarkBarView = [bookmarkBarController_ view];
     activeArea.size.height += NSHeight([bookmarkBarView frame]);

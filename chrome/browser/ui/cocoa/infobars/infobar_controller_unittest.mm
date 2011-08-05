@@ -54,6 +54,10 @@
   DCHECK(controller_ == controller);
   controller_ = nil;
 }
+
+- (BrowserWindowController*)browserWindowController {
+  return nil;
+}
 @end
 
 // Calls to removeSelf normally start an animation, which removes the infobar
