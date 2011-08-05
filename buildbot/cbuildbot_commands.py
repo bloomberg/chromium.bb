@@ -173,6 +173,22 @@ def RunChrootUpgradeHooks(buildroot):
                       enter_chroot=True)
 
 
+def RefreshPackageStatus(buildroot, boards, debug):
+  """Wrapper around refresh_package_status"""
+  cwd = os.path.join(buildroot, 'src', 'scripts')
+  cmd = ['../../chromite/bin/refresh_package_status']
+
+  # Skip the host board if present.
+  board = ':'.join([b for b in boards if b != 'amd64-host'])
+  cmd.append('--board=%s' % board)
+
+  # Upload to the test spreadsheet only when in debug mode.
+  if debug:
+    cmd.append('--test-spreadsheet')
+
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+
+
 def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
                extra_env=None, profile=None):
   """Wrapper around setup_board."""

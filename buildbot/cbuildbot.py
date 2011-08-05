@@ -243,6 +243,7 @@ def RunBuildStages(bot_id, options, build_config):
     if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       stages.TestSDKStage(bot_id, options, build_config).Run()
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
+      stages.RefreshPackageStatusStage(bot_id, options, build_config).Run()
       results_lib.Results.Report(sys.stdout, current_version=version)
       return results_lib.Results.Success()
 

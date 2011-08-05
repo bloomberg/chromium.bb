@@ -87,6 +87,17 @@ class BuilderStage(object):
       BuilderStage.overlays = overlays
       BuilderStage.push_overlays = push_overlays
 
+  def _ListifyBoard(self, board):
+    """Return list of boards from either str or list |board|."""
+    boards = None
+    if isinstance(board, str):
+      boards = [board]
+    else:
+      boards = board
+
+    assert isinstance(boards, list), 'Board was neither an array or a string.'
+    return boards
+
   def _ResolveOverlays(self, overlays):
     """Return the list of overlays to use for a given buildbot.
 
@@ -491,6 +502,15 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
 
+class RefreshPackageStatusStage(BuilderStage):
+  """Stage for refreshing Portage package status in online spreadsheet."""
+  def _PerformStage(self):
+    # If board is a string, convert to list.
+    boards = self._ListifyBoard(self._build_config['board'])
+    commands.RefreshPackageStatus(buildroot=self._build_root,
+                                  boards=boards, debug=self._options.debug)
+
+
 class BuildBoardStage(BuilderStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
   def _PerformStage(self):
@@ -504,14 +524,8 @@ class BuildBoardStage(BuilderStage):
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
-    # If board is a string, convert to array.
-    if isinstance(self._build_config['board'], str):
-      board = [self._build_config['board']]
-    else:
-      assert self._build_config['build_type'] == constants.CHROOT_BUILDER_TYPE
-      board = self._build_config['board']
-
-    assert isinstance(board, list), 'Board was neither an array or a string.'
+    # If board is a string, convert to list.
+    board = self._ListifyBoard(self._build_config['board'])
 
     # Iterate through boards to setup.
     for board_to_build in board:
