@@ -64,6 +64,13 @@ std::string TestVar::TestBasicString() {
     ASSERT_EQ(NULL, result);
   }
 
+  // Make sure we can assign a C++ object to itself and it stays alive.
+  {
+    pp::Var a("test");
+    a = a;
+    ASSERT_TRUE(a.AsString() == "test");
+  }
+
   // Make sure nothing leaked.
   ASSERT_TRUE(testing_interface_->GetLiveObjectsForInstance(
       instance_->pp_instance()) == before_object);

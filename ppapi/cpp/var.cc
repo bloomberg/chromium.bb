@@ -117,20 +117,27 @@ Var::~Var() {
 }
 
 Var& Var::operator=(const Var& other) {
-  if (needs_release_ && has_interface<PPB_Var>())
-    get_interface<PPB_Var>()->Release(var_);
-  var_ = other.var_;
-  if (NeedsRefcounting(var_)) {
-    if (has_interface<PPB_Var>()) {
-      needs_release_ = true;
-      get_interface<PPB_Var>()->AddRef(var_);
-    } else {
-      var_.type = PP_VARTYPE_NULL;
-      needs_release_ = false;
-    }
+  // Early return for self-assignment. Note however, that two distinct vars
+  // can refer to the same object, so we still need to be careful about the
+  // refcounting below.
+  if (this == &other)
+    return *this;
+
+  // Be careful to keep the ref alive for cases where we're assigning an
+  // object to itself by addrefing the new one before releasing the old one.
+  bool old_needs_release = needs_release_;
+  if (NeedsRefcounting(other.var_)) {
+    // Assume we already has_interface<PPB_Var> for refcounted vars or else we
+    // couldn't have created them in the first place.
+    needs_release_ = true;
+    get_interface<PPB_Var>()->AddRef(other.var_);
   } else {
     needs_release_ = false;
   }
+  if (old_needs_release)
+    get_interface<PPB_Var>()->Release(var_);
+
+  var_ = other.var_;
   return *this;
 }
 
