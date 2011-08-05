@@ -288,6 +288,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   scoped_nsobject<PageInfoContentView> contentView(
       [[PageInfoContentView alloc] initWithFrame:contentFrame]);
   [contentView setSubviews:subviews];
+  [contentView setAutoresizingMask:NSViewMinYMargin];
 
   NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
