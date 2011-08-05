@@ -27,7 +27,6 @@
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
-#include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -310,8 +309,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
       new webkit_glue::WebMediaPlayerImpl(client,
                                           collection.release(),
                                           message_loop_factory.release(),
-                                          NULL,
-                                          new media::MediaLog()));
+                                          NULL));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }

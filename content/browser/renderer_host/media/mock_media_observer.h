@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "content/browser/renderer_host/media/media_observer.h"
-#include "media/base/media_log_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockMediaObserver : public MediaObserver {
@@ -26,8 +25,6 @@ class MockMediaObserver : public MediaObserver {
                void(void* host, int stream_id, const std::string& status));
   MOCK_METHOD3(OnSetAudioStreamVolume,
                void(void* host, int stream_id, double volume));
-  MOCK_METHOD2(OnMediaEvent,
-               void(int source, const media::MediaLogEvent& event));
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MOCK_MEDIA_OBSERVER_H_

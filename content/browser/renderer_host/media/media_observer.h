@@ -6,10 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_OBSERVER_H_
 #pragma once
 
-namespace media {
-struct MediaLogEvent;
-}
-
 // A class may implement MediaObserver and register itself with ResourceContext
 // to receive callbacks as media events occur.
 class MediaObserver {
@@ -31,10 +27,6 @@ class MediaObserver {
   // Called when the volume of an audio stream is set.
   virtual void OnSetAudioStreamVolume(void* host, int stream_id,
                                       double volume) = 0;
-
-  // Called when a MediaEvent occurs.
-  virtual void OnMediaEvent(int render_process_id,
-                            const media::MediaLogEvent& event) = 0;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_OBSERVER_H_

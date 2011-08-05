@@ -1,3 +1,0 @@
-include_rules = [
-  "+media/base", # For media_log_event.h.
-]

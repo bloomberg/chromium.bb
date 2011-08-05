@@ -12,7 +12,6 @@
 #include "media/base/composite_data_source_factory.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
@@ -320,8 +319,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
     media::FilterCollection* collection,
     media::MessageLoopFactory* message_loop_factory,
-    MediaStreamClient* media_stream_client,
-    media::MediaLog* media_log)
+    MediaStreamClient* media_stream_client)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
@@ -333,12 +331,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       playback_rate_(0.0f),
       client_(client),
       proxy_(NULL),
-      media_stream_client_(media_stream_client),
-      media_log_(media_log) {
+      media_stream_client_(media_stream_client) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
-  media_log_->AddEventOfType(media::MediaLogEvent::CREATING);
 }
 
 bool WebMediaPlayerImpl::Initialize(
@@ -425,7 +421,6 @@ bool WebMediaPlayerImpl::Initialize(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
-  media_log_->AddEventOfType(media::MediaLogEvent::DESTROYING);
   Destroy();
 
   // Finally tell the |main_loop_| we don't want to be notified of destruction
@@ -463,8 +458,6 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       url.spec(),
       NewCallback(proxy_.get(),
                   &WebMediaPlayerImpl::Proxy::PipelineInitializationCallback));
-
-  media_log_->Load(url.spec());
 }
 
 void WebMediaPlayerImpl::cancelLoad() {
@@ -476,8 +469,6 @@ void WebMediaPlayerImpl::play() {
 
   paused_ = false;
   pipeline_->SetPlaybackRate(playback_rate_);
-
-  media_log_->AddEventOfType(media::MediaLogEvent::PLAY);
 }
 
 void WebMediaPlayerImpl::pause() {
@@ -486,8 +477,6 @@ void WebMediaPlayerImpl::pause() {
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
   paused_time_ = pipeline_->GetCurrentTime();
-
-  media_log_->AddEventOfType(media::MediaLogEvent::PAUSE);
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {

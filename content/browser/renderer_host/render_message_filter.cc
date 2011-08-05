@@ -24,10 +24,8 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/ppapi_broker_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/browser/renderer_host/media/media_observer.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_switches.h"
 #include "content/common/desktop_notification_messages.h"
@@ -37,7 +35,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_util.h"
-#include "media/base/media_log_event.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
@@ -372,7 +369,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
                         OnGetHardwareSampleRate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -869,10 +865,6 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, NewRunnableMethod(
           this, &RenderMessageFilter::Send, reply));
-}
-
-void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
-  resource_context_.media_observer()->OnMediaEvent(render_process_id_, event);
 }
 
 void RenderMessageFilter::CheckPolicyForCookies(

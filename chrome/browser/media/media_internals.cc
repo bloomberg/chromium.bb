@@ -10,7 +10,6 @@
 #include "chrome/browser/media/media_internals_observer.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/webui/web_ui.h"
-#include "media/base/media_log_event.h"
 
 // The names of the javascript functions to call with updates.
 static const char kDeleteItemFunction[] = "media.onItemDeleted";
@@ -45,13 +44,6 @@ void MediaInternals::OnSetAudioStreamVolume(
   DCHECK(CalledOnValidThread());
   UpdateAudioStream(host, stream_id,
                     "volume", Value::CreateDoubleValue(volume));
-}
-
-void MediaInternals::OnMediaEvent(
-    int render_process_id, const media::MediaLogEvent& event) {
-  DCHECK(CalledOnValidThread());
-  // TODO(scottfr): Handle |event|. Record status information in data_ and pass
-  //                |event| along to observers.
 }
 
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
