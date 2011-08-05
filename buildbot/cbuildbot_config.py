@@ -87,6 +87,11 @@ use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
 latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
 gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
 use_sdk -- Use cros_sdk to create and manage chroot.
+
+trybot_list -- List this config when user runs cbuildbot with --list option
+               without the --all flag.
+description -- The description string to print out for config when user runs
+               --list.
 """
 
 import constants
@@ -169,6 +174,9 @@ default = {
 
   'use_sdk' : True,
   'usepkg_chroot' : True,
+
+  'trybot_list' : False,
+  'description' : None,
 }
 
 arm = {
@@ -284,6 +292,9 @@ add_config('x86-generic-pre-flight-queue', [{
   'overlays': 'public',
   'push_overlays': 'public',
   'manifest_version': True,
+
+  'trybot_list' : True,
+  'description' : 'x86-generic PFQ',
 }])
 
 add_config('x86-generic-commit-queue', [{
@@ -340,16 +351,6 @@ add_config('x86-pineview-bin', [{
   'manifest_version': True,
 }])
 
-add_config('arm-tegra2-bin', [arm, {
-  'board' : 'tegra2',
-
-  'uprev' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'important': True,
-  'manifest_version': True,
-}])
-
 add_config('arm-generic-bin', [arm, {
   'board' : 'arm-generic',
 
@@ -358,6 +359,22 @@ add_config('arm-generic-bin', [arm, {
   'push_overlays': None,
   'important': True,
   'manifest_version': True,
+
+  'trybot_list' : True,
+  'description' : 'arm-generic PFQ',
+}])
+
+add_config('arm-tegra2-bin', [arm, {
+  'board' : 'tegra2',
+
+  'uprev' : True,
+  'overlays': 'public',
+  'push_overlays': None,
+  'important': True,
+  'manifest_version': True,
+
+  'trybot_list' : True,
+  'description' : 'arm-tegra2 PFQ',
 }])
 
 add_config('arm-generic-full', [arm, full, {
@@ -420,6 +437,9 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
   'manifest_version' : True,
+
+  'trybot_list' : True,
+  'description' : 'internal x86 PFQ',
 }])
 
 add_config('x86-alex-pre-flight-branch', [internal, {

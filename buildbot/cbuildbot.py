@@ -38,12 +38,25 @@ _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
 
 
-def _PrintValidConfigs():
-  """Print a list of valid buildbot configs."""
+def _PrintValidConfigs(trybot_only=True):
+  """Print a list of valid buildbot configs.
+
+  Arguments:
+    trybot_only: Only print selected trybot configs, as specified by the
+                 'trybot_list' config setting.
+  """
+  COLUMN_WIDTH=45
+  print 'config'.ljust(COLUMN_WIDTH), 'description'
+  print '------'.ljust(COLUMN_WIDTH), '-----------'
   config_names = cbuildbot_config.config.keys()
   config_names.sort()
   for name in config_names:
-    print '  %s' % name
+    if not trybot_only or cbuildbot_config.config[name]['trybot_list']:
+      desc = ''
+      if cbuildbot_config.config[name]['description']:
+        desc = cbuildbot_config.config[name]['description']
+
+      print name.ljust(COLUMN_WIDTH), desc
 
 
 def _GetConfig(config_name, options):
@@ -475,6 +488,10 @@ def _CreateParser():
   parser = optparse.OptionParser(usage=usage)
 
   # Main options
+  parser.add_option('-a', '--all', action='store_true', dest='print_all',
+                    default=False,
+                    help=('List all of the buildbot configs available. Use '
+                          'with the --list option'))
   parser.add_option('-r', '--buildroot', action='callback', dest='buildroot',
                     type='string', callback=_CheckBuildRootOption,
                     help=('Root directory where source is checked out to, and '
@@ -494,7 +511,8 @@ def _CreateParser():
                           "prepend '*' to internal Change-Id's"))
   parser.add_option('-l', '--list', action='store_true', dest='list',
                     default=False,
-                    help="List the valid buildbot configs to use.")
+                    help=('List the suggested trybot configs to use.  Use '
+                          '--all to list all of the available configs.'))
   parser.add_option('-p', '--local-patches', action='callback',
                     metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
                     type='string', callback=_CheckLocalPatches,
@@ -598,7 +616,7 @@ def main(argv=None):
   (options, args) = parser.parse_args(argv)
 
   if options.list:
-    _PrintValidConfigs()
+    _PrintValidConfigs(not options.print_all)
     sys.exit(0)
 
   _PostParseCheck(options)
