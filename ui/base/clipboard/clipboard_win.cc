@@ -438,27 +438,54 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   if (!clipboard.Acquire(GetClipboardWindow()))
     return SkBitmap();
 
-  HBITMAP source_bitmap = static_cast<HBITMAP>(::GetClipboardData(CF_BITMAP));
-  if (!source_bitmap)
-    return SkBitmap();
+  // We use a DIB rather than a DDB here since ::GetObject() with the
+  // HBITMAP returned from ::GetClipboardData(CF_BITMAP) always reports a color
+  // depth of 32bpp.
+  BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
+  int color_table_length = 0;
+  switch (bitmap->bmiHeader.biBitCount) {
+    case 1:
+    case 4:
+    case 8:
+      color_table_length = bitmap->bmiHeader.biClrUsed
+          ? bitmap->bmiHeader.biClrUsed
+          : 1 << bitmap->bmiHeader.biBitCount;
+      break;
+    case 16:
+    case 32:
+      if (bitmap->bmiHeader.biCompression == BI_BITFIELDS)
+        color_table_length = 3;
+      break;
+    case 24:
+      break;
+    default:
+      NOTREACHED();
+  }
+  const void* bitmap_bits = reinterpret_cast<const char*>(bitmap)
+      + bitmap->bmiHeader.biSize + color_table_length * sizeof(RGBQUAD);
 
-  base::win::ScopedHDC source_dc(::CreateCompatibleDC(NULL));
-  if (!source_dc)
-    return SkBitmap();
-  ::SelectObject(source_dc, source_bitmap);
-
-  // Get the dimensions of the bitmap.
-  BITMAPINFO bitmap_info = {};
-  bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
-  ::GetDIBits(source_dc, source_bitmap, 0, 0, 0, &bitmap_info, DIB_RGB_COLORS);
-  int width = bitmap_info.bmiHeader.biWidth;
-  int height = bitmap_info.bmiHeader.biHeight;
-
-  gfx::CanvasSkia canvas(width, height, false);
-
-  skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
-  HDC destination_dc = scoped_platform_paint.GetPlatformSurface();
-  ::BitBlt(destination_dc, 0, 0, width, height, source_dc, 0, 0, SRCCOPY);
+  gfx::CanvasSkia canvas(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
+                         false);
+  {
+    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    HDC dc = scoped_platform_paint.GetPlatformSurface();
+    ::SetDIBitsToDevice(dc, 0, 0, bitmap->bmiHeader.biWidth,
+                        bitmap->bmiHeader.biHeight, 0, 0, 0,
+                        bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,
+                        DIB_RGB_COLORS);
+  }
+  // SetDIBitsToDevice doesn't properly set alpha values for bitmaps with
+  // depth < 32bpp so manually fix it up.
+  if (bitmap->bmiHeader.biBitCount < 32) {
+    const SkBitmap& device_bitmap = canvas.getDevice()->accessBitmap(true);
+    SkAutoLockPixels lock(device_bitmap);
+    for (int i = 0; i < device_bitmap.height(); ++i) {
+      for (int j = 0; j < device_bitmap.width(); ++j) {
+        *device_bitmap.getAddr32(i, j) =
+            SkColorSetA(*device_bitmap.getAddr32(i, j), 0xFF);
+      }
+    }
+  }
   return canvas.ExtractBitmap();
 }
 
