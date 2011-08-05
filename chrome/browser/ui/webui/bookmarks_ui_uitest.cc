@@ -102,7 +102,14 @@ TEST_F(BookmarksUITest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(tab);
 }
 
-TEST_F(BookmarksUITest, CommandAgainGoesBackToBookmarksTab) {
+// http://crbug.com/91843
+#if defined(OS_LINUX)
+#define MAYBE_CommandAgainGoesBackToBookmarksTab FLAKY_CommandAgainGoesBackToBookmarksTab
+#else
+#define MAYBE_CommandAgainGoesBackToBookmarksTab CommandAgainGoesBackToBookmarksTab
+#endif
+
+TEST_F(BookmarksUITest, MAYBE_CommandAgainGoesBackToBookmarksTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
