@@ -338,15 +338,23 @@ cr.define('options', function() {
     if (!tab || !tab.classList.contains('tab'))
       return;
 
-    if (this.activeNavTab != null) {
-      this.activeNavTab.classList.remove('active-tab');
-      $(this.activeNavTab.getAttribute('tab-contents')).classList.
+    // Find tab bar of the tab.
+    var tabBar = tab;
+    while (tabBar && !tabBar.classList.contains('subpages-nav-tabs')) {
+      tabBar = tabBar.parentNode;
+    }
+    if (!tabBar)
+      return;
+
+    if (tabBar.activeNavTab != null) {
+      tabBar.activeNavTab.classList.remove('active-tab');
+      $(tabBar.activeNavTab.getAttribute('tab-contents')).classList.
           remove('active-tab-contents');
     }
 
     tab.classList.add('active-tab');
     $(tab.getAttribute('tab-contents')).classList.add('active-tab-contents');
-    this.activeNavTab = tab;
+    tabBar.activeNavTab = tab;
   };
 
   /**
