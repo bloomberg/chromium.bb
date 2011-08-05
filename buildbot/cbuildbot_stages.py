@@ -789,7 +789,8 @@ class ArchiveStage(NonHaltingBuilderStage):
       cros_lib.Info('No test results.')
     return test_tarball
 
-  def _PerformStage(self):
+  def _SetupFullArchivePath(self):
+    """Create a fresh directory for archiving a build."""
     full_archive_path = self._GetFullArchivePath()
     if not self._options.buildbot:
       # Trybot: Clear artifacts from all previous runs.
@@ -798,10 +799,16 @@ class ArchiveStage(NonHaltingBuilderStage):
       # Buildbot: Clear out any leftover build artifacts, if present.
       shutil.rmtree(full_archive_path, ignore_errors=True)
 
+    os.makedirs(full_archive_path)
+
+    return full_archive_path
+
+  def _PerformStage(self):
     config = self._build_config
     board = config['board']
     debug = self._options.debug
     upload_url = self._GetGSUploadLocation()
+    full_archive_path = self._SetupFullArchivePath()
 
     # The following three functions are run in parallel.
     #  1. UploadTestResults: Upload results from test phase.
@@ -851,7 +858,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       commands.PushImages(self._build_root,
                           board=board,
                           branch_name='master',
-                          archive_dir=self._GetFullArchivePath())
+                          archive_dir=full_archive_path)
 
 
 class UploadPrebuiltsStage(NonHaltingBuilderStage):

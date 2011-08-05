@@ -612,6 +612,9 @@ def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
 
+  # Set umask to 022 so files created by buildbot are readable.
+  os.umask(022)
+
   parser = _CreateParser()
   (options, args) = parser.parse_args(argv)
 

@@ -580,12 +580,7 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
   useflags = buildconfig.get('useflags')
   if useflags: cmd.extend(['--useflags', ' '.join(useflags)])
 
-  try:
-    # Files created in our archive dir should be publicly accessible.
-    old_umask = os.umask(022)
-    cros_lib.RunCommand(cmd, cwd=cwd)
-  finally:
-    os.umask(old_umask)
+  cros_lib.RunCommand(cmd, cwd=cwd)
 
 def UpdateIndex(upload_url):
   """Update _index.html page in Google Storage.
