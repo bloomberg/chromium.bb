@@ -219,6 +219,99 @@ class HistoryTest(pyauto.PyUITest):
     self.assertEqual(ftp_title, history[0]['title'])
     self.assertEqual(ftp_url, history[0]['url'])
 
+  def _CheckHistory(self, title, url, length, index=0):
+    """Verify that the current history matches expectations.
+
+    Verify that history item has the given title and url
+    and that length of history list is as expected.
+
+    Args:
+      title: Expected title of given web page.
+      url: Expected address of given web page.
+      length: Expected length of history list.
+      index: Position of item we want to check in history list.
+    """
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(
+        length, len(history),
+        msg='History length: expected = %d, actual = %d.'
+            % (length, len(history)))
+    self.assertEqual(
+        title, history[index]['title'],
+        msg='Title: expected = %s, actual = %s.'
+            % (title,  history[index]['title']))
+    self.assertEqual(
+        url, history[index]['url'], msg='URL: expected = %s, actual = %s.'
+            % (url,  history[index]['url']))
+
+  def _NavigateAndCheckHistory(self, title, page, length):
+    """Navigate to a page, then verify the history.
+
+    Args:
+      title: Title of given web page.
+      page: Filename of given web page.
+      length: Length of history list.
+    """
+    url = self.GetFileURLForDataPath(page)
+    self.NavigateToURL(url)
+    self._CheckHistory(title, url, length)
+
+  def testNavigateBringPageToTop(self):
+    """Verify that navigation brings current page to top of history list."""
+    self._NavigateAndCheckHistory('Title Of Awesomeness', 'title2.html', 1)
+    self._NavigateAndCheckHistory('Title Of More Awesomeness', 'title3.html',
+                                  2)
+
+  def testReloadBringPageToTop(self):
+    """Verify that reloading a page brings it to top of history list."""
+    url1 = self.GetFileURLForDataPath('title2.html')
+    title1 = 'Title Of Awesomeness'
+    self._NavigateAndCheckHistory(title1, 'title2.html', 1)
+
+    url2 = self.GetFileURLForDataPath('title3.html')
+    title2 = 'Title Of More Awesomeness'
+    self.AppendTab(pyauto.GURL(url2))
+    self._CheckHistory(title2, url2, 2)
+
+    self.ActivateTab(0)
+    self.ReloadActiveTab()
+    self._CheckHistory(title1, url1, 2)
+
+  def testBackForwardBringPageToTop(self):
+    """Verify that back/forward brings current page to top of history list."""
+    url1 = self.GetFileURLForDataPath('title2.html')
+    title1 = 'Title Of Awesomeness'
+    self._NavigateAndCheckHistory(title1, 'title2.html', 1)
+
+    url2 = self.GetFileURLForDataPath('title3.html')
+    title2 = 'Title Of More Awesomeness'
+    self._NavigateAndCheckHistory(title2, 'title3.html', 2)
+
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    tab.GoBack()
+    self._CheckHistory(title1, url1, 2)
+    tab.GoForward()
+    self._CheckHistory(title2, url2, 2)
+
+  def testAppendTabAddPage(self):
+    """Verify that opening a new tab adds that page to history."""
+    self._NavigateAndCheckHistory('Title Of Awesomeness', 'title2.html', 1)
+
+    url2 = self.GetFileURLForDataPath('title3.html')
+    title2 = 'Title Of More Awesomeness'
+    self.AppendTab(pyauto.GURL(url2))
+    self._CheckHistory(title2, url2, 2)
+
+  def testOpenWindowAddPage(self):
+    """Verify that opening new window to a page adds the page to history."""
+    self._NavigateAndCheckHistory('Title Of Awesomeness', 'title2.html', 1)
+
+    url2 = self.GetFileURLForDataPath('title3.html')
+    title2 = 'Title Of More Awesomeness'
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(url2, 1)
+    self._CheckHistory(title2, url2, 2)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
