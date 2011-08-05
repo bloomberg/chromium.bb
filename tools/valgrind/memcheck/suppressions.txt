@@ -5247,6 +5247,17 @@
    fun:_ZN38BrowsingDataQuotaHelperTest_Empty_Test8TestBodyEv
 }
 {
+   bug_91836_c2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5quota12QuotaManager13StartEvictionEv
+   fun:_ZN5quota12QuotaManager34InitializeTemporaryOriginsInfoTask21DatabaseTaskCompletedEv
+   fun:_ZN5quota12QuotaManager16DatabaseTaskBase9CompletedEv
+   fun:_ZN5quota9QuotaTask13CallCompletedEv
+   ...
+   fun:_ZN42BrowsingDataQuotaHelperTest_FetchData_Test8TestBodyEv
+}
+{
    bug_91836_d
    Memcheck:Leak
    fun:_Znw*
@@ -5329,9 +5340,36 @@
    fun:_ZN38BrowsingDataQuotaHelperTest_Empty_Test8TestBodyEv
 }
 {
+   bug_91836_h2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8GetValueEPKcPi
+   fun:_ZN5quota13QuotaDatabase28IsOriginDatabaseBootstrappedEv
+   fun:_ZN5quota12QuotaManager14InitializeTask17RunOnTargetThreadEv
+   ...
+   fun:_ZN38BrowsingDataQuotaHelperTest_Empty_Test8TestBodyEv
+}
+{
+   bug_91836_h3
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN5quota12_GLOBAL__N_122PrepareCachedStatementEPN3sql10ConnectionERKNS1_11StatementIDEPKcPNS1_9StatementE
+   fun:_ZN5quota13QuotaDatabase19FindOriginUsedCountERK4GURLNS_11StorageTypeEPi
+   fun:_ZN5quota13QuotaDatabase25SetOriginLastModifiedTimeERK4GURLNS_11StorageTypeEN4base4TimeE
+   fun:_ZN5quota12QuotaManager22UpdateModifiedTimeTask17RunOnTargetThreadEv
+   ...
+   fun:_ZN42BrowsingDataQuotaHelperTest_FetchData_Test8TestBodyEv
+}
+{
    bug_91836_i
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN27BrowsingDataQuotaHelperTest5SetUpEv
 }
 {
