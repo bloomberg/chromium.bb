@@ -537,12 +537,6 @@ UNINITIALIZED READ
 ...
 CRYPT32.dll!I_CertSyncStore
 
-# We get plenty of such leak reports on unit_tests.
-# They are likely real but not very interesting since test-only
-LEAK
-...
-*!TestURLRequestContext::Init
-
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
@@ -628,6 +622,20 @@ LEAK
 UNADDRESSABLE ACCESS
 *!CrashingChildProcess
 
+# http://crbug.com/79933
+LEAK
+...
+*!TestURLRequestContext::Init
+
+LEAK
+...
+*!TestURLRequestContext::TestURLRequestContext
+*!TestURLRequestContextGetter::GetURLRequestContext
+*!notifier::SingleLoginAttempt::SingleLoginAttempt
+*!notifier::Login::StartConnection
+*!sync_notifier::InvalidationNotifier::UpdateCredentials
+*!sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+
 ############################
 # Real issues in Chromium
 
@@ -707,6 +715,21 @@ LEAK
 *!operator new
 *!disk_cache::BackendImpl::NewEntry
 
+# http://crbug.com/76354
+LEAK
+...
+*!IPC::MessageWithReply*
+*!ChildProcessHostMsg_ResolveProxy::ChildProcessHostMsg_ResolveProxy
+*!ResolveProxyMsgHelperTest::GenerateReply
+*!ResolveProxyMsgHelperTest_*_Test::TestBody
+
+# http://crbug.com/78784
+LEAK
+*!generic_cpp_alloc
+*!operator new
+*!TestingProfile::CreateRequestContext
+*!ProfileSyncService*::SetUp
+
 # http://crbug.com/81522
 LEAK
 *!operator new
@@ -732,6 +755,16 @@ UNINITIALIZED READ
 *!i18n::phonenumbers::RegExp::FullMatch
 *!i18n::phonenumbers::PhoneNumberUtil::IsViablePhoneNumber
 
+# http://crbug.com/82716
+LEAK
+*!generic_cpp_alloc
+*!operator new
+*!base::MessageLoopProxy::CreateForCurrentThread
+*!IPC::SyncChannel::ReceivedSyncMsgQueue::ReceivedSyncMsgQueue
+*!IPC::SyncChannel::ReceivedSyncMsgQueue::AddContext
+*!IPC::SyncChannel::SyncContext::SyncContext
+*!IPC::SyncChannel::SyncChannel
+
 # http://crbug.com/87612
 LEAK
 ...
@@ -744,6 +777,14 @@ UNADDRESSABLE ACCESS
 *!base::win::ObjectWatcher::StopWatching
 *!base::win::ObjectWatcher::WillDestroyCurrentMessageLoop
 *!MessageLoop::~MessageLoop
+
+# http://crbug.com/88640
+LEAK
+*!generic_cpp_alloc
+*!operator new
+*!ProfileImpl::InitRegisteredProtocolHandlers
+*!ProfileImpl::DoFinalInit
+*!ProfileImpl::OnPrefsLoaded
 
 # http://crbug.com/90654
 UNINITIALIZED READ
@@ -765,6 +806,14 @@ LEAK
 *!remoting::protocol::`anonymous namespace'::RunMessageLoopWithTimeout
 *!remoting::protocol::JingleSessionTest::InitiateConnection
 *!remoting::protocol::JingleSessionTest_ConnectBadChannelAuth_Test::TestBody
+
+# http://crbug.com/91465
+LEAK
+*!generic_cpp_alloc
+*!operator new
+*!browser_sync::internal::WeakHandleCore<browser_sync::JsBackend>::*
+*!browser_sync::WeakHandle<browser_sync::JsBackend>::*
+*!sync_api::SyncManager::SyncInternal::Init
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
