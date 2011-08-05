@@ -29,7 +29,15 @@ cr.define('ntp4', function() {
      * @return {bool}
      */
     shouldAcceptDrag: function(e) {
-      return !!ntp4.getCurrentlyDraggingTile().querySelector('.app');
+      var tile = ntp4.getCurrentlyDraggingTile();
+      if (!tile)
+        return false;
+
+      var app = tile.querySelector('.app');
+      if (!app)
+        return false;
+
+      return app.appData.can_uninstall;
     },
 
     /**
@@ -37,6 +45,8 @@ cr.define('ntp4', function() {
      * @param {Event} e The drag event.
      */
     doDragOver: function(e) {
+      ntp4.getCurrentlyDraggingTile().dragClone.classList.add(
+          'hovering-on-trash');
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
     },
@@ -73,6 +83,8 @@ cr.define('ntp4', function() {
      * @param {Event} e The drag event.
      */
     doDragLeave: function(e) {
+      ntp4.getCurrentlyDraggingTile().dragClone.classList.remove(
+          'hovering-on-trash');
     },
   };
 

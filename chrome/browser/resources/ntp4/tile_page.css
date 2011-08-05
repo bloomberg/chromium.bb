@@ -73,6 +73,7 @@
   pointer-events: none;
   position: fixed;
   z-index: 3;
+  -webkit-transition: opacity 0.2s;
 }
 
 .tile.drag-representation.placing > * {
@@ -87,6 +88,10 @@
 .animating-tile-page .tile,
 .tile.drag-representation.placing {
   -webkit-transition: left 200ms, right 200ms, top 200ms;
+}
+
+.hovering-on-trash {
+  opacity: 0.6;
 }
 
 .animating-tile-page .top-margin {
