@@ -406,14 +406,14 @@ const int kInterruptedAnimationDuration = 2.5;
           nil];
   NSPoint secondaryPos =
       NSMakePoint(innerFrame.origin.x + kTextPosLeft, kSecondaryTextPosTop);
-
-  gfx::ScopedNSGraphicsContextSaveGState contextSave;
   NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
   CGContextRef cgContext = (CGContextRef)[nsContext graphicsPort];
+  [nsContext saveGraphicsState];
   [nsContext setCompositingOperation:NSCompositeSourceOver];
   CGContextSetAlpha(cgContext, statusAlpha_);
   [secondaryText drawAtPoint:secondaryPos
               withAttributes:secondaryTextAttributes];
+  [nsContext restoreGraphicsState];
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -579,7 +579,8 @@ const int kInterruptedAnimationDuration = 2.5;
   [triangle lineToPoint:p3];
   [triangle closePath];
 
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState(context);
 
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor whiteColor]];

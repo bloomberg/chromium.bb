@@ -56,7 +56,8 @@ const CGFloat kBorderRadius = 3.0;
   if (!themeProvider)
     return;
 
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState(context);
 
   // Draw the background.
   {
@@ -102,9 +103,8 @@ const CGFloat kBorderRadius = 3.0;
 
   // Fade in/out the background.
   {
-    gfx::ScopedNSGraphicsContextSaveGState bgScopedState;
+    gfx::ScopedNSGraphicsContextSaveGState bgScopedState(context);
     [border setClip];
-    NSGraphicsContext* context = [NSGraphicsContext currentContext];
     CGContextRef cgContext = (CGContextRef)[context graphicsPort];
     CGContextBeginTransparencyLayer(cgContext, NULL);
     CGContextSetAlpha(cgContext, 1 - morph);
