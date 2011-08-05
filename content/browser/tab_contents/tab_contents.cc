@@ -1002,7 +1002,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
 void TabContents::OnDidDisplayInsecureContent() {
   UserMetrics::RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged();
+  SSLManager::NotifySSLInternalStateChanged(&controller());
 }
 
 void TabContents::OnDidRunInsecureContent(
@@ -1016,7 +1016,7 @@ void TabContents::OnDidRunInsecureContent(
   }
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged();
+  SSLManager::NotifySSLInternalStateChanged(&controller());
 }
 
 void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
