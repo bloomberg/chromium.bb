@@ -292,6 +292,7 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
+  profile_pref_registrar_.Add(prefs::kEnableBookmarkBar, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
 
@@ -3728,6 +3729,8 @@ void Browser::Observe(int type,
           g_browser_process->devtools_manager()->CloseAllClientHosts();
       } else if (pref_name == prefs::kEditBookmarksEnabled) {
         UpdateCommandsForBookmarkEditing();
+      } else if (pref_name == prefs::kEnableBookmarkBar) {
+        UpdateCommandsForBookmarkBar();
       } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
         UpdateSaveAsState(GetContentRestrictionsForSelectedTab());
         UpdateOpenFileState();
@@ -4043,8 +4046,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
-      browser_defaults::bookmarks_enabled && show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->GetOriginalProfile()->IsSyncAccessible());
@@ -4059,6 +4060,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif
+
+  UpdateCommandsForBookmarkBar();
 }
 
 void Browser::UpdateCommandsForTabState() {
@@ -4157,6 +4160,19 @@ void Browser::UpdateCommandsForBookmarkEditing() {
       enabled && is_type_tabbed());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
       enabled && CanBookmarkAllTabs());
+}
+
+void Browser::UpdateCommandsForBookmarkBar() {
+#if !defined(OS_MACOSX)
+  const bool show_main_ui = is_type_tabbed() &&
+                            (!window_ || !window_->IsFullscreen());
+#else
+  const bool show_main_ui = is_type_tabbed();
+#endif
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
+      browser_defaults::bookmarks_enabled &&
+      !profile_->GetPrefs()->IsManagedPreference(prefs::kEnableBookmarkBar) &&
+      show_main_ui);
 }
 
 void Browser::UpdateSaveAsState(int content_restrictions) {

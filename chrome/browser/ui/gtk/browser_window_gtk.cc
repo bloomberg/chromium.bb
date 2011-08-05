@@ -912,12 +912,9 @@ void BrowserWindowGtk::RotatePaneFocus(bool forwards) {
 }
 
 bool BrowserWindowGtk::IsBookmarkBarVisible() const {
-  return (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
-          bookmark_bar_.get() &&
-          browser_->profile()->GetPrefs()->GetBoolean(
-              prefs::kShowBookmarkBar) &&
-          browser_->profile()->GetPrefs()->GetBoolean(
-              prefs::kEnableBookmarkBar));
+  return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
+         bookmark_bar_.get() &&
+         browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool BrowserWindowGtk::IsBookmarkBarAnimating() const {

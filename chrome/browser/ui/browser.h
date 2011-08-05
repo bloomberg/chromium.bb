@@ -963,6 +963,9 @@ class Browser : public TabHandlerDelegate,
   // Updates commands for bookmark editing.
   void UpdateCommandsForBookmarkEditing();
 
+  // Updates commands that affect the bookmark bar.
+  void UpdateCommandsForBookmarkBar();
+
   // Update commands whose state depends on whether the window is in fullscreen
   // mode.
   void UpdateCommandsForFullscreenMode(bool is_fullscreen);

@@ -278,10 +278,7 @@ void BrowserWindowCocoa::FocusChromeOSStatus() {
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
-  return (browser_->profile()->GetPrefs()->GetBoolean(
-              prefs::kShowBookmarkBar) &&
-          browser_->profile()->GetPrefs()->GetBoolean(
-              prefs::kEnableBookmarkBar));
+  return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarAnimating() const {

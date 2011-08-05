@@ -318,13 +318,7 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
-  switch (command_id) {
-    case IDC_SHOW_BOOKMARK_BAR:
-      return !browser_->profile()->GetPrefs()->IsManagedPreference(
-          prefs::kEnableBookmarkBar);
-    default:
-      return browser_->command_updater()->IsCommandEnabled(command_id);
-  }
+  return browser_->command_updater()->IsCommandEnabled(command_id);
 }
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
