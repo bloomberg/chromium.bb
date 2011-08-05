@@ -51,6 +51,24 @@ def GetArchStageTarball(tarballArch, version):
     sys.exit('Unsupported arch: ' + arch)
 
 
+def BootstrapChroot(chroot_path, stage_path, replace):
+  """Builds a new chroot from source"""
+  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
+         '--chroot', chroot_path,
+         '--nousepkg']
+  if stage_path:
+    cmd.extend(['--stage3_path', stage_path])
+
+  if replace:
+    cmd.append('--replace')
+
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    print 'Running %r failed!' % cmd
+    sys.exit(1)
+
+
 def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
   if sdk_path and sdk_url:
@@ -93,8 +111,10 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
          '--stage3_path', tarball_dest,
          '--chroot', chroot_path]
+
   if replace:
     cmd.append('--replace')
+
   try:
     cros_build_lib.RunCommand(cmd)
   except cros_build_lib.RunCommandError:
@@ -119,11 +139,9 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   cmd = [os.path.join(SRC_ROOT, 'src/scripts/enter_chroot.sh'),
          '--chroot', chroot_path]
   if chrome_root:
-    cmd.append('--chrome_root')
-    cmd.append(chrome_root)
+    cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
-    cmd.append('--chrome_root_mount')
-    cmd.append(chrome_root_mount)
+    cmd.extend(['--chrome_root_mount', chrome_root_mount])
   if len(additional_args) > 0:
     cmd.append('--')
     cmd.extend(additional_args)
@@ -146,21 +164,29 @@ exists, it will do nothing at all, and every call will be a noop.
 To replace, use --replace."""
   sdk_latest_version = GetLatestVersion()
   parser = optparse.OptionParser(usage)
-  parser.add_option('', '--chroot',
-                    dest='chroot', default=DEFAULT_CHROOT_DIR,
-                    help=('SDK chroot dir name [%s]' % DEFAULT_CHROOT_DIR))
+  # Actions:
+  parser.add_option('', '--bootstrap',
+                    action='store_true', dest='bootstrap', default=False,
+                    help=('Build a new SDK chroot from source'))
+  parser.add_option('', '--delete',
+                    action='store_true', dest='delete', default=False,
+                    help=('Delete the current SDK chroot'))
   parser.add_option('', '--enter',
                     action='store_true', dest='enter', default=False,
                     help=('Enter the SDK chroot, possibly (re)create first'))
+
+  # Global options:
+  parser.add_option('', '--chroot',
+                    dest='chroot', default=DEFAULT_CHROOT_DIR,
+                    help=('SDK chroot dir name [%s]' % DEFAULT_CHROOT_DIR))
+
+  # Additional options:
   parser.add_option('', '--chrome_root',
                     dest='chrome_root', default='',
                     help=('Mount this chrome root into the SDK chroot'))
   parser.add_option('', '--chrome_root_mount',
                     dest='chrome_root_mount', default='',
                     help=('Mount chrome into this path inside SDK chroot'))
-  parser.add_option('', '--delete',
-                    action='store_true', dest='delete', default=False,
-                    help=('Delete the current SDK chroot'))
   parser.add_option('-p', '--path',
                     dest='sdk_path', default='',
                     help=('Use sdk tarball located at this path'))
@@ -171,25 +197,47 @@ To replace, use --replace."""
                     dest='sdk_url', default='',
                     help=('Use sdk tarball located at this url'))
   parser.add_option('-v', '--version',
-                    dest='sdk_version', default=sdk_latest_version,
+                    dest='sdk_version', default='',
                     help=('Use this sdk version [%s]' % sdk_latest_version))
   (options, remaining_arguments) = parser.parse_args()
 
+  # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
     print "This needs to be ran outside the chroot"
     sys.exit(1)
 
+  # Only --enter can process additional args as passthrough commands.
+  # Warn and exit for least surprise.
   if len(remaining_arguments) > 0 and not options.enter:
     print "Additional arguments not permitted, unless running with --enter"
     parser.print_help()
     sys.exit(1)
 
-  if options.delete and (options.enter or options.replace):
-    print "--delete cannot be combined with --enter or --replace"
+  # All "actions" can be combined, as they merely modify how is the chroot
+  # going to be made. The only option that hates all others is --delete.
+  if options.delete and \
+    (options.enter or options.replace or options.bootstrap):
+    print "--delete cannot be combined with --enter, --replace or --bootstrap"
+    parser.print_help()
+    sys.exit(1)
+  # NOTE: --delete is a true hater, it doesn't like other options either, but
+  # those will hardly lead to confusion. Nobody can expect to pass --version to
+  # delete and actually change something.
+
+  # Bootstrap will start off from a non-selectable stage3 tarball. Attempts to
+  # select sdk by any means are confusing. Warn and exit.
+  if options.bootstrap and \
+    (options.sdk_url or options.sdk_version):
+    print "Cannot use --url or --version when bootstrapping"
     parser.print_help()
     sys.exit(1)
 
   chroot_path = os.path.join(SRC_ROOT, options.chroot)
+
+  if not options.sdk_version:
+    sdk_version = sdk_latest_version
+  else:
+    sdk_version = options.sdk_version
 
   if options.delete and not os.path.exists(chroot_path):
     print "Not doing anything. The chroot you want to remove doesn't exist."
@@ -204,8 +252,11 @@ To replace, use --replace."""
     sys.exit(0)
 
   if not os.path.exists(chroot_path) or options.replace:
-    CreateChroot(options.sdk_path, options.sdk_url, options.sdk_version,
-                 chroot_path, options.replace)
+    if options.bootstrap:
+      BootstrapChroot(chroot_path, options.sdk_path, options.replace)
+    else:
+      CreateChroot(options.sdk_path, options.sdk_url, sdk_version,
+                   chroot_path, options.replace)
 
   if options.enter:
     EnterChroot(chroot_path, options.chrome_root, options.chrome_root_mount,
