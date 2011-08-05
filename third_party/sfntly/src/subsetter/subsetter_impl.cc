@@ -254,6 +254,8 @@ bool SubsetterImpl::ResolveCompositeGlyphs(const unsigned int* glyph_ids,
     glyph_id_remaining.clear();
     glyph_id_remaining = comp_glyph_id;
   }
+
+  return true;
 }
 
 CALLER_ATTACH Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids) {
