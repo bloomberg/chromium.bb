@@ -31,15 +31,13 @@ const IMAGE_EDITOR_ENABLED = false;
  *     - defaultPath: The default path for the dialog.  The default path should
  *       end with a trailing slash if it represents a directory.
  */
-function FileManager(dialogDom, filesystem, rootEntries) {
+function FileManager(dialogDom, filesystem, rootEntries, params) {
   console.log('Init FileManager: ' + dialogDom);
 
   this.dialogDom_ = dialogDom;
   this.rootEntries_ = rootEntries;
   this.filesystem_ = filesystem;
-  this.params_ = location.search ?
-                 JSON.parse(decodeURIComponent(location.search.substr(1))) :
-                 {};
+  this.params_ = params || {};
 
   this.listType_ = null;
 
@@ -134,7 +132,7 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.initCommands_();
   this.initDom_();
   this.initDialogType_();
-  this.setupCurrentDirectory_();
+  this.initDefaultDirectory_(this.params_.defaultPath);
 
   this.summarizeSelection_();
   this.updatePreview_();
@@ -798,7 +796,6 @@ FileManager.prototype = {
            // Rename not in progress.
            !this.renameInput_.currentEntry &&
            // Only one file selected.
-           this.selection &&
            this.selection.totalCount == 1 &&
            !isSystemDirEntry(this.currentDirEntry_));
          break;
@@ -1001,11 +998,10 @@ FileManager.prototype = {
   };
 
   /**
-   * Respond to the back and forward buttons.
+   * Respond to the back button.
    */
   FileManager.prototype.onPopState_ = function(event) {
-    // TODO(serya): We should restore selected items here.
-    this.setupCurrentDirectory_();
+    this.changeDirectory(event.state, CD_NO_HISTORY);
   };
 
   /**
@@ -1038,50 +1034,31 @@ FileManager.prototype = {
                             errorCallback);
   };
 
-  /**
-   * Restores current directory and may be a selected item after page load (or
-   * reload) or popping a state (after click on back/forward). If location.hash
-   * is present it means that the user has navigated somewhere and that place
-   * will be restored. defaultPath primarily is used with save/open dialogs.
-   * Default path may also contain a file name. Freshly opened file manager
-   * window has neither.
-   */
-  FileManager.prototype.setupCurrentDirectory_ = function() {
-    if (location.hash) {
-      // Location hash has the highest priority.
-      var path = decodeURI(location.hash.substr(1));
-      this.changeDirectory(path, CD_NO_HISTORY);
-      return;
-    } else if (this.params_.defaultPath) {
-      this.setupPath_(this.params_.defaultPath);
-    } else {
-      this.setupDefaultPath_();
-    }
-  };
-
-  FileManager.prototype.setupDefaultPath_ = function() {
-    // No preset given, find a good place to start.
-    // Check for removable devices, if there are none, go to Downloads.
-    var removableDirectoryEntry = this.rootEntries_.filter(function(rootEntry) {
-      return rootEntry.fullPath == REMOVABLE_DIRECTORY;
-    })[0];
-    if (!removableDirectoryEntry) {
-      this.changeDirectory(DOWNLOADS_DIRECTORY, CD_NO_HISTORY);
-      return;
-    }
-
-    var foundRemovable = false;
-    util.forEachDirEntry(removableDirectoryEntry, function(result) {
-      if (result) {
-        foundRemovable = true;
-      } else {  // Done enumerating, and we know the answer.
-        this.changeDirectory(foundRemovable ? '/' : DOWNLOADS_DIRECTORY,
-                             CD_NO_HISTORY);
+  FileManager.prototype.initDefaultDirectory_ = function(path) {
+    if (!path) {
+      // No preset given, find a good place to start.
+      // Check for removable devices, if there are none, go to Downloads.
+      for (var i = 0; i != this.rootEntries_.length; i++) {
+        var rootEntry = this.rootEntries_[i];
+        if (rootEntry.fullPath == REMOVABLE_DIRECTORY) {
+          var foundRemovable = false;
+          var self = this;
+          util.forEachDirEntry(rootEntry, function(result) {
+            if (result) {
+              foundRemovable = true;
+            } else {  // Done enumerating, and we know the answer.
+              self.initDefaultDirectory_(
+                  foundRemovable ? '/' : DOWNLOADS_DIRECTORY);
+            }
+          });
+          return;
+        }
       }
-    }.bind(this));
-  };
 
-  FileManager.prototype.setupPath_ = function(path) {
+      // Removable root directory is missing altogether.
+      path = DOWNLOADS_DIRECTORY;
+    }
+
     // Split the dirname from the basename.
     var ary = path.match(/^(.*?)(?:\/([^\/]+))?$/);
     if (!ary) {
@@ -2009,29 +1986,18 @@ FileManager.prototype = {
   FileManager.prototype.changeDirectoryEntry = function(dirEntry,
                                                         opt_saveHistory,
                                                         opt_selectedEntry) {
-    if (typeof opt_saveHistory == 'undefined') {
-      opt_saveHistory = true;
-    } else {
-      opt_saveHistory = !!opt_saveHistory;
-    }
-
-    var location = '#' + encodeURI(dirEntry.fullPath);
-    if (opt_saveHistory) {
-      history.pushState(undefined, dirEntry.fullPath, location);
-    } else if (window.location.hash != location) {
-      // If the user typed URL manually that is not canonical it would be fixed
-      // here. However it seems history.replaceState doesn't work properly
-      // with rewritable URLs (while does with history.pushState). It changes
-      // window.location but doesn't change content of the ombibox.
-      history.replaceState(undefined, dirEntry.fullPath, location);
-    }
-
     if (this.currentDirEntry_ &&
         this.currentDirEntry_.fullPath == dirEntry.fullPath) {
       // Directory didn't actually change.
       if (opt_selectedEntry)
         this.selectEntry(opt_selectedEntry);
       return;
+    }
+
+    if (typeof opt_saveHistory == 'undefined') {
+      opt_saveHistory = true;
+    } else {
+      opt_saveHistory = !!opt_saveHistory;
     }
 
     var e = new cr.Event('directory-changed');
@@ -2060,9 +2026,7 @@ FileManager.prototype = {
                                                    opt_saveHistory,
                                                    opt_selectedEntry) {
     if (path == '/')
-      return this.changeDirectoryEntry(this.filesystem_.root,
-                                       opt_saveHistory,
-                                       opt_selectedEntry);
+      return this.changeDirectoryEntry(this.filesystem_.root);
 
     var self = this;
 
@@ -2074,12 +2038,7 @@ FileManager.prototype = {
         },
         function(err) {
           console.error('Error changing directory to: ' + path + ', ' + err);
-          if (self.currentDirEntry_) {
-            var location = '#' + encodeURI(self.currentDirEntry_.fullPath);
-            history.replaceState(undefined,
-                                 self.currentDirEntry_.fullPath,
-                                 location);
-          } else {
+          if (!self.currentDirEntry_) {
             // If we've never successfully changed to a directory, force them
             // to the root.
             self.changeDirectory('/', false);
@@ -2371,6 +2330,12 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
+    if (event.saveHistory) {
+      history.pushState(this.currentDirEntry_.fullPath,
+                        this.currentDirEntry_.fullPath,
+                        location.href);
+    }
+
     this.updateCommands_();
     this.updateOkButton_();
 
@@ -2839,7 +2804,7 @@ FileManager.prototype = {
 
       case 46:  // Delete.
         if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-            this.selection && this.selection.totalCount > 0 &&
+            this.selection.totalCount > 0 &&
             !isSystemDirEntry(this.currentDirEntry_)) {
           event.preventDefault();
           this.deleteEntries(this.selection.entries);
