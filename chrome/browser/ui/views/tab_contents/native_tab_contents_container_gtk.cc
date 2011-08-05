@@ -13,6 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/focus/focus_manager.h"
+#include "views/views_delegate.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerGtk, public:
@@ -146,7 +147,8 @@ void NativeTabContentsContainerGtk::GetAccessibleState(
 // static
 NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
     TabContentsContainer* container) {
-  if (views::Widget::IsPureViews())
+  if (views::Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView())
     return new NativeTabContentsContainerViews(container);
   return new NativeTabContentsContainerGtk(container);
 }
