@@ -84,7 +84,7 @@ class MockQuotaManagerTest : public testing::Test {
     return origins_;
   }
 
-  const StorageType type() const {
+  const StorageType& type() const {
     return type_;
   }
 
