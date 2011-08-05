@@ -81,6 +81,8 @@
         'renderer/media/media_stream_dispatcher_eventhandler.h',
         'renderer/media/media_stream_impl.cc',
         'renderer/media/media_stream_impl.h',
+        'renderer/media/render_media_log.cc',
+        'renderer/media/render_media_log.h',
         'renderer/media/rtc_video_decoder.cc',
         'renderer/media/rtc_video_decoder.h',
         'renderer/media/video_capture_impl.cc',

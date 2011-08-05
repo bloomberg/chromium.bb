@@ -14,6 +14,10 @@
 
 class MediaInternalsObserver;
 
+namespace media {
+struct MediaLogEvent;
+}
+
 // This class stores information about currently active media.
 // All of its methods are called on the IO thread.
 class MediaInternals : public MediaObserver, public base::NonThreadSafe {
@@ -26,6 +30,8 @@ class MediaInternals : public MediaObserver, public base::NonThreadSafe {
   virtual void OnSetAudioStreamStatus(void* host, int stream_id,
                                       const std::string& status);
   virtual void OnSetAudioStreamVolume(void* host, int stream_id, double volume);
+  virtual void OnMediaEvent(int render_process_id,
+                            const media::MediaLogEvent& event);
 
   // Methods for observers.
   // Observers should add themselves on construction and remove themselves

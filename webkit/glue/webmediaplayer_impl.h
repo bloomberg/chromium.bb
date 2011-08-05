@@ -77,6 +77,10 @@ namespace WebKit {
 class WebFrame;
 }
 
+namespace media {
+class MediaLog;
+}
+
 namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
@@ -208,7 +212,8 @@ class WebMediaPlayerImpl
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
                      media::FilterCollection* collection,
                      media::MessageLoopFactory* message_loop_factory,
-                     MediaStreamClient* media_stream_client);
+                     MediaStreamClient* media_stream_client,
+                     media::MediaLog* media_log);
   virtual ~WebMediaPlayerImpl();
 
   // Finalizes initialization of the object.
@@ -360,6 +365,8 @@ class WebMediaPlayerImpl
 #if WEBKIT_USING_CG
   scoped_ptr<skia::PlatformCanvas> skia_canvas_;
 #endif
+
+  scoped_refptr<media::MediaLog> media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

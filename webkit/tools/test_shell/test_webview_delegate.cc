@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
+#include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
@@ -625,7 +626,8 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
       new webkit_glue::WebMediaPlayerImpl(client,
                                           collection.release(),
                                           message_loop_factory.release(),
-                                          NULL));
+                                          NULL,
+                                          new media::MediaLog()));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }

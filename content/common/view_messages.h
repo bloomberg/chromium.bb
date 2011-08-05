@@ -18,6 +18,7 @@
 #include "content/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/base/media_log_event.h"
 #include "net/base/host_port_pair.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
@@ -172,6 +173,7 @@ IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::StringAttribute)
+IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 
 IPC_STRUCT_TRAITS_BEGIN(ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
@@ -406,6 +408,13 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginInfo)
   IPC_STRUCT_TRAITS_MEMBER(desc)
   IPC_STRUCT_TRAITS_MEMBER(mime_types)
   IPC_STRUCT_TRAITS_MEMBER(enabled)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(params)
+  IPC_STRUCT_TRAITS_MEMBER(time)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
@@ -2028,3 +2037,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
 // being sent back.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RequestRemoteAccessClientFirewallTraversal)
 
+// Notifies the browser of an event occurring in the media pipeline.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
+                     media::MediaLogEvent /* event */)
