@@ -19,7 +19,7 @@ typedef struct _XDisplay Display;
 namespace base {
 
 // The documentation for this class is in message_pump_glib.h
-class BASE_API MessagePumpObserver {
+class BASE_EXPORT MessagePumpObserver {
  public:
    enum EventStatus {
      EVENT_CONTINUE,    // The event should be dispatched as normal.
@@ -59,7 +59,7 @@ class MessagePumpDispatcher {
 };
 
 // This class implements a message-pump for dispatching X events.
-class BASE_API MessagePumpX : public MessagePumpGlib {
+class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
  public:
   MessagePumpX();
   virtual ~MessagePumpX();

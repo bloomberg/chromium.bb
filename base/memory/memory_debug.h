@@ -10,12 +10,12 @@
 #define BASE_MEMORY_MEMORY_DEBUG_H_
 #pragma once
 
-#include "base/base_api.h"
+#include "base/base_export.h"
 #include "base/basictypes.h"
 
 namespace base {
 
-class BASE_API MemoryDebug {
+class BASE_EXPORT MemoryDebug {
  public:
   // Since MIU messages are a lot of data, and we don't always want this data,
   // we have a global switch.  If disabled, *MemoryInUse are no-ops.

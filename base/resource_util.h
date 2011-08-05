@@ -11,7 +11,7 @@
 
 #include <windows.h>
 
-#include "base/base_api.h"
+#include "base/base_export.h"
 #include "base/basictypes.h"
 
 namespace base {
@@ -19,8 +19,9 @@ namespace base {
 // Function for getting a data resource (BINDATA) from a dll.  Some
 // resources are optional, especially in unit tests, so this returns false
 // but doesn't raise an error if the resource can't be loaded.
-bool BASE_API GetDataResourceFromModule(HMODULE module, int resource_id,
-                                        void** data, size_t* length);
+bool BASE_EXPORT GetDataResourceFromModule(HMODULE module, int resource_id,
+                                           void** data, size_t* length);
+
 }  // namespace base
 
 #endif  // BASE_RESOURCE_UTIL_H__

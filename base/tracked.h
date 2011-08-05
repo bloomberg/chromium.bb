@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "base/base_api.h"
+#include "base/base_export.h"
 #include "base/time.h"
 
 #ifndef NDEBUG
@@ -36,7 +36,7 @@ namespace tracked_objects {
 // Location provides basic info where of an object was constructed, or was
 // significantly brought to life.
 
-class BASE_API Location {
+class BASE_EXPORT Location {
  public:
   // Constructor should be called with a long-lived char*, such as __FILE__.
   // It assumes the provided value will persist as a global constant, and it
@@ -81,7 +81,7 @@ class BASE_API Location {
   const void* const program_counter_;
 };
 
-BASE_API const void* GetProgramCounter();
+BASE_EXPORT const void* GetProgramCounter();
 
 //------------------------------------------------------------------------------
 // Define a macro to record the current source location.
@@ -98,7 +98,7 @@ BASE_API const void* GetProgramCounter();
 
 class Births;
 
-class BASE_API Tracked {
+class BASE_EXPORT Tracked {
  public:
   Tracked();
   virtual ~Tracked();

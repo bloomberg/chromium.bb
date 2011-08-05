@@ -6,7 +6,7 @@
 #define BASE_TASK_H_
 #pragma once
 
-#include "base/base_api.h"
+#include "base/base_export.h"
 #include "base/debug/alias.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +22,7 @@ const size_t kDeadTask = 0xDEAD7A53;
 // A task is a generic runnable thingy, usually used for running code on a
 // different thread or for scheduling future tasks off of the message loop.
 
-class BASE_API Task : public tracked_objects::Tracked {
+class BASE_EXPORT Task : public tracked_objects::Tracked {
  public:
   Task();
   virtual ~Task();
@@ -31,7 +31,7 @@ class BASE_API Task : public tracked_objects::Tracked {
   virtual void Run() = 0;
 };
 
-class BASE_API CancelableTask : public Task {
+class BASE_EXPORT CancelableTask : public Task {
  public:
   CancelableTask();
   virtual ~CancelableTask();
@@ -550,7 +550,7 @@ namespace base {
 
 // ScopedTaskRunner is akin to scoped_ptr for Tasks.  It ensures that the Task
 // is executed and deleted no matter how the current scope exits.
-class BASE_API ScopedTaskRunner {
+class BASE_EXPORT ScopedTaskRunner {
  public:
   // Takes ownership of the task.
   explicit ScopedTaskRunner(Task* task);

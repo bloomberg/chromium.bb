@@ -74,7 +74,7 @@ void Location::WriteFunctionName(std::string* output) const {
 #if defined(COMPILER_MSVC)
 __declspec(noinline)
 #endif
-BASE_API const void* GetProgramCounter() {
+BASE_EXPORT const void* GetProgramCounter() {
 #if defined(COMPILER_MSVC)
   return _ReturnAddress();
 #elif defined(COMPILER_GCC)

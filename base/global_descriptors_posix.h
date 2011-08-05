@@ -34,7 +34,7 @@ namespace base {
 // It maps from an abstract key to a descriptor. If independent modules each
 // need to define keys, then values should be chosen randomly so as not to
 // collide.
-class BASE_API GlobalDescriptors {
+class BASE_EXPORT GlobalDescriptors {
  public:
   typedef uint32_t Key;
   typedef std::vector<std::pair<Key, int> > Mapping;

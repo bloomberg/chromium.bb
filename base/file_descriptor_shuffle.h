@@ -24,7 +24,7 @@
 
 #include <vector>
 
-#include "base/base_api.h"
+#include "base/base_export.h"
 
 namespace base {
 
@@ -69,11 +69,12 @@ struct InjectionArc {
 
 typedef std::vector<InjectionArc> InjectiveMultimap;
 
-BASE_API bool PerformInjectiveMultimap(const InjectiveMultimap& map,
-                                       InjectionDelegate* delegate);
+BASE_EXPORT bool PerformInjectiveMultimap(const InjectiveMultimap& map,
+                                          InjectionDelegate* delegate);
 
-BASE_API bool PerformInjectiveMultimapDestructive(InjectiveMultimap* map,
-                                                  InjectionDelegate* delegate);
+BASE_EXPORT bool PerformInjectiveMultimapDestructive(
+    InjectiveMultimap* map,
+    InjectionDelegate* delegate);
 
 // This function will not call malloc but will mutate |map|
 static inline bool ShuffleFileDescriptors(InjectiveMultimap* map) {
