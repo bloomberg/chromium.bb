@@ -17,7 +17,7 @@ static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 class TypedUrlsSyncPerfTest: public TwoClientLiveTypedUrlsSyncTest {
  public:
-  TypedUrlsSyncPerfTest() : url_number(0) {}
+  TypedUrlsSyncPerfTest() : url_number_(0) {}
 
   // Adds |num_urls| new unique typed urls to |profile|.
   void AddURLs(int profile, int num_urls);
@@ -42,7 +42,7 @@ class TypedUrlsSyncPerfTest: public TwoClientLiveTypedUrlsSyncTest {
   // Returns a unique URL according to the integer |n|.
   GURL IntToURL(int n);
 
-  int url_number;
+  int url_number_;
   DISALLOW_COPY_AND_ASSIGN(TypedUrlsSyncPerfTest);
 };
 
@@ -82,7 +82,7 @@ void TypedUrlsSyncPerfTest::Cleanup() {
 }
 
 GURL TypedUrlsSyncPerfTest::NextURL() {
-  return IntToURL(url_number++);
+  return IntToURL(url_number_++);
 }
 
 GURL TypedUrlsSyncPerfTest::IntToURL(int n) {

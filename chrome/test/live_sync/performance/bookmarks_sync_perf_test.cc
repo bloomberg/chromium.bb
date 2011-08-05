@@ -19,8 +19,8 @@ class BookmarksSyncPerfTest : public LiveSyncTest {
  public:
   BookmarksSyncPerfTest()
       : LiveSyncTest(TWO_CLIENT),
-        url_number(0),
-        url_title_number(0) {}
+        url_number_(0),
+        url_title_number_(0) {}
 
   // Adds |num_urls| new unique bookmarks to the bookmark bar for |profile|.
   void AddURLs(int profile, int num_urls);
@@ -45,8 +45,8 @@ class BookmarksSyncPerfTest : public LiveSyncTest {
   // Returns a new unique bookmark title.
   std::wstring NextIndexedURLTitle();
 
-  int url_number;
-  int url_title_number;
+  int url_number_;
+  int url_title_number_;
   DISALLOW_COPY_AND_ASSIGN(BookmarksSyncPerfTest);
 };
 
@@ -88,11 +88,11 @@ void BookmarksSyncPerfTest::Cleanup() {
 }
 
 std::string BookmarksSyncPerfTest::NextIndexedURL() {
-  return BookmarksHelper::IndexedURL(url_number++);
+  return BookmarksHelper::IndexedURL(url_number_++);
 }
 
 std::wstring BookmarksSyncPerfTest::NextIndexedURLTitle() {
-  return BookmarksHelper::IndexedURLTitle(url_title_number++);
+  return BookmarksHelper::IndexedURLTitle(url_title_number_++);
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
