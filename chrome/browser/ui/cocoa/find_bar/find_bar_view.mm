@@ -64,8 +64,8 @@ CGFloat kCurveSize = 8;
         controlPoint2:NSMakePoint(midRight2.x, topLeft.y)];
 
   {
+    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     NSGraphicsContext* context = [NSGraphicsContext currentContext];
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState(context);
     [path addClip];
 
     // Set the pattern phase

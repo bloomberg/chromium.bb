@@ -4,19 +4,20 @@
 
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
+
+#include "base/logging.h"
 
 namespace gfx {
 
-ScopedNSGraphicsContextSaveGState::ScopedNSGraphicsContextSaveGState(
-    NSGraphicsContext* context) : context_([context retain]) {
-  if (!context_)
-    context_.reset([[NSGraphicsContext currentContext] retain]);
-  [context_ saveGraphicsState];
+ScopedNSGraphicsContextSaveGState::ScopedNSGraphicsContextSaveGState()
+    : context_([NSGraphicsContext currentContext]) {
+  [NSGraphicsContext saveGraphicsState];
 }
 
 ScopedNSGraphicsContextSaveGState::~ScopedNSGraphicsContextSaveGState() {
-  [context_ restoreGraphicsState];
+  [NSGraphicsContext restoreGraphicsState];
+  DCHECK_EQ(context_, [NSGraphicsContext currentContext]);
 }
 
 }  // namespace gfx

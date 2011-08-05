@@ -251,8 +251,8 @@ const CGFloat kRapidCloseDist = 2.5;
 - (void)drawRect:(NSRect)dirtyRect {
   const CGFloat lineWidth = [self cr_lineWidth];
 
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState(context);
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);
@@ -288,7 +288,8 @@ const CGFloat kRapidCloseDist = 2.5;
       [[[self window] backgroundColor] set];
       [path fill];
 
-      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState(context);
+      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
+      NSGraphicsContext* context = [NSGraphicsContext currentContext];
       CGContextRef cgContext =
           static_cast<CGContextRef>([context graphicsPort]);
       CGContextBeginTransparencyLayer(cgContext, 0);
@@ -299,55 +300,6 @@ const CGFloat kRapidCloseDist = 2.5;
     }
   }
 
-  [context saveGraphicsState];
-  [path addClip];
-
-  // Use the same overlay for the selected state and for hover and alert glows;
-  // for the selected state, it's fully opaque.
-  CGFloat hoverAlpha = [self hoverAlpha];
-  CGFloat alertAlpha = [self alertAlpha];
-  if (selected || hoverAlpha > 0 || alertAlpha > 0) {
-    // Draw the selected background / glow overlay.
-    gfx::ScopedNSGraphicsContextSaveGState drawHoverState(context);
-    CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
-    CGContextBeginTransparencyLayer(cgContext, 0);
-    if (!selected) {
-      // The alert glow overlay is like the selected state but at most at most
-      // 80% opaque. The hover glow brings up the overlay's opacity at most 50%.
-      CGFloat backgroundAlpha = 0.8 * alertAlpha;
-      backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
-      CGContextSetAlpha(cgContext, backgroundAlpha);
-    }
-    [path addClip];
-    {
-      gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState(context);
-      [super drawBackgroundWithOpaque:NO];
-    }
-
-    // Draw a mouse hover gradient for the default themes.
-    if (!selected && hoverAlpha > 0) {
-      if (themeProvider && !hasBackgroundImage) {
-        scoped_nsobject<NSGradient> glow([NSGradient alloc]);
-        [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
-                                        alpha:1.0 * hoverAlpha]
-                        endingColor:[NSColor colorWithCalibratedWhite:1.0
-                                                                alpha:0.0]];
-
-        NSPoint point = hoverPoint_;
-        point.y = NSHeight(rect);
-        [glow drawFromCenter:point
-                      radius:0.0
-                    toCenter:point
-                      radius:NSWidth(rect) / 3.0
-                     options:NSGradientDrawsBeforeStartingLocation];
-
-        [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
-      }
-    }
-
-    CGContextEndTransparencyLayer(cgContext);
-  }
-
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
   CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : 0.2;
   NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
@@ -356,35 +308,87 @@ const CGFloat kRapidCloseDist = 2.5;
           ThemeService::COLOR_TOOLBAR_BEZEL :
           ThemeService::COLOR_TOOLBAR, true) : nil;
 
-  // Draw the top inner highlight within the tab if using the default theme.
-  if (themeProvider && themeProvider->UsingDefaultTheme()) {
-    NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-    [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
-    if (selected) {
-      scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-      [highlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightColor setStroke];
-      [highlightPath setLineWidth:lineWidth];
-      [highlightPath stroke];
-      highlightTransform = [NSAffineTransform transform];
-      [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
-      [highlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightPath stroke];
-    } else {
-      NSBezierPath* topHighlightPath =
-          [self topHighlightBezierPathForRect:[self bounds]];
-      [topHighlightPath transformUsingAffineTransform:highlightTransform];
-      [highlightColor setStroke];
-      [topHighlightPath setLineWidth:lineWidth];
-      [topHighlightPath stroke];
+  {
+    gfx::ScopedNSGraphicsContextSaveGState contextSave;
+    [path addClip];
+
+    // Use the same overlay for the selected state and for hover and alert
+    // glows; for the selected state, it's fully opaque.
+    CGFloat hoverAlpha = [self hoverAlpha];
+    CGFloat alertAlpha = [self alertAlpha];
+    if (selected || hoverAlpha > 0 || alertAlpha > 0) {
+      // Draw the selected background / glow overlay.
+      gfx::ScopedNSGraphicsContextSaveGState drawHoverState;
+      NSGraphicsContext* context = [NSGraphicsContext currentContext];
+      CGContextRef cgContext =
+          static_cast<CGContextRef>([context graphicsPort]);
+      CGContextBeginTransparencyLayer(cgContext, 0);
+      if (!selected) {
+        // The alert glow overlay is like the selected state but at most at most
+        // 80% opaque. The hover glow brings up the overlay's opacity at most
+        // 50%.
+        CGFloat backgroundAlpha = 0.8 * alertAlpha;
+        backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
+        CGContextSetAlpha(cgContext, backgroundAlpha);
+      }
+      [path addClip];
+      {
+        gfx::ScopedNSGraphicsContextSaveGState drawBackgroundState;
+        [super drawBackgroundWithOpaque:NO];
+      }
+
+      // Draw a mouse hover gradient for the default themes.
+      if (!selected && hoverAlpha > 0) {
+        if (themeProvider && !hasBackgroundImage) {
+          scoped_nsobject<NSGradient> glow([NSGradient alloc]);
+          [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
+                                          alpha:1.0 * hoverAlpha]
+                          endingColor:[NSColor colorWithCalibratedWhite:1.0
+                                                                  alpha:0.0]];
+
+          NSPoint point = hoverPoint_;
+          point.y = NSHeight(rect);
+          [glow drawFromCenter:point
+                        radius:0.0
+                      toCenter:point
+                        radius:NSWidth(rect) / 3.0
+                       options:NSGradientDrawsBeforeStartingLocation];
+
+          [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
+        }
+      }
+
+      CGContextEndTransparencyLayer(cgContext);
+    }
+
+    // Draw the top inner highlight within the tab if using the default theme.
+    if (themeProvider && themeProvider->UsingDefaultTheme()) {
+      NSAffineTransform* highlightTransform = [NSAffineTransform transform];
+      [highlightTransform translateXBy:lineWidth yBy:-lineWidth];
+      if (selected) {
+        scoped_nsobject<NSBezierPath> highlightPath([path copy]);
+        [highlightPath transformUsingAffineTransform:highlightTransform];
+        [highlightColor setStroke];
+        [highlightPath setLineWidth:lineWidth];
+        [highlightPath stroke];
+        highlightTransform = [NSAffineTransform transform];
+        [highlightTransform translateXBy:-2 * lineWidth yBy:0.0];
+        [highlightPath transformUsingAffineTransform:highlightTransform];
+        [highlightPath stroke];
+      } else {
+        NSBezierPath* topHighlightPath =
+            [self topHighlightBezierPathForRect:[self bounds]];
+        [topHighlightPath transformUsingAffineTransform:highlightTransform];
+        [highlightColor setStroke];
+        [topHighlightPath setLineWidth:lineWidth];
+        [topHighlightPath stroke];
+      }
     }
   }
 
-  [context restoreGraphicsState];
-
   // Draw the top stroke.
   {
-    gfx::ScopedNSGraphicsContextSaveGState drawBorderState(context);
+    gfx::ScopedNSGraphicsContextSaveGState drawBorderState;
     [borderColor set];
     [path setLineWidth:lineWidth];
     [path stroke];
