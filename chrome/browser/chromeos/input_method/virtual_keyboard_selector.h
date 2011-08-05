@@ -7,6 +7,7 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 
@@ -32,6 +33,9 @@ class VirtualKeyboard {
   // in this case.
   GURL GetURLForLayout(const std::string& layout) const;
 
+  // Returns true if the virtual keyboard extension supports the |layout|.
+  bool IsLayoutSupported(const std::string& layout) const;
+
   const GURL& url() const { return url_; }
   const std::set<std::string>& supported_layouts() const {
     return supported_layouts_;
@@ -54,15 +58,18 @@ class VirtualKeyboardSelector {
 
   // Adds a new virtual keyboard extension. If |keyboard.is_system_| is true,
   // the virtual keyboard extension will have lower priority than non-system
-  // keyboard extensions.
+  // keyboard extensions. Returns false if a virtual keyboard extension
+  // specified by the |url| is already added.
   // TODO(yusukes): Add RemoveVirtualKeyboard() as well.
-  void AddVirtualKeyboard(const GURL& url,
+  bool AddVirtualKeyboard(const GURL& url,
                           const std::set<std::string>& supported_layouts,
                           bool is_system);
 
   // Selects and returns the most suitable virtual keyboard extension for the
   // |layout|. Returns NULL if no virtual keyboard extension for the layout
-  // is found. If |current_|, which is the virtual keyboard extension currently
+  // is found. If a specific virtual keyboard extension for the |layout| is
+  // already set by SetUserPreference, the virtual keyboard extension is always
+  // returned. If |current_|, which is the virtual keyboard extension currently
   // in use, supports the |layout|, the current one will be returned. Otherwise
   // the function scans the list of |keyboards_| and then the list of
   // |system_keyboards_|. The most recently added keyboards to each list take
@@ -75,17 +82,28 @@ class VirtualKeyboardSelector {
   //   currently using.
   const VirtualKeyboard* SelectVirtualKeyboard(const std::string& layout);
 
-  // TODO(yusukes): Add a function something like
-  //   void SetUserPreference(const std::string& layout,
-  //                          const VirtualKeyboard& keyboard);
-  // so that users could use a specific virtual keyboard extension for the
-  // |layout|.
+  // Sets user preferences on virtual keyboard selection so that the virtual
+  // keyboard extension specified by the |url| is always selected for the
+  // |layout|. Returns false if a virtual keyboard extension whose address is
+  // |url| is not registered, or the extension specified by the |url| does not
+  // support the |layout|.
+  bool SetUserPreference(const std::string& layout, const GURL& url);
+
+  // Removes the preference for the |layout| added by SetUserPreference.
+  void RemoveUserPreference(const std::string& layout);
 
  protected:
-  // This function neither checks |current_| nor updates the variable. The
-  // function is protected for testability.
-  const VirtualKeyboard* SelectVirtualKeyboardInternal(
+  // Selects and returns the most suitable virtual keyboard extension for the
+  // |layout|. Unlike SelectVirtualKeyboard(), this function only scans
+  // |keyboards_| and |system_keyboards_| (in this order), and never updates
+  // |current_|. The function is protected for testability.
+  const VirtualKeyboard* SelectVirtualKeyboardWithoutPreferences(
       const std::string& layout);
+
+  // The function is protected for testability.
+  const std::map<std::string, const VirtualKeyboard*>& user_preference() const {
+    return user_preference_;
+  }
 
  private:
   // A list of third party virtual keyboard extensions.
@@ -93,8 +111,18 @@ class VirtualKeyboardSelector {
   // A list of system virtual keyboard extensions.
   std::list<const VirtualKeyboard*> system_keyboards_;
 
+  // A map from layout name to virtual keyboard extension.
+  std::map<std::string, const VirtualKeyboard*> user_preference_;
+
+  // TODO(yusukes): Support per-site preference. e.g. always use virtual
+  // keyboard ABC on https://mail.google.com/, XYZ on http://www.google.com/.
+
   // The virtual keyboard currently in use.
   const VirtualKeyboard* current_;
+
+  // A map from URL to virtual keyboard extension. The map is for making
+  // SetUserPreference() faster.
+  std::map<GURL, const VirtualKeyboard*> url_to_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardSelector);
 };
