@@ -420,15 +420,21 @@
             '../third_party/adobe/flash/flash_player.gyp:flash_player',
           ],
         }],
-        ['OS=="mac" or OS=="win"', {
+        ['OS=="mac"', {
           'dependencies': [
-            # On Windows and Mac, make sure we've built chrome_dll, which
-            # contains all of the library code with Chromium functionality.
+            # On Mac, make sure we've built chrome_dll, which contains all of
+            # the library code with Chromium functionality.
             'chrome_dll',
           ],
         }],
         ['OS=="win"', {
           'dependencies': [
+            # On Windows there is an intermediate target which builds an
+            # initial version of chrome_dll, then either optimizes it or
+            # copies to its final location.  The optimization step also
+            # depends on chrome_exe, so here we depend on the initial
+            # chrome_dll.
+            'chrome_dll_initial',
             'chrome_version_resources',
             'installer_util',
             'installer_util_strings',

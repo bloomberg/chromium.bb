@@ -63,11 +63,24 @@
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
-          'target_name': 'chrome_dll',
-          'type': 'shared_library',
           'variables': {
             'chrome_dll_target': 1,
+            'conditions' : [
+              ['OS=="win"', {
+                # On Windows we use build chrome_dll as an intermediate target
+                # then have a subsequent step which either optimizes it to its
+                # final location, or copies it to its final location, depending
+                # on whether or not optimize_with_syzygy==1.  Please, refer to
+                # chrome_dll_syzygy.gypi for the subsequent defintion of the
+                # Windows chrome_dll target.
+                'dll_target_name': 'chrome_dll_initial',
+              }, {
+                'dll_target_name': 'chrome_dll',
+              }],
+            ],
           },
+          'target_name': '<(dll_target_name)',
+          'type': 'shared_library',
           'dependencies': [
             '<@(chromium_dependencies)',
             'app/policy/cloud_policy_codegen.gyp:policy',
@@ -133,7 +146,21 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
-                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                  # On Windows we use build chrome_dll as an intermediate target
+                  # then have a subsequent step which either optimizes it to its
+                  # final location, or copies it to its final location, based
+                  # on whether or not optimize_with_syzygy==1.
+                  'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
+                  'OutputFile': '$(OutDir)\\initial\\chrome.dll',
+                  'conditions': [
+                    ['fastbuild==0', {
+                      # This corresponds to the /PROFILE flag which ensures the PDB
+                      # file contains FIXUP information. This information is used
+                      # by the Syzygy optimization tool. Syzygy optimization is
+                      # disabled when fastbuild!=0.
+                      'Profile': 'true',
+                    }],
+                  ],
                 },
               },
             }],  # OS=="win"

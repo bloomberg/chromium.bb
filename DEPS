@@ -312,6 +312,11 @@ deps_os = {
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":
       "/trunk/deps/third_party/yasm/binaries@74228",
+
+    # Binary level profile guided optimizations.  This points to the
+    # latest release binaries for the toolchain.
+    "src/third_party/syzygy/binaries":
+      "https://sawbuck.googlecode.com/svn/trunk/syzygy/binaries@394",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
