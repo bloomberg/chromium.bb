@@ -53,6 +53,7 @@ class GtkIMContextWrapper {
                               const gfx::Rect& caret_rect);
   void OnFocusIn();
   void OnFocusOut();
+  bool is_focused() const { return is_focused_; }
 
 #if !defined(TOOLKIT_VIEWS)
   // Not defined for views because the views context menu doesn't

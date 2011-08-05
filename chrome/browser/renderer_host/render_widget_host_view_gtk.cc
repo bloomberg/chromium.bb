@@ -216,7 +216,7 @@ class RenderWidgetHostViewGtkWidget {
       host_view->GetRenderWidgetHost()->Blur();
 
     // Prevents us from stealing input context focus in OnGrabNotify() handler.
-    host_view->was_focused_before_grab_ = false;
+    host_view->was_imcontext_focused_before_grab_ = false;
 
     // Disable the GtkIMContext object.
     host_view->im_context_->OnFocusOut();
@@ -231,11 +231,12 @@ class RenderWidgetHostViewGtkWidget {
   static void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed,
                            RenderWidgetHostViewGtk* host_view) {
     if (was_grabbed) {
-      if (host_view->was_focused_before_grab_)
+      if (host_view->was_imcontext_focused_before_grab_)
         host_view->im_context_->OnFocusIn();
     } else {
-      host_view->was_focused_before_grab_ = host_view->HasFocus();
-      if (host_view->was_focused_before_grab_) {
+      host_view->was_imcontext_focused_before_grab_ =
+          host_view->im_context_->is_focused();
+      if (host_view->was_imcontext_focused_before_grab_) {
         gdk_window_set_cursor(widget->window, NULL);
         host_view->im_context_->OnFocusOut();
       }
@@ -509,7 +510,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       overlay_animation_(this),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
-      was_focused_before_grab_(false),
+      was_imcontext_focused_before_grab_(false),
       do_x_grab_(false),
       is_fullscreen_(false),
       destroy_handler_id_(0),

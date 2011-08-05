@@ -211,9 +211,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // We ignore the first mouse release on popups so the popup will remain open.
   bool is_popup_first_mouse_release_;
 
-  // Whether or not this widget was focused before shadowed by another widget.
-  // Used in OnGrabNotify() handler to track the focused state correctly.
-  bool was_focused_before_grab_;
+  // Whether or not this widget's input context was focused before being
+  // shadowed by another widget. Used in OnGrabNotify() handler to track the
+  // focused state correctly.
+  bool was_imcontext_focused_before_grab_;
 
   // True if we are responsible for creating an X grab. This will only be used
   // for <select> dropdowns. It should be true for most such cases, but false
