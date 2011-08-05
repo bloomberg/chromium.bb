@@ -897,7 +897,7 @@ bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
   if (dest_root.empty())
     return false;
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      origin_url, type, false);
+      origin_url, type, true);
   if (!db)
     return false;
 
