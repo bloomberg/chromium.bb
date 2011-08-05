@@ -69,11 +69,6 @@ class Logging {
   void OnPostDispatchMessage(const Message& message,
                              const std::string& channel_id);
 
-  // Returns the name of the logging enabled/disabled events so that the
-  // sandbox can add them to to the policy.  If true, gets the name of the
-  // enabled event, if false, gets the name of the disabled event.
-  static std::wstring GetEventName(bool enabled);
-
   // Like the *MsgLog functions declared for each message class, except this
   // calls the correct one based on the message type automatically.  Defined in
   // ipc_logging.cc.
