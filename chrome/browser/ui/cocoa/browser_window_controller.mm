@@ -1049,10 +1049,13 @@ enum {
           }
           break;
         }
-        case IDC_SYNC_BOOKMARKS:
-          enable &= browser_->profile()->IsSyncAccessible();
-          sync_ui_util::UpdateSyncItem(item, enable, browser_->profile());
+        case IDC_SYNC_BOOKMARKS: {
+          Profile* original_profile =
+              browser_->profile()->GetOriginalProfile();
+          enable &= original_profile->IsSyncAccessible();
+          sync_ui_util::UpdateSyncItem(item, enable, original_profile);
           break;
+        }
         default:
           // Special handling for the contents of the Text Encoding submenu. On
           // Mac OS, instead of enabling/disabling the top-level menu item, we
