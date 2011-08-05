@@ -219,6 +219,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--allow-file-access-from-files',
         '--enable-file-cookies',
         '--dom-automation',
+        '--skip-oauth-login',
       ]
     else:
       return []
