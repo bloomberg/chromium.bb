@@ -13,20 +13,37 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/policy/delayed_work_scheduler.h"
 
+// Utilities for testing users of DelayedWorkScheduler. There are no
+// thread-safety guarantees for the classes in this file. They expect to
+// only be called from the UI thread and issue callbacks on that very same
+// thread.
+//
+// Usage examples:
+//
+// Making CloudPolicyController and/or DeviceTokenFetcher run without real-time
+// delays in tests:
+//
+//   DeviceTokenFetcher fetcher(..., new DummyDelayedWorkScheduler);
+//
+// Running CloudPolicyController and/or DeviceTokenFetcher in a simulated
+// environment, in which the time of any of their actions can be recorded,
+// but without having to wait for the real-time delays:
+//
+//   EventLogger logger;
+//   DeviceTokenFetcher fetcher(..., new LoggingEventScheduler(&logger));
+//   CloudPolicyController controller(..., new LoggingEventScheduler(&logger));
+//
+// Start the policy subsystem, and use logger.RegisterEvent() in case of
+// any interesting events. The time of all these events will be recorded
+// by |logger|. After that, the results can be extracted easily:
+//
+//   std::vector<int64> logged_events;
+//   logger.Swap(&logged_events);
+//
+// Each element of |logged_events| corresponds to a logger event, and stores
+// the virtual time when it was logged. Events are in ascending order.
+
 namespace policy {
-
-// This implementation of DelayedWorkScheduler always schedules the tasks
-// with zero delay.
-class DummyWorkScheduler : public DelayedWorkScheduler {
- public:
-  DummyWorkScheduler();
-  virtual ~DummyWorkScheduler();
-
-  virtual void PostDelayedWork(const base::Closure& callback, int64 delay);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyWorkScheduler);
-};
 
 // Helper class for LoggingWorkScheduler. It essentially emulates a real
 // message loop. All the submitted tasks are run with zero delay, but the
@@ -38,7 +55,7 @@ class DummyWorkScheduler : public DelayedWorkScheduler {
 class EventLogger {
  public:
   EventLogger();
-  virtual ~EventLogger();
+  ~EventLogger();
 
   // Post a task to be executed |delay| milliseconds from now. The task can be
   // cancelled later by calling Reset() on the callback.
@@ -56,36 +73,7 @@ class EventLogger {
                          int64 start, int64 length);
 
  private:
-  class Task {
-   public:
-    Task();
-    Task(int64 trigger_time,
-         int64 secondary_key,
-         linked_ptr<base::Closure> callback);
-    ~Task();
-
-    // Returns true if |this| should be executed before |rhs|.
-    // Used for sorting by the priority queue.
-    bool operator< (const Task& rhs) const;
-
-    int64 trigger_time() const;
-
-    // Returns a copy of the callback object of this task, and resets the
-    // original callback object. (LoggingTaskScheduler owns a linked_ptr to
-    // its task's callback objects and it only allows firing new tasks if the
-    // previous task's callback object has been reset.)
-    base::Closure GetAndResetCallback();
-
-   private:
-    // The virtual time when this task will trigger.
-    // Smaller times win.
-    int64 trigger_time_;
-    // Used for sorting tasks that have the same trigger_time.
-    // Bigger keys win.
-    int64 secondary_key_;
-
-    linked_ptr<base::Closure> callback_;
-  };
+  class Task;
 
   // Updates |current_time_| and triggers the next scheduled task. This method
   // is run repeatedly on the main message loop until there are scheduled
@@ -115,6 +103,8 @@ class EventLogger {
 // execution time.
 class LoggingWorkScheduler : public DelayedWorkScheduler {
  public:
+  // An EventLogger may be shared by more than one schedulers, therefore
+  // no ownership is taken.
   explicit LoggingWorkScheduler(EventLogger* logger);
   virtual ~LoggingWorkScheduler();
 
@@ -126,6 +116,19 @@ class LoggingWorkScheduler : public DelayedWorkScheduler {
   linked_ptr<base::Closure> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingWorkScheduler);
+};
+
+// This implementation of DelayedWorkScheduler always schedules the tasks
+// with zero delay.
+class DummyWorkScheduler : public DelayedWorkScheduler {
+ public:
+  DummyWorkScheduler();
+  virtual ~DummyWorkScheduler();
+
+  virtual void PostDelayedWork(const base::Closure& callback, int64 delay);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyWorkScheduler);
 };
 
 }  // namespace policy

@@ -13,6 +13,8 @@ namespace policy {
 
 // A mockable class for scheduling and cancelling a delayed task.
 // This is only a thin wrapper around base::OneShotTimer.
+// This class is not thread-safe: all its methods should be called on the same
+// thread, and the callback will happen on that same thread.
 class DelayedWorkScheduler {
  public:
   DelayedWorkScheduler();
