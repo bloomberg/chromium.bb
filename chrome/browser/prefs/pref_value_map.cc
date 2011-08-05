@@ -102,6 +102,15 @@ void PrefValueMap::SetString(const std::string& key,
   SetValue(key, Value::CreateStringValue(value));
 }
 
+bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
+  const Value* stored_value = NULL;
+  return GetValue(key, &stored_value) && stored_value->GetAsInteger(value);
+}
+
+void PrefValueMap::SetInteger(const std::string& key, const int value) {
+  SetValue(key, Value::CreateIntegerValue(value));
+}
+
 void PrefValueMap::GetDifferingKeys(
     const PrefValueMap* other,
     std::vector<std::string>* differing_keys) const {

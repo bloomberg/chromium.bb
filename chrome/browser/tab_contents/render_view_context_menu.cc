@@ -28,6 +28,7 @@
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -977,6 +978,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return true;
   }
 
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   switch (id) {
     case IDC_BACK:
       return source_tab_contents_->controller().CanGoBack();
@@ -1028,8 +1031,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
-    case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       return params_.link_url.is_valid();
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
+      return params_.link_url.is_valid() &&
+             incognito_avail != IncognitoModePrefs::FORCED;
 
     case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
       return params_.unfiltered_link_url.is_valid();
@@ -1153,7 +1158,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid() &&
-             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
+             incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();

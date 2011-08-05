@@ -55,6 +55,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profiles/profile.h"
@@ -292,7 +293,7 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
-  profile_pref_registrar_.Add(prefs::kIncognitoEnabled, this);
+  profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -1470,10 +1471,12 @@ void Browser::Stop() {
 }
 
 void Browser::NewWindow() {
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   if (browser_defaults::kAlwaysOpenIncognitoWindow &&
+      incognito_avail != IncognitoModePrefs::DISABLED &&
       (CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) ||
-       profile_->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
-      profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+       incognito_avail == IncognitoModePrefs::FORCED)) {
     NewIncognitoWindow();
     return;
   }
@@ -1487,7 +1490,8 @@ void Browser::NewWindow() {
 }
 
 void Browser::NewIncognitoWindow() {
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+  if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
+          IncognitoModePrefs::DISABLED) {
     NewWindow();
     return;
   }
@@ -2251,12 +2255,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kIncognitoEnabled,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kIncognitoForced,
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation,
@@ -3715,10 +3713,15 @@ void Browser::Observe(int type,
         } else {
           CreateInstantIfNecessary();
         }
-      } else if (pref_name == prefs::kIncognitoEnabled) {
+      } else if (pref_name == prefs::kIncognitoModeAvailability) {
+        IncognitoModePrefs::Availability available =
+            IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+        command_updater_.UpdateCommandEnabled(
+            IDC_NEW_WINDOW,
+            available != IncognitoModePrefs::FORCED);
         command_updater_.UpdateCommandEnabled(
             IDC_NEW_INCOGNITO_WINDOW,
-            profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
+            available != IncognitoModePrefs::DISABLED);
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
@@ -3854,10 +3857,15 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
 
   // Window management commands
-  command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, true);
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+  command_updater_.UpdateCommandEnabled(
+      IDC_NEW_WINDOW,
+      incognito_avail != IncognitoModePrefs::FORCED);
   command_updater_.UpdateCommandEnabled(
       IDC_NEW_INCOGNITO_WINDOW,
-      profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
+      incognito_avail != IncognitoModePrefs::DISABLED);
+
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);

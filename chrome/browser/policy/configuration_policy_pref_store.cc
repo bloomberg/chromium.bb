@@ -21,6 +21,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_path_parser.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -106,6 +107,11 @@ class ConfigurationPolicyPrefKeeper
   // ApplyDefaultSearchPolicy takes ownership of |value|.
   bool ApplyDefaultSearchPolicy(ConfigurationPolicyType policy, Value* value);
 
+  // Processes incognito mode availability related policies. Returns true if the
+  // specified policy is pertinent to incognito mode availability. In that case,
+  // the function takes ownership of |value|.
+  bool ApplyIncognitoModePolicy(ConfigurationPolicyType policy, Value* value);
+
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
   void EnsureStringPrefExists(const std::string& path);
@@ -121,6 +127,11 @@ class ConfigurationPolicyPrefKeeper
   // respective values in |prefs_|.
   void FinalizeProxyPolicySettings();
 
+  // If the required entries for the Incognito mode availability settings
+  // are specified and valid, finalizes the policy-specified configuration
+  // by initializing the respective values in |prefs_|.
+  void FinalizeIncognitoModeSettings();
+
   // Returns true if the policy values stored in proxy_* represent a valid proxy
   // configuration, including the case in which there is no configuration at
   // all.
@@ -135,6 +146,11 @@ class ConfigurationPolicyPrefKeeper
   // Temporary cache that stores values until FinalizeProxyPolicySettings()
   // is called.
   std::map<ConfigurationPolicyType, Value*> proxy_policies_;
+
+  // Saved state of the deprecated kPolicyIncognitoEnabled. It is still used for
+  // backward compatibility to set the new kIncognitoAvailabilityMode pref in
+  // case the corresponding policy for the latter is not specified.
+  scoped_ptr<Value> deprecated_incognito_enabled_;
 
   PrefValueMap prefs_;
 
@@ -191,10 +207,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kShowHomeButton },
   { Value::TYPE_BOOLEAN, kPolicyJavascriptEnabled,
     prefs::kWebKitJavascriptEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyIncognitoEnabled,
-    prefs::kIncognitoEnabled },
-  { Value::TYPE_BOOLEAN, kPolicyIncognitoForced,
-    prefs::kIncognitoForced },
   { Value::TYPE_BOOLEAN, kPolicySavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled },
   { Value::TYPE_BOOLEAN, kPolicyClearSiteDataOnExit,
@@ -317,6 +329,7 @@ ConfigurationPolicyPrefKeeper::ConfigurationPolicyPrefKeeper(
     LOG(WARNING) << "Failed to get policy from provider.";
   FinalizeProxyPolicySettings();
   FinalizeDefaultSearchPolicySettings();
+  FinalizeIncognitoModeSettings();
 }
 
 ConfigurationPolicyPrefKeeper::~ConfigurationPolicyPrefKeeper() {
@@ -367,6 +380,9 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
     return;
 
   if (ApplyDefaultSearchPolicy(policy, value))
+    return;
+
+  if (ApplyIncognitoModePolicy(policy, value))
     return;
 
   if (ApplyPolicyFromMap(policy, value, kSimplePolicyMap,
@@ -556,6 +572,37 @@ bool ConfigurationPolicyPrefKeeper::ApplyDefaultSearchPolicy(
   return false;
 }
 
+bool ConfigurationPolicyPrefKeeper::ApplyIncognitoModePolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  if (policy == kPolicyIncognitoModeAvailability) {
+    int availability = IncognitoModePrefs::ENABLED;
+    bool result = value->GetAsInteger(&availability);
+    delete value;
+    if (result) {
+      IncognitoModePrefs::Availability availability_enum_value;
+      if (IncognitoModePrefs::IntToAvailability(availability,
+                                                &availability_enum_value)) {
+        prefs_.SetValue(prefs::kIncognitoModeAvailability,
+                        Value::CreateIntegerValue(availability_enum_value));
+      } else {
+        LOG(WARNING) << "IncognitoModeAvailability policy value is "
+                     << "out of range " << availability;
+      }
+    } else {
+      LOG(WARNING) << "IncognitoModeAvailability policy value could not be "
+                   << "parsed";
+    }
+    return true;
+  }
+  if (policy == kPolicyIncognitoEnabled) {
+    deprecated_incognito_enabled_.reset(value);
+    return true;
+  }
+  // The policy is not relevant to incognito.
+  return false;
+}
+
 void ConfigurationPolicyPrefKeeper::EnsureStringPrefExists(
     const std::string& path) {
   std::string value;
@@ -635,6 +682,25 @@ void ConfigurationPolicyPrefKeeper::FinalizeDefaultSearchPolicySettings() {
   // Required entries are not there.  Remove any related entries.
   RemovePreferencesOfMap(kDefaultSearchPolicyMap,
                          arraysize(kDefaultSearchPolicyMap));
+}
+
+void ConfigurationPolicyPrefKeeper::FinalizeIncognitoModeSettings() {
+  int int_value;
+  if (!prefs_.GetInteger(prefs::kIncognitoModeAvailability, &int_value)) {
+    // If kPolicyIncognitoModeAvailability is not specified, check the obsolete
+    // kPolicyIncognitoEnabled.
+    if (deprecated_incognito_enabled_.get()) {
+      bool enabled = true;
+      if (deprecated_incognito_enabled_->GetAsBoolean(&enabled)) {
+        prefs_.SetInteger(
+            prefs::kIncognitoModeAvailability,
+            enabled ? IncognitoModePrefs::ENABLED :
+                      IncognitoModePrefs::DISABLED);
+      } else {
+        LOG(WARNING) << "IncognitoEnabled policy value could not be parsed";
+      }
+    }
+  }
 }
 
 void ConfigurationPolicyPrefKeeper::FinalizeProxyPolicySettings() {
@@ -999,7 +1065,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     { kPolicyPrintingEnabled, Value::TYPE_BOOLEAN, key::kPrintingEnabled },
     { kPolicyJavascriptEnabled, Value::TYPE_BOOLEAN, key::kJavascriptEnabled },
     { kPolicyIncognitoEnabled, Value::TYPE_BOOLEAN, key::kIncognitoEnabled },
-    { kPolicyIncognitoForced, Value::TYPE_BOOLEAN, key::kIncognitoForced },
+    { kPolicyIncognitoModeAvailability, Value::TYPE_INTEGER,
+      key::kIncognitoModeAvailability },
     { kPolicySavingBrowserHistoryDisabled, Value::TYPE_BOOLEAN,
       key::kSavingBrowserHistoryDisabled },
     { kPolicyClearSiteDataOnExit, Value::TYPE_BOOLEAN,

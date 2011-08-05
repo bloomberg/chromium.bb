@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -242,7 +243,8 @@ class OffTheRecordProfileImpl : public Profile,
 
     ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
-    DCHECK(real_profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
+    DCHECK_NE(IncognitoModePrefs::DISABLED,
+              IncognitoModePrefs::GetAvailability(real_profile->GetPrefs()));
 
     // TODO(oshima): Remove the need to eagerly initialize the request context
     // getter. chromeos::OnlineAttempt is illegally trying to access this

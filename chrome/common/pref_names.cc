@@ -164,11 +164,11 @@ const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingReportingEnabled[] =
     "safebrowsing.reporting_enabled";
 
-// Boolean that is true when Incognito support is enabled.
-const char kIncognitoEnabled[] = "incognito.enabled";
-
-// Boolean that specifies if all user sessions should be forced into Incognito.
-const char kIncognitoForced[] = "incognito.forced";
+// Enum that specifies whether Incognito mode is:
+// 0 - Enabled. Default behaviour. Default mode is available on demand.
+// 1 - Disabled. Used cannot browse pages in Incognito mode.
+// 2 - Forced. All pages/sessions are forced into Incognito.
+const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";

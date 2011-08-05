@@ -271,28 +271,49 @@
       'type': 'main',
       'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
       'features': {'dynamic_refresh': 1},
+      'deprecated': True,
       'example_value': False,
       'id': 10,
       'caption': '''Enable Incognito mode''',
-      'desc': '''Enables Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy is deprecated. Please, use IncognitoModeAvailability instead.
+      Enables Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this setting is enabled or not configured, users can open web pages in incognito mode.
 
       If this setting is disabled, users cannot open web pages in incognito mode.''',
     },
     {
-      'name': 'IncognitoForced',
-      'type': 'main',
+      'name': 'IncognitoModeAvailability',
+      'type': 'int-enum',
+      'items': [
+        {
+          'name': 'Enabled',
+          'value': 0,
+          'caption': '''Incognito mode available.'''
+        },
+        {
+          'name': 'Disabled',
+          'value': 1,
+          'caption': '''Incognito mode disabled.'''
+        },
+        {
+          'name': 'Forced',
+          'value': 2,
+          'caption': '''Incognito mode forced.'''
+        },
+      ],
       'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
       'features': {'dynamic_refresh': 1},
-      'example_value': False,
+      'example_value': 1,
       'id': 93,
-      'caption': '''Force Incognito mode''',
-      'desc': '''Forces every session into Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'caption': '''Incognito mode availability.''',
+      'desc': '''Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this setting is enabled, users can open pages only in incognito mode.
+      If 'Enabled' is selected, pages may be opened in Incognito mode.
 
-      If this setting is disabled or not configured, users can use the browser in normal mode as well.''',
+      If 'Disabled' is selected, pages may not be opened in Incognito mode.
+
+      If 'Forced' is selected, pages may be opened ONLY in Incognito mode.''',
     },
     {
       'name': 'SavingBrowserHistoryDisabled',

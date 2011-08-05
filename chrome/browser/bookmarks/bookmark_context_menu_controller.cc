@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -243,18 +244,23 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
        selection_[0]->parent() == model_->root_node());
   bool can_edit =
       profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled);
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
   switch (command_id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
-             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
+             incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO:
-      return HasURLs() && !profile_->IsOffTheRecord() &&
-             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
+      return HasURLs() &&
+             !profile_->IsOffTheRecord() &&
+             incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL:
-    case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
       return HasURLs();
+    case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
+      return HasURLs() &&
+             incognito_avail != IncognitoModePrefs::FORCED;
 
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
     case IDC_BOOKMARK_BAR_EDIT:

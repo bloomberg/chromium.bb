@@ -462,9 +462,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyTestParams::ForBooleanPolicy(
             kPolicyInstantEnabled,
             key::kInstantEnabled),
-        PolicyTestParams::ForBooleanPolicy(
-            kPolicyIncognitoEnabled,
-            key::kIncognitoEnabled),
+        PolicyTestParams::ForIntegerPolicy(
+            kPolicyIncognitoModeAvailability,
+            key::kIncognitoModeAvailability),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyDisablePluginFinder,
             key::kDisablePluginFinder),

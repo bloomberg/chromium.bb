@@ -23,6 +23,19 @@ TEST_F(PrefValueMapTest, SetValue) {
   EXPECT_TRUE(StringValue("hi mom!").Equals(result));
 }
 
+TEST_F(PrefValueMapTest, GetAndSetIntegerValue) {
+  PrefValueMap map;
+  ASSERT_TRUE(map.SetValue("key", Value::CreateIntegerValue(5)));
+
+  int int_value = 0;
+  EXPECT_TRUE(map.GetInteger("key", &int_value));
+  EXPECT_EQ(5, int_value);
+
+  map.SetInteger("key", -14);
+  EXPECT_TRUE(map.GetInteger("key", &int_value));
+  EXPECT_EQ(-14, int_value);
+}
+
 TEST_F(PrefValueMapTest, RemoveValue) {
   PrefValueMap map;
   EXPECT_FALSE(map.RemoveValue("key"));

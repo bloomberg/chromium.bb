@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -527,7 +528,8 @@ bool CreateWindowFunction::RunImpl() {
     if (args->HasKey(keys::kIncognitoKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
                                                    &incognito));
-      if (!profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+      if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
+          IncognitoModePrefs::DISABLED) {
         error_ = keys::kIncognitoModeIsDisabled;
         return false;
       }

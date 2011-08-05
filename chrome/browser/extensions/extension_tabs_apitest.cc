@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -200,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
   ASSERT_TRUE(StartTestServer());
 
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kIncognitoEnabled, false);
+  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
 
   // This makes sure that creating an incognito window fails due to pref
   // (policy) being set.

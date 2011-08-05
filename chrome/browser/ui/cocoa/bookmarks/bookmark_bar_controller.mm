@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -1085,12 +1086,23 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
   }
 
+  Profile* profile = browser_->profile();
   // If this is an incognito window, don't allow "open in incognito".
   if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
       (action == @selector(openAllBookmarksIncognitoWindow:))) {
-    Profile* profile = browser_->profile();
     if (profile->IsOffTheRecord() ||
-        !profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+        IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+            IncognitoModePrefs::DISABLED) {
+      return NO;
+    }
+  }
+
+  // If Incognito mode is forced, do not let open bookmarks in normal window.
+  if ((action == @selector(openBookmark:)) ||
+      (action == @selector(openAllBookmarksNewWindow:)) ||
+      (action == @selector(openAllBookmarks:))) {
+    if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+            IncognitoModePrefs::FORCED) {
       return NO;
     }
   }

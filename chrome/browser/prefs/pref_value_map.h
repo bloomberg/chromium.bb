@@ -58,6 +58,13 @@ class PrefValueMap {
   // Sets the value for |key| to the string |value|.
   void SetString(const std::string& key, const std::string& value);
 
+  // Gets an int value for |key| and stores it in |value|. Returns true if
+  // the value was found and of the proper type.
+  bool GetInteger(const std::string& key, int* value) const;
+
+  // Sets the value for |key| to the int |value|.
+  void SetInteger(const std::string& key, const int value);
+
   // Compares this value map against |other| and stores all key names that have
   // different values in |differing_keys|. This includes keys that are present
   // only in one of the maps.

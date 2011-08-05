@@ -67,8 +67,7 @@ extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kAutologinEnabled[];
 extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingReportingEnabled[];
-extern const char kIncognitoEnabled[];
-extern const char kIncognitoForced[];
+extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 extern const char kConfirmToQuitEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE

@@ -31,6 +31,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -360,15 +361,22 @@ bool SessionCrashedInfoBarDelegate::Accept() {
 
 // Utility functions ----------------------------------------------------------
 
+bool IncognitoIsForced(const CommandLine& command_line,
+                       const PrefService* prefs) {
+  IncognitoModePrefs::Availability incognito_avail =
+      IncognitoModePrefs::GetAvailability(prefs);
+  return incognito_avail != IncognitoModePrefs::DISABLED &&
+         (command_line.HasSwitch(switches::kIncognito) ||
+          incognito_avail == IncognitoModePrefs::FORCED);
+}
+
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
   if (command_line.HasSwitch(switches::kRestoreLastSession))
     pref.type = SessionStartupPref::LAST;
-  if ((command_line.HasSwitch(switches::kIncognito) ||
-       profile->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
-      pref.type == SessionStartupPref::LAST &&
-      profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+  if (pref.type == SessionStartupPref::LAST &&
+      IncognitoIsForced(command_line, profile->GetPrefs())) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.
@@ -537,10 +545,9 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   }
 #endif
 
-  // Continue with the incognito profile from here on if --incognito
-  if ((command_line.HasSwitch(switches::kIncognito) ||
-       profile->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
-      profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+  // Continue with the incognito profile from here on if Incognito mode
+  // is forced.
+  if (IncognitoIsForced(command_line, profile->GetPrefs())) {
     profile = profile->GetOffTheRecordProfile();
   }
 

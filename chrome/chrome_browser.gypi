@@ -1708,6 +1708,8 @@
         'browser/prefs/command_line_pref_store.h',
         'browser/prefs/default_pref_store.cc',
         'browser/prefs/default_pref_store.h',
+        'browser/prefs/incognito_mode_prefs.cc',
+        'browser/prefs/incognito_mode_prefs.h',
         'browser/prefs/incognito_user_pref_store.cc',
         'browser/prefs/incognito_user_pref_store.h',
         'browser/prefs/pref_change_registrar.cc',
