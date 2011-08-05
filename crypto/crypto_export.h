@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRYPTO_CRYPTO_API_H_
-#define CRYPTO_CRYPTO_API_H_
+#ifndef CRYPTO_CRYPTO_EXPORT_H_
+#define CRYPTO_CRYPTO_EXPORT_H_
 #pragma once
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(CRYPTO_IMPLEMENTATION)
-#define CRYPTO_API __declspec(dllexport)
+#define CRYPTO_EXPORT __declspec(dllexport)
 #else
-#define CRYPTO_API __declspec(dllimport)
+#define CRYPTO_EXPORT __declspec(dllimport)
 #endif  // defined(CRYPTO_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-#define CRYPTO_API __attribute__((visibility("default")))
+#define CRYPTO_EXPORT __attribute__((visibility("default")))
 #endif
 
 #else  // defined(COMPONENT_BUILD)
-#define CRYPTO_API
+#define CRYPTO_EXPORT
 #endif
 
-#endif  // CRYPTO_CRYPTO_API_H_
+#endif  // CRYPTO_CRYPTO_EXPORT_H_
