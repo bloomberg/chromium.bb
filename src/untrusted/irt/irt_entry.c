@@ -17,7 +17,6 @@ void __libc_init_array(void) __attribute__((weak));
 void _init(void) __attribute__((weak));
 
 void __pthread_initialize(void);
-void __pthread_shutdown(void);
 
 /*
  * This is the true entry point for untrusted code.

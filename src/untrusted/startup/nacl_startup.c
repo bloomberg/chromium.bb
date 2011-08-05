@@ -1,9 +1,8 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Native Client startup wrapper
@@ -18,7 +17,6 @@ extern void __libc_fini_array();
 extern int main(int argc, char *argv[], char *envp[]);
 extern void exit(int result);
 extern void __pthread_initialize();
-extern void __pthread_shutdown();
 extern void atexit(void (*funptr)());
 
 typedef void (*FUN_PTR)();
@@ -48,10 +46,6 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    * present.
    */
   __pthread_initialize();
-  /*
-   * Install the pthread_shutdown call to be called at exit.
-   */
-  atexit(__pthread_shutdown);
   /*
    * Execute the init section before starting main.  The C++ static
    * object constructors are invoked from here.

@@ -24,12 +24,3 @@ int __pthread_initialize(void) {
    */
   return __pthread_initialize_minimal(sizeof(void *));
 }
-
-__attribute__((weak))
-int __pthread_shutdown(void) {
-  /*
-   * No extra shutdown work is required when pthread library is not used.
-   */
-  __newlib_thread_exit();
-  return 0;
-}

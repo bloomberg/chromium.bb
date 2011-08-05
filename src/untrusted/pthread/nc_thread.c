@@ -564,7 +564,7 @@ ret:
   return retval;
 }
 
-int __pthread_shutdown(void) {
+static int wait_for_threads(void) {
   pthread_mutex_lock(&__nc_thread_management_lock);
 
   while (1 != __nc_running_threads_counter) {
@@ -639,8 +639,8 @@ void pthread_exit (void* retval) {
 
   if (0 == thread_id) {
     /* This is the main thread - wait for other threads to complete */
-    __pthread_shutdown();
-    _exit(0);
+    wait_for_threads();
+    exit(0);
   }
 
   pthread_mutex_lock(&__nc_thread_management_lock);

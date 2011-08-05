@@ -108,6 +108,16 @@ if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
                          'run_main_thread_pthread_exit_test2',
                          is_broken=is_broken or not env.Bit('nacl_glibc'))
 
+exit_with_thread_nexe = env.ComponentProgram(
+    'exit_with_thread',
+    'exit_with_thread.c',
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('exit_with_thread.out',
+                                 exit_with_thread_nexe)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_with_thread_test',
+                       is_broken=is_broken)
+
 cond_wait_test_nexe = env.ComponentProgram(
     'cond_wait_test',
     'cond_wait_test.cc',

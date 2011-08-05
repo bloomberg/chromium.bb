@@ -17,7 +17,6 @@ void _init(void) __attribute__((weak));
 void _fini(void) __attribute__((weak));
 
 void __pthread_initialize(void);
-void __pthread_shutdown(void);
 
 int main(int argc, char **argv, char **envp);
 
@@ -49,7 +48,6 @@ void _start(uint32_t *info) {
     atexit(&_fini);
 
   __pthread_initialize();
-  atexit(&__pthread_shutdown);
 
   if (&__libc_init_array)
     __libc_init_array();
