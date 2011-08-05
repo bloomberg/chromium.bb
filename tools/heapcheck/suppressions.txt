@@ -1712,3 +1712,72 @@
    ...
    fun:CrxUpdateService::ProcessPendingItems
 }
+{
+   bug_91816_a
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:MockBrowsingDataQuotaHelper::AddHost
+   fun:MockBrowsingDataQuotaHelper::AddQuotaSamples
+   fun:::CookiesTreeModelTest::CreateCookiesTreeModelWithInitialSample
+}
+{
+   bug_91816_b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:MockBrowsingDataQuotaHelper::AddHost
+   fun:MockBrowsingDataQuotaHelper::AddQuotaSamples
+   fun:::CookiesTreeModelTest_RemoveSingleCookieNode_Test::TestBody
+}
+{
+   bug_91816_c
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:MockBrowsingDataQuotaHelper::AddHost
+   fun:MockBrowsingDataQuotaHelper::AddQuotaSamples
+   fun:::CookiesTreeModelTest_RemoveSingleCookieNodeOf3_Test::TestBody
+}
+{
+   bug_91816_d
+   Heapcheck:Leak
+   fun:::CookiesTreeModelTest::SetUp
+}
+{
+   bug_91816_e
+   Heapcheck:Leak
+   fun:BrowserThread::GetMessageLoopProxyForThread
+   fun:MockBrowsingDataQuotaHelper*
+   fun:::CookiesTreeModelTest::SetUp
+}
+{
+   bug_91816_f
+   Heapcheck:Leak
+   fun:::CookiesTreeModelTest_OriginOrdering_Test::TestBody
+}
+{
+   bug_91816_g
+   Heapcheck:Leak
+   fun:BrowserThread::GetMessageLoopProxyForThread
+   fun:MockBrowsingDataQuotaHelper*
+   fun:::CookiesTreeModelTest_OriginOrdering_Test::TestBody
+}
+{
+   bug_91816_h
+   Heapcheck:Leak
+   fun:::CookiesTreeModelTest_ContentSettings_Test::TestBody
+}
+{
+   bug_91816_i
+   Heapcheck:Leak
+   fun:BrowserThread::GetMessageLoopProxyForThread
+   fun:MockBrowsingDataQuotaHelper*
+   fun:::CookiesTreeModelTest_ContentSettings_Test::TestBody
+}

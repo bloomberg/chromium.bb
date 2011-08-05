@@ -5227,3 +5227,21 @@
    obj:/lib/libselinux.so.1
    obj:/lib/libselinux.so.1
 }
+{
+   bug_91816_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_120CookiesTreeModelTest5SetUpEv
+}
+{
+   bug_91816_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_140CookiesTreeModelTest_OriginOrdering_Test8TestBodyEv
+}
+{
+   bug_91816_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_141CookiesTreeModelTest_ContentSettings_Test8TestBodyEv
+}
