@@ -50,6 +50,7 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/media/media_stream_impl.h"
+#include "content/renderer/media/render_media_log.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -1968,7 +1969,8 @@ WebMediaPlayer* RenderView::createMediaPlayer(
       new webkit_glue::WebMediaPlayerImpl(client,
                                           collection.release(),
                                           message_loop_factory.release(),
-                                          media_stream_impl_.get()));
+                                          media_stream_impl_.get(),
+                                          new RenderMediaLog()));
   if (!result->Initialize(frame,
                           cmd_line->HasSwitch(switches::kSimpleDataSource),
                           video_renderer)) {

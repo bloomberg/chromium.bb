@@ -49,6 +49,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace media {
+struct MediaLogEvent;
+}
+
 namespace net {
 class CookieList;
 class URLRequestContextGetter;
@@ -212,6 +216,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                  int flags,
                                  int message_id,
                                  int routing_id);
+  void OnMediaLogEvent(const media::MediaLogEvent&);
 
   // Check the policy for getting cookies. Gets the cookies if allowed.
   void CheckPolicyForCookies(const GURL& url,
