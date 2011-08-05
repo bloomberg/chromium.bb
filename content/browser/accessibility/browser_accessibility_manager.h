@@ -53,6 +53,14 @@ class BrowserAccessibilityManager {
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
+  // Creates the platform specific BrowserAccessibilityManager. Ownership passes
+  // to the caller.
+  static BrowserAccessibilityManager* CreateEmptyDocument(
+    gfx::NativeView parent_view,
+    WebAccessibility::State state,
+    BrowserAccessibilityDelegate* delegate,
+    BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+
   virtual ~BrowserAccessibilityManager();
 
   // Type is a ViewHostMsg_AccessibilityNotification_Params::int.

@@ -35,6 +35,23 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 }
 #endif
 
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::CreateEmptyDocument(
+    gfx::NativeView parent_view,
+    WebAccessibility::State state,
+    BrowserAccessibilityDelegate* delegate,
+    BrowserAccessibilityFactory* factory) {
+  // Use empty document to process notifications
+  webkit_glue::WebAccessibility empty_document;
+  // Renderer id's always start at 1000 as determined by webkit. Boot strap
+  // our ability to reuse BrowserAccessibility instances.
+  empty_document.id = 1000;
+  empty_document.role = WebAccessibility::ROLE_WEB_AREA;
+  empty_document.state = state;
+  return BrowserAccessibilityManager::Create(
+      parent_view, empty_document, delegate, factory);
+}
+
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     gfx::NativeView parent_view,
     const WebAccessibility& src,
@@ -99,7 +116,10 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
 
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
   child_id_map_.erase(child_id);
-  renderer_id_to_child_id_map_.erase(renderer_id);
+  // Make sure we don't overwrite a newer entry (see UpdateNode for a possible
+  // corner case).
+  if (renderer_id_to_child_id_map_[renderer_id] == child_id)
+    renderer_id_to_child_id_map_.erase(renderer_id);
 }
 
 void BrowserAccessibilityManager::OnAccessibilityNotifications(
@@ -184,9 +204,8 @@ void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
 void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
   const WebAccessibility& acc_obj) {
   SetFocus(NULL, false);
-  root_->InternalReleaseReference(true);
 
-  root_ = CreateAccessibilityTree(NULL, acc_obj, 0);
+  root_ = UpdateNode(acc_obj, true);
   if (!focus_)
     SetFocus(root_, false);
 
@@ -247,11 +266,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
 
 void BrowserAccessibilityManager::SetFocus(
     BrowserAccessibility* node, bool notify) {
-  if (focus_)
-    focus_->InternalReleaseReference(false);
-  focus_ = node;
-  if (focus_)
-    focus_->InternalAddReference();
+  if (focus_ != node) {
+    if (focus_)
+      focus_->InternalReleaseReference(false);
+    focus_ = node;
+    if (focus_)
+      focus_->InternalAddReference();
+  }
 
   if (notify && node && delegate_)
     delegate_->SetAccessibilityFocus(node->renderer_id());
@@ -311,8 +332,7 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
   for (int i = 0; i < static_cast<int>(old_tree_nodes.size()); i++)
     old_tree_nodes[i]->InternalReleaseReference(false);
 
-  DCHECK(focus_);
-  if (!focus_->instance_active())
+  if (!focus_ || !focus_->instance_active())
     SetFocus(root_, false);
 
   return current;

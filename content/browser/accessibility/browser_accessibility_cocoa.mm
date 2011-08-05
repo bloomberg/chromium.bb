@@ -16,6 +16,11 @@
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
+// See http://openradar.appspot.com/9896491. This SPI has been tested on 10.5,
+// 10.6, and 10.7. It allows accessibility clients to observe events posted on
+// this object.
+extern "C" void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
+
 typedef WebAccessibility::IntAttribute IntAttribute;
 typedef WebAccessibility::StringAttribute StringAttribute;
 
@@ -249,6 +254,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 // Deletes our associated BrowserAccessibilityMac.
 - (void)dealloc {
   if (browserAccessibility_) {
+    NSAccessibilityUnregisterUniqueIdForUIElement(self);
     delete browserAccessibility_;
     browserAccessibility_ = NULL;
   }
@@ -830,6 +836,10 @@ NSDictionary* attributeToMethodNameMap = nil;
   if (!browserAccessibility_)
     return [super hash];
   return browserAccessibility_->renderer_id();
+}
+
+- (BOOL)accessibilityShouldUseUniqueId {
+  return YES;
 }
 
 @end

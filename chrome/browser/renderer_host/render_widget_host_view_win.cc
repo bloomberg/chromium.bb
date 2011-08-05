@@ -1446,14 +1446,10 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (!browser_accessibility_manager_.get()) {
-    // Use empty document to process notifications
-    webkit_glue::WebAccessibility empty_document;
-    empty_document.role = WebAccessibility::ROLE_DOCUMENT;
-    empty_document.state = 0;
     browser_accessibility_manager_.reset(
-        BrowserAccessibilityManager::Create(m_hWnd, empty_document, this));
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            m_hWnd, static_cast<WebAccessibility::State>(0), this));
   }
-
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
 
@@ -1629,11 +1625,11 @@ IAccessible* RenderWidgetHostViewWin::GetIAccessible() {
 
   if (!browser_accessibility_manager_.get()) {
     // Return busy document tree while renderer accessibility tree loads.
-    webkit_glue::WebAccessibility loading_tree;
-    loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
-    loading_tree.state = (1 << WebAccessibility::STATE_BUSY);
+    WebAccessibility::State busy_state =
+        static_cast<WebAccessibility::State>(1 << WebAccessibility::STATE_BUSY);
     browser_accessibility_manager_.reset(
-      BrowserAccessibilityManager::Create(m_hWnd, loading_tree, this));
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            m_hWnd, busy_state, this));
   }
 
   return browser_accessibility_manager_->GetRoot()->toBrowserAccessibilityWin();

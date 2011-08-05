@@ -1061,12 +1061,9 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (!browser_accessibility_manager_.get()) {
-    // Use empty document to process notifications
-    webkit_glue::WebAccessibility empty_document;
-    empty_document.role = WebAccessibility::ROLE_WEB_AREA;
-    empty_document.state = 0;
     browser_accessibility_manager_.reset(
-        BrowserAccessibilityManager::Create(cocoa_view_, empty_document, NULL));
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            cocoa_view_, static_cast<WebAccessibility::State>(0), NULL));
   }
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
