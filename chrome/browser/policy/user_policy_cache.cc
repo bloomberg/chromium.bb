@@ -201,7 +201,8 @@ Value* UserPolicyCache::DecodeValue(const em::GenericValue& value) const {
     case em::GenericValue::VALUE_TYPE_BYTES:
       if (value.has_bytes_value()) {
         std::string bytes = value.bytes_value();
-        return BinaryValue::CreateWithCopiedBuffer(bytes.c_str(), bytes.size());
+        return base::BinaryValue::CreateWithCopiedBuffer(bytes.c_str(),
+                                                         bytes.size());
       }
       return NULL;
     case em::GenericValue::VALUE_TYPE_BOOL_ARRAY: {

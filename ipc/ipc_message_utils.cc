@@ -62,7 +62,8 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
       break;
     }
     case Value::TYPE_BINARY: {
-      const BinaryValue* binary = static_cast<const BinaryValue*>(value);
+      const base::BinaryValue* binary =
+          static_cast<const base::BinaryValue*>(value);
       m->WriteData(binary->GetBuffer(), static_cast<int>(binary->GetSize()));
       break;
     }
@@ -185,7 +186,7 @@ static bool ReadValue(const Message* m, void** iter, Value** value,
       int length;
       if (!m->ReadData(iter, &data, &length))
         return false;
-      *value = BinaryValue::CreateWithCopiedBuffer(data, length);
+      *value = base::BinaryValue::CreateWithCopiedBuffer(data, length);
       break;
     }
     case Value::TYPE_DICTIONARY: {

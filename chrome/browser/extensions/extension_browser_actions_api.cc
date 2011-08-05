@@ -46,7 +46,7 @@ bool BrowserActionFunction::RunImpl() {
 }
 
 bool BrowserActionSetIconFunction::RunBrowserAction() {
-  BinaryValue* binary = NULL;
+  base::BinaryValue* binary = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->GetBinary("imageData", &binary));
   IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
   void* iter = NULL;

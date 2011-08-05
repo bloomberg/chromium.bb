@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,7 +229,7 @@ bool SetBadgeTextSidebarFunction::RunImpl(TabContents* tab,
 bool SetIconSidebarFunction::RunImpl(TabContents* tab,
                                      const std::string& content_id,
                                      const DictionaryValue& details) {
-  BinaryValue* binary;
+  base::BinaryValue* binary;
   EXTENSION_FUNCTION_VALIDATE(details.GetBinary(kImageDataKey, &binary));
   IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
   void* iter = NULL;

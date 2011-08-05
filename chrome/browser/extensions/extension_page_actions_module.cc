@@ -155,7 +155,7 @@ bool PageActionSetIconFunction::RunImpl() {
 
   // setIcon can take a variant argument: either a canvas ImageData, or an
   // icon index.
-  BinaryValue* binary;
+  base::BinaryValue* binary;
   int icon_index;
   if (args->GetBinary("imageData", &binary)) {
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());

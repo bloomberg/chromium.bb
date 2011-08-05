@@ -123,7 +123,7 @@ bool AppNotifyFunction::RunImpl() {
   }
 
   if (details->HasKey(kIconDataKey)) {
-    BinaryValue* binary = NULL;
+    base::BinaryValue* binary = NULL;
     EXTENSION_FUNCTION_VALIDATE(details->GetBinary(kIconDataKey, &binary));
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
     void* iter = NULL;

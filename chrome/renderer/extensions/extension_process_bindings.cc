@@ -515,7 +515,7 @@ class ExtensionImpl : public ExtensionBase {
     // Construct the Value object.
     IPC::Message bitmap_pickle;
     IPC::WriteParam(&bitmap_pickle, bitmap);
-    *bitmap_value = BinaryValue::CreateWithCopiedBuffer(
+    *bitmap_value = base::BinaryValue::CreateWithCopiedBuffer(
         static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
 
     return true;
