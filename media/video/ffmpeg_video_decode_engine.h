@@ -17,7 +17,7 @@ struct AVFrame;
 
 namespace media {
 
-class MEDIA_EXPORT FFmpegVideoDecodeEngine : public VideoDecodeEngine {
+class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
  public:
   FFmpegVideoDecodeEngine();
   virtual ~FFmpegVideoDecodeEngine();

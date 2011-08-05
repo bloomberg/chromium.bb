@@ -15,7 +15,7 @@ class MessageLoop;
 
 namespace media {
 
-class MEDIA_EXPORT CompositeFilter : public Filter {
+class CompositeFilter : public Filter {
  public:
   explicit CompositeFilter(MessageLoop* message_loop);
 

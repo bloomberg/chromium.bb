@@ -23,7 +23,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT NullAudioRenderer
+class NullAudioRenderer
     : public AudioRendererBase,
       public base::PlatformThread::Delegate {
  public:

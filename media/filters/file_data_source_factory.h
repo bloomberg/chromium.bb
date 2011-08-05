@@ -9,7 +9,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT FileDataSourceFactory : public DataSourceFactory {
+class FileDataSourceFactory : public DataSourceFactory {
  public:
   FileDataSourceFactory();
   virtual ~FileDataSourceFactory();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "media/base/media_export.h"
 
 // FFmpeg types.
 struct AVBitStreamFilterContext;
@@ -23,7 +22,7 @@ struct AVPacket;
 
 namespace media {
 
-class MEDIA_EXPORT BitstreamConverter {
+class BitstreamConverter {
  public:
   BitstreamConverter() {}
   virtual ~BitstreamConverter() {}
@@ -54,7 +53,7 @@ class IdentityBitstreamConverter : public BitstreamConverter {
   DISALLOW_COPY_AND_ASSIGN(IdentityBitstreamConverter);
 };
 
-class MEDIA_EXPORT FFmpegBitstreamConverter : public BitstreamConverter {
+class FFmpegBitstreamConverter : public BitstreamConverter {
  public:
   // Creates FFmpegBitstreamConverter based on the FFmpeg bistream filter
   // corresponding to |filter_name|.
