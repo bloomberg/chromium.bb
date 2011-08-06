@@ -603,6 +603,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry) {
       break;
     }
   }
+  AddToHistory(entry);
   pending_delete_list_.push_back(entry);
 
   // Destroy the old TabContents relatively promptly to reduce resource usage,
@@ -651,7 +652,6 @@ void PrerenderManager::DeletePendingDeleteEntries() {
   while (!pending_delete_list_.empty()) {
     PrerenderContents* contents = pending_delete_list_.front();
     pending_delete_list_.pop_front();
-    AddToHistory(contents);
     delete contents;
   }
 }
