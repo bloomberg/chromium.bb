@@ -1355,7 +1355,6 @@
             'installer/mini_installer.gyp:*',
             'installer/installer_tools.gyp:*',
             'installer/upgrade_test.gyp:*',
-            '../app/app.gyp:*',
             '../base/base.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
             '../content/content.gyp:*',
