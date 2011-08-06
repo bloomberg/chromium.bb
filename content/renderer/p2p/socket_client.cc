@@ -11,7 +11,7 @@
 P2PSocketClient::P2PSocketClient(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_message_loop_(dispatcher->message_loop()),
-      delegate_message_loop_(NULL),
+      delegate_message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
       socket_id_(0), delegate_(NULL),
       state_(STATE_UNINITIALIZED) {
 }
@@ -21,21 +21,21 @@ P2PSocketClient::~P2PSocketClient() {
 }
 
 void P2PSocketClient::Init(
-    P2PSocketType type, const net::IPEndPoint& local_address,
-    const net::IPEndPoint& remote_address, P2PSocketClient::Delegate* delegate,
-    scoped_refptr<base::MessageLoopProxy> delegate_loop) {
+    P2PSocketType type,
+    const net::IPEndPoint& local_address,
+    const net::IPEndPoint& remote_address,
+    P2PSocketClient::Delegate* delegate) {
   if (!ipc_message_loop_->BelongsToCurrentThread()) {
     ipc_message_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(
-            this, &P2PSocketClient::Init, type, local_address, remote_address,
-            delegate, delegate_loop));
+            this, &P2PSocketClient::Init, type, local_address,
+            remote_address, delegate));
     return;
   }
 
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   state_ = STATE_OPENING;
   delegate_ = delegate;
-  delegate_message_loop_ = delegate_loop;
   socket_id_ = dispatcher_->RegisterClient(this);
   dispatcher_->SendP2PMessage(new P2PHostMsg_CreateSocket(
       0, type, socket_id_, local_address, remote_address));

@@ -124,8 +124,7 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
     return false;
   }
 
-  client_->Init(type, local_endpoint, remote_endpoint, this,
-                base::MessageLoopProxy::CreateForCurrentThread());
+  client_->Init(type, local_endpoint, remote_endpoint, this);
 
   return true;
 }

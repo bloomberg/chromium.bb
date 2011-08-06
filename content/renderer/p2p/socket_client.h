@@ -46,8 +46,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   void Init(P2PSocketType type,
             const net::IPEndPoint& local_address,
             const net::IPEndPoint& remote_address,
-            Delegate* delegate,
-            scoped_refptr<base::MessageLoopProxy> delegate_loop);
+            Delegate* delegate);
 
   // Send the |data| to the |address|.
   void Send(const net::IPEndPoint& address, const std::vector<char>& data);
