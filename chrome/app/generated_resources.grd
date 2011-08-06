@@ -3547,7 +3547,7 @@ are declared in build/common.gypi.
 
       <!-- Task Manager Window -->
       <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
-        End process
+        &amp;End process
       </message>
       <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
         Purge memory

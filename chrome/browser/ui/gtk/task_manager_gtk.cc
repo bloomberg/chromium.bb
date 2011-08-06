@@ -366,8 +366,8 @@ void TaskManagerGtk::OnItemsChanged(int start, int length) {
     SetRowDataFromModel(i, &iter);
     if (i != start + length - 1) {
       if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(process_list_), &iter)) {
-        NOTREACHED() << "Can't get next GtkTreeIter object from process_list_ \
-            iterator at position " << i;
+        NOTREACHED() << "Can't get next GtkTreeIter object from process_list_ "
+                        "iterator at position " << i;
       }
     }
   }
@@ -476,7 +476,8 @@ void TaskManagerGtk::Init() {
   }
 
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
-      l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL).c_str(),
+      gfx::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL)).c_str(),
       kTaskManagerResponseKill);
 
   // The response button should not be sensitive when the dialog is first opened
