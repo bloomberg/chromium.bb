@@ -175,6 +175,7 @@ default = {
   'test_mod' : False,
   'factory_install_mod' : False,
   'factory_test_mod' : False,
+  'factory_install_netboot' : False,
 
   'push_image' : False,
   'upload_symbols' : False,
@@ -202,6 +203,9 @@ arm = {
   'build_tests' : False,
   'unittests' : False,
   'vm_tests' : False,
+
+  # The factory install image should be a netboot image on ARM.
+  'factory_install_netboot' : True,
 }
 
 binary = {

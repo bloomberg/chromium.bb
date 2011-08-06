@@ -923,21 +923,26 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['upload_symbols'] = True
     self._build_config['push_image'] = True
 
-    self.mox.StubOutWithMock(stages.ArchiveStage, '_GetTestTarball')
-
   def ConstructStage(self):
     return stages.ArchiveStage(self.bot_id, self.options, self._build_config)
 
-  def disabledTestArchive(self):
+  def testArchive(self):
     """Simple did-it-run test."""
-    self.mox.StubOutWithMock(shutil, 'rmtree')
-    shutil.rmtree(mox.Regex(r'^/var/www'), ignore_errors=True)
+    self.mox.StubOutWithMock(stages.ArchiveStage, '_SetupArchivePath')
+    stages.ArchiveStage._SetupArchivePath()
 
+    # TODO(davidjames): Test the individual archive steps as well.
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg())
 
     self.mox.StubOutWithMock(commands, 'UpdateIndex')
     commands.UpdateIndex(mox.IgnoreArg())
+
+    self.mox.StubOutWithMock(commands, 'UpdateLatestFile')
+    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
+    commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
+    commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
+                                'LATEST', False)
 
     self.mox.StubOutWithMock(commands, 'PushImages')
     commands.PushImages(self.build_root,
@@ -945,26 +950,8 @@ class ArchiveStageTest(AbstractStageTest):
                         branch_name='master',
                         archive_dir=mox.IgnoreArg())
 
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def disabledTestTrybotArchive(self):
-    self.options.buildbot = False
-    self.mox.StubOutWithMock(shutil, 'rmtree')
-    shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
-
-    self.mox.StubOutWithMock(background, 'RunParallelSteps')
-    background.RunParallelSteps(mox.IgnoreArg())
-
-    self.mox.StubOutWithMock(commands, 'UpdateIndex')
-    commands.UpdateIndex(mox.IgnoreArg())
-
-    self.mox.StubOutWithMock(commands, 'PushImages')
-    commands.PushImages(self.build_root,
-                        board=self._build_config['board'],
-                        branch_name='master',
-                        archive_dir=mox.IgnoreArg())
+    self.mox.StubOutWithMock(commands, 'RemoveOldArchives')
+    commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()
