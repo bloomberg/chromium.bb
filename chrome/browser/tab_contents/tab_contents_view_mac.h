@@ -55,28 +55,28 @@ class TabContentsViewMac : public TabContentsView,
 
   // TabContentsView implementation --------------------------------------------
 
-  virtual void CreateView(const gfx::Size& initial_size);
+  virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host);
-  virtual gfx::NativeView GetNativeView() const;
-  virtual gfx::NativeView GetContentNativeView() const;
-  virtual gfx::NativeWindow GetTopLevelNativeWindow() const;
-  virtual void GetContainerBounds(gfx::Rect* out) const;
-  virtual void RenderViewCreated(RenderViewHost* host);
-  virtual void SetPageTitle(const std::wstring& title);
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
+  virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
+  virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
+  virtual void SetPageTitle(const std::wstring& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code);
-  virtual void SizeContents(const gfx::Size& size);
-  virtual void Focus();
-  virtual void SetInitialFocus();
-  virtual void StoreFocus();
-  virtual void RestoreFocus();
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-  virtual bool IsDoingDrag() const;
-  virtual void CancelDragAndCloseTab();
-  virtual bool IsEventTracking() const;
-  virtual void CloseTabAfterEventTracking();
-  virtual void GetViewBounds(gfx::Rect* out) const;
+                            int error_code) OVERRIDE;
+  virtual void SizeContents(const gfx::Size& size) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void SetInitialFocus() OVERRIDE;
+  virtual void StoreFocus() OVERRIDE;
+  virtual void RestoreFocus() OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
+  virtual bool IsDoingDrag() const OVERRIDE;
+  virtual void CancelDragAndCloseTab() OVERRIDE;
+  virtual bool IsEventTracking() const OVERRIDE;
+  virtual void CloseTabAfterEventTracking() OVERRIDE;
+  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
