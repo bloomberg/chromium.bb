@@ -11,7 +11,7 @@ vars = {
   # After changing nacl_revision, run 'gclient runhooks' to get the new values.
   "nacl_irt_hash_x86_32": "4bb285d7560668a72dec1d42e44d6a2bf744170b",
   "nacl_irt_hash_x86_64": "e317b15c9c4527fd91cdb236d5f181552404e479",
-  "nacl_revision": "6322",
+  "nacl_revision": "6339",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
