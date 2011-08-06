@@ -27,6 +27,7 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
 
   const PrefService* prefs = profile->GetPrefs();
   if (!prefs ||
+      !prefs->GetBoolean(prefs::kSearchSuggestEnabled) ||
       prefs->GetBoolean(prefs::kInstantEnabledOnce) ||
       prefs->IsManagedPreference(prefs::kInstantEnabled)) {
     return INACTIVE;
