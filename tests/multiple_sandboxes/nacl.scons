@@ -46,6 +46,9 @@ test_command = [runner, test_prog]
 if env.Bit('tests_use_irt'):
   test_command.append(env.GetIrtNexe())
 node = env.CommandTest('multidomain_test.out', test_command,
+                       # Increase verbosity to get more information in
+                       # the event of a crash.
+                       osenv='NACLVERBOSITY=4',
                        stdout_golden=env.File('multidomain_test.stdout'))
 
 # This test does not work everywhere:

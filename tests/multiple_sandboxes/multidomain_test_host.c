@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -36,6 +37,9 @@ int main(int argc, char **argv) {
             "Expected 1 or 2 arguments: executable filename [IRT filename]\n");
 
   NaClAllModulesInit();
+
+  /* Enable signal handling to get more information in the event of a crash. */
+  NaClSignalHandlerInit();
 
   NaClFileNameForValgrind(argv[1]);
   if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0)
@@ -97,9 +101,9 @@ int main(int argc, char **argv) {
     NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
 
   return_code = NaClWaitForMainThreadToExit(&app[0]);
-  CHECK(return_code == 0);
+  CHECK(return_code == 1001);
   return_code = NaClWaitForMainThreadToExit(&app[1]);
-  CHECK(return_code == 0);
+  CHECK(return_code == 1002);
 
   return 0;
 }

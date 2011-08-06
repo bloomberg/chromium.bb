@@ -45,8 +45,10 @@ int main(int argc, char **argv) {
   assert(argc >= 2);
   if (strcmp(argv[1], "domain1") == 0) {
     domain1();
+    return 1001;
   } else if (strcmp(argv[1], "domain2") == 0) {
     domain2();
+    return 1002;
   } else {
     printf("Unrecognised argument: \"%s\"\n", argv[1]);
   }
