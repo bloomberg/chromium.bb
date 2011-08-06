@@ -982,7 +982,8 @@ bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
     params->set_exception_string("A callback has already been registered");
     return false;
   }
-  AsyncNaClToJSThreadArgs* args = new(std::nothrow) AsyncNaClToJSThreadArgs;
+  nacl::scoped_ptr<AsyncNaClToJSThreadArgs> args(new(std::nothrow)
+                                                 AsyncNaClToJSThreadArgs);
   if (args == NULL) {
     params->set_exception_string("Memory allocation failed");
     return false;
@@ -1000,8 +1001,15 @@ bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   // It would be nice if the thread interface did not require us to
   // specify a stack size.  This is fairly arbitrary.
   size_t stack_size = 128 << 10;
-  NaClThreadCreateJoinable(&plugin->receive_thread_, AsyncNaClToJSThread, args,
-                           stack_size);
+  if (!NaClThreadCreateJoinable(&plugin->receive_thread_,
+                                AsyncNaClToJSThread,
+                                args.get(),
+                                stack_size)) {
+    params->set_exception_string("Thread creation failed");
+    return false;
+  }
+  // Arguments now owned by the new thread.
+  (void)args.release();
   plugin->receive_thread_running_ = true;
   return true;
 }

@@ -144,7 +144,9 @@ void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
   printf("Waiting for %d on %s.\n", sig, str);
   g_SigFound = 0;
 
-  NaClThreadCreateJoinable(&thread, start_fn, NULL, 65536);
+  if (!NaClThreadCreateJoinable(&thread, start_fn, NULL, 65536)) {
+    NaClLog(LOG_FATAL, "Error: Attempt() could not create thread\n");
+  }
   NaClThreadJoin(&thread);
 
   switch(sig) {

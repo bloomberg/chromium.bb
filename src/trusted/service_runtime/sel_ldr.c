@@ -1620,8 +1620,11 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
             "Could not start secure command channel service thread\n");
   }
 
-  NaClThreadCtor(&nap->reverse_setup_thread, ReverseSetupThread, nap,
-                 NACL_KERN_STACK_SIZE);
+  if (!NaClThreadCtor(&nap->reverse_setup_thread, ReverseSetupThread, nap,
+                      NACL_KERN_STACK_SIZE)) {
+    NaClLog(LOG_FATAL,
+            "Could not start reverse setup thread\n");
+  }
 
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }

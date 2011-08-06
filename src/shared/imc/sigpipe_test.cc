@@ -689,8 +689,10 @@ int TestNaClSocket(int rep_count) {
 
   printf("Starting receiver thread.\n");
   struct NaClThread thr;
-  (void) NaClThreadCtor(&thr, PeerThread, static_cast<void *>(&tstate),
-                        128*1024);
+  if (!NaClThreadCtor(&thr, PeerThread, static_cast<void *>(&tstate),
+                      128*1024)) {
+    NaClLog(LOG_FATAL, "TestNaClSocket could not create receiver thread!\n");
+  }
 
   for (int rep = 0; rep < rep_count; ++rep) {
     printf("\n======== MAIN THREAD, START REPETITION %d ========\n", rep);
@@ -741,8 +743,10 @@ int TestNaClSocket(int rep_count) {
           continue;
         }
         struct NaClThread private_thr;
-        (void) NaClThreadCtor(&private_thr, PeerThread,
-                              static_cast<void *>(&private_sock), 128*1024);
+        if (!NaClThreadCtor(&private_thr, PeerThread,
+                            static_cast<void *>(&private_sock), 128*1024)) {
+          NaClLog(LOG_FATAL, "TestNaClSocket could not create PeerThread\n");
+        }
 
         printf("Locking to start test %d\n", test);
         NaClXMutexLock(&private_sock.mu);

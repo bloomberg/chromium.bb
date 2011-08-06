@@ -384,10 +384,16 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error,
                                             pexe_fd_.get()));
   translate_thread_.reset(new NaClThread);
   if (translate_thread_ != NULL && translate_args_ != NULL) {
-    NaClThreadCreateJoinable(translate_thread_.get(),
-                             DoTranslateThread,
-                             translate_args_.get(),
-                             kArbitraryStackSize);
+    if (!NaClThreadCreateJoinable(translate_thread_.get(),
+                                  DoTranslateThread,
+                                  translate_args_.get(),
+                                  kArbitraryStackSize)) {
+      ErrorInfo error_info;
+      error_info.SetReport(ERROR_UNKNOWN,
+                           "Could not create a translator thread.\n");
+      ReportLoadError(error_info);
+      PnaclNonPpapiError();
+    }
   } else {
     ErrorInfo error_info;
     error_info.SetReport(ERROR_UNKNOWN,
@@ -595,10 +601,16 @@ void PnaclCoordinator::RunLink(int32_t pp_error) {
                                   obj_len_));
   link_thread_.reset(new NaClThread);
   if (link_args_ != NULL && link_thread_ != NULL) {
-    NaClThreadCreateJoinable(link_thread_.get(),
-                             DoLinkThread,
-                             link_args_.get(),
-                             kArbitraryStackSize);
+    if (!NaClThreadCreateJoinable(link_thread_.get(),
+                                  DoLinkThread,
+                                  link_args_.get(),
+                                  kArbitraryStackSize)) {
+      ErrorInfo error_info;
+      error_info.SetReport(ERROR_UNKNOWN,
+                           "Could not create a linker thread.\n");
+      ReportLoadError(error_info);
+      PnaclNonPpapiError();
+    }
   } else {
     ErrorInfo error_info;
     error_info.SetReport(ERROR_UNKNOWN,

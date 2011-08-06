@@ -17,6 +17,7 @@
  * TODO(sehr): use export_header.py to copy these files out.
  */
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN
@@ -45,18 +46,21 @@ EXTERN_C_BEGIN
  * called at some point to prevent a handle leak, but it should
  * probably be merged into NaClThreadCtor().  Calling it immediately
  * after NaClThreadCtor() should be OK.
+ *
+ * Returns a non-zero value if a thread is successfully created,
+ * and returns zero if thread creation failed.
  */
 
 int NaClThreadCtor(struct NaClThread  *ntp,
-                   void               (WINAPI *start_fn)(void *),
-                   void               *state,
-                   size_t             stack_size);
+                   void (WINAPI *start_fn)(void *),
+                   void *state,
+                   size_t stack_size) NACL_WUR;
 void NaClThreadDtor(struct NaClThread *ntp);
 
 int NaClThreadCreateJoinable(struct NaClThread  *ntp,
-                             void               (WINAPI *start_fn)(void *),
-                             void               *state,
-                             size_t             stack_size);
+                             void (WINAPI *start_fn)(void *),
+                             void *state,
+                             size_t stack_size) NACL_WUR;
 void NaClThreadJoin(struct NaClThread *ntp);
 
 /*
