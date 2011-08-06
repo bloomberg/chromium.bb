@@ -1573,6 +1573,37 @@
             },
           },
         },
+        {
+          'target_name': 'crash_service_win64',
+          'type': 'executable',
+          'product_name': 'crash_service64',
+          'dependencies': [
+            'app/policy/cloud_policy_codegen.gyp:policy_win64',
+            'common_constants_win64',
+            'installer_util_nacl_win64',
+            '../base/base.gyp:base_static_win64',
+            '../breakpad/breakpad.gyp:breakpad_handler_win64',
+            '../breakpad/breakpad.gyp:breakpad_sender_win64',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'tools/crash_service/crash_service.cc',
+            'tools/crash_service/crash_service.h',
+            'tools/crash_service/main.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+            },
+          },
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
       ]},  # 'targets'
     ],  # OS=="win"
     ['os_posix == 1 and OS != "mac"', {
