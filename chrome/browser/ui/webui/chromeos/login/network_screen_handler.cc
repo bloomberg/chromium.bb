@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -15,10 +14,10 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
-#include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -37,28 +36,7 @@ const char kNetworkScreen[] = "connect";
 const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
-const char kJsApiNetworkControlPosition[] = "networkControlPosition";
-
-// Width/height of the network control window.
-const int kNetworkControlWidth = 250;
-const int kNetworkControlHeight = 25;
-
-// Offsets for the network dropdown control menu.
-const int kMenuHorizontalOffset = -3;
-const int kMenuVerticalOffset = -1;
-
-// Initializes menu button default properties.
-static void InitMenuButtonProperties(views::MenuButton* menu_button) {
-  menu_button->set_focusable(true);
-  menu_button->SetEnabledColor(SK_ColorBLACK);
-  menu_button->SetHighlightColor(SK_ColorBLACK);
-  menu_button->SetHoverColor(SK_ColorBLACK);
-  static_cast<views::TextButtonBorder*>(menu_button->border())->
-      copy_normal_set_to_hot_set();
-  menu_button->set_animate_on_state_change(false);
-  // Menu is positioned by bottom right corner of the MenuButton.
-  menu_button->set_menu_offset(kMenuHorizontalOffset, kMenuVerticalOffset);
-}
+const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 
 }  // namespace
 
@@ -67,15 +45,13 @@ namespace chromeos {
 // NetworkScreenHandler, public: -----------------------------------------------
 
 NetworkScreenHandler::NetworkScreenHandler()
-    : network_window_(NULL),
-      screen_(NULL),
+    : screen_(NULL),
       is_continue_enabled_(false),
       show_on_init_(false) {
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
   ClearErrors();
-  CloseNetworkWindow();
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
@@ -92,11 +68,16 @@ void NetworkScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
+
+  DCHECK(!dropdown_.get());
+  dropdown_.reset(new NetworkDropdown(
+      web_ui_, WebUILoginDisplay::GetLoginWindow()->GetNativeWindow()));
+
   ShowScreen(kNetworkScreen, NULL);
 }
 
 void NetworkScreenHandler::Hide() {
-  CloseNetworkWindow();
+  dropdown_.reset();
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
@@ -165,30 +146,18 @@ void NetworkScreenHandler::Initialize() {
 // NetworkScreenHandler, WebUIMessageHandler implementation: -------------------
 
 void NetworkScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(kJsApiNetworkControlPosition,
-      NewCallback(this, &NetworkScreenHandler::HandleNetworkControlPosition));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnExit,
       NewCallback(this, &NetworkScreenHandler::HandleOnExit));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnLanguageChanged,
       NewCallback(this, &NetworkScreenHandler::HandleOnLanguageChanged));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
       NewCallback(this, &NetworkScreenHandler::HandleOnInputMethodChanged));
+  web_ui_->RegisterMessageCallback(kJsApiNetworkItemChosen,
+        NewCallback(this, &NetworkScreenHandler::HandleNetworkItemChosen));
+
 }
 
 // NetworkScreenHandler, private: ----------------------------------------------
-
-void NetworkScreenHandler::HandleNetworkControlPosition(const ListValue* args) {
-  const size_t kParamCount = 2;
-  double x, y;
-  if (args->GetSize() != kParamCount ||
-      !args->GetDouble(0, &x) ||
-      !args->GetDouble(1, &y)) {
-    NOTREACHED();
-    return;
-  }
-  network_control_pos_.SetPoint(static_cast<int>(x), static_cast<int>(y));
-  CreateOrUpdateNetworkWindow();
-}
 
 void NetworkScreenHandler::HandleOnExit(const ListValue* args) {
   ClearErrors();
@@ -216,6 +185,16 @@ void NetworkScreenHandler::HandleOnInputMethodChanged(const ListValue* args) {
   if (!args->GetString(0, &id))
     NOTREACHED();
   input_method::InputMethodManager::GetInstance()->ChangeInputMethod(id);
+}
+
+void NetworkScreenHandler::HandleNetworkItemChosen(
+    const base::ListValue* args) {
+  DCHECK(args->GetSize() == 1);
+  double id;
+  if (!args->GetDouble(0, &id))
+    NOTREACHED();
+  DCHECK(dropdown_.get());
+  dropdown_->OnItemChosen(static_cast<int>(id));
 }
 
 ListValue* NetworkScreenHandler::GetLanguageList() {
@@ -266,43 +245,6 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
     input_methods_list->Append(input_method);
   }
   return input_methods_list;
-}
-
-void NetworkScreenHandler::CreateOrUpdateNetworkWindow() {
-  views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
-  gfx::Rect login_bounds = login_window->GetWindowScreenBounds();
-  gfx::Rect bounds(login_bounds.x() + network_control_pos_.x(),
-                   login_bounds.y() + network_control_pos_.y(),
-                   kNetworkControlWidth, kNetworkControlHeight);
-  if (!network_window_) {
-    views::Widget::InitParams widget_params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    widget_params.bounds = bounds;
-    widget_params.double_buffer = true;
-    widget_params.parent = login_window->GetNativeView();
-    network_window_ = new views::Widget;
-    network_window_->Init(widget_params);
-    std::vector<int> params;
-    chromeos::WmIpc::instance()->SetWindowType(
-        network_window_->GetNativeView(),
-        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-        &params);
-    NetworkDropdownButton* button =
-        new NetworkDropdownButton(false /* not a browser mode */,
-                                  login_window->GetNativeWindow(),
-                                  true /* show proxy settings in menu */);
-    InitMenuButtonProperties(button);
-    network_window_->SetContentsView(button);
-    network_window_->Show();
-  } else {
-    network_window_->SetBounds(bounds);
-  }
-}
-
-void NetworkScreenHandler::CloseNetworkWindow() {
-  if (network_window_)
-    network_window_->Close();
-  network_window_ = NULL;
 }
 
 }  // namespace chromeos

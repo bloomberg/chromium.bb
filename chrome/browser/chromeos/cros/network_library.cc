@@ -5644,7 +5644,7 @@ void NetworkLibraryImplStub::Init() {
   AddNetwork(wifi2);
 
   WifiNetwork* wifi3 = new WifiNetwork("fw3");
-  wifi3->set_name("Fake WiFi Encrypted");
+  wifi3->set_name("Fake WiFi Encrypted with a long name");
   wifi3->set_strength(60);
   wifi3->set_connected(false);
   wifi3->set_encryption(SECURITY_WEP);

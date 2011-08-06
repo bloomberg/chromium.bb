@@ -3447,6 +3447,8 @@
         'browser/ui/webui/chromeos/login/login_ui.h',
         'browser/ui/webui/chromeos/login/login_ui_helpers.cc',
         'browser/ui/webui/chromeos/login/login_ui_helpers.h',
+        'browser/ui/webui/chromeos/login/network_dropdown.cc',
+        'browser/ui/webui/chromeos/login/network_dropdown.h',
         'browser/ui/webui/chromeos/login/network_screen_handler.cc',
         'browser/ui/webui/chromeos/login/network_screen_handler.h',
         'browser/ui/webui/chromeos/login/oobe_ui.cc',

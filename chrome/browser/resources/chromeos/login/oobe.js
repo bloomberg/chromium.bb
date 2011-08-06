@@ -124,15 +124,10 @@ cr.define('cr.ui', function() {
         oldStep.addEventListener('webkitTransitionEnd', function f(e) {
           oldStep.removeEventListener('webkitTransitionEnd', f);
           oldStep.classList.add('hidden');
-          if (nextStepIndex == 0)
-            Oobe.refreshNetworkControl();
         });
       } else {
         // First screen on OOBE launch.
         newHeader.classList.remove('right');
-        if (nextStepIndex == 0) {
-          Oobe.refreshNetworkControl();
-        }
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
@@ -320,15 +315,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Refreshes position of the network control (on connect screen).
-   */
-  Oobe.refreshNetworkControl = function() {
-    var controlOffset = Oobe.getOffset($('network-control'));
-    chrome.send('networkControlPosition',
-                [controlOffset.left, controlOffset.top]);
-  };
-
-  /**
    * Sets usage statistics checkbox.
    * @param {bool} checked Is the checkbox checked?
    */
@@ -400,9 +386,6 @@ cr.define('cr.ui', function() {
 
     // Update headers & buttons.
     Oobe.updateHeadersAndButtons();
-
-    // Update the network control position.
-    Oobe.refreshNetworkControl();
   }
 
   /**

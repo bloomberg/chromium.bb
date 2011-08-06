@@ -93,7 +93,7 @@ class NetworkMenu {
   void CancelMenu();
 
   // Update the menu (e.g. when the network list or status has changed).
-  void UpdateMenu();
+  virtual void UpdateMenu();
 
   // Run the menu.
   void RunMenu(views::View* source);

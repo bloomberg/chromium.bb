@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_SCREEN_HANDLER_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
@@ -20,6 +21,8 @@ class Widget;
 }
 
 namespace chromeos {
+
+class NetworkDropdown;
 
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
@@ -60,6 +63,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Handles change of the input method.
   void HandleOnInputMethodChanged(const base::ListValue* args);
 
+  // Handle choosing of the network menu item.
+  void HandleNetworkItemChosen(const base::ListValue* args);
+
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
   static base::ListValue* GetLanguageList();
@@ -68,16 +74,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // depend on the current locale.
   static base::ListValue* GetInputMethods();
 
-  // Creates network window or updates it's bounds.
-  void CreateOrUpdateNetworkWindow();
-
-  // Closes network window.
-  void CloseNetworkWindow();
-
-  // Window that contains network dropdown button.
-  // TODO(nkostylev): Temporary solution till we have
-  // RenderWidgetHostViewViews working.
-  views::Widget* network_window_;
+  scoped_ptr<NetworkDropdown> dropdown_;
 
   NetworkScreenActor::Delegate* screen_;
 
