@@ -538,8 +538,12 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
   PrepareStringForFileOps(text, &trimmed);
 
   bool is_file = true;
+  // Avoid recognizing definite non-file URLs as file paths.
+  GURL gurl(trimmed);
+  if (gurl.is_valid() && gurl.IsStandard())
+    is_file = false;
   FilePath full_path;
-  if (!ValidPathForFile(trimmed, &full_path)) {
+  if (is_file && !ValidPathForFile(trimmed, &full_path)) {
     // Not a path as entered, try unescaping it in case the user has
     // escaped things. We need to go through 8-bit since the escaped values
     // only represent 8-bit values.

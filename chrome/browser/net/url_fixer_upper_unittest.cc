@@ -516,4 +516,11 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   // done with the subdir
   EXPECT_TRUE(file_util::Delete(full_path, false));
   EXPECT_TRUE(file_util::Delete(new_dir, true));
+
+  // Test that an obvious HTTP URL isn't accidentally treated as an absolute
+  // file path (on account of system-specific craziness).
+  FilePath empty_path;
+  FilePath http_url_path(FILE_PATH_LITERAL("http://../"));
+  EXPECT_TRUE(URLFixerUpper::FixupRelativeFile(
+      empty_path, http_url_path).SchemeIs("http"));
 }
