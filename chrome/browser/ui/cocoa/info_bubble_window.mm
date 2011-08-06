@@ -139,6 +139,12 @@ class AppNotificationBridge : public NotificationObserver {
   return YES;
 }
 
+// Lets the traffic light buttons on the browser window keep their "active"
+// state while an info bubble is open. Only has an effect on 10.7.
+- (BOOL)_sharesParentKeyState {
+  return YES;
+}
+
 - (void)close {
   // Block the window from receiving events while it fades out.
   closing_ = YES;
