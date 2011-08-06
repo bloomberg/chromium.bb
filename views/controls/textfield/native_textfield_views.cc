@@ -256,7 +256,7 @@ void NativeTextfieldViews::OnBlur() {
 
 void NativeTextfieldViews::SelectRect(const gfx::Point& start,
                                       const gfx::Point& end) {
-  if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
   gfx::SelectionModel start_pos = GetRenderText()->FindCursorPosition(start);
