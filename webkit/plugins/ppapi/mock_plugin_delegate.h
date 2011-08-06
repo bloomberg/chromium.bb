@@ -25,6 +25,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id);
+  virtual PlatformVideoCapture* CreateVideoCapture(
+      media::VideoCapture::EventHandler* handler);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client);

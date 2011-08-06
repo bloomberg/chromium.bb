@@ -291,6 +291,11 @@ PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
   return PPB_URLRequestInfo_Proxy::CreateProxyResource(instance);
 }
 
+PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_Instance instance,
     PP_Resource context3d_id,

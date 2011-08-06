@@ -178,6 +178,8 @@ class PepperPluginDelegateImpl
       PlatformAudio::Client* client);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
+  virtual PlatformVideoCapture* CreateVideoCapture(
+      media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id);

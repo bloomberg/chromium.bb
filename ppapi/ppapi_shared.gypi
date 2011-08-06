@@ -137,6 +137,8 @@
         'thunk/ppb_url_request_info_thunk.cc',
         'thunk/ppb_url_response_info_api.h',
         'thunk/ppb_url_response_info_thunk.cc',
+        'thunk/ppb_video_capture_api.h',
+        'thunk/ppb_video_capture_thunk.cc',
         'thunk/ppb_video_decoder_api.h',
         'thunk/ppb_video_decoder_thunk.cc',
         'thunk/ppb_video_layer_api.h',

@@ -36,6 +36,7 @@
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/media/audio_message_filter.h"
+#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper_platform_video_decoder_impl.h"
@@ -44,6 +45,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
+#include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -72,8 +74,6 @@
 using WebKit::WebView;
 
 namespace {
-
-const int32 kDefaultCommandBufferSize = 1024 * 1024;
 
 int32_t PlatformFileToInt(base::PlatformFile handle) {
 #if defined(OS_WIN)
@@ -374,6 +374,64 @@ class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
   }
  private:
   scoped_ptr<PluginCallback> callback_;
+};
+
+class PlatformVideoCaptureImpl
+    : public webkit::ppapi::PluginDelegate::PlatformVideoCapture {
+ public:
+  PlatformVideoCaptureImpl(media::VideoCapture::EventHandler* handler)
+      : handler_proxy_(new media::VideoCaptureHandlerProxy(
+            handler, base::MessageLoopProxy::CreateForCurrentThread())) {
+    VideoCaptureImplManager* manager =
+        RenderThread::current()->video_capture_impl_manager();
+    // 1 means the "default" video capture device.
+    // TODO(piman): Add a way to enumerate devices and pass them through the
+    // API.
+    video_capture_ = manager->AddDevice(1, handler_proxy_.get());
+  }
+
+  // Overrides from media::VideoCapture::EventHandler
+  virtual ~PlatformVideoCaptureImpl() {
+    VideoCaptureImplManager* manager =
+        RenderThread::current()->video_capture_impl_manager();
+    manager->RemoveDevice(1, handler_proxy_.get());
+  }
+
+  virtual void StartCapture(
+      EventHandler* handler,
+      const VideoCaptureCapability& capability) OVERRIDE {
+    DCHECK(handler == handler_proxy_->proxied());
+    video_capture_->StartCapture(handler_proxy_.get(), capability);
+  }
+
+  virtual void StopCapture(EventHandler* handler) OVERRIDE {
+    DCHECK(handler == handler_proxy_->proxied());
+    video_capture_->StopCapture(handler_proxy_.get());
+  }
+
+  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE {
+    video_capture_->FeedBuffer(buffer);
+  }
+
+  virtual bool CaptureStarted() OVERRIDE {
+    return handler_proxy_->state().started;
+  }
+
+  virtual int CaptureWidth() OVERRIDE {
+    return handler_proxy_->state().width;
+  }
+
+  virtual int CaptureHeight() OVERRIDE {
+    return handler_proxy_->state().height;
+  }
+
+  virtual int CaptureFrameRate() OVERRIDE {
+    return handler_proxy_->state().frame_rate;
+  }
+
+ private:
+  scoped_ptr<media::VideoCaptureHandlerProxy> handler_proxy_;
+  media::VideoCapture* video_capture_;
 };
 
 }  // namespace
@@ -852,6 +910,12 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 #else
   return NULL;
 #endif
+}
+
+webkit::ppapi::PluginDelegate::PlatformVideoCapture*
+PepperPluginDelegateImpl::CreateVideoCapture(
+      media::VideoCapture::EventHandler* handler) {
+  return new PlatformVideoCaptureImpl(handler);
 }
 
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*

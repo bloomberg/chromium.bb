@@ -37,6 +37,7 @@
   F(PPB_URLLoader_API) \
   F(PPB_URLRequestInfo_API) \
   F(PPB_URLResponseInfo_API) \
+  F(PPB_VideoCapture_API) \
   F(PPB_VideoDecoder_API) \
   F(PPB_VideoLayer_API) \
   F(PPB_Widget_API)

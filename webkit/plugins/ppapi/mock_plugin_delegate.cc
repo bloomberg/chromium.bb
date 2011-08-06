@@ -50,6 +50,12 @@ MockPluginDelegate::CreateVideoDecoder(
   return NULL;
 }
 
+MockPluginDelegate::PlatformVideoCapture*
+MockPluginDelegate::CreateVideoCapture(
+    media::VideoCapture::EventHandler* handler){
+  return NULL;
+}
+
 MockPluginDelegate::PlatformAudio* MockPluginDelegate::CreateAudio(
     uint32_t sample_rate,
     uint32_t sample_count,

@@ -300,6 +300,8 @@
         '../plugins/ppapi/ppb_url_util_impl.h',
         '../plugins/ppapi/ppb_var_impl.cc',
         '../plugins/ppapi/ppb_var_impl.h',
+        '../plugins/ppapi/ppb_video_capture_impl.cc',
+        '../plugins/ppapi/ppb_video_capture_impl.h',
         '../plugins/ppapi/ppb_video_decoder_impl.cc',
         '../plugins/ppapi/ppb_video_decoder_impl.h',
         '../plugins/ppapi/ppb_video_layer_impl.cc',

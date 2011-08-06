@@ -100,6 +100,7 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                       const char* proto) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,
       PP_Resource context3d_id,

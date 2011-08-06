@@ -15,6 +15,7 @@
 #include "base/sync_socket.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "media/video/capture/video_capture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -220,6 +221,11 @@ class PluginDelegate {
     virtual ~PlatformVideoDecoder() {}
   };
 
+  class PlatformVideoCapture : public media::VideoCapture {
+   public:
+    virtual ~PlatformVideoCapture() {}
+  };
+
   // Provides access to the ppapi broker.
   class PpapiBroker {
    public:
@@ -260,6 +266,10 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;
+
+  // The caller will own the pointer returned from this.
+  virtual PlatformVideoCapture* CreateVideoCapture(
+      media::VideoCapture::EventHandler* handler) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(

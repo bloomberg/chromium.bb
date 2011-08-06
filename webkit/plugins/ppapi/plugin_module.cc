@@ -36,6 +36,7 @@
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
@@ -102,6 +103,7 @@
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_util_impl.h"
 #include "webkit/plugins/ppapi/ppb_var_impl.h"
+#include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
@@ -322,6 +324,8 @@ const void* GetInterface(const char* name) {
     return PPB_Var_Impl::GetVarInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
+  if (strcmp(name, PPB_VIDEO_CAPTURE_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_VideoCapture_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
   if (strcmp(name, PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0) == 0)
