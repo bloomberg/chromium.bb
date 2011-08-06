@@ -179,13 +179,9 @@ class RenderWidgetHostView {
   // the page has changed.
   virtual void SetTooltipText(const std::wstring& tooltip_text) = 0;
 
-  // Notifies the View that the renderer text selection has changed. |start|
-  // and |end| are the visual end points of the selection in the coordinate
-  // system of the render view.
+  // Notifies the View that the renderer text selection has changed.
   virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range,
-                                const gfx::Point& start,
-                                const gfx::Point& end) {}
+                                const ui::Range& range) {}
 
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.

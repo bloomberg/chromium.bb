@@ -87,9 +87,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       visually_deemphasized_(false),
       touch_event_(),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      has_composition_text_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
-          views::TouchSelectionController::create(this))) {
+      has_composition_text_(false) {
   set_focusable(true);
   host_->SetView(this);
 
@@ -306,13 +304,9 @@ void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
 }
 
 void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
-                                                 const ui::Range& range,
-                                                 const gfx::Point& start,
-                                                 const gfx::Point& end) {
+                                                 const ui::Range& range) {
   // TODO(anicolao): deal with the clipboard without GTK
   NOTIMPLEMENTED();
-  if (touch_selection_controller_.get())
-    touch_selection_controller_->SelectionChanged(start, end);
 }
 
 void RenderWidgetHostViewViews::ShowingContextMenu(bool showing) {
@@ -333,34 +327,6 @@ void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
     const SkColor* color, bool animate) {
   // TODO(anicolao)
-}
-
-void RenderWidgetHostViewViews::SelectRect(const gfx::Point& start,
-                                           const gfx::Point& end) {
-  if (host_)
-    host_->Send(new ViewMsg_SelectRange(host_->routing_id(), start, end));
-}
-
-bool RenderWidgetHostViewViews::IsCommandIdChecked(int command_id) const {
-  // TODO(varunjain): implement this and other menu delegate methods.
-  NOTREACHED();
-  return true;
-}
-
-bool RenderWidgetHostViewViews::IsCommandIdEnabled(int command_id) const {
-  NOTREACHED();
-  return true;
-}
-
-bool RenderWidgetHostViewViews::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) {
-  NOTREACHED();
-  return true;
-}
-
-void RenderWidgetHostViewViews::ExecuteCommand(int command_id) {
-  NOTREACHED();
 }
 
 std::string RenderWidgetHostViewViews::GetClassName() const {

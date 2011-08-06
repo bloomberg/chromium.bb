@@ -923,11 +923,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Replace,
 IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 
-// Requests the renderer to select the region between two points.
-IPC_MESSAGE_ROUTED2(ViewMsg_SelectRange,
-                    gfx::Point /* start */,
-                    gfx::Point /* end */)
-
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
 IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
@@ -1716,11 +1711,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     WebKit::WebTextDirection /* text direction hint */)
 
 // Notification that the text selection has changed.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_SelectionChanged,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionChanged,
                     std::string /* currently selected text */,
-                    ui::Range /* selection range */,
-                    gfx::Point,
-                    gfx::Point /* visual end points of selection */)
+                    ui::Range /* selection range */)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewHost_RunFileChooserResponse message.

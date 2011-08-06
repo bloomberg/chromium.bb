@@ -819,7 +819,6 @@ class RenderView : public RenderWidget,
                            int id,
                            bool notify_result);
   void OnSelectAll();
-  void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
   void OnSetAccessibilityFocus(int acc_obj_id);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
@@ -1197,10 +1196,6 @@ class RenderView : public RenderWidget,
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   ObserverList<RenderViewObserver> observers_;
-
-  // Used to inform didChangeSelection() when it is called in the context
-  // of handling a ViewMsg_SelectRange IPC.
-  bool handling_select_range_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
