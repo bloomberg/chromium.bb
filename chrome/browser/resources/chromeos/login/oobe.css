@@ -36,27 +36,25 @@ body {
   text-decoration: none;
 }
 
-hr.topshadow {
+hr.shadow {
   -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
                                         black 50%, rgba(0,0,0,0));
   -webkit-mask-clip: padding-box;
-  background: -webkit-linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.0));
   border: none;
-  border-top: 1px solid rgba(0,0,0,0.5);
-  height: 4px;
-  opacity: 0.3;
+  opacity: 0.3
 }
 
-hr.bottomshadow {
-  -webkit-mask: -webkit-linear-gradient(left, rgba(0,0,0,0),
-                                        black 50%, rgba(0,0,0,0));
-  -webkit-mask-clip: padding-box;
+hr.top {
+  background: -webkit-linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.0));
+  border-top: 1px solid rgba(0,0,0,0.5);
+  height: 4px;
+}
+
+hr.bottom {
   background: -webkit-linear-gradient(bottom, top,
                                       rgba(0,0,0,0.2)), rgba(0,0,0,0.0));
-  border: none;
   border-bottom: 1px solid rgba(0,0,0,0.5);
   height: 2px;
-  opacity: 0.3;
 }
 
 #header {
@@ -482,7 +480,7 @@ body.login-display #oobe hr {
 
 body.login-display #oobe.signin hr,
 body.login-display #oobe.gaia-signin hr {
-  width: 640px;
+  opacity: 0;
 }
 
 body.login-display #inner-container {
