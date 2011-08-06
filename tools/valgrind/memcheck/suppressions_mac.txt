@@ -1804,3 +1804,24 @@
    fun:_ZN14GpuDataManager11GetInstanceEv
    fun:_ZN19GpuBlacklistUpdater17SetupOnFileThreadEv
 }
+{
+   bug_91892
+   Memcheck:Leak
+   fun:_Znw*
+   fun:sendSimpleEventToSelf
+   fun:aeInitializeFromHIToolbox
+   fun:INIT_AppleEvents
+   fun:_FirstEventTime
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN11MessageLoop13RunAllPendingEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+}
