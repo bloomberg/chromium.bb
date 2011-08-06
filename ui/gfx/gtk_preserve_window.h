@@ -21,7 +21,7 @@ G_BEGIN_DECLS
 #define GTK_TYPE_PRESERVE_WINDOW                                 \
     (gtk_preserve_window_get_type())
 #define GTK_PRESERVE_WINDOW(obj)                                 \
-    (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_PERSERVE_WINDOW, \
+    (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_PRESERVE_WINDOW, \
                                 GtkPreserveWindow))
 #define GTK_PRESERVE_WINDOW_CLASS(klass)                         \
     (G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_PRESERVE_WINDOW,  \
