@@ -361,7 +361,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
-      session_storage_namespace_id_(session_storage_namespace_id) {
+      session_storage_namespace_id_(session_storage_namespace_id),
+      handling_select_range_(false) {
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
@@ -614,6 +615,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
+    IPC_MESSAGE_HANDLER(ViewMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
@@ -977,6 +979,15 @@ void RenderView::OnSelectAll() {
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
+}
+
+void RenderView::OnSelectRange(const gfx::Point& start, const gfx::Point& end) {
+  if (!webview())
+    return;
+
+  handling_select_range_ = true;
+  webview()->focusedFrame()->selectRange(start, end);
+  handling_select_range_ = false;
 }
 
 void RenderView::OnSetInitialFocus(bool reverse) {
@@ -1515,8 +1526,9 @@ bool RenderView::isSelectTrailingWhitespaceEnabled() {
 
 void RenderView::didChangeSelection(bool is_empty_selection) {
 #if defined(OS_POSIX)
-  if (!handling_input_event_)
+  if (!handling_input_event_ && !handling_select_range_)
       return;
+  handling_select_range_ = false;
 
   if (is_empty_selection) {
     last_selection_.clear();
@@ -1537,7 +1549,22 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
     range.set_start(location);
     range.set_end(location + length);
   }
-  Send(new ViewHostMsg_SelectionChanged(routing_id_, last_selection_, range));
+
+  WebKit::WebPoint start, end;
+  webview()->selectionRange(start, end);
+
+  // Webkit gives an offset of 1 between start and end even if there is no
+  // selection. So we need to check against that.
+  // TODO(varunjain): remove this check once that is fixed.
+  gfx::Point p1, p2;
+  if (std::abs(start.x - end.x) > 1 || std::abs(start.y - end.y) > 1) {
+    gfx::Point scroll_offset = GetScrollOffset();
+    p1.SetPoint(start.x + scroll_offset.x(), start.y + scroll_offset.y());
+    p2.SetPoint(end.x + scroll_offset.x(), end.y + scroll_offset.y());
+  }
+  // TODO(varunjain): add other hooks for SelectionChanged.
+  Send(new ViewHostMsg_SelectionChanged(routing_id_, last_selection_, range,
+                                        p1, p2));
 #endif  // defined(OS_POSIX)
 }
 

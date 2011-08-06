@@ -428,7 +428,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgOpenURL(const GURL& url, const GURL& referrer,
                     WindowOpenDisposition disposition);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
-  void OnMsgSelectionChanged(const std::string& text, const ui::Range& range);
+  void OnMsgSelectionChanged(const std::string& text, const ui::Range& range,
+                             const gfx::Point& start, const gfx::Point& end);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,

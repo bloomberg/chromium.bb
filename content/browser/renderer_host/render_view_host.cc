@@ -1002,9 +1002,11 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
 }
 
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text,
-                                           const ui::Range& range) {
+                                           const ui::Range& range,
+                                           const gfx::Point& start,
+                                           const gfx::Point& end) {
   if (view())
-    view()->SelectionChanged(text, range);
+    view()->SelectionChanged(text, range, start, end);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(
