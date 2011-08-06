@@ -1641,7 +1641,33 @@ SyncManager::Observer::~Observer() {}
 SyncManager::SyncManager(const std::string& name)
     : data_(new SyncInternal(name)) {}
 
-SyncManager::Status::Status() {
+SyncManager::Status::Status()
+    : summary(INVALID),
+      authenticated(false),
+      server_up(false),
+      server_reachable(false),
+      server_broken(false),
+      notifications_enabled(false),
+      notifications_received(0),
+      notifiable_commits(0),
+      max_consecutive_errors(0),
+      unsynced_count(0),
+      conflicting_count(0),
+      syncing(false),
+      initial_sync_ended(false),
+      syncer_stuck(false),
+      updates_available(0),
+      updates_received(0),
+      tombstone_updates_received(0),
+      disk_full(false),
+      num_local_overwrites_total(0),
+      num_server_overwrites_total(0),
+      nonempty_get_updates(0),
+      empty_get_updates(0),
+      useless_sync_cycles(0),
+      useful_sync_cycles(0),
+      cryptographer_ready(false),
+      crypto_has_pending_keys(false) {
 }
 
 SyncManager::Status::~Status() {
@@ -2096,12 +2122,18 @@ void SyncManager::SyncInternal::EncryptDataTypes(
   Cryptographer* cryptographer = trans.GetCryptographer();
 
   if (!cryptographer->is_initialized()) {
-    NOTREACHED() << "Attempting to encrypt datatypes when cryptographer not "
-                 << "initialized.";
+    VLOG(1) << "Attempting to encrypt datatypes when cryptographer not "
+            << "initialized, prompting for passphrase.";
+    ObserverList<SyncManager::Observer> temp_obs_list;
+    CopyObservers(&temp_obs_list);
+    // TODO(zea): this isn't really decryption, but that's the only way we have
+    // to prompt the user for a passsphrase. See http://crbug.com/91379.
+    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                      OnPassphraseRequired(sync_api::REASON_DECRYPTION));
     return;
   }
 
-  // Update the Nigori node set of encrypted datatypes so other machines notice.
+  // Update the Nigori node's set of encrypted datatypes.
   // Note, we merge the current encrypted types with those requested. Once a
   // datatypes is marked as needing encryption, it is never unmarked.
   sync_pb::NigoriSpecifics nigori;
@@ -2113,8 +2145,14 @@ void SyncManager::SyncInternal::EncryptDataTypes(
                  std::inserter(newly_encrypted_types,
                                newly_encrypted_types.begin()));
   allstatus_.SetEncryptedTypes(newly_encrypted_types);
-  if (newly_encrypted_types == current_encrypted_types)
-    return;  // Set of encrypted types did not change.
+  if (newly_encrypted_types == current_encrypted_types) {
+    // Set of encrypted types has not changed, just notify and return.
+    ObserverList<SyncManager::Observer> temp_obs_list;
+    CopyObservers(&temp_obs_list);
+    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                      OnEncryptionComplete(current_encrypted_types));
+    return;
+  }
   syncable::FillNigoriEncryptedTypes(newly_encrypted_types, &nigori);
   node.SetNigoriSpecifics(nigori);
 
@@ -2159,7 +2197,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
       WriteNode child(trans);
       if (!child.InitByIdLookup(child_id)) {
         NOTREACHED();
-        return;
+        continue;
       }
       if (child.GetIsFolder()) {
         to_visit.push(child.GetFirstChildId());
@@ -2178,20 +2216,19 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
     ReadNode passwords_root(trans);
     std::string passwords_tag =
         syncable::ModelTypeToRootTag(syncable::PASSWORDS);
-    if (!passwords_root.InitByTagLookup(passwords_tag)) {
-      LOG(WARNING) << "No passwords to reencrypt.";
-      return;
-    }
-
-    int64 child_id = passwords_root.GetFirstChildId();
-    while (child_id != kInvalidId) {
-      WriteNode child(trans);
-      if (!child.InitByIdLookup(child_id)) {
-        NOTREACHED();
-        return;
+    // It's possible we'll have the password routing info and not the password
+    // root if we attempted to SetPassphrase before passwords was enabled.
+    if (passwords_root.InitByTagLookup(passwords_tag)) {
+      int64 child_id = passwords_root.GetFirstChildId();
+      while (child_id != kInvalidId) {
+        WriteNode child(trans);
+        if (!child.InitByIdLookup(child_id)) {
+          NOTREACHED();
+          return;
+        }
+        child.SetPasswordSpecifics(child.GetPasswordSpecifics());
+        child_id = child.GetSuccessorId();
       }
-      child.SetPasswordSpecifics(child.GetPasswordSpecifics());
-      child_id = child.GetSuccessorId();
     }
   }
 

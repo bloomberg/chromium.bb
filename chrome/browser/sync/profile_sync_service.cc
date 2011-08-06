@@ -376,6 +376,8 @@ void ProfileSyncService::CreateBackend() {
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
+  if (HasPendingEncryptedTypes())
+    return true;
   syncable::ModelTypeSet preferred_types;
   GetPreferredDataTypes(&preferred_types);
   syncable::ModelTypeSet encrypted_types;
@@ -691,31 +693,39 @@ void ProfileSyncService::OnPassphraseRequired(
           << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
+  // Store any passphrases we have into temps and clear out the originals so
+  // we don't hold on to the passphrases any longer than we have to. We
+  // then use the passphrases if they're present (after OnPassphraseAccepted).
+  std::string gaia_password = gaia_password_;
+  std::string cached_passphrase = cached_passphrase_.value;
+  bool is_explicit = cached_passphrase_.is_explicit;
+  bool is_creation = cached_passphrase_.is_creation;
+  gaia_password_ = std::string();
+  cached_passphrase_ = CachedPassphrase();
+
   // We will skip the passphrase prompt and suppress the warning if the
   // passphrase is needed for decryption but the user is not syncing an
   // encrypted data type on this machine. Otherwise we look for one.
   if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
-    VLOG(1) << "Not decrypting and no encrypted datatypes enabled"
+    VLOG(1) << "Decrypting and no encrypted datatypes enabled"
             << ", accepted passphrase.";
     OnPassphraseAccepted();
   }
 
   // First try supplying gaia password as the passphrase.
-  if (!gaia_password_.empty()) {
+  if (!gaia_password.empty()) {
     VLOG(1) << "Attempting gaia passphrase.";
-    SetPassphrase(gaia_password_, false, true);
-    gaia_password_ = std::string();
+    // SetPassphrase will set gaia_password_ if the syncer isn't ready.
+    SetPassphrase(gaia_password, false, true);
     return;
   }
 
   // If the above failed then try the custom passphrase the user might have
   // entered in setup.
-  if (!cached_passphrase_.value.empty()) {
+  if (!cached_passphrase.empty()) {
     VLOG(1) << "Attempting cached passphrase.";
-    SetPassphrase(cached_passphrase_.value,
-                  cached_passphrase_.is_explicit,
-                  cached_passphrase_.is_creation);
-    cached_passphrase_ = CachedPassphrase();
+    // SetPassphrase will set cached_passphrase_ if the syncer isn't ready.
+    SetPassphrase(cached_passphrase, is_explicit, is_creation);
     return;
   }
 
@@ -731,6 +741,10 @@ void ProfileSyncService::OnPassphraseRequired(
 
 void ProfileSyncService::OnPassphraseAccepted() {
   VLOG(1) << "Received OnPassphraseAccepted.";
+  // Don't hold on to a passphrase in raw form longer than needed.
+  gaia_password_ = std::string();
+  cached_passphrase_ = CachedPassphrase();
+
   // Make sure the data types that depend on the passphrase are started at
   // this time.
   syncable::ModelTypeSet types;
@@ -753,6 +767,12 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
+  if (!pending_types_for_encryption_.empty()) {
+    // The user had chosen to encrypt datatypes. This is the last thing to
+    // complete, so now that we're done notify the UI.
+    wizard_.Step(SyncSetupWizard::DONE);
+  }
+  pending_types_for_encryption_.clear();
   NotifyObservers();
 }
 
@@ -1182,7 +1202,7 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        bool is_creation) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
     VLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit")
-            << " passphrase " << (is_creation ? " for creation" : "");
+            << " passphrase" << (is_creation ? " for creation" : "");
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     if (is_explicit) {
@@ -1195,17 +1215,21 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
   }
 }
 
-void ProfileSyncService::EncryptDataTypes(
+void ProfileSyncService::set_pending_types_for_encryption(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (HasSyncSetupCompleted()) {
-    backend_->EncryptDataTypes(encrypted_types);
+  if (encrypted_types.empty()) {
+    // We can't unencrypt types.
+    VLOG(1) << "No datatypes set for encryption, dropping encryption request.";
     pending_types_for_encryption_.clear();
-  } else {
-    pending_types_for_encryption_ = encrypted_types;
+    return;
   }
+  // Setting the pending types for encryption doesn't actually trigger
+  // encryption. The actual encryption will occur after the datatype manager
+  // is reconfigured.
+  pending_types_for_encryption_ = encrypted_types;
 }
 
-// This would open a transaction to get the encrypted types. Do not call this
+// This will open a transaction to get the encrypted types. Do not call this
 // if you already have a transaction open.
 void ProfileSyncService::GetEncryptedDataTypes(
     syncable::ModelTypeSet* encrypted_types) const {
@@ -1220,6 +1244,10 @@ void ProfileSyncService::GetEncryptedDataTypes(
     // types are.
     (*encrypted_types).insert(syncable::PASSWORDS);
   }
+}
+
+bool ProfileSyncService::HasPendingEncryptedTypes() const {
+  return !pending_types_for_encryption_.empty();
 }
 
 void ProfileSyncService::Observe(int type,
@@ -1243,8 +1271,6 @@ void ProfileSyncService::Observe(int type,
         expect_sync_configuration_aborted_ = false;
         return;
       }
-      // Clear out the gaia password if it is already there.
-      gaia_password_ = std::string();
       if (status != DataTypeManager::OK) {
         VLOG(0) << "ProfileSyncService::Observe: Unrecoverable error detected";
         std::string message =
@@ -1256,32 +1282,25 @@ void ProfileSyncService::Observe(int type,
         return;
       }
 
-      // If the user had entered a custom passphrase use it now.
-      if (!cached_passphrase_.value.empty()) {
-        // Don't hold on to the passphrase in raw form longer than needed.
-        SetPassphrase(cached_passphrase_.value,
-                      cached_passphrase_.is_explicit,
-                      cached_passphrase_.is_creation);
-        cached_passphrase_ = CachedPassphrase();
-      }
-
       // We should never get in a state where we have no encrypted datatypes
       // enabled, and yet we still think we require a passphrase for decryption.
       DCHECK(!(IsPassphraseRequiredForDecryption() &&
                !IsEncryptedDatatypeEnabled()));
-
-      // TODO(sync): Less wizard, more toast.
-      wizard_.Step(SyncSetupWizard::DONE);
-      NotifyObservers();
 
       // In the old world, this would be a no-op.  With new syncer thread,
       // this is the point where it is safe to switch from config-mode to
       // normal operation.
       backend_->StartSyncingWithServer();
 
-      if (!pending_types_for_encryption_.empty()) {
-        EncryptDataTypes(pending_types_for_encryption_);
-        pending_types_for_encryption_.clear();
+      if (pending_types_for_encryption_.empty()) {
+        wizard_.Step(SyncSetupWizard::DONE);
+        NotifyObservers();
+      } else {
+        // Will clear pending_types_for_encryption_ on success (via
+        // OnEncryptionComplete). Has no effect if pending_types_for_encryption_
+        // matches the encrypted types (and will clear
+        // pending_types_for_encryption_).
+        backend_->EncryptDataTypes(pending_types_for_encryption_);
       }
       break;
     }

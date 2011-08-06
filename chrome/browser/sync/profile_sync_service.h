@@ -446,13 +446,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                              bool is_explicit,
                              bool is_creation);
 
-  // Changes the set of datatypes that require encryption. This affects all
-  // machines synced to this account and all data belonging to the specified
-  // types.
-  // Note that this is an asynchronous operation (the encryption of data is
-  // performed on SyncBackendHost's core thread) and may not have an immediate
-  // effect.
-  virtual void EncryptDataTypes(
+  // Sets the set of datatypes that are waiting for encryption
+  // (pending_types_for_encryption_).
+  // Note that this does not trigger the actual encryption. The encryption call
+  // is kicked off automatically the next time the datatype manager is
+  // reconfigured.
+  virtual void set_pending_types_for_encryption(
       const syncable::ModelTypeSet& encrypted_types);
 
   // Get the currently encrypted data types.
@@ -460,6 +459,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // will always be in this list.
   virtual void GetEncryptedDataTypes(
       syncable::ModelTypeSet* encrypted_types) const;
+
+  // Returns true if the syncer is waiting for new datatypes to be encrypted.
+  virtual bool HasPendingEncryptedTypes() const;
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
@@ -636,9 +638,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
 
   // The most recently requested set of types to encrypt. Set by the user,
-  // and cached if the syncer was unable to encrypt new types (for example
-  // because we haven't finished initializing). Cleared when we successfully
-  // post a new encrypt task to the sync backend.
+  // and cached until the syncer either finishes encryption
+  // (OnEncryptionComplete) or the user cancels.
   syncable::ModelTypeSet pending_types_for_encryption_;
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;

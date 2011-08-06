@@ -175,6 +175,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   service->GetEncryptedDataTypes(&encrypted_types);
   bool encrypt_all =
       encrypted_types.upper_bound(syncable::PASSWORDS) != encrypted_types.end();
+  if (service->HasPendingEncryptedTypes())
+    encrypt_all = true;
   args->SetBoolean("encryptAllData", encrypt_all);
 
   // Load the parameters for the encryption tab.
@@ -267,16 +269,13 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // Go to the "loading..." screen.
   Advance(SyncSetupWizard::SETTING_UP);
 
+  // Note: encryption will not occur until OnUserChoseDatatypes is called.
+  syncable::ModelTypeSet encrypted_types;
   if (configuration.encrypt_all) {
-    syncable::ModelTypeSet data_types;
-    service_->GetRegisteredDataTypes(&data_types);
-    service_->EncryptDataTypes(data_types);
-  }
-
-  // If we are activating the passphrase, we need to have one supplied.
-  DCHECK(service_->IsUsingSecondaryPassphrase() ||
-         !configuration.use_secondary_passphrase ||
-         configuration.secondary_passphrase.length() > 0);
+    // Encrypt all registered types.
+    service_->GetRegisteredDataTypes(&encrypted_types);
+  }  // Else we clear the pending types for encryption.
+  service_->set_pending_types_for_encryption(encrypted_types);
 
   if (!configuration.gaia_passphrase.empty()) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
@@ -285,6 +284,15 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     service_->SetPassphrase(configuration.gaia_passphrase, false, false);
   }
 
+  // It's possible the user has to provide a secondary passphrase even when
+  // they have not set one previously. This occurs when the user has changed
+  // their gaia password and then sign in to a new machine for the first time.
+  // The new machine will download data encrypted with their old gaia password,
+  // which their current gaia password will not be able to decrypt, triggering
+  // a prompt for a passphrase. At this point, the user must enter their old
+  // password, which we store as a new secondary passphrase.
+  // TODO(zea): eventually use the above gaia_passphrase instead of the
+  // secondary passphrase in this case.
   if (configuration.use_secondary_passphrase) {
     if (!service_->IsUsingSecondaryPassphrase()) {
       service_->SetPassphrase(configuration.secondary_passphrase, true, true);

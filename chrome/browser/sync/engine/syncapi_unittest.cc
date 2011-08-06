@@ -1342,7 +1342,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // Trigger's a ReEncryptEverything with new passphrase.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(1);
-  EXPECT_CALL(observer_, OnEncryptionComplete(_)).Times(1);
+  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types)).Times(1);
   sync_manager_.SetPassphrase("new_passphrase", true);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1360,11 +1360,12 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
                                                    syncable::THEMES,
                                                    false /* not encrypted */));
   }
-  // Calling EncryptDataTypes with the same encrypted types should not trigger
-  // a re-encryption.
+  // Calling EncryptDataTypes with an empty encrypted types should not trigger
+  // a reencryption and should just notify immediately.
+  // TODO(zea): add logic to ensure nothing was written.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnPassphraseAccepted(_)).Times(0);
-  EXPECT_CALL(observer_, OnEncryptionComplete(_)).Times(0);
+  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types)).Times(1);
   sync_manager_.EncryptDataTypes(encrypted_types);
 }
 

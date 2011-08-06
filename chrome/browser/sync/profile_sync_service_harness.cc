@@ -796,7 +796,16 @@ bool ProfileSyncServiceHarness::EnableEncryptionForType(
   if (encrypted_types.count(type) > 0)
     return true;
   encrypted_types.insert(type);
-  service_->EncryptDataTypes(encrypted_types);
+  service_->set_pending_types_for_encryption(encrypted_types);
+
+  // In order to kick off the encryption we have to reconfigure. Just grab the
+  // currently synced types and use them.
+  syncable::ModelTypeSet synced_datatypes;
+  service_->GetPreferredDataTypes(&synced_datatypes);
+  bool sync_everything = (synced_datatypes.size() ==
+      (syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE));
+  service_->OnUserChoseDatatypes(sync_everything,
+                                 synced_datatypes);
 
   // Wait some time to let the enryption finish.
   return WaitForTypeEncryption(type);
