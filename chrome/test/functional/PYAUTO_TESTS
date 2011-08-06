@@ -160,6 +160,8 @@
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',
+      # crbug.com/91887
+      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-prefs.PrefsTest.testDownloadDirPref',
