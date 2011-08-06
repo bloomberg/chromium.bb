@@ -1484,6 +1484,7 @@
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/instant/instant_loader_manager_unittest.cc',
         'browser/instant/promo_counter_unittest.cc',
+        'browser/intents/web_intents_registry_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',

@@ -10,17 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "googleurl/src/gurl.h"
+#include "chrome/browser/intents/web_intent_data.h"
 #include "chrome/browser/webdata/web_database_table.h"
 
-// Describes the relevant elements of a WebIntent.
-// TODO(groby): Will need to be moved to different place once more
-// infrastructure for WebIntents is in place.
-struct WebIntentData {
-  GURL service_url; // URL for service invocation.
-  string16 action; // Name of action provided by service.
-  string16 type; // MIME type of data accepted by service.
-};
+class GURL;
 
 // This class manages the WebIntents table within the SQLite database passed
 // to the constructor. It expects the following schema:
