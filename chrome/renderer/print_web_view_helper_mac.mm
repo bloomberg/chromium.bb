@@ -68,13 +68,15 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   printing::Metafile* initial_render_metafile =
       print_preview_context_.metafile();
+  scoped_ptr<printing::Metafile> draft_metafile;
 #if !defined(USE_SKIA)
   if (print_preview_context_.IsModifiable()) {
-    initial_render_metafile = new printing::PreviewMetafile();
-    if (!initial_render_metafile->Init()) {
+    draft_metafile.reset(new printing::PreviewMetafile);
+    if (!draft_metafile->Init()) {
       DidFinishPrinting(FAIL_PREVIEW);
       return;
     }
+    initial_render_metafile = draft_metafile.get();
   }
 #endif
 
@@ -84,13 +86,12 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
-  printing::Metafile* draft_metafile = NULL;
   if (print_preview_context_.IsModifiable()) {
 #if defined(USE_SKIA)
-    draft_metafile = reinterpret_cast<printing::PreviewMetafile*>(
-        print_preview_context_.metafile())->GetMetafileForCurrentPage();
+    DCHECK(!draft_metafile.get());
+    draft_metafile.reset(reinterpret_cast<printing::PreviewMetafile*>(
+        print_preview_context_.metafile())->GetMetafileForCurrentPage());
 #else
-    draft_metafile = initial_render_metafile;
     draft_metafile->FinishDocument();
 
     // With CG, we rendered into a new metafile so we could get it as a draft
@@ -107,7 +108,7 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 #endif
   }
 
-  PreviewPageRendered(page_number, draft_metafile);
+  PreviewPageRendered(page_number, draft_metafile.get());
 }
 
 void PrintWebViewHelper::RenderPage(

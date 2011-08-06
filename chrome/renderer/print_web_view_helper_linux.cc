@@ -38,12 +38,12 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
-  printing::Metafile* page_metafile = NULL;
+  scoped_ptr<printing::Metafile> page_metafile;
   if (print_preview_context_.IsModifiable()) {
-    page_metafile = reinterpret_cast<printing::PreviewMetafile*>(
-        print_preview_context_.metafile())->GetMetafileForCurrentPage();
+    page_metafile.reset(reinterpret_cast<printing::PreviewMetafile*>(
+        print_preview_context_.metafile())->GetMetafileForCurrentPage());
   }
-  PreviewPageRendered(page_number, page_metafile);
+  PreviewPageRendered(page_number, page_metafile.get());
 }
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
