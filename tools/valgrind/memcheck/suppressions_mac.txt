@@ -1753,3 +1753,54 @@
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
 }
+{
+   bug_91889_a
+   Memcheck:Addr4
+   fun:_ZN4base12_GLOBAL__N_122StackDumpSignalHandlerEiP9__siginfoP17__darwin_ucontext
+   obj:*
+   fun:IOCFUnserialize
+   fun:IORegistryEntrySearchCFProperty
+   fun:_ZN12_GLOBAL__N_121SearchPortForPropertyEjPK10__CFString
+   fun:_ZN12_GLOBAL__N_123CollectPCIVideoCardInfoEP7GPUInfo
+   fun:_ZN18gpu_info_collector30CollectPreliminaryGraphicsInfoEP7GPUInfo
+   fun:_ZN14GpuDataManagerC2Ev
+   fun:_ZN14GpuDataManagerC1Ev
+   fun:_ZN22DefaultSingletonTraitsI14GpuDataManagerE3NewEv
+   fun:_ZN9SingletonI14GpuDataManager22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN14GpuDataManager11GetInstanceEv
+   fun:_ZN19GpuBlacklistUpdater17SetupOnFileThreadEv
+}
+{
+   bug_91889_b
+   Memcheck:Addr1
+   fun:IOCFUnserializeparse
+   fun:IOCFUnserialize
+   fun:IORegistryEntrySearchCFProperty
+   fun:_ZN12_GLOBAL__N_121SearchPortForPropertyEjPK10__CFString
+   fun:_ZN12_GLOBAL__N_123CollectPCIVideoCardInfoEP7GPUInfo
+   fun:_ZN18gpu_info_collector30CollectPreliminaryGraphicsInfoEP7GPUInfo
+   fun:_ZN14GpuDataManagerC2Ev
+   fun:_ZN14GpuDataManagerC1Ev
+   fun:_ZN22DefaultSingletonTraitsI14GpuDataManagerE3NewEv
+   fun:_ZN9SingletonI14GpuDataManager22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN14GpuDataManager11GetInstanceEv
+   fun:_ZN19GpuBlacklistUpdater17SetupOnFileThreadEv
+}
+{
+   bug_91889_c
+   Memcheck:Addr4
+   fun:_ZN4base12_GLOBAL__N_122StackDumpSignalHandlerEiP9__siginfoP17__darwin_ucontext
+   obj:*
+   obj:*
+   fun:IOCFUnserialize
+   fun:IORegistryEntrySearchCFProperty
+   fun:_ZN12_GLOBAL__N_121SearchPortForPropertyEjPK10__CFString
+   fun:_ZN12_GLOBAL__N_123CollectPCIVideoCardInfoEP7GPUInfo
+   fun:_ZN18gpu_info_collector30CollectPreliminaryGraphicsInfoEP7GPUInfo
+   fun:_ZN14GpuDataManagerC2Ev
+   fun:_ZN14GpuDataManagerC1Ev
+   fun:_ZN22DefaultSingletonTraitsI14GpuDataManagerE3NewEv
+   fun:_ZN9SingletonI14GpuDataManager22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN14GpuDataManager11GetInstanceEv
+   fun:_ZN19GpuBlacklistUpdater17SetupOnFileThreadEv
+}
