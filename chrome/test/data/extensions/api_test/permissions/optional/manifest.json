@@ -8,12 +8,14 @@
      "experimental",
      "management",
      "permissions",
-     "http://example.org/"
+     "http://a.com/*"
    ],
    "optional_permissions": [
      "tabs",
      "management",
      "notifications",
-     "background"
+     "background",
+     "http://a.com/*",
+     "http://*.c.com/*"
    ]
 }

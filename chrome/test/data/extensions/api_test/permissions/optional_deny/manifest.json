@@ -3,6 +3,6 @@
    "description": "permissions/optional_deny",
    "version": "0.1",
    "background_page": "background.html",
-   "permissions": ["experimental", "permissions", "http://example.org/"],
-   "optional_permissions": ["tabs", "management"]
+   "permissions": ["experimental", "permissions", "http://a.com/*"],
+   "optional_permissions": ["tabs", "management", "http://*.c.com/*"]
 }

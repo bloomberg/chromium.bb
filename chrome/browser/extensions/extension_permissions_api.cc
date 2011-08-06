@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_permissions_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_permissions_api_constants.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -42,11 +42,14 @@ DictionaryValue* PackPermissionsToValue(const ExtensionPermissionSet* set) {
        i != set->apis().end(); ++i)
     apis->Append(Value::CreateStringValue(info->GetByID(*i)->name()));
 
-  // TODO(jstritar): Include hosts once the API supports them. At that point,
-  // we could also shared this code with ExtensionPermissionSet methods in
-  // ExtensionPrefs.
+  // Generate the list of origin permissions.
+  URLPatternSet hosts = set->explicit_hosts();
+  ListValue* origins = new ListValue();
+  for (URLPatternSet::const_iterator i = hosts.begin(); i != hosts.end(); ++i)
+    origins->Append(Value::CreateStringValue(i->GetAsString()));
 
   value->Set(keys::kApisKey, apis);
+  value->Set(keys::kOriginsKey, origins);
   return value;
 }
 
@@ -74,17 +77,43 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
 
       ExtensionAPIPermission* permission = info->GetByName(api_name);
       if (!permission) {
-        *error = base::StringPrintf(
-            keys::kUnknownPermissionError, api_name.c_str());
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            keys::kUnknownPermissionError, api_name);
         return false;
       }
       apis.insert(permission->id());
     }
   }
 
-  // Ignore host permissions for now.
-  URLPatternSet empty_set;
-  *ptr = new ExtensionPermissionSet(apis, empty_set, empty_set);
+  URLPatternSet origins;
+  if (value->HasKey(keys::kOriginsKey)) {
+    ListValue* origin_list = NULL;
+    if (!value->GetList(keys::kOriginsKey, &origin_list)) {
+      *bad_message = true;
+      return false;
+    }
+    for (size_t i = 0; i < origin_list->GetSize(); ++i) {
+      std::string pattern;
+      if (!origin_list->GetString(i, &pattern)) {
+        *bad_message = true;
+        return false;
+      }
+
+      URLPattern origin(Extension::kValidHostPermissionSchemes);
+      URLPattern::ParseResult parse_result =
+          origin.Parse(pattern, URLPattern::IGNORE_PORTS);
+      if (URLPattern::PARSE_SUCCESS != parse_result) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            keys::kInvalidOrigin,
+            pattern,
+            URLPattern::GetParseResultString(parse_result));
+        return false;
+      }
+      origins.AddPattern(origin);
+    }
+  }
+
+  *ptr = new ExtensionPermissionSet(apis, origins, URLPatternSet());
   return true;
 }
 
@@ -110,7 +139,7 @@ void ExtensionPermissionsManager::AddPermissions(
   // Update the granted permissions so we don't auto-disable the extension.
   extension_service_->GrantPermissions(extension);
 
-  NotifyPermissionsUpdated(extension, total.get(), added.get(), ADDED);
+  NotifyPermissionsUpdated(ADDED, extension, added.get());
 }
 
 void ExtensionPermissionsManager::RemovePermissions(
@@ -127,7 +156,7 @@ void ExtensionPermissionsManager::RemovePermissions(
   // extension to add them again without prompting the user.
   extension_service_->UpdateActivePermissions(extension, total.get());
 
-  NotifyPermissionsUpdated(extension, total.get(), removed.get(), REMOVED);
+  NotifyPermissionsUpdated(REMOVED, extension, removed.get());
 }
 
 void ExtensionPermissionsManager::DispatchEvent(
@@ -146,10 +175,9 @@ void ExtensionPermissionsManager::DispatchEvent(
 }
 
 void ExtensionPermissionsManager::NotifyPermissionsUpdated(
+    EventType event_type,
     const Extension* extension,
-    const ExtensionPermissionSet* active,
-    const ExtensionPermissionSet* changed,
-    EventType event_type) {
+    const ExtensionPermissionSet* changed) {
   if (!changed || changed->IsEmpty())
     return;
 
@@ -183,10 +211,11 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
     Profile* profile = Profile::FromBrowserContext(host->browser_context());
     if (extension_service_->profile()->IsSameProfile(profile))
       host->Send(new ExtensionMsg_UpdatePermissions(
+          static_cast<int>(reason),
           extension->id(),
-          active->apis(),
-          active->explicit_hosts(),
-          active->scriptable_hosts()));
+          changed->apis(),
+          changed->explicit_hosts(),
+          changed->scriptable_hosts()));
   }
 }
 
@@ -235,7 +264,8 @@ bool RemovePermissionsFunction::RunImpl() {
        i != apis.end(); ++i) {
     const ExtensionAPIPermission* api = info->GetByID(*i);
     if (!api->supports_optional()) {
-      error_ = base::StringPrintf(keys::kNotWhitelistedError, api->name());
+      error_ = ExtensionErrorUtils::FormatErrorMessage(
+          keys::kNotWhitelistedError, api->name());
       return false;
     }
   }
@@ -286,7 +316,8 @@ bool RequestPermissionsFunction::RunImpl() {
        i != apis.end(); ++i) {
     const ExtensionAPIPermission* api = info->GetByID(*i);
     if (!api->supports_optional()) {
-      error_ = base::StringPrintf(keys::kNotWhitelistedError, api->name());
+      error_ = ExtensionErrorUtils::FormatErrorMessage(
+          keys::kNotWhitelistedError, api->name());
       return false;
     }
   }

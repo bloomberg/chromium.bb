@@ -234,11 +234,12 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)
 
 // Tell the renderer to update an extension's permission set.
-IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdatePermissions,
+IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
+                     int /* UpdateExtensionPermissionsInfo::REASON */,
                      std::string /* extension_id*/,
-                     ExtensionAPIPermissionSet,
-                     URLPatternSet,
-                     URLPatternSet)
+                     ExtensionAPIPermissionSet /* permissions */,
+                     URLPatternSet /* explicit_hosts */,
+                     URLPatternSet /* scriptable_hosts */)
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,

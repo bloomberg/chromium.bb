@@ -1071,6 +1071,12 @@
             "items": {"type": "string"},
             "optional": true,
             "description": "List of named permissions (does not include hosts or origins)."
+          },
+          "origins": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "List of origin permissions."
           }
         }
       }

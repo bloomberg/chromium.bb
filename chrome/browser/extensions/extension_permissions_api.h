@@ -48,16 +48,14 @@ class ExtensionPermissionsManager {
                      const char* event_name,
                      const ExtensionPermissionSet* changed_permissions);
 
-  // Issues the relevant events, messages and notifications when the permissions
-  // have changed for the |extension| (|changed| is the permission delta, while
-  // |active| is the new permission set). Specifically, this sends the
-  // EXTENSION_PERMISSIONS_UPDATED notification, the
-  // ExtensionMsg_UpdatePermissions IPC message, and fires the onAdded/onRemoved
-  // events in the extension.
-  void NotifyPermissionsUpdated(const Extension* extension,
-                                const ExtensionPermissionSet* active,
-                                const ExtensionPermissionSet* changed,
-                                EventType event_type);
+  // Issues the relevant events, messages and notifications when the
+  // |extension|'s permissions have |changed| (|changed| is the delta).
+  // Specifically, this sends the EXTENSION_PERMISSIONS_UPDATED notification,
+  // the ExtensionMsg_UpdatePermissions IPC message, and fires the
+  // onAdded/onRemoved events in the extension.
+  void NotifyPermissionsUpdated(EventType event_type,
+                                const Extension* extension,
+                                const ExtensionPermissionSet* changed);
 
   ExtensionService* extension_service_;
 };

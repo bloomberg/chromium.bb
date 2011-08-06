@@ -7,15 +7,18 @@
 namespace extension_permissions_module_constants {
 
 const char kApisKey[] = "permissions";
+const char kOriginsKey[] = "origins";
 
 const char kCantRemoveRequiredPermissionsError[] =
     "You cannot remove required permissions.";
 const char kNotInOptionalPermissionsError[] =
     "Optional permissions must be listed in extension manifest.";
 const char kNotWhitelistedError[] =
-    "The optional permissions API does not support '%s'.";
+    "The optional permissions API does not support '*'.";
 const char kUnknownPermissionError[] =
-    "'%s' is not a recognized permission.";
+    "'*' is not a recognized permission.";
+const char kInvalidOrigin[] =
+    "Invalid value for origin pattern *: *";
 
 const char kOnAdded[] = "experimental.permissions.onAdded";
 const char kOnRemoved[] = "experimental.permissions.onRemoved";

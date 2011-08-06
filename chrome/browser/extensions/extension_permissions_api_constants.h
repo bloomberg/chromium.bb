@@ -12,12 +12,14 @@ namespace extension_permissions_module_constants {
 
 // Keys used in serializing permissions data and events.
 extern const char kApisKey[];
+extern const char kOriginsKey[];
 
 // Error messages.
 extern const char kCantRemoveRequiredPermissionsError[];
 extern const char kNotInOptionalPermissionsError[];
 extern const char kNotWhitelistedError[];
 extern const char kUnknownPermissionError[];
+extern const char kInvalidOrigin[];
 
 // Event names.
 extern const char kOnAdded[];

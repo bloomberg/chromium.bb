@@ -98,7 +98,7 @@ void ExtensionDispatcher::WebKitInitialized() {
        iter != active_extension_ids_.end(); ++iter) {
     const Extension* extension = extensions_.GetByID(*iter);
     if (extension)
-      InitHostPermissions(extension);
+      InitOriginPermissions(extension);
   }
 
   is_webkit_initialized_ = true;
@@ -234,10 +234,13 @@ void ExtensionDispatcher::OnActivateExtension(
     return;
 
   if (is_webkit_initialized_)
-    InitHostPermissions(extension);
+    InitOriginPermissions(extension);
 }
 
-void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
+void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
+  // TODO(jstritar): We should try to remove this special case. Also, these
+  // whitelist entries need to be updated when the kManagement permission
+  // changes.
   if (extension->HasAPIPermission(ExtensionAPIPermission::kManagement)) {
     WebSecurityPolicy::addOriginAccessWhitelistEntry(
         extension->url(),
@@ -246,10 +249,17 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
         false);
   }
 
-  const URLPatternSet& permissions =
-      extension->GetActivePermissions()->explicit_hosts();
-  for (URLPatternSet::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
+  UpdateOriginPermissions(UpdatedExtensionPermissionsInfo::ADDED,
+                          extension,
+                          extension->GetActivePermissions()->explicit_hosts());
+}
+
+void ExtensionDispatcher::UpdateOriginPermissions(
+    UpdatedExtensionPermissionsInfo::Reason reason,
+    const Extension* extension,
+    const URLPatternSet& origins) {
+  for (URLPatternSet::const_iterator i = origins.begin();
+       i != origins.end(); ++i) {
     const char* schemes[] = {
       chrome::kHttpScheme,
       chrome::kHttpsScheme,
@@ -258,17 +268,20 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {
-        WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension->url(),
-            WebString::fromUTF8(schemes[j]),
-            WebString::fromUTF8(i->host()),
-            i->match_subdomains());
+        ((reason == UpdatedExtensionPermissionsInfo::REMOVED) ?
+         WebSecurityPolicy::removeOriginAccessWhitelistEntry :
+         WebSecurityPolicy::addOriginAccessWhitelistEntry)(
+              extension->url(),
+              WebString::fromUTF8(schemes[j]),
+              WebString::fromUTF8(i->host()),
+              i->match_subdomains());
       }
     }
   }
 }
 
 void ExtensionDispatcher::OnUpdatePermissions(
+    int reason_id,
     const std::string& extension_id,
     const ExtensionAPIPermissionSet& apis,
     const URLPatternSet& explicit_hosts,
@@ -277,8 +290,23 @@ void ExtensionDispatcher::OnUpdatePermissions(
   if (!extension)
     return;
 
-  extension->SetActivePermissions(
-      new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));
+  scoped_refptr<const ExtensionPermissionSet> delta =
+      new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
+  scoped_refptr<const ExtensionPermissionSet> old_active =
+      extension->GetActivePermissions();
+  UpdatedExtensionPermissionsInfo::Reason reason =
+      static_cast<UpdatedExtensionPermissionsInfo::Reason>(reason_id);
+
+  const ExtensionPermissionSet* new_active = NULL;
+  if (reason == UpdatedExtensionPermissionsInfo::ADDED) {
+    new_active = ExtensionPermissionSet::CreateUnion(old_active, delta);
+  } else {
+    CHECK_EQ(UpdatedExtensionPermissionsInfo::REMOVED, reason);
+    new_active = ExtensionPermissionSet::CreateDifference(old_active, delta);
+  }
+
+  extension->SetActivePermissions(new_active);
+  UpdateOriginPermissions(reason, extension, explicit_hosts);
 }
 
 void ExtensionDispatcher::OnUpdateUserScripts(
