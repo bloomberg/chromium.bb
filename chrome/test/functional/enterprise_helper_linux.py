@@ -14,8 +14,10 @@ def main():
   assert os.geteuid() == 0, 'Need superuser privileges'
   if sys.argv[1] == 'copy':
     shutil.copy(sys.argv[2], sys.argv[3])
-    filename = os.path.join(sys.argv[3], 'chrome.json')
-    os.chmod(filename, 0755)
+    dirList = os.listdir(sys.argv[3])
+    for fname in dirList:
+      filename = os.path.join(sys.argv[3], fname)
+      os.chmod(filename, 0755)
   elif sys.argv[1] == 'setup_dir':
     os.system('mkdir -p %s' % sys.argv[2])
     os.system('chmod -R 755 /etc/opt/chrome/')
