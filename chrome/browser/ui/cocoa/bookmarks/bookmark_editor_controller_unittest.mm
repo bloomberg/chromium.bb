@@ -156,7 +156,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaTest {
 };
 
 TEST_F(BookmarkEditorControllerNoNodeTest, NoNodeNoTree) {
-  EXPECT_EQ(@"", [controller_ displayName]);
+  EXPECT_NSEQ(@"", [controller_ displayName]);
   EXPECT_EQ(nil, [controller_ displayURL]);
   EXPECT_FALSE([controller_ okButtonEnabled]);
   [controller_ cancel:nil];
