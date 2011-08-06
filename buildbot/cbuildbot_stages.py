@@ -14,6 +14,7 @@ import tempfile
 import time
 import traceback
 
+from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
@@ -29,6 +30,7 @@ _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
+_MAX_ARCHIVED_BUILDS = 3
 _PRINT_INTERVAL = 1
 
 class BuildException(Exception):
@@ -760,11 +762,12 @@ class ArchiveStage(NonHaltingBuilderStage):
     image_id = os.readlink(self.GetImageDirSymlink())
     self._set_version = '%s-b%s' % (image_id, self._options.buildnumber)
     if self._options.buildbot:
-      self._local_archive_path = '/var/www/archive'
+      self._archive_root = '/var/www/archive'
     else:
-      self._local_archive_path = os.path.join(self._build_root,
-                                              'trybot_archive')
+      self._archive_root = os.path.join(self._build_root,
+                                        'trybot_archive')
 
+    self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
     self._test_results_queue = multiprocessing.Queue()
 
   def TestStageComplete(self, test_results):
@@ -779,7 +782,7 @@ class ArchiveStage(NonHaltingBuilderStage):
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
     if not self._options.buildbot:
-      return self._GetFullArchivePath()
+      return self._GetArchivePath()
     elif self._gsutil_archive:
       upload_location = self._GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
@@ -797,9 +800,8 @@ class ArchiveStage(NonHaltingBuilderStage):
     else:
       return None
 
-  def _GetFullArchivePath(self):
-    return os.path.join(self._local_archive_path, self._bot_id,
-                        self._set_version)
+  def _GetArchivePath(self):
+    return os.path.join(self._bot_archive_root, self._set_version)
 
   def _GetTestTarball(self):
     """Get the path to the test tarball."""
@@ -811,76 +813,147 @@ class ArchiveStage(NonHaltingBuilderStage):
       cros_lib.Info('No test results.')
     return test_tarball
 
-  def _SetupFullArchivePath(self):
+  def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
-    full_archive_path = self._GetFullArchivePath()
+    archive_path = self._GetArchivePath()
     if not self._options.buildbot:
       # Trybot: Clear artifacts from all previous runs.
-      shutil.rmtree(self._local_archive_path, ignore_errors=True)
+      shutil.rmtree(self._archive_root, ignore_errors=True)
     else:
       # Buildbot: Clear out any leftover build artifacts, if present.
-      shutil.rmtree(full_archive_path, ignore_errors=True)
+      shutil.rmtree(archive_path, ignore_errors=True)
 
-    os.makedirs(full_archive_path)
+    os.makedirs(archive_path)
 
-    return full_archive_path
+    return archive_path
 
   def _PerformStage(self):
+    buildroot = self._build_root
     config = self._build_config
     board = config['board']
     debug = self._options.debug
     upload_url = self._GetGSUploadLocation()
-    full_archive_path = self._SetupFullArchivePath()
+    archive_path = self._SetupArchivePath()
+    image_dir = self.GetImageDirSymlink()
+    extra_env = {}
+    if config['useflags']:
+      extra_env['USE'] = ' '.join(config['useflags'])
 
     # The following three functions are run in parallel.
     #  1. UploadTestResults: Upload results from test phase.
     #  2. ArchiveDebugSymbols: Generate and upload debug symbols.
-    #  3. LegacyArchiveBuild: Run archive_build.sh.
+    #  3. BuildAndArchiveAllImages: Build and archive images.
 
     def UploadTestResults():
-      # Upload test results when they are ready.
-      test_results = self._GetTestTarball()
-      if test_results:
-        commands.UploadTestTarball(
-          test_results, full_archive_path, upload_url, debug)
+       """Upload test results when they are ready."""
+       test_results = self._GetTestTarball()
+       if test_results:
+         filename = commands.ArchiveTestTarball(test_results, archive_path)
+         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
     def ArchiveDebugSymbols():
+      """Generate and upload debug symbols."""
       if config['archive_build_debug']:
-        commands.GenerateBreakpadSymbols(self._build_root, board)
-        debug_tgz = commands.GenerateDebugTarball(
-            self._build_root, board, full_archive_path)
-        commands.UploadDebugTarball(debug_tgz, upload_url, debug)
+        commands.GenerateBreakpadSymbols(buildroot, board)
+        filename = commands.GenerateDebugTarball(
+          buildroot, board, archive_path)
+        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
       if not debug and config['upload_symbols']:
-        commands.UploadSymbols(self._build_root,
+        commands.UploadSymbols(buildroot,
                                board=board,
                                official=config['chromeos_official'])
 
-    def LegacyArchiveBuild():
-      commands.LegacyArchiveBuild(
-          self._build_root, self._bot_id, config, self._gsutil_archive,
-          self._set_version, self._local_archive_path, debug)
+    def BuildAndArchiveFactoryImages():
+      """Build and archive the factory zip file.
+
+      The factory zip file consists of the factory test image and the factory
+      install image. Both are built here.
+      """
+
+      # Build factory test image and create symlink to it.
+      factory_test_symlink = None
+      if config['factory_test_mod']:
+        alias = commands.BuildFactoryTestImage(buildroot, board, extra_env)
+        factory_test_symlink = self.GetImageDirSymlink(alias)
+
+      # Build factory install image and create a symlink to it.
+      factory_install_symlink = None
+      if config['factory_install_mod']:
+        alias = commands.BuildFactoryInstallImage(buildroot, board, extra_env)
+        factory_install_symlink = self.GetImageDirSymlink(alias)
+        if config['factory_install_netboot']:
+          commands.MakeNetboot(buildroot, board, factory_install_symlink)
+
+      # Build and upload factory zip.
+      if factory_install_symlink and factory_test_symlink:
+        image_root = os.path.dirname(factory_install_symlink)
+        filename = commands.BuildFactoryZip(archive_path, image_root)
+        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
+    def ArchiveRegularImages():
+      """Build and archive image.zip and the hwqual image."""
+
+      # Build autotest tarball, which is used in image.zip.
+      if config['test_mod']:
+        filename = commands.BuildAutotestTarball(buildroot, board, image_dir)
+
+      # Zip up everything in the image directory.
+      filename = commands.BuildImageZip(archive_path, image_dir)
+
+      # Upload image.zip to Google Storage.
+      commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
+      if config['chromeos_official']:
+        # Build hwqual image and upload to Google Storage.
+        version = os.path.basename(os.path.realpath(image_dir))
+        hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
+        filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
+        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
+      # Archive au-generator.zip.
+      filename = 'au-generator.zip'
+      shutil.copy(os.path.join(image_dir, filename), archive_path)
+      commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
+    def BuildAndArchiveAllImages():
+      # If we're an official build, generate the recovery image. To conserve
+      # loop devices, we try to only run one instance of build_image at a
+      # time. TODO(davidjames): Move the image generation out of the archive
+      # stage.
+      if config['chromeos_official']:
+        commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
+
+      background.RunParallelSteps([BuildAndArchiveFactoryImages,
+                                   ArchiveRegularImages])
 
     try:
-      # TODO(davidjames): Run these steps in parallel.
-      LegacyArchiveBuild()
-      ArchiveDebugSymbols()
-      UploadTestResults()
+      background.RunParallelSteps([
+        UploadTestResults,
+        ArchiveDebugSymbols,
+        BuildAndArchiveAllImages])
     finally:
       # Update the _index.html file with the test artifacts and build artifacts
       # uploaded above.
       if upload_url and not debug:
         commands.UpdateIndex(upload_url)
 
+    # Update and upload LATEST file.
+    commands.UpdateLatestFile(self._bot_archive_root, self._gsutil_archive)
+    commands.UploadArchivedFile(self._bot_archive_root, self._gsutil_archive,
+                                'LATEST', debug)
+
     # Now that all data has been generated, we can upload the final result to
     # the image server.
     # TODO: When we support branches fully, the friendly name of the branch
     # needs to be used with PushImages
     if not debug and config['push_image']:
-      commands.PushImages(self._build_root,
+      commands.PushImages(buildroot,
                           board=board,
                           branch_name='master',
-                          archive_dir=full_archive_path)
+                          archive_dir=archive_path)
+
+    commands.RemoveOldArchives(self._bot_archive_root, _MAX_ARCHIVED_BUILDS)
 
 
 class UploadPrebuiltsStage(NonHaltingBuilderStage):

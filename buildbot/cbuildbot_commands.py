@@ -19,6 +19,8 @@ CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
+_FACTORY_SHIM = 'factory_shim'
+_FACTORY_TEST = 'factory_test'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
                              'chromeos/binhost')
@@ -375,7 +377,7 @@ def ArchiveTestResults(buildroot, test_results_dir):
   """Archives the test results into a tarball.
 
   Arguments:
-    buildroot: Root directory where build occurs
+    buildroot: Root directory where build occurs.
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
 
@@ -405,30 +407,20 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.Warning('========================================================')
 
 
-def UploadTestTarball(test_tarball, local_archive_dir, upload_url, debug):
-  """Uploads the test results tarball.
+def ArchiveTestTarball(test_tarball, archive_dir):
+  """Archives the test results tarball.
 
   Arguments:
     test_tarball: Path to test tarball.
-    upload_url: Google Storage location for test tarball.
-    local_archive_dir: Local directory for archive tarball.
-    debug: Whether we're in debug mode.
+    archive_dir: Local directory for archive tarball.
   """
-  if local_archive_dir:
-    archived_tarball = os.path.join(local_archive_dir, 'test_results.tgz')
+  filename = os.path.basename(test_tarball)
+  if archive_dir:
+    archived_tarball = os.path.join(archive_dir, filename)
     shutil.copy(test_tarball, archived_tarball)
     os.chmod(archived_tarball, 0644)
 
-  if upload_url and not debug:
-    tarball_url = '%s/%s' % (upload_url, 'test_results.tgz')
-    cros_lib.OldRunCommand([_GSUTIL_PATH,
-                            'cp',
-                            test_tarball,
-                            tarball_url])
-    cros_lib.OldRunCommand([_GSUTIL_PATH,
-                            'setacl',
-                            _GS_ACL,
-                            tarball_url])
+  return filename
 
 
 def MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
@@ -619,42 +611,6 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
-def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
-                       set_version, archive_path, debug=False):
-  """Archives build artifacts and returns URL to archived location."""
-
-  # Fixed properties
-  keep_max = 3
-
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./archive_build.sh',
-         '--set_version', str(set_version),
-         '--to', os.path.join(archive_path, bot_id),
-         '--keep_max', str(keep_max),
-         '--board', buildconfig['board'],
-         ]
-
-  # If we archive to Google Storage
-  if gsutil_archive:
-    cmd += ['--gsutil_archive', gsutil_archive,
-            '--acl', _GS_ACL,
-            '--gsutil', _GSUTIL_PATH,
-            ]
-
-  # Give the right args to archive_build.
-  if buildconfig.get('chromeos_official'): cmd.append('--official_build')
-  if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
-  cmd.append('--noarchive_debug')
-  if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
-  if debug: cmd.append('--debug')
-  if buildconfig.get('factory_install_mod', True):
-    cmd.append('--factory_install_mod')
-
-  useflags = buildconfig.get('useflags')
-  if useflags: cmd.extend(['--useflags', ' '.join(useflags)])
-
-  cros_lib.RunCommand(cmd, cwd=cwd)
-
 def UpdateIndex(upload_url):
   """Update _index.html page in Google Storage.
 
@@ -687,7 +643,7 @@ def GenerateDebugTarball(buildroot, board, archive_path):
     board: Board type that was built on this machine
     archive_dir: Directory where tarball should be stored.
 
-  Returns the path to the debug tarball.
+  Returns the filename of the created debug tarball.
   """
 
   # Generate debug tarball. This needs to run as root because some of the
@@ -712,28 +668,29 @@ def GenerateDebugTarball(buildroot, board, archive_path):
   cros_lib.RunCommand(['sudo', 'chown', str(os.getuid()), debug_tgz])
   os.chmod(debug_tgz, 0644)
 
-  return debug_tgz
+  return os.path.basename(debug_tgz)
 
 
-def UploadDebugTarball(debug_tgz, upload_url, debug):
-  """Upload the debug tarball from the archive dir to Google Storage.
+def UploadArchivedFile(archive_path, upload_url, filename, debug):
+  """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
-    debug_tgz: Path to debug tarball in archive dir.
+    archive_path: Path to archive dir.
     upload_url: Location where tarball should be uploaded.
     debug: Whether we are in debug mode.
   """
 
   if upload_url and not debug:
-    debug_tgz_url = '%s/%s' % (upload_url, 'debug.tgz')
+    full_filename = os.path.join(archive_path, filename)
+    full_url = '%s/%s' % (upload_url, filename)
     cros_lib.RunCommand([_GSUTIL_PATH,
                          'cp',
-                         debug_tgz,
-                         debug_tgz_url])
+                         full_filename,
+                         full_url])
     cros_lib.RunCommand([_GSUTIL_PATH,
                          'setacl',
                          _GS_ACL,
-                         debug_tgz_url])
+                         full_url])
 
 
 def UploadSymbols(buildroot, board, official):
@@ -759,3 +716,195 @@ def PushImages(buildroot, board, branch_name, archive_dir):
         archive_dir]
 
   cros_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
+
+
+def BuildFactoryTestImage(buildroot, board, extra_env):
+  """Build a factory test image.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine
+    extra_env: Flags to be added to the environment for the new process.
+
+  Returns the basename of the symlink created for the image.
+  """
+
+  # We use build_attempt=2 here to ensure that this image uses a different
+  # output directory from our regular image and the factory shim image (below).
+  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  alias = _FACTORY_TEST
+  cmd = ['./build_image',
+         '--board=%s' % board,
+         '--factory',
+         '--test',
+         '--replace',
+         '--noenable_rootfs_verification',
+         '--symlink=%s' % alias,
+         '--build_attempt=2']
+  cros_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
+                      cwd=scripts_dir)
+  return alias
+
+
+def BuildFactoryInstallImage(buildroot, board, extra_env):
+  """Build a factory install image.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine
+    extra_env: Flags to be added to the environment for the new process.
+
+  Returns the basename of the symlink created for the image.
+  """
+
+  # We use build_attempt=3 here to ensure that this image uses a different
+  # output directory from our regular image and the factory test image.
+  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  alias = _FACTORY_SHIM
+  cmd = ['./build_image',
+         '--board=%s' % board,
+         '--factory_install',
+         '--replace',
+         '--symlink=%s' % alias,
+         '--build_attempt=3']
+  cros_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
+                      cwd=scripts_dir)
+  return alias
+
+
+def MakeNetboot(buildroot, board, image_dir):
+  """Convert the specified image to be a netboot image.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    image_dir: Directory containing factory install shim.
+  """
+  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  image = os.path.join(image_dir, 'factory_install_shim.bin')
+  cmd = ['./make_netboot.sh',
+         '--board=%s' % board,
+         '--image=%s' % cros_lib.ReinterpretPathForChroot(image)]
+  cros_lib.RunCommand(cmd, enter_chroot=True, cwd=scripts_dir)
+
+
+def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
+  """Build a recovery image.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    image_dir: Directory containing base image.
+    extra_env: Flags to be added to the environment for the new process.
+  """
+  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  image = os.path.join(image_dir, 'chromiumos_base_image.bin')
+  cmd = ['./mod_image_for_recovery.sh',
+         '--board=%s' % board,
+         '--image=%s' % cros_lib.ReinterpretPathForChroot(image)]
+  cros_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
+                      cwd=scripts_dir)
+
+
+def BuildAutotestTarball(buildroot, board, image_dir):
+  """Tar up the autotest artifacts into image_dir.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    image_dir: Directory for storing autotest tarball
+
+  Returns the basename of the autotest tarball.
+  """
+  filename = 'autotest.tar.bz2'
+  cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
+  pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
+  cmd = ['tar',
+         'cf',
+         os.path.join(image_dir, filename),
+         '--checkpoint=10000',
+         '--use-compress-program=%s' % pbzip2,
+         'autotest']
+  cros_lib.RunCommand(cmd, cwd=cwd)
+  return filename
+
+
+def BuildImageZip(archive_dir, image_dir):
+  """Build image.zip in archive_dir from contents of image_dir.
+
+  Exclude the dev image from the zipfile.
+
+  Args:
+    archive_dir: Directory to store image.zip.
+    image_dir: Directory to zip up.
+
+  Returns the basename of the zipfile.
+  """
+  filename = 'image.zip'
+  zipfile = os.path.join(archive_dir, filename)
+  cmd = ['zip', zipfile, '-r', '.', '--exclude', 'chromiumos_image.bin']
+  cros_lib.RunCommand(cmd, cwd=image_dir)
+  return filename
+
+
+def BuildFactoryZip(archive_dir, image_root):
+  """Build factory_image.zip in archive_dir.
+
+  Args:
+    archive_dir: Directory to store image.zip.
+    image_root: Directory containing factory_shim and factory_test symlinks.
+
+  Returns the basename of the zipfile.
+  """
+  filename = 'factory_image.zip'
+  zipfile = os.path.join(archive_dir, filename)
+  patterns = ['factory_image', 'factory_install', 'partition', 'netboot',
+              'hwid']
+  cmd = ['zip', zipfile, '-r', _FACTORY_SHIM, _FACTORY_TEST]
+  for pattern in patterns:
+    cmd.extend(['--include', '*%s*' % pattern])
+  cros_lib.RunCommand(cmd, cwd=image_root)
+  return filename
+
+
+def ArchiveHWQual(buildroot, hwqual_name, archive_dir):
+  """Create a hwqual tarball in archive_dir.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    hwqual_name: Name for tarball.
+    archive_dir: Local directory for hwqual tarball.
+    image_dir: Directory where image was stored.
+  """
+  scripts_dir = os.path.join(buildroot, 'src', 'scripts')
+  cmd = [os.path.join(scripts_dir, 'archive_hwqual'),
+         '--from', archive_dir,
+         '--output_tag', hwqual_name]
+  cros_lib.RunCommand(cmd)
+  return '%s.tar.bz2' % hwqual_name
+
+
+def UpdateLatestFile(bot_archive_root, set_version):
+  """Update the latest file in archive_root.
+
+  Args:
+    bot_archive_root: Parent directory of archive directory.
+    set_version: Version of output directory.
+  """
+  latest_path = os.path.join(bot_archive_root, 'LATEST')
+  latest_file = open(latest_path, 'w')
+  print >>latest_file, set_version
+  latest_file.close()
+
+
+def RemoveOldArchives(bot_archive_root, keep_max):
+  """Remove old archive directories in bot_archive_root.
+
+  Args:
+    bot_archive_root: Parent directory containing old directories.
+    keep_max: Maximum number of directories to keep.
+  """
+  # TODO(davidjames): Reimplement this in Python.
+  # +2 because line numbers start at 1 and need to skip LATEST file
+  cmd = 'ls -t1 | tail --lines=+%d | xargs rm -rf' % (keep_max + 2)
+  cros_lib.RunCommand(cmd, cwd=bot_archive_root, shell=True)
