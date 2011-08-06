@@ -84,8 +84,6 @@
       # crbug.com/88128
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       '-browsing_data.BrowsingDataTest.testClearingAccuracy',
-      # crbug.com/91764
-      '-extensions.ExtensionsTest.testSetExtensionStates',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       # crbug.com/89279
