@@ -189,7 +189,15 @@ remoting.setMode = function(mode) {
     element.hidden = hidden;
   }
   remoting.debug.log('App mode: ' + mode);
-  remoting.currentMode = modes[0];
+  remoting.currentMode = mode;
+}
+
+/**
+ * Get the major mode that the app is running in.
+ * @return {remoting.Mode} The app's current major mode.
+ */
+remoting.getMajorMode = function(mode) {
+  return remoting.currentMode.split('.')[0];
 }
 
 remoting.tryShare = function() {
@@ -520,7 +528,7 @@ remoting.tryConnect = function() {
 
 remoting.cancelPendingOperation = function() {
   document.getElementById('cancel-button').disabled = true;
-  if (remoting.currentMode == remoting.AppMode.HOST) {
+  if (remoting.getMajorMode() == remoting.AppMode.HOST) {
     remoting.cancelShare();
   }
 }
@@ -587,6 +595,25 @@ remoting.disconnect = function() {
     remoting.session = null;
     remoting.debug.log('Disconnected.');
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
+  }
+}
+
+/** If the client is connected, or the host is shared, prompt before closing.
+ *
+ * @return {(string|void)} The prompt string if a connection is active.
+ */
+remoting.promptClose = function() {
+  var messageId = null;
+  if (remoting.getMajorMode() == remoting.AppMode.HOST &&
+      remoting.currentMode != remoting.AppMode.HOST_UNSHARED) {
+    messageId = 'closePromptHost';
+  } else if (remoting.getMajorMode() == remoting.AppMode.IN_SESSION ||
+             remoting.currentMode == remoting.AppMode.CLIENT_CONNECTING) {
+    messageId = 'closePromptClient';
+  }
+  if (messageId) {
+    var result = chrome.i18n.getMessage(messageId);
+    return result;
   }
 }
 

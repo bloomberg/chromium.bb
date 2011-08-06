@@ -11,6 +11,14 @@
     "message": "Cancel",
     "description": "Label for general-purpose Cancel buttons"
   },
+  "closePromptClient": {
+    "message": "Navigating away from this page will end your Chromoting session.",
+    "description": "Message shown when the client tab is closed while a connection is active."
+  },
+  "closePromptHost": {
+    "message": "Navigating away from this page will disconnect the Chromoting viewer.",
+    "description": "Message shown when the host tab is closed while a connection is active."
+  },
   "connectButton": {
     "message": "Connect",
     "description": "Label for the connect button"
