@@ -735,9 +735,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
 }
 
 #if defined(OS_CHROMEOS)
-// This test seems to be flaky on chromiumos.
+// This test seems to be flaky and hang on chromiumos.
 // http://crbug.com/84419
-#define MAYBE_TestRefNavigation FLAKY_TestRefNavigation
+#define MAYBE_TestRefNavigation DISABLED_TestRefNavigation
 #else
 #define MAYBE_TestRefNavigation TestRefNavigation
 #endif
