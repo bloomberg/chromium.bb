@@ -24,7 +24,7 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& configs) {
+bool PlatformVideoDecoderImpl::Initialize(const std::vector<int32>& configs) {
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
     return true;

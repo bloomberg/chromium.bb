@@ -99,7 +99,7 @@ void OmxVideoDecodeAccelerator::SetEglState(
 }
 
 bool OmxVideoDecodeAccelerator::VerifyConfigs(
-    const std::vector<uint32>& configs) {
+    const std::vector<int32>& configs) {
   size_t cur;
   for (cur = 0; cur + 1 < configs.size(); cur++) {
     uint32 n = configs[cur++];
@@ -141,7 +141,7 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
   param->nSize = sizeof(T);
 }
 
-bool OmxVideoDecodeAccelerator::Initialize(const std::vector<uint32>& config) {
+bool OmxVideoDecodeAccelerator::Initialize(const std::vector<int32>& config) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   RETURN_ON_FAILURE(VerifyConfigs(config), "Invalid config", INVALID_ARGUMENT,
                     false);

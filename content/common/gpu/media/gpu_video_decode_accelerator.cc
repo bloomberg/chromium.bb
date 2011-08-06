@@ -94,7 +94,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
 }
 
 void GpuVideoDecodeAccelerator::Initialize(
-    const std::vector<uint32>& configs,
+    const std::vector<int32>& configs,
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);

@@ -32,8 +32,9 @@
   F(PrivateFontFile) \
   F(Surface3D) \
   F(URLLoader) \
-  F(URLRequestInfo)\
-  F(URLResponseInfo)
+  F(URLRequestInfo) \
+  F(URLResponseInfo) \
+  F(VideoDecoder)
 
 namespace pp {
 namespace proxy {

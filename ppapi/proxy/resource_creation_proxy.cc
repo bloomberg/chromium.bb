@@ -31,6 +31,7 @@
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
+#include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/input_event_impl.h"
@@ -300,8 +301,8 @@ PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_Instance instance,
     PP_Resource context3d_id,
     const PP_VideoConfigElement* config) {
-  NOTIMPLEMENTED();
-  return 0;
+  return PPB_VideoDecoder_Proxy::CreateProxyResource(
+      instance, context3d_id, config);
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoLayer(

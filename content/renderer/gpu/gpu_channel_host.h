@@ -86,7 +86,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // Returned pointer is owned by the CommandBufferProxy for |route_id|.
   GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
       int command_buffer_route_id,
-      const std::vector<uint32>& configs,
+      const std::vector<int32>& configs,
       media::VideoDecodeAccelerator::Client* client);
 
   // Destroy a command buffer created by this channel.

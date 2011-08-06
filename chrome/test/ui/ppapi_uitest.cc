@@ -215,6 +215,9 @@ TEST_PPAPI_OUT_OF_PROCESS(Memory)
 TEST_PPAPI_IN_PROCESS(QueryPolicy)
 //TEST_PPAPI_OUT_OF_PROCESS(QueryPolicy)
 
+TEST_PPAPI_IN_PROCESS(VideoDecoder)
+TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
+
 // http://crbug.com/90039 and http://crbug.com/83443 (Mac)
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
@@ -263,10 +266,4 @@ TEST_PPAPI_IN_PROCESS(UMA)
 // There is no proxy.
 TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
   RunTest("UMA");
-}
-
-TEST_PPAPI_IN_PROCESS(VideoDecoder)
-// There is no proxy yet (vrk is adding it).
-TEST_F(OutOfProcessPPAPITest, FAILS_VideoDecoder) {
-  RunTest("VideoDecoder");
 }

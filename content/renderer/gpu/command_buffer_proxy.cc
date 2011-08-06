@@ -393,7 +393,7 @@ void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
 
 scoped_refptr<GpuVideoDecodeAcceleratorHost>
 CommandBufferProxy::CreateVideoDecoder(
-    const std::vector<uint32>& configs,
+    const std::vector<int32>& configs,
     media::VideoDecodeAccelerator::Client* client) {
   video_decoder_host_ = new GpuVideoDecodeAcceleratorHost(
       channel_, route_id_, client);

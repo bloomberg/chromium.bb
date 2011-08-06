@@ -32,12 +32,7 @@ namespace webkit {
 namespace ppapi {
 
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
-    : Resource(instance),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      context3d_id_(0),
-      flush_callback_(PP_BlockUntilComplete()),
-      reset_callback_(PP_BlockUntilComplete()),
-      gles2_impl_(NULL) {
+    : Resource(instance) {
   ppp_videodecoder_ =
       static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
           GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
@@ -54,52 +49,41 @@ PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
 PP_Resource PPB_VideoDecoder_Impl::Create(PluginInstance* instance,
                                           PP_Resource context3d_id,
                                           const PP_VideoConfigElement* config) {
+  if (!context3d_id)
+    return NULL;
+
+  EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
+  if (enter_context.failed())
+    return NULL;
+
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
-  if (decoder->Init(context3d_id, config))
+  if (decoder->Init(context3d_id, enter_context.object(), config))
     return decoder->GetReference();
   return 0;
 }
 
 bool PPB_VideoDecoder_Impl::Init(PP_Resource context3d_id,
+                                 PPB_Context3D_API* context3d,
                                  const PP_VideoConfigElement* config) {
-  if (!instance() || !context3d_id || !config)
+  if (!::ppapi::VideoDecoderImpl::Init(context3d_id, context3d, config))
     return false;
 
-  EnterResourceNoLock<PPB_Context3D_API> enter(context3d_id, true);
-  if (enter.failed())
+  std::vector<int32> copied;
+  if (!CopyConfigsToVector(config, &copied))
     return false;
-  PPB_Context3D_Impl* context3d =
-      static_cast<PPB_Context3D_Impl*>(enter.object());
 
-  context3d_id_ = context3d_id;
-  ResourceTracker::Get()->AddRefResource(context3d_id_);
+  PPB_Context3D_Impl* context3d_impl =
+      static_cast<PPB_Context3D_Impl*>(context3d);
 
   int command_buffer_route_id =
-      context3d->platform_context()->GetCommandBufferRouteId();
+      context3d_impl->platform_context()->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
     return false;
   platform_video_decoder_ = instance()->delegate()->CreateVideoDecoder(
       this, command_buffer_route_id);
-
-  gles2_impl_ = context3d->gles2_impl();
-
   if (!platform_video_decoder_)
     return false;
-
-  std::vector<uint32> copied;
-  // TODO(fischman,vrk): this is completely broken in that it fails to account
-  // for the semantic distinction between keys and values; it is certainly
-  // possible for a value to show up as 0, and that shouldn't terminate the
-  // config vector.  Only a *key* of 0 should do so.
-  // TODO(vrk): This is assuming PP_VideoAttributeDictionary and
-  // VideoAttributeKey have identical enum values. There is no compiler
-  // assert to guarantee this. We either need to add such asserts or
-  // merge PP_VideoAttributeDictionary and VideoAttributeKey.
-  for (const PP_VideoConfigElement* current = config;
-       *current != PP_VIDEOATTR_DICTIONARY_TERMINATOR; ++current) {
-    copied.push_back(static_cast<uint32>(*current));
-  }
 
   FlushCommandBuffer();
   return platform_video_decoder_->Initialize(copied);
@@ -119,8 +103,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
                                        buffer->shared_memory()->handle(),
                                        static_cast<size_t>(buffer->size()));
-  CHECK(bitstream_buffer_callbacks_.insert(std::make_pair(
-      bitstream_buffer->id, callback)).second);
+  SetBitstreamBufferCallback(bitstream_buffer->id, callback);
 
   FlushCommandBuffer();
   platform_video_decoder_->Decode(decode_buffer);
@@ -159,9 +142,7 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
-  // Store the callback to be called when Flush() is done.
-  // TODO(fischman,vrk): consider implications of already-outstanding callback.
-  flush_callback_ = callback;
+  SetFlushCallback(callback);
 
   FlushCommandBuffer();
   platform_video_decoder_->Flush();
@@ -172,9 +153,7 @@ int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
-  // Store the callback to be called when Reset() is done.
-  // TODO(fischman,vrk): consider implications of already-outstanding callback.
-  reset_callback_ = callback;
+  SetResetCallback(callback);
 
   FlushCommandBuffer();
   platform_video_decoder_->Reset();
@@ -187,9 +166,7 @@ void PPB_VideoDecoder_Impl::Destroy() {
 
   FlushCommandBuffer();
   platform_video_decoder_->Destroy();
-  gles2_impl_ = NULL;
-  if (context3d_id_)
-    ResourceTracker::Get()->UnrefResource(context3d_id_);
+  ::ppapi::VideoDecoderImpl::Destroy();
   platform_video_decoder_ = NULL;
   ppp_videodecoder_ = NULL;
 }
@@ -250,41 +227,27 @@ void PPB_VideoDecoder_Impl::NotifyError(
 }
 
 void PPB_VideoDecoder_Impl::NotifyResetDone() {
-  if (reset_callback_.func == NULL)
-    return;
-
-  // Call the callback that was stored to be called when Reset is done.
-  PP_RunAndClearCompletionCallback(&reset_callback_, PP_OK);
+  RunResetCallback(PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
-  CallbackById::iterator it =
-      bitstream_buffer_callbacks_.find(bitstream_buffer_id);
-  DCHECK(it != bitstream_buffer_callbacks_.end());
-  PP_CompletionCallback cc = it->second;
-  bitstream_buffer_callbacks_.erase(it);
-  PP_RunCompletionCallback(&cc, PP_OK);
+  RunBitstreamBufferCallback(bitstream_buffer_id, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyFlushDone() {
-  if (flush_callback_.func == NULL)
-    return;
-
-  // Call the callback that was stored to be called when Flush is done.
-  PP_RunAndClearCompletionCallback(&flush_callback_, PP_OK);
+  RunFlushCallback(PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
   NOTREACHED() << "PlatformVideoDecoder::Initialize() is synchronous!";
 }
+void PPB_VideoDecoder_Impl::AddRefResource(PP_Resource resource) {
+  ResourceTracker::Get()->AddRefResource(resource);
+}
 
-void PPB_VideoDecoder_Impl::FlushCommandBuffer() {
-  // For the out-of-process case, |gles2_impl_| will be NULL in the renderer
-  // process. The VideoDecoder_Proxy is charged with the responsibility of
-  // doing this Flush() in the analogous places in the plugin process.
-  if (gles2_impl_)
-    gles2_impl_->Flush();
+void PPB_VideoDecoder_Impl::UnrefResource(PP_Resource resource) {
+  ResourceTracker::Get()->UnrefResource(resource);
 }
 
 }  // namespace ppapi

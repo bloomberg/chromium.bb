@@ -135,7 +135,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
 GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
-    const std::vector<uint32>& configs,
+    const std::vector<int32>& configs,
     media::VideoDecodeAccelerator::Client* client) {
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());

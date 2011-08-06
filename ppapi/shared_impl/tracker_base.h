@@ -23,6 +23,8 @@ class Var;
 // called "Tracker", and this would be used in both the plugin side of the
 // proxy as well as the implementation in the renderer. Currently, all this
 // does is forward to the process-type-specific tracker to get the information.
+// TODO(fischman/vrk): When brettw fixes the TODO above, fix the ugliness in
+// VideoDecoderImpl accordingly.
 class TrackerBase {
  public:
   // Must be called before any other function that uses the TrackerBase.

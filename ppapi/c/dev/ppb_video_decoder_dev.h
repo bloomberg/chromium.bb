@@ -38,6 +38,8 @@ struct PPB_VideoDecoder_Dev {
   //   |decoder_config| the configuration to use to initialize the decoder.
   //
   // The created decoder is returned as PP_Resource. 0 means failure.
+  // TODO(fischman/vrk): Get rid of silly PP_VideoConfigElement* vector in favor
+  // of config struct.
   PP_Resource (*Create)(PP_Instance instance,
                         PP_Resource context,
                         const PP_VideoConfigElement* decoder_config);

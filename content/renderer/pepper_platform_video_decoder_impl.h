@@ -21,7 +21,7 @@ class PlatformVideoDecoderImpl
       int32 command_buffer_route_id);
 
   // PlatformVideoDecoder (a.k.a. VideoDecodeAccelerator) implementation.
-  virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
+  virtual bool Initialize(const std::vector<int32>& configs) OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(

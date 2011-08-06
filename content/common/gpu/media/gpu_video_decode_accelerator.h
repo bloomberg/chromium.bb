@@ -45,7 +45,7 @@ class GpuVideoDecodeAccelerator
 
   // Initialize the accelerator with the given configuration and send the
   // |init_done_msg| when done.
-  void Initialize(const std::vector<uint32>& configs,
+  void Initialize(const std::vector<int32>& configs,
                   IPC::Message* init_done_msg);
 
  private:

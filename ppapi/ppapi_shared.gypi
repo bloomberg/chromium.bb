@@ -60,6 +60,8 @@
         'shared_impl/url_util_impl.h',
         'shared_impl/var.cc',
         'shared_impl/var.h',
+        'shared_impl/video_decoder_impl.cc',
+        'shared_impl/video_decoder_impl.h',
         'shared_impl/webkit_forwarding.cc',
         'shared_impl/webkit_forwarding.h',
 

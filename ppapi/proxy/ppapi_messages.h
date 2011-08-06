@@ -26,6 +26,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
@@ -37,6 +38,7 @@
 
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
+IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -56,6 +58,17 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_Rect)
   IPC_STRUCT_TRAITS_MEMBER(point)
   IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PictureBuffer_Dev)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(texture_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_Picture_Dev)
+  IPC_STRUCT_TRAITS_MEMBER(picture_buffer_id)
+  IPC_STRUCT_TRAITS_MEMBER(bitstream_buffer_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
@@ -316,6 +329,36 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                     pp::proxy::HostResource /* loader */,
                     int32 /* result */,
                     std::string /* data */)
+
+// PPB_VideoDecoder_Dev.
+// (Messages from renderer to plugin to notify it to run callbacks.)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBVideoDecoder_EndOfBitstreamACK,
+                    pp::proxy::HostResource /* video_decoder */,
+                    int32_t /* bitstream buffer id */,
+                    int32_t /* PP_CompletionCallback result */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBVideoDecoder_FlushACK,
+                    pp::proxy::HostResource /* video_decoder */,
+                    int32_t /* PP_CompletionCallback result  */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBVideoDecoder_ResetACK,
+                    pp::proxy::HostResource /* video_decoder */,
+                    int32_t /* PP_CompletionCallback result */)
+
+// PPP_VideoDecoder_Dev.
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers,
+                    pp::proxy::HostResource /* video_decoder */,
+                    uint32_t /* requested number of buffers */,
+                    PP_Size /* dimensions of buffers */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_DismissPictureBuffer,
+                    pp::proxy::HostResource /* video_decoder */,
+                    int32_t /* picture buffer id */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_PictureReady,
+                    pp::proxy::HostResource /* video_decoder */,
+                    PP_Picture_Dev /* output picture */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPVideoDecoder_NotifyEndOfStream,
+                    pp::proxy::HostResource /* video_decoder */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
+                    pp::proxy::HostResource /* video_decoder */,
+                    PP_VideoDecodeError_Dev /* error */)
 
 // -----------------------------------------------------------------------------
 // These are from the plugin to the renderer.
@@ -902,3 +945,26 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
                            pp::proxy::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
                            pp::proxy::ImageHandle /* result */)
+// PPB_VideoDecoder.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVideoDecoder_Create,
+                           PP_Instance /* instance */,
+                           pp::proxy::HostResource /* context */,
+                           std::vector<PP_VideoConfigElement> /* config */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBVideoDecoder_Decode,
+                    pp::proxy::HostResource /* video_decoder */,
+                    pp::proxy::HostResource /* bitstream buffer */,
+                    int32 /* bitstream buffer id */,
+                    int32 /* size of buffer */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoDecoder_AssignPictureBuffers,
+                    pp::proxy::HostResource /* video_decoder */,
+                    std::vector<PP_PictureBuffer_Dev> /* picture buffers */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoDecoder_ReusePictureBuffer,
+                    pp::proxy::HostResource /* video_decoder */,
+                    int32_t /* picture buffer id */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoDecoder_Flush,
+                    pp::proxy::HostResource /* video_decoder */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoDecoder_Reset,
+                    pp::proxy::HostResource /* video_decoder */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBVideoDecoder_Destroy,
+                           pp::proxy::HostResource /* video_decoder */)

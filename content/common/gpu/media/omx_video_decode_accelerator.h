@@ -42,7 +42,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
 
   // media::VideoDecodeAccelerator implementation.
-  bool Initialize(const std::vector<uint32>& config) OVERRIDE;
+  bool Initialize(const std::vector<int32>& config) OVERRIDE;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -83,7 +83,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   typedef std::map<int32, OutputPicture> OutputPictureById;
 
   // Verify that |config| is compatible with this class and hardware.
-  bool VerifyConfigs(const std::vector<uint32>& configs);
+  bool VerifyConfigs(const std::vector<int32>& configs);
 
   MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;

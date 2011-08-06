@@ -298,7 +298,8 @@ void GLES2DemoInstance::DecodeNextNALU() {
 }
 
 void GLES2DemoInstance::ProvidePictureBuffers(
-    PP_Resource /* decoder */, uint32_t req_num_of_bufs, PP_Size dimensions) {
+    PP_Resource decoder, uint32_t req_num_of_bufs, PP_Size dimensions) {
+  assert(decoder == video_decoder_->pp_resource());
   std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; i++) {
     PP_PictureBuffer_Dev buffer;
@@ -311,16 +312,18 @@ void GLES2DemoInstance::ProvidePictureBuffers(
   video_decoder_->AssignPictureBuffers(buffers);
 }
 
-void GLES2DemoInstance::DismissPictureBuffer(PP_Resource /* decoder */,
+void GLES2DemoInstance::DismissPictureBuffer(PP_Resource decoder,
                                              int32_t picture_buffer_id) {
+  assert(decoder == video_decoder_->pp_resource());
   PictureBufferMap::iterator it = buffers_by_id_.find(picture_buffer_id);
   assert(it != buffers_by_id_.end());
   DeleteTexture(it->second.texture_id);
   buffers_by_id_.erase(it);
 }
 
-void GLES2DemoInstance::PictureReady(PP_Resource /* decoder */,
+void GLES2DemoInstance::PictureReady(PP_Resource decoder,
                                      const PP_Picture_Dev& picture) {
+  assert(decoder == video_decoder_->pp_resource());
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
   if (is_painting_) {
@@ -333,11 +336,13 @@ void GLES2DemoInstance::PictureReady(PP_Resource /* decoder */,
   Render(it->second);
 }
 
-void GLES2DemoInstance::EndOfStream(PP_Resource /* decoder */) {
+void GLES2DemoInstance::EndOfStream(PP_Resource decoder) {
+  assert(decoder == video_decoder_->pp_resource());
 }
 
-void GLES2DemoInstance::NotifyError(PP_Resource /* decoder */,
+void GLES2DemoInstance::NotifyError(PP_Resource decoder,
                                     PP_VideoDecodeError_Dev error) {
+  assert(decoder == video_decoder_->pp_resource());
   LogError(this).s() << "Received error: " << error;
   assert(!"Unexpected error; see stderr for details");
 }
@@ -414,7 +419,7 @@ void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   while (!pictures_pending_paint_.empty() && !is_painting_) {
     PP_Picture_Dev picture = pictures_pending_paint_.front();
     pictures_pending_paint_.pop_front();
-    PictureReady(0 /* ignored */, picture);
+    PictureReady(video_decoder_->pp_resource(), picture);
   }
 }
 

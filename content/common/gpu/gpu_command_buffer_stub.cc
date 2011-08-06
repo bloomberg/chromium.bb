@@ -552,7 +552,7 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    const std::vector<uint32>& configs,
+    const std::vector<int32>& configs,
     IPC::Message* reply_message) {
   video_decoder_.reset(
       new GpuVideoDecodeAccelerator(this, route_id_, this));

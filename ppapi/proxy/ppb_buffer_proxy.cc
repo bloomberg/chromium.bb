@@ -14,10 +14,8 @@
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -32,35 +30,6 @@ InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
 }
 
 }  // namespace
-
-class Buffer : public ppapi::thunk::PPB_Buffer_API,
-               public PluginResource {
- public:
-  Buffer(const HostResource& resource,
-         const base::SharedMemoryHandle& shm_handle,
-         uint32_t size);
-  virtual ~Buffer();
-
-  // Resource overrides.
-  virtual Buffer* AsBuffer() OVERRIDE;
-
-  // ResourceObjectBase overrides.
-  virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
-
-  // PPB_Buffer_API implementation.
-  virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;
-  virtual PP_Bool IsMapped() OVERRIDE;
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
-
- private:
-  base::SharedMemory shm_;
-  uint32_t size_;
-  void* mapped_data_;
-  int map_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(Buffer);
-};
 
 Buffer::Buffer(const HostResource& resource,
                const base::SharedMemoryHandle& shm_handle,

@@ -30,7 +30,7 @@ class GpuVideoDecodeAcceleratorHost
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
+  virtual bool Initialize(const std::vector<int32>& configs) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;

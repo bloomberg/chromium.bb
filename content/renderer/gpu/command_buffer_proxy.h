@@ -90,7 +90,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // the GPU process, even if this returns non-NULL. In this case the client is
   // notified of an error later.
   scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
-      const std::vector<uint32>& configs,
+      const std::vector<int32>& configs,
       media::VideoDecodeAccelerator::Client* client);
 
 #if defined(OS_MACOSX)
