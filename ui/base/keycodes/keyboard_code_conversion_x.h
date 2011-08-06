@@ -6,15 +6,15 @@
 #define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 typedef union _XEvent XEvent;
 
 namespace ui {
 
-UI_API KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
+UI_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
 
-UI_API KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
+UI_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
 // Converts a hardware keycode into a key symbol on a standard US PC keyboard.
 unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int keycode);

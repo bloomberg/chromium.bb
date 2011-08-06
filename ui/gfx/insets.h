@@ -9,7 +9,7 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <gtk/gtkstyle.h>
@@ -22,7 +22,7 @@ namespace gfx {
 // leave at each of its edges).
 //
 
-class UI_API Insets {
+class UI_EXPORT Insets {
  public:
   Insets() : top_(0), left_(0), bottom_(0), right_(0) {}
   Insets(int top, int left, int bottom, int right)

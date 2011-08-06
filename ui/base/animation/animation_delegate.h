@@ -6,7 +6,7 @@
 #define UI_BASE_ANIMATION_ANIMATION_DELEGATE_H_
 #pragma once
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -16,7 +16,7 @@ class Animation;
 //
 //  Implement this interface when you want to receive notifications about the
 //  state of an animation.
-class UI_API AnimationDelegate {
+class UI_EXPORT AnimationDelegate {
  public:
   // Called when an animation has completed.
   virtual void AnimationEnded(const Animation* animation) {}

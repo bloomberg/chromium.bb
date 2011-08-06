@@ -6,13 +6,13 @@
 #define UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_
 #pragma once
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // Observer for a TableModel. Anytime the model changes, it must notify its
 // observer.
-class UI_API TableModelObserver {
+class UI_EXPORT TableModelObserver {
  public:
   // Invoked when the model has been completely changed.
   virtual void OnModelChanged() = 0;

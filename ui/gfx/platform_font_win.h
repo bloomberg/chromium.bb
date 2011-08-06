@@ -7,12 +7,12 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/platform_font.h"
-#include "ui/ui_api.h"
 
 namespace gfx {
 
-class UI_API PlatformFontWin : public PlatformFont {
+class UI_EXPORT PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
   explicit PlatformFontWin(const Font& other);

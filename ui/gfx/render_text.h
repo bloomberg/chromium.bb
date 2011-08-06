@@ -37,7 +37,7 @@ class Canvas;
 class RenderTextTest;
 
 // A visual style applicable to a range of text.
-struct UI_API StyleRange {
+struct UI_EXPORT StyleRange {
   StyleRange();
 
   Font font;
@@ -84,7 +84,7 @@ enum BreakType {
 // the trailing side of the 2nd character 'c' when pointing to right half of
 // 'c'. And it is bound to the leading edge of the 3rd character 'D' when
 // pointing to right of 'D'.
-class UI_API SelectionModel {
+class UI_EXPORT SelectionModel {
  public:
   enum CaretPlacement {
     // PREVIOUS_GRAPHEME_TRAILING means cursor is visually attached to the
@@ -142,7 +142,7 @@ class UI_API SelectionModel {
 // visual layout. Support is built in for a cursor, a selection, simple styling,
 // complex scripts, and bi-directional text. Implementations provide mechanisms
 // for rendering and translation between logical and visual data.
-class UI_API RenderText {
+class UI_EXPORT RenderText {
  public:
   virtual ~RenderText();
 

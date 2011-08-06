@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 class Size;
@@ -50,7 +50,7 @@ class SkBitmap;
 //   ::DestroyIcon(icon);
 //
 ///////////////////////////////////////////////////////////////////////////////
-class UI_API IconUtil {
+class UI_EXPORT IconUtil {
  public:
   // Given an SkBitmap object, the function converts the bitmap to a Windows
   // icon and returns the corresponding HICON handle. If the function cannot

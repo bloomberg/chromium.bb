@@ -15,7 +15,7 @@ namespace gfx {
 // A utility class for getting various info about screen size, monitors,
 // cursor position, etc.
 // TODO(erikkay) add more of those methods here
-class UI_API Screen {
+class UI_EXPORT Screen {
  public:
   static gfx::Point GetCursorScreenPoint();
 

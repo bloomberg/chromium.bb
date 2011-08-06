@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // A model representing the rows of buttons that should be inserted in a button
 // containing menu item.
-class UI_API ButtonMenuItemModel {
+class UI_EXPORT ButtonMenuItemModel {
  public:
   // Types of buttons.
   enum ButtonType {
@@ -24,7 +24,7 @@ class UI_API ButtonMenuItemModel {
     TYPE_BUTTON_LABEL
   };
 
-  class UI_API Delegate {
+  class UI_EXPORT Delegate {
    public:
     // Some command ids have labels that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;

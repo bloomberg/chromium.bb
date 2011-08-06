@@ -9,8 +9,8 @@
 #include <Foundation/Foundation.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "ui/ui_api.h"
 #include "ui/base/models/accelerator.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -18,7 +18,7 @@ namespace ui {
 // support for Cocoa key equivalents. Note that the typical use case for this
 // class is to initialize it with a string literal, which is why it sends
 // |-copy| to the |key_code| paramater in the constructor.
-class UI_API AcceleratorCocoa : public Accelerator {
+class UI_EXPORT AcceleratorCocoa : public Accelerator {
  public:
   AcceleratorCocoa();
   AcceleratorCocoa(NSString* key_code, NSUInteger mask);

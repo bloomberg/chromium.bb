@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/time.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // Interface for the elements the AnimationContainer contains. This is
 // implemented by Animation.
-class UI_API AnimationContainerElement {
+class UI_EXPORT AnimationContainerElement {
  public:
   // Sets the start of the animation. This is invoked from
   // AnimationContainer::Start.

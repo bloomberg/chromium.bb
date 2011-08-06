@@ -10,8 +10,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
 
 typedef unsigned long XID;
 struct _GtkPreserveWindow;
@@ -31,7 +31,7 @@ struct _GtkPreserveWindow;
 // pointers and observes the various signals from the widget for when an X
 // window is created, destroyed etc. Thus it provides a thread safe mapping
 // from NativeViewIds to the current XID for that widget.
-class UI_API GtkNativeViewManager {
+class UI_EXPORT GtkNativeViewManager {
  public:
   // Returns the singleton instance.
   static GtkNativeViewManager* GetInstance();

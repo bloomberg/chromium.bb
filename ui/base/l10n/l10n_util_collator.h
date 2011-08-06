@@ -13,13 +13,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 #include "unicode/coll.h"
 
 namespace l10n_util {
 
 // Compares the two strings using the specified collator.
-UI_API UCollationResult CompareString16WithCollator(
+UI_EXPORT UCollationResult CompareString16WithCollator(
     const icu::Collator* collator,
     const string16& lhs,
     const string16& rhs);
@@ -112,7 +112,7 @@ class StringComparator : public std::binary_function<const Element&,
 };
 
 // Specialization of operator() method for string16 version.
-template <> UI_API
+template <> UI_EXPORT
 bool StringComparator<string16>::operator()(const string16& lhs,
                                             const string16& rhs);
 

@@ -17,7 +17,7 @@ namespace ui {
 //
 // A ThrobAnimation has two durations: the duration used when behavior like
 // a SlideAnimation, and the duration used when throbbing.
-class UI_API ThrobAnimation : public SlideAnimation {
+class UI_EXPORT ThrobAnimation : public SlideAnimation {
  public:
   explicit ThrobAnimation(AnimationDelegate* target);
   virtual ~ThrobAnimation() {}

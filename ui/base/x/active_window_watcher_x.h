@@ -12,14 +12,14 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // This is a helper class that is used to keep track of which window the X
 // window manager thinks is active. Add an Observer to listener for changes to
 // the active window.
-class UI_API ActiveWindowWatcherX {
+class UI_EXPORT ActiveWindowWatcherX {
  public:
   class Observer {
    public:

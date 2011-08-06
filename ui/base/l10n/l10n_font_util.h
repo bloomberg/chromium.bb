@@ -6,8 +6,8 @@
 #define UI_BASE_L10N_FONT_UTIL_H_
 #pragma once
 
+#include "ui/base/ui_export.h"
 #include "ui/gfx/size.h"
-#include "ui/ui_api.h"
 
 namespace gfx {
 class Font;
@@ -19,13 +19,13 @@ namespace ui {
 // its localized size data and the given font. The width in cols is held in a
 // localized string resource identified by |col_resource_id|, the height in the
 // same fashion.
-UI_API int GetLocalizedContentsWidthForFont(int col_resource_id,
-                                            const gfx::Font& font);
-UI_API int GetLocalizedContentsHeightForFont(int row_resource_id,
-                                             const gfx::Font& font);
-UI_API gfx::Size GetLocalizedContentsSizeForFont(int col_resource_id,
-                                                 int row_resource_id,
-                                                 const gfx::Font& font);
+UI_EXPORT int GetLocalizedContentsWidthForFont(int col_resource_id,
+                                               const gfx::Font& font);
+UI_EXPORT int GetLocalizedContentsHeightForFont(int row_resource_id,
+                                                const gfx::Font& font);
+UI_EXPORT gfx::Size GetLocalizedContentsSizeForFont(int col_resource_id,
+                                                    int row_resource_id,
+                                                    const gfx::Font& font);
 
 }  // namespace ui
 

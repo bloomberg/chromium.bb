@@ -7,12 +7,12 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/ui_api.h"
 
 class SkBitmap;
 
-class UI_API SkBitmapOperations {
+class UI_EXPORT SkBitmapOperations {
  public:
   // Create a bitmap that is an inverted image of the passed in image.
   // Each color becomes its inverse in the color wheel. So (255, 15, 0) becomes

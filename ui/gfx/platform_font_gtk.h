@@ -15,7 +15,7 @@ class SkPaint;
 
 namespace gfx {
 
-class UI_API PlatformFontGtk : public PlatformFont {
+class UI_EXPORT PlatformFontGtk : public PlatformFont {
  public:
   PlatformFontGtk();
   explicit PlatformFontGtk(const Font& other);

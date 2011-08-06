@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -26,7 +26,7 @@ class AnimationContainerObserver;
 //
 // AnimationContainer is ref counted. Each Animation contained within the
 // AnimationContainer own it.
-class UI_API AnimationContainer
+class UI_EXPORT AnimationContainer
     : public base::RefCounted<AnimationContainer> {
  public:
   AnimationContainer();

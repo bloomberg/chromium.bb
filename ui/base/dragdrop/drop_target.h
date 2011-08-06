@@ -9,7 +9,7 @@
 #include <objidl.h>
 
 #include "base/memory/ref_counted.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 // Windows interface.
 struct IDropTargetHelper;
@@ -25,7 +25,7 @@ namespace ui {
 // before the HWND is deleted too.
 //
 // This class is meant to be used in a STA and is not multithread-safe.
-class UI_API DropTarget : public IDropTarget {
+class UI_EXPORT DropTarget : public IDropTarget {
  public:
   // Create a new DropTarget associating it with the given HWND.
   explicit DropTarget(HWND hwnd);

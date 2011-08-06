@@ -15,7 +15,7 @@
 
 namespace gfx {
 
-class UI_API CanvasDirect2D : public Canvas {
+class UI_EXPORT CanvasDirect2D : public Canvas {
  public:
   // Creates an empty Canvas.
   explicit CanvasDirect2D(ID2D1RenderTarget* rt);

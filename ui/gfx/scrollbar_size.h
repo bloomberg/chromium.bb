@@ -6,14 +6,14 @@
 #define UI_GFX_SCROLLBAR_SIZE_H_
 #pragma once
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 
 // This should return the thickness, in pixels, of a scrollbar in web content.
 // This needs to match the values in WebCore's
 // ScrollbarThemeChromiumXXX.cpp::scrollbarThickness().
-UI_API int scrollbar_size();
+UI_EXPORT int scrollbar_size();
 
 }  // namespace gfx
 

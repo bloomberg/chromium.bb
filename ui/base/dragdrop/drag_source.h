@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -18,8 +18,8 @@ namespace ui {
 // drag-drop operation as the user mouses over other drop targets on their
 // system. This object tells Windows whether or not the drag should continue,
 // and supplies the appropriate cursors.
-class UI_API DragSource : public IDropSource,
-                          public base::RefCountedThreadSafe<DragSource> {
+class UI_EXPORT DragSource : public IDropSource,
+                             public base::RefCountedThreadSafe<DragSource> {
  public:
   DragSource();
   virtual ~DragSource() {}

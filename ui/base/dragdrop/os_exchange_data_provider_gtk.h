@@ -25,7 +25,7 @@ namespace ui {
 // types can be set on OSExchangeDataProviderGtk by way of the various setters.
 // The various has methods return true if the format was supplied to the
 // constructor, or explicitly set.
-class UI_API OSExchangeDataProviderGtk : public OSExchangeData::Provider {
+class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
  public:
   OSExchangeDataProviderGtk(int known_formats,
                             const std::set<GdkAtom>& known_custom_formats_);

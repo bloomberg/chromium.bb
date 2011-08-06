@@ -6,7 +6,7 @@
 #define UI_BASE_ANIMATION_ANIMATION_CONTAINER_OBSERVER_H_
 #pragma once
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -14,7 +14,7 @@ class AnimationContainer;
 
 // The observer is notified after every update of the animations managed by
 // the container.
-class UI_API AnimationContainerObserver {
+class UI_EXPORT AnimationContainerObserver {
  public:
   // Invoked on every tick of the timer managed by the container and after
   // all the animations have updated.

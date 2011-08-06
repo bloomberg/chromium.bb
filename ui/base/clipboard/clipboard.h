@@ -14,7 +14,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 class Size;
@@ -29,7 +29,7 @@ typedef struct _GtkClipboard GtkClipboard;
 
 namespace ui {
 
-class UI_API Clipboard {
+class UI_EXPORT Clipboard {
  public:
   typedef std::string FormatType;
 

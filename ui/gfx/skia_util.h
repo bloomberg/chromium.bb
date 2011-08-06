@@ -10,7 +10,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 class SkBitmap;
 class SkShader;
@@ -20,8 +20,8 @@ namespace gfx {
 class Rect;
 
 // Convert between Skia and gfx rect types.
-UI_API SkRect RectToSkRect(const gfx::Rect& rect);
-UI_API gfx::Rect SkRectToRect(const SkRect& rect);
+UI_EXPORT SkRect RectToSkRect(const gfx::Rect& rect);
+UI_EXPORT gfx::Rect SkRectToRect(const SkRect& rect);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
@@ -29,18 +29,19 @@ UI_API gfx::Rect SkRectToRect(const SkRect& rect);
 //
 // (The old shader in the paint, if any, needs to be freed, and SkSafeUnref will
 // handle the NULL case.)
-UI_API SkShader* CreateGradientShader(int start_point,
-                                      int end_point,
-                                      SkColor start_color,
-                                      SkColor end_color);
+UI_EXPORT SkShader* CreateGradientShader(int start_point,
+                                         int end_point,
+                                         SkColor start_color,
+                                         SkColor end_color);
 
 // Returns true if the two bitmaps contain the same pixels.
-UI_API bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2);
+UI_EXPORT bool BitmapsAreEqual(const SkBitmap& bitmap1,
+                               const SkBitmap& bitmap2);
 
 // Strip the accelerator char (typically '&') from a menu string.  A
 // double accelerator char ('&&') will be converted to a single char.
-UI_API std::string RemoveAcceleratorChar(const std::string& s,
-                                         char accelerator_char);
+UI_EXPORT std::string RemoveAcceleratorChar(const std::string& s,
+                                            char accelerator_char);
 
 }  // namespace gfx;
 

@@ -12,8 +12,8 @@
 // TODO(beng): remove these includes when we no longer depend on SkTypes.
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
 
 namespace ui {
 class Transform;
@@ -30,7 +30,7 @@ class Point;
 class Rect;
 
 // TODO(beng): documentation.
-class UI_API Canvas {
+class UI_EXPORT Canvas {
  public:
   // Specifies the alignment for text rendered with the DrawStringInt method.
   enum {
@@ -231,7 +231,7 @@ class UI_API Canvas {
   virtual const CanvasSkia* AsCanvasSkia() const;
 };
 
-class UI_API CanvasPaint {
+class UI_EXPORT CanvasPaint {
  public:
   virtual ~CanvasPaint() {}
 

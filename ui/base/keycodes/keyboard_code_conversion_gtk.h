@@ -38,17 +38,17 @@
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 typedef struct _GdkEventKey GdkEventKey;
 
 namespace ui {
 
-UI_API KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
+UI_EXPORT KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
-UI_API int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
+UI_EXPORT int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 
-UI_API KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
+UI_EXPORT KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
 
 } // namespace ui
 

@@ -8,12 +8,12 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
 
 namespace gfx {
 
-class UI_API Path : public SkPath {
+class UI_EXPORT Path : public SkPath {
  public:
   // Used by Path(Point,size_t) constructor.
   struct Point {

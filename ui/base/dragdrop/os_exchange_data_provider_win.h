@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/win/scoped_comptr.h"
-#include "ui/ui_api.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -127,7 +127,7 @@ class DataObjectImpl : public DownloadFileObserver,
   Observer* observer_;
 };
 
-class UI_API OSExchangeDataProviderWin : public OSExchangeData::Provider {
+class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
  public:
   // Returns true if source has plain text that is a valid url.
   static bool HasPlainTextURL(IDataObject* source);

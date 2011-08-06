@@ -34,7 +34,7 @@ class Canvas;
 // source and destination colors are combined. Unless otherwise specified,
 // the variant that does not take a SkXfermode::Mode uses a transfer mode
 // of kSrcOver_Mode.
-class UI_API CanvasSkia : public skia::PlatformCanvas, public Canvas {
+class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
  public:
   enum TruncateFadeMode {
     TruncateFadeTail,

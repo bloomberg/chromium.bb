@@ -25,7 +25,7 @@ class AnimationDelegate;
 //
 // To subclass override Step, which is invoked as the animation progresses and
 // GetCurrentValue() to return the value appropriate to the animation.
-class UI_API Animation : public AnimationContainerElement {
+class UI_EXPORT Animation : public AnimationContainerElement {
  public:
   explicit Animation(base::TimeDelta timer_interval);
   virtual ~Animation();

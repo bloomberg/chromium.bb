@@ -7,11 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
-class UI_API DragDropTypes {
+class UI_EXPORT DragDropTypes {
  public:
   enum DragOperation {
     DRAG_NONE = 0,

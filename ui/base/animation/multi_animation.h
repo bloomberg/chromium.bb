@@ -17,7 +17,7 @@ namespace ui {
 // To create a MultiAnimation pass in the parts, invoke Start() and the delegate
 // is notified as the animation progresses. By default MultiAnimation runs until
 // Stop is invoked, see |set_continuous()| for details.
-class UI_API MultiAnimation : public Animation {
+class UI_EXPORT MultiAnimation : public Animation {
  public:
   // Defines part of the animation. Each part consists of the following:
   //

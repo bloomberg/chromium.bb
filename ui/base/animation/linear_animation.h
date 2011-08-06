@@ -15,7 +15,7 @@ class AnimationDelegate;
 
 // Linear time bounded animation. As the animation progresses AnimateToState is
 // invoked.
-class UI_API LinearAnimation : public Animation {
+class UI_EXPORT LinearAnimation : public Animation {
  public:
   // Initializes everything except the duration.
   //

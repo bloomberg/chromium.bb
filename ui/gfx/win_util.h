@@ -6,12 +6,12 @@
 #define UI_GFX_WIN_UTIL_H_
 #pragma once
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 
 // Returns true if Direct2d is available, false otherwise.
-UI_API bool Direct2dIsAvailable();
+UI_EXPORT bool Direct2dIsAvailable();
 
 // Returns true if DirectWrite is available, false otherwise.
 bool DirectWriteIsAvailable();

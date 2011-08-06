@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace color_utils {
 
@@ -19,7 +19,7 @@ namespace color_utils {
 // stubbing out for things like unit tests. Might be useful to pass more
 // arguments into the GetSample method in the future (such as which
 // cluster is being worked on, etc.).
-class UI_API KMeanImageSampler {
+class UI_EXPORT KMeanImageSampler {
  public:
   virtual int GetSample(int width, int height) = 0;
 
@@ -38,7 +38,7 @@ class RandomSampler : public KMeanImageSampler {
 };
 
 // This sampler will pick pixels from an evenly spaced grid.
-class UI_API GridSampler : public KMeanImageSampler {
+class UI_EXPORT GridSampler : public KMeanImageSampler {
   public:
    GridSampler();
    virtual ~GridSampler();
@@ -103,10 +103,10 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
                                  uint32_t darkness_limit,
                                  uint32_t brightness_limit);
 
-UI_API SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
-                                        uint32_t darkness_limit,
-                                        uint32_t brightness_limit,
-                                        KMeanImageSampler& sampler);
+UI_EXPORT SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
+                                           uint32_t darkness_limit,
+                                           uint32_t brightness_limit,
+                                           KMeanImageSampler& sampler);
 
 }  // namespace color_utils
 

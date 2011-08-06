@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 class SkCanvas;
 
@@ -17,35 +17,35 @@ class Point;
 class Rect;
 
 // Blits a rectangle from the source context into the destination context.
-UI_API void BlitContextToContext(NativeDrawingContext dst_context,
-                                 const Rect& dst_rect,
-                                 NativeDrawingContext src_context,
-                                 const Point& src_origin);
+UI_EXPORT void BlitContextToContext(NativeDrawingContext dst_context,
+                                    const Rect& dst_rect,
+                                    NativeDrawingContext src_context,
+                                    const Point& src_origin);
 
 // Blits a rectangle from the source context into the destination canvas.
-UI_API void BlitContextToCanvas(SkCanvas *dst_canvas,
-                                const Rect& dst_rect,
-                                NativeDrawingContext src_context,
-                                const Point& src_origin);
+UI_EXPORT void BlitContextToCanvas(SkCanvas *dst_canvas,
+                                   const Rect& dst_rect,
+                                   NativeDrawingContext src_context,
+                                   const Point& src_origin);
 
 // Blits a rectangle from the source canvas into the destination context.
-UI_API void BlitCanvasToContext(NativeDrawingContext dst_context,
-                                const Rect& dst_rect,
-                                SkCanvas *src_canvas,
-                                const Point& src_origin);
+UI_EXPORT void BlitCanvasToContext(NativeDrawingContext dst_context,
+                                   const Rect& dst_rect,
+                                   SkCanvas *src_canvas,
+                                   const Point& src_origin);
 
 // Blits a rectangle from the source canvas into the destination canvas.
-UI_API void BlitCanvasToCanvas(SkCanvas *dst_canvas,
-                               const Rect& dst_rect,
-                               SkCanvas *src_canvas,
-                               const Point& src_origin);
+UI_EXPORT void BlitCanvasToCanvas(SkCanvas *dst_canvas,
+                                  const Rect& dst_rect,
+                                  SkCanvas *src_canvas,
+                                  const Point& src_origin);
 
 // Scrolls the given subset of the given canvas by the given amount.
 // The canvas should not have a clip or a transform applied, since platforms
 // may implement those operations differently.
-UI_API void ScrollCanvas(SkCanvas* canvas,
-                         const Rect& clip,
-                         const Point& amount);
+UI_EXPORT void ScrollCanvas(SkCanvas* canvas,
+                            const Rect& clip,
+                            const Point& amount);
 
 }  // namespace gfx
 

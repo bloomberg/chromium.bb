@@ -10,7 +10,7 @@
 
 #include <iosfwd>
 
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 #if defined(OS_WIN)
 typedef unsigned long DWORD;
@@ -22,7 +22,7 @@ typedef struct tagPOINT POINT;
 namespace gfx {
 
 // A point has an x and y coordinate.
-class UI_API Point {
+class UI_EXPORT Point {
  public:
   Point();
   Point(int x, int y);
@@ -96,7 +96,7 @@ class UI_API Point {
   int y_;
 };
 
-UI_API std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
+UI_EXPORT std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
 
 }  // namespace gfx
 

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 class Rect;
@@ -15,7 +15,7 @@ class Rect;
 
 namespace ui {
 
-class UI_API Tween {
+class UI_EXPORT Tween {
  public:
   enum Type {
     LINEAR,        // Linear.

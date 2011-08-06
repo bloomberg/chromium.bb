@@ -15,7 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
 #include "ui/gfx/rect.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
@@ -74,7 +74,7 @@ struct CompositionText;
 //   hand, we can NEVER disable either TSF or CUAS in Windows Vista, i.e.
 //   THIS CLASS IS NOT ONLY USED ON THE INPUT CONTEXTS OF EAST-ASIAN
 //   LANGUAGES BUT ALSO USED ON THE INPUT CONTEXTS OF ALL LANGUAGES.
-class UI_API ImeInput {
+class UI_EXPORT ImeInput {
  public:
   ImeInput();
   ~ImeInput();

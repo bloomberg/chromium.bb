@@ -9,13 +9,13 @@
 #include <vector>
 #include <windows.h>
 
+#include "ui/base/ui_export.h"
 #include "ui/gfx/rect.h"
-#include "ui/ui_api.h"
 
 namespace gfx {
 
 // Creates a BITMAPINFOHEADER structure given the bitmap's size.
-UI_API void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
+UI_EXPORT void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 
 // Creates a BITMAPINFOHEADER structure given the bitmap's size and
 // color depth in bits per pixel.
@@ -25,14 +25,15 @@ void CreateBitmapHeaderWithColorDepth(int width, int height, int color_depth,
 // Creates a BITMAPV4HEADER structure given the bitmap's size.  You probably
 // only need to use BMP V4 if you need transparency (alpha channel). This
 // function sets the AlphaMask to 0xff000000.
-UI_API void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr);
+UI_EXPORT void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr);
 
 // Creates a monochrome bitmap header.
 void CreateMonochromeBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 
 // Modify the given hrgn by subtracting the given rectangles.
-UI_API void SubtractRectanglesFromRegion(HRGN hrgn,
-                                         const std::vector<gfx::Rect>& cutouts);
+UI_EXPORT void SubtractRectanglesFromRegion(
+    HRGN hrgn,
+    const std::vector<gfx::Rect>& cutouts);
 
 }  // namespace gfx
 

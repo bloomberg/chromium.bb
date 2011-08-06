@@ -30,7 +30,7 @@ namespace gfx {
 // of several PaintXXX methods to an API, inherited from the NativeTheme base
 // class, that consists of a single Paint() method with a argument to indicate
 // what kind of part to paint.
-class UI_API NativeThemeWin : public NativeTheme {
+class UI_EXPORT NativeThemeWin : public NativeTheme {
  public:
   enum ThemeName {
     BUTTON,

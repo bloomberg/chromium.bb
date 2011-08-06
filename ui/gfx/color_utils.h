@@ -7,7 +7,7 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 class SkBitmap;
 
@@ -23,11 +23,11 @@ struct HSL {
 unsigned char GetLuminanceForColor(SkColor color);
 
 // Calculated according to http://www.w3.org/TR/WCAG20/#relativeluminancedef
-UI_API double RelativeLuminance(SkColor color);
+UI_EXPORT double RelativeLuminance(SkColor color);
 
 // Note: these transformations assume sRGB as the source color space
-UI_API void SkColorToHSL(SkColor c, HSL* hsl);
-UI_API SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
+UI_EXPORT void SkColorToHSL(SkColor c, HSL* hsl);
+UI_EXPORT SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
 
 // HSL-Shift an SkColor. The shift values are in the range of 0-1, with the
 // option to specify -1 for 'no change'. The shift values are defined as:
@@ -43,7 +43,7 @@ UI_API SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
 //    0 = remove all lightness (make all pixels black).
 //    0.5 = leave unchanged.
 //    1 = full lightness (make all pixels white).
-UI_API SkColor HSLShift(SkColor color, const HSL& shift);
+UI_EXPORT SkColor HSLShift(SkColor color, const HSL& shift);
 
 // Determine if a given alpha value is nearly completely transparent.
 bool IsColorCloseToTransparent(SkAlpha alpha);
@@ -58,14 +58,14 @@ SkColor GetAverageColorOfFavicon(SkBitmap* bitmap, SkAlpha alpha);
 
 // Builds a histogram based on the Y' of the Y'UV representation of
 // this image.
-UI_API void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
+UI_EXPORT void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
 
 // Returns a blend of the supplied colors, ranging from |background| (for
 // |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
 // the supplied colors are also taken into account, so the returned color may
 // be partially transparent.
-UI_API SkColor AlphaBlend(SkColor foreground, SkColor background,
-                          SkAlpha alpha);
+UI_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
+                             SkAlpha alpha);
 
 // Given a foreground and background color, try to return a foreground color
 // that is "readable" over the background color by luma-inverting the foreground
@@ -74,10 +74,10 @@ UI_API SkColor AlphaBlend(SkColor foreground, SkColor background,
 //
 // NOTE: This won't do anything but waste time if the supplied foreground color
 // has a luma value close to the midpoint (0.5 in the HSL representation).
-UI_API SkColor GetReadableColor(SkColor foreground, SkColor background);
+UI_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
 
 // Gets a Windows system color as a SkColor
-UI_API SkColor GetSysSkColor(int which);
+UI_EXPORT SkColor GetSysSkColor(int which);
 
 }  // namespace color_utils
 

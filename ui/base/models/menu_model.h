@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
 
 class SkBitmap;
 
@@ -24,7 +24,7 @@ class Accelerator;
 class ButtonMenuItemModel;
 
 // An interface implemented by an object that provides the content of a menu.
-class UI_API MenuModel {
+class UI_EXPORT MenuModel {
  public:
   // The type of item.
   enum ItemType {

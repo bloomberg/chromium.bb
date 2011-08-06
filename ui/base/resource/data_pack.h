@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 class FilePath;
 class RefCountedStaticMemory;
@@ -29,7 +29,7 @@ class MemoryMappedFile;
 
 namespace ui {
 
-class UI_API DataPack {
+class UI_EXPORT DataPack {
  public:
   DataPack();
   ~DataPack();

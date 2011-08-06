@@ -10,14 +10,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_api.h"
 
 namespace gfx {
 
 class Font;
 
-class UI_API PlatformFont : public base::RefCounted<PlatformFont> {
+class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
   // Create an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();

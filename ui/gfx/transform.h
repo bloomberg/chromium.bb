@@ -7,7 +7,7 @@
 #pragma once
 
 #include "third_party/skia/include/utils/SkMatrix44.h"
-#include "ui/ui_api.h"
+#include "ui/base/ui_export.h"
 
 namespace gfx {
 class Rect;
@@ -19,7 +19,7 @@ namespace ui {
 
 // 4x4 transformation matrix. Transform is cheap and explicitly allows
 // copy/assign.
-class UI_API Transform {
+class UI_EXPORT Transform {
  public:
   Transform();
   ~Transform();
