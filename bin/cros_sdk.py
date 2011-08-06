@@ -51,12 +51,28 @@ def GetArchStageTarball(tarballArch, version):
     sys.exit('Unsupported arch: ' + arch)
 
 
-def BootstrapChroot(chroot_path, stage_path, replace):
+def FetchRemoteTarball(url):
+  tarball_dest = os.path.join(SDK_DIR,
+      os.path.basename(urlparse.urlparse(url).path))
+
+  print 'Downloading sdk: "%s"' % url
+  cros_build_lib.RunCommand(['curl', '-f', '--retry', '5', '-L',
+      '-y', '30', '-C', '-', '--output', tarball_dest, url])
+  return tarball_dest
+
+
+def BootstrapChroot(chroot_path, stage_path, stage_url, replace):
   """Builds a new chroot from source"""
   cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
          '--chroot', chroot_path,
          '--nousepkg']
   if stage_path:
+    cros_build_lib.RunCommand(['cp', '-f', stage_path, SDK_DIR])
+    stage = os.path.join(SDK_DIR, os.path.basename(stage_path))
+  elif stage_url:
+    stage = FetchRemoteTarball(stage_url)
+
+  if stage:
     cmd.extend(['--stage3_path', stage_path])
 
   if replace:
@@ -84,8 +100,7 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
       sys.exit('No such file: %s' % sdk_path)
 
     cros_build_lib.RunCommand(['cp', '-f', sdk_path, SDK_DIR])
-    tarball_dest = os.path.join(SDK_DIR,
-        os.path.basename(sdk_path))
+    sdk = os.path.join(SDK_DIR, os.path.basename(sdk_path))
   else:
     if sdk_url:
       url = sdk_url
@@ -96,12 +111,7 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
       else:
         url = GetArchStageTarball(arch)
 
-    tarball_dest = os.path.join(SDK_DIR,
-        os.path.basename(urlparse.urlparse(url).path))
-
-    print 'Downloading sdk: "%s"' % url
-    cros_build_lib.RunCommand(['curl', '-f', '--retry', '5', '-L',
-        '-y', '30', '-C', '-', '--output', tarball_dest, url])
+    sdk = FetchRemoteTarball(url)
 
   # TODO(zbehan): Unpack and install
   # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
@@ -109,7 +119,7 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   # These should all be eliminated/minimised, after which, we can change
   # this to just unpacking the sdk.
   cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
-         '--stage3_path', tarball_dest,
+         '--stage3_path', sdk,
          '--chroot', chroot_path]
 
   if replace:
@@ -226,9 +236,8 @@ To replace, use --replace."""
 
   # Bootstrap will start off from a non-selectable stage3 tarball. Attempts to
   # select sdk by any means are confusing. Warn and exit.
-  if options.bootstrap and \
-    (options.sdk_url or options.sdk_version):
-    print "Cannot use --url or --version when bootstrapping"
+  if options.bootstrap and options.sdk_version:
+    print "Cannot use --version when bootstrapping"
     parser.print_help()
     sys.exit(1)
 
@@ -253,7 +262,8 @@ To replace, use --replace."""
 
   if not os.path.exists(chroot_path) or options.replace:
     if options.bootstrap:
-      BootstrapChroot(chroot_path, options.sdk_path, options.replace)
+      BootstrapChroot(chroot_path, options.sdk_path, options.sdk_url,
+                      options.replace)
     else:
       CreateChroot(options.sdk_path, options.sdk_url, sdk_version,
                    chroot_path, options.replace)
