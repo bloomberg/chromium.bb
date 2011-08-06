@@ -80,6 +80,7 @@
 
 #language-options-list {
   -webkit-box-flex: 1;
+  outline: none;
   padding: 1px 0 0;
   width: 100%;
 }
