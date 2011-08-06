@@ -878,6 +878,7 @@ def _GenerateMSVSProject(project, options, version):
           spec, options, gyp_dir, sources, excluded_sources))
 
   # Add in files.
+  _VerifySourcesExist(sources, gyp_dir)
   p.AddFiles(sources)
 
   _AddToolFilesToMSVS(p, spec)
@@ -2606,15 +2607,35 @@ def _GetValueFormattedForMSBuild(tool_name, name, value):
   return formatted_value
 
 
-def _GetMSBuildSources(spec, root_dir, sources, exclusions,
-                       extension_to_rule_name, actions_spec,
-                       sources_handled_by_action):
+def _VerifySourcesExist(sources, root_dir):
+  """Verifies that all source files exist on disk.
+
+  Checks that all regular source files, i.e. not created at run time,
+  exist on disk.  Missing files cause needless recompilation but no otherwise
+  visible errors.
+
+  Arguments:
+    sources: A recursive list of Filter/file names.
+    root_dir: The root directory for the relative path names.
+  """
+  for source in sources:
+    if isinstance(source, MSVSProject.Filter):
+      _VerifySourcesExist(source.contents, root_dir)
+    else:
+      if '$' not in source:
+        full_path = os.path.join(root_dir, source)
+        if not os.path.exists(full_path):
+          print 'Error: Missing input file ' + full_path
+
+
+def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,
+                       actions_spec, sources_handled_by_action):
   groups = ['none', 'midl', 'include', 'compile', 'resource', 'rule']
   grouped_sources = {}
   for g in groups:
     grouped_sources[g] = []
 
-  _AddSources2(spec, root_dir, sources, exclusions, grouped_sources,
+  _AddSources2(spec, sources, exclusions, grouped_sources,
                extension_to_rule_name, sources_handled_by_action)
   sources = []
   for g in groups:
@@ -2625,20 +2646,13 @@ def _GetMSBuildSources(spec, root_dir, sources, exclusions,
   return sources
 
 
-def _AddSources2(spec, root_dir, sources, exclusions, grouped_sources,
+def _AddSources2(spec, sources, exclusions, grouped_sources,
                  extension_to_rule_name, sources_handled_by_action):
   for source in sources:
     if isinstance(source, MSVSProject.Filter):
-      _AddSources2(spec, root_dir, source.contents, exclusions, grouped_sources,
+      _AddSources2(spec, source.contents, exclusions, grouped_sources,
                    extension_to_rule_name, sources_handled_by_action)
     else:
-      # If it is a regular source file, i.e. not created at run time,
-      # warn if it does not exists.  Missing header files will cause needless
-      # recompilation but no otherwise visible errors.
-      if '$' not in source:
-        full_path = os.path.join(root_dir, source)
-        if not os.path.exists(full_path):
-          print 'Warning: Missing input file ' + full_path
       if not source in sources_handled_by_action:
         detail = []
         excluded_configurations = exclusions.get(source, [])
@@ -2725,6 +2739,7 @@ def _GenerateMSBuildProject(project, options, version):
 
   _GenerateMSBuildFiltersFile(project.path + '.filters', sources,
                               extension_to_rule_name)
+  _VerifySourcesExist(sources, gyp_dir)
 
   for (_, configuration) in configurations.iteritems():
     _FinalizeMSBuildSettings(spec, configuration)
@@ -2758,7 +2773,7 @@ def _GenerateMSBuildProject(project, options, version):
                                                       project.build_file)
   content += _GetMSBuildToolSettingsSections(spec, configurations)
   content += _GetMSBuildSources(
-      spec, gyp_dir, sources, exclusions, extension_to_rule_name, actions_spec,
+      spec, sources, exclusions, extension_to_rule_name, actions_spec,
       sources_handled_by_action)
   content += _GetMSBuildProjectReferences(project)
   content += import_cpp_targets_section
