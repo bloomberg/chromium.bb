@@ -50,11 +50,11 @@ PP_Resource PPB_VideoDecoder_Impl::Create(PluginInstance* instance,
                                           PP_Resource context3d_id,
                                           const PP_VideoConfigElement* config) {
   if (!context3d_id)
-    return NULL;
+    return 0;
 
   EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
   if (enter_context.failed())
-    return NULL;
+    return 0;
 
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
