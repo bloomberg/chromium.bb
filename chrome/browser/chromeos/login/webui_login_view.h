@@ -99,6 +99,7 @@ class WebUILoginView : public views::View,
  private:
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual bool TakeFocus(bool reverse) OVERRIDE;
 
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have

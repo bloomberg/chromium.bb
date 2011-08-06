@@ -93,6 +93,7 @@ void WebUILoginView::UpdateWindowType() {
 
 void WebUILoginView::LoadURL(const GURL & url) {
   webui_login_->LoadURL(url);
+  webui_login_->RequestFocus();
 }
 
 WebUI* WebUILoginView::GetWebUI() {
@@ -209,6 +210,12 @@ bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
 #else
   return true;
 #endif
+}
+
+bool WebUILoginView::TakeFocus(bool reverse) {
+  // Forward the focus back to web contents.
+  webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
+  return true;
 }
 
 }  // namespace chromeos
