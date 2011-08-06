@@ -1927,3 +1927,75 @@
    fun:BrowserAccessibilityManager::CreateEmptyDocument
    fun:BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test::TestBody
 }
+{
+   bug_91896_a
+   Heapcheck:Leak
+   fun:media::MediaLog::CreateEvent
+   fun:media::MediaLog::AddEventOfType
+   fun:webkit_glue::WebMediaPlayerImpl::play
+   fun:WebKit::WebMediaPlayerClientImpl::play
+   fun:WebCore::MediaPlayer::play
+   fun:WebCore::HTMLMediaElement::updatePlayState
+   fun:WebCore::HTMLMediaElement::setReadyState
+   fun:WebCore::HTMLMediaElement::mediaPlayerReadyStateChanged
+   fun:WebCore::MediaPlayer::readyStateChanged
+   fun:WebKit::WebMediaPlayerClientImpl::readyStateChanged
+   fun:webkit_glue::WebMediaPlayerImpl::SetReadyState
+   fun:webkit_glue::WebMediaPlayerImpl::OnPipelineInitialize
+   fun:webkit_glue::WebMediaPlayerImpl::Proxy::PipelineInitializationTask
+   ...
+   fun:MediaLeakTest_VideoBear_Test::TestBody
+}
+{
+   bug_91896_b
+   Heapcheck:Leak
+   fun:media::MediaLog::CreateEvent
+   fun:media::MediaLog::AddEventOfType
+   fun:webkit_glue::WebMediaPlayerImpl::~WebMediaPlayerImpl
+   fun:WTF::deleteOwnedPtr
+   fun:WTF::OwnPtr::~OwnPtr
+   fun:WebKit::WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl
+   fun:WTF::deleteOwnedPtr
+   fun:WTF::OwnPtr::~OwnPtr
+   fun:WebCore::MediaPlayer::~MediaPlayer
+   fun:WTF::deleteOwnedPtr
+   fun:WTF::OwnPtr::~OwnPtr
+   fun:WebCore::HTMLMediaElement::~HTMLMediaElement
+   fun:WebCore::HTMLVideoElement::~HTMLVideoElement
+   fun:WebCore::TreeShared::removedLastRef
+   fun:WebCore::TreeShared::deref
+   fun:WebCore::Node::derefEventTarget
+   fun:WebCore::EventTarget::deref
+   fun:WTF::derefIfNotNull
+   fun:WTF::RefPtr::~RefPtr
+   fun:WebCore::Event::~Event
+   fun:WTF::RefCounted::deref
+   fun:WebCore::V8Event::derefObject
+   fun:WebCore::WrapperTypeInfo::derefObject
+   fun:WebCore::DOMData::derefObject
+   fun:WebCore::DOMData::handleWeakObject
+   fun:WebCore::DOMDataStore::weakDOMObjectCallback
+   fun:v8::internal::GlobalHandles::Node::PostGarbageCollectionProcessing
+   fun:v8::internal::GlobalHandles::PostGarbageCollectionProcessing
+   fun:v8::internal::Heap::PerformGarbageCollection
+   fun:v8::internal::Heap::CollectGarbage
+   fun:v8::internal::Heap::CollectGarbage
+   fun:v8::internal::Heap::CollectAllGarbage
+}
+{
+   bug_91896_c
+   Heapcheck:Leak
+   fun:media::MediaLog::CreateEvent
+   fun:media::MediaLog::AddEventOfType
+   fun:webkit_glue::WebMediaPlayerImpl::pause
+   fun:WebKit::WebMediaPlayerClientImpl::pause
+   fun:WebCore::MediaPlayer::pause
+   fun:WebCore::HTMLMediaElement::updatePlayState
+   fun:WebCore::HTMLMediaElement::mediaPlayerTimeChanged
+   fun:WebCore::MediaPlayer::timeChanged
+   fun:WebKit::WebMediaPlayerClientImpl::timeChanged
+   fun:webkit_glue::WebMediaPlayerImpl::OnPipelineEnded
+   fun:webkit_glue::WebMediaPlayerImpl::Proxy::PipelineEndedTask
+   ...
+   fun:MediaLeakTest_VideoBear_Test::TestBody
+}
