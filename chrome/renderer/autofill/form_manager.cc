@@ -764,10 +764,15 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
     }
 
     std::map<string16, FormField*>::iterator iter = name_map.find(element_name);
-    // Concatenate labels because some sites might have multiple label
-    // candidates.
-    if (iter != name_map.end())
-      iter->second->label += FindChildText(label);
+    if (iter != name_map.end()) {
+      string16 label_text = FindChildText(label);
+
+      // Concatenate labels because some sites might have multiple label
+      // candidates.
+      if (!iter->second->label.empty() && !label_text.empty())
+        iter->second->label += ASCIIToUTF16(" ");
+      iter->second->label += label_text;
+    }
   }
 
   // Loop through the form control elements, extracting the label text from

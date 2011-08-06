@@ -3210,7 +3210,7 @@ TEST_F(FormManagerTest, MultipleLabelsPerElement) {
   names.push_back(ASCIIToUTF16("lastname"));
   values.push_back(ASCIIToUTF16("Smith"));
 
-  labels.push_back(ASCIIToUTF16("Email:xxx@yyy.com"));
+  labels.push_back(ASCIIToUTF16("Email: xxx@yyy.com"));
   names.push_back(ASCIIToUTF16("email"));
   values.push_back(ASCIIToUTF16("john@example.com"));
 

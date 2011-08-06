@@ -14,8 +14,8 @@ NAME_LAST | lastName | Last Name* |
 ADDRESS_HOME_LINE1 | address1 | Street Address Line 1* | 
 ADDRESS_HOME_LINE2 | address2 | Street Address Line 2 | 
 ADDRESS_HOME_CITY | city | City* | 
-ADDRESS_HOME_STATE | state | State*State* | AL
-ADDRESS_HOME_ZIP | zipCode | ZIP Code*ZIP Code* | 
+ADDRESS_HOME_STATE | state | State* State* | AL
+ADDRESS_HOME_ZIP | zipCode | ZIP Code* ZIP Code* | 
 PHONE_HOME_WHOLE_NUMBER | day1 | Phone Number* | 
 UNKNOWN_TYPE | ext1 | Ext. | 
-ADDRESS_HOME_STATE | county | CountyCounty | UNKNOWN
+ADDRESS_HOME_STATE | county | County County | UNKNOWN
