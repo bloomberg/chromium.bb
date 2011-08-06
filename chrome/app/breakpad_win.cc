@@ -519,7 +519,15 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   std::wstring pipe_name;
   if (use_crash_service) {
     // Crash reporting is done by crash_service.exe.
-    pipe_name = kChromePipeName;
+    const wchar_t* var_name = L"CHROME_BREAKPAD_PIPE_NAME";
+    DWORD value_length = ::GetEnvironmentVariableW(var_name, NULL, 0);
+    if (value_length == 0) {
+      pipe_name = kChromePipeName;
+    } else {
+      scoped_array<wchar_t> value(new wchar_t[value_length]);
+      ::GetEnvironmentVariableW(var_name, value.get(), value_length);
+      pipe_name = value.get();
+    }
   } else {
     // We want to use the Google Update crash reporting. We need to check if the
     // user allows it first (in case the administrator didn't already decide

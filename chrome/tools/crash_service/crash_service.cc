@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,6 +149,8 @@ struct DumpJobInfo {
 const char CrashService::kMaxReports[]  = "max-reports";
 const char CrashService::kNoWindow[]    = "no-window";
 const char CrashService::kReporterTag[] = "reporter";
+const char CrashService::kDumpsDir[]    = "dumps-dir";
+const char CrashService::kPipeName[]    = "pipe-name";
 
 CrashService::CrashService(const std::wstring& report_dir)
     : report_path_(report_dir),
@@ -172,7 +174,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   using google_breakpad::CrashReportSender;
   using google_breakpad::CrashGenerationServer;
 
-  const wchar_t* pipe_name = kTestPipeName;
+  std::wstring pipe_name = kTestPipeName;
   int max_reports = -1;
 
   // The checkpoint file allows CrashReportSender to enforce the the maximum
@@ -189,17 +191,25 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   }
   report_path_ = user_data_dir.Append(chrome::kCrashReportLog);
 
-  FilePath dumps_path;
-  if (!PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
-    LOG(ERROR) << "could not get DIR_CRASH_DUMPS";
-    return false;
-  }
-
   CommandLine cmd_line = CommandLine::FromString(command_line);
+
+  FilePath dumps_path;
+  if (cmd_line.HasSwitch(kDumpsDir)) {
+    dumps_path = FilePath(cmd_line.GetSwitchValueNative(kDumpsDir));
+  } else {
+    if (!PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
+      LOG(ERROR) << "could not get DIR_CRASH_DUMPS";
+      return false;
+    }
+  }
 
   // We can override the send reports quota with a command line switch.
   if (cmd_line.HasSwitch(kMaxReports))
     max_reports = _wtoi(cmd_line.GetSwitchValueNative(kMaxReports).c_str());
+
+  // Allow the global pipe name to be overridden for better testability.
+  if (cmd_line.HasSwitch(kPipeName))
+    pipe_name = cmd_line.GetSwitchValueNative(kPipeName);
 
   if (max_reports > 0) {
     // Create the http sender object.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,13 @@ class CrashService {
   // page in the crash server. This should be a 25 chars or less string.
   // The default tag if not specified is 'crash svc'.
   static const char kReporterTag[];
+  // --dumps-dir=<directory-path>
+  // Override the directory to which crash dump files will be written.
+  static const char kDumpsDir[];
+  // --pipe-name=<string>
+  // Override the name of the Windows named pipe on which we will
+  // listen for crash dump request messages.
+  static const char kPipeName[];
 
   // Returns number of crash dumps handled.
   int requests_handled() const {
