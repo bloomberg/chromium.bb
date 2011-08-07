@@ -5385,11 +5385,12 @@
    bug_91836_k
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN5quota12UsageTrackerC1ERKSt4listIPNS_11QuotaClientESaIS3_EENS_11StorageTypeEPNS_20SpecialStoragePolicyE
    fun:_ZN5quota12QuotaManager14LazyInitializeEv
    fun:_ZN5quota12QuotaManager29NotifyStorageModifiedInternalENS_11QuotaClient2IDERK4GURLNS_11StorageTypeExN4base4TimeE
    fun:_ZN5quota17MockStorageClient24TouchAllOriginsAndNotifyEv
-   fun:_ZN27BrowsingDataQuotaHelperTest14RegisterClientEPKN5quota14MockOriginDataEj
+   fun:_ZN27BrowsingDataQuotaHelperTest14RegisterClientEPKN5quota14MockOriginData*
    fun:_ZN42BrowsingDataQuotaHelperTest_FetchData_Test8TestBodyEv
 }
 {
