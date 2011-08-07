@@ -5409,6 +5409,13 @@
    fun:_ZN27BrowserAccessibilityManager19CreateEmptyDocumentEP10_GtkWidgetN11webkit_glue16WebAccessibility5StateEP28BrowserAccessibilityDelegateP27BrowserAccessibilityFactory
    fun:_ZN60BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test8TestBodyEv
 }
+{
+   bug_91950
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18WebIntentsRegistry18GetIntentProvidersERKSbItN4base20string16_char_traitsESaItEEPNS_8ConsumerE
+   fun:_ZN38WebIntentsRegistryTest_BasicTests_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations

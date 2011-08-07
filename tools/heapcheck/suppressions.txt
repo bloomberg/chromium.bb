@@ -1999,3 +1999,9 @@
    ...
    fun:MediaLeakTest_VideoBear_Test::TestBody
 }
+{
+   bug_91950
+   Heapcheck:Leak
+   fun:WebIntentsRegistry::GetIntentProviders
+   fun:WebIntentsRegistryTest_BasicTests_Test::TestBody
+}
