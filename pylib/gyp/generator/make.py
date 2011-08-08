@@ -1735,7 +1735,7 @@ class MakefileWriter:
         if self.flavor == 'mac':
           ldflags = self.xcode_settings.GetLdflags(self, configname)
         else:
-          ldflags = config.get('ldflags')
+          ldflags = config.get('ldflags', [])
           # Compute an rpath for this output if needed.
           if any(dep.endswith('.so') for dep in deps):
             # We want to get the literal string "$ORIGIN" into the link command,
