@@ -14,6 +14,10 @@
 #include "views/widget/native_widget_private.h"
 
 namespace views {
+namespace desktop {
+class DesktopWindowView;
+}
+
 namespace internal {
 class NativeWidgetView;
 }
@@ -128,6 +132,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
  private:
+  friend class desktop::DesktopWindowView;
+
   // These functions may return NULL during Widget destruction.
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;

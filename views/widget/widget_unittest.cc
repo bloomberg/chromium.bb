@@ -586,10 +586,15 @@ class WidgetObserverTest : public WidgetTest,
   virtual void OnWidgetActivationChanged(Widget* widget,
                                          bool active) OVERRIDE {
     if (active) {
+      if (widget_activated_)
+        widget_activated_->Deactivate();
       widget_activated_ = widget;
       active_ = widget;
-    } else
+    } else {
+      if (widget_activated_ == widget)
+        widget_activated_ = NULL;
       widget_deactivated_ = widget;
+    }
   }
 
   virtual void OnWidgetVisibilityChanged(Widget* widget,
@@ -633,9 +638,7 @@ class WidgetObserverTest : public WidgetTest,
   Widget* widget_hidden_;
 };
 
-// TODO: This test should be enabled when NativeWidgetViews::Activate is
-// implemented.
-TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
+TEST_F(WidgetObserverTest, ActivationChange) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
   views_delegate.set_default_parent_view(toplevel->GetRootView());
 

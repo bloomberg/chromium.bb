@@ -378,11 +378,12 @@ bool NativeWidgetViews::IsVisible() const {
 
 void NativeWidgetViews::Activate() {
   // Enable WidgetObserverTest.ActivationChange when this is implemented.
-  NOTIMPLEMENTED();
+  MoveToTop();
+  OnActivate(true);
 }
 
 void NativeWidgetViews::Deactivate() {
-  NOTIMPLEMENTED();
+  OnActivate(false);
 }
 
 bool NativeWidgetViews::IsActive() const {
