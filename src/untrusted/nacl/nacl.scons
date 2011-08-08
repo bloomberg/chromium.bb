@@ -6,7 +6,7 @@
 
 Import('env')
 
-# we have some empty source files
+# NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
 # Sources are split into essentially one function per file to be in
@@ -49,8 +49,6 @@ sources_for_nacl_extensions = [
     'nacl_irt.c',
     'nacl_tls_get.c',
     'nacl_tls_init.c',
-    'null.c',
-    'sysbrk.c',
     ]
 
 if env.Bit('nacl_glibc'):
@@ -60,24 +58,7 @@ if env.Bit('nacl_glibc'):
 else:
   sources = sources_for_nacl_extensions + sources_for_standard_interfaces
 
-# TODO(mcgrathr): These should eventually live in ../irt/ instead.
-# For now we need them as fallback definitions in libnacl when no
-# IRT is available.  To simplify build matters, we just include them
-# here and the IRT itself gets them from linking with libnacl.
-irt_interface_sources = ['irt_basic.c',
-                         'irt_fdio.c',
-                         'irt_filename.c',
-                         'irt_memory.c',
-                         'irt_dyncode.c',
-                         'irt_thread.c',
-                         'irt_mutex.c',
-                         'irt_cond.c',
-                         'irt_sem.c',
-                         'irt_tls.c',
-                         'irt_blockhook.c',
-                         ]
-
-env.NaClSdkLibrary('libnacl', sources + irt_interface_sources)
+env.NaClSdkLibrary('libnacl', sources)
 
 env.AddLibraryToSdk(['libnacl'])
 header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
@@ -86,6 +67,8 @@ env.Requires('libnacl', header_install)
 env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'], LIBS=['nacl'])
 env.AddLibraryToSdk(['libnacl_dyncode'])
 env.AddHeaderToSdk(['nacl_dyncode.h'])
+
+env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
 
 imc_syscalls = [
     'imc_accept.c',
@@ -100,3 +83,19 @@ imc_syscalls = [
 
 env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)
 env.AddLibraryToSdk(['libimc_syscalls'])
+
+sys_private = [
+    'null.c',
+    'sysbrk.c',
+    ]
+
+if not env.Bit('nacl_glibc'):
+  blockhook = env.ComponentObject(
+      'private_blockhook.o', '${MAIN_DIR}/src/untrusted/irt/irt_blockhook.c')
+  sys_private += [
+      blockhook,
+      'gc_hooks_private.c',
+      'sys_private.c',
+      ]
+
+env.ComponentLibrary('libnacl_sys_private', sys_private)

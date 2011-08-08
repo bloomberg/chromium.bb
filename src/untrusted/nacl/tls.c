@@ -49,7 +49,7 @@ static char *aligned_addr(void *start, size_t alignment) {
   return (void *) aligned_size((size_t) start, alignment);
 }
 
-static void *tp_from_combined_area(void *combined_area, size_t tdb_size) {
+static char *tp_from_combined_area(void *combined_area, size_t tdb_size) {
   size_t tls_size = TLS_TDATA_SIZE + TLS_TBSS_SIZE;
   ptrdiff_t tdboff = __nacl_tp_tdb_offset(tdb_size);
   if (tdboff < 0) {

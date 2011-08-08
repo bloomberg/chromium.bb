@@ -6,6 +6,8 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_
 
+#include <stddef.h>
+
 extern size_t nacl_irt_interface(const char *interface_ident,
                                  void *table, size_t tablesize);
 

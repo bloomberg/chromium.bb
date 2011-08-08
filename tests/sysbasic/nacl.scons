@@ -9,7 +9,7 @@ sysbasic_nexe = env.ComponentProgram('sysbasic.nexe',
                                      'sysbasic.c',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
                                                  '${NONIRT_LIBS}',
-                                                 'nacl'])
+                                                 'nacl_sys_private'])
 
 node = env.CommandSelLdrTestNacl(
     'sysbasic_test.out',

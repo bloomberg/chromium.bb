@@ -13,6 +13,8 @@ extern struct nacl_irt_mutex __nc_irt_mutex;
 extern struct nacl_irt_cond __nc_irt_cond;
 extern struct nacl_irt_sem __nc_irt_sem;
 
+void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread);
+
 void *__nc_adopt_thread(void);
 
 #endif

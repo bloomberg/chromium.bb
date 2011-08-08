@@ -25,7 +25,7 @@ irt_support_sources = [
     'irt_malloc.c',
     'irt_sbrk.c',
     'irt_elf_utils.c',
-    'irt_tls.c',
+    'irt_private_tls.c',
     ]
 
 # The bitcode build must use -mtls-use-call to separate user TLS
@@ -33,15 +33,27 @@ irt_support_sources = [
 if env.Bit('bitcode'):
   blob_env.Append(LINKFLAGS='-Wl,--add-translate-option=-mtls-use-call')
 
-# TODO(mcgrathr): most of these live in ../nacl/irt_*.c now because
-# of the dismal kludge state of building everything.  Eventually
-# all that should move here.
-irt_common_interfaces = []
+# NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
+blob_env.FilterOut(CCFLAGS=['-pedantic'])
+
+irt_common_interfaces = [
+    'irt_basic.c',
+    'irt_fdio.c',
+    'irt_filename.c',
+    'irt_memory.c',
+    'irt_dyncode.c',
+    'irt_thread.c',
+    'irt_mutex.c',
+    'irt_cond.c',
+    'irt_sem.c',
+    'irt_tls.c',
+    'irt_blockhook.c',
+    ]
 
 # These are the objects and libraries that go into every IRT image.
 irt_support_objs = [blob_env.ComponentObject(x) for x in
                     (irt_support_sources + irt_common_interfaces)]
-irt_support_libs = ['pthread']
+irt_support_libs = ['nacl_sys_private', 'pthread_private']
 
 if env.Bit('target_arm'):
   blob_env.Append(LINKFLAGS='--pnacl-allow-native')

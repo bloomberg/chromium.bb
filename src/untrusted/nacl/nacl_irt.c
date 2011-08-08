@@ -35,18 +35,27 @@ static void grok_auxv(const Elf32_auxv_t *auxv) {
   }
 }
 
-#define DO_QUERY(ident, name)                                                 \
-  do_irt_query(ident, &__libnacl_irt_##name,                                  \
-               sizeof(__libnacl_irt_##name), &nacl_irt_##name)
+static void stderr_message(const char *message) {
+  write(2, message, strlen(message));
+}
 
-static void do_irt_query(const char *interface_ident,
-                         void *buffer, size_t table_size,
-                         const void *fallback) {
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(interface_ident, buffer, table_size) != table_size) {
-    memcpy(buffer, fallback, table_size);
+void __libnacl_mandatory_irt_query(const char *interface,
+                                   void *table, size_t table_size) {
+  if (NULL == __nacl_irt_query) {
+    stderr_message("No IRT interface query routine!\n");
+    _exit(-1);
+  }
+  if (__nacl_irt_query(interface, table, table_size) != table_size) {
+    stderr_message("IRT interface query failed for essential interface \"");
+    stderr_message(interface);
+    stderr_message("\"!\n");
+    _exit(-1);
   }
 }
+
+#define DO_QUERY(ident, name)                                   \
+  __libnacl_mandatory_irt_query(ident, &__libnacl_irt_##name,   \
+                                sizeof(__libnacl_irt_##name))
 
 /*
  * Initialize all our IRT function tables using the query function.

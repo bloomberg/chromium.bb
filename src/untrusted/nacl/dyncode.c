@@ -17,10 +17,8 @@
 static struct nacl_irt_dyncode irt_dyncode;
 
 static void __attribute__((constructor)) setup_irt_dyncode(void) {
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(NACL_IRT_DYNCODE_v0_1, &irt_dyncode,
-                       sizeof(irt_dyncode)) != sizeof(irt_dyncode))
-    irt_dyncode = nacl_irt_dyncode;
+  __libnacl_mandatory_irt_query(NACL_IRT_DYNCODE_v0_1, &irt_dyncode,
+                                sizeof(irt_dyncode));
 }
 
 int nacl_dyncode_create(void *dest, const void *src, size_t size) {

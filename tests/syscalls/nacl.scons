@@ -130,7 +130,7 @@ sysbrk_test_nexe = env.ComponentProgram('sysbrk_test',
                                         ['sysbrk_test.cc'],
                                         EXTRA_LIBS=['syscall_test_framework',
                                                     '${NONIRT_LIBS}',
-                                                    'nacl'])
+                                                    'nacl_sys_private'])
 
 node = env.CommandSelLdrTestNacl('sysbrk_test.out',
                                  sysbrk_test_nexe)

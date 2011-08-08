@@ -319,7 +319,6 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   return 0;
 }
 
-
 /* Will be called from the library startup code,
  * which always happens on the application's main thread
  */
@@ -332,25 +331,9 @@ int __pthread_initialize(void) {
   __pthread_initialize_minimal(TDB_SIZE);
 
   /*
-   * Fetch the ABI tables from the IRT.  We fall back to tables
-   * provided by libnacl, in case we have no IRT (or are the IRT).
+   * Fetch the ABI tables from the IRT.  If we don't have these, all is lost.
    */
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(NACL_IRT_THREAD_v0_1, &irt_thread,
-                       sizeof(irt_thread)) != sizeof(irt_thread))
-    irt_thread = nacl_irt_thread;
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(NACL_IRT_MUTEX_v0_1, &__nc_irt_mutex,
-                       sizeof(__nc_irt_mutex)) != sizeof(__nc_irt_mutex))
-    __nc_irt_mutex = nacl_irt_mutex;
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(NACL_IRT_COND_v0_1, &__nc_irt_cond,
-                       sizeof(__nc_irt_cond)) != sizeof(__nc_irt_cond))
-    __nc_irt_cond = nacl_irt_cond;
-  if (NULL == __nacl_irt_query ||
-      __nacl_irt_query(NACL_IRT_SEM_v0_1, &__nc_irt_sem,
-                       sizeof(__nc_irt_sem)) != sizeof(__nc_irt_sem))
-    __nc_irt_sem = nacl_irt_sem;
+  __nc_initialize_interfaces(&irt_thread);
 
   /* At this point GS is already initialized */
   tdb = nc_get_tdb();

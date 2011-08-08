@@ -2402,11 +2402,11 @@ nacl_env = MakeArchSpecificEnv().Clone(
     LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
 
     # These are settings for in-tree, non-browser tests to use.
-    # TODO(mcgrathr): Later these will refer to private libraries,
-    # and be replaced with these settings only in nacl_irt_test_env.
-    NONIRT_LIBS = [],
-    PTHREAD_LIBS = ['pthread'],
-    DYNCODE_LIBS = ['nacl_dyncode'],
+    # They use libraries that circumvent the IRT-based implementations
+    # in the public libraries.
+    NONIRT_LIBS = ['nacl_sys_private'],
+    PTHREAD_LIBS = ['pthread_private'],
+    DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
 
 # This is the address at which a user executable is expected to place its
@@ -2438,6 +2438,18 @@ nacl_env.Replace(
     IRT_BLOB_CODE_START = '%#.8x' % irt_code_addr,
     IRT_BLOB_DATA_START = '%#.8x' % irt_data_addr,
     )
+
+def TestsUsePublicLibs(env):
+  """Change the environment so it uses public libraries for in-tree tests."""
+  env.Replace(NONIRT_LIBS=[],
+              PTHREAD_LIBS=['pthread'],
+              DYNCODE_LIBS=['nacl_dyncode'])
+
+# glibc is incompatible with the private libraries.
+# It's probably really only wholly incompatible with libpthread_private,
+# but we make it use only the public libraries altogether anyway.
+if nacl_env.Bit('nacl_glibc'):
+  TestsUsePublicLibs(nacl_env)
 
 # These add on to those set in pre_base_env, above.
 nacl_env.Append(
@@ -2988,6 +3000,7 @@ nacl_irt_test_env = nacl_env.Clone(
     )
 nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')
+TestsUsePublicLibs(nacl_irt_test_env)
 
 # If a tests/.../nacl.scons file builds a library, we will just use
 # the one already built in nacl_env instead.

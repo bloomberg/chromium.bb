@@ -12,16 +12,30 @@ valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
 
-env.ComponentLibrary('libpthread', ['nc_thread.c',
-                                    'nc_mutex.c',
-                                    'nc_condvar.c',
-                                    'nc_semaphore.c',
-                                    'nc_token.c',
-                                    'nc_hash.c',
-                                    valgrind
-                                    ])
+nc_objs = [env.ComponentObject(module, module + '.c')
+           for module in [
+               'nc_thread',
+               'nc_mutex',
+               'nc_condvar',
+               'nc_semaphore',
+               'nc_token',
+               'nc_hash'
+               ]
+           ] + [valgrind]
 
+# The public library relies on the IRT for crucial system services.
+env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
 env.AddLibraryToSdk(['libpthread'])
+
+# The private library rolls in those IRT components.
+nc_private_objs = nc_objs + ['nc_init_private.c'] + [
+    env.ComponentObject(
+        'irt_%s' % interface,
+        '${MAIN_DIR}/src/untrusted/irt/irt_%s.c' % interface)
+    for interface in ['thread', 'mutex', 'cond', 'sem', 'blockhook']
+    ]
+
+env.ComponentLibrary('libpthread_private', nc_private_objs)
 
 # install_libpthread is a no-op under --nacl_glibc, but without it
 # installs the header files from this directory into the toolchain.

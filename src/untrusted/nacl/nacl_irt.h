@@ -19,6 +19,8 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
 extern struct nacl_irt_tls __libnacl_irt_tls;
 extern struct nacl_irt_blockhook __libnacl_irt_blockhook;
 
+extern void __libnacl_mandatory_irt_query(const char *interface_ident,
+                                          void *table, size_t table_size);
 extern void __libnacl_irt_init(Elf32_auxv_t *auxv);
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_NACL_IRT_H_ */
