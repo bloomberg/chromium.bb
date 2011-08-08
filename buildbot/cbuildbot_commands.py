@@ -301,6 +301,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
            '--zipbase=http://chromeos-images.corp.google.com',
            '--type=vm',
            '--no_graphics',
+           '--target_image=%s' % image_path,
            '--test_results_root=%s' % results_dir_in_chroot, ]
   else:
     cmd = ['bin/cros_au_test_harness',
