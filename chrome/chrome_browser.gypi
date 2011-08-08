@@ -4927,19 +4927,6 @@
                 'LD_DYLIB_INSTALL_NAME': '/usr/lib/libSystem.B.dylib',
                 'DYLIB_COMPATIBILITY_VERSION': '1.0.0',
                 'DYLIB_CURRENT_VERSION': '111.1.4',
-
-                # Turn on stripping (yes, even in debug mode), and add the -c
-                # flag. This is what produces a stub library (MH_DYLIB_STUB)
-                # as opposed to a dylib (MH_DYLIB). MH_DYLIB_STUB files
-                # contain symbol tables and everything else needed for
-                # linking, but are stripped of section contents. This is the
-                # same way that the stub libraries in Mac OS X SDKs are
-                # created. dyld will refuse to load a stub library, so this
-                # provides some insurance in case anyone tries to load the
-                # stub at runtime.
-                'DEPLOYMENT_POSTPROCESSING': 'YES',
-                'STRIP_STYLE': 'non-global',
-                'STRIPFLAGS': '-c',
               },
             }, {  # else: mac_sdk != "10.5"
               # When using the 10.6 SDK or newer, the necessary definitions
