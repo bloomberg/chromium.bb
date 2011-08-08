@@ -213,15 +213,6 @@
             'host/plugin/host_plugin.rc',
           ],
         }],
-        ['target_arch=="arm"', {
-          'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx_lib',
-          ],
-        }, {
-          'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx',
-          ],
-        }],
       ],
     },  # end of target 'remoting_host_plugin'
     {
@@ -344,11 +335,18 @@
       ],
       'conditions': [
         ['target_arch=="arm"', {
+          'dependencies': [
+            '../third_party/libvpx/libvpx.gyp:libvpx_lib',
+          ],
           'sources!': [
             'base/decoder_vp8.cc',
             'base/decoder_vp8.h',
             'base/encoder_vp8.cc',
             'base/encoder_vp8.h',
+          ],
+        }, {
+          'dependencies': [
+            '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }],
       ],

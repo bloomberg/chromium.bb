@@ -34,7 +34,7 @@ namespace media {
 
 class Buffer;
 
-class AudioRendererAlgorithmBase {
+class MEDIA_EXPORT AudioRendererAlgorithmBase {
  public:
   // Used to simplify callback declarations.
   typedef Callback0::Type RequestReadCallback;

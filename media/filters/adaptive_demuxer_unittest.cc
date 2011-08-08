@@ -8,10 +8,6 @@
 
 namespace media {
 
-bool ParseAdaptiveUrl(
-    const std::string& url, int* audio_index, int* video_index,
-    std::vector<std::string>* urls);
-
 TEST(ParseAdaptiveUrlTest, BackwardsCompatible) {
   std::string manifest = "http://youtube.com/video.webm";
   int audio_index;

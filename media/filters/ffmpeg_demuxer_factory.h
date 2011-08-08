@@ -15,7 +15,7 @@ class MessageLoop;
 
 namespace media {
 
-class FFmpegDemuxerFactory : public DemuxerFactory {
+class MEDIA_EXPORT FFmpegDemuxerFactory : public DemuxerFactory {
  public:
   // Takes ownership of |data_source_factory|, but not of |loop|.
   FFmpegDemuxerFactory(DataSourceFactory* data_source_factory,

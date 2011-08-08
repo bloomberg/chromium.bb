@@ -242,7 +242,7 @@ class AdaptiveDemuxer : public Demuxer {
 // DemuxerFactory's Build() method individually.  For backward-compatibility,
 // the manifest URL may also simply be a regular URL in which case an implicit
 // "x-adaptive:0:0:" is prepended.
-class AdaptiveDemuxerFactory : public DemuxerFactory {
+class MEDIA_EXPORT AdaptiveDemuxerFactory : public DemuxerFactory {
  public:
   // Takes a reference to |demuxer_factory|.
   AdaptiveDemuxerFactory(DemuxerFactory* delegate_factory);
@@ -259,6 +259,11 @@ class AdaptiveDemuxerFactory : public DemuxerFactory {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveDemuxerFactory);
 };
+
+// See AdaptiveDemuxerFactory's class-level comment for |url|'s format.
+MEDIA_EXPORT bool ParseAdaptiveUrl(
+    const std::string& url, int* audio_index, int* video_index,
+    std::vector<std::string>* urls);
 
 }  // namespace media
 
