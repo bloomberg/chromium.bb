@@ -966,3 +966,12 @@ PrintSettings.prototype.save = function() {
   this.isLandscape = layoutSettings.isLandscape();
 }
 
+/// Pull in all other scripts in a single shot.
+<include src="print_preview_animations.js"/>
+<include src="print_preview_cloud.js"/>
+<include src="print_preview_utils.js"/>
+<include src="print_header.js"/>
+<include src="page_settings.js"/>
+<include src="copies_settings.js"/>
+<include src="layout_settings.js"/>
+<include src="color_settings.js"/>

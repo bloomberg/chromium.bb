@@ -2,6 +2,7 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
+<include src="../content_security_policy.html"/>
 <title i18n-content="title"></title>
 <link rel="icon" href="../../../app/theme/print_preview_favicon.png">
 <link rel="stylesheet" href="../webui.css">
@@ -10,15 +11,8 @@
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="print_preview.js"></script>
-<script src="print_preview_animations.js"></script>
-<script src="print_preview_cloud.js"></script>
-<script src="print_preview_utils.js"></script>
-<script src="print_header.js"></script>
-<script src="page_settings.js"></script>
-<script src="copies_settings.js"></script>
-<script src="layout_settings.js"></script>
-<script src="color_settings.js"></script>
+<script src="chrome://print/print_preview.js"></script>
+<script src="chrome://print/strings.js"></script>
 </head>
 <body>
   <div id="sidebar">
@@ -70,6 +64,8 @@
   </div>
   <object id="dummy-viewer"
       type="application/x-google-chrome-print-preview-pdf"
-      src="chrome://print/dummy.pdf"></object>
+      data="chrome://print/dummy.pdf"></object>
+  <script src="chrome://resources/js/i18n_template.js"></script>
+  <script src="chrome://resources/js/i18n_process.js"></script>
 </body>
 </html>

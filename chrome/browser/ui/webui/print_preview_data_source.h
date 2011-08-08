@@ -10,10 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 
 // PrintPreviewDataSource serves data for chrome://print requests.
 //
-// The format for requesting data is as follows:
+// The format for requesting PDF data is as follows:
 // chrome://print/<PrintPreviewUIAddrStr>/<PageIndex>/print.pdf
 //
 // Parameters (< > required):
@@ -24,8 +25,10 @@
 //
 // Example:
 //    chrome://print/0xab0123ef/10/print.pdf
-
-class PrintPreviewDataSource : public ChromeURLDataManager::DataSource {
+//
+// Requests to chrome://print with paths not ending in /print.pdf are used
+// to return the markup or other resources for the print preview page itself.
+class PrintPreviewDataSource : public ChromeWebUIDataSource {
  public:
   PrintPreviewDataSource();
 
@@ -33,8 +36,6 @@ class PrintPreviewDataSource : public ChromeURLDataManager::DataSource {
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-
  private:
   virtual ~PrintPreviewDataSource();
 

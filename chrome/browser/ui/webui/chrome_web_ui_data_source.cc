@@ -33,6 +33,9 @@ std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
   if (EndsWith(path, ".js", false))
     return "application/javascript";
 
+  if (EndsWith(path, ".pdf", false))
+    return "application/pdf";
+
   return "text/html";
 }
 
