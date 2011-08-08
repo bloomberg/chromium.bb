@@ -27,11 +27,6 @@ class SystemNotification;
 // found.
 class ExtensionFileBrowserEventRouter
     : public chromeos::MountLibrary::Observer {
-
-  friend void HideFileBrowserNotificationExternally(
-      const std::string& category, const std::string& system_path,
-      ExtensionFileBrowserEventRouter* that);
-
  public:
   explicit ExtensionFileBrowserEventRouter(Profile* profile);
   virtual ~ExtensionFileBrowserEventRouter();
@@ -61,8 +56,7 @@ class ExtensionFileBrowserEventRouter
       NotificationMap;
   typedef std::map<std::string, std::string> MountPointMap;
   typedef struct FileWatcherExtensions {
-    FileWatcherExtensions(const FilePath& path,
-        const std::string& extension_id) {
+    FileWatcherExtensions(const FilePath& path, const std::string& extension_id) {
       file_watcher.reset(new base::files::FilePathWatcher());
       virtual_path = path;
       extensions.insert(extension_id);
@@ -94,17 +88,13 @@ class ExtensionFileBrowserEventRouter
   void OnDiskAdded(const chromeos::MountLibrary::Disk* disk);
   void OnDiskRemoved(const chromeos::MountLibrary::Disk* disk);
   void OnDiskChanged(const chromeos::MountLibrary::Disk* disk);
-  void OnDiskMounted(const chromeos::MountLibrary::Disk* disk);
-  void OnDiskUnmounted(const chromeos::MountLibrary::Disk* disk);
   void OnDeviceAdded(const std::string& device_path);
   void OnDeviceRemoved(const std::string& device_path);
   void OnDeviceScanned(const std::string& device_path);
-  void OnFormattingStarted(const std::string& device_path);
-  void OnFormattingFinished(const std::string& device_path);
 
   // Finds first notifications corresponding to the same device. Ensures that
   // we don't pop up multiple notifications for the same device.
-  NotificationMap::iterator FindNotificationForId(const std::string& path);
+  NotificationMap::iterator FindNotificationForPath(const std::string& path);
 
   // Process file watch notifications.
   void HandleFileWatchNotification(const FilePath& path,
@@ -130,13 +120,10 @@ class ExtensionFileBrowserEventRouter
                       bool small);
 
   // Show/hide desktop notifications.
-  void ShowFileBrowserNotification(const std::string& category,
-                                   const std::string& system_path,
-                                   int icon_resource_id,
-                                   const string16& title,
-                                   const string16& message);
-  void HideFileBrowserNotification(const std::string& category,
-                                   const std::string& system_path);
+  void ShowDeviceNotification(const std::string& system_path,
+                              int icon_resource_id,
+                              const string16& message);
+  void HideDeviceNotification(const std::string& system_path);
 
   scoped_refptr<FileWatcherDelegate> delegate_;
   MountPointMap mounted_devices_;

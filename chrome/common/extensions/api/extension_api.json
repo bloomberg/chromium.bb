@@ -6365,17 +6365,6 @@
             ]
           }
         ]
-      },
-      {
-        "name": "formatDevice",
-        "description": "Formats a mounted device",
-        "parameters": [
-          {
-            "name": "mountPath",
-            "type": "string",
-            "description": "Device's mount path."
-          }
-        ]
       }
     ],
     "events": [

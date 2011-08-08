@@ -277,21 +277,6 @@ class GetMountPointsFunction
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getMountPoints");
 };
 
-// Formats Device given its mount path.
-class FormatDeviceFunction
-    : public SyncExtensionFunction {
-  public:
-    FormatDeviceFunction();
-
- protected:
-  virtual ~FormatDeviceFunction();
-
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.formatDevice");
-};
-
 // Retrieves devices meta-data. Expects volume's device path as an argument.
 class GetVolumeMetadataFunction
     : public SyncExtensionFunction {
