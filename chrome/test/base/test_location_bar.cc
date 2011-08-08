@@ -11,7 +11,7 @@ TestLocationBar::TestLocationBar()
 
 TestLocationBar::~TestLocationBar() {}
 
-std::wstring TestLocationBar::GetInputString() const {
+string16 TestLocationBar::GetInputString() const {
   return input_string_;
 }
 

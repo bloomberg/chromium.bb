@@ -138,7 +138,7 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal(
   [FirstRunBubbleController showForView:field_ offset:kOffset profile:profile_];
 }
 
-std::wstring LocationBarViewMac::GetInputString() const {
+string16 LocationBarViewMac::GetInputString() const {
   return location_input_;
 }
 
@@ -224,7 +224,7 @@ void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
   // WARNING: don't add an early return here. The calls after the if must
   // happen.
   if (url.is_valid()) {
-    location_input_ = UTF8ToWide(url.spec());
+    location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
     transition_ = transition;
 

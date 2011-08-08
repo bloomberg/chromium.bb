@@ -472,7 +472,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     PageTransition::Type transition,
     const GURL& alternate_nav_url) {
   if (url.is_valid()) {
-    location_input_ = UTF8ToWide(url.spec());
+    location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
     transition_ = transition;
 
@@ -596,7 +596,7 @@ void LocationBarViewGtk::SetSuggestedText(const string16& text,
   location_entry_->model()->SetSuggestedText(text, behavior);
 }
 
-std::wstring LocationBarViewGtk::GetInputString() const {
+string16 LocationBarViewGtk::GetInputString() const {
   return location_input_;
 }
 

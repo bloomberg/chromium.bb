@@ -817,7 +817,7 @@ void LocationBarView::OnAutocompleteAccept(
   // WARNING: don't add an early return here. The calls after the if must
   // happen.
   if (url.is_valid()) {
-    location_input_ = UTF8ToWide(url.spec());
+    location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
     transition_ = transition;
 
@@ -1131,7 +1131,7 @@ void LocationBarView::SetSuggestedText(const string16& text,
   location_entry_->model()->SetSuggestedText(text, behavior);
 }
 
-std::wstring LocationBarView::GetInputString() const {
+string16 LocationBarView::GetInputString() const {
   return location_input_;
 }
 

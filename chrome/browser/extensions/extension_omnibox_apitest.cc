@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
-    EXPECT_EQ(std::wstring(), location_bar->GetInputString());
+    EXPECT_EQ(string16(), location_bar->GetInputString());
     EXPECT_EQ(string16(), location_bar->location_entry()->GetText());
     EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 

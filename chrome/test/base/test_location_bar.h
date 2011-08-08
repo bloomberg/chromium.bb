@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "content/common/page_transition_types.h"
@@ -16,7 +17,7 @@ class TestLocationBar : public LocationBar {
   TestLocationBar();
   virtual ~TestLocationBar();
 
-  void set_input_string(const std::wstring& input_string) {
+  void set_input_string(const string16& input_string) {
     input_string_ = input_string;
   }
   void set_disposition(WindowOpenDisposition disposition) {
@@ -30,7 +31,7 @@ class TestLocationBar : public LocationBar {
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE {}
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE {}
-  virtual std::wstring GetInputString() const OVERRIDE;
+  virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual PageTransition::Type GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE {}
@@ -49,7 +50,7 @@ class TestLocationBar : public LocationBar {
 
   // Test-supplied values that will be returned through the LocationBar
   // interface.
-  std::wstring input_string_;
+  string16 input_string_;
   WindowOpenDisposition disposition_;
   PageTransition::Type transition_;
 

@@ -241,7 +241,7 @@ class LocationBarView : public LocationBar,
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
-  virtual std::wstring GetInputString() const OVERRIDE;
+  virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
   virtual PageTransition::Type GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
@@ -356,7 +356,7 @@ class LocationBarView : public LocationBar,
 
   // This is the string of text from the autocompletion session that the user
   // entered or selected.
-  std::wstring location_input_;
+  string16 location_input_;
 
   // The user's desired disposition for how their input should be opened
   WindowOpenDisposition disposition_;

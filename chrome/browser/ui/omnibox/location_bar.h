@@ -38,7 +38,7 @@ class LocationBar {
                                 InstantCompleteBehavior behavior) = 0;
 
   // Returns the string of text entered in the location bar.
-  virtual std::wstring GetInputString() const = 0;
+  virtual string16 GetInputString() const = 0;
 
   // Returns the WindowOpenDisposition that should be used to determine where
   // to open a URL entered in the location bar.

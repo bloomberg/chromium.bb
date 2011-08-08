@@ -1436,7 +1436,7 @@ void Browser::OpenCurrentURL() {
   if (OpenInstant(open_disposition))
     return;
 
-  GURL url(WideToUTF8(location_bar->GetInputString()));
+  GURL url(location_bar->GetInputString());
 
   if (open_disposition == CURRENT_TAB && TabFinder::IsEnabled()) {
     Browser* existing_browser = NULL;

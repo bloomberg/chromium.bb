@@ -111,30 +111,30 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
 
   // Implement the LocationBar interface.
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
-                                InstantCompleteBehavior behavior);
-  virtual std::wstring GetInputString() const;
-  virtual WindowOpenDisposition GetWindowOpenDisposition() const;
-  virtual PageTransition::Type GetPageTransition() const;
-  virtual void AcceptInput();
-  virtual void FocusLocation(bool select_all);
-  virtual void FocusSearch();
-  virtual void UpdateContentSettingsIcons();
-  virtual void UpdatePageActions();
-  virtual void InvalidatePageActions();
-  virtual void SaveStateToContents(TabContents* contents);
-  virtual void Revert();
-  virtual const OmniboxView* location_entry() const;
-  virtual OmniboxView* location_entry();
-  virtual LocationBarTesting* GetLocationBarForTesting();
+                                InstantCompleteBehavior behavior) OVERRIDE;
+  virtual string16 GetInputString() const OVERRIDE;
+  virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
+  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual void AcceptInput() OVERRIDE;
+  virtual void FocusLocation(bool select_all) OVERRIDE;
+  virtual void FocusSearch() OVERRIDE;
+  virtual void UpdateContentSettingsIcons() OVERRIDE;
+  virtual void UpdatePageActions() OVERRIDE;
+  virtual void InvalidatePageActions() OVERRIDE;
+  virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
+  virtual void Revert() OVERRIDE;
+  virtual const OmniboxView* location_entry() const OVERRIDE;
+  virtual OmniboxView* location_entry() OVERRIDE;
+  virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // Implement the LocationBarTesting interface.
-  virtual int PageActionCount();
-  virtual int PageActionVisibleCount();
-  virtual ExtensionAction* GetPageAction(size_t index);
-  virtual ExtensionAction* GetVisiblePageAction(size_t index);
-  virtual void TestPageActionPressed(size_t index);
+  virtual int PageActionCount() OVERRIDE;
+  virtual int PageActionVisibleCount() OVERRIDE;
+  virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
+  virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
+  virtual void TestPageActionPressed(size_t index) OVERRIDE;
 
   // Implement the NotificationObserver interface.
   virtual void Observe(int type,
@@ -418,7 +418,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // When we get an OnAutocompleteAccept notification from the autocomplete
   // edit, we save the input string so we can give it back to the browser on
   // the LocationBar interface via GetInputString().
-  std::wstring location_input_;
+  string16 location_input_;
 
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
