@@ -2054,7 +2054,13 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create();
 
-	ec = NULL;
+	loop = wl_display_get_event_loop(display);
+	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
+	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
+	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, ec);
+
+	wl_list_init(&child_process_list);
+	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
 
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
@@ -2094,14 +2100,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
-
-	loop = wl_display_get_event_loop(ec->wl_display);
-	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
-	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
-	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, ec);
-
-	wl_list_init(&child_process_list);
-	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
 
 	wl_display_run(display);
 
