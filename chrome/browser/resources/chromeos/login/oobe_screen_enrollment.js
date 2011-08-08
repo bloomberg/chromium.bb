@@ -37,6 +37,15 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Event handler that is invoked just before the frame is shown.
+     * @param {object} data Screen init payload.
+     */
+    onBeforeShow: function(data) {
+      // Reload the gaia frame.
+      $('gaia-local-login').src = 'chrome://oobe/gaialogin';
+    },
+
+    /**
      * Buttons in oobe wizard's button strip.
      * @type {array} Array of Buttons.
      */
