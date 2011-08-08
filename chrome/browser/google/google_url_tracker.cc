@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -21,6 +22,7 @@
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,7 +50,8 @@ GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     const GURL& new_google_url)
     : ConfirmInfoBarDelegate(tab_contents),
       google_url_tracker_(google_url_tracker),
-      new_google_url_(new_google_url) {
+      new_google_url_(new_google_url),
+      tab_contents_(tab_contents) {
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
@@ -62,21 +65,39 @@ bool GoogleURLTrackerInfoBarDelegate::Cancel() {
   return true;
 }
 
+string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
+      GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      PageTransition::LINK);
+  return false;
+}
+
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
   google_url_tracker_->InfoBarClosed();
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
-  // TODO(ukai): change new_google_url to google_base_domain?
   return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(new_google_url_.spec()));
+                                    GetHost(true), GetHost(false));
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
-      IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+  bool new_host = (button == BUTTON_OK);
+  return l10n_util::GetStringFUTF16(new_host ?
+      IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH :
+      IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH, GetHost(new_host));
+}
+
+string16 GoogleURLTrackerInfoBarDelegate::GetHost(bool new_host) const {
+  return net::StripWWW(UTF8ToUTF16(
+      (new_host ? new_google_url_ : google_url_tracker_->GoogleURL()).host()));
 }
 
 

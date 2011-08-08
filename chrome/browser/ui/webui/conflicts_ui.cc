@@ -45,7 +45,7 @@ ChromeWebUIDataSource* CreateConflictsUIHTMLSource() {
                              IDS_CONFLICTS_CHECK_WARNING_SUSPECTED);
   source->AddLocalizedString("moduleConfirmedBad",
                      IDS_CONFLICTS_CHECK_WARNING_CONFIRMED);
-  source->AddLocalizedString("helpCenterLink", IDS_CONFLICTS_HELP_CENTER_LINK);
+  source->AddLocalizedString("helpCenterLink", IDS_LEARN_MORE);
   source->AddLocalizedString("investigatingText",
                              IDS_CONFLICTS_CHECK_INVESTIGATING);
   source->AddLocalizedString("modulesNoneLoaded",

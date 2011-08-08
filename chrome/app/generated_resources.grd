@@ -4519,9 +4519,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONFLICTS_EXPLANATION_TEXT" desc="The text blurb explaining what the compatibility page is.">
         This page lists all modules loaded into the main process and modules registered to load at a later point.
       </message>
-      <message name="IDS_CONFLICTS_HELP_CENTER_LINK" desc="The text for the Help Center link.">
-        Learn more
-      </message>
       <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
         We are currently investigating this issue.
       </message>
@@ -13087,8 +13084,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
 
     <!-- GoogleURL tracker info bar -->
-    <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE" desc="Message displayed when the user's current Google TLD doesn't match the default for their location.">
-       It looks like you've moved.  Would you like to use <ph name="NEW_GOOGLE_URL">$1<ex>google.com</ex></ph>?
+    <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE" desc="Message displayed when the user's current Google TLD doesn't match the default for their location.  This can be shortened in other languages (e.g. by removing 'would you like to') as needed to keep the translated strings from being much longer than English, so the infobar can still display all three IDS_GOOGLE_URL_TRACKER_ strings and a 'Learn more' link.">
+       Would you like to search with <ph name="NEW_GOOGLE_HOST">$1<ex>google.de</ex></ph> instead of <ph name="CURRENT_GOOGLE_HOST">$2<ex>google.fr</ex></ph>?
+    </message>
+    <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH" desc="Button text for button that changes user's default Google TLD to a new TLD.">
+       Switch to <ph name="NEW_GOOGLE_HOST">$1<ex>google.de</ex></ph>
+    </message>
+    <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH" desc="Button text for button that leaves user's default Google TLD unchanged.">
+       Keep using <ph name="CURRENT_GOOGLE_HOST">$1<ex>google.fr</ex></ph>
     </message>
 
     <message name="IDS_SPEECH_INPUT_BUBBLE_HEADING" desc="First line in the content area of the speech input bubble. Instructs the user that they can start speaking.">

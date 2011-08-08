@@ -170,6 +170,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
  protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
@@ -181,6 +183,11 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+
+  // Returns the portion of the appropriate hostname to display.
+  string16 GetHost(bool new_host) const;
+
+  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };
