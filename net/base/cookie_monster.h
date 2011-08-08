@@ -163,7 +163,7 @@ class NET_API CookieMonster : public CookieStore {
 
   // Helper function that adds all cookies from |cookie_monster| into this
   // instance.
-  bool InitializeFrom(CookieMonster* cookie_monster);
+  bool InitializeFrom(const CookieList& list);
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
