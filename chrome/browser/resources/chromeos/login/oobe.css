@@ -406,14 +406,18 @@ button {
   width: 100%;
 }
 
-#enroll-confirmation-header {
-  font-size: 1.4em;
-  font-weight: bold;
+#enroll-confirmation-screen {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 #enroll-confirmation-content {
   height: 1.5em;
   margin-top: -.75em;
+  position: absolute;
   text-align: center;
   top: 50%;
   width: 100%;
