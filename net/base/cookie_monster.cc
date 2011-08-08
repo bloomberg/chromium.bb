@@ -611,7 +611,9 @@ void CookieMonster::SetCookieWithDetailsAsync(
     callback.Run(success_);
 }
 
-bool CookieMonster::InitializeFrom(const CookieList& list) {
+bool CookieMonster::InitializeFrom(CookieMonster* cookie_monster) {
+  net::CookieList list = cookie_monster->GetAllCookies();
+
   base::AutoLock autolock(lock_);
   InitIfNecessary();
   for (net::CookieList::const_iterator iter = list.begin();
