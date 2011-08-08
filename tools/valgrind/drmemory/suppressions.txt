@@ -465,6 +465,14 @@ UNINITIALIZED READ
 ...
 *!v8*
 
+# http://code.google.com/p/drmemory/issues/detail?id=546
+UNINITIALIZED READ
+...
+mscms.dll!*
+...
+GDI32.dll!*
+*!IconUtil::Create*HICON*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ

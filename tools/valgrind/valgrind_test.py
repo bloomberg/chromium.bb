@@ -712,6 +712,10 @@ class DrMemory(BaseTool):
                       help="Monitor python child processes.  If off, neither "
                       "python children nor any children of python children "
                       "will be monitored.")
+    parser._parser.add_option("", "--indirect", action="store_true",
+                      default=False,
+                      help="set BROWSER_WRAPPER rather than "
+                           "running Dr. Memory directly on the harness")
     parser.add_option("", "--use_debug", action="store_true",
                       default=False, dest="use_debug",
                       help="Run Dr. Memory debug build")
@@ -812,9 +816,16 @@ class DrMemory(BaseTool):
     # Dr.Memory requires -- to separate tool flags from the executable name.
     proc += ["--"]
 
+    if self._options.indirect:
+      self.CreateBrowserWrapper(" ".join(proc))
+      proc = []
+
     # Note that self._args begins with the name of the exe to be run.
     proc += self._args
     return proc
+
+  def CreateBrowserWrapper(self, command):
+    os.putenv("BROWSER_WRAPPER", command)
 
   def Analyze(self, check_sanity=False):
     # Glob all the results files in the "testing.tmp" directory
