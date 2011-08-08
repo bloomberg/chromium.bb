@@ -40,11 +40,8 @@ ResourceType::Type ResourceType::FromTargetType(
       return ResourceType::PRERENDER;
     case WebURLRequest::TargetIsFavicon:
       return ResourceType::FAVICON;
-    // TODO(jochen): remove the #ifdef as soon as WebKit side has landed.
-#if defined(WEBKIT_HAS_TARGET_IS_XHR)
     case WebURLRequest::TargetIsXHR:
       return ResourceType::XHR;
-#endif
     default:
       NOTREACHED();
       return ResourceType::SUB_RESOURCE;
