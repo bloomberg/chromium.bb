@@ -10,7 +10,7 @@
               "host": ["file://*", "http://*.google.com/*", "https://*.google.com/*", "http://*.news.com/*"]
             },
             "state": 1,
-            "newAllowFileAccess": true,
+            "allowFileAccess": true,
             "manifest": {
               "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDuUZGKCDbff6IRaxa4Pue7PPkxwPaNhGT3JEqppEsNWFjM80imEdqMbf3lrWqEfaHgaNku7nlpwPO1mu3/4Hr+XdNa5MhfnOnuPee4hyTLwOs3Vzz81wpbdzUxZSi2OmqMyI5oTaBYICfNHLwcuc65N5dbt6WKGeKgTpp4v7j7zwIDAQAB",
               "version": "1.0.0.0",

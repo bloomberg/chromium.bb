@@ -207,6 +207,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // scripts into pages with file URLs.
   bool AllowFileAccess(const std::string& extension_id);
   void SetAllowFileAccess(const std::string& extension_id, bool allow);
+  bool HasAllowFileAccessSetting(const std::string& extension_id) const;
 
   // Get the launch type preference.  If no preference is set, return
   // |default_pref_value|.

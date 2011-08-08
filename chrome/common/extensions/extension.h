@@ -287,6 +287,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
            location == Extension::COMPONENT;
   }
 
+  // Unpacked extensions start off with file access since they are a developer
+  // feature.
+  static inline bool ShouldAlwaysAllowFileAccess(Location location) {
+    return location == Extension::LOAD;
+  }
+
   // See Type definition above.
   Type GetType() const;
 

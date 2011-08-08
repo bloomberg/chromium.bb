@@ -114,9 +114,9 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     ui_test_utils::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         Source<Profile>(browser()->profile()));
-    CHECK(!service->AllowFileAccess(extension));
+    CHECK(service->AllowFileAccess(extension));
 
-    if (fileaccess_enabled) {
+    if (!fileaccess_enabled) {
       service->SetAllowFileAccess(extension, fileaccess_enabled);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
@@ -131,7 +131,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
 }
 
 const Extension* ExtensionBrowserTest::LoadExtension(const FilePath& path) {
-  return LoadExtensionWithOptions(path, false, false);
+  return LoadExtensionWithOptions(path, false, true);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
