@@ -44,8 +44,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  -webkit-margin-start: 0;
   -webkit-padding-end: 0;
-  -webkit-padding-start: 18px
+  -webkit-padding-start: 22px;
+}
+
+html[dir='rtl'] .recent-menu-item {
+  background: no-repeat 100% 50%;
 }
 
 .recent-window {
