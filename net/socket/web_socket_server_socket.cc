@@ -699,8 +699,8 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     memcpy(challenge, &part1, 4);
     memcpy(challenge + 4, &part2, 4);
     memcpy(challenge + 4 + 4, key3, sizeof(key3));
-    MD5Digest challenge_response;
-    MD5Sum(challenge, sizeof(challenge), &challenge_response);
+    base::MD5Digest challenge_response;
+    base::MD5Sum(challenge, sizeof(challenge), &challenge_response);
 
     // Concocting response handshake.
     class Buffer {

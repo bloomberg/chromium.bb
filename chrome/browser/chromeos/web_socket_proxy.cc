@@ -360,7 +360,7 @@ class Conn {
   std::map<std::string, std::string> header_fields_;
 
   // Cryptohashed answer for websocket handshake.
-  MD5Digest handshake_response_;
+  base::MD5Digest handshake_response_;
 
   // Hostname and port of destination socket.
   // Websocket client supplies them in first data frame (destframe).

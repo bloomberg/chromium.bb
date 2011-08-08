@@ -100,7 +100,7 @@ bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
 
 #if defined(OS_WIN)
 // Calculates image checksum using MD5.
-void GetImageCheckSum(const SkBitmap& image, MD5Digest* digest) {
+void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
   DCHECK(digest);
 
   SkAutoLockPixels image_lock(image);
@@ -112,7 +112,7 @@ bool SaveIconWithCheckSum(const FilePath& icon_file, const SkBitmap& image) {
   if (!IconUtil::CreateIconFileFromSkBitmap(image, icon_file))
     return false;
 
-  MD5Digest digest;
+  base::MD5Digest digest;
   GetImageCheckSum(image, &digest);
 
   FilePath cheksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
@@ -130,18 +130,18 @@ bool ShouldUpdateIcon(const FilePath& icon_file, const SkBitmap& image) {
       !file_util::PathExists(checksum_file))
     return true;
 
-  MD5Digest persisted_image_checksum;
+  base::MD5Digest persisted_image_checksum;
   if (sizeof(persisted_image_checksum) != file_util::ReadFile(checksum_file,
                       reinterpret_cast<char*>(&persisted_image_checksum),
                       sizeof(persisted_image_checksum)))
     return true;
 
-  MD5Digest downloaded_image_checksum;
+  base::MD5Digest downloaded_image_checksum;
   GetImageCheckSum(image, &downloaded_image_checksum);
 
   // Update icon if checksums are not equal.
   return memcmp(&persisted_image_checksum, &downloaded_image_checksum,
-                sizeof(MD5Digest)) != 0;
+                sizeof(base::MD5Digest)) != 0;
 }
 
 #endif  // defined(OS_WIN)
