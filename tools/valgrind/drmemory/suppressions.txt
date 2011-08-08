@@ -821,5 +821,16 @@ LEAK
 *!browser_sync::WeakHandle<browser_sync::JsBackend>::*
 *!sync_api::SyncManager::SyncInternal::Init
 
+# http://crbug.com/92026
+UNINITIALIZED READ
+softokn3.dll!FC_GetFunctionList
+...
+softokn3.dll!NSC_ModuleDBFunc
+
+UNINITIALIZED READ
+freebl3.dll!FREEBL_GetVector
+...
+softokn3.dll!NSC_ModuleDBFunc
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
