@@ -1416,7 +1416,8 @@ void GLES2Implementation::TexSubImage2DImpl(
                                          static_cast<GLsizeiptr>(1));
     while (height) {
       GLint num_rows = std::min(height, max_rows);
-      GLsizeiptr part_size = num_rows * padded_row_size;
+      GLsizeiptr part_size =
+          (num_rows - 1) * padded_row_size + unpadded_row_size;
       void* buffer = transfer_buffer_.Alloc(part_size);
       GLint y;
       if (unpack_flip_y_) {
@@ -1433,7 +1434,7 @@ void GLES2Implementation::TexSubImage2DImpl(
           transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
-      source += part_size;
+      source += num_rows * padded_row_size;
       height -= num_rows;
     }
   } else {
@@ -1805,7 +1806,7 @@ void GLES2Implementation::ReadPixels(
       // Compute how much space those rows will take. The last row will not
       // include padding.
       GLsizeiptr part_size =
-          unpadded_row_size + (padded_row_size * std::max(num_rows - 1, 0));
+          unpadded_row_size + padded_row_size * (num_rows - 1);
       void* buffer = transfer_buffer_.Alloc(part_size);
       *result = 0;  // mark as failed.
       helper_->ReadPixels(

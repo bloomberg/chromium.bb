@@ -308,10 +308,11 @@ class TextureInfoTest : public testing::Test {
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     manager_.CreateTextureInfo(&feature_info_, kClient1Id, kService1Id);
     info_ = manager_.GetTextureInfo(kClient1Id);
-    ASSERT_TRUE(info_ != NULL);
+    ASSERT_TRUE(info_.get() != NULL);
   }
 
   virtual void TearDown() {
+    info_ = NULL;
     ::gfx::GLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
@@ -319,7 +320,7 @@ class TextureInfoTest : public testing::Test {
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   TextureManager manager_;
-  TextureManager::TextureInfo* info_;
+  TextureManager::TextureInfo::Ref info_;
   FeatureInfo feature_info_;
 };
 
