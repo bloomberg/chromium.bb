@@ -229,9 +229,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
-                                                                 bool root);
-  virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
+      bool opaque, bool root) OVERRIDE;
+  virtual void DestroyFakePluginWindowHandle(
+      gfx::PluginWindowHandle window) OVERRIDE;
 
   // Exposed for testing.
   AcceleratedPluginView* ViewForPluginWindowHandle(

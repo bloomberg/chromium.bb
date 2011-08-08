@@ -53,87 +53,75 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual ~TestRenderWidgetHostView();
 
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) {}
-  virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) {}
-  virtual RenderWidgetHost* GetRenderWidgetHost() const;
-  virtual void DidBecomeSelected() {}
-  virtual void WasHidden() {}
-  virtual void SetSize(const gfx::Size& size) {}
-  virtual void SetBounds(const gfx::Rect& rect) {}
-  virtual gfx::NativeView GetNativeView();
+                           const gfx::Rect& pos) OVERRIDE {}
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE {}
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE {}
+  virtual void WasHidden() OVERRIDE {}
+  virtual void SetSize(const gfx::Size& size) OVERRIDE {}
+  virtual void SetBounds(const gfx::Rect& rect) OVERRIDE {}
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) {}
-#if defined(OS_WIN)
-  virtual void ForwardMouseEventToRenderer(UINT message,
-                                           WPARAM wparam,
-                                           LPARAM lparam) {}
-#endif
-  virtual void Focus() {}
-  virtual void Blur() {}
-  virtual bool HasFocus();
-  virtual void AdvanceFocus(bool reverse) {}
-  virtual void Show();
-  virtual void Hide();
-  virtual bool IsShowing();
-  virtual gfx::Rect GetViewBounds() const;
-  virtual void SetIsLoading(bool is_loading) {}
-  virtual void UpdateCursor(const WebCursor& cursor) {}
-  virtual void UpdateCursorIfOverSelf() {}
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
+  virtual void Focus() OVERRIDE {}
+  virtual void Blur() OVERRIDE {}
+  virtual bool HasFocus() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual bool IsShowing() OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void SetIsLoading(bool is_loading) OVERRIDE {}
+  virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE {}
   virtual void ImeUpdateTextInputState(ui::TextInputType state,
                                        bool can_compose_inline,
-                                       const gfx::Rect& caret_rect) {}
-  virtual void ImeCancelComposition() {}
+                                       const gfx::Rect& caret_rect) OVERRIDE {}
+  virtual void ImeCancelComposition() OVERRIDE {}
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
-      const std::vector<gfx::Rect>& rects) {}
+      const std::vector<gfx::Rect>& rects) OVERRIDE {}
   virtual void RenderViewGone(base::TerminationStatus status,
-                              int error_code);
+                              int error_code) OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }
-  virtual void Destroy() {}
-  virtual void PrepareToDestroy() {}
-  virtual void SetTooltipText(const std::wstring& tooltip_text) {}
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size);
+  virtual void Destroy() OVERRIDE {}
+  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE {}
+  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
 #if defined(OS_MACOSX)
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) {}
-  virtual void ShowPopupWithItems(gfx::Rect bounds,
-                                  int item_height,
-                                  double item_font_size,
-                                  int selected_item,
-                                  const std::vector<WebMenuItem>& items,
-                                  bool right_aligned);
-  virtual gfx::Rect GetViewCocoaBounds() const;
-  virtual gfx::Rect GetRootWindowRect();
-  virtual void SetActive(bool active);
-  virtual void SetWindowVisibility(bool visible) {}
-  virtual void WindowFrameChanged() {}
-  virtual void PluginFocusChanged(bool focused, int plugin_id);
-  virtual void StartPluginIme();
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
+  virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowRect() OVERRIDE;
+  virtual void SetActive(bool active) OVERRIDE;
+  virtual void SetWindowVisibility(bool visible) OVERRIDE {}
+  virtual void WindowFrameChanged() OVERRIDE {}
+  virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
+  virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event);
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
       bool opaque,
-      bool root);
-  virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
+      bool root) OVERRIDE;
+  virtual void DestroyFakePluginWindowHandle(
+      gfx::PluginWindowHandle window) OVERRIDE;
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,
                                               int32 height,
-                                              uint64 surface_id);
+                                              uint64 surface_id) OVERRIDE;
   virtual void AcceleratedSurfaceSetTransportDIB(
       gfx::PluginWindowHandle window,
       int32 width,
       int32 height,
-      TransportDIB::Handle transport_dib);
+      TransportDIB::Handle transport_dib) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window,
       uint64 surface_id,
       int renderer_id,
       int32 route_id,
       int gpu_host_id,
-      uint64 swap_buffers_count);
-  virtual void GpuRenderingStateDidChange();
+      uint64 swap_buffers_count) OVERRIDE;
+  virtual void GpuRenderingStateDidChange() OVERRIDE;
 #elif defined(OS_WIN)
-  virtual void WillWmDestroy();
-  virtual void ShowCompositorHostWindow(bool show);
+  virtual void WillWmDestroy() OVERRIDE;
+  virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
 
@@ -150,7 +138,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AcceleratedCompositingActivated(bool activated) { }
 #endif
 
-  virtual gfx::PluginWindowHandle GetCompositingSurface();
+  virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
   bool is_showing() const { return is_showing_; }
 
