@@ -68,7 +68,7 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   printing::Metafile* initial_render_metafile =
       print_preview_context_.metafile();
-  scoped_ptr<printing::Metafile> draft_metafile;
+  scoped_ptr<printing::PreviewMetafile> draft_metafile;
 #if !defined(USE_SKIA)
   if (print_preview_context_.IsModifiable()) {
     draft_metafile.reset(new printing::PreviewMetafile);
@@ -95,16 +95,26 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
     draft_metafile->FinishDocument();
 
     // With CG, we rendered into a new metafile so we could get it as a draft
-    // document.  Now we need to add it to complete document.
+    // document.  Now we need to add it to complete document.  But the document
+    // has already been scaled and adjusted for margins, so do a 1:1 drawing.
+    printing::Metafile* complete_metafile = print_preview_context_.metafile();
+    bool success = complete_metafile->StartPage(
+        printParams.page_size, gfx::Rect(printParams.page_size), 1.0);
+    DCHECK(success);
+    // StartPage unconditionally flips the content over, flip it back since it
+    // was already flipped in |draft_metafile|.
+    CGContextTranslateCTM(complete_metafile->context(), 0,
+                          printParams.page_size.height());
+    CGContextScaleCTM(complete_metafile->context(), 1.0, -1.0);
+
     draft_metafile->RenderPage(1,
-                               print_preview_context_.metafile()->context(),
-                               CGRectMake(content_area.x(), content_area.y(),
-                                          content_area.width(),
-                                          content_area.height()),
-                               false /*shrunk_to_fit*/,
-                               false /*stretch_to_fit*/,
-                               true /*center_horizontally*/,
-                               true /*center_vertically*/);
+                               complete_metafile->context(),
+                               draft_metafile->GetPageBounds(1).ToCGRect(),
+                               false /* shrink_to_fit */,
+                               false /* stretch_to_fit */,
+                               true  /* center_horizontally */,
+                               true  /* center_vertically */);
+    complete_metafile->FinishPage();
 #endif
   }
 
