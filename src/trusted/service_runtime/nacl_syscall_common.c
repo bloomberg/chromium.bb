@@ -397,7 +397,6 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   nap = natp->nap;
-  NaClSyncQueueQuit(&nap->work_queue);
 
   NaClXMutexLock(&nap->mu);
   nap->exit_status = status;

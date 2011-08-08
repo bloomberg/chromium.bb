@@ -193,12 +193,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
     NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
   }
 
-  if (!NaClSyncQueueCtor(&nap->work_queue)) {
-    goto cleanup_cv;
-  }
-
   if (!NaClMutexCtor(&nap->threads_mu)) {
-    goto cleanup_work_queue;
+    goto cleanup_name_service;
   }
   if (!NaClCondVarCtor(&nap->threads_cv)) {
     goto cleanup_threads_mu;
@@ -229,8 +225,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   NaClCondVarDtor(&nap->threads_cv);
  cleanup_threads_mu:
   NaClMutexDtor(&nap->threads_mu);
- cleanup_work_queue:
-  NaClSyncQueueDtor(&nap->work_queue);
  cleanup_name_service:
   NaClDescUnref(nap->name_service_conn_cap);
   NaClRefCountUnref((struct NaClRefCount *) nap->name_service);

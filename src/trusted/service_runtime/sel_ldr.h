@@ -289,8 +289,6 @@ struct NaClApp {
   int                       ignore_validator_result;
   int                       skip_validator;
   int                       validator_stub_out_mode;
-  /* all threads enqueue the "special" syscalls to the work queue */
-  struct NaClSyncQueue      work_queue;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uint16_t                  code_seg_sel;

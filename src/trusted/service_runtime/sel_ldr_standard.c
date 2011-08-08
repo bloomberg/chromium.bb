@@ -836,19 +836,7 @@ cleanup:
 }
 
 int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
-  struct NaClClosure        *work;
-
-  while (NULL != (work = NaClSyncQueueDequeue(&nap->work_queue))) {
-    NaClLog(3, "NaClWaitForMainThreadToExit: got work %08"NACL_PRIxPTR"\n",
-            (uintptr_t) work);
-    NaClLog(3, " invoking Run fn %08"NACL_PRIxPTR"\n",
-            (uintptr_t) work->vtbl->Run);
-
-    (*work->vtbl->Run)(work);
-    NaClLog(3, "... done\n");
-  }
-
-  NaClLog(3, " taking NaClApp lock\n");
+  NaClLog(3, "NaClWaitForMainThreadToExit: taking NaClApp lock\n");
   NaClXMutexLock(&nap->mu);
   NaClLog(3, " waiting for exit status\n");
   while (nap->running) {
