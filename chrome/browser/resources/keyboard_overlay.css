@@ -27,7 +27,8 @@ body {
 
 .keyboard-overlay-instructions-text {
   -webkit-box-flex: 3;
-  margin-top: 13px;
+  margin: 13px auto 0;
+  max-width: 20em;
   text-align: center;
   vertical-align: middle;
 }
