@@ -446,9 +446,9 @@ class RenderViewHost : public RenderWidgetHost {
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnAddMessageToConsole(int32 level,
-                             const std::wstring& message,
+                             const string16& message,
                              int32 line_no,
-                             const std::wstring& source_id);
+                             const string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);

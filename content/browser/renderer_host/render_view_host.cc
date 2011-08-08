@@ -1083,9 +1083,9 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
 }
 
 void RenderViewHost::OnAddMessageToConsole(int32 level,
-                                           const std::wstring& message,
+                                           const string16& message,
                                            int32 line_no,
-                                           const std::wstring& source_id) {
+                                           const string16& source_id) {
   // Pass through log level only on WebUI pages to limit console spew.
   int32 resolved_level =
       BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ? level : 0;

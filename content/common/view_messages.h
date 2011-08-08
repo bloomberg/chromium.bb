@@ -1758,9 +1758,9 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 // or debugger UI.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
                     int32, /* log level */
-                    std::wstring, /* msg */
+                    string16, /* msg */
                     int32, /* line number */
-                    std::wstring /* source id */)
+                    string16 /* source id */)
 
 // Sent by the renderer process to indicate that a plugin instance has
 // crashed.

@@ -1432,9 +1432,9 @@ void RenderView::didAddMessageToConsole(
 
   Send(new ViewHostMsg_AddMessageToConsole(routing_id_,
                                            static_cast<int32>(log_severity),
-                                           UTF16ToWideHack(message.text),
+                                           message.text,
                                            static_cast<int32>(source_line),
-                                           UTF16ToWideHack(source_name)));
+                                           source_name));
 }
 
 void RenderView::printPage(WebFrame* frame) {
