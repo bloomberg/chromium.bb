@@ -2667,27 +2667,6 @@
     "nodoc": true,
     "types": [
       {
-        "id": "MenuItem",
-        "type": "object",
-        "description": "A menu item used by an input method to interact with the user from the language menu.",
-        "properties": {
-          "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
-          "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
-          "style": {
-            "type": "string",
-            "optional": true,
-            "description": "Enum representing if this item is: none, check, radio, or a separator.  Radio buttons between separators are considered grouped.",
-            "enum": ["none", "check", "radio", "separator"]
-          },
-          "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
-          "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
-          "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."},
-          "icon": {"type": "string", "optional": true, "description": "Name of the icon to use.  Must be bundled in the extension.  Data urls are also acceptable."},
-          "shortcutKey": {"type": "Keystroke", "optional": true, "description": "Used to create a shortcut key label.  The IME should handle the shortcut key itself, however."},
-          "children": {"type": "array", "items": { "type": "MenuItem" }, "optional": true, "description": "Menu items which will appear as children of this item."}
-        }
-      },
-      {
         "id": "KeyboardEvent",
         "type": "object",
         "description": "See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent",
@@ -2701,35 +2680,11 @@
         }
       },
       {
-        "id": "Keystroke",
-        "type": "object",
-        "description": "See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent",
-        "properties": {
-          "key": {"type": "string", "description": "Value of the key being pressed"},
-          "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
-          "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
-          "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
-          "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
-        }
-      },
-      {
-        "id": "Candidate",
-        "type": "object",
-        "description": "An item in the candidate window",
-        "properties": {
-          "candidate": {"type": "string", "description": "The candidate"},
-          "id": {"type": "integer", "description": "The candidate"},
-          "label": {"type": "string", "optional": true, "description": "Short string displayed to next to the candidate, often the shortcut key or index"},
-          "annotation": {"type": "string", "optional": true, "description": "Additional text describing the candidate"},
-          "subCandidates": {"type": "array", "items": { "type": "Candidate" }, "optional": true, "description": "Candidates that appear in a cascaded menu from this candidate."}
-        }
-      },
-      {
         "id": "InputContext",
         "type": "object",
         "description": "Describes an input Context",
         "properties": {
-          "textID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
+          "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
           "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, Password, etc)", "enum": ["text", "number", "password"]}
         }
       }
@@ -3012,7 +2967,16 @@
               "candidates": {
                 "description": "List of candidates to show in the candidate window",
                 "type": "array",
-                "items": { "type": "Candidate" }
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "candidate": {"type": "string", "description": "The candidate"},
+                    "id": {"type": "integer", "description": "The candidate's id"},
+                    "parentId": {"type": "integer", "optional": true, "description": "The id to add these candidates under"},
+                    "label": {"type": "string", "optional": true, "description": "Short string displayed to next to the candidate, often the shortcut key or index"},
+                    "annotation": {"type": "string", "optional": true, "description": "Additional text describing the candidate"}
+                  }
+                }
               }
             }
           },
@@ -3071,10 +3035,44 @@
                 "description": "ID of the engine to use",
                 "type": "string"
               },
+              "parentId": {
+                "description": "ID of the parent menu item",
+                "optional": true,
+                "type": "string"
+              },
               "items": {
                 "description": "MenuItems to add. They will be added in the order they exist in the array.",
                 "type": "array",
-                "items": { "type": "MenuItem" }
+                "items": {
+                  "type": "object",
+                  "description": "A menu item used by an input method to interact with the user from the language menu.",
+                  "properties": {
+                    "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
+                    "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
+                    "style": {
+                      "type": "string",
+                      "optional": true,
+                      "description": "Enum representing if this item is: none, check, radio, or a separator.  Radio buttons between separators are considered grouped.",
+                      "enum": ["none", "check", "radio", "separator"]
+                    },
+                    "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
+                    "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
+                    "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."},
+                    "icon": {"type": "string", "optional": true, "description": "Name of the icon to use.  Must be bundled in the extension.  Data urls are also acceptable."},
+                    "shortcutKey": {
+                      "type": "object",
+                      "optional": true,
+                      "description": "Used to create a shortcut key label.  The IME should handle the shortcut key itself, however.",
+                      "properties": {
+                        "key": {"type": "string", "description": "Value of the key being pressed"},
+                        "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
+                        "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
+                        "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
+                        "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
+                      }
+                    }
+                  }
+                }
               }
             }
           },
@@ -3103,7 +3101,36 @@
               "items": {
                 "description": "Array of MenuItems to update",
                 "type": "array",
-                "items": { "type": "MenuItem" }
+                "items": {
+                  "type": "object",
+                  "description": "A menu item used by an input method to interact with the user from the language menu.",
+                  "properties": {
+                    "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
+                    "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
+                    "style": {
+                      "type": "string",
+                      "optional": true,
+                      "description": "Enum representing if this item is: none, check, radio, or a separator.  Radio buttons between separators are considered grouped.",
+                      "enum": ["none", "check", "radio", "separator"]
+                    },
+                    "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
+                    "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
+                    "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."},
+                    "icon": {"type": "string", "optional": true, "description": "Name of the icon to use.  Must be bundled in the extension.  Data urls are also acceptable."},
+                    "shortcutKey": {
+                      "type": "object",
+                      "optional": true,
+                      "description": "Used to create a shortcut key label.  The IME should handle the shortcut key itself, however.",
+                      "properties": {
+                        "key": {"type": "string", "description": "Value of the key being pressed"},
+                        "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
+                        "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
+                        "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
+                        "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
+                      }
+                    }
+                  }
+                }
               }
             }
           },
