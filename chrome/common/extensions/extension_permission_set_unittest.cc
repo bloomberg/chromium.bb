@@ -872,6 +872,21 @@ TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay) {
         empty_perms, explicit_hosts, scriptable_hosts);
     EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
   }
+
+  {
+    // We don't display warnings for file URLs because they are off by default.
+    SCOPED_TRACE("file urls");
+    explicit_hosts.ClearPatterns();
+    scriptable_hosts.ClearPatterns();
+    expected.clear();
+
+    explicit_hosts.AddPattern(
+        URLPattern(URLPattern::SCHEME_FILE, "file:///*"));
+
+    perm_set = new ExtensionPermissionSet(
+        empty_perms, explicit_hosts, scriptable_hosts);
+    EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
+  }
 }
 
 TEST(ExtensionPermissionSetTest, GetDistinctHostsForDisplay_ComIsBestRcd) {

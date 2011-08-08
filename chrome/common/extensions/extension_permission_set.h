@@ -380,7 +380,9 @@ class ExtensionPermissionSet
   friend class base::RefCountedThreadSafe<ExtensionPermissionSet>;
 
   static std::set<std::string> GetDistinctHosts(
-      const URLPatternSet& host_patterns, bool include_rcd);
+      const URLPatternSet& host_patterns,
+      bool include_rcd,
+      bool exclude_file_scheme);
 
   // Initializes the set based on |extension|'s manifest data.
   void InitImplicitExtensionPermissions(const Extension* extension);

@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
+#include "content/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -517,7 +518,7 @@ std::set<std::string> ExtensionPermissionSet::GetAPIsAsStrings() const {
 
 std::set<std::string>
     ExtensionPermissionSet::GetDistinctHostsForDisplay() const {
-  return GetDistinctHosts(effective_hosts_, true);
+  return GetDistinctHosts(effective_hosts_, true, true);
 }
 
 ExtensionPermissionMessages
@@ -687,7 +688,9 @@ bool ExtensionPermissionSet::HasLessPrivilegesThan(
 
 // static
 std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
-    const URLPatternSet& host_patterns, bool include_rcd) {
+    const URLPatternSet& host_patterns,
+    bool include_rcd,
+    bool exclude_file_scheme) {
   // Use a vector to preserve order (also faster than a map on small sets).
   // Each item is a host split into two parts: host without RCDs and
   // current best RCD.
@@ -695,6 +698,9 @@ std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
   HostVector hosts_best_rcd;
   for (URLPatternSet::const_iterator i = host_patterns.begin();
        i != host_patterns.end(); ++i) {
+    if (exclude_file_scheme && i->scheme() == chrome::kFileScheme)
+      continue;
+
     std::string host = i->host();
 
     // Add the subdomain wildcard back to the host, if necessary.
@@ -824,8 +830,8 @@ bool ExtensionPermissionSet::HasLessHostPrivilegesThan(
   // TODO(jstritar): This is overly conservative with respect to subdomains.
   // For example, going from *.google.com to www.google.com will be
   // considered an elevation, even though it is not (http://crbug.com/65337).
-  std::set<std::string> new_hosts_set = GetDistinctHosts(new_list, false);
-  std::set<std::string> old_hosts_set = GetDistinctHosts(old_list, false);
+  std::set<std::string> new_hosts_set(GetDistinctHosts(new_list, false, false));
+  std::set<std::string> old_hosts_set(GetDistinctHosts(old_list, false, false));
   std::set<std::string> new_hosts_only;
 
   std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
