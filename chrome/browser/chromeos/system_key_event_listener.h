@@ -76,6 +76,10 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   void OnVolumeUp();
   void OnCapsLock(bool enabled);
 
+  // Displays the volume bubble for the current volume and muting status.
+  // Also hides the brightness bubble if it's being shown.
+  void ShowVolumeBubble();
+
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
 

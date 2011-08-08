@@ -74,12 +74,12 @@ static views::Widget* GetToplevelWidget() {
 
 SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
                                        SkBitmap* decrease_icon,
-                                       SkBitmap* zero_icon)
+                                       SkBitmap* disabled_icon)
     : previous_percent_(-1),
       current_percent_(-1),
       increase_icon_(increase_icon),
       decrease_icon_(decrease_icon),
-      zero_icon_(zero_icon),
+      disabled_icon_(disabled_icon),
       bubble_(NULL),
       view_(NULL),
       animation_(this) {
@@ -89,15 +89,15 @@ SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
 
 SettingLevelBubble::~SettingLevelBubble() {}
 
-void SettingLevelBubble::ShowBubble(int percent) {
+void SettingLevelBubble::ShowBubble(int percent, bool enabled) {
   percent = LimitPercent(percent);
   if (previous_percent_ == -1)
     previous_percent_ = percent;
   current_percent_ = percent;
 
   SkBitmap* icon = increase_icon_;
-  if (current_percent_ == 0)
-    icon = zero_icon_;
+  if (!enabled || current_percent_ == 0)
+    icon = disabled_icon_;
   else if (current_percent_ < previous_percent_)
     icon = decrease_icon_;
 
@@ -109,7 +109,7 @@ void SettingLevelBubble::ShowBubble(int percent) {
     }
     DCHECK(view_ == NULL);
     view_ = new SettingLevelBubbleView;
-    view_->Init(icon, previous_percent_);
+    view_->Init(icon, previous_percent_, enabled);
 
     // Calculate the position in screen coordinates that the bubble should
     // "point" at (since we use BubbleBorder::FLOAT, this position actually
@@ -135,10 +135,14 @@ void SettingLevelBubble::ShowBubble(int percent) {
     timeout_timer_.Stop();
     view_->SetIcon(icon);
   }
+
+  view_->SetEnabled(enabled);
+
   if (animation_.is_animating())
     animation_.End();
   animation_.Reset();
   animation_.Show();
+
   timeout_timer_.Start(base::TimeDelta::FromSeconds(kBubbleShowTimeoutSec),
                        this, &SettingLevelBubble::OnTimeout);
 }
@@ -148,7 +152,10 @@ void SettingLevelBubble::HideBubble() {
     bubble_->Close();
 }
 
-void SettingLevelBubble::UpdateWithoutShowingBubble(int percent) {
+void SettingLevelBubble::UpdateWithoutShowingBubble(int percent, bool enabled) {
+  if (view_)
+    view_->SetEnabled(enabled);
+
   percent = LimitPercent(percent);
 
   previous_percent_ =
@@ -191,7 +198,7 @@ void SettingLevelBubble::AnimationEnded(const ui::Animation* animation) {
 
 void SettingLevelBubble::AnimationProgressed(const ui::Animation* animation) {
   if (view_) {
-    view_->Update(
+    view_->SetLevel(
         ui::Tween::ValueBetween(animation->GetCurrentValue(),
                                 previous_percent_,
                                 current_percent_));

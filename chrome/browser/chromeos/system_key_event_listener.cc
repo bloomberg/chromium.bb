@@ -26,6 +26,11 @@ namespace {
 // Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
+// Percent to which the volume should be set when the "volume up" key is pressed
+// while we're muted and have the volume set to 0.  See
+// http://crosbug.com/13618.
+const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
+
 }  // namespace
 
 // static
@@ -169,41 +174,44 @@ void SystemKeyEventListener::OnVolumeMute() {
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
   audio_handler_->SetMuted(true);
-  VolumeBubble::GetInstance()->ShowBubble(0);
-  BrightnessBubble::GetInstance()->HideBubble();
+  ShowVolumeBubble();
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
   if (!audio_handler_->IsInitialized())
     return;
 
-  if (audio_handler_->IsMuted()) {
-    VolumeBubble::GetInstance()->ShowBubble(0);
-  } else {
+  if (audio_handler_->IsMuted())
+    audio_handler_->SetVolumePercent(0.0);
+  else
     audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
-    VolumeBubble::GetInstance()->ShowBubble(
-        audio_handler_->GetVolumePercent());
-  }
-  BrightnessBubble::GetInstance()->HideBubble();
+  ShowVolumeBubble();
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
   if (!audio_handler_->IsInitialized())
     return;
 
-  if (audio_handler_->IsMuted())
+  if (audio_handler_->IsMuted()) {
     audio_handler_->SetMuted(false);
-  else
+    if (audio_handler_->GetVolumePercent() <= 0.1)  // float comparison
+      audio_handler_->SetVolumePercent(kVolumePercentOnVolumeUpWhileMuted);
+  } else {
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
-
-  VolumeBubble::GetInstance()->ShowBubble(
-      audio_handler_->GetVolumePercent());
-  BrightnessBubble::GetInstance()->HideBubble();
+  }
+  ShowVolumeBubble();
 }
 
 void SystemKeyEventListener::OnCapsLock(bool enabled) {
   FOR_EACH_OBSERVER(
       CapsLockObserver, caps_lock_observers_, OnCapsLockChange(enabled));
+}
+
+void SystemKeyEventListener::ShowVolumeBubble() {
+  VolumeBubble::GetInstance()->ShowBubble(
+      audio_handler_->GetVolumePercent(),
+      !audio_handler_->IsMuted());
+  BrightnessBubble::GetInstance()->HideBubble();
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {

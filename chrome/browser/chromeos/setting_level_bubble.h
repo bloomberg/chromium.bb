@@ -23,7 +23,7 @@ class SettingLevelBubbleView;
 class SettingLevelBubble : public BubbleDelegate,
                            public ui::AnimationDelegate {
  public:
-  void ShowBubble(int percent);
+  void ShowBubble(int percent, bool enabled);
   void HideBubble();
 
   // Update the bubble's current level without showing the bubble onscreen.
@@ -41,7 +41,7 @@ class SettingLevelBubble : public BubbleDelegate,
   // If we didn't update our internal state to 25% after 2), then the animation
   // displayed in response to 3) would show the bubble animating from 50% down
   // to 30%, rather than from 25% up to 30%.
-  void UpdateWithoutShowingBubble(int percent);
+  void UpdateWithoutShowingBubble(int percent, bool enabled);
 
  protected:
   SettingLevelBubble(SkBitmap* increase_icon,
@@ -53,23 +53,23 @@ class SettingLevelBubble : public BubbleDelegate,
   void OnTimeout();
 
   // Overridden from BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
 
   // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Previous and current percentages, or -1 if not yet shown.
   int previous_percent_;
   int current_percent_;
 
   // Icons displayed in the bubble when increasing or decreasing the level or
-  // setting it to zero.  Not owned by us.
+  // when it's disabled.  Not owned by us.
   SkBitmap* increase_icon_;
   SkBitmap* decrease_icon_;
-  SkBitmap* zero_icon_;
+  SkBitmap* disabled_icon_;
 
   // Currently shown bubble or NULL.
   Bubble* bubble_;
