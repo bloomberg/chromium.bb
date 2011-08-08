@@ -543,7 +543,7 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     if self.IsWin():
-      download_default_dir = os.path.join(os.getenv('USERPROFILE'),'Downloads')
+      download_default_dir = self.GetDownloadDirectory().value()
       self.assertEqual(download_default_dir,
         self.GetPrefsInfo().Prefs()['download']['default_directory'],
         msg='Downloads directory is not set correctly.')
