@@ -29,8 +29,8 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
   AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
 #if defined(GOOGLE_CHROME_BUILD)
-  AddString("noPlugin", l10n_util::GetStringFUTF8(
-      IDS_PRINT_PREVIEW_NO_PLUGIN, ASCIIToUTF16("chrome://plugins/"));
+  AddString("noPlugin", l10n_util::GetStringFUTF16(
+      IDS_PRINT_PREVIEW_NO_PLUGIN, ASCIIToUTF16("chrome://plugins/")));
 #else
   AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
 #endif
