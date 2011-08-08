@@ -89,8 +89,8 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (print_preview_context_.IsModifiable()) {
 #if defined(USE_SKIA)
     DCHECK(!draft_metafile.get());
-    draft_metafile.reset(reinterpret_cast<printing::PreviewMetafile*>(
-        print_preview_context_.metafile())->GetMetafileForCurrentPage());
+    draft_metafile.reset(
+        print_preview_context_.metafile()->GetMetafileForCurrentPage());
 #else
     draft_metafile->FinishDocument();
 

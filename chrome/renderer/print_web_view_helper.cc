@@ -398,7 +398,7 @@ bool PrintWebViewHelper::FinalizePreviewDocument() {
   print_preview_context_.FinalizePreviewDocument();
 
   // Get the size of the resulting metafile.
-  printing::Metafile* metafile = print_preview_context_.metafile();
+  printing::PreviewMetafile* metafile = print_preview_context_.metafile();
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
@@ -1110,7 +1110,8 @@ int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
   return total_page_count_;
 }
 
-printing::Metafile* PrintWebViewHelper::PrintPreviewContext::metafile() const {
+printing::PreviewMetafile*
+PrintWebViewHelper::PrintPreviewContext::metafile() const {
   return metafile_.get();
 }
 

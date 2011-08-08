@@ -15,6 +15,7 @@
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_observer_tracker.h"
 #include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -347,7 +348,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     WebKit::WebFrame* frame() const;
     WebKit::WebNode* node() const;
     int total_page_count() const;
-    printing::Metafile* metafile() const;
+    printing::PreviewMetafile* metafile() const;
     const PrintMsg_Print_Params& print_params() const;
     const gfx::Size& GetPrintCanvasSize() const;
 
@@ -367,7 +368,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     scoped_ptr<WebKit::WebNode> node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
-    scoped_ptr<printing::Metafile> metafile_;
+    scoped_ptr<printing::PreviewMetafile> metafile_;
     scoped_ptr<PrintMsg_Print_Params> print_params_;
 
     // Total page count in the renderer.
