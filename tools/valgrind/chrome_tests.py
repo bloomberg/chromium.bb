@@ -222,6 +222,9 @@ class ChromeTests:
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
+  def TestGPU(self):
+    return self.SimpleTest("gpu", "gpu_unittests")
+
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
 
@@ -440,6 +443,7 @@ class ChromeTests:
     "sql": TestSql,              "sql_unittests": TestSql,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "gfx": TestGfx,              "gfx_unittests": TestGfx,
+    "gpu": TestGPU,              "gpu_unittests": TestGPU,
     "views": TestViews,          "views_unittests": TestViews,
   }
 
