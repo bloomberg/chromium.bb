@@ -209,7 +209,7 @@ OmniboxViewGtk::OmniboxViewGtk(
 #else
       new OmniboxPopupViewGtk
 #endif
-          (GetFont(), this, model_.get(), profile, location_bar));
+          (GetFont(), this, model_.get(), location_bar));
 }
 
 OmniboxViewGtk::~OmniboxViewGtk() {

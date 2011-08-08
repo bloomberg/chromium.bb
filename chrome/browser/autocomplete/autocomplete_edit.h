@@ -119,9 +119,6 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   AutocompleteEditController* controller() const { return controller_; }
 
-  // Invoked when the profile has changed.
-  void SetProfile(Profile* profile);
-
   Profile* profile() const { return profile_; }
 
   // Returns the current state.  This assumes we are switching tabs, and changes

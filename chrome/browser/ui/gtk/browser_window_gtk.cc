@@ -1302,10 +1302,8 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 
   TabContentsWrapper* tab = GetDisplayedTab();
 
-  if (tab) {
-    bookmark_bar_->SetProfile(tab->profile());
+  if (tab)
     bookmark_bar_->SetPageNavigator(browser_.get());
-  }
 
   BookmarkBar::State state = browser_->bookmark_bar_state();
   if (contents_container_->HasPreview() && state == BookmarkBar::DETACHED)
@@ -1684,7 +1682,7 @@ void BrowserWindowGtk::InitWidgets() {
                      0);
 
   toolbar_.reset(new BrowserToolbarGtk(browser_.get(), this));
-  toolbar_->Init(browser_->profile(), window_);
+  toolbar_->Init(window_);
   gtk_box_pack_start(GTK_BOX(window_vbox_), toolbar_->widget(),
                      FALSE, FALSE, 0);
   g_signal_connect_after(toolbar_->widget(), "expose-event",
@@ -1750,7 +1748,6 @@ void BrowserWindowGtk::InitWidgets() {
 
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(this,
-                                           browser_->profile(),
                                            browser_.get(),
                                            tabstrip_.get()));
     PlaceBookmarkBar(false);

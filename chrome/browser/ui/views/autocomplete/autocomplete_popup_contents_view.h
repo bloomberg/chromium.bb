@@ -36,7 +36,6 @@ class AutocompletePopupContentsView : public views::View,
   AutocompletePopupContentsView(const gfx::Font& font,
                                 OmniboxView* omnibox_view,
                                 AutocompleteEditModel* edit_model,
-                                Profile* profile,
                                 views::View* location_bar);
   virtual ~AutocompletePopupContentsView();
 
@@ -142,6 +141,8 @@ class AutocompletePopupContentsView : public views::View,
 
   // The edit view that invokes us.
   OmniboxView* omnibox_view_;
+
+  Profile* profile_;
 
   // An object that the popup positions itself against.
   views::View* location_bar_;

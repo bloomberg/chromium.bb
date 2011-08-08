@@ -359,11 +359,6 @@ class AutocompleteProvider
                        Profile* profile,
                        const char* name);
 
-  // Invoked when the profile changes.
-  // NOTE: Do not access any previous Profile* at this point as it may have
-  // already been deleted.
-  void SetProfile(Profile* profile);
-
   // Called to start an autocomplete query.  The provider is responsible for
   // tracking its matches for this query and whether it is done processing the
   // query.  When new matches are available or the provider finishes, it
@@ -610,10 +605,6 @@ class AutocompleteController : public ACProviderListener {
   }
 #endif
   ~AutocompleteController();
-
-  // Invoked when the profile changes. This forwards the call down to all
-  // the AutocompleteProviders.
-  void SetProfile(Profile* profile);
 
   // Starts an autocomplete query, which continues until all providers are
   // done or the query is Stop()ed.  It is safe to Start() a new query without

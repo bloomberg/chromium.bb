@@ -45,8 +45,6 @@ class KeywordHintView : public views::View {
   virtual gfx::Size GetMinimumSize();
   virtual void Layout();
 
-  void set_profile(Profile* profile) { profile_ = profile; }
-
  private:
   views::Label* leading_label_;
   views::Label* trailing_label_;

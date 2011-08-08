@@ -29,7 +29,6 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
 class LocationBarView;
-class Profile;
 class TabContents;
 
 namespace views {
@@ -66,7 +65,6 @@ class OmniboxViewWin
                  ToolbarModel* toolbar_model,
                  LocationBarView* parent_view,
                  HWND hwnd,
-                 Profile* profile,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
                  views::View* location_bar);

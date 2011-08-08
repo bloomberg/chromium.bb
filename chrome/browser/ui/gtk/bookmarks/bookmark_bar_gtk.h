@@ -37,7 +37,6 @@ class CustomContainerButton;
 class GtkThemeService;
 class MenuGtk;
 class PageNavigator;
-class Profile;
 class TabstripOriginProvider;
 
 class BookmarkBarGtk : public ui::AnimationDelegate,
@@ -52,17 +51,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   static const int kBookmarkBarNTPHeight;
 
   BookmarkBarGtk(BrowserWindowGtk* window,
-                 Profile* profile,
                  Browser* browser,
                  TabstripOriginProvider* tabstrip_origin_provider);
   virtual ~BookmarkBarGtk();
-
-  // Resets the profile. This removes any buttons for the current profile and
-  // recreates the models.
-  void SetProfile(Profile* profile);
-
-  // Returns the current profile.
-  Profile* GetProfile() { return profile_; }
 
   // Returns the current browser.
   Browser* browser() const { return browser_; }
@@ -75,7 +66,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   void SetPageNavigator(PageNavigator* navigator);
 
   // Create the contents of the bookmark bar.
-  void Init(Profile* profile);
+  void Init();
 
   // Changes the state of the bookmark bar.
   void SetBookmarkBarState(BookmarkBar::State state,
@@ -134,8 +125,14 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // bookmarks in it.
   void UpdateOtherBookmarksVisibility();
 
-  // Helper function which destroys all the bookmark buttons in the GtkToolbar.
-  void RemoveAllBookmarkButtons();
+  // Destroys all the bookmark buttons in the GtkToolbar.
+  void RemoveAllButtons();
+
+  // Adds the "other bookmarks" and overflow buttons.
+  void AddCoreButtons();
+
+  // Removes and recreates all buttons in the bar.
+  void ResetButtons();
 
   // Returns the number of buttons corresponding to starred urls/folders. This
   // is equivalent to the number of children the bookmark bar node from the
@@ -301,8 +298,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Updates the drag&drop state when |edit_bookmarks_enabled_| changes.
   void OnEditBookmarksEnabledChanged();
-
-  Profile* profile_;
 
   // Used for opening urls.
   PageNavigator* page_navigator_;

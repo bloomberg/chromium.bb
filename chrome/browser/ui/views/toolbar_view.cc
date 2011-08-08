@@ -87,7 +87,6 @@ ToolbarView::ToolbarView(Browser* browser)
       location_bar_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
-      profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL) {
   set_id(VIEW_ID_TOOLBAR);
@@ -117,7 +116,7 @@ ToolbarView::~ToolbarView() {
   // already gone.
 }
 
-void ToolbarView::Init(Profile* profile) {
+void ToolbarView::Init() {
   back_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
@@ -144,8 +143,8 @@ void ToolbarView::Init(Profile* profile) {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
-  location_bar_ = new LocationBarView(profile, browser_,
-      model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
+  location_bar_ = new LocationBarView(browser_, model_, this,
+      (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
 
   reload_ = new ReloadButton(location_bar_, browser_);
@@ -197,10 +196,9 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(app_menu_);
 
   location_bar_->Init();
-  show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
+  show_home_button_.Init(prefs::kShowHomeButton,
+                         browser_->profile()->GetPrefs(), this);
   browser_actions_->Init();
-
-  SetProfile(profile);
 
   // Accessibility specific tooltip text.
   if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
@@ -208,13 +206,6 @@ void ToolbarView::Init(Profile* profile) {
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK)));
     forward_->SetTooltipText(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD)));
-  }
-}
-
-void ToolbarView::SetProfile(Profile* profile) {
-  if (profile != profile_) {
-    profile_ = profile;
-    location_bar_->SetProfile(profile);
   }
 }
 

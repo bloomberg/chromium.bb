@@ -16,7 +16,6 @@
 class ContentSettingImageModel;
 class Bubble;
 class LocationBarView;
-class Profile;
 class TabContents;
 
 namespace views {
@@ -28,11 +27,9 @@ class ContentSettingImageView : public views::ImageView,
                                 public ui::LinearAnimation {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
-                          LocationBarView* parent,
-                          Profile* profile);
+                          LocationBarView* parent);
   virtual ~ContentSettingImageView();
 
-  void set_profile(Profile* profile) { profile_ = profile; }
   // |new_navigation| true if this is a new navigation, false if the tab was
   // just switched to.
   void UpdateFromTabContents(TabContents* tab_contents);
@@ -60,9 +57,6 @@ class ContentSettingImageView : public views::ImageView,
 
   // The owning LocationBarView.
   LocationBarView* parent_;
-
-  // The currently active profile.
-  Profile* profile_;
 
   // The currently shown info bubble if any.
   Bubble* bubble_;

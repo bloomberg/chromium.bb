@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
@@ -57,9 +56,8 @@ TouchAutocompletePopupContentsView::TouchAutocompletePopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
-    Profile* profile,
     views::View* location_bar)
-    : AutocompletePopupContentsView(font, omnibox_view, edit_model, profile,
+    : AutocompletePopupContentsView(font, omnibox_view, edit_model,
                                     location_bar) {
 }
 

@@ -270,14 +270,13 @@ void OmniboxPopupViewGtk::SetupLayoutForMatch(
 OmniboxPopupViewGtk::OmniboxPopupViewGtk(const gfx::Font& font,
                                          OmniboxView* omnibox_view,
                                          AutocompleteEditModel* edit_model,
-                                         Profile* profile,
                                          GtkWidget* location_bar)
-    : model_(new AutocompletePopupModel(this, edit_model, profile)),
+    : model_(new AutocompletePopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_(location_bar),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
-      theme_service_(GtkThemeService::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(edit_model->profile())),
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       opened_(false) {

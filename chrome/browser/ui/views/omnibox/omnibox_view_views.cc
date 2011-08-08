@@ -12,8 +12,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
-#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -31,6 +29,12 @@
 #include "views/border.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/fill_layout.h"
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
+#else
+#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
+#endif
 
 namespace {
 
@@ -696,6 +700,6 @@ AutocompletePopupView* OmniboxViewViews::CreatePopupView(
 #else
   typedef AutocompletePopupContentsView AutocompleteContentsView;
 #endif
-  return new AutocompleteContentsView(
-      gfx::Font(), this, model_.get(), profile, location_bar);
+  return new AutocompleteContentsView(gfx::Font(), this, model_.get(),
+                                      location_bar);
 }

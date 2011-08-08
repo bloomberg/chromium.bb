@@ -25,16 +25,14 @@ class AutocompleteEditModel;
 class AutocompletePopupModel;
 class GtkThemeService;
 class OmniboxView;
-class Profile;
 class SkBitmap;
 
 class OmniboxPopupViewGtk : public AutocompletePopupView,
-                             public NotificationObserver {
+                            public NotificationObserver {
  public:
   OmniboxPopupViewGtk(const gfx::Font& font,
                       OmniboxView* omnibox_view,
                       AutocompleteEditModel* edit_model,
-                      Profile* profile,
                       GtkWidget* location_bar);
   virtual ~OmniboxPopupViewGtk();
 

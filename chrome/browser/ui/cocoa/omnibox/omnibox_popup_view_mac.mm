@@ -284,8 +284,9 @@ OmniboxPopupViewMac::OmniboxPopupViewMac(OmniboxViewMac* omnibox_view,
                                          AutocompleteEditModel* edit_model,
                                          Profile* profile,
                                          NSTextField* field)
-    : model_(new AutocompletePopupModel(this, edit_model, profile)),
-      omnibox_view_(omnibox_view),
+    : omnibox_view_(omnibox_view),
+      model_(new AutocompletePopupModel(this, edit_model)),
+      profile_(profile),
       field_(field),
       popup_(nil),
       opt_in_controller_(nil),
@@ -549,12 +550,11 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
 }
 
 void OmniboxPopupViewMac::UserPressedOptIn(bool opt_in) {
-  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  PromoCounter* counter = profile_->GetInstantPromoCounter();
   DCHECK(counter);
   counter->Hide();
   if (opt_in) {
-    browser::ShowInstantConfirmDialogIfNecessary([field_ window],
-                                                 model_->profile());
+    browser::ShowInstantConfirmDialogIfNecessary([field_ window], profile_);
   }
 
   // This call will remove and delete |opt_in_controller_|.
@@ -562,7 +562,7 @@ void OmniboxPopupViewMac::UserPressedOptIn(bool opt_in) {
 }
 
 bool OmniboxPopupViewMac::ShouldShowInstantOptIn() {
-  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  PromoCounter* counter = profile_->GetInstantPromoCounter();
   return (counter && counter->ShouldShow(base::Time::Now()));
 }
 

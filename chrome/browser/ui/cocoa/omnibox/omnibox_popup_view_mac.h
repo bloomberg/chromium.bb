@@ -135,8 +135,9 @@ class OmniboxPopupViewMac : public AutocompletePopupView,
   // Returns whether or not to show the instant opt-in prompt.
   bool ShouldShowInstantOptIn();
 
-  scoped_ptr<AutocompletePopupModel> model_;
   OmniboxViewMac* omnibox_view_;
+  scoped_ptr<AutocompletePopupModel> model_;
+  Profile* profile_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.

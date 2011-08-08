@@ -41,7 +41,6 @@ class ContentSettingImageModel;
 class ContentSettingBubbleGtk;
 class ExtensionAction;
 class GtkThemeService;
-class Profile;
 class SkBitmap;
 class TabContents;
 class ToolbarModel;
@@ -55,8 +54,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual ~LocationBarViewGtk();
 
   void Init(bool popup_window_mode);
-
-  void SetProfile(Profile* profile);
 
   // Returns the widget the caller should host.  You must call Init() first.
   GtkWidget* widget() { return hbox_.get(); }
@@ -149,13 +146,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
                                      public ui::AnimationDelegate {
    public:
     ContentSettingImageViewGtk(ContentSettingsType content_type,
-                               const LocationBarViewGtk* parent,
-                               Profile* profile);
+                               const LocationBarViewGtk* parent);
     virtual ~ContentSettingImageViewGtk();
 
     GtkWidget* widget() { return alignment_.get(); }
-
-    void set_profile(Profile* profile) { profile_ = profile; }
 
     bool IsVisible();
     void UpdateFromTabContents(TabContents* tab_contents);
@@ -195,9 +189,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
 
-    // The currently active profile.
-    Profile* profile_;
-
     // The currently shown bubble if any.
     ContentSettingBubbleGtk* content_setting_bubble_;
 
@@ -215,9 +206,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   class PageActionViewGtk : public ImageLoadingTracker::Observer,
                             public ExtensionContextMenuModel::PopupDelegate {
    public:
-    PageActionViewGtk(
-        LocationBarViewGtk* owner, Profile* profile,
-        ExtensionAction* page_action);
+    PageActionViewGtk(LocationBarViewGtk* owner, ExtensionAction* page_action);
     virtual ~PageActionViewGtk();
 
     GtkWidget* widget() { return event_box_.get(); }
@@ -257,9 +246,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
-
-    // The current profile (not owned by us).
-    Profile* profile_;
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
@@ -410,7 +396,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Alignment used to wrap |location_entry_|.
   GtkWidget* location_entry_alignment_;
 
-  Profile* profile_;
   CommandUpdater* command_updater_;
   ToolbarModel* toolbar_model_;
   Browser* browser_;

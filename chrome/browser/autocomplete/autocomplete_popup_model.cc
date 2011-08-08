@@ -25,11 +25,9 @@
 
 AutocompletePopupModel::AutocompletePopupModel(
     AutocompletePopupView* popup_view,
-    AutocompleteEditModel* edit_model,
-    Profile* profile)
+    AutocompleteEditModel* edit_model)
     : view_(popup_view),
       edit_model_(edit_model),
-      profile_(profile),
       hovered_line_(kNoMatch),
       selected_line_(kNoMatch) {
   edit_model->set_popup_model(this);
@@ -136,7 +134,7 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
 
   if (match.template_url) {
     TemplateURLService* url_service =
-        TemplateURLServiceFactory::GetForProfile(profile_);
+        TemplateURLServiceFactory::GetForProfile(edit_model_->profile());
     if (!url_service)
       return false;
 
@@ -171,8 +169,9 @@ bool AutocompletePopupModel::GetKeywordForText(const string16& text,
 
   if (keyword_hint.empty())
     return false;
+  Profile* profile = edit_model_->profile();
   TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(profile);
   if (!url_service)
     return false;
   url_service->Load();
@@ -185,12 +184,10 @@ bool AutocompletePopupModel::GetKeywordForText(const string16& text,
 
   // Don't provide a hint for inactive/disabled extension keywords.
   if (template_url->IsExtensionKeyword()) {
-    const Extension* extension = profile_->GetExtensionService()->
+    const Extension* extension = profile->GetExtensionService()->
         GetExtensionById(template_url->GetExtensionId(), false);
-    if (!extension ||
-        (profile_->IsOffTheRecord() &&
-         !profile_->GetExtensionService()->
-             IsIncognitoEnabled(extension->id())))
+    if (!extension || (profile->IsOffTheRecord() &&
+        !profile->GetExtensionService()->IsIncognitoEnabled(extension->id())))
       return false;
   }
 
@@ -250,7 +247,7 @@ const SkBitmap* AutocompletePopupModel::GetIconIfExtensionMatch(
   if (!match.template_url || !match.template_url->IsExtensionKeyword())
     return NULL;
 
-  return &profile_->GetExtensionService()->GetOmniboxPopupIcon(
+  return &edit_model_->profile()->GetExtensionService()->GetOmniboxPopupIcon(
       match.template_url->GetExtensionId());
 }
 

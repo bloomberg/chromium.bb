@@ -31,7 +31,6 @@ class CustomDrawButton;
 class GtkThemeService;
 class LocationBar;
 class LocationBarViewGtk;
-class Profile;
 class ReloadButtonGtk;
 class TabContents;
 class ToolbarModel;
@@ -48,7 +47,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Create the contents of the toolbar. |top_level_window| is the GtkWindow
   // to which we attach our accelerators.
-  void Init(Profile* profile, GtkWindow* top_level_window);
+  void Init(GtkWindow* top_level_window);
 
   // Set the various widgets' ViewIDs.
   void SetViewIDs();
@@ -100,9 +99,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  Profile* profile() { return profile_; }
-  void SetProfile(Profile* profile);
 
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
@@ -194,7 +190,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   Browser* browser_;
   BrowserWindowGtk* window_;
-  Profile* profile_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;

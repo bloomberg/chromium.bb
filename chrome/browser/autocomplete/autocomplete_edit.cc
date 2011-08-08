@@ -89,13 +89,6 @@ AutocompleteEditModel::AutocompleteEditModel(
 AutocompleteEditModel::~AutocompleteEditModel() {
 }
 
-void AutocompleteEditModel::SetProfile(Profile* profile) {
-  DCHECK(profile);
-  profile_ = profile;
-  autocomplete_controller_->SetProfile(profile);
-  popup_->set_profile(profile);
-}
-
 const AutocompleteEditModel::State
     AutocompleteEditModel::GetStateForTabSwitch() {
   // Like typing, switching tabs "accepts" the temporary text as the user
@@ -236,7 +229,7 @@ void AutocompleteEditModel::OnChanged() {
       // Start Prerender of this page instead.
       CHECK(tab->tab_contents());
       prerender::PrerenderManager* prerender_manager =
-          tab->profile()->GetPrerenderManager();
+          profile_->GetPrerenderManager();
       if (prerender_manager) {
         prerender_manager->AddPrerenderFromOmnibox(
             CurrentMatch().destination_url);

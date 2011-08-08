@@ -28,6 +28,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -395,13 +396,13 @@ OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
                                ToolbarModel* toolbar_model,
                                LocationBarView* parent_view,
                                HWND hwnd,
-                               Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                views::View* location_bar)
-    : model_(new AutocompleteEditModel(this, controller, profile)),
+    : model_(new AutocompleteEditModel(this, controller,
+                                       parent_view->browser()->profile())),
       popup_view_(new AutocompletePopupContentsView(font, this, model_.get(),
-                                                    profile, location_bar)),
+                                                    location_bar)),
       controller_(controller),
       parent_view_(parent_view),
       toolbar_model_(toolbar_model),

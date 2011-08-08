@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -45,14 +46,12 @@ const double kAnimatingFraction = kOpenTimeMs * 1.0 / kMoveTimeMs;
 
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
-    LocationBarView* parent,
-    Profile* profile)
+    LocationBarView* parent)
     : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
       parent_(parent),
-      profile_(profile),
       bubble_(NULL),
       animation_in_progress_(false),
       text_size_(0),
@@ -136,12 +135,13 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   gfx::Point origin(screen_bounds.origin());
   views::View::ConvertPointToScreen(this, &origin);
   screen_bounds.set_origin(origin);
+  Profile* profile = parent_->browser()->profile();
   ContentSettingBubbleContents* bubble_contents =
       new ContentSettingBubbleContents(
           ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-              parent_->browser(), tab_contents, profile_,
+              parent_->browser(), tab_contents, profile,
               content_setting_image_model_->get_content_settings_type()),
-          profile_, tab_contents->tab_contents());
+          profile, tab_contents->tab_contents());
   bubble_ = Bubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_RIGHT,
                          bubble_contents, this);
   bubble_contents->set_bubble(bubble_);

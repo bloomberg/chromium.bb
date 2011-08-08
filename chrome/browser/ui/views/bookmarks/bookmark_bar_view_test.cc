@@ -11,12 +11,14 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/view_event_test_base.h"
+#include "chrome/test/testing_browser_process.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -180,10 +182,12 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->BlockUntilBookmarkModelLoaded();
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
+    browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
+
     model_ = profile_->GetBookmarkModel();
     model_->ClearStore();
 
-    bb_view_ = new BookmarkBarView(profile_.get(), NULL);
+    bb_view_.reset(new BookmarkBarView(browser_.get()));
     bb_view_->SetPageNavigator(&navigator_);
 
     AddTestData(CreateBigMenu());
@@ -200,7 +204,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // we brute force search for a size that triggers the overflow button.
     views::View tmp_parent;
 
-    tmp_parent.AddChildView(bb_view_);
+    tmp_parent.AddChildView(bb_view_.get());
 
     bb_view_pref_ = bb_view_->GetPreferredSize();
     bb_view_pref_.set_width(1000);
@@ -211,12 +215,21 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
       bb_view_->Layout();
     }
 
-    tmp_parent.RemoveChildView(bb_view_);
+    tmp_parent.RemoveChildView(bb_view_.get());
 
     ViewEventTestBase::SetUp();
   }
 
   virtual void TearDown() {
+    // Destroy everything, then run the message loop to ensure we delete all
+    // Tasks and fully shut down.
+    browser_->CloseAllTabs();
+    bb_view_.reset();
+    browser_.reset();
+    profile_.reset();
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    MessageLoop::current()->Run();
+
     ViewEventTestBase::TearDown();
     BookmarkBarView::testing_ = false;
     views::ViewsDelegate::views_delegate = NULL;
@@ -228,7 +241,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   virtual views::View* CreateContentsView() {
-    return bb_view_;
+    return bb_view_.get();
   }
 
   virtual gfx::Size GetPreferredSize() { return bb_view_pref_; }
@@ -241,7 +254,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   virtual bool CreateBigMenu() { return false; }
 
   BookmarkModel* model_;
-  BookmarkBarView* bb_view_;
+  scoped_ptr<BookmarkBarView> bb_view_;
   TestingPageNavigator navigator_;
 
  private:
@@ -275,7 +288,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   gfx::Size bb_view_pref_;
+  ScopedTestingBrowserProcess testing_browser_process_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<Browser> browser_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
   ViewsDelegateImpl views_delegate_;
@@ -358,7 +373,7 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     // true. If that changes, this code will need to find another empty space
     // to press the mouse on.
     gfx::Point mouse_loc;
-    views::View::ConvertPointToScreen(bb_view_, &mouse_loc);
+    views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
     ui_controls::SendMouseMove(0, 0);
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
@@ -1043,7 +1058,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
 
     // Now click on empty space.
     gfx::Point mouse_loc;
-    views::View::ConvertPointToScreen(bb_view_, &mouse_loc);
+    views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
     ui_controls::SendMouseMove(mouse_loc.x(), mouse_loc.y());
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::UP | ui_controls::DOWN,

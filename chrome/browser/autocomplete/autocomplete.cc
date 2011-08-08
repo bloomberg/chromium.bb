@@ -503,12 +503,6 @@ AutocompleteProvider::AutocompleteProvider(ACProviderListener* listener,
       name_(name) {
 }
 
-void AutocompleteProvider::SetProfile(Profile* profile) {
-  DCHECK(profile);
-  DCHECK(done_);  // The controller should have already stopped us.
-  profile_ = profile;
-}
-
 void AutocompleteProvider::Stop() {
   done_ = true;
 }
@@ -833,15 +827,6 @@ AutocompleteController::~AutocompleteController() {
     (*i)->Release();
 
   providers_.clear();  // Not really necessary.
-}
-
-void AutocompleteController::SetProfile(Profile* profile) {
-  Stop(true);
-  for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
-    (*i)->SetProfile(profile);
-  input_.Clear();  // Ensure we don't try to do a "minimal_changes" query on a
-                   // different profile.
-  profile_ = profile;
 }
 
 void AutocompleteController::Start(

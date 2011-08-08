@@ -41,7 +41,6 @@ class InstantController;
 class KeywordHintView;
 class LocationIconView;
 class PageActionWithBadgeView;
-class Profile;
 class SelectedKeywordView;
 class StarView;
 class TabContents;
@@ -118,8 +117,7 @@ class LocationBarView : public LocationBar,
     APP_LAUNCHER
   };
 
-  LocationBarView(Profile* profile,
-                  Browser* browser,
+  LocationBarView(Browser* browser,
                   ToolbarModel* model,
                   Delegate* delegate,
                   Mode mode);
@@ -141,8 +139,6 @@ class LocationBarView : public LocationBar,
   // saved state that the tab holds.
   void Update(const TabContents* tab_for_state_restoring);
 
-  void SetProfile(Profile* profile);
-  Profile* profile() const { return profile_; }
   Browser* browser() const { return browser_; }
 
   // Sets |preview_enabled| for the PageAction View associated with this
@@ -338,9 +334,6 @@ class LocationBarView : public LocationBar,
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
-
-  // Current profile. Not owned by us.
-  Profile* profile_;
 
   // The Autocomplete Edit field.
   scoped_ptr<OmniboxView> location_entry_;

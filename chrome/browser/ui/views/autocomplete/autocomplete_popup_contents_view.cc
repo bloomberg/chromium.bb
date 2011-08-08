@@ -229,11 +229,11 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
-    Profile* profile,
     views::View* location_bar)
-    : model_(new AutocompletePopupModel(this, edit_model, profile)),
+    : model_(new AutocompletePopupModel(this, edit_model)),
       opt_in_view_(NULL),
       omnibox_view_(omnibox_view),
+      profile_(edit_model->profile()),
       location_bar_(location_bar),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
@@ -331,7 +331,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   for (size_t i = model_->result().size(); i < child_rv_count; ++i)
     child_at(i)->SetVisible(false);
 
-  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  PromoCounter* counter = profile_->GetInstantPromoCounter();
   if (!opt_in_view_ && counter && counter->ShouldShow(base::Time::Now())) {
     opt_in_view_ = new InstantOptInView(this, result_bold_font_, result_font_);
     AddChildView(opt_in_view_);
@@ -694,12 +694,12 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
 void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
   delete opt_in_view_;
   opt_in_view_ = NULL;
-  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  PromoCounter* counter = profile_->GetInstantPromoCounter();
   DCHECK(counter);
   counter->Hide();
   if (opt_in) {
     browser::ShowInstantConfirmDialogIfNecessary(
-        location_bar_->GetWidget()->GetNativeWindow(), model_->profile());
+        location_bar_->GetWidget()->GetNativeWindow(), profile_);
   }
   UpdatePopupAppearance();
 }

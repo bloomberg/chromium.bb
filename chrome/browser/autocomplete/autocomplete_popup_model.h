@@ -11,21 +11,13 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 
 class AutocompletePopupView;
-class Profile;
 class SkBitmap;
 
 class AutocompletePopupModel {
  public:
   AutocompletePopupModel(AutocompletePopupView* popup_view,
-                         AutocompleteEditModel* edit_model,
-                         Profile* profile);
+                         AutocompleteEditModel* edit_model);
   ~AutocompletePopupModel();
-
-  // Invoked when the profile has changed.
-  void set_profile(Profile* profile) { profile_ = profile; }
-
-  // TODO(sky): see about removing this.
-  Profile* profile() const { return profile_; }
 
   // Returns true if the popup is currently open.
   bool IsOpen() const;
@@ -114,9 +106,6 @@ class AutocompletePopupModel {
   AutocompletePopupView* view_;
 
   AutocompleteEditModel* edit_model_;
-
-  // Profile for current tab.
-  Profile* profile_;
 
   // The line that's currently hovered.  If we're not drawing a hover rect,
   // this will be kNoMatch, even if the cursor is over the popup contents.

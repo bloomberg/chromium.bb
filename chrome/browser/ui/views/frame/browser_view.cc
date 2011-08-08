@@ -2094,8 +2094,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
   if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       contents) {
     if (!bookmark_bar_view_.get()) {
-      bookmark_bar_view_.reset(new BookmarkBarView(contents->profile(),
-                                                   browser_.get()));
+      bookmark_bar_view_.reset(new BookmarkBarView(browser_.get()));
       bookmark_bar_view_->set_parent_owned(false);
       bookmark_bar_view_->set_background(
           new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
@@ -2103,8 +2102,6 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
       bookmark_bar_view_->SetBookmarkBarState(
           browser_->bookmark_bar_state(),
           BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-    } else {
-      bookmark_bar_view_->SetProfile(contents->profile());
     }
     bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
     new_bookmark_bar_view = bookmark_bar_view_.get();
@@ -2644,7 +2641,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
   toolbar_ = toolbar;
   if (toolbar) {
     AddChildView(toolbar_);
-    toolbar_->Init(browser_->profile());
+    toolbar_->Init();
   }
 }
 

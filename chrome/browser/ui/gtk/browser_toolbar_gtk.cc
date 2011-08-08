@@ -89,8 +89,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       model_(browser->toolbar_model()),
       wrench_menu_model_(this, browser),
       browser_(browser),
-      window_(window),
-      profile_(NULL) {
+      window_(window) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
@@ -112,11 +111,8 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   wrench_menu_.reset();
 }
 
-void BrowserToolbarGtk::Init(Profile* profile,
-                             GtkWindow* top_level_window) {
-  // Make sure to tell the location bar the profile before calling its Init.
-  SetProfile(profile);
-
+void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
+  Profile* profile = browser_->profile();
   theme_service_ = GtkThemeService::GetFrom(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -165,9 +161,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
                      0);
 
-  home_.reset(new CustomDrawButton(GtkThemeService::GetFrom(profile_),
-      IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0, GTK_STOCK_HOME,
-      GTK_ICON_SIZE_SMALL_TOOLBAR));
+  home_.reset(new CustomDrawButton(theme_service_, IDR_HOME, IDR_HOME_P,
+      IDR_HOME_H, 0, GTK_STOCK_HOME, GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(home_->widget(),
       l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME).c_str());
   g_signal_connect(home_->widget(), "clicked",
@@ -200,10 +195,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   wrench_menu_image_ = gtk_image_new_from_pixbuf(
       theme_service_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
-  wrench_menu_button_.reset(new CustomDrawButton(
-      GtkThemeService::GetFrom(profile_),
-      IDR_TOOLS, IDR_TOOLS_P, IDR_TOOLS_H, 0,
-      wrench_menu_image_));
+  wrench_menu_button_.reset(new CustomDrawButton(theme_service_, IDR_TOOLS,
+      IDR_TOOLS_P, IDR_TOOLS_H, 0, wrench_menu_image_));
   GtkWidget* wrench_button = wrench_menu_button_->widget();
 
   gtk_widget_set_tooltip_text(
@@ -224,7 +217,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-      Source<HostZoomMap>(browser_->profile()->GetHostZoomMap()));
+      Source<HostZoomMap>(profile->GetHostZoomMap()));
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -398,14 +391,6 @@ void BrowserToolbarGtk::Observe(int type,
 }
 
 // BrowserToolbarGtk, public ---------------------------------------------------
-
-void BrowserToolbarGtk::SetProfile(Profile* profile) {
-  if (profile == profile_)
-    return;
-
-  profile_ = profile;
-  location_bar_->SetProfile(profile);
-}
 
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
                                           bool should_restore_state) {

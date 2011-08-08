@@ -362,16 +362,15 @@ static const SkBitmap& GetFolderIcon() {
   return *kFolderIcon;
 }
 
-BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
-    : profile_(NULL),
-      page_navigator_(NULL),
+BookmarkBarView::BookmarkBarView(Browser* browser)
+    : page_navigator_(NULL),
       model_(NULL),
       bookmark_menu_(NULL),
       bookmark_drop_menu_(NULL),
       other_bookmarked_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_folder_method_factory_(this)),
       sync_error_button_(NULL),
-      sync_service_(NULL),
+      sync_service_(browser->profile()->GetProfileSyncService()),
       overflow_button_(NULL),
       instructions_(NULL),
       bookmarks_separator_view_(NULL),
@@ -380,16 +379,11 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       throbbing_view_(NULL),
       bookmark_bar_state_(BookmarkBar::SHOW),
       animating_detached_(false) {
-  if (profile->GetProfileSyncService()) {
-    // Obtain a pointer to the profile sync service and add our instance as an
-    // observer.
-    sync_service_ = profile->GetProfileSyncService();
+  if (sync_service_)
     sync_service_->AddObserver(this);
-  }
 
   set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
-  SetProfile(profile);
 
   size_animation_->Reset(1);
 }
@@ -407,43 +401,6 @@ BookmarkBarView::~BookmarkBarView() {
 
   if (sync_service_)
     sync_service_->RemoveObserver(this);
-}
-
-void BookmarkBarView::SetProfile(Profile* profile) {
-  DCHECK(profile);
-  if (profile_ == profile)
-    return;
-
-  StopThrobbing(true);
-
-  // Cancels the current cancelable.
-  registrar_.RemoveAll();
-
-  profile_ = profile;
-
-  if (model_)
-    model_->RemoveObserver(this);
-
-  // Disable the other bookmarked button, we'll re-enable when the model is
-  // loaded.
-  other_bookmarked_button_->SetEnabled(false);
-
-  Source<Profile> ns_source(profile_->GetOriginalProfile());
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
-
-  // Remove any existing bookmark buttons.
-  while (GetBookmarkButtonCount())
-    delete child_at(0);
-
-  model_ = profile_->GetBookmarkModel();
-  if (model_) {
-    model_->AddObserver(this);
-    if (model_->IsLoaded())
-      Loaded(model_, false);
-    // else case: we'll receive notification back from the BookmarkModel when
-    // done loading, then we'll populate the bar.
-  }
 }
 
 void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
@@ -725,7 +682,8 @@ bool BookmarkBarView::AreDropTypesRequired() {
 
 bool BookmarkBarView::CanDrop(const ui::OSExchangeData& data) {
   if (!model_ || !model_->IsLoaded() ||
-      !profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+      !browser_->profile()->GetPrefs()->GetBoolean(
+          prefs::kEditBookmarksEnabled))
     return false;
 
   if (!drop_info_.get())
@@ -837,8 +795,8 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   const BookmarkNodeData data = drop_info_->data;
   DCHECK(data.is_valid());
   drop_info_.reset();
-  return bookmark_utils::PerformBookmarkDrop(profile_, data, parent_node,
-                                             index);
+  return bookmark_utils::PerformBookmarkDrop(browser_->profile(), data,
+                                             parent_node, index);
 }
 
 void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
@@ -1019,7 +977,7 @@ int BookmarkBarView::GetDragOperationsForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       return bookmark_utils::BookmarkDragOperation(
-          profile_, model_->bookmark_bar_node()->GetChild(i));
+          browser_->profile(), model_->bookmark_bar_node()->GetChild(i));
     }
   }
   NOTREACHED();
@@ -1065,8 +1023,8 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
-  bookmark_menu_ = new BookmarkMenuController(
-      profile_, page_navigator_, GetWidget(), node, start_index);
+  bookmark_menu_ = new BookmarkMenuController(browser_->profile(),
+      page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(this, false);
 }
@@ -1094,12 +1052,13 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   WindowOpenDisposition disposition_from_event_flags =
       event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
 
+  Profile* profile = browser_->profile();
   if (node->is_url()) {
-    RecordAppLaunch(profile_, node->url());
+    RecordAppLaunch(profile, node->url());
     page_navigator_->OpenURL(node->url(), GURL(),
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
   } else {
-    bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile_,
+    bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile,
         page_navigator_, node, disposition_from_event_flags);
   }
   UserMetrics::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
@@ -1134,21 +1093,19 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
     parent = model_->bookmark_bar_node();
     nodes.push_back(parent);
   }
-  // Browser may be null during testing.
-  PageNavigator* navigator =
-      browser() ? browser()->GetSelectedTabContents() : NULL;
+  Profile* profile = browser_->profile();
   bool close_on_remove =
-      (parent == profile_->GetBookmarkModel()->other_node() &&
-       parent->child_count() == 1);
-  BookmarkContextMenu controller(GetWidget(), profile_,
-                                 navigator, parent, nodes, close_on_remove);
+      (parent == profile->GetBookmarkModel()->other_node()) &&
+      (parent->child_count() == 1);
+  BookmarkContextMenu controller(GetWidget(), profile,
+      browser_->GetSelectedTabContents(), parent, nodes, close_on_remove);
   controller.RunMenuAt(p);
 }
 
 void BookmarkBarView::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(profile_);
+  DCHECK(browser_->profile());
   switch (type) {
     case chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN: {
       StopThrobbing(true);
@@ -1189,6 +1146,8 @@ void BookmarkBarView::Init() {
   AddChildView(overflow_button_);
 
   other_bookmarked_button_ = CreateOtherBookmarkedButton();
+  // We'll re-enable when the model is loaded.
+  other_bookmarked_button_->SetEnabled(false);
   AddChildView(other_bookmarked_button_);
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
@@ -1200,6 +1159,20 @@ void BookmarkBarView::Init() {
   set_context_menu_controller(this);
 
   size_animation_.reset(new ui::SlideAnimation(this));
+
+  Profile* profile = browser_->profile();
+  Source<Profile> ns_source(profile->GetOriginalProfile());
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_SHOWN, ns_source);
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN, ns_source);
+
+  model_ = profile->GetBookmarkModel();
+  if (model_) {
+    model_->AddObserver(this);
+    if (model_->IsLoaded())
+      Loaded(model_, false);
+    // else case: we'll receive notification back from the BookmarkModel when
+    // done loading, then we'll populate the bar.
+  }
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {
@@ -1280,7 +1253,7 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
     BookmarkButton* button = new BookmarkButton(this, node->url(),
-        UTF16ToWide(node->GetTitle()), profile_);
+        UTF16ToWide(node->GetTitle()), browser_->profile());
     ConfigureButton(node, button);
     return button;
   } else {
@@ -1393,8 +1366,8 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
-  bookmark_drop_menu_ = new BookmarkMenuController(
-      profile_, page_navigator_, GetWidget(), node, start_index);
+  bookmark_drop_menu_ = new BookmarkMenuController(browser_->profile(),
+      page_navigator_, GetWidget(), node, start_index);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this, true);
 }
@@ -1436,6 +1409,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
 
   bool found = false;
   const int other_delta_x = mirrored_x - other_bookmarked_button_->x();
+  Profile* profile = browser_->profile();
   if (other_bookmarked_button_->IsVisible() && other_delta_x >= 0 &&
       other_delta_x < other_bookmarked_button_->width()) {
     // Mouse is over 'other' folder.
@@ -1445,9 +1419,8 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   } else if (!GetBookmarkButtonCount()) {
     // No bookmarks, accept the drop.
     location->index = 0;
-    int ops = data.GetFirstNode(profile_)
-        ? ui::DragDropTypes::DRAG_MOVE
-        : ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
+    int ops = data.GetFirstNode(profile) ? ui::DragDropTypes::DRAG_MOVE :
+        ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
     location->operation =
         bookmark_utils::PreferredDropOperation(event.source_operations(), ops);
     return;
@@ -1510,18 +1483,16 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
         model_->other_node() :
         model_->bookmark_bar_node()->GetChild(location->index);
     location->operation =
-        bookmark_utils::BookmarkDropOperation(profile_, event, data, parent,
+        bookmark_utils::BookmarkDropOperation(profile, event, data, parent,
                                               parent->child_count());
     if (!location->operation && !data.has_single_url() &&
-        data.GetFirstNode(profile_) == parent) {
+        data.GetFirstNode(profile) == parent) {
       // Don't open a menu if the node being dragged is the menu to open.
       location->on = false;
     }
   } else {
-    location->operation =
-        bookmark_utils::BookmarkDropOperation(profile_, event, data,
-                                              model_->bookmark_bar_node(),
-                                              location->index);
+    location->operation = bookmark_utils::BookmarkDropOperation(profile, event,
+        data, model_->bookmark_bar_node(), location->index);
   }
 }
 
@@ -1529,7 +1500,7 @@ void BookmarkBarView::WriteBookmarkDragData(const BookmarkNode* node,
                                             ui::OSExchangeData* data) {
   DCHECK(node && data);
   BookmarkNodeData drag_data(node);
-  drag_data.Write(profile_, data);
+  drag_data.Write(browser_->profile(), data);
 }
 
 void BookmarkBarView::StartThrobbing(const BookmarkNode* node,

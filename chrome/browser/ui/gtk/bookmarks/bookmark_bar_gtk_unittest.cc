@@ -37,7 +37,7 @@ class BookmarkBarGtkUnittest : public TestingBrowserProcessTest {
     browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
 
     origin_provider_.reset(new EmptyTabstripOriginProvider);
-    bookmark_bar_.reset(new BookmarkBarGtk(NULL, profile_.get(), browser_.get(),
+    bookmark_bar_.reset(new BookmarkBarGtk(NULL, browser_.get(),
                                            origin_provider_.get()));
   }
 

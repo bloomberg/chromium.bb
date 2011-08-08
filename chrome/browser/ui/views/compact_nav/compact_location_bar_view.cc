@@ -110,7 +110,6 @@ void CompactLocationBarView::Init() {
 
   // Location bar.
   location_bar_view_ = new LocationBarView(
-      browser()->profile(),
       browser(),
       browser()->toolbar_model(),
       clb_host(),
