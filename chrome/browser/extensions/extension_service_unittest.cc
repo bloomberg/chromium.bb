@@ -1756,6 +1756,18 @@ TEST_F(ExtensionServiceTest, InstallApps) {
   ValidatePrefKeyCount(pref_count);
 }
 
+// Tests that file access is OFF by default.
+TEST_F(ExtensionServiceTest, DefaultFileAccess) {
+  InitializeEmptyExtensionService();
+  PackAndInstallCrx(data_dir_.AppendASCII("permissions").AppendASCII("files"),
+                    true);
+
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  std::string id = service_->extensions()->at(0)->id();
+  EXPECT_FALSE(service_->extension_prefs()->AllowFileAccess(id));
+}
+
 TEST_F(ExtensionServiceTest, UpdateApps) {
   InitializeEmptyExtensionService();
   FilePath extensions_path = data_dir_.AppendASCII("app_update");

@@ -304,12 +304,7 @@ void ExtensionServiceBackend::CheckExtensionFileAccess(
     const FilePath& extension_path, bool prompt_for_plugins) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string id = Extension::GenerateIdForPath(extension_path);
-  // Unpacked extensions default to allowing file access, but if that has been
-  // overridden, don't reset the value.
-  bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
-  if (frontend_->extension_prefs()->HasAllowFileAccessSetting(id))
-    allow_file_access = frontend_->extension_prefs()->AllowFileAccess(id);
+  bool allow_file_access = frontend_->extension_prefs()->AllowFileAccess(id);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -1034,13 +1029,9 @@ void ExtensionService::LoadExtensionFromCommandLine(
   file_util::AbsolutePath(&extension_path);
 
   std::string id = Extension::GenerateIdForPath(extension_path);
-  bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
-  if (extension_prefs()->HasAllowFileAccessSetting(id))
-    allow_file_access = extension_prefs()->AllowFileAccess(id);
 
   int flags = Extension::NO_FLAGS;
-  if (allow_file_access)
+  if (extension_prefs()->AllowFileAccess(id))
     flags |= Extension::ALLOW_FILE_ACCESS;
   if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
     flags |= Extension::STRICT_ERROR_CHECKS;
@@ -2204,13 +2195,6 @@ void ExtensionService::OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,
       from_webstore);
-
-  // Unpacked extensions default to allowing file access, but if that has been
-  // overridden, don't reset the value.
-  if (Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
-      !extension_prefs_->HasAllowFileAccessSetting(id)) {
-    extension_prefs_->SetAllowFileAccess(id, true);
-  }
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
