@@ -6,12 +6,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -79,19 +78,14 @@ class WebDataServiceTest : public TestingBrowserProcessTest {
   virtual void SetUp() {
     db_thread_.Start();
 
-    PathService::Get(chrome::DIR_TEST_DATA, &profile_dir_);
-    const std::string test_profile = "WebDataServiceTest";
-    profile_dir_ = profile_dir_.AppendASCII(test_profile);
-    file_util::Delete(profile_dir_, true);
-    file_util::CreateDirectory(profile_dir_);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     wds_ = new WebDataService();
-    wds_->Init(profile_dir_);
+    wds_->Init(temp_dir_.path());
   }
 
   virtual void TearDown() {
     if (wds_.get())
       wds_->Shutdown();
-    file_util::Delete(profile_dir_, true);
 
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
@@ -103,6 +97,7 @@ class WebDataServiceTest : public TestingBrowserProcessTest {
   BrowserThread db_thread_;
   FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
+  ScopedTempDir temp_dir_;
 };
 
 class WebDataServiceAutofillTest : public WebDataServiceTest {
