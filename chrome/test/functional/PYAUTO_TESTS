@@ -48,7 +48,6 @@
       'extensions',
       'find_in_page',
       'flash',
-      'gpu',
       'history',
       'https',
       'imports',
@@ -86,8 +85,6 @@
       '-browsing_data.BrowsingDataTest.testClearingAccuracy',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-      # crbug.com/89279
-      '-gpu',
       # crbug.com/87959
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       # crbug.com/83459
@@ -198,7 +195,7 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
       '-omnibox.OmniboxTest.testContentHistory',
-      '-omnibox.OmniboxTest.testOmniboxSearchHistory',      
+      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
       # crbug.com/79263
@@ -403,6 +400,7 @@
 
     'win': [
       'enterprise',
+      'gpu',
     ],
 
     'mac': [
