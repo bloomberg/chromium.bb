@@ -3814,41 +3814,6 @@
             'test/nacl_security_tests/nacl_security_tests_win.cc',
           ],
         },
-        {
-          'target_name': 'selenium_tests',
-          'type': 'executable',
-          'dependencies': [
-            'chrome_resources',
-            'chrome_strings',
-            'test_support_common',
-            'test_support_ui',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '..',
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'sources': [
-            'test/selenium/selenium_test.cc',
-          ],
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-          'conditions': [
-            ['OS=="win" and win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            },],
-          ],
-        },
       ]},  # 'targets'
     ],  # OS=="win"
     # If you change this condition, make sure you also change it in all.gyp
