@@ -14,6 +14,7 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 
+@class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
@@ -38,6 +39,10 @@ class PanelBrowserWindowCocoa;
 
 // Shows the window for the first time. Only happens once.
 - (void)revealAnimatedWithFrame:(const NSRect&)frame;
+
+// Adds the FindBar controller's view to this Panel. Must only be
+// called once per PanelWindowControllerCocoa.
+- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController;
 
 // Initiate the closing of the panel, starting from the platform-independent
 // layer. This will take care of PanelManager, other panels and close the

@@ -1168,6 +1168,10 @@ WindowOpenDisposition BrowserWindowGtk::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
+FindBar* BrowserWindowGtk::CreateFindBar() {
+  return new FindBarGtk(this);
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

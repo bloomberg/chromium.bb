@@ -36,7 +36,7 @@ class FindBarGtk : public FindBar,
                    public FindBarTesting,
                    public NotificationObserver {
  public:
-  explicit FindBarGtk(Browser* browser);
+  explicit FindBarGtk(BrowserWindowGtk* window);
   virtual ~FindBarGtk();
 
   GtkWidget* widget() const { return slide_widget_->widget(); }

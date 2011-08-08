@@ -253,7 +253,8 @@ const float kRightEdgeOffset = 25;
 
   // The browser window might have changed while the FindBar was hidden.
   // Update its position now.
-  [browserWindowController_ layoutSubviews];
+  if (browserWindowController_)
+    [browserWindowController_ layoutSubviews];
 
   // Move to the correct horizontal position first, to prevent the FindBar
   // from jumping around when switching tabs.

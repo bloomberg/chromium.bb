@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -24,9 +26,17 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
+#endif
+
 class PanelBrowserTest : public InProcessBrowserTest {
  public:
-  PanelBrowserTest() : InProcessBrowserTest() { }
+  PanelBrowserTest() : InProcessBrowserTest() {
+#if defined(OS_MACOSX)
+    FindBarBridge::disable_animations_during_testing_ = true;
+#endif
+  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnablePanels);
@@ -157,6 +167,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 
   panel->Close();
   EXPECT_EQ(0, panel_manager->num_panels());
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
+  Panel* panel = CreatePanel("PanelTest", gfx::Rect(0, 0, 400, 400));
+  Browser* browser = panel->browser();
+  browser->ShowFindBar();
+  ASSERT_TRUE(browser->GetFindBarController()->find_bar()->IsFindBarVisible());
+  panel->Close();
 }
 
 // TODO(jianli): Investigate and enable it for Mac.

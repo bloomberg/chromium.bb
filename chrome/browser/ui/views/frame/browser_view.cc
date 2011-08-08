@@ -1362,6 +1362,10 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
+FindBar* BrowserView::CreateFindBar() {
+  return browser::CreateFindBar(this);
+}
+
 #if defined(OS_CHROMEOS)
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);
@@ -2657,8 +2661,3 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   return view;
 }
 #endif
-
-// static
-FindBar* BrowserWindow::CreateFindBar(Browser* browser) {
-  return browser::CreateFindBar(static_cast<BrowserView*>(browser->window()));
-}

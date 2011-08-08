@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
+#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
@@ -83,6 +85,15 @@ const int kMinimumWindowSize = 1;
 
   // Resume auto-resizing of the TabContents view.
   [self enableTabContentsViewAutosizing];
+}
+
+- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {
+  NSView* contentView = [[self window] contentView];
+  [contentView addSubview:[findBarCocoaController view]];
+
+  CGFloat maxY = NSMaxY([contentView frame]);
+  CGFloat maxWidth = NSWidth([contentView frame]);
+  [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
 - (void)closePanel {

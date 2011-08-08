@@ -156,6 +156,10 @@ void PanelBrowserWindowGtk::ShowTaskManagerForPanel() {
   ShowTaskManager();
 }
 
+FindBar* PanelBrowserWindowGtk::CreatePanelFindBar() {
+  return CreateFindBar();
+}
+
 void PanelBrowserWindowGtk::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }

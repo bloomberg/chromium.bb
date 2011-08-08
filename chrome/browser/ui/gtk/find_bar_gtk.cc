@@ -173,10 +173,10 @@ void BuildBorder(GtkWidget* child,
 
 }  // namespace
 
-FindBarGtk::FindBarGtk(Browser* browser)
-    : browser_(browser),
-      window_(static_cast<BrowserWindowGtk*>(browser->window())),
-      theme_service_(GtkThemeService::GetFrom(browser->profile())),
+FindBarGtk::FindBarGtk(BrowserWindowGtk* window)
+    : browser_(window->browser()),
+      window_(window),
+      theme_service_(GtkThemeService::GetFrom(browser_->profile())),
       container_width_(-1),
       container_height_(-1),
       match_label_failure_(false),

@@ -6,14 +6,9 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/find_bar_gtk.h"
 
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   BrowserWindowGtk* browser_window_gtk = new BrowserWindowGtk(browser);
   browser_window_gtk->Init();
   return browser_window_gtk;
-}
-
-FindBar* BrowserWindow::CreateFindBar(Browser* browser) {
-  return new FindBarGtk(browser);
 }

@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"
 
+class FindBar;
 class NativePanelTesting;
-class Panel;
 
 namespace gfx {
 class Rect;
@@ -56,6 +56,7 @@ class NativePanel {
   virtual gfx::NativeWindow GetNativePanelHandle() = 0;
   virtual void UpdatePanelTitleBar() = 0;
   virtual void ShowTaskManagerForPanel() = 0;
+  virtual FindBar* CreatePanelFindBar() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void DrawAttention() = 0;
   virtual bool IsDrawingAttention() const = 0;

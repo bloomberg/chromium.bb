@@ -25,6 +25,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
@@ -304,7 +305,7 @@ void BrowserWindowCocoa::ToggleBookmarkBar() {
 
 void BrowserWindowCocoa::AddFindBar(
     FindBarCocoaController* find_bar_cocoa_controller) {
-  return [controller_ addFindBar:find_bar_cocoa_controller];
+  [controller_ addFindBar:find_bar_cocoa_controller];
 }
 
 void BrowserWindowCocoa::ShowAboutChromeDialog() {
@@ -588,6 +589,16 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;
+}
+
+FindBar* BrowserWindowCocoa::CreateFindBar() {
+  // We could push the AddFindBar() call into the FindBarBridge
+  // constructor or the FindBarCocoaController init, but that makes
+  // unit testing difficult, since we would also require a
+  // BrowserWindow object.
+  FindBarBridge* bridge = new FindBarBridge();
+  AddFindBar(bridge->find_bar_cocoa_controller());
+  return bridge;
 }
 
 void BrowserWindowCocoa::Observe(int type,

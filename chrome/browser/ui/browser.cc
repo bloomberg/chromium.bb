@@ -531,7 +531,7 @@ void Browser::set_user_data_dir_profiles(
 
 FindBarController* Browser::GetFindBarController() {
   if (!find_bar_controller_.get()) {
-    FindBar* find_bar = BrowserWindow::CreateFindBar(this);
+    FindBar* find_bar = window_->CreateFindBar();
     find_bar_controller_.reset(new FindBarController(find_bar));
     find_bar->SetFindBarController(find_bar_controller_.get());
     find_bar_controller_->ChangeTabContents(GetSelectedTabContentsWrapper());

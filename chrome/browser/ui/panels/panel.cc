@@ -417,6 +417,10 @@ WindowOpenDisposition Panel::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
+FindBar* Panel::CreateFindBar() {
+  return native_panel_->CreatePanelFindBar();
+}
+
 #if defined(OS_CHROMEOS)
 void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   NOTIMPLEMENTED();

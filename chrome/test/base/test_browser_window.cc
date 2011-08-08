@@ -102,3 +102,7 @@ WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;
 }
+
+FindBar* TestBrowserWindow::CreateFindBar() {
+  return NULL;
+}

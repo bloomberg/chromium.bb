@@ -42,6 +42,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
+  virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
@@ -67,6 +68,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   gfx::Rect bounds_;
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
+  bool has_find_bar_; // Find bar should only be created once per panel.
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
 };

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/panels/panel.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 
@@ -43,7 +44,8 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     panel_(panel),
     bounds_(bounds),
-    is_shown_(false) {
+    is_shown_(false),
+    has_find_bar_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
 }
 
@@ -132,6 +134,15 @@ void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
 
 void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {
   NOTIMPLEMENTED();
+}
+
+FindBar* PanelBrowserWindowCocoa::CreatePanelFindBar() {
+  DCHECK(!has_find_bar_) << "find bar should only be created once";
+  has_find_bar_ = true;
+
+  FindBarBridge* bridge = new FindBarBridge();
+  [controller_ addFindBar:bridge->find_bar_cocoa_controller()];
+  return bridge;
 }
 
 void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {

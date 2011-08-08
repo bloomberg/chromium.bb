@@ -333,6 +333,9 @@ class BrowserWindow {
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) = 0;
 
+  // Construct a FindBar implementation for the |browser|.
+  virtual FindBar* CreateFindBar() = 0;
+
 #if defined(OS_CHROMEOS)
   // Shows the keyboard overlay dialog box.
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) = 0;
@@ -340,9 +343,6 @@ class BrowserWindow {
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
-
-  // Construct a FindBar implementation for the specified |browser|.
-  static FindBar* CreateFindBar(Browser* browser_window);
 
  protected:
   friend class BrowserList;

@@ -135,6 +135,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual gfx::Rect GetInstantBounds();
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds);
+  virtual FindBar* CreateFindBar() OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,

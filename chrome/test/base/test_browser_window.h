@@ -112,6 +112,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
+  virtual FindBar* CreateFindBar() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE {}

@@ -255,6 +255,10 @@ void PanelBrowserView::ShowTaskManagerForPanel() {
   ShowTaskManager();
 }
 
+FindBar* PanelBrowserView::CreatePanelFindBar() {
+  return CreateFindBar();
+}
+
 void PanelBrowserView::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }

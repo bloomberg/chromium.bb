@@ -84,6 +84,7 @@ class PanelBrowserView : public BrowserView,
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
+  virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
