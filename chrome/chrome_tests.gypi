@@ -198,8 +198,6 @@
         # production code code in libbrowser (in chrome.gyp).
         #'../content/browser/net/url_request_mock_http_job.cc',
         #'../content/browser/net/url_request_mock_http_job.h',
-        '../content/browser/net/url_request_mock_net_error_job.cc',
-        '../content/browser/net/url_request_mock_net_error_job.h',
         '../content/browser/renderer_host/media/mock_media_observer.cc',
         '../content/browser/renderer_host/media/mock_media_observer.h',
         '../content/browser/renderer_host/mock_render_process_host.cc',
