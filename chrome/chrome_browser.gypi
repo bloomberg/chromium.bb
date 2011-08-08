@@ -179,6 +179,7 @@
         'browser/autofill/personal_data_manager.cc',
         'browser/autofill/personal_data_manager.h',
         'browser/autofill/personal_data_manager_mac.mm',
+        'browser/autofill/personal_data_manager_observer.h',
         'browser/autofill/phone_field.cc',
         'browser/autofill/phone_field.h',
         'browser/autofill/phone_number.cc',

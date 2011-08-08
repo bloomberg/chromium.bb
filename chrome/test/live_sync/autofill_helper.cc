@@ -7,6 +7,8 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -14,9 +16,9 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/thread_observer_helper.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/sync_datatype_helper.h"
-#include "chrome/test/base/thread_observer_helper.h"
 #include "webkit/glue/form_field.h"
 
 using base::WaitableEvent;
@@ -76,7 +78,7 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
   }
 };
 
-class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
+class MockPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   MOCK_METHOD0(OnPersonalDataChanged, void());
 };

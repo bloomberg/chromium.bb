@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/win/registry.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/sync/util/data_encryption.h"
@@ -174,7 +176,7 @@ bool ImportSingleProfile(FormGroup* profile,
 
 // Imports profiles from the IE toolbar and stores them. Asynchronous
 // if PersonalDataManager has not been loaded yet. Deletes itself on completion.
-class AutofillImporter : public PersonalDataManager::Observer {
+class AutofillImporter : public PersonalDataManagerObserver {
  public:
   explicit AutofillImporter(PersonalDataManager* personal_data_manager)
     : personal_data_manager_(personal_data_manager) {
@@ -191,8 +193,8 @@ class AutofillImporter : public PersonalDataManager::Observer {
     return true;
   }
 
-  // PersonalDataManager::Observer methods:
-  virtual void OnPersonalDataChanged() {
+  // PersonalDataManagerObserver:
+  virtual void OnPersonalDataChanged() OVERRIDE {
     for (std::vector<AutofillProfile>::const_iterator iter = profiles_.begin();
          iter != profiles_.end(); ++iter) {
       personal_data_manager_->AddProfile(*iter);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/test/live_sync/autofill_helper.h"

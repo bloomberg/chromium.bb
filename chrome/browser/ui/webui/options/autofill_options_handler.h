@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+
+class PersonalDataManager;
 
 namespace base {
 class DictionaryValue;
@@ -17,7 +19,7 @@ class ListValue;
 }
 
 class AutofillOptionsHandler : public OptionsPageUIHandler,
-                               public PersonalDataManager::Observer {
+                               public PersonalDataManagerObserver {
  public:
   AutofillOptionsHandler();
   virtual ~AutofillOptionsHandler();
@@ -27,7 +29,7 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   virtual void Initialize();
   virtual void RegisterMessages();
 
-  // PersonalDataManager::Observer implementation.
+  // PersonalDataManagerObserver implementation.
   virtual void OnPersonalDataChanged() OVERRIDE;
 
  private:

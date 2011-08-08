@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -257,7 +258,7 @@ void AutofillOptionsHandler::RegisterMessages() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// PersonalDataManager::Observer implementation:
+// PersonalDataManagerObserver implementation:
 void AutofillOptionsHandler::OnPersonalDataChanged() {
   LoadAutofillData();
 }

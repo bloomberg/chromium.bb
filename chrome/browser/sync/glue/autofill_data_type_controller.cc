@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/task.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -20,8 +21,7 @@ namespace browser_sync {
 AutofillDataTypeController::AutofillDataTypeController(
     ProfileSyncFactory* profile_sync_factory,
     Profile* profile)
-    : NonFrontendDataTypeController(profile_sync_factory,
-                                 profile),
+    : NonFrontendDataTypeController(profile_sync_factory, profile),
       personal_data_(NULL) {
 }
 

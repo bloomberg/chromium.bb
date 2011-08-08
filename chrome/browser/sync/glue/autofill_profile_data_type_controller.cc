@@ -6,15 +6,14 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/webdata/web_data_service.h"
 
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     ProfileSyncFactory* profile_sync_factory,
     Profile* profile)
-    : AutofillDataTypeController(
-      profile_sync_factory,
-      profile) {}
+    : AutofillDataTypeController(profile_sync_factory, profile) {}
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
 

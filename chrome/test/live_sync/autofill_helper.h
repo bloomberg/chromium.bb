@@ -7,14 +7,18 @@
 #pragma once
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
+#include "base/string16.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 
 class AutofillEntry;
 class AutofillKey;
 class AutofillProfile;
+class AutofillType;
+class PersonalDataManager;
 class WebDataService;
 
 namespace autofill_helper {

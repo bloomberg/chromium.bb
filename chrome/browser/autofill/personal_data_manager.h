@@ -24,6 +24,7 @@
 class AutofillManager;
 class AutofillMetrics;
 class FormStructure;
+class PersonalDataManagerObserver;
 class Profile;
 
 namespace autofill_helper {
@@ -38,27 +39,15 @@ class PersonalDataManager
       public ProfileSyncServiceObserver,
       public base::RefCountedThreadSafe<PersonalDataManager> {
  public:
-  // An interface the PersonalDataManager uses to notify its clients (observers)
-  // when it has finished loading personal data from the web database.  Register
-  // the observer via PersonalDataManager::SetObserver.
-  class Observer {
-   public:
-    // Notifies the observer that the PersonalDataManager changed in some way.
-    virtual void OnPersonalDataChanged() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
   // Sets the listener to be notified of PersonalDataManager events.
-  virtual void SetObserver(PersonalDataManager::Observer* observer);
+  virtual void SetObserver(PersonalDataManagerObserver* observer);
 
   // Removes |observer| as the observer of this PersonalDataManager.
-  virtual void RemoveObserver(PersonalDataManager::Observer* observer);
+  virtual void RemoveObserver(PersonalDataManagerObserver* observer);
 
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged();
@@ -238,7 +227,7 @@ class PersonalDataManager
   WebDataService::Handle pending_creditcards_query_;
 
   // The observers.
-  ObserverList<Observer> observers_;
+  ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
   // For logging UMA metrics. Overridden by metrics tests.

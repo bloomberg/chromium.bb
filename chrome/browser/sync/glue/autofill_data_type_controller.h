@@ -10,20 +10,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
 class NotificationDetails;
 class NotificationSource;
+class PersonalDataManager;
+class WebDataService;
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController : public NonFrontendDataTypeController,
                                    public NotificationObserver,
-                                   public PersonalDataManager::Observer {
+                                   public PersonalDataManagerObserver {
  public:
   AutofillDataTypeController(ProfileSyncFactory* profile_sync_factory,
                              Profile* profile);
@@ -38,7 +40,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // PersonalDataManager::Observer implementation:
+  // PersonalDataManagerObserver implementation:
   virtual void OnPersonalDataChanged() OVERRIDE;
 
  protected:
@@ -57,6 +59,7 @@ class AutofillDataTypeController : public NonFrontendDataTypeController,
    // Getters and setters
    PersonalDataManager* personal_data() const;
    WebDataService* web_data_service() const;
+
  private:
   PersonalDataManager* personal_data_;
   scoped_refptr<WebDataService> web_data_service_;

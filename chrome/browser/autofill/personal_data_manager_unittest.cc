@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +35,7 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-class PersonalDataLoadedObserverMock : public PersonalDataManager::Observer {
+class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
  public:
   PersonalDataLoadedObserverMock() {}
   virtual ~PersonalDataLoadedObserverMock() {}
