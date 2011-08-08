@@ -18,7 +18,7 @@ ImageUtil.trace = (function() {
     this.container_ = container;
   };
 
-  PerformanceTrace.prototype.report_ = function(key, value) {
+  PerformanceTrace.prototype.report = function(key, value) {
     if (!this.container_) return;
     if (!(key in this.lines_)) {
       var div = this.lines_[key] = document.createElement('div');
@@ -29,17 +29,17 @@ ImageUtil.trace = (function() {
 
   PerformanceTrace.prototype.resetTimer = function(key) {
     this.timers_[key] = Date.now();
-  }
+  };
 
   PerformanceTrace.prototype.reportTimer = function(key) {
-    this.report_(key, (Date.now() - this.timers_[key]) + 'ms');
+    this.report(key, (Date.now() - this.timers_[key]) + 'ms');
   };
 
   return new PerformanceTrace();
 })();
 
 
-ImageUtil.clip = function(min, value, max) {
+ImageUtil.clamp = function(min, value, max) {
   return Math.max(min, Math.min(max, value));
 };
 
@@ -169,6 +169,36 @@ Rect.prototype.inside = function(x, y) {
          this.top <= y && y < this.top + this.height;
 };
 
+/**
+ * Clamp the rectangle to the bounds by moving it.
+ * Decrease the size only if necessary.
+ */
+Rect.prototype.clamp = function(bounds) {
+  var rect = new Rect(this);
+
+  if (rect.width > bounds.width) {
+    rect.left = bounds.left;
+    rect.width = bounds.width;
+  } else if (rect.left < bounds.left){
+    rect.left = bounds.left;
+  } else if (rect.left + rect.width >
+             bounds.left + bounds.width) {
+    rect.left = bounds.left + bounds.width - rect.width;
+  }
+
+  if (rect.height > bounds.height) {
+    rect.top = bounds.top;
+    rect.height = bounds.height;
+  } else if (rect.top < bounds.top){
+    rect.top = bounds.top;
+  } else if (rect.top + rect.height >
+             bounds.top + bounds.height) {
+    rect.top = bounds.top + bounds.height - rect.height;
+  }
+
+  return rect;
+};
+
 /*
  * Useful shortcuts for drawing (static functions).
  */
@@ -176,10 +206,12 @@ Rect.prototype.inside = function(x, y) {
 /**
  * Draws the image in context with appropriate scaling.
  */
-Rect.drawImage = function(context, image, dstRect, srcRect) {
+Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
+  opt_dstRect = opt_dstRect || new Rect(context.canvas);
+  opt_srcRect = opt_srcRect || new Rect(image);
   context.drawImage(image,
-      srcRect.left, srcRect.top, srcRect.width, srcRect.height,
-      dstRect.left, dstRect.top, dstRect.width, dstRect.height);
+      opt_srcRect.left, opt_srcRect.top, opt_srcRect.width, opt_srcRect.height,
+      opt_dstRect.left, opt_dstRect.top, opt_dstRect.width, opt_dstRect.height);
 };
 
 /**
@@ -223,7 +255,7 @@ function Circle(x, y, R) {
   this.x = x;
   this.y = y;
   this.squaredR = R * R;
-};
+}
 
 Circle.prototype.inside = function(x, y) {
   x -= this.x;

@@ -15,7 +15,7 @@ ImageEditor.Mode.Resize.prototype = {__proto__: ImageEditor.Mode.prototype};
 ImageEditor.Mode.register(ImageEditor.Mode.Resize);
 
 ImageEditor.Mode.Resize.prototype.createTools = function(toolbar) {
-  var canvas = this.getBuffer().getImageCanvas();
+  var canvas = this.getContent().getCanvas();
   this.widthRange_ =
       toolbar.addRange('width', 0, canvas.width, canvas.width * 2);
   this.heightRange_ =
@@ -23,19 +23,12 @@ ImageEditor.Mode.Resize.prototype.createTools = function(toolbar) {
 };
 
 ImageEditor.Mode.Resize.prototype.commit = function() {
-  var newCanvas = this.getBuffer().createBlankCanvas(
-      this.widthRange_.getValue(), this.heightRange_.getValue());
-
-  var srcCanvas = this.getBuffer().getImageCanvas();
-
-  var context = newCanvas.getContext("2d");
   ImageUtil.trace.resetTimer('transform');
-  Rect.drawImage(
-      context, srcCanvas, new Rect(newCanvas), new Rect(srcCanvas));
+  var newCanvas = this.getContent().copyCanvas(
+      this.widthRange_.getValue(), this.heightRange_.getValue());
   ImageUtil.trace.reportTimer('transform');
-
-  this.getBuffer().setImageCanvas(newCanvas);
-  this.getBuffer().fitImage();
+  this.getContent().setCanvas(newCanvas);
+  this.getViewport().fitImage();
 };
 
 /**
@@ -50,25 +43,23 @@ ImageEditor.Mode.Rotate.prototype = {__proto__: ImageEditor.Mode.prototype};
 
 ImageEditor.Mode.register(ImageEditor.Mode.Rotate);
 
-ImageEditor.Mode.Rotate.prototype.commit = function() {
-  this.getBuffer().fitImage();
-};
+ImageEditor.Mode.Rotate.prototype.commit = function() {};
 
 ImageEditor.Mode.Rotate.prototype.rollback = function() {
   if (this.backup_) {
-    this.getBuffer().setImageCanvas(this.backup_);
+    this.getContent().setCanvas(this.backup_);
     this.backup_ = null;
-    this.transform_ = null;
   }
+  this.transform_ = null;
 };
 
 ImageEditor.Mode.Rotate.prototype.createTools = function(toolbar) {
-  toolbar.addButton("Left", this.doTransform.bind(this, 1, 1, 3));
-  toolbar.addButton("Right", this.doTransform.bind(this, 1, 1, 1));
-  toolbar.addButton("Flip V", this.doTransform.bind(this, 1, -1, 0));
-  toolbar.addButton("Flip H", this.doTransform.bind(this, -1, 1, 0));
+  toolbar.addButton("Left", this.modifyTransform.bind(this, 1, 1, 3));
+  toolbar.addButton("Right", this.modifyTransform.bind(this, 1, 1, 1));
+  toolbar.addButton("Flip V", this.modifyTransform.bind(this, 1, -1, 0));
+  toolbar.addButton("Flip H", this.modifyTransform.bind(this, -1, 1, 0));
 
-  var srcCanvas = this.getBuffer().getImageCanvas();
+  var srcCanvas = this.getContent().getCanvas();
 
   var width = srcCanvas.width;
   var height = srcCanvas.height;
@@ -81,79 +72,165 @@ ImageEditor.Mode.Rotate.prototype.createTools = function(toolbar) {
   this.tiltRange_.addEventListener('mouseup', this.onTiltStop.bind(this));
 };
 
+ImageEditor.Mode.Rotate.prototype.getOriginal = function() {
+  if (!this.backup_) {
+    this.backup_ = this.getContent().getCanvas();
+  }
+  return this.backup_;
+};
+
+ImageEditor.Mode.Rotate.prototype.getTransform = function() {
+  if (!this.transform_) {
+    this.transform_ = new ImageEditor.Mode.Rotate.Transform();
+  }
+  return this.transform_;
+};
+
 ImageEditor.Mode.Rotate.prototype.onTiltStart = function() {
   this.tiltDrag_ = true;
+
+  var original = this.getOriginal();
+
+  // Downscale the original image to the overview thumbnail size.
+  var downScale = ImageBuffer.Overview.MAX_SIZE /
+      Math.max(original.width, original.height);
+
+  this.preScaledOriginal_ = this.getContent().createBlankCanvas(
+        original.width * downScale, original.height * downScale);
+  Rect.drawImage(this.preScaledOriginal_.getContext('2d'), original);
+
+  // Translate the current offset into the original image coordinate space.
+  var viewport = this.getViewport();
+  var originalOffset = this.getTransform().transformOffsetToBaseline(
+      viewport.getOffsetX(), viewport.getOffsetY());
+
+  // Find the part of the original image that is sufficient to pre-render
+  // the rotation results.
+  var screenClipped = viewport.getScreenClipped();
+  var diagonal = viewport.screenToImageSize(
+      Math.sqrt(screenClipped.width * screenClipped.width +
+                screenClipped.height * screenClipped.height));
+
+  var originalBounds = new Rect(original);
+
+  var originalPreclipped = new Rect(
+      originalBounds.width / 2 - originalOffset.x - diagonal / 2,
+      originalBounds.height / 2 - originalOffset.y - diagonal / 2,
+      diagonal,
+      diagonal).clamp(originalBounds);
+
+  // We assume that the scale is not changing during the mouse drag.
+  var scale = viewport.getScale();
+  this.preClippedOriginal_ = this.getContent().createBlankCanvas(
+        originalPreclipped.width * scale, originalPreclipped.height * scale);
+
+  Rect.drawImage(this.preClippedOriginal_.getContext('2d'), original, null,
+      originalPreclipped);
+
   this.repaint();
 };
 
 ImageEditor.Mode.Rotate.prototype.onTiltStop = function() {
   this.tiltDrag_ = false;
-  this.repaint();
+  if (this.preScaledOriginal_) {
+    this.preScaledOriginal_ = false;
+    this.preClippedOriginal_ = false;
+    this.applyTransform();
+  } else {
+    this.repaint();
+  }
 };
 
 ImageEditor.Mode.Rotate.prototype.draw = function(context) {
   if (!this.tiltDrag_) return;
 
-  var rect = this.getBuffer().getClippedScreen();
+  var screenClipped = this.getViewport().getScreenClipped();
+
+  if (this.preClippedOriginal_) {
+    ImageUtil.trace.resetTimer('preview');
+    var transformed = this.getContent().createBlankCanvas(
+        screenClipped.width, screenClipped.height);
+    this.getTransform().apply(
+        transformed.getContext('2d'), this.preClippedOriginal_);
+    Rect.drawImage(context, transformed, screenClipped);
+    ImageUtil.trace.reportTimer('preview');
+  }
+
   const STEP = 50;
   context.save();
   context.globalAlpha = 0.4;
   context.strokeStyle = "#C0C0C0";
-  for(var x = 0; x <= rect.width - STEP; x += STEP) {
-    context.strokeRect(rect.left + x, rect.top, STEP, rect.height);
+
+  for(var x = Math.floor(screenClipped.left / STEP) * STEP;
+          x < screenClipped.left + screenClipped.width;
+          x += STEP) {
+    var left = Math.max(screenClipped.left, x);
+    var right = Math.min(screenClipped.left + screenClipped.width, x + STEP);
+    context.strokeRect(
+        left, screenClipped.top, right - left, screenClipped.height);
   }
-  for(var y = 0; y <= rect.height - STEP; y += STEP) {
-    context.strokeRect(rect.left, rect.top + y, rect.width, STEP);
+
+  for(var y = Math.floor(screenClipped.top / STEP) * STEP;
+          y < screenClipped.top + screenClipped.height;
+          y += STEP) {
+    var top = Math.max(screenClipped.top, y);
+    var bottom = Math.min(screenClipped.top + screenClipped.height, y + STEP);
+    context.strokeRect(
+        screenClipped.left, top, screenClipped.width, bottom - top);
   }
+
   context.restore();
 };
 
-ImageEditor.Mode.Rotate.prototype.doTransform =
+ImageEditor.Mode.Rotate.prototype.modifyTransform =
     function(scaleX, scaleY, turn90) {
-  if (!this.backup_) {
-    this.backup_ = this.getBuffer().getImageCanvas();
-    this.transform_ = new ImageEditor.Mode.Rotate.Transform();
-  }
 
-  var baselineOffset = this.transform_.transformOffsetToBaseline(
-      this.getBuffer().getOffsetX(), this.getBuffer().getOffsetY());
+  var transform = this.getTransform();
+  var viewport = this.getViewport();
 
-  this.transform_.modify(scaleX, scaleY, turn90, this.tiltRange_.getValue());
+  var baselineOffset = transform.transformOffsetToBaseline(
+      viewport.getOffsetX(), viewport.getOffsetY());
+
+  transform.modify(scaleX, scaleY, turn90, this.tiltRange_.getValue());
+
+  var newOffset = transform.transformOffsetFromBaseline(
+      baselineOffset.x, baselineOffset.y);
+
+  // Ignoring offset clipping makes rotation behave more naturally.
+  viewport.setOffset(newOffset.x, newOffset.y, true /*ignore clipping*/);
 
   if (scaleX * scaleY < 0) {
-    this.tiltRange_.setValue(this.transform_.tilt);
+    this.tiltRange_.setValue(transform.tilt);
   }
 
-  var srcCanvas = this.backup_;
+  this.applyTransform();
+};
+
+ImageEditor.Mode.Rotate.prototype.applyTransform = function() {
+  var srcCanvas = this.getOriginal();
 
   var newSize = this.transform_.getTiltedRectSize(
       srcCanvas.width, srcCanvas.height);
 
-  var dstCanvas =
-      this.getBuffer().createBlankCanvas(newSize.width, newSize.height);
+  var scale = 1;
 
-  var context = dstCanvas.getContext("2d");
-  context.save();
-  context.translate(dstCanvas.width / 2, dstCanvas.height / 2);
-  context.rotate(this.transform_.getAngle());
-  context.scale(this.transform_.scaleX, this.transform_.scaleY);
+  if (this.preScaledOriginal_) {
+    scale = this.preScaledOriginal_.width / srcCanvas.width;
+    srcCanvas = this.preScaledOriginal_;
+  }
+
+  var dstCanvas = this.getContent().createBlankCanvas(
+      newSize.width * scale, newSize.height * scale);
   ImageUtil.trace.resetTimer('transform');
-  context.drawImage(srcCanvas, -srcCanvas.width / 2, -srcCanvas.height / 2);
+  this.transform_.apply(dstCanvas.getContext('2d'), srcCanvas);
   ImageUtil.trace.reportTimer('transform');
-  context.restore();
+  this.getContent().setCanvas(dstCanvas, newSize.width, newSize.height);
 
-  var newOffset = this.transform_.transformOffsetFromBaseline(
-      baselineOffset.x, baselineOffset.y);
-
-  // Ignoring offset clipping make rotation behave more natural.
-  this.getBuffer().setOffset(
-      newOffset.x, newOffset.y, true /*ignore clipping*/);
-  this.getBuffer().setImageCanvas(dstCanvas);
-  this.getBuffer().repaint();
+  this.repaint();
 };
 
 ImageEditor.Mode.Rotate.prototype.update = function(values) {
-  this.doTransform(1, 1, 0);
+  this.modifyTransform(1, 1, 0);
 };
 
 ImageEditor.Mode.Rotate.Transform = function() {
@@ -161,7 +238,7 @@ ImageEditor.Mode.Rotate.Transform = function() {
   this.scaleY = 1;
   this.turn90 = 0;
   this.tilt = 0;
-}
+};
 
 ImageEditor.Mode.Rotate.Transform.prototype.modify =
     function(scaleX, scaleY, turn90, tilt) {
@@ -224,6 +301,15 @@ ImageEditor.Mode.Rotate.Transform.prototype.getTiltedRectSize =
   }
 };
 
+ImageEditor.Mode.Rotate.Transform.prototype.apply = function(
+    context, srcCanvas) {
+  context.save();
+  context.translate(context.canvas.width / 2, context.canvas.height / 2);
+  context.rotate(this.getAngle());
+  context.scale(this.scaleX, this.scaleY);
+  context.drawImage(srcCanvas, -srcCanvas.width / 2, -srcCanvas.height / 2);
+  context.restore();
+};
 
 /**
  * Crop mode.
@@ -246,17 +332,17 @@ ImageEditor.Mode.Crop.GRAB_RADIUS = 5;
 ImageEditor.Mode.Crop.prototype.commit = function() {
   var cropImageRect = this.cropRect_.getRect();
 
-  var newCanvas = this.getBuffer().
+  var newCanvas = this.getContent().
       createBlankCanvas(cropImageRect.width, cropImageRect.height);
 
   var newContext = newCanvas.getContext("2d");
   ImageUtil.trace.resetTimer('transform');
-  Rect.drawImage(newContext, this.getBuffer().getImageCanvas(),
+  Rect.drawImage(newContext, this.getContent().getCanvas(),
       new Rect(newCanvas), cropImageRect);
   ImageUtil.trace.reportTimer('transform');
 
-  this.getBuffer().setImageCanvas(newCanvas);
-  this.getBuffer().fitImage();
+  this.getContent().setCanvas(newCanvas);
+  this.getViewport().fitImage();
 };
 
 ImageEditor.Mode.Crop.prototype.rollback = function() {
@@ -264,17 +350,17 @@ ImageEditor.Mode.Crop.prototype.rollback = function() {
 };
 
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
-  var rect = new Rect(this.getBuffer().getClippedImage());
+  var rect = new Rect(this.getViewport().getImageClipped());
   rect = rect.inflate (-rect.width / 6, -rect.height / 6);
   this.cropRect_ = new DraggableRect(
-      rect, this.getBuffer(), ImageEditor.Mode.Crop.GRAB_RADIUS);
+      rect, this.getViewport(), ImageEditor.Mode.Crop.GRAB_RADIUS);
 };
 
 ImageEditor.Mode.Crop.prototype.draw = function(context) {
   var R = ImageEditor.Mode.Crop.GRAB_RADIUS;
 
-  var inner = this.getBuffer().imageToScreenRect(this.cropRect_.getRect());
-  var outer = this.getBuffer().getClippedScreen();
+  var inner = this.getViewport().imageToScreenRect(this.cropRect_.getRect());
+  var outer = this.getViewport().getScreenClipped();
 
   var inner_bottom = inner.top + inner.height;
   var inner_right = inner.left + inner.width;
@@ -324,7 +410,7 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y) {
  * A draggable rectangle over the image.
  */
 
-function DraggableRect(rect, buffer, sensitivity) {
+function DraggableRect(rect, viewport, sensitivity) {
 
   // The bounds are not held in a regular rectangle (with width/height).
   // left/top/right/bottom held instead for convenience.
@@ -334,7 +420,7 @@ function DraggableRect(rect, buffer, sensitivity) {
   this.bounds_[DraggableRect.TOP] = rect.top;
   this.bounds_[DraggableRect.BOTTOM] = rect.top + rect.height;
 
-  this.buffer_ = buffer;
+  this.viewport_ = viewport;
   this.sensitivity_ = sensitivity;
 
   this.oppositeSide_ = {};
@@ -350,10 +436,10 @@ function DraggableRect(rect, buffer, sensitivity) {
   this.cssSide_[DraggableRect.RIGHT] = 'e';
   this.cssSide_[DraggableRect.BOTTOM] = 's';
   this.cssSide_[DraggableRect.NONE] = '';
-};
+}
 
 // Static members to simplify reflective access to the bounds.
-DraggableRect.LEFT = 'left'
+DraggableRect.LEFT = 'left';
 DraggableRect.RIGHT = 'right';
 DraggableRect.TOP = 'top';
 DraggableRect.BOTTOM = 'bottom';
@@ -368,7 +454,7 @@ DraggableRect.prototype.getDragMode = function(x, y) {
   };
 
   var bounds = this.bounds_;
-  var R = this.buffer_.screenToImageSize(this.sensitivity_);
+  var R = this.viewport_.screenToImageSize(this.sensitivity_);
 
   var circle = new Circle(x, y, R);
 
@@ -410,7 +496,7 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
     mode = this.dragMode_;
   } else {
     mode = this.getDragMode(
-        this.buffer_.screenToImageX(x), this.buffer_.screenToImageY(y));
+        this.viewport_.screenToImageX(x), this.viewport_.screenToImageY(y));
   }
   if (mode.whole) return 'hand';
   if (mode.outside) return 'crosshair';
@@ -418,10 +504,10 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
 };
 
 DraggableRect.prototype.getDragHandler = function(x, y) {
-  x = this.buffer_.screenToImageX(x);
-  y = this.buffer_.screenToImageY(y);
+  x = this.viewport_.screenToImageX(x);
+  y = this.viewport_.screenToImageY(y);
 
-  var clipRect = this.buffer_.getClippedImage();
+  var clipRect = this.viewport_.getImageClipped();
   if (!clipRect.inside(x, y)) return null;
 
   this.dragMode_ = this.getDragMode(x, y);
@@ -487,16 +573,16 @@ DraggableRect.prototype.getDragHandler = function(x, y) {
   }
 
   function convertX(x) {
-    return ImageUtil.clip(
+    return ImageUtil.clamp(
         clipRect.left,
-        self.buffer_.screenToImageX(x) + mouseBiasX,
+        self.viewport_.screenToImageX(x) + mouseBiasX,
         clipRect.left + clipRect.width - fixedWidth);
   }
 
   function convertY(y) {
-    return ImageUtil.clip(
+    return ImageUtil.clamp(
         clipRect.top,
-        self.buffer_.screenToImageY(y) + mouseBiasY,
+        self.viewport_.screenToImageY(y) + mouseBiasY,
         clipRect.top + clipRect.height - fixedHeight);
   }
 

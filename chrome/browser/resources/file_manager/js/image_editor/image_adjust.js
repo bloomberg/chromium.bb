@@ -15,21 +15,21 @@ ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
 
 ImageEditor.Mode.Adjust.prototype.rollback = function() {
   if (!this.backup_) return; // Did not do anything yet.
-  this.getBuffer().drawImageData(this.backup_);
+  this.getContent().drawImageData(this.backup_, 0, 0);
   this.backup_ = null;
   this.repaint();
 };
 
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
   if (!this.backup_) {
-    this.backup_ = this.getBuffer().copyImageData();
-    this.scratch_ = this.getBuffer().copyImageData();
+    this.backup_ = this.getContent().copyImageData();
+    this.scratch_ = this.getContent().copyImageData();
   }
 
   ImageUtil.trace.resetTimer('filter');
   this.filterFunc_(this.scratch_, this.backup_, options);
   ImageUtil.trace.reportTimer('filter');
-  this.getBuffer().drawImageData(this.scratch_);
+  this.getContent().drawImageData(this.scratch_, 0, 0);
   this.repaint();
 };
 

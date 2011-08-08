@@ -28,12 +28,11 @@ function ImageEditor(container, saveCallback, closeCallback) {
   canvas.height = this.canvasWrapper_.clientHeight;
 
   this.buffer_ = new ImageBuffer(canvas);
-  this.buffer_.addOverlay(new ImageBuffer.Overview());
 
-  this.scaleControl_ =
-      new ImageEditor.ScaleControl(this.canvasWrapper_, this.buffer_);
+  this.scaleControl_ = new ImageEditor.ScaleControl(
+      this.canvasWrapper_, this.getBuffer().getViewport());
 
-  this.panControl_ = new ImageEditor.MouseControl(canvas, this.buffer_);
+  this.panControl_ = new ImageEditor.MouseControl(canvas, this.getBuffer());
 
   this.toolbar_ =
       new ImageEditor.Toolbar(container, this.onOptionsChange.bind(this));
@@ -57,7 +56,7 @@ ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
   window.addEventListener('resize', editor.resizeFrame.bind(editor), false);
   editor.load(source, opt_metadata);
   return editor;
-}
+};
 
 /**
  * Loads a new image and its metadata.
@@ -98,7 +97,7 @@ ImageEditor.prototype.close = function() {
  */
 ImageEditor.prototype.save = function() {
   this.saveCallback_(ImageEncoder.getBlob(
-      this.getBuffer().getImageCanvas(), 'image/jpeg', this.metadata_));
+      this.getBuffer().getContent().getCanvas(), 'image/jpeg', this.metadata_));
 };
 
 ImageEditor.prototype.onOptionsChange = function(options) {
@@ -124,7 +123,7 @@ ImageEditor.prototype.initToolbar = function() {
 
 ImageEditor.Mode = function(displayName) {
   this.displayName = displayName;
-}
+};
 
 ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
 
@@ -132,8 +131,16 @@ ImageEditor.Mode.prototype.getBuffer = function() {
   return this.buffer_;
 };
 
-ImageEditor.Mode.prototype.repaint = function() {
-  return this.getBuffer().repaint();
+ImageEditor.Mode.prototype.repaint = function(opt_fromOverlay) {
+  return this.buffer_.repaint(opt_fromOverlay);
+};
+
+ImageEditor.Mode.prototype.getViewport = function() {
+  return this.viewport_;
+};
+
+ImageEditor.Mode.prototype.getContent = function() {
+  return this.content_;
 };
 
 /**
@@ -141,6 +148,8 @@ ImageEditor.Mode.prototype.repaint = function() {
  */
 ImageEditor.Mode.prototype.setUp = function(buffer) {
   this.buffer_ = buffer;
+  this.viewport_ = buffer.getViewport();
+  this.content_ = buffer.getContent();
   this.buffer_.addOverlay(this);
 };
 
@@ -176,7 +185,7 @@ ImageEditor.Mode.constructors = [];
 
 ImageEditor.Mode.register = function(constructor) {
   ImageEditor.Mode.constructors.push(constructor);
-}
+};
 
 ImageEditor.prototype.createModeButtons = function() {
   for (var i = 0; i != ImageEditor.Mode.constructors.length; i++) {
@@ -236,9 +245,9 @@ ImageEditor.prototype.onModeReset = function() {
 /**
  * Scale control for an ImageBuffer.
  */
-ImageEditor.ScaleControl = function(parent, buffer) {
-  this.buffer_ = buffer;
-  this.buffer_.setScaleControl(this);
+ImageEditor.ScaleControl = function(parent, viewport) {
+  this.viewport_ = viewport;
+  this.viewport_.setScaleControl(this);
 
   var div = parent.ownerDocument.createElement('div');
   div.className = 'scale-tool';
@@ -319,10 +328,10 @@ ImageEditor.ScaleControl.prototype.displayScale = function(scale) {
  * Called when the user changes the scale via the controls.
  */
 ImageEditor.ScaleControl.prototype.setScale = function (scale) {
-  scale = ImageUtil.clip(this.scaleRange_.min, scale, this.scaleRange_.max);
+  scale = ImageUtil.clamp(this.scaleRange_.min, scale, this.scaleRange_.max);
   this.updateSlider(scale);
-  this.buffer_.setScale(scale / ImageEditor.ScaleControl.FACTOR, false);
-  this.buffer_.repaint();
+  this.viewport_.setScale(scale / ImageEditor.ScaleControl.FACTOR, false);
+  this.viewport_.repaint();
 };
 
 ImageEditor.ScaleControl.prototype.updateSlider = function(scale) {
@@ -365,8 +374,8 @@ ImageEditor.ScaleControl.prototype.onUpButton = function () {
 };
 
 ImageEditor.ScaleControl.prototype.onFitButton = function () {
-  this.buffer_.fitImage();
-  this.buffer_.repaint();
+  this.viewport_.fitImage();
+  this.viewport_.repaint();
 };
 
 /**
@@ -431,7 +440,7 @@ ImageEditor.Toolbar = function (parent, updateCallback) {
   this.wrapper_.className = 'toolbar';
   parent.appendChild(this.wrapper_);
   this.updateCallback_ = updateCallback;
-}
+};
 
 ImageEditor.Toolbar.prototype.clear = function() {
   this.wrapper_.innerHTML = '';
