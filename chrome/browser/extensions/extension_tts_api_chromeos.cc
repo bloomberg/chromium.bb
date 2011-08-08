@@ -88,7 +88,7 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
   if (params.rate >= 0.0) {
     AppendSpeakOption(
         chromeos::SpeechSynthesisLibrary::kSpeechPropertyRate,
-        DoubleToString(1.5 + params.rate * 2.5),
+        DoubleToString(params.rate),
         &options);
   }
 
@@ -101,10 +101,11 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
   }
 
   if (params.volume >= 0.0) {
-    // The TTS service allows a range of 0 to 5 for speech volume.
+    // The Chrome OS TTS service allows a range of 0 to 5 for speech volume,
+    // but 5 clips, so map to a range of 0...4.
     AppendSpeakOption(
         chromeos::SpeechSynthesisLibrary::kSpeechPropertyVolume,
-        DoubleToString(params.volume * 5),
+        DoubleToString(params.volume * 4),
         &options);
   }
 
