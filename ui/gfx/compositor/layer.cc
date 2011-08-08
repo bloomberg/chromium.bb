@@ -89,8 +89,9 @@ void Layer::Draw() {
         static_cast<float>(layer->bounds_.y()));
   }
 
-  // Only blend for child layers. The root layer will clobber the cleared bg.
-  texture_draw_params.blend = parent_ != NULL;
+  // Only blend for transparent child layers.
+  // The root layer will clobber the cleared bg.
+  texture_draw_params.blend = parent_ != NULL && !fills_bounds_opaquely_;
 
 #if defined(OS_WIN)
   texture_->Draw(texture_draw_params);
