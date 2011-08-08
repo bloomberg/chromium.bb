@@ -589,11 +589,10 @@ void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
   for (DictionaryValue::key_iterator iter = virtual_keyboard_pref->begin_keys();
        iter != virtual_keyboard_pref->end_keys();
        ++iter) {
-    const std::string& input_method_id = *iter;
-    if (!virtual_keyboard_pref->GetString(input_method_id, &url))
+    const std::string& xkb_layout = *iter;
+    if (!virtual_keyboard_pref->GetString(xkb_layout, &url))
       continue;
-    input_method_manager->SetVirtualKeyboardPreference(
-        input_method_id, GURL(url));
+    input_method_manager->SetVirtualKeyboardPreference(xkb_layout, GURL(url));
   }
 }
 
