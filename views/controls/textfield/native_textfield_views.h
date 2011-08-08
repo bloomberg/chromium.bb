@@ -139,6 +139,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
 
  private:
   friend class NativeTextfieldViewsTest;
+  friend class TouchSelectionControllerImplTest;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(

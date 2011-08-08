@@ -474,6 +474,7 @@
         'run_all_unittests.cc',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
+        'touchui/touch_selection_controller_impl_unittest.cc',
         'view_unittest.cc',
         'widget/native_widget_test_utils.h',
         'widget/native_widget_test_utils_gtk.cc',
@@ -502,6 +503,11 @@
           ],
         },
         ],
+        ['touchui==0', {
+          'sources!': [
+            'touchui/touch_selection_controller_impl_unittest.cc',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             # TODO(jcivelli): ideally the resource needed by views would be

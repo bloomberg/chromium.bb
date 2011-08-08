@@ -28,6 +28,7 @@ class TouchSelectionControllerImpl : public TouchSelectionController {
   virtual void ClientViewLostFocus() OVERRIDE;
 
  private:
+  friend class TouchSelectionControllerImplTest;
   class SelectionHandleView;
 
   // Callback to inform the client view that the selection handle has been
@@ -37,6 +38,12 @@ class TouchSelectionControllerImpl : public TouchSelectionController {
   // Convenience method to convert a point from a selection handle's coordinate
   // system to that of the client view.
   void ConvertPointToClientView(SelectionHandleView* source, gfx::Point* point);
+
+  // Convenience methods for testing.
+  gfx::Point GetSelectionHandle1Position();
+  gfx::Point GetSelectionHandle2Position();
+  bool IsSelectionHandle1Visible();
+  bool IsSelectionHandle2Visible();
 
   TouchSelectionClientView* client_view_;
   scoped_ptr<SelectionHandleView> selection_handle_1_;

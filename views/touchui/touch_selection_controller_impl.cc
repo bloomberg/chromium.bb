@@ -233,6 +233,22 @@ void TouchSelectionControllerImpl::ConvertPointToClientView(
   View::ConvertPointFromWidget(client_view_, point);
 }
 
+gfx::Point TouchSelectionControllerImpl::GetSelectionHandle1Position() {
+  return selection_handle_1_->GetScreenPosition();
+}
+
+gfx::Point TouchSelectionControllerImpl::GetSelectionHandle2Position() {
+  return selection_handle_2_->GetScreenPosition();
+}
+
+bool TouchSelectionControllerImpl::IsSelectionHandle1Visible() {
+  return selection_handle_1_->IsVisible();
+}
+
+bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
+  return selection_handle_2_->IsVisible();
+}
+
 TouchSelectionController* TouchSelectionController::create(
     TouchSelectionClientView* client_view) {
   return new TouchSelectionControllerImpl(client_view);
