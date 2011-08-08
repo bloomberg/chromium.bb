@@ -126,11 +126,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCookiesEnabled(const GURL& url,
                         const GURL& first_party_for_cookies,
                         bool* cookies_enabled);
-  void OnPluginFileDialog(const IPC::Message& msg,
-                          bool multiple_files,
-                          const std::wstring& title,
-                          const std::wstring& filter,
-                          uint32 user_data);
 
 #if defined(OS_MACOSX)
   void OnLoadFont(const FontDescriptor& font,
