@@ -368,7 +368,7 @@ command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$(call replace_spaces,$@))),\\
 # so we can check their command lines.
 #   $? -- new prerequisites
 #   $| -- order-only dependencies
-prereq_changed = $(filter-out $|,$?)
+prereq_changed = $(filter-out FORCE_DO_CMD,$(filter-out $|,$?))
 
 # do_cmd: run a command via the above cmd_foo names, if necessary.
 # Should always run for a given target to handle command-line changes.
