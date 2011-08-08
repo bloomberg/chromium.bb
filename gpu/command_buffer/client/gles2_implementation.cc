@@ -9,6 +9,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gles2_command_buffer.h>
 #include "../client/mapped_memory.h"
+#include "../client/program_info_manager.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
 #include "../common/trace_event.h"
@@ -514,6 +515,9 @@ GLES2Implementation::GLES2Implementation(
   texture_units_.reset(
       new TextureUnit[gl_state_.max_combined_texture_image_units]);
 
+
+  program_info_manager_.reset(ProgramInfoManager::Create(sharing_resources_));
+
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   buffer_id_handler_->MakeIds(
       kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
@@ -949,28 +953,37 @@ void GLES2Implementation::GetVertexAttribPointerv(
   });
 }
 
+void GLES2Implementation::DeleteProgramOrShaderHelper(
+    GLuint program_or_shader) {
+  program_and_shader_id_handler_->FreeIds(1, &program_or_shader);
+  program_info_manager_->DeleteInfo(program_or_shader);
+}
+
+GLint GLES2Implementation::GetAttribLocationHelper(
+    GLuint program, const char* name) {
+  typedef GetAttribLocationBucket::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = -1;
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->GetAttribLocationBucket(
+      program, kResultBucketId, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
   GPU_CLIENT_LOG("[" << this << "] glGetAttribLocation(" << program
       << ", " << name << ")");
   TRACE_EVENT0("gpu", "GLES2::GetAttribLocation");
-  typedef GetAttribLocationBucket::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = -1;
-  SetBucketAsCString(kResultBucketId, name);
-  helper_->GetAttribLocationBucket(program, kResultBucketId,
-                                   result_shm_id(), result_shm_offset());
-  WaitForCmd();
-  helper_->SetBucketSize(kResultBucketId, 0);
-  GPU_CLIENT_LOG("returned " << *result);
-  return *result;
+  GLint loc = program_info_manager_->GetAttribLocation(this, program, name);
+  GPU_CLIENT_LOG("returned " << loc);
+  return loc;
 }
 
-GLint GLES2Implementation::GetUniformLocation(
+GLint GLES2Implementation::GetUniformLocationHelper(
     GLuint program, const char* name) {
-  GPU_CLIENT_LOG("[" << this << "] glGetUniformLocation(" << program
-      << ", " << name << ")");
-  TRACE_EVENT0("gpu", "GLES2::GetUniformLocation");
   typedef GetUniformLocationBucket::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = -1;
@@ -979,10 +992,29 @@ GLint GLES2Implementation::GetUniformLocation(
                                     result_shm_id(), result_shm_offset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
-  GPU_CLIENT_LOG("returned " << *result);
   return *result;
 }
 
+GLint GLES2Implementation::GetUniformLocation(
+    GLuint program, const char* name) {
+  GPU_CLIENT_LOG("[" << this << "] glGetUniformLocation(" << program
+      << ", " << name << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetUniformLocation");
+  GLint loc = program_info_manager_->GetUniformLocation(this, program, name);
+  GPU_CLIENT_LOG("returned " << loc);
+  return loc;
+}
+
+bool GLES2Implementation::GetProgramivHelper(
+    GLuint program, GLenum pname, GLint* params) {
+  return program_info_manager_->GetProgramiv(this, program, pname, params);
+}
+
+void GLES2Implementation::LinkProgram(GLuint program) {
+  GPU_CLIENT_LOG("[" << this << "] glLinkProgram(" << program << ")");
+  helper_->LinkProgram(program);
+  program_info_manager_->CreateInfo(program);
+}
 
 void GLES2Implementation::ShaderBinary(
     GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
@@ -1436,6 +1468,43 @@ void GLES2Implementation::TexSubImage2DImpl(
   }
 }
 
+bool GLES2Implementation::GetActiveAttribHelper(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  typedef gles2::GetActiveAttrib::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  // Set as failed so if the command fails we'll recover.
+  result->success = false;
+  helper_->GetActiveAttrib(program, index, kResultBucketId,
+                           result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  if (result->success) {
+    if (size) {
+      *size = result->size;
+    }
+    if (type) {
+      *type = result->type;
+    }
+    if (length || name) {
+      std::vector<int8> str;
+      GetBucketContents(kResultBucketId, &str);
+      GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
+                                  std::max(static_cast<size_t>(0),
+                                           str.size() - 1));
+      if (length) {
+        *length = max_size;
+      }
+      if (name && bufsize > 0) {
+        memcpy(name, &str[0], max_size);
+        name[max_size] = '\0';
+      }
+    }
+  }
+  return result->success != 0;
+}
+
 void GLES2Implementation::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
@@ -1450,23 +1519,39 @@ void GLES2Implementation::GetActiveAttrib(
     return;
   }
   TRACE_EVENT0("gpu", "GLES2::GetActiveAttrib");
-  // Clear the bucket so if we the command fails nothing will be in it.
+  bool success = program_info_manager_->GetActiveAttrib(
+        this, program, index, bufsize, length, size, type, name);
+  if (success) {
+    if (size) {
+      GPU_CLIENT_LOG("  size: " << *size);
+    }
+    if (type) {
+      GPU_CLIENT_LOG("  type: " << GLES2Util::GetStringEnum(*type));
+    }
+    if (name) {
+      GPU_CLIENT_LOG("  name: " << name);
+    }
+  }
+}
+
+bool GLES2Implementation::GetActiveUniformHelper(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
-  typedef gles2::GetActiveAttrib::Result Result;
+  typedef gles2::GetActiveUniform::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
   // Set as failed so if the command fails we'll recover.
   result->success = false;
-  helper_->GetActiveAttrib(program, index, kResultBucketId,
-                           result_shm_id(), result_shm_offset());
+  helper_->GetActiveUniform(program, index, kResultBucketId,
+                            result_shm_id(), result_shm_offset());
   WaitForCmd();
   if (result->success) {
     if (size) {
       *size = result->size;
-      GPU_CLIENT_LOG("  size: " << *size);
     }
     if (type) {
       *type = result->type;
-      GPU_CLIENT_LOG("  type: " << GLES2Util::GetStringEnum(*type));
     }
     if (length || name) {
       std::vector<int8> str;
@@ -1480,10 +1565,10 @@ void GLES2Implementation::GetActiveAttrib(
       if (name && bufsize > 0) {
         memcpy(name, &str[0], max_size);
         name[max_size] = '\0';
-        GPU_CLIENT_LOG("  name: " << name);
       }
     }
   }
+  return result->success != 0;
 }
 
 void GLES2Implementation::GetActiveUniform(
@@ -1500,38 +1585,17 @@ void GLES2Implementation::GetActiveUniform(
     return;
   }
   TRACE_EVENT0("gpu", "GLES2::GetActiveUniform");
-  // Clear the bucket so if we the command fails nothing will be in it.
-  helper_->SetBucketSize(kResultBucketId, 0);
-  typedef gles2::GetActiveUniform::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
-  // Set as failed so if the command fails we'll recover.
-  result->success = false;
-  helper_->GetActiveUniform(program, index, kResultBucketId,
-                            result_shm_id(), result_shm_offset());
-  WaitForCmd();
-  if (result->success) {
+  bool success = program_info_manager_->GetActiveUniform(
+      this, program, index, bufsize, length, size, type, name);
+  if (success) {
     if (size) {
-      *size = result->size;
       GPU_CLIENT_LOG("  size: " << *size);
     }
     if (type) {
-      *type = result->type;
       GPU_CLIENT_LOG("  type: " << GLES2Util::GetStringEnum(*type));
     }
-    if (length || name) {
-      std::vector<int8> str;
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
-                                  std::max(static_cast<size_t>(0),
-                                           str.size() - 1));
-      if (length) {
-        *length = max_size;
-      }
-      if (name && bufsize > 0) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-        GPU_CLIENT_LOG("  name: " << name);
-      }
+    if (name) {
+      GPU_CLIENT_LOG("  name: " << name);
     }
   }
 }
@@ -2332,6 +2396,15 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
   });
 }
 
+void GLES2Implementation::GetProgramInfoCHROMIUMHelper(
+    GLuint program, std::vector<int8>* result) {
+  GPU_DCHECK(result);
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetProgramInfoCHROMIUM(program, kResultBucketId);
+  GetBucketContents(kResultBucketId, result);
+}
+
 void GLES2Implementation::GetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info) {
   if (bufsize < 0) {
@@ -2345,12 +2418,9 @@ void GLES2Implementation::GetProgramInfoCHROMIUM(
   // Make sure they've set size to 0 else the value will be undefined on
   // lost context.
   GPU_DCHECK(*size == 0);
-  // Clear the bucket so if the command fails nothing will be in it.
-  helper_->SetBucketSize(kResultBucketId, 0);
-  helper_->GetProgramInfoCHROMIUM(program, kResultBucketId);
   std::vector<int8> result;
-  GetBucketContents(kResultBucketId, &result);
-  if (result.size() == 0) {
+  GetProgramInfoCHROMIUMHelper(program, &result);
+  if (result.empty()) {
     return;
   }
   *size = result.size();

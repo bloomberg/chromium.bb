@@ -857,7 +857,7 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
   EXPECT_EQ(arraysize(kUniforms), header->num_uniforms);
   const ProgramInput* inputs = bucket.GetDataAs<const ProgramInput*>(
       sizeof(*header),
-      sizeof(ProgramInput) * (header->num_attribs + header->num_attribs));
+      sizeof(ProgramInput) * (header->num_attribs + header->num_uniforms));
   ASSERT_TRUE(inputs != NULL);
   const ProgramInput* input = inputs;
   // TODO(gman): Don't assume these are in order.

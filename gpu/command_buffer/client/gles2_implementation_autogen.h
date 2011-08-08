@@ -249,7 +249,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
 void DeleteProgram(GLuint program) {
   GPU_CLIENT_LOG("[" << this << "] glDeleteProgram(" << program << ")");
   GPU_CLIENT_DCHECK(program != 0);
-  program_and_shader_id_handler_->FreeIds(1, &program);
+  DeleteProgramOrShaderHelper(program);
   helper_->DeleteProgram(program);
   Flush();
 }
@@ -278,7 +278,7 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
 void DeleteShader(GLuint shader) {
   GPU_CLIENT_LOG("[" << this << "] glDeleteShader(" << shader << ")");
   GPU_CLIENT_DCHECK(shader != 0);
-  program_and_shader_id_handler_->FreeIds(1, &shader);
+  DeleteProgramOrShaderHelper(shader);
   helper_->DeleteShader(shader);
   Flush();
 }
@@ -571,18 +571,19 @@ void GetProgramInfoLog(
       << static_cast<void*>(infolog) << ")");
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetProgramInfoLog(program, kResultBucketId);
-  if (bufsize > 0) {
-    std::string str;
-    if (GetBucketAsString(kResultBucketId, &str)) {
-      GLsizei max_size =
+  std::string str;
+  GLsizei max_size = 0;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    if (bufsize > 0) {
+      max_size =
           std::min(static_cast<size_t>(bufsize) - 1, str.size());
-      if (length != NULL) {
-        *length = max_size;
-      }
       memcpy(infolog, str.c_str(), max_size);
       infolog[max_size] = '\0';
       GPU_CLIENT_LOG("------\n" << infolog << "\n------");
     }
+  }
+  if (length != NULL) {
+    *length = max_size;
   }
 }
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
@@ -633,18 +634,19 @@ void GetShaderInfoLog(
       << static_cast<void*>(infolog) << ")");
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetShaderInfoLog(shader, kResultBucketId);
-  if (bufsize > 0) {
-    std::string str;
-    if (GetBucketAsString(kResultBucketId, &str)) {
-      GLsizei max_size =
+  std::string str;
+  GLsizei max_size = 0;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    if (bufsize > 0) {
+      max_size =
           std::min(static_cast<size_t>(bufsize) - 1, str.size());
-      if (length != NULL) {
-        *length = max_size;
-      }
       memcpy(infolog, str.c_str(), max_size);
       infolog[max_size] = '\0';
       GPU_CLIENT_LOG("------\n" << infolog << "\n------");
     }
+  }
+  if (length != NULL) {
+    *length = max_size;
   }
 }
 void GetShaderPrecisionFormat(
@@ -660,18 +662,19 @@ void GetShaderSource(
       << static_cast<void*>(source) << ")");
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetShaderSource(shader, kResultBucketId);
-  if (bufsize > 0) {
-    std::string str;
-    if (GetBucketAsString(kResultBucketId, &str)) {
-      GLsizei max_size =
+  std::string str;
+  GLsizei max_size = 0;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    if (bufsize > 0) {
+      max_size =
           std::min(static_cast<size_t>(bufsize) - 1, str.size());
-      if (length != NULL) {
-        *length = max_size;
-      }
       memcpy(source, str.c_str(), max_size);
       source[max_size] = '\0';
       GPU_CLIENT_LOG("------\n" << source << "\n------");
     }
+  }
+  if (length != NULL) {
+    *length = max_size;
   }
 }
 const GLubyte* GetString(GLenum name);
@@ -809,10 +812,7 @@ void LineWidth(GLfloat width) {
   helper_->LineWidth(width);
 }
 
-void LinkProgram(GLuint program) {
-  GPU_CLIENT_LOG("[" << this << "] glLinkProgram(" << program << ")");
-  helper_->LinkProgram(program);
-}
+void LinkProgram(GLuint program);
 
 void PixelStorei(GLenum pname, GLint param);
 

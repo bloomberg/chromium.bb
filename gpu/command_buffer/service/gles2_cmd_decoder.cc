@@ -4727,7 +4727,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glGetProgramInfoLog");
   if (!info || !info->log_info()) {
-    bucket->SetSize(0);
+    bucket->SetFromString("");
     return error::kNoError;
   }
   bucket->SetFromString(info->log_info()->c_str());
@@ -4742,7 +4742,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       shader, "glGetShaderInfoLog");
   if (!info || !info->log_info()) {
-    bucket->SetSize(0);
+    bucket->SetFromString("");
     return error::kNoError;
   }
   bucket->SetFromString(info->log_info()->c_str());
@@ -6792,17 +6792,9 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(ProgramInfoHeader));  // in case we fail.
   ProgramManager::ProgramInfo* info = NULL;
-  if (program) {
-    info = GetProgramInfoNotShader(program, "glGetProgramInfoCHROMIUM");
-    if (!info) {
-      return error::kNoError;
-    }
-    if (!info->IsValid()) {
-      // Program was not linked successfully. (ie, glLinkProgram)
-      SetGLError(GL_INVALID_OPERATION,
-                 "glGetProgramInfoCHROMIUM: program not linked");
-      return error::kNoError;
-    }
+  info = GetProgramInfo(program);
+  if (!info || !info->IsValid()) {
+    return error::kNoError;
   }
   info->GetProgramInfo(bucket);
   return error::kNoError;

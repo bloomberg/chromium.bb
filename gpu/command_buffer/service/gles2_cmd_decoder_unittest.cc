@@ -4276,7 +4276,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMInvalidArgs) {
   GetProgramInfoCHROMIUM cmd;
   cmd.Init(kInvalidClientId, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   bucket = decoder_->GetBucket(kBucketId);
   ASSERT_TRUE(bucket != NULL);
   EXPECT_EQ(sizeof(ProgramInfoHeader), bucket->size());

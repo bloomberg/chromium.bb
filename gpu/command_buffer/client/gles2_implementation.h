@@ -75,6 +75,7 @@ class MappedMemoryManager;
 namespace gles2 {
 
 class ClientSideBufferHelper;
+class ProgramInfoManager;
 
 // Base class for IdHandlers
 class IdHandlerInterface {
@@ -174,6 +175,17 @@ class GLES2Implementation {
   void EnableVertexAttribArray(GLuint index);
   void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
   void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
+
+  void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
+  void DeleteProgramOrShaderHelper(GLuint program_or_shader);
+  GLint GetAttribLocationHelper(GLuint program, const char* name);
+  GLint GetUniformLocationHelper(GLuint program, const char* name);
+  bool GetActiveAttribHelper(
+      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
+      GLint* size, GLenum* type, char* name);
+  bool GetActiveUniformHelper(
+      GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
+      GLint* size, GLenum* type, char* name);
 
   GLuint MakeTextureId() {
     GLuint id;
@@ -479,6 +491,8 @@ class GLES2Implementation {
 
   scoped_ptr<MappedMemoryManager> mapped_memory_;
 
+  scoped_ptr<ProgramInfoManager> program_info_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
 
@@ -492,11 +506,6 @@ inline bool GLES2Implementation::GetFramebufferAttachmentParameterivHelper(
     GLenum /* attachment */,
     GLenum /* pname */,
     GLint* /* params */) {
-  return false;
-}
-
-inline bool GLES2Implementation::GetProgramivHelper(
-    GLuint /* program */, GLenum /* pname */, GLint* /* params */) {
   return false;
 }
 
