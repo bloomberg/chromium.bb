@@ -24,7 +24,7 @@ WebIntentsRegistry::WebIntentsRegistry() : next_query_id_(0) {}
 
 WebIntentsRegistry::~WebIntentsRegistry() {
   // Cancel all pending queries, since we can't handle them any more.
-  for (QueryMap::iterator it(queries.begin()); it != queries.end(); ++it) {
+  for (QueryMap::iterator it(queries_.begin()); it != queries_.end(); ++it) {
     wds_->CancelRequest(it->first);
     delete it->second;
   }
@@ -40,18 +40,19 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   DCHECK(result);
   DCHECK(result->GetType() == WEB_INTENTS_RESULT);
 
-  QueryMap::iterator it = queries.find(h);
-  DCHECK(it != queries.end());
+  QueryMap::iterator it = queries_.find(h);
+  DCHECK(it != queries_.end());
 
   IntentsQuery* query(it->second);
   DCHECK(query);
-  queries.erase(it);
+  queries_.erase(it);
 
   // TODO(groby): Filtering goes here.
   std::vector<WebIntentData> intents = static_cast<
       const WDResult<std::vector<WebIntentData> >*>(result)->GetValue();
 
   query->consumer_->OnIntentsQueryDone(query->query_id_, intents);
+  delete query;
 }
 
 WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
@@ -64,7 +65,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   query->query_id_ = next_query_id_++;
   query->consumer_ = consumer;
   query->pending_query_ = wds_->GetWebIntents(action, this);
-  queries[query->pending_query_] = query;
+  queries_[query->pending_query_] = query;
 
   return query->query_id_;
 }

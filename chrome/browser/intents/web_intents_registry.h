@@ -59,7 +59,7 @@ class WebIntentsRegistry : public WebDataServiceConsumer {
                                            const WDTypedResult* result);
 
   // Map for all in-flight web data requests/intent queries.
-  QueryMap queries;
+  QueryMap queries_;
 
   // Unique identifier for next intent query.
   QueryID next_query_id_;
