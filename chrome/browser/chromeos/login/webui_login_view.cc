@@ -68,7 +68,7 @@ std::string WebUILoginView::GetClassName() const {
 bool WebUILoginView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator == accel_toggle_accessibility_) {
-    accessibility::ToggleAccessibility();
+    accessibility::ToggleAccessibility(GetWebUI());
   } else {
     return false;
   }

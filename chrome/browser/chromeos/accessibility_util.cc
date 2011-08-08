@@ -4,21 +4,79 @@
 
 #include "chrome/browser/chromeos/accessibility_util.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/webui/web_ui.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 namespace accessibility {
 
+// Helper class that directly loads an extension's content scripts into
+// all of the frames corresponding to a given RenderViewHost.
+class ContentScriptLoader {
+ public:
+  // Initialize the ContentScriptLoader with the ID of the extension
+  // and the RenderViewHost where the scripts should be loaded.
+  ContentScriptLoader(const std::string& extension_id,
+                      RenderViewHost* render_view_host)
+      : extension_id_(extension_id),
+        render_view_host_(render_view_host) {}
 
-void EnableAccessibility(bool enabled) {
+  // Call this once with the ExtensionResource corresponding to each
+  // content script to be loaded.
+  void AppendScript(ExtensionResource resource) {
+    resources_.push(resource);
+  }
+
+  // Fianlly, call this method once to fetch all of the resources and
+  // load them. This method will delete this object when done.
+  void Run() {
+    if (resources_.empty()) {
+      delete this;
+      return;
+    }
+
+    ExtensionResource resource = resources_.front();
+    resources_.pop();
+    scoped_refptr<FileReader> reader(new FileReader(resource, NewCallback(
+        this, &ContentScriptLoader::OnFileLoaded)));
+    reader->Start();
+  }
+
+ private:
+  void OnFileLoaded(bool success, const std::string& data) {
+    if (success) {
+      ExtensionMsg_ExecuteCode_Params params;
+      params.request_id = 0;
+      params.extension_id = extension_id_;
+      params.is_javascript = true;
+      params.code = data;
+      params.all_frames = true;
+      params.in_main_world = false;
+      render_view_host_->Send(new ExtensionMsg_ExecuteCode(
+          render_view_host_->routing_id(), params));
+    }
+    Run();
+  }
+
+  std::string extension_id_;
+  RenderViewHost* render_view_host_;
+  std::queue<ExtensionResource> resources_;
+};
+
+void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kAccessibilityEnabled);
@@ -44,7 +102,26 @@ void EnableAccessibility(bool enabled) {
   ExtensionService::ComponentExtensionInfo info(manifest, path);
   if (enabled) { // Load ChromeVox
     extension_service->register_component_extension(info);
-    extension_service->LoadComponentExtension(info);
+    const Extension* extension =
+        extension_service->LoadComponentExtension(info);
+
+    if (login_web_ui) {
+      RenderViewHost* render_view_host = login_web_ui->GetRenderViewHost();
+      ContentScriptLoader* loader = new ContentScriptLoader(
+          extension->id(), render_view_host);
+
+      for (size_t i = 0; i < extension->content_scripts().size(); i++) {
+        const UserScript& script = extension->content_scripts()[i];
+        for (size_t j = 0; j < script.js_scripts().size(); ++j) {
+          const UserScript::File &file = script.js_scripts()[j];
+          ExtensionResource resource = extension->GetResource(
+              file.relative_path());
+          loader->AppendScript(resource);
+        }
+      }
+      loader->Run();  // It cleans itself up when done.
+    }
+
     LOG(INFO) << "ChromeVox was Loaded.";
   } else { // Unload ChromeVox
     extension_service->UnloadComponentExtension(info);
@@ -53,12 +130,12 @@ void EnableAccessibility(bool enabled) {
   }
 }
 
-void ToggleAccessibility() {
+void ToggleAccessibility(WebUI* login_web_ui) {
   bool accessibility_enabled = g_browser_process &&
       g_browser_process->local_state()->GetBoolean(
           prefs::kAccessibilityEnabled);
   accessibility_enabled = !accessibility_enabled;
-  EnableAccessibility(accessibility_enabled);
+  EnableAccessibility(accessibility_enabled, login_web_ui);
 };
 
 }  // namespace accessibility

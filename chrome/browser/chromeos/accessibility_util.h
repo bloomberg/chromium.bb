@@ -6,11 +6,20 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_UTIL_H_
 #pragma once
 
+class WebUI;
+
 namespace chromeos {
 namespace accessibility {
 
-void EnableAccessibility(bool enabled);
-void ToggleAccessibility();
+// Enable or disable accessibility. Enabling accessibility installs the
+// ChromeVox component extension.  If this is being called in a login/oobe
+// login screen, pass the WebUI object in login_web_ui so that ChromeVox
+// can be injected directly into that screen, otherwise it should be NULL.
+void EnableAccessibility(bool enabled, WebUI* login_web_ui);
+
+// Toggles whether Chrome OS accessibility is on or off. See docs for
+// EnableAccessibility, above.
+void ToggleAccessibility(WebUI* login_web_ui);
 
 }  // namespace accessibility
 }  // namespace chromeos

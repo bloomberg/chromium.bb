@@ -105,5 +105,5 @@ void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
   args->GetString(0, &checked_str);
   bool accessibility_enabled = (checked_str == "true");
 
-  chromeos::accessibility::EnableAccessibility(accessibility_enabled);
+  chromeos::accessibility::EnableAccessibility(accessibility_enabled, NULL);
 }
