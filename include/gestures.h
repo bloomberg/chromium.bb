@@ -196,9 +196,6 @@ struct GestureInterpreter {
     callback_data_ = client_data;
   }
   void SetTimerProvider(GesturesTimerProvider* tp, void* data);
-  void set_tap_to_click(bool tap_to_click) { tap_to_click_ = tap_to_click; }
-  void set_move_speed(int speed) { move_speed_ = speed; }
-  void set_scroll_speed(int speed) { scroll_speed_ = speed; }
  private:
   GestureReadyFunction callback_;
   void* callback_data_;
@@ -208,11 +205,6 @@ struct GestureInterpreter {
   GesturesTimerProvider* timer_provider_;
   void* timer_provider_data_;
   GesturesTimer* interpret_timer_;
-
-  // Settings
-  bool tap_to_click_;
-  int move_speed_;
-  int scroll_speed_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };
@@ -248,15 +240,6 @@ void GestureInterpreterSetCallback(GestureInterpreter*,
 void GestureInterpreterSetTimerProvider(GestureInterpreter*,
                                         GesturesTimerProvider*,
                                         void* data);
-
-void GestureInterpreterSetTapToClickEnabled(GestureInterpreter*,
-                                            int);  // 0 (disabled) or 1
-
-void GestureInterpreterSetMovementSpeed(GestureInterpreter*,
-                                        int);  // [0..100]
-
-void GestureInterpreterSetScrollSpeed(GestureInterpreter*,
-                                      int);  // [0..100]
 
 #ifdef __cplusplus
 }

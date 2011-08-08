@@ -79,21 +79,6 @@ void GestureInterpreterSetTimerProvider(GestureInterpreter* obj,
   obj->SetTimerProvider(tp, data);
 }
 
-void GestureInterpreterSetTapToClickEnabled(GestureInterpreter* obj,
-                                            int enabled) {
-  obj->set_tap_to_click(enabled != 0);
-}
-
-void GestureInterpreterSetMovementSpeed(GestureInterpreter* obj,
-                                        int speed) {
-  obj->set_move_speed(speed);
-}
-
-void GestureInterpreterSetScrollSpeed(GestureInterpreter* obj,
-                                      int speed) {
-  obj->set_scroll_speed(speed);
-}
-
 // C++ API:
 
 GestureInterpreter::GestureInterpreter(int version)
@@ -101,10 +86,7 @@ GestureInterpreter::GestureInterpreter(int version)
       callback_data_(NULL),
       timer_provider_(NULL),
       timer_provider_data_(NULL),
-      interpret_timer_(NULL),
-      tap_to_click_(false),
-      move_speed_(50),
-      scroll_speed_(50) {
+      interpret_timer_(NULL) {
   interpreter_.reset(new IntegralGestureFilterInterpreter(
       new ScalingFilterInterpreter(new ImmediateInterpreter)));
 }
