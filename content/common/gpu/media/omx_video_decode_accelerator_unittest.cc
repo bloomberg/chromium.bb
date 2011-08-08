@@ -565,7 +565,7 @@ void EglRenderingVDAClient::CreateDecoder() {
     media::VIDEOCODECFOURCC_H264,
     media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT, media::VIDEOCOLORFORMAT_RGBA,
   };
-  std::vector<uint32> config(
+  std::vector<int32> config(
       config_array, config_array + arraysize(config_array));
   CHECK(decoder_->Initialize(config));
 }
