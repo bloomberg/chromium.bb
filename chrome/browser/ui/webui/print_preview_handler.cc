@@ -46,6 +46,7 @@
 
 #if defined(USE_CUPS)
 #include <cups/cups.h>
+#include <cups/ppd.h>
 
 #include "base/file_util.h"
 #endif
