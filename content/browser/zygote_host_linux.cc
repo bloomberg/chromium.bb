@@ -118,10 +118,11 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
       &cmd_line, -1);
 
   sandbox_binary_ = sandbox_cmd.c_str();
-  struct stat st;
 
-  if (!sandbox_cmd.empty() && stat(sandbox_binary_.c_str(), &st) == 0) {
-    if (access(sandbox_binary_.c_str(), X_OK) == 0 &&
+  if (!sandbox_cmd.empty()) {
+    struct stat st;
+    if (stat(sandbox_binary_.c_str(), &st) == 0 &&
+        access(sandbox_binary_.c_str(), X_OK) == 0 &&
         (st.st_uid == 0) &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
@@ -135,6 +136,10 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                     "I'm aborting now. You need to make sure that "
                  << sandbox_binary_ << " is mode 4755 and owned by root.";
     }
+  } else {
+    LOG(WARNING) << "Running without the SUID sandbox! See "
+        "http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
+        "for more information on developing with the sandbox on.";
   }
 
   // Start up the sandbox host process and get the file descriptor for the
