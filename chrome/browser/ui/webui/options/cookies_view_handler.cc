@@ -10,7 +10,6 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
@@ -67,7 +66,7 @@ void CookiesViewHandler::GetLocalizedValues(
     { "label_file_system_temporary_usage",
       IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL },
     { "label_file_system_persistent_usage",
-      IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL },
+      IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -152,7 +151,6 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataAppCacheHelper(profile),
         BrowsingDataIndexedDBHelper::Create(profile),
         BrowsingDataFileSystemHelper::Create(profile),
-        BrowsingDataQuotaHelper::Create(profile),
         false));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }

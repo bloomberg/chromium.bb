@@ -68,7 +68,7 @@ void CookieTreeCookieNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_COOKIE,
-                      cookie_, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      cookie_, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 namespace {
@@ -148,7 +148,7 @@ void CookieTreeAppCacheNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeAppCacheNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_APPCACHE,
-                      NULL, NULL, NULL, NULL, appcache_info_, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, appcache_info_, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeDatabaseNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_DATABASE,
-                      NULL, database_info_, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, database_info_, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,8 +198,7 @@ CookieTreeNode::DetailedInfo
 CookieTreeLocalStorageNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_LOCAL_STORAGE,
-                      NULL, NULL, local_storage_info_, NULL, NULL, NULL, NULL,
-                      NULL);
+                      NULL, NULL, local_storage_info_, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,7 +220,7 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_SESSION_STORAGE,
                       NULL, NULL, NULL, session_storage_info_, NULL, NULL,
-                      NULL, NULL);
+                      NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,8 +245,7 @@ void CookieTreeIndexedDBNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeIndexedDBNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_INDEXED_DB,
-                      NULL, NULL, NULL, NULL, NULL, indexed_db_info_, NULL,
-                      NULL);
+                      NULL, NULL, NULL, NULL, NULL, indexed_db_info_, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -270,29 +268,7 @@ void CookieTreeFileSystemNode::DeleteStoredObjects() {
 CookieTreeNode::DetailedInfo CookieTreeFileSystemNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->parent()->GetTitle(),
                       DetailedInfo::TYPE_FILE_SYSTEM,
-                      NULL, NULL, NULL, NULL, NULL, NULL, file_system_info_,
-                      NULL);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieTreeQuotaNode, public:
-
-CookieTreeQuotaNode::CookieTreeQuotaNode(
-    BrowsingDataQuotaHelper::QuotaInfo* quota_info)
-    : CookieTreeNode(UTF8ToUTF16(quota_info->host)),
-      quota_info_(quota_info) {
-}
-
-CookieTreeQuotaNode::~CookieTreeQuotaNode() {}
-
-void CookieTreeQuotaNode::DeleteStoredObjects() {
-  GetModel()->quota_helper_->DeleteQuotaHost(quota_info_->host);
-}
-
-CookieTreeNode::DetailedInfo CookieTreeQuotaNode::GetDetailedInfo() const {
-  return DetailedInfo(parent()->parent()->GetTitle(),
-                      DetailedInfo::TYPE_QUOTA,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, quota_info_);
+                      NULL, NULL, NULL, NULL, NULL, NULL, file_system_info_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,7 +310,7 @@ CookiesTreeModel* CookieTreeRootNode::GetModel() const {
 CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
   return DetailedInfo(string16(),
                       DetailedInfo::TYPE_ROOT,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -355,7 +331,6 @@ CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
       appcaches_child_(NULL),
       indexed_dbs_child_(NULL),
       file_systems_child_(NULL),
-      quota_child_(NULL),
       url_(url) {}
 
 CookieTreeOriginNode::~CookieTreeOriginNode() {}
@@ -363,7 +338,7 @@ CookieTreeOriginNode::~CookieTreeOriginNode() {}
 CookieTreeNode::DetailedInfo CookieTreeOriginNode::GetDetailedInfo() const {
   return DetailedInfo(GetTitle(),
                       DetailedInfo::TYPE_ORIGIN,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
@@ -424,15 +399,6 @@ CookieTreeFileSystemsNode* CookieTreeOriginNode::GetOrCreateFileSystemsNode() {
   return file_systems_child_;
 }
 
-CookieTreeQuotaNode* CookieTreeOriginNode::UpdateOrCreateQuotaNode(
-    BrowsingDataQuotaHelper::QuotaInfo* quota_info) {
-  if (quota_child_)
-    return quota_child_;
-  quota_child_ = new CookieTreeQuotaNode(quota_info);
-  AddChildSortedByTitle(quota_child_);
-  return quota_child_;
-}
-
 void CookieTreeOriginNode::CreateContentException(
     HostContentSettingsMap* content_settings, ContentSetting setting) const {
   if (CanCreateContentException()) {
@@ -461,7 +427,7 @@ CookieTreeCookiesNode::~CookieTreeCookiesNode() {
 CookieTreeNode::DetailedInfo CookieTreeCookiesNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_COOKIES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -477,7 +443,7 @@ CookieTreeAppCachesNode::~CookieTreeAppCachesNode() {}
 CookieTreeNode::DetailedInfo CookieTreeAppCachesNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_APPCACHES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -492,7 +458,7 @@ CookieTreeDatabasesNode::~CookieTreeDatabasesNode() {}
 CookieTreeNode::DetailedInfo CookieTreeDatabasesNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_DATABASES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -508,7 +474,7 @@ CookieTreeNode::DetailedInfo
 CookieTreeLocalStoragesNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_LOCAL_STORAGES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -524,7 +490,7 @@ CookieTreeNode::DetailedInfo
 CookieTreeSessionStoragesNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_SESSION_STORAGES,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -540,7 +506,7 @@ CookieTreeNode::DetailedInfo
 CookieTreeIndexedDBsNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_INDEXED_DBS,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -556,7 +522,7 @@ CookieTreeNode::DetailedInfo
 CookieTreeFileSystemsNode::GetDetailedInfo() const {
   return DetailedInfo(parent()->GetTitle(),
                       DetailedInfo::TYPE_FILE_SYSTEMS,
-                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                      NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -592,7 +558,6 @@ CookiesTreeModel::CookiesTreeModel(
     BrowsingDataAppCacheHelper* appcache_helper,
     BrowsingDataIndexedDBHelper* indexed_db_helper,
     BrowsingDataFileSystemHelper* file_system_helper,
-    BrowsingDataQuotaHelper* quota_helper,
     bool use_cookie_source)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
@@ -603,7 +568,6 @@ CookiesTreeModel::CookiesTreeModel(
       session_storage_helper_(session_storage_helper),
       indexed_db_helper_(indexed_db_helper),
       file_system_helper_(file_system_helper),
-      quota_helper_(quota_helper),
       batch_update_(0),
       use_cookie_source_(use_cookie_source) {
   LoadCookies();
@@ -634,11 +598,6 @@ CookiesTreeModel::CookiesTreeModel(
     file_system_helper_->StartFetching(NewCallback(
         this, &CookiesTreeModel::OnFileSystemModelInfoLoaded));
   }
-
-  if (quota_helper_) {
-    quota_helper_->StartFetching(NewCallback(
-        this, &CookiesTreeModel::OnQuotaModelInfoLoaded));
-  }
 }
 
 CookiesTreeModel::~CookiesTreeModel() {
@@ -652,8 +611,6 @@ CookiesTreeModel::~CookiesTreeModel() {
     indexed_db_helper_->CancelNotification();
   if (file_system_helper_)
     file_system_helper_->CancelNotification();
-  if (quota_helper_)
-    quota_helper_->CancelNotification();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -693,8 +650,6 @@ int CookiesTreeModel::GetIconIndex(ui::TreeModelNode* node) {
       return DATABASE;  // ditto
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
       return DATABASE;  // ditto
-    case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
-      return -1;
     default:
       break;
   }
@@ -771,7 +726,6 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   PopulateAppCacheInfoWithFilter(filter);
   PopulateIndexedDBInfoWithFilter(filter);
   PopulateFileSystemInfoWithFilter(filter);
-  PopulateQuotaInfoWithFilter(filter);
   NotifyObserverTreeNodeChanged(root);
   NotifyObserverEndBatch();
 }
@@ -984,32 +938,6 @@ void CookiesTreeModel::PopulateFileSystemInfoWithFilter(
           origin_node->GetOrCreateFileSystemsNode();
       file_systems_node->AddFileSystemNode(
           new CookieTreeFileSystemNode(&(*file_system_info)));
-    }
-  }
-  NotifyObserverTreeNodeChanged(root);
-  NotifyObserverEndBatch();
-}
-
-void CookiesTreeModel::OnQuotaModelInfoLoaded(
-    const QuotaInfoArray& quota_info) {
-  quota_info_list_ = quota_info;
-  PopulateQuotaInfoWithFilter(std::wstring());
-}
-
-void CookiesTreeModel::PopulateQuotaInfoWithFilter(
-    const std::wstring& filter) {
-  if (quota_info_list_.empty())
-    return;
-  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
-  NotifyObserverBeginBatch();
-  for (QuotaInfoArray::iterator quota_info = quota_info_list_.begin();
-       quota_info != quota_info_list_.end();
-       ++quota_info) {
-    if (!filter.size() ||
-        (UTF8ToWide(quota_info->host).find(filter) != std::wstring::npos)) {
-      CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(GURL("http://" + quota_info->host));
-      origin_node->UpdateOrCreateQuotaNode(&*quota_info);
     }
   }
   NotifyObserverTreeNodeChanged(root);

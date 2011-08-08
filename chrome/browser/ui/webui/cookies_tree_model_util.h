@@ -21,8 +21,7 @@ namespace cookies_tree_model_util {
 std::string GetTreeNodeId(CookieTreeNode* node);
 
 // Populate given |dict| with cookie tree node properties.
-// Returns false if the |node| does not need to be shown.
-bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
+void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                                  base::DictionaryValue* dict);
 
 // Append the children nodes of |parent| in specified range to |nodes| list.

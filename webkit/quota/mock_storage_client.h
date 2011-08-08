@@ -37,7 +37,6 @@ class MockStorageClient : public QuotaClient {
       const GURL& origin_url, StorageType type, int64 size);
   void ModifyOriginAndNotify(
       const GURL& origin_url, StorageType type, int64 delta);
-  void TouchAllOriginsAndNotify();
 
   void AddOriginToErrorSet(const GURL& origin_url, StorageType type);
 
