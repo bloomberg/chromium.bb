@@ -49,7 +49,6 @@
         '../third_party/skia/gpu/src/GrResourceCache.cpp',
         '../third_party/skia/gpu/src/GrResourceCache.h',
         '../third_party/skia/gpu/src/GrStencil.cpp',
-        '../third_party/skia/gpu/src/GrStencilBuffer.cpp',
         '../third_party/skia/gpu/src/GrTesselatedPathRenderer.cpp',
         '../third_party/skia/gpu/src/GrTexture.cpp',
         '../third_party/skia/gpu/src/GrTextContext.cpp',
