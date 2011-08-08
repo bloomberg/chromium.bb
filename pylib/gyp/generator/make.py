@@ -1736,6 +1736,11 @@ class MakefileWriter:
           ldflags = self.xcode_settings.GetLdflags(self, configname)
         else:
           ldflags = config.get('ldflags')
+          # Compute an rpath for this output if needed.
+          if any(dep.endswith('.so') for dep in deps):
+            # We want to get the literal string "$ORIGIN" into the link command,
+            # so we need lots of escaping.
+            ldflags.append(r'-Wl,-rpath=\$$ORIGIN/lib.%s/' % self.toolset)
         self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
       libraries = spec.get('libraries')
       if libraries:
