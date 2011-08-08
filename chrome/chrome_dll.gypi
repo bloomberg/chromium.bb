@@ -152,15 +152,6 @@
                   # on whether or not optimize_with_syzygy==1.
                   'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
                   'OutputFile': '$(OutDir)\\initial\\chrome.dll',
-                  'conditions': [
-                    ['fastbuild==0', {
-                      # This corresponds to the /PROFILE flag which ensures the PDB
-                      # file contains FIXUP information. This information is used
-                      # by the Syzygy optimization tool. Syzygy optimization is
-                      # disabled when fastbuild!=0.
-                      'Profile': 'true',
-                    }],
-                  ],
                 },
               },
             }],  # OS=="win"
