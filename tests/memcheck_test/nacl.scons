@@ -42,7 +42,8 @@ env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test')
 # Leak checker sanity test.
 if env.Bit('with_leakcheck'):
   leak_test_nexe = env.ComponentProgram('leak_test', 'leak_test.c',
-                                        EXTRA_LIBS=['${PTHREAD_LIBS}'])
+                                        EXTRA_LIBS=['${NONIRT_LIBS}',
+                                                    '${PTHREAD_LIBS}'])
   node = env.CommandSelLdrTestNacl(
       'leak_test.out',
       leak_test_nexe,
