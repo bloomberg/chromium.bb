@@ -968,7 +968,7 @@ IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
 // into that frame's document. See ViewMsg_ScriptEvalRequest for details on
 // allowed xpath expressions.
 IPC_MESSAGE_ROUTED2(ViewMsg_CSSInsertRequest,
-                    std::wstring,  /* frame_xpath */
+                    string16,  /* frame_xpath */
                     std::string  /* css string */)
 
 // External popup menus.

@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -3323,7 +3324,7 @@ void RenderView::OnResetPageEncodingToDefault() {
   webview()->setPageEncoding(no_encoding);
 }
 
-WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
+WebFrame* RenderView::GetChildFrame(const string16& xpath) const {
   if (xpath.empty())
     return webview()->mainFrame();
 
@@ -3332,20 +3333,13 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
   // should break into 2 xpaths
   // /html/body/table/tbody/tr/td/iframe & /frameset/frame[0]
+  std::vector<string16> xpaths;
+  base::SplitString(xpath, '\n', &xpaths);
 
   WebFrame* frame = webview()->mainFrame();
-
-  std::wstring xpath_remaining = xpath;
-  while (!xpath_remaining.empty()) {
-    std::wstring::size_type delim_pos = xpath_remaining.find_first_of(L'\n');
-    std::wstring xpath_child;
-    if (delim_pos != std::wstring::npos) {
-      xpath_child = xpath_remaining.substr(0, delim_pos);
-      xpath_remaining.erase(0, delim_pos + 1);
-    } else {
-      xpath_remaining.swap(xpath_child);
-    }
-    frame = frame->findChildByExpression(WideToUTF16Hack(xpath_child));
+  for (std::vector<string16>::const_iterator i = xpaths.begin();
+       frame && i != xpaths.end(); ++i) {
+    frame = frame->findChildByExpression(*i);
   }
 
   return frame;
@@ -3382,7 +3376,7 @@ void RenderView::EvaluateScript(const string16& frame_xpath,
                                 int id,
                                 bool notify_result) {
   v8::Handle<v8::Value> result;
-  WebFrame* web_frame = GetChildFrame(UTF16ToWideHack(frame_xpath));
+  WebFrame* web_frame = GetChildFrame(frame_xpath);
   if (web_frame)
     result = web_frame->executeScriptAndReturnValue(WebScriptSource(script));
   if (notify_result) {
@@ -3409,7 +3403,7 @@ void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
   EvaluateScript(frame_xpath, jscript, id, notify_result);
 }
 
-void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,
+void RenderView::OnCSSInsertRequest(const string16& frame_xpath,
                                     const std::string& css) {
   WebFrame* frame = GetChildFrame(frame_xpath);
   if (!frame)

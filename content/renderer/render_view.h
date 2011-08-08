@@ -763,7 +763,7 @@ class RenderView : public RenderWidget,
   void OnCopyToFindPboard();
 #endif
   void OnCut();
-  void OnCSSInsertRequest(const std::wstring& frame_xpath,
+  void OnCSSInsertRequest(const string16& frame_xpath,
                           const std::string& css);
   void OnCustomContextMenuAction(
       const webkit_glue::CustomContextMenuContext& custom_context,
@@ -885,7 +885,7 @@ class RenderView : public RenderWidget,
                                 ErrorPageType error_type);
 
   // Locates a sub frame with given xpath
-  WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
+  WebKit::WebFrame* GetChildFrame(const string16& frame_xpath) const;
 
   WebUIBindings* GetWebUIBindings();
 

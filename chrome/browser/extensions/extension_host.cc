@@ -347,7 +347,7 @@ void ExtensionHost::InsertInfobarCSS() {
       IDR_EXTENSIONS_INFOBAR_CSS));
 
   render_view_host()->Send(new ViewMsg_CSSInsertRequest(
-      render_view_host()->routing_id(), L"", css.as_string()));
+      render_view_host()->routing_id(), string16(), css.as_string()));
 }
 
 void ExtensionHost::DisableScrollbarsForSmallWindows(
