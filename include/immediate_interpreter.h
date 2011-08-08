@@ -33,7 +33,7 @@ class TapRecord {
   void Clear();
 
   // if any gesturing fingers are moving
-  bool Moving(const HardwareState& hwstate) const;
+  bool Moving(const HardwareState& hwstate, const float dist_max) const;
   bool TapComplete() const;  // is a completed tap
   int TapType() const;  // return GESTURES_BUTTON_* value
  private:

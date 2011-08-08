@@ -118,7 +118,8 @@ void TapRecord::Clear() {
   released_.clear();
 }
 
-bool TapRecord::Moving(const HardwareState& hwstate) const {
+bool TapRecord::Moving(const HardwareState& hwstate,
+                       const float dist_max) const {
   for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
            touched_.begin(), e = touched_.end(); it != e; ++it) {
     const FingerState* fs = hwstate.GetFingerState((*it).first);
@@ -128,7 +129,7 @@ bool TapRecord::Moving(const HardwareState& hwstate) const {
     float dist_x = fs->position_x - (*it).second.position_x;
     float dist_y = fs->position_y - (*it).second.position_y;
     bool moving =
-        dist_x * dist_x + dist_y * dist_y > kTapMoveDist * kTapMoveDist;
+        dist_x * dist_x + dist_y * dist_y > dist_max * dist_max;
     Log("Moving? x %f y %f (%s)", dist_x, dist_y, moving ? "Yes" : "No");
     if (moving)
       return true;
@@ -575,7 +576,7 @@ void ImmediateInterpreter::UpdateTapState(
           *hwstate, added_fingers, removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
-          tap_record_.Moving(*hwstate));
+          tap_record_.Moving(*hwstate, kTapMoveDist));
       if (tap_record_.TapComplete()) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcTapComplete, now);
@@ -583,7 +584,7 @@ void ImmediateInterpreter::UpdateTapState(
           *buttons_down = *buttons_up = tap_record_.TapType();
           SetTapToClickState(kTtcIdle, now);
         }
-      } else if (tap_record_.Moving(*hwstate)) {
+      } else if (tap_record_.Moving(*hwstate, kTapMoveDist)) {
         SetTapToClickState(kTtcIdle, now);
       }
       break;
@@ -610,7 +611,7 @@ void ImmediateInterpreter::UpdateTapState(
       if (hwstate)
         tap_record_.Update(
             *hwstate, added_fingers, removed_fingers, dead_fingers);
-      if (is_timeout || tap_record_.Moving(*hwstate)) {
+      if (is_timeout || tap_record_.Moving(*hwstate, kTapMoveDist)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcDrag, now);
         } else {
@@ -671,7 +672,7 @@ void ImmediateInterpreter::UpdateTapState(
         Log("not timeout but hwstate is NULL?!");
         break;
       }
-      if (tap_record_.Moving(*hwstate))
+      if (tap_record_.Moving(*hwstate, kTapMoveDist))
         SetTapToClickState(kTtcDrag, now);
       break;
   }

@@ -400,6 +400,7 @@ TEST(ImmediateInterpreter, TapRecordTest) {
   // two finger IDs:
   const short kF1 = 91;
   const short kF2 = 92;
+  const float kTapMoveDist = 1.0;  // mm
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -418,33 +419,33 @@ TEST(ImmediateInterpreter, TapRecordTest) {
   };
 
   tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
-  EXPECT_FALSE(tr.Moving(hw[0]));
+  EXPECT_FALSE(tr.Moving(hw[0], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[1], MkSet(), MkSet(), MkSet());
-  EXPECT_FALSE(tr.Moving(hw[1]));
+  EXPECT_FALSE(tr.Moving(hw[1], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[2], MkSet(), MkSet(kF1), MkSet());
-  EXPECT_FALSE(tr.Moving(hw[2]));
+  EXPECT_FALSE(tr.Moving(hw[2], kTapMoveDist));
   EXPECT_TRUE(tr.TapComplete());
   EXPECT_EQ(GESTURES_BUTTON_LEFT, tr.TapType());
 
   tr.Clear();
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[2], MkSet(kF2), MkSet(), MkSet());
-  EXPECT_FALSE(tr.Moving(hw[2]));
+  EXPECT_FALSE(tr.Moving(hw[2], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[3], MkSet(kF1), MkSet(), MkSet(kF2));
-  EXPECT_FALSE(tr.Moving(hw[3]));
+  EXPECT_FALSE(tr.Moving(hw[3], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[4], MkSet(), MkSet(kF1), MkSet());
-  EXPECT_FALSE(tr.Moving(hw[4]));
+  EXPECT_FALSE(tr.Moving(hw[4], kTapMoveDist));
   EXPECT_TRUE(tr.TapComplete());
 
   tr.Clear();
   EXPECT_FALSE(tr.TapComplete());
   tr.Update(hw[0], MkSet(kF1), MkSet(), MkSet());
   tr.Update(hw[5], MkSet(), MkSet(), MkSet());
-  EXPECT_TRUE(tr.Moving(hw[5]));
+  EXPECT_TRUE(tr.Moving(hw[5], kTapMoveDist));
   EXPECT_FALSE(tr.TapComplete());
 
   // This should log an error
