@@ -192,8 +192,7 @@ SavePackage::~SavePackage() {
     Cancel(true);
   }
 
-  // We should no longer be observing the DownloadManager at this point.
-  CHECK(!download_manager_);
+  // We should no longer be observing the DownloadItem at this point.
   CHECK(!download_);
 
   DCHECK(all_save_items_count_ == (waiting_item_queue_.size() +
