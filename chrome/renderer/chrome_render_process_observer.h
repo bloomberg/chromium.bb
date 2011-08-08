@@ -12,6 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/render_process_observer.h"
 
+namespace chrome {
+class ChromeContentRendererClient;
+}
+
 class GURL;
 class ResourceDispatcherDelegate;
 struct ContentSettings;
@@ -22,7 +26,8 @@ struct ContentSettings;
 // observer.
 class ChromeRenderProcessObserver : public RenderProcessObserver {
  public:
-  ChromeRenderProcessObserver();
+  explicit ChromeRenderProcessObserver(
+      chrome::ChromeContentRendererClient* client);
   virtual ~ChromeRenderProcessObserver();
 
   static bool is_incognito_process() { return is_incognito_process_; }
@@ -49,6 +54,7 @@ class ChromeRenderProcessObserver : public RenderProcessObserver {
 
   static bool is_incognito_process_;
   scoped_ptr<ResourceDispatcherDelegate> resource_delegate_;
+  chrome::ChromeContentRendererClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };

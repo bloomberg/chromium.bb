@@ -152,7 +152,7 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
-  chrome_observer_.reset(new ChromeRenderProcessObserver());
+  chrome_observer_.reset(new ChromeRenderProcessObserver(this));
   extension_dispatcher_.reset(new ExtensionDispatcher());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   net_predictor_.reset(new RendererNetPredictor());
@@ -215,7 +215,7 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
-  new SpellCheckProvider(render_view, spellcheck_.get());
+  spellcheck_provider_ = new SpellCheckProvider(render_view, spellcheck_.get());
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
@@ -690,6 +690,18 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
   }
 
   return !extensions->InSameExtent(old_url, new_url);
+}
+
+void ChromeContentRendererClient::OnPurgeMemory() {
+  DVLOG(1) << "Resetting spellcheck in renderer client";
+  RenderThread* thread = RenderThread::current();
+  if (spellcheck_.get())
+    thread->RemoveObserver(spellcheck_.get());
+  SpellCheck* new_spellcheck = new SpellCheck();
+  if (spellcheck_provider_)
+    spellcheck_provider_->SetSpellCheck(new_spellcheck);
+  spellcheck_.reset(new_spellcheck);
+  thread->AddObserver(new_spellcheck);
 }
 
 }  // namespace chrome

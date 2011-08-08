@@ -15,6 +15,7 @@ class ExtensionDispatcher;
 class RendererHistogramSnapshots;
 class RendererNetPredictor;
 class SpellCheck;
+class SpellCheckProvider;
 class VisitedLinkSlave;
 
 namespace safe_browsing {
@@ -73,6 +74,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // For testing.
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
 
+  // Called in low-memory conditions to dump the memory used by the spellchecker
+  // and start over.
+  void OnPurgeMemory();
+
  private:
   WebKit::WebPlugin* CreatePluginImpl(
       RenderView* render_view,
@@ -99,6 +104,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
+  // The SpellCheckProvider is a RenderViewObserver, and handles its own
+  // destruction.
+  SpellCheckProvider* spellcheck_provider_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
 };

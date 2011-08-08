@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "content/common/resource_dispatcher.h"
@@ -305,7 +306,9 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
-ChromeRenderProcessObserver::ChromeRenderProcessObserver() {
+ChromeRenderProcessObserver::ChromeRenderProcessObserver(
+    chrome::ChromeContentRendererClient* client)
+    : client_(client) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
@@ -502,4 +505,7 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
   // Tell tcmalloc to release any free pages it's still holding.
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
+
+  if (client_)
+    client_->OnPurgeMemory();
 }

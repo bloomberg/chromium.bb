@@ -53,6 +53,8 @@ class SpellCheckProvider : public RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void FocusedNodeChanged(const WebKit::WebNode& node);
 
+  void SetSpellCheck(SpellCheck* spellcheck);
+
  private:
   // WebKit::WebSpellCheckClient implementation.
   virtual void spellCheck(

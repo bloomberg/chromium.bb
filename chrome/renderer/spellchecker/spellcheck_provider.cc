@@ -202,3 +202,7 @@ void SpellCheckProvider::EnsureDocumentTag() {
   }
 #endif
 }
+
+void SpellCheckProvider::SetSpellCheck(SpellCheck* spellcheck) {
+  spellcheck_ = spellcheck;
+}

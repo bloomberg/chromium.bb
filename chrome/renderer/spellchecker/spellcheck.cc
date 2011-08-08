@@ -36,18 +36,13 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (message.type() == ViewMsg_PurgeMemory::ID) {
-    delete this;
-    new SpellCheck();
-  }
-
   return handled;
 }
 
 void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
                         const std::vector<std::string>& custom_words,
                         const std::string& language,
-    bool auto_spell_correct) {
+                        bool auto_spell_correct) {
   Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
        custom_words, language);
   auto_spell_correct_turned_on_ = auto_spell_correct;
