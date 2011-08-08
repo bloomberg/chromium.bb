@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp.idl modified Thu Jul 21 16:38:20 2011. */
+/* From ppp.idl modified Mon Aug  8 06:47:44 2011. */
 
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
@@ -78,8 +78,12 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
  * Since your module runs in a separate process, there's no need to free
  * allocated memory. There is also no need to free any resources since all of
  * resources associated with an instance will be force-freed when that instance
- * is deleted. Moreover, this function will not be called when Chrome does
- * "fast shutdown" of a web page.
+ * is deleted.
+ *
+ * <strong>Note:</strong> This function will always be skipped on untrusted
+ * (Native Client) implementations. This function may be skipped on trusted
+ * implementations in certain circumstances when Chrome does "fast shutdown"
+ * of a web page.
  */
 PP_EXPORT void PPP_ShutdownModule();
 /**

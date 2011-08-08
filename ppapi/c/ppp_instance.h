@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Wed Jul 20 11:17:15 2011. */
+/* From ppp_instance.idl modified Mon Aug  8 06:46:25 2011. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -93,17 +93,18 @@ struct PPP_Instance {
    * instance but this isn't required; all resources associated with the deleted
    * instance will be automatically freed when this function returns.
    *
-   * The instance identifier will still be valid during this call so the module
+   * The instance identifier will still be valid during this call, so the module
    * can perform cleanup-related tasks. Once this function returns, the
    * <code>PP_Instance</code> handle will be invalid. This means that you can't
-   * do any asynchronous operations like network requests or file writes from
-   * this function since they will be immediately canceled.
+   * do any asynchronous operations like network requests, file writes or
+   * messaging from this function since they will be immediately canceled.
    *
-   * <strong>Note:</strong> This function may be skipped in certain
-   * circumstances when Chrome does "fast shutdown". Fast shutdown will happen
-   * in some cases when all module instances are being deleted, and no cleanup
-   * functions will be called. The module will just be unloaded and the process
-   * terminated.
+   * <strong>Note:</strong> This function will always be skipped on untrusted
+   * (Native Client) implementations. This function may be skipped on trusted
+   * implementations in certain circumstances when Chrome does "fast shutdown"
+   * of a web page. Fast shutdown will happen in some cases when all module
+   * instances are being deleted, and no cleanup functions will be called.
+   * The module will just be unloaded and the process terminated.
    *
    * @param[in] instance A <code>PP_Instance</code> indentifying one instance
    * of a module.

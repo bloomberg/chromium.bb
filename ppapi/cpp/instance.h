@@ -58,11 +58,12 @@ class Instance {
   /// asynchronous operations like network requests or file writes from this
   /// destructor since they will be immediately canceled.
   ///
-  /// <strong>Important note:</strong> This function may be skipped in certain
-  /// circumstances when Chrome does "fast shutdown". Fast shutdown will happen
-  /// in some cases when all plugin instances are being deleted, and no cleanup
-  /// functions will be called. The module will just be unloaded and the process
-  /// terminated.
+  /// <strong>Important note:</strong> This function will always be skipped on
+  /// untrusted (Native Client) implementations. This function may be skipped
+  /// in certain circumstances when Chrome does "fast shutdown". Fast shutdown
+  /// will happen in some cases when all plugin instances are being deleted,
+  /// and no cleanup functions will be called. The module will just be unloaded
+  /// and the process terminated.
   virtual ~Instance();
 
   /// Returns the PP_Instance identifying this object. When using the PPAPI C++
