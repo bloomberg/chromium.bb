@@ -98,6 +98,10 @@ cr.define('oobe', function() {
   UserImageScreen.addUserImage = function(src, clickHandler) {
     var imageElement = document.createElement('img');
     imageElement.src = src;
+    imageElement.setAttribute('role', 'option');
+    imageElement.setAttribute('tabindex', '-1');
+    imageElement.setAttribute(
+        'aria-label', src.replace(/(.*\/|\.png)/g, '').replace(/_/g, ' '));
     imageElement.addEventListener('click',
                                   clickHandler,
                                   false);
@@ -115,6 +119,20 @@ cr.define('oobe', function() {
           imageUrl,
           UserImageScreen.handleImageClick);
     }
+
+    var userImageScreen = $('user-image');
+    var userImageList = $('user-image-list');
+    userImageList.addEventListener('keydown', function(e) {
+      var prevIndex = userImageScreen.selectedUserImage_;
+      var len = userImageList.children.length;
+      if (e.keyCode == 39 || e.keyCode == 40) {  // right or down
+        if (prevIndex < len - 1)
+          UserImageScreen.selectUserImage(prevIndex + 1);
+      } else if (e.keyCode == 37 || e.keyCode == 38) {  // left or up
+        if (prevIndex > 0)
+          UserImageScreen.selectUserImage(prevIndex - 1);
+      }
+    });
   };
 
   /**
@@ -127,10 +145,13 @@ cr.define('oobe', function() {
     var prevIndex = userImageScreen.selectedUserImage_;
     if (prevIndex != -1) {
       userImageList.children[prevIndex].classList.remove('user-image-selected');
+      userImageList.children[prevIndex].setAttribute('tabIndex', '-1');
     }
     if (index != -1) {
       var selectedImage = userImageList.children[index];
       selectedImage.classList.add('user-image-selected');
+      selectedImage.setAttribute('tabIndex', '0');
+      selectedImage.focus();
       $('user-image-preview').src = selectedImage.src;
     }
     userImageScreen.selectedUserImage_ = index;
