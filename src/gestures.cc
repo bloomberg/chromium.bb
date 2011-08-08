@@ -79,6 +79,12 @@ void GestureInterpreterSetTimerProvider(GestureInterpreter* obj,
   obj->SetTimerProvider(tp, data);
 }
 
+void GestureInterpreterSetPropProvider(GestureInterpreter* obj,
+                                       GesturesPropProvider* pp,
+                                       void* data) {
+    obj->SetPropProvider(pp, data);
+}
+
 // C++ API:
 
 GestureInterpreter::GestureInterpreter(int version)
@@ -86,13 +92,16 @@ GestureInterpreter::GestureInterpreter(int version)
       callback_data_(NULL),
       timer_provider_(NULL),
       timer_provider_data_(NULL),
-      interpret_timer_(NULL) {
+      interpret_timer_(NULL),
+      prop_provider_(NULL),
+      prop_provider_data_(NULL) {
   interpreter_.reset(new IntegralGestureFilterInterpreter(
       new ScalingFilterInterpreter(new ImmediateInterpreter)));
 }
 
 GestureInterpreter::~GestureInterpreter() {
   SetTimerProvider(NULL, NULL);
+  SetPropProvider(NULL, NULL);
 }
 
 namespace {
@@ -150,4 +159,16 @@ void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
   timer_provider_data_ = data;
   if (timer_provider_)
     interpret_timer_ = timer_provider_->create_fn(timer_provider_data_);
+}
+
+void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
+                                         void* data) {
+  if (prop_provider_ == pp && prop_provider_data_ == data)
+    return;
+  if (prop_provider_)
+  { /* Free and NULL any allocated properties */ }
+  prop_provider_ = pp;
+  prop_provider_data_ = data;
+  if (prop_provider_)
+  { /* Reallocate and initialize properties */ }
 }

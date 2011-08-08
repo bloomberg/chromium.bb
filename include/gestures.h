@@ -146,6 +146,7 @@ struct Gesture {
 typedef void (*GestureReadyFunction)(void* client_data,
                                      const struct Gesture* gesture);
 
+// Gestures Timer Provider Interface
 struct GesturesTimer;
 typedef struct GesturesTimer GesturesTimer;
 
@@ -173,6 +174,49 @@ typedef struct {
   GesturesTimerFree free_fn;
 } GesturesTimerProvider;
 
+// Gestures Property Provider Interface
+struct GesturesProp;
+typedef struct GesturesProp GesturesProp;
+
+typedef int GesturesPropBool;
+
+// These functions create a named property of given type.
+//   data - data used by PropProvider
+//   loc - location of a variable to be updated by PropProvider.
+//         Set to NULL to create a ReadOnly property
+//   init - initial value for the property.
+//          If the PropProvider has an alternate configuration source, it may
+//          override this initial value, in which case *loc returns the
+//          value from the configuration source.
+typedef GesturesProp* (*GesturesPropCreateInt)(void* data, const char* name,
+                                               int* loc, const int init);
+
+typedef GesturesProp* (*GesturesPropCreateShort)(void* data, const char* name,
+                                                 short* loc, const short init);
+
+typedef GesturesProp* (*GesturesPropCreateBool)(void* data, const char* name,
+                                                GesturesPropBool* loc,
+                                                const GesturesPropBool init);
+
+typedef GesturesProp* (*GesturesPropCreateString)(void* data, const char* name,
+                                                  const char** loc,
+                                                  const char* const init);
+
+typedef GesturesProp* (*GesturesPropCreateReal)(void* data, const char* name,
+                                                double* loc, const double init);
+
+// Free a property.
+typedef void (*GesturesPropFree)(void* data, GesturesProp* prop);
+
+typedef struct GesturesPropProvider {
+  GesturesPropCreateInt create_int_fn;
+  GesturesPropCreateShort create_short_fn;
+  GesturesPropCreateBool create_bool_fn;
+  GesturesPropCreateString create_string_fn;
+  GesturesPropCreateReal create_real_fn;
+  GesturesPropFree free_fn;
+} GesturesPropProvider;
+
 #ifdef __cplusplus
 // C++ API:
 
@@ -196,6 +240,7 @@ struct GestureInterpreter {
     callback_data_ = client_data;
   }
   void SetTimerProvider(GesturesTimerProvider* tp, void* data);
+  void SetPropProvider(GesturesPropProvider* pp, void* data);
  private:
   GestureReadyFunction callback_;
   void* callback_data_;
@@ -205,6 +250,9 @@ struct GestureInterpreter {
   GesturesTimerProvider* timer_provider_;
   void* timer_provider_data_;
   GesturesTimer* interpret_timer_;
+
+  GesturesPropProvider* prop_provider_;
+  void* prop_provider_data_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };
@@ -239,7 +287,11 @@ void GestureInterpreterSetCallback(GestureInterpreter*,
 // Gestures to stop holding a reference.
 void GestureInterpreterSetTimerProvider(GestureInterpreter*,
                                         GesturesTimerProvider*,
-                                        void* data);
+                                        void*);
+
+void GestureInterpreterSetPropProvider(GestureInterpreter*,
+                                       GesturesPropProvider*,
+                                       void*);
 
 #ifdef __cplusplus
 }
