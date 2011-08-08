@@ -1482,6 +1482,7 @@
         'browser/intents/web_intents_registry_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',
+        'browser/mac/closure_blocks_leopard_compat_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/media/media_internals_unittest.cc',
         'browser/metrics/display_utils_unittest.cc',
@@ -2200,6 +2201,7 @@
            # exist on disk so it can pull from it.
           'dependencies': [
             'chrome',
+            'closure_blocks_leopard_compat',
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'include_dirs': [
