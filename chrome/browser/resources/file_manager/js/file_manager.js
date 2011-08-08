@@ -148,6 +148,8 @@ function FileManager(dialogDom, filesystem, rootEntries, params) {
   this.metadataReader_ = new Worker('js/metadata_dispatcher.js');
   this.metadataReader_.onmessage = this.onMetadataMessage_.bind(this);
   this.metadataReader_.postMessage({verb: 'init'});
+  // Initialization is not complete until the Worker sends back the
+  // 'initialized' message.  See below.
 }
 
 FileManager.prototype = {
@@ -1499,8 +1501,17 @@ FileManager.prototype = {
     this.onMetadataResult_(fileURL, {});
   };
 
-  FileManager.prototype.onMetadataFilter_ = function(regexp) {
+  /**
+   * Handles the 'initialized' message from the metadata reader Worker.
+   */
+  FileManager.prototype.onMetadataInitialized_ = function(regexp) {
     this.metadataUrlFilter_ = regexp;
+    // We're ready to run.  Tests can monitor for this state with
+    // ExtensionTestMessageListener listener("worker-initialized");
+    // ASSERT_TRUE(listener.WaitUntilSatisfied());
+    // Automated tests need to wait for this, otherwise we crash in browser_test
+    // cleanup because the worker process still has URL requests in-flight.
+    chrome.test.sendMessage('worker-initialized');
   };
 
   FileManager.prototype.onMetadataLog_ = function(arglist) {

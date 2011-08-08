@@ -51,7 +51,9 @@ MetadataDispatcher.prototype.verbose = false;
 
 MetadataDispatcher.prototype.messageHandlers = {
   init: function() {
-    this.postMessage('filter', [this.parserRegexp_]);
+    // Inform our owner that we're done initializing.
+    // If we need to pass more data back, we can add it to the param array.
+    this.postMessage('initialized', [this.parserRegexp_]);
     this.log('initialized with URL filter ' + this.parserRegexp_);
   },
 

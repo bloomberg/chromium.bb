@@ -108,17 +108,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerDestroyListener) {
   listener_.reset();
 }
 
-// Flaky: http://crbug.com/89733
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndCancel) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
   FilePath tmp_dir("/tmp");
   AddMountPoint(tmp_dir);
 
-  // Spawn a dialog to open a file.  The dialog will signal that it is done
-  // loading via chrome.test.sendMessage('ready') in the extension JavaScript.
-  ExtensionTestMessageListener msg_listener("ready", false /* will_reply */);
+  // Spawn a dialog to open a file.  The dialog will signal that it is ready
+  // via chrome.test.sendMessage() in the extension JavaScript.
+  ExtensionTestMessageListener init_listener("worker-initialized",
+                                             false /* will_reply */);
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
   dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                       string16() /* title */,
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndCancel) {
                       owning_window,
                       this /* params */);
   LOG(INFO) << "Waiting for JavaScript ready message.";
-  ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(init_listener.WaitUntilSatisfied());
 
   // Dialog should be running now.
   ASSERT_TRUE(dialog_->IsRunning(owning_window));
@@ -181,8 +181,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   // Spawn a dialog to open a file.  Provide the path to the file so the dialog
   // will automatically select it.  Ensure that the OK button is enabled by
   // waiting for chrome.test.sendMessage('selection-change-complete').
-  ExtensionTestMessageListener msg_listener("selection-change-complete",
-                                            false /* will_reply */);
+  // The extension starts a Web Worker to read file metadata, so it may send
+  // 'selection-change-complete' before 'worker-initialized'.  This is OK.
+  ExtensionTestMessageListener init_listener("worker-initialized",
+                                             false /* will_reply */);
+  ExtensionTestMessageListener selection_listener("selection-change-complete",
+                                                  false /* will_reply */);
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
   dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                       string16() /* title */,
@@ -193,8 +197,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
                       NULL /* source_contents */,
                       owning_window,
                       this /* params */);
+  LOG(INFO) << "Waiting for JavaScript initialized message.";
+  ASSERT_TRUE(init_listener.WaitUntilSatisfied());
   LOG(INFO) << "Waiting for JavaScript selection-change-complete message.";
-  ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(selection_listener.WaitUntilSatisfied());
 
   // Dialog should be running now.
   ASSERT_TRUE(dialog_->IsRunning(owning_window));
@@ -225,8 +231,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   ASSERT_EQ(this, listener_->params());
 }
 
-// Flaky: http://crbug.com/89733
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, DISABLED_SelectFileAndSave) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -242,8 +247,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, DISABLED_SelectFileAndSave) {
   // Spawn a dialog to save a file, providing a suggested path.
   // Ensure "Save" button is enabled by waiting for notification from
   // chrome.test.sendMessage().
-  ExtensionTestMessageListener msg_listener("directory-change-complete",
-                                            false /* will_reply */);
+  // The extension starts a Web Worker to read file metadata, so it may send
+  // 'directory-change-complete' before 'worker-initialized'.  This is OK.
+  ExtensionTestMessageListener init_listener("worker-initialized",
+                                             false /* will_reply */);
+  ExtensionTestMessageListener dir_change_listener("directory-change-complete",
+                                                   false /* will_reply */);
   gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
   dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                       string16() /* title */,
@@ -254,8 +263,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, DISABLED_SelectFileAndSave) {
                       NULL /* source_contents */,
                       owning_window,
                       this /* params */);
-  LOG(INFO) << "Waiting for JavaScript message.";
-  ASSERT_TRUE(msg_listener.WaitUntilSatisfied());
+  LOG(INFO) << "Waiting for JavaScript initialized message.";
+  ASSERT_TRUE(init_listener.WaitUntilSatisfied());
+  LOG(INFO) << "Waiting for JavaScript directory-change-complete message.";
+  ASSERT_TRUE(dir_change_listener.WaitUntilSatisfied());
 
   // Dialog should be running now.
   ASSERT_TRUE(dialog_->IsRunning(owning_window));
