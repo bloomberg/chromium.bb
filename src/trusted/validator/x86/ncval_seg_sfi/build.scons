@@ -36,4 +36,7 @@ test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # Segment register validator library
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi'),
-                     ['ncdecode.c', 'ncvalidate.c'])
+                     ['ncdecode.c',
+                      'ncvalidate.c',
+                      'ncvalidate_detailed.c'
+                      ])

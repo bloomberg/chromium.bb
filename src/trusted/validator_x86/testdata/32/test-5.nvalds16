@@ -1,11 +1,4 @@
-VALIDATOR: 805464b: Bad call alignment
-VALIDATOR: 805464b: JUMP TARGET out of range
-VALIDATOR: 805466b: Bad call alignment
-VALIDATOR: 805468b: Bad call alignment
-VALIDATOR: 80546cb: Bad call alignment
-VALIDATOR: 80546eb: Bad call alignment
-VALIDATOR: 80546eb: JUMP TARGET out of range
-D: ***MODULE <hex_text> IS UNSAFE***
+D: ***module <hex_text> is safe***
 
 Opcode Histogram;
 1	0x00	1	0x01	1	0x0f	1	0x29	
@@ -16,14 +9,14 @@ Opcode Histogram;
 1	0xf4	1	0xff	
 Analysis Summary:
 91 Checked instructions
-17 checked jump targets
+11 checked jump targets
 0 calls/jumps need dynamic checking (0.00%)
 
 Problems:
 0 illegal instructions
-2 bad jump targets
+0 bad jump targets
 0 illegal unprotected indirect jumps (including ret)
-5 instruction alignment defects
+0 instruction alignment defects
 0 segmentation errors
 0 bad prefix
 0 bad instruction length

@@ -1161,7 +1161,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
   do {
     printf("vtest->sawfailure = %d, vstate->stats.sawfailure = %d\n",
            vtest->sawfailure, vstate->stats.sawfailure);
-    Stats_Print(vstate);
+    NCStatsPrint(vstate);
     if (vtest->sawfailure ^ vstate->stats.sawfailure) break;
     if (vtest->instructions != vstate->stats.instructions) break;
     if (vtest->illegalinst != vstate->stats.illegalinst) break;
@@ -1169,7 +1169,7 @@ static void TestValidator(struct NCValTestCase *vtest) {
     NCValidateFreeState(&vstate);
     return;
   } while (0);
-  Stats_Print(vstate);
+  NCStatsPrint(vstate);
   NCValidateFreeState(&vstate);
   Info("*** %s failed (%s)\n", vtest->name, vtest->description);
   exit(-1);

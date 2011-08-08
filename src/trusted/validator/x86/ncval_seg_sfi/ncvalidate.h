@@ -12,9 +12,13 @@
 #include "native_client/src/trusted/validator/types_memory_model.h"
 
 /*
- * ncvalidate.h: exports for ncvalidate.c
+ * ncvalidate.h: Validator for the segment-based sandbox.
  *
- * This is the library interface to the NaCl validator.
+ * This is the primary library interface to the validator for the
+ * segment-based sandbox. This version should be used when performance
+ * is important. See ncvalidate_detailed.h for a secondary API which
+ * provides more details when reporting errors.
+ *
  * Basic usage:
  *   if (!NaClArchSuppported()) fail
  *   vstate = NCValidateInit(base, limit, 16)
@@ -23,15 +27,14 @@
  *     NCValidateSegment(maddr, vaddr, size, vstate);
  *   rc = NCValidateFinish();
  *   if rc != 0 fail
- *   Optional reporting routines
- *   Stats_Print()
  *   NCValidateFreeState(&vstate);
  *
  * See the README file in this directory for more info on the general
  * structure of the validator.
  */
-struct NCValidatorState;
 struct Gio;
+struct NCDecoderInst;
+struct NCValidatorState;
 struct NaClErrorReporter;
 
 /* NCValidateSetCPUFeatures: Define the set of CPU features to use.
@@ -123,7 +126,9 @@ int NCValidateFinish(struct NCValidatorState *vstate);
 /* BEWARE: this call deallocates vstate.                      */
 void NCValidateFreeState(struct NCValidatorState **vstate);
 
-/* Print some interesting statistics...
+/* Print some interesting statistics... (optional). If used,
+ * should be called between NCValidateFinish and
+ * NCValidateFreeState.
  *
  * Note: Uses error reporter of validator to print messages.
  * The default error reporter of the validator will not
@@ -131,7 +136,7 @@ void NCValidateFreeState(struct NCValidatorState **vstate);
  * must associate an error reporter with the validator using
  * NCValidateSetErrorReporter.
  */
-void Stats_Print(struct NCValidatorState *vstate);
+void NCStatsPrint(struct NCValidatorState *vstate);
 
 /* Returns the default value used for controlling printing
  * of validator messages.

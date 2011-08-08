@@ -30,6 +30,7 @@
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
@@ -42,6 +43,11 @@
  * model.
  */
 static Bool NACL_FLAGS_stats_print = FALSE;
+
+/* Flag defining if detailed error messages should be generated. When
+ * false, runs performance model as used by sel_ldr.
+ */
+static Bool NACL_FLAGS_detailed_errors = TRUE;
 
 /* Flag defining the name of a hex text to be used as the code segment.
  */
@@ -151,13 +157,24 @@ static void NCValidateResults(int result, const char *fname) {
   }
 }
 
+/* Initialize segment validator, using detailed (summary) error
+ * messages if selected.
+ */
+struct NCValidatorState* NCValInit(const NaClPcAddress vbase,
+                                   const NaClPcAddress vlimit,
+                                   const uint8_t alignment) {
+  return NACL_FLAGS_detailed_errors
+      ? NCValidateInitDetailed(vbase, vlimit, alignment)
+      : NCValidateInit(vbase, vlimit, alignment);
+}
+
 static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   NaClPcAddress vbase, vlimit;
   struct NCValidatorState *vstate;
   int result;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NCValidateInit(vbase, vlimit, ncf->ncalign);
+  vstate = NCValInit(vbase, vlimit, ncf->ncalign);
   if (vstate == NULL) return 0;
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
@@ -165,7 +182,7 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   }
   result = NCValidateFinish(vstate);
   NCValidateResults(result, fname);
-  if (NACL_FLAGS_stats_print) Stats_Print(vstate);
+  if (NACL_FLAGS_stats_print) NCStatsPrint(vstate);
   NCValidateFreeState(&vstate);
   SegmentDebug("Validated %s\n", fname);
   return result;
@@ -471,6 +488,9 @@ static void usage() {
       "--annotate\n"
       "\tRun validator using annotations that will be understood\n"
       "\tby ncval_annotate.py.\n"
+      "--detailed\n"
+      "\tPrint out detailed error messages, rather than use performant\n"
+      "\tcode used by sel_ldr\n"
       "--errors\n"
       "\tPrint out error and fatal error messages, but not\n"
       "\tinformative and warning messages\n"
@@ -523,6 +543,7 @@ static Bool GrokABoolFlag(const char *arg) {
     Bool *flag_ptr;
   } flags[] = {
     { "--segments" , &NACL_FLAGS_analyze_segments },
+    { "--detailed", &NACL_FLAGS_detailed_errors },
     { "--stubout", &NACL_FLAGS_stubout_memory },
     { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
     { "-t", &NACL_FLAGS_print_timing },
@@ -696,8 +717,8 @@ int main(int argc, const char *argv[]) {
     struct NCValidatorState *vstate;
     NCValidateSetCPUFeatures(&ncval_cpu_features);
     argc = ValidateSfiHexLoad(argc, argv, &data);
-    vstate = NCValidateInit(data.base, data.base + data.num_bytes,
-                            (uint8_t) NACL_FLAGS_block_alignment);
+    vstate = NCValInit(data.base, data.base + data.num_bytes,
+                       (uint8_t) NACL_FLAGS_block_alignment);
     if (vstate == NULL) {
       printf("Unable to create validator state, quitting!\n");
       result = 1;
@@ -710,7 +731,7 @@ int main(int argc, const char *argv[]) {
       NCValidateResults(NCValidateFinish(vstate),
                         ((strcmp(NACL_FLAGS_hex_text, "-") == 0)
                          ? "<hex_text>" : NACL_FLAGS_hex_text));
-      if (NACL_FLAGS_stats_print) Stats_Print(vstate);
+      if (NACL_FLAGS_stats_print) NCStatsPrint(vstate);
       NCValidateFreeState(&vstate);
       NaClMaybeDecodeDataSegment(&data.bytes[0], data.base, data.num_bytes);
       /* always succeed, so that the testing framework works. */

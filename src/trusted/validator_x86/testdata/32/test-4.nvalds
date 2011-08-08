@@ -17,7 +17,7 @@ Opcode Histogram;
 1	0xff	
 Analysis Summary:
 91 Checked instructions
-18 checked jump targets
+12 checked jump targets
 0 calls/jumps need dynamic checking (0.00%)
 
 Problems:

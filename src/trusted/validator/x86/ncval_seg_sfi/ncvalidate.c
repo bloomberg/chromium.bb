@@ -58,13 +58,6 @@
 /* allows DCE but compiler can still do format string checks */
 #endif  /* VERBOSE */
 
-/* The following macro is used to clarify the derived class relationship
- * of NCValidateState and NCDecoderState. That is, &this->dstate is also
- * an instance of a validator state. Hence one can downcast this pointer.
- */
-#define VALIDATOR_STATE_DOWNCAST(this_dstate) \
-  ((NCValidatorState*) (this_dstate))
-
 static const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
 /* Define how many diagnostic error messages are printed by the validator.
@@ -98,9 +91,9 @@ static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
   }
 }
 
-static void BadInstructionError(const NCDecoderInst *dinst,
-                                const char *msg) {
-  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+void NCBadInstructionError(const struct NCDecoderInst *dinst,
+                           const char *msg) {
+  NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   ValidatePrintError(dinst->vpc, msg, vstate);
   if (vstate->do_stub_out) {
     memset(dinst->dstate->memory.mpc, kNaClFullStop,
@@ -159,78 +152,78 @@ static void PrintOpcodeHisto(struct NCValidatorState *vstate) {
 #endif /* VERBOSE == 1 */
 
 /* statistics code */
-static void Stats_Inst(struct NCValidatorState *vstate) {
+static void NCStatsInst(struct NCValidatorState *vstate) {
   vstate->stats.instructions += 1;
 }
 
-static void Stats_CheckTarget(struct NCValidatorState *vstate) {
+static void NCStatsCheckTarget(struct NCValidatorState *vstate) {
   vstate->stats.checktarget += 1;
 }
 
-static void Stats_TargetIndirect(struct NCValidatorState *vstate) {
+static void NCStatsTargetIndirect(struct NCValidatorState *vstate) {
   vstate->stats.targetindirect += 1;
 }
 
-static void Stats_SawFailure(struct NCValidatorState *vstate) {
+static void NCStatsSawFailure(struct NCValidatorState *vstate) {
   vstate->stats.sawfailure = 1;
 }
 
-static void Stats_InternalError(struct NCValidatorState *vstate) {
+void NCStatsInternalError(struct NCValidatorState *vstate) {
   vstate->stats.internalerrors += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_BadAlignment(struct NCValidatorState *vstate) {
+void NCStatsBadAlignment(struct NCValidatorState *vstate) {
   vstate->stats.badalignment += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_SegFault(struct NCValidatorState *vstate) {
+static void NCStatsSegFault(struct NCValidatorState *vstate) {
   vstate->stats.segfaults += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_NewSegment(struct NCValidatorState *vstate) {
+static void NCStatsNewSegment(struct NCValidatorState *vstate) {
   vstate->stats.segments += 1;
   if (vstate->stats.segments > 1) {
     vprint(vstate, (reporter, "error: multiple segments\n"));
-    Stats_SawFailure(vstate);
+    NCStatsSawFailure(vstate);
   }
 }
 
-static void Stats_BadTarget(struct NCValidatorState *vstate) {
+void NCStatsBadTarget(struct NCValidatorState *vstate) {
   vstate->stats.badtarget += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_UnsafeIndirect(struct NCValidatorState *vstate) {
+static void NCStatsUnsafeIndirect(struct NCValidatorState *vstate) {
   vstate->stats.unsafeindirect += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_Return(struct NCValidatorState *vstate) {
+static void NCStatsReturn(struct NCValidatorState *vstate) {
   vstate->stats.returns += 1;
-  Stats_UnsafeIndirect(vstate);
-  Stats_SawFailure(vstate);
+  NCStatsUnsafeIndirect(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_IllegalInst(struct NCValidatorState *vstate) {
+static void NCStatsIllegalInst(struct NCValidatorState *vstate) {
   vstate->stats.illegalinst += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_BadPrefix(struct NCValidatorState *vstate) {
+static void NCStatsBadPrefix(struct NCValidatorState *vstate) {
   vstate->stats.badprefix += 1;
   vstate->stats.illegalinst += 1; /* a bad prefix is also an invalid inst */
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_BadInstLength(struct NCValidatorState *vstate) {
+static void NCStatsBadInstLength(struct NCValidatorState *vstate) {
   vstate->stats.badinstlength += 1;
-  Stats_SawFailure(vstate);
+  NCStatsSawFailure(vstate);
 }
 
-static void Stats_Init(struct NCValidatorState *vstate) {
+static void NCStatsInit(struct NCValidatorState *vstate) {
   vstate->stats.instructions = 0;
   vstate->stats.segments = 0;
   vstate->stats.checktarget = 0;
@@ -247,7 +240,7 @@ static void Stats_Init(struct NCValidatorState *vstate) {
   InitOpcodeHisto(vstate);
 }
 
-void Stats_Print(struct NCValidatorState *vstate) {
+void NCStatsPrint(struct NCValidatorState *vstate) {
   NaClErrorReporter* reporter;
   if (!VERBOSE || (vstate == NULL)) return;
   reporter = vstate->dstate.error_reporter;
@@ -283,22 +276,15 @@ void Stats_Print(struct NCValidatorState *vstate) {
 
 /***********************************************************************/
 /* jump target table                                                   */
-static const uint8_t iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
-                                     0x10, 0x20, 0x40, 0x80};
-#define IATOffset(__IA) ((__IA) >> 3)
-#define IATMask(__IA) (iadrmasks[(__IA) & 0x7])
-#define SetAdrTable(__IOFF, __TABLE) \
-  (__TABLE)[IATOffset(__IOFF)] |= IATMask(__IOFF)
-#define ClearAdrTable(__IOFF, __TABLE) \
-  (__TABLE)[IATOffset(__IOFF)] &= ~(IATMask(__IOFF))
-#define GetAdrTable(__IOFF, __TABLE) \
-  ((__TABLE)[IATOffset(__IOFF)] & IATMask(__IOFF))
+const uint8_t nc_iadrmasks[8] = {0x01, 0x02, 0x04, 0x08,
+                                 0x10, 0x20, 0x40, 0x80};
 
 /* forward declarations, needed for registration */
 static Bool ValidateInst(const NCDecoderInst *dinst);
 static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
                                     NCDecoderInst *dinst_old,
                                     NCDecoderInst *dinst_new);
+static void NCJumpSummarize(struct NCValidatorState* vstate);
 
 /*
  * NCValidateInit: Initialize NaCl validator internal state
@@ -335,12 +321,14 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     vstate->iadrlimit = vlimit;
     vstate->alignment = alignment;
     vstate->alignmask = alignment-1;
-    vstate->vttable = (uint8_t *)calloc(IATOffset(vlimit - vbase) + 1, 1);
-    vstate->kttable = (uint8_t *)calloc(IATOffset(vlimit - vbase) + 1, 1);
+    vstate->vttable = (uint8_t *)calloc(NCIATOffset(vlimit - vbase) + 1, 1);
+    vstate->kttable = (uint8_t *)calloc(NCIATOffset(vlimit - vbase) + 1, 1);
+    vstate->pattern_nonfirst_insts_table = NULL;
+    vstate->summarize_fn = NCJumpSummarize;
     vstate->do_stub_out = 0;
     if (vstate->vttable == NULL || vstate->kttable == NULL) break;
     dprint(("  allocated tables\n"));
-    Stats_Init(vstate);
+    NCStatsInit(vstate);
     if (NULL == nc_validator_features) {
       NaClCPUData cpu_data;
       NaClCPUDataGet(&cpu_data);
@@ -386,54 +374,64 @@ void NCValidateSetErrorReporter(struct NCValidatorState* state,
   NCDecoderStateSetErrorReporter(&state->dstate, error_reporter);
 }
 
+/* Returns true iff the given address is within the code segment being
+ * validated.
+ */
+Bool NCAddressInMemoryRange(const NaClPcAddress address,
+                              struct NCValidatorState* vstate) {
+  return vstate->iadrbase <= address && address < vstate->iadrlimit;
+}
+
 static void RememberIP(const NaClPcAddress ip,
                        struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset =  ip - vstate->iadrbase;
-  if (ip < vstate->iadrbase || ip >= vstate->iadrlimit) {
+  if (!NCAddressInMemoryRange(ip, vstate)) {
     ValidatePrintError(ip, "JUMP TARGET out of range in RememberIP", vstate);
-    Stats_BadTarget(vstate);
+    NCStatsBadTarget(vstate);
     return;
   }
-  if (GetAdrTable(ioffset, vstate->vttable)) {
+  if (NCGetAdrTable(ioffset, vstate->vttable)) {
     vprint(vstate, (reporter,
                     "RememberIP: Saw inst at %"NACL_PRIxNaClPcAddressAll
                     " twice\n", ip));
-    Stats_InternalError(vstate);
+    NCStatsInternalError(vstate);
     return;
   }
-  Stats_Inst(vstate);
-  SetAdrTable(ioffset, vstate->vttable);
+  NCStatsInst(vstate);
+  NCSetAdrTable(ioffset, vstate->vttable);
 }
 
 static void RememberTP(const NaClPcAddress src, NaClPcAddress target,
                        struct NCValidatorState *vstate) {
   const NaClMemorySize ioffset =  target - vstate->iadrbase;
 
-  if (vstate->iadrbase <= target && target < vstate->iadrlimit) {
-    SetAdrTable(ioffset, vstate->kttable);
+  if (NCAddressInMemoryRange(target, vstate)) {
+    NCSetAdrTable(ioffset, vstate->kttable);
   }
   else if ((target & vstate->alignmask) == 0) {
     /* Allow bundle-aligned jumps. */
   }
   else {
     ValidatePrintError(src, "JUMP TARGET out of range", vstate);
-    Stats_BadTarget(vstate);
+    NCStatsBadTarget(vstate);
   }
 }
 
 static void ForgetIP(const NaClPcAddress ip,
                      struct NCValidatorState *vstate) {
   NaClMemorySize ioffset =  ip - vstate->iadrbase;
-  if (ip < vstate->iadrbase || ip >= vstate->iadrlimit) {
+  if (!NCAddressInMemoryRange(ip, vstate)) {
     ValidatePrintError(ip, "JUMP TARGET out of range in ForgetIP", vstate);
-    Stats_BadTarget(vstate);
+    NCStatsBadTarget(vstate);
     return;
   }
-  ClearAdrTable(ioffset, vstate->vttable);
+  NCClearAdrTable(ioffset, vstate->vttable);
+  if (NULL != vstate->pattern_nonfirst_insts_table) {
+    NCSetAdrTable(ioffset, vstate->pattern_nonfirst_insts_table);
+  }
 }
 
 int NCValidateFinish(struct NCValidatorState *vstate) {
-  uint32_t offset;
   if (vstate == NULL) {
     vprint(vstate,
            (reporter,
@@ -441,41 +439,24 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
     /* non-zero indicates failure */
     return 1;
   }
+
   /* If we are stubbing out code, the following checks don't provide any
    * usefull information, so quit early.
    */
   if (vstate->do_stub_out) return vstate->stats.sawfailure;
-  dprint(("CheckTargets: %"NACL_PRIxNaClPcAddress"-%"NACL_PRIxNaClPcAddress"\n",
-          vstate->iadrbase, vstate->iadrlimit));
-  for (offset = 0;
-       offset < vstate->iadrlimit - vstate->iadrbase;
-       offset += 1) {
-    if (GetAdrTable(offset, vstate->kttable)) {
-      /* printf("CheckTarget %x\n", offset + iadrbase); */
-      Stats_CheckTarget(vstate);
-      if (!GetAdrTable(offset, vstate->vttable)) {
-        ValidatePrintError(vstate->iadrbase + offset,
-                           "Bad jump target", vstate);
-        Stats_BadTarget(vstate);
-      }
-    }
-  }
-  /* check basic block boundaries */
+
+  /* Double check that the base address matches the alignment constraint. */
   if (vstate->iadrbase & vstate->alignmask) {
     /* This should never happen because the alignment of iadrbase is */
     /* checked in NCValidateInit(). */
     ValidatePrintError(vstate->iadrbase, "Bad base address alignment", vstate);
-    Stats_BadAlignment(vstate);
+    NCStatsBadAlignment(vstate);
   }
-  for (offset = 0; offset < vstate->iadrlimit - vstate->iadrbase;
-       offset += vstate->alignment) {
-    if (!GetAdrTable(offset, vstate->vttable)) {
-      ValidatePrintError(vstate->iadrbase + offset,
-                         "Bad basic block alignment", vstate);
-      Stats_BadAlignment(vstate);
-    }
-  }
-  fflush(stdout);
+
+  /* Apply summary analysis to collected data during pass over
+   * instructions.
+   */
+  (*(vstate->summarize_fn))(vstate);
 
   /* Now that all the work is done, generate return code. */
   /* Return zero if there are no problems.                */
@@ -486,6 +467,7 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
   CHECK(*vstate != NULL);
   free((*vstate)->vttable);
   free((*vstate)->kttable);
+  free((*vstate)->pattern_nonfirst_insts_table);
   free(*vstate);
   *vstate = NULL;
 }
@@ -493,7 +475,7 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
 /* ValidateSFenceClFlush is called for the sfence/clflush opcode 0f ae /7 */
 /* It returns 0 if the current instruction is implemented, and 1 if not.  */
 static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
-  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   uint8_t mrm = NCInstBytesByte(&dinst->inst_bytes, 2);
 
   if (modrm_mod(mrm) == 3) {
@@ -509,32 +491,22 @@ static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
 
 static void ValidateCallAlignment(const NCDecoderInst *dinst) {
   NaClPcAddress fallthru = dinst->vpc + dinst->inst.bytes.length;
-  struct NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   if (fallthru & vstate->alignmask) {
     ValidatePrintError(dinst->vpc, "Bad call alignment", vstate);
     /* This makes bad call alignment a fatal error. */
-    Stats_BadAlignment(vstate);
+    NCStatsBadAlignment(vstate);
   }
 }
 
 static void ValidateJmp8(const NCDecoderInst *dinst) {
-  uint8_t opcode = NCInstBytesByte(&dinst->inst_bytes,
-                                   dinst->inst.prefixbytes);
   int8_t offset = NCInstBytesByte(&dinst->inst_bytes,
                                   dinst->inst.prefixbytes+1);
-  struct NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NaClPcAddress target =
       dinst->vpc + dinst->inst.bytes.length + offset;
-  Stats_CheckTarget(vstate);
-  if ((opcode & 0xf0) == 0x70 || opcode == 0xeb ||
-      opcode == 0xe0 || opcode == 0xe1 || opcode == 0xe2 || opcode == 0xe3) {
-    RememberTP(dinst->vpc, target, vstate);
-  } else {
-    /* If this ever happens, it's probably a decoder bug. */
-    vprint(vstate, (reporter, "ERROR: JMP8 %"NACL_PRIxNaClPcAddress": %x\n",
-                    dinst->vpc, opcode));
-    Stats_InternalError(vstate);
-  }
+  NCStatsCheckTarget(vstate);
+  RememberTP(dinst->vpc, target, vstate);
 }
 
 static void ValidateJmpz(const NCDecoderInst *dinst) {
@@ -542,36 +514,31 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
   uint8_t opcode0;
   int32_t offset;
   NaClPcAddress target;
-  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
   NCInstBytesPtrInitInc(&opcode, &dinst->inst_bytes,
                         dinst->inst.prefixbytes);
   opcode0 = NCInstBytesByte(&opcode, 0);
-  Stats_CheckTarget(vstate);
-  if (opcode0 == 0xe8 || opcode0 == 0xe9) {
+  NCStatsCheckTarget(vstate);
+  if (opcode0 == 0x0f) {
+    /* Multbyte opcode. Intruction is of form:
+     *    0F80 .. 0F8F: jCC $Jz
+     */
+    NCInstBytesPtr opcode_2;
+    NCInstBytesPtrInitInc(&opcode_2, &opcode, 2);
+    offset = NCInstBytesInt32(&opcode_2);
+  } else {
+    /* Single byte opcode. Must be one of:
+     *    E8: call $Jz
+     *    E9: jmp $Jx
+     */
     NCInstBytesPtr opcode_1;
     NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
     offset = NCInstBytesInt32(&opcode_1);
-    target = dinst->vpc + dinst->inst.bytes.length + offset;
-    RememberTP(dinst->vpc, target, vstate);
     /* as a courtesy, check call alignment correctness */
     if (opcode0 == 0xe8) ValidateCallAlignment(dinst);
-  } else if (opcode0 == 0x0f) {
-    uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
-    if ((opcode1 & 0xf0) == 0x80) {
-      NCInstBytesPtr opcode_2;
-      NCInstBytesPtrInitInc(&opcode_2, &opcode, 2);
-      offset = NCInstBytesInt32(&opcode_2);
-      target = dinst->vpc + dinst->inst.bytes.length + offset;
-      RememberTP(dinst->vpc, target, vstate);
-    }
-  } else {
-    /* If this ever happens, it's probably a decoder bug. */
-    uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
-    vprint(vstate,
-           (reporter, "ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
-            dinst->vpc, opcode0, opcode1));
-    Stats_InternalError(vstate);
   }
+  target = dinst->vpc + dinst->inst.bytes.length + offset;
+  RememberTP(dinst->vpc, target, vstate);
 }
 
 /*
@@ -589,12 +556,12 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   uint8_t               mrm;
   uint8_t               targetreg;
   const uint8_t         kReg_ESP = 4;
-  NCValidatorState* vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
   struct NCDecoderInst *andinst = PreviousInst(dinst, 1);
   if ((andinst == NULL) || (andinst->inst.bytes.length != 3)) {
-    BadInstructionError(dinst, "Unsafe indirect jump");
-    Stats_UnsafeIndirect(vstate);
+    NCBadInstructionError(dinst, "Unsafe indirect jump");
+    NCStatsUnsafeIndirect(vstate);
     return;
   }
   /* note: no prefixbytes allowed */
@@ -605,8 +572,8 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
   targetreg = modrm_rm(mrm);  /* Note that the modrm_rm field holds the   */
                               /* target addr the modrm_reg is the opcode. */
 
-  Stats_CheckTarget(vstate);
-  Stats_TargetIndirect(vstate);
+  NCStatsCheckTarget(vstate);
+  NCStatsTargetIndirect(vstate);
   do {
     /* no prefix bytes allowed */
     if (dinst->inst.prefixbytes != 0) break;
@@ -632,8 +599,8 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
     if (modrm_reg(mrm) == 2) ValidateCallAlignment(dinst);
     return;
   } while (0);
-  BadInstructionError(dinst, "Unsafe indirect jump");
-  Stats_UnsafeIndirect(vstate);
+  NCBadInstructionError(dinst, "Unsafe indirect jump");
+  NCStatsUnsafeIndirect(vstate);
 }
 
 /* Checks if the set of prefixes are allowed for the instruction.
@@ -721,7 +688,7 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
   int squashme = 0;
   NCValidatorState* vstate;
   if (dinst == NULL) return TRUE;
-  vstate = VALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
  /*  dprint(("ValidateInst(%x, %x) at %x\n",
       (uint32_t)dinst, (uint32_t)vstate, dinst->vpc)); */
@@ -733,15 +700,15 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
   cpufeatures = &(vstate->cpufeatures);
 
   if (!ValidatePrefixes(dinst)) {
-    BadInstructionError(dinst, "Bad prefix usage");
-    Stats_BadPrefix(vstate);
+    NCBadInstructionError(dinst, "Bad prefix usage");
+    NCStatsBadPrefix(vstate);
   }
 
   if ((dinst->opinfo->insttype != NACLi_NOP) &&
       ((size_t) (dinst->inst.bytes.length - dinst->inst.prefixbytes)
        > kMaxValidInstLength)) {
-    BadInstructionError(dinst, "Instruction too long");
-    Stats_BadInstLength(vstate);
+    NCBadInstructionError(dinst, "Instruction too long");
+    NCStatsBadInstLength(vstate);
   }
 
   switch (dinst->opinfo->insttype) {
@@ -772,8 +739,8 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
        * http://en.wikipedia.org/wiki/Pentium_F00F_bug
        */
       if (modrm_mod(dinst->inst.mrm) == kModRmModFieldDefinesRegisterRef) {
-        BadInstructionError(dinst, "Illegal instruction");
-        Stats_IllegalInst(vstate);
+        NCBadInstructionError(dinst, "Illegal instruction");
+        NCStatsIllegalInst(vstate);
       }
       squashme = (!cpufeatures->f_CX8);
       break;
@@ -840,15 +807,15 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
        * do this check.
        */
       if (!(dinst->inst.opcode_prefixmask & kPrefixDATA16)) {
-        BadInstructionError(dinst, "Bad prefix usage");
-        Stats_BadPrefix(vstate);
+        NCBadInstructionError(dinst, "Bad prefix usage");
+        NCStatsBadPrefix(vstate);
       }
       squashme = (!cpufeatures->f_SSE2);
       break;
 
     case NACLi_RETURN:
-      BadInstructionError(dinst, "ret instruction (not allowed)");
-      Stats_Return(vstate);
+      NCBadInstructionError(dinst, "ret instruction (not allowed)");
+      NCStatsReturn(vstate);
       /* ... and fall through to illegal instruction code */
     case NACLi_EMMX:
       /* EMMX needs to be supported someday but isn't ready yet. */
@@ -864,19 +831,19 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
     case NACLi_OPINMRM:
     case NACLi_3BYTE:
     case NACLi_CMPXCHG16B: {
-        BadInstructionError(dinst, "Illegal instruction");
-        Stats_IllegalInst(vstate);
+        NCBadInstructionError(dinst, "Illegal instruction");
+        NCStatsIllegalInst(vstate);
         break;
       }
     case NACLi_UNDEFINED: {
-        BadInstructionError(dinst, "Undefined instruction");
-        Stats_IllegalInst(vstate);
-        Stats_InternalError(vstate);
+        NCBadInstructionError(dinst, "Undefined instruction");
+        NCStatsIllegalInst(vstate);
+        NCStatsInternalError(vstate);
         break;
       }
     default:
-      BadInstructionError(dinst, "Undefined instruction type");
-      Stats_InternalError(vstate);
+      NCBadInstructionError(dinst, "Undefined instruction type");
+      NCStatsInternalError(vstate);
       break;
   }
   if (squashme) memset(dinst->dstate->memory.mpc, kNaClFullStop,
@@ -908,9 +875,9 @@ static void ValidateIndirect5Replacement(NCDecoderInst *dinst_old,
 
     return;
   } while (0);
-  BadInstructionError(dinst_new,
-                      "Replacement indirect jump must match original");
-  Stats_UnsafeIndirect(VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
+  NCBadInstructionError(dinst_new,
+                        "Replacement indirect jump must match original");
+  NCStatsUnsafeIndirect(NCVALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
 }
 
 /*
@@ -930,7 +897,7 @@ static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
     /* Still need to record there is an intruction here for NCValidateFinish()
      * to verify basic block alignment.
      */
-    RememberIP(dinst_new->vpc, VALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
+    RememberIP(dinst_new->vpc, NCVALIDATOR_STATE_DOWNCAST(dinst_new->dstate));
   }
 
   if (dinst_old->opinfo->insttype == NACLi_INDIRECT
@@ -947,17 +914,19 @@ static Bool ValidateInstReplacement(NCDecoderStatePair* tthis,
 static void NCValidateDStateInit(NCValidatorState *vstate,
                                  uint8_t *mbase, NaClPcAddress vbase,
                                  NaClMemorySize sz) {
-  /* TODO(karl): Refactor this so that NCValidatorState properly
-   * inherits from NCDecoderState. This means refactoring the
-   * API to have a constructor that does the following.
-   */
   NCDecoderState* dstate = &vstate->dstate;
+  /* Note: Based on the current API, we must grab the error reporter
+   * and reinstall it, after the call to NCValidateDStateInit, so that
+   * we don't replace it with the default error reporter.
+   */
+  NaClErrorReporter* reporter = dstate->error_reporter;
   NCDecoderStateConstruct(dstate, mbase, vbase, sz,
                           vstate->inst_buffer, kNCValidatorInstBufferSize);
   dstate->action_fn = ValidateInst;
-  dstate->new_segment_fn = (NCDecoderStateMethod) Stats_NewSegment;
-  dstate->segmentation_error_fn = (NCDecoderStateMethod) Stats_SegFault;
-  dstate->internal_error_fn = (NCDecoderStateMethod) Stats_InternalError;
+  dstate->new_segment_fn = (NCDecoderStateMethod) NCStatsNewSegment;
+  dstate->segmentation_error_fn = (NCDecoderStateMethod) NCStatsSegFault;
+  dstate->internal_error_fn = (NCDecoderStateMethod) NCStatsInternalError;
+  NCDecoderStateSetErrorReporter(dstate, reporter);
 }
 
 void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
@@ -965,22 +934,11 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
   NCHaltTrimSegment(mbase, vbase, vstate->alignment, &sz, &vstate->iadrlimit);
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)", vstate);
-    Stats_SegFault(vstate);
+    NCStatsSegFault(vstate);
     return;
   } else {
-    /* Note: Based on the current API, we must grab the error reporter
-     * and reinstall it, after the call to NCValidateDStateInit, so that
-     * we don't replace it with the default error reporter.
-     */
-    /* TODO(karl): Create a constructor for a decoder state so that
-     * it doesn't require the mbase, vbase, and sz values, so that
-     * the constructor can be called whe4n the validator state is
-     * created.
-     */
     NCDecoderState* dstate = &vstate->dstate;
-    NaClErrorReporter* reporter = dstate->error_reporter;
     NCValidateDStateInit(vstate, mbase, vbase, sz);
-    NCDecoderStateSetErrorReporter(dstate, reporter);
     NCDecoderStateDecode(dstate);
     NCDecoderStateDestruct(dstate);
   }
@@ -1031,4 +989,39 @@ int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     NCValidateFreeState(&old_vstate);
   }
   return result;
+}
+
+/* Walk the collected information on instruction boundaries and jump targets,
+ * and verify that they are legal.
+ */
+static void NCJumpSummarize(struct NCValidatorState* vstate) {
+  uint32_t offset;
+
+  /* Verify that jumps are to the beginning of instructions, and that the
+   * jumped to instruction is not in the middle of a native client pattern.
+   */
+  dprint(("CheckTargets: %"NACL_PRIxNaClPcAddress"-%"NACL_PRIxNaClPcAddress"\n",
+          vstate->iadrbase, vstate->iadrlimit));
+  for (offset = 0;
+       offset < vstate->iadrlimit - vstate->iadrbase;
+       offset += 1) {
+    if (NCGetAdrTable(offset, vstate->kttable)) {
+      NCStatsCheckTarget(vstate);
+      if (!NCGetAdrTable(offset, vstate->vttable)) {
+        ValidatePrintError(vstate->iadrbase + offset,
+                           "Bad jump target", vstate);
+        NCStatsBadTarget(vstate);
+      }
+    }
+  }
+
+  /* check basic block boundaries */
+  for (offset = 0; offset < vstate->iadrlimit - vstate->iadrbase;
+       offset += vstate->alignment) {
+    if (!NCGetAdrTable(offset, vstate->vttable)) {
+      ValidatePrintError(vstate->iadrbase + offset,
+                         "Bad basic block alignment", vstate);
+      NCStatsBadAlignment(vstate);
+    }
+  }
 }

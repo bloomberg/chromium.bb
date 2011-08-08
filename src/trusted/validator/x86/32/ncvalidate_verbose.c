@@ -11,7 +11,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
 #include "native_client/src/trusted/validator/x86/32/ncvalidate.h"
 
 /* Be sure the correct compile flags are defined for this. */
@@ -31,7 +31,7 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
     Bool local_cpu) {
   int validator_result = 0;
   struct NCValidatorState *vstate =
-      NCValidateInit(guest_addr, guest_addr + size, bundle_size);
+      NCValidateInitDetailed(guest_addr, guest_addr + size, bundle_size);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   if (!local_cpu) {
     CPUFeatures features;

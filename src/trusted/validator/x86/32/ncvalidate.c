@@ -8,6 +8,7 @@
 
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
@@ -48,7 +49,7 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
     Bool local_cpu) {
   CPUFeatures features;
   struct NCValidatorState *vstate =
-      NCValidateInit(guest_addr, guest_addr + size, bundle_size);
+      NCValidateInitDetailed(guest_addr, guest_addr + size, bundle_size);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   NCValidateSetStubOutMode(vstate, 1);
   if (!local_cpu) {

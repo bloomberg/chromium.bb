@@ -16,6 +16,7 @@
         'sources': [
           'ncdecode.c',
           'ncvalidate.c',
+          'ncvalidate_detailed.c',
         ],
         'cflags!': [
           '-Wextra',

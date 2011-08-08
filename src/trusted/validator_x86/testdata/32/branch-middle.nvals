@@ -1,0 +1,20 @@
+VALIDATOR: 80000005: Bad call alignment
+VALIDATOR: 80000005: Bad jump target
+D: ***MODULE <hex_text> IS UNSAFE***
+
+Opcode Histogram;
+1	0x7e	1	0x83	1	0xff	
+Analysis Summary:
+3 Checked instructions
+3 checked jump targets
+1 calls/jumps need dynamic checking (33.33%)
+
+Problems:
+0 illegal instructions
+1 bad jump targets
+0 illegal unprotected indirect jumps (including ret)
+1 instruction alignment defects
+0 segmentation errors
+0 bad prefix
+0 bad instruction length
+0 internal errors

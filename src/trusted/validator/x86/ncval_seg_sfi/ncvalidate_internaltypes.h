@@ -9,7 +9,8 @@
 
 /*
  * ncvalidate_internaltypes.h
- * Type declarations intimate to ncvalidate.h, exposed for testing.
+ * Declarations intimate to ncvalidate.h, exposed for testing and other files
+ * that define the validator.
  *
  */
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
@@ -45,6 +46,12 @@ typedef struct SummaryStats {
  */
 #define kNCValidatorInstBufferSize 4
 
+/* Defines a jump summarization function. When in sel_ldr, this will
+ * be the minimal code needed to detect issues. When in ncval, this
+ * will expend more effort and generate more readable error messages.
+ */
+typedef void (*NCValidateJumpSummarizeFn)(struct NCValidatorState* vstate);
+
 /* put all formerly global data into a struct */
 typedef struct NCValidatorState {
   /* NOTE: Decoder state (dstate) must appear first so that we can use it like
@@ -62,8 +69,72 @@ typedef struct NCValidatorState {
   uint32_t opcodehisto[256];
   uint8_t *vttable;
   uint8_t *kttable;
+  /* If non-null, then in detailed mode. Keeps track of addresses
+   * to instructions in the middle of a NaCl (atomic) pattern.
+   * This allows detailed mode to give better error messages (i.e.
+   * whether the jump isn't to an instruction boundary,
+   * or if the jump is into the middle of a nacl pattern).
+   */
+  uint8_t *pattern_nonfirst_insts_table;
   int do_stub_out;  /* boolean */
   int num_diagnostics; /* How many error messages to print. */
+  /* Defines the summarization function to apply. Defaults to
+   * NCSelLDrJumpSummarizeFn, which is the summarize function
+   * for sel_ldr (i.e. non-detailed).
+   */
+  NCValidateJumpSummarizeFn summarize_fn;
 } NCValidatorState;
+
+/* The following macro is used to clarify the derived class relationship
+ * of NCValidateState and NCDecoderState. That is, &this->dstate is also
+ * an instance of a validator state. Hence one can downcast this pointer.
+ */
+#define NCVALIDATOR_STATE_DOWNCAST(this_dstate) \
+  ((NCValidatorState*) (this_dstate))
+
+/* Masks used to access bits within a byte. */
+extern const uint8_t nc_iadrmasks[8];
+
+/* Converts address to corresponding byte in jump table. */
+#define NCIATOffset(__IA) ((__IA) >> 3)
+
+/* Gets mask for bit associated with corresponding byte in jump table. */
+#define NCIATMask(__IA) (nc_iadrmasks[(__IA) & 0x7])
+
+/* Sets bit __IOFF in jump table __TABLE. */
+#define NCSetAdrTable(__IOFF, __TABLE) \
+  (__TABLE)[NCIATOffset(__IOFF)] |= NCIATMask(__IOFF)
+
+/* Clears bit __IOFF in jump table __TABLE. */
+#define NCClearAdrTable(__IOFF, __TABLE) \
+  (__TABLE)[NCIATOffset(__IOFF)] &= ~(NCIATMask(__IOFF))
+
+/* Gets bit __IOFF in jump table __TABLE. */
+#define NCGetAdrTable(__IOFF, __TABLE) \
+  ((__TABLE)[NCIATOffset(__IOFF)] & NCIATMask(__IOFF))
+
+/* Returns true iff the given address is within the code segment being
+ * validated.
+ */
+Bool NCAddressInMemoryRange(const NaClPcAddress address,
+                            struct NCValidatorState* vstate);
+
+/* Report that the given instruction is illegal in native client, using
+ * the given error message.
+ */
+void NCBadInstructionError(const struct NCDecoderInst *dinst, const char *msg);
+
+/* Update statistics to show that another bad jump target was found. */
+void NCStatsBadTarget(struct NCValidatorState *vstate);
+
+/* Update statistics to show that another bad address alignment issues has been
+ * found.
+ */
+void NCStatsBadAlignment(struct NCValidatorState *vstate);
+
+/* Update statistics to show that some (unexpected) internal error occurred
+ * while running the validator.
+ */
+void NCStatsInternalError(struct NCValidatorState *vstate);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_INTERNALTYPES_H__ */
