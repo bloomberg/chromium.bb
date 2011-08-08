@@ -1030,8 +1030,7 @@ WebRect RenderWidget::windowRect() {
 
 void RenderWidget::setToolTipText(const WebKit::WebString& text,
                                   WebTextDirection hint) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, UTF16ToWideHack(text),
-                                      hint));
+  Send(new ViewHostMsg_SetTooltipText(routing_id_, text, hint));
 }
 
 void RenderWidget::setWindowRect(const WebRect& pos) {

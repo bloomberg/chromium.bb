@@ -815,7 +815,7 @@ void RenderWidgetHost::OnMsgClose() {
 }
 
 void RenderWidgetHost::OnMsgSetTooltipText(
-    const std::wstring& tooltip_text,
+    const string16& tooltip_text,
     WebTextDirection text_direction_hint) {
   // First, add directionality marks around tooltip text if necessary.
   // A naive solution would be to simply always wrap the text. However, on
@@ -830,7 +830,7 @@ void RenderWidgetHost::OnMsgSetTooltipText(
   // trying to detect the directionality from the tooltip text rather than the
   // element direction.  One could argue that would be a preferable solution
   // but we use the current approach to match Fx & IE's behavior.
-  string16 wrapped_tooltip_text = WideToUTF16(tooltip_text);
+  string16 wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
     if (text_direction_hint == WebKit::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.

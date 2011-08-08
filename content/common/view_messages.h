@@ -1707,7 +1707,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetScreenInfo,
 
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
-                    std::wstring /* tooltip text string */,
+                    string16 /* tooltip text string */,
                     WebKit::WebTextDirection /* text direction hint */)
 
 // Notification that the text selection has changed.
