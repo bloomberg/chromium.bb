@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility_util.h"
 
+#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -22,6 +23,8 @@ void EnableAccessibility(bool enabled) {
       g_browser_process->local_state()->GetBoolean(
           prefs::kAccessibilityEnabled);
   if (accessibility_enabled == enabled) {
+    LOG(INFO) << "Accessibility is already " <<
+        (enabled ? "enabled" : "diabled") << ".  Going to do nothing.";
     return;
   }
 
@@ -42,9 +45,11 @@ void EnableAccessibility(bool enabled) {
   if (enabled) { // Load ChromeVox
     extension_service->register_component_extension(info);
     extension_service->LoadComponentExtension(info);
+    LOG(INFO) << "ChromeVox was Loaded.";
   } else { // Unload ChromeVox
     extension_service->UnloadComponentExtension(info);
     extension_service->UnregisterComponentExtension(info);
+    LOG(INFO) << "ChromeVox was Unloaded.";
   }
 }
 
