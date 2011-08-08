@@ -10,7 +10,6 @@
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 
 #include "native_client/src/third_party/ppapi/c/dev/ppb_console_dev.h"
@@ -23,7 +22,7 @@ using nacl::assert_cast;
 
 namespace plugin {
 
-uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
+uintptr_t BrowserInterface::StringToIdentifier(const nacl::string& str) {
   StringToIdentifierMap::iterator iter = string_to_identifier_map_.find(str);
   if (iter == string_to_identifier_map_.end()) {
     uintptr_t id = next_identifier++;
@@ -35,16 +34,15 @@ uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
 }
 
 
-nacl::string BrowserInterfacePpapi::IdentifierToString(uintptr_t ident) {
+nacl::string BrowserInterface::IdentifierToString(uintptr_t ident) {
   assert(identifier_to_string_map_.find(ident) !=
          identifier_to_string_map_.end());
   return identifier_to_string_map_[ident];
 }
 
 
-void BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
-                                         const nacl::string& text) {
-  pp::InstancePrivate* instance = InstanceIdentifierToPPInstance(instance_id);
+void BrowserInterface::AddToConsole(pp::InstancePrivate* instance,
+                                    const nacl::string& text) {
   pp::Module* module = pp::Module::Get();
   const PPB_Var* var_interface =
       static_cast<const struct PPB_Var*>(
@@ -66,25 +64,6 @@ void BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
                                    str);
   var_interface->Release(prefix);
   var_interface->Release(str);
-}
-
-
-ScriptableHandle* BrowserInterfacePpapi::NewScriptableHandle(
-    PortableHandle* handle) {
-  return ScriptableHandlePpapi::New(handle);
-}
-
-
-pp::InstancePrivate* InstanceIdentifierToPPInstance(
-    InstanceIdentifier instance_id) {
-  return reinterpret_cast<pp::InstancePrivate*>(
-      assert_cast<intptr_t>(instance_id));
-}
-
-
-InstanceIdentifier PPInstanceToInstanceIdentifier(
-    pp::InstancePrivate* instance) {
-  return assert_cast<InstanceIdentifier>(reinterpret_cast<intptr_t>(instance));
 }
 
 }  // namespace plugin

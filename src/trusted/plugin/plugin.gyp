@@ -16,9 +16,6 @@
         'sources': [
           '<@(common_sources)',
         ],
-        'defines': [
-          'NACL_PPAPI',
-        ],
         'xcode_settings': {
           'WARNING_CFLAGS!': [
             # TODO(bradnelson): remove -pedantic when --std=c++98 in common.gypi
@@ -92,9 +89,6 @@
                 '-Wl,-exported_symbols_list <(DEPTH)/native_client/src/trusted/plugin/ppapi.def'
             ],
           },
-          'defines': [
-            'NACL_PPAPI',
-          ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',

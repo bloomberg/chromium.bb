@@ -24,52 +24,49 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
 
+struct NaClDesc;
+
 namespace plugin {
 
 // Forward declarations for externals.
-class PortableHandle;
+class DescBasedHandle;
+class Plugin;
 
 // ScriptableHandle encapsulates objects that are scriptable from the browser.
-class ScriptableHandle {
+class ScriptableHandle : public pp::deprecated::ScriptableObject {
  public:
+  // Factory methods for creation.
+  static ScriptableHandle* NewPlugin(Plugin* plugin);
+  static ScriptableHandle* NewDescHandle(DescBasedHandle* desc_handle);
+
+  // If not NULL, this var should be reused to pass this object to the browser.
+  pp::VarPrivate* var() { return var_; }
+
   // Check that a pointer is to a validly created ScriptableHandle.
   static bool is_valid(const ScriptableHandle* handle);
   static void Unref(ScriptableHandle** handle);
 
-  // Get the contained object.
-  PortableHandle* handle() const { return handle_; }
-  // Set the contained object.
-  void set_handle(PortableHandle* handle) { handle_ = handle; }
+  // Get the contained plugin object.  NULL if this contains a descriptor.
+  Plugin* plugin() const { return plugin_; }
 
-  // Add a browser reference to this object.
-  virtual ScriptableHandle* AddRef() = 0;
+  // Get the contained descriptor object.  NULL if this contains a plugin.
+  // OBSOLETE -- this support is only needed for SRPC descriptor passing.
+  // TODO(polina): Remove this support when SRPC descriptor passing is removed.
+  DescBasedHandle* desc_handle() const { return desc_handle_; }
+
+  // This function is called when we are about to share the object owned by the
+  // plugin with the browser. Since reference counting on the browser side is
+  // handled via pp::Var's, we create the var() here if not created already.
+  ScriptableHandle* AddRef();
   // Remove a browser reference to this object.
   // Delete the object when the ref count becomes 0.
-  virtual void Unref() = 0;
-
- protected:
-  explicit ScriptableHandle(PortableHandle* handle);
-  virtual ~ScriptableHandle();
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandle);
-  PortableHandle* handle_;
-};
-
-// Encapsulates a browser scriptable object for a PPAPI NaCl plugin.
-class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
-                              public ScriptableHandle {
- public:
-  // Factory method for creation.
-  static ScriptableHandlePpapi* New(PortableHandle* handle);
-
-  // If not NULL, this var should be reused to pass this object to the browser.
-  pp::VarPrivate* var() { return var_; }
+  // If var() is set, we delete it. Otherwise, we delete the object itself.
+  // Therefore, this cannot be called more than once.
+  void Unref();
 
   // ------ Methods inherited from pp::deprecated::ScriptableObject:
 
@@ -103,34 +100,15 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   virtual pp::Var Construct(const std::vector<pp::Var>& args,
                             pp::Var* exception);
 
-  // ----- Methods inherited from ScriptableHandle:
-
-  // This function is called when we are about to share the object owned by the
-  // plugin with the browser. Since reference counting on the browser side is
-  // handled via pp::Var's, we create the var() here if not created already.
-  virtual ScriptableHandle* AddRef();
-  // If var() is set, we delete it. Otherwise, we delete the object itself.
-  // Therefore, this cannot be called more than once.
-  virtual void Unref();
-
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandlePpapi);
-  // Prevent construction from outside the class:
-  // must use factory New() method instead.
-  explicit ScriptableHandlePpapi(PortableHandle* handle);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandle);
+  // Prevent construction from outside the class: must use factory New()
+  // method instead.
+  explicit ScriptableHandle(Plugin* plugin);
+  explicit ScriptableHandle(DescBasedHandle* desc_handle);
   // This will be called when both the plugin and the browser clear all
   // references to this object.
-  virtual ~ScriptableHandlePpapi();
-
-  // Helper functionality common to HasProperty and HasMethod.
-  bool HasCallType(CallType call_type, nacl::string call_name,
-                   const char* caller);
-  // Helper functionality common to GetProperty, SetProperty and Call.
-  // If |call_type| is PROPERTY_GET, ignores args and expects 1 return var.
-  // If |call_type| is PROPERTY_SET, expects 1 arg and returns void var.
-  // Sets |exception| on failure.
-  pp::Var Invoke(CallType call_type, nacl::string call_name, const char* caller,
-                 const std::vector<pp::Var>& args, pp::Var* exception);
+  virtual ~ScriptableHandle();
 
   // When we pass the object owned by the plugin to the browser, we need to wrap
   // it in a pp::VarPrivate, which also registers the object with the browser
@@ -148,7 +126,12 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   // and only that owner should call Unref(). To CHECK for that keep a counter.
   int num_unref_calls_;
 
-  bool handle_is_plugin_;  // Whether (portable) handle() is a plugin.
+  // The contained plugin object.
+  Plugin* plugin_;
+  // OBSOLETE -- this support is only needed for SRPC descriptor passing.
+  // TODO(polina): Remove this support when SRPC descriptor passing is removed.
+  // The contained descriptor handle object.
+  DescBasedHandle* desc_handle_;
 };
 
 }  // namespace plugin

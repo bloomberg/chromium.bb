@@ -12,8 +12,8 @@
 
 namespace plugin {
 
-DescBasedHandle::DescBasedHandle(Plugin* plugin, nacl::DescWrapper* wrapper)
-    : plugin_(plugin), wrapper_(wrapper) {
+DescBasedHandle::DescBasedHandle(nacl::DescWrapper* wrapper)
+    : wrapper_(wrapper) {
   PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
 }
@@ -23,19 +23,14 @@ DescBasedHandle::~DescBasedHandle() {
                  static_cast<void*>(this)));
 }
 
-DescBasedHandle* DescBasedHandle::New(Plugin* plugin,
-                                      nacl::DescWrapper* wrapper) {
-  PLUGIN_PRINTF(("DescBasedHandle::New (plugin=%p)\n",
-                 static_cast<void*>(plugin)));
+DescBasedHandle* DescBasedHandle::New(nacl::DescWrapper* wrapper) {
+  PLUGIN_PRINTF(("DescBasedHandle::New (wrapper=%p)\n",
+                 static_cast<void*>(wrapper)));
 
-  if ((plugin == NULL) || (wrapper == NULL)) {
+  if (wrapper == NULL) {
     return NULL;
   }
-  return new DescBasedHandle(plugin, wrapper);
-}
-
-BrowserInterface* DescBasedHandle::browser_interface() const {
-  return plugin_->browser_interface();
+  return new DescBasedHandle(wrapper);
 }
 
 }  // namespace plugin

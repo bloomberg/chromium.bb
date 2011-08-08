@@ -21,7 +21,7 @@ namespace plugin {
 // as well as multiple return values from invoking SRPC methods.
 class ArrayPpapi : public pp::deprecated::ScriptableObject {
  public:
-  explicit ArrayPpapi(PluginPpapi* instance);
+  explicit ArrayPpapi(Plugin* instance);
   virtual ~ArrayPpapi() {}
 
   virtual bool HasProperty(const pp::Var& name, pp::Var* exception) {

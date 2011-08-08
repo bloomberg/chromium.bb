@@ -13,7 +13,7 @@
 
 namespace plugin {
 
-ArrayPpapi::ArrayPpapi(PluginPpapi* instance) {
+ArrayPpapi::ArrayPpapi(Plugin* instance) {
   PLUGIN_PRINTF(("ArrayPpapi::ArrayPpapi (this=%p, instance=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(instance)));
   pp::VarPrivate window = instance->GetWindowObject();

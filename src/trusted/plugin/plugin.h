@@ -20,12 +20,11 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/file_downloader.h"
+#include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 #include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
@@ -63,8 +62,46 @@ class PnaclCoordinator;
 class ProgressEvent;
 class ScriptableHandle;
 
-class Plugin : public PortableHandle {
+typedef enum {
+  METHOD_CALL = 0,
+  PROPERTY_GET,
+  PROPERTY_SET
+} CallType;
+
+
+class Plugin : public pp::InstancePrivate {
  public:
+  // Factory method for creation.
+  static Plugin* New(PP_Instance instance);
+
+  // ----- Methods inherited from pp::Instance:
+
+  // Initializes this plugin with <embed/object ...> tag attribute count |argc|,
+  // names |argn| and values |argn|. Returns false on failure.
+  // Gets called by the browser right after New().
+  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+
+  // Handles view changes from the browser.
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+
+  // Handles gaining or losing focus.
+  virtual void DidChangeFocus(bool has_focus);
+
+  // Handles input events delivered from the browser to this plugin element.
+  virtual bool HandleInputEvent(const pp::InputEvent& event);
+
+  // Handles gaining or losing focus.
+  virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
+
+  // Returns a scriptable reference to this plugin element.
+  // Called by JavaScript document.getElementById(plugin_id).
+  virtual pp::Var GetInstanceObject();
+
+  // Handles postMessage from browser
+  virtual void HandleMessage(const pp::Var& message);
+
+  // ----- Plugin interface support.
+
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
   // Updates nacl_module_origin() and nacl_module_url().
@@ -86,44 +123,36 @@ class Plugin : public PortableHandle {
     LENGTH_IS_COMPUTABLE = 1
   };
   // Report successful loading of a module.
-  virtual void ReportLoadSuccess(LengthComputable length_computable,
-                                 uint64_t loaded_bytes,
-                                 uint64_t total_bytes) = 0;
+  void ReportLoadSuccess(LengthComputable length_computable,
+                         uint64_t loaded_bytes,
+                         uint64_t total_bytes);
   // Report an error that was encountered while loading a module.
-  virtual void ReportLoadError(const ErrorInfo& error_info) = 0;
+  void ReportLoadError(const ErrorInfo& error_info);
   // Report loading a module was aborted, typically due to user action.
-  virtual void ReportLoadAbort() = 0;
+  void ReportLoadAbort();
   // Dispatch a JavaScript event to indicate a key step in loading.
   // |event_type| is a character string indicating which type of progress
-  // event (loadstart, progress, error, abort, load, loadend).
-  virtual void EnqueueProgressEvent(const char* event_type,
-                                    LengthComputable length_computable,
-                                    uint64_t loaded_bytes,
-                                    uint64_t total_bytes) = 0;
+  // event (loadstart, progress, error, abort, load, loadend).  Events are
+  // enqueued on the JavaScript event loop, which then calls back through
+  // DispatchProgressEvent.
+  void EnqueueProgressEvent(const char* event_type,
+                            LengthComputable length_computable,
+                            uint64_t loaded_bytes,
+                            uint64_t total_bytes);
 
   // Report the error code that sel_ldr produces when starting a nexe.
-  virtual void ReportSelLdrLoadStatus(int status) = 0;
+  void ReportSelLdrLoadStatus(int status);
 
-  // Report the error when nexe dies after loading.
-  virtual void ReportDeadNexe() = 0;
-
-  // Get the method signature so ScriptableHandle can marshal the inputs
-  virtual bool InitParams(uintptr_t method_id,
-                          CallType call_type,
-                          SrpcParams* params);
-
-  // The unique identifier for this plugin instance.
-  InstanceIdentifier instance_id() const { return instance_id_; }
+  // Report nexe death after load to JS and shut down the proxy.
+  void ReportDeadNexe();
 
   // The embed/object tag argument list.
   int argc() const { return argc_; }
   char** argn() const { return argn_; }
   char** argv() const { return argv_; }
 
-  virtual BrowserInterface* browser_interface() const {
-    return browser_interface_;
-  }
-  virtual Plugin* plugin() const { return const_cast<Plugin*>(this); }
+  BrowserInterface* browser_interface() const { return browser_interface_; }
+  Plugin* plugin() const { return const_cast<Plugin*>(this); }
 
   // URL resolution support.
   // plugin_base_url is the URL used for resolving relative URLs used in
@@ -174,22 +203,21 @@ class Plugin : public PortableHandle {
 
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
-  // Requesting a nacl manifest from a specified url.
-  virtual void RequestNaClManifest(const nacl::string& url) = 0;
+  // Requests a NaCl manifest download from a |url| relative to the page origin.
+  void RequestNaClManifest(const nacl::string& url);
 
   // Start up proxied execution of the browser API.
-  virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                     ErrorInfo* error_info) = 0;
+  bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
+                               ErrorInfo* error_info);
 
   // Determines whether experimental APIs are usable.
   static bool ExperimentalJavaScriptApisAreEnabled();
 
-  // Override virtual methods for method and property dispatch.
-  virtual bool HasMethod(uintptr_t method_id, CallType call_type);
-  virtual bool Invoke(uintptr_t method_id,
-                      CallType call_type,
-                      SrpcParams* params);
-  virtual std::vector<uintptr_t>* GetPropertyIdentifiers() {
+  // Methods for method and property dispatch.
+  bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  bool HasMethod(uintptr_t method_id, CallType call_type);
+  bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  std::vector<uintptr_t>* GetPropertyIdentifiers() {
     return property_get_methods_.Keys();
   }
 
@@ -198,162 +226,12 @@ class Plugin : public PortableHandle {
   // sizes return 0.
   static const uint64_t kUnknownBytes = 0;
 
- protected:
-  Plugin();
-  virtual ~Plugin();
-  bool Init(BrowserInterface* browser_interface,
-            InstanceIdentifier instance_id,
-            int argc,
-            char* argn[],
-            char* argv[]);
-  void LoadMethods();
-  // Shuts down socket connection, service runtime, and receive thread,
-  // in this order, for all spun up NaCl module subprocesses.
-  void ShutDownSubprocesses();
-
-  ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
-  void set_scriptable_handle(ScriptableHandle* scriptable_handle) {
-    scriptable_handle_ = scriptable_handle;
-  }
-
-  // Access the service runtime for the main NaCl subprocess.
-  ServiceRuntime* main_service_runtime() const {
-    return main_subprocess_.service_runtime();
-  }
-
-  // Setting the properties and methods exported.
-  void AddPropertyGet(RpcFunction function_ptr,
-                      const char* name,
-                      const char* outs);
-  void AddPropertySet(RpcFunction function_ptr,
-                      const char* name,
-                      const char* ins);
-  void AddMethodCall(RpcFunction function_ptr,
-                     const char* name,
-                     const char* ins,
-                     const char* outs);
-
-  bool receive_thread_running_;
-  struct NaClThread receive_thread_;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
-
-  InstanceIdentifier instance_id_;
-  BrowserInterface* browser_interface_;
-  ScriptableHandle* scriptable_handle_;
-
-  int argc_;
-  char** argn_;
-  char** argv_;
-
-  // Keep track of the NaCl module subprocesses that were spun up in the plugin.
-  NaClSubprocess main_subprocess_;
-  std::vector<NaClSubprocess*> nacl_subprocesses_;
-
-  nacl::string plugin_base_url_;
-  nacl::string manifest_base_url_;
-  nacl::string manifest_url_;
-  ReadyState nacl_ready_state_;
-
-  nacl::DescWrapperFactory* wrapper_factory_;
-
-  MethodMap methods_;
-  MethodMap property_get_methods_;
-  MethodMap property_set_methods_;
-
-  static bool SendAsyncMessage(void* obj, SrpcParams* params,
-                               nacl::DescWrapper** fds, int fds_count);
-  static bool SendAsyncMessage0(void* obj, SrpcParams* params);
-  static bool SendAsyncMessage1(void* obj, SrpcParams* params);
-  // Help load a nacl module, from the file specified in wrapper.
-  // This will fully initialize the |subprocess| if the load was successful.
-  bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
-                            NaClSubprocess* subprocess,
-                            ErrorInfo* error_info);
-  bool StartSrpcServices(NaClSubprocess* subprocess, ErrorInfo* error_info);
-  bool StartSrpcServicesCommon(NaClSubprocess* subprocess,
-                               ErrorInfo* error_info);
-  bool StartJSObjectProxy(NaClSubprocess* subprocess, ErrorInfo* error_info);
-  static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
-
-  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
-};
-
-// Encapsulates a PPAPI NaCl plugin.
-class PluginPpapi : public pp::InstancePrivate, public Plugin {
- public:
-  // Factory method for creation.
-  static PluginPpapi* New(PP_Instance instance);
-
-  // ----- Methods inherited from pp::Instance:
-
-  // Initializes this plugin with <embed/object ...> tag attribute count |argc|,
-  // names |argn| and values |argn|. Returns false on failure.
-  // Gets called by the browser right after New().
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
-
-  // Handles view changes from the browser.
-  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
-
-  // Handles gaining or losing focus.
-  virtual void DidChangeFocus(bool has_focus);
-
-  // Handles input events delivered from the browser to this plugin element.
-  virtual bool HandleInputEvent(const pp::InputEvent& event);
-
-  // Handles gaining or losing focus.
-  virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
-
-  // Returns a scriptable reference to this plugin element.
-  // Called by JavaScript document.getElementById(plugin_id).
-  virtual pp::Var GetInstanceObject();
-
-  // Handles postMessage from browser
-  virtual void HandleMessage(const pp::Var& message);
-
-  // ----- Methods inherited from Plugin:
-
-  // Requests a NaCl manifest download from a |url| relative to the page origin.
-  virtual void RequestNaClManifest(const nacl::string& url);
-
-  // Support for proxied execution.
-  virtual bool StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                     ErrorInfo* error_info);
-
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
-
-  // Report successful loading of a module.
-  virtual void ReportLoadSuccess(LengthComputable length_computable,
-                                 uint64_t loaded_bytes,
-                                 uint64_t total_bytes);
-  // Report an error encountered while loading a module.
-  virtual void ReportLoadError(const ErrorInfo& error_info);
-
-  // Report loading a module was aborted, typically due to user action.
-  virtual void ReportLoadAbort();
-  // Dispatch a JavaScript event to indicate a key step in loading.
-  // |event_type| is a character string indicating which type of progress
-  // event (loadstart, progress, error, abort, load, loadend).  Events are
-  // enqueued on the JavaScript event loop, which then calls back through
-  // DispatchProgressEvent.
-  virtual void EnqueueProgressEvent(const char* event_type,
-                                    LengthComputable length_computable,
-                                    uint64_t loaded_bytes,
-                                    uint64_t total_bytes);
-
-  // Report the error code that sel_ldr produces when starting a nexe.
-  virtual void ReportSelLdrLoadStatus(int status);
-
-  // Report nexe death after load to JS and shut down the proxy.
-  void ReportDeadNexe();
 
   // Called back by CallOnMainThread.  Dispatches the first enqueued progress
   // event.
   void DispatchProgressEvent(int32_t result);
-
-  // ----- Methods unique to PluginPpapi:
 
   // Requests a URL asynchronously resulting in a call to js_callback.onload
   // with NaClDesc-wrapped file descriptor on success and js_callback.onfail
@@ -394,24 +272,63 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   Manifest const* manifest() const { return manifest_.get(); }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
   // Prevent construction and destruction from outside the class:
   // must use factory New() method instead.
-  explicit PluginPpapi(PP_Instance instance);
+  explicit Plugin(PP_Instance instance);
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
-  virtual ~PluginPpapi();
+  ~Plugin();
 
-  // File download support.  |nexe_downloader_| can be opened with a specific
-  // callback to run when the file has been downloaded and is opened for
-  // reading.  We use one downloader for all URL downloads to prevent issuing
-  // multiple GETs that might arrive out of order.  For example, this will
-  // prevent a GET of a NaCl manifest while a .nexe GET is pending.  Note that
-  // this will also prevent simultaneous handling of multiple .nexes on a page.
-  FileDownloader nexe_downloader_;
-  pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
+  bool Init(BrowserInterface* browser_interface,
+            int argc,
+            char* argn[],
+            char* argv[]);
+  void LoadMethods();
+  // Shuts down socket connection, service runtime, and receive thread,
+  // in this order, for all spun up NaCl module subprocesses.
+  void ShutDownSubprocesses();
 
-  PnaclCoordinator pnacl_;
+  ScriptableHandle* scriptable_handle() const { return scriptable_handle_; }
+  void set_scriptable_handle(ScriptableHandle* scriptable_handle) {
+    scriptable_handle_ = scriptable_handle;
+  }
+
+  // Access the service runtime for the main NaCl subprocess.
+  ServiceRuntime* main_service_runtime() const {
+    return main_subprocess_.service_runtime();
+  }
+
+  // Setting the properties and methods exported.
+  void AddPropertyGet(RpcFunction function_ptr,
+                      const char* name,
+                      const char* outs);
+  void AddPropertySet(RpcFunction function_ptr,
+                      const char* name,
+                      const char* ins);
+  void AddMethodCall(RpcFunction function_ptr,
+                     const char* name,
+                     const char* ins,
+                     const char* outs);
+
+  // OBSOLETE: Async message channels are only used with SRPC nexes.
+  // TODO(polina): Remove this once SRPC nexe support is no longer needed.
+  static bool SendAsyncMessage(void* obj, SrpcParams* params,
+                               nacl::DescWrapper** fds, int fds_count);
+  static bool SendAsyncMessage0(void* obj, SrpcParams* params);
+  static bool SendAsyncMessage1(void* obj, SrpcParams* params);
+  // Help load a nacl module, from the file specified in wrapper.
+  // This will fully initialize the |subprocess| if the load was successful.
+  bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
+                            NaClSubprocess* subprocess,
+                            ErrorInfo* error_info);
+  bool StartSrpcServices(NaClSubprocess* subprocess, ErrorInfo* error_info);
+  bool StartSrpcServicesCommon(NaClSubprocess* subprocess,
+                               ErrorInfo* error_info);
+  bool StartJSObjectProxy(NaClSubprocess* subprocess, ErrorInfo* error_info);
+  static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
+
+  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 
   // Check url and decide if PPAPI Dev interfaces are required.
   bool RequiresDevInterface(const nacl::string& manifest_url);
@@ -489,6 +406,42 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   // Handles the __setAsyncCallback() method.  Spawns a thread to receive
   // IMC messages from the NaCl process and pass them on to Javascript.
   static bool SetAsyncCallback(void* obj, SrpcParams* params);
+
+  bool receive_thread_running_;
+  struct NaClThread receive_thread_;
+
+  BrowserInterface* browser_interface_;
+  ScriptableHandle* scriptable_handle_;
+
+  int argc_;
+  char** argn_;
+  char** argv_;
+
+  // Keep track of the NaCl module subprocesses that were spun up in the plugin.
+  NaClSubprocess main_subprocess_;
+  std::vector<NaClSubprocess*> nacl_subprocesses_;
+
+  nacl::string plugin_base_url_;
+  nacl::string manifest_base_url_;
+  nacl::string manifest_url_;
+  ReadyState nacl_ready_state_;
+
+  nacl::DescWrapperFactory* wrapper_factory_;
+
+  MethodMap methods_;
+  MethodMap property_get_methods_;
+  MethodMap property_set_methods_;
+
+  // File download support.  |nexe_downloader_| can be opened with a specific
+  // callback to run when the file has been downloaded and is opened for
+  // reading.  We use one downloader for all URL downloads to prevent issuing
+  // multiple GETs that might arrive out of order.  For example, this will
+  // prevent a GET of a NaCl manifest while a .nexe GET is pending.  Note that
+  // this will also prevent simultaneous handling of multiple .nexes on a page.
+  FileDownloader nexe_downloader_;
+  pp::CompletionCallbackFactory<Plugin> callback_factory_;
+
+  PnaclCoordinator pnacl_;
 
   // The manifest dictionary.  Used for looking up resources to be loaded.
   nacl::scoped_ptr<Manifest> manifest_;

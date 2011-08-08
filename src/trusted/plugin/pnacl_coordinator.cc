@@ -32,7 +32,7 @@ namespace plugin {
 
 class Plugin;
 
-void PnaclCoordinator::Initialize(PluginPpapi* instance) {
+void PnaclCoordinator::Initialize(Plugin* instance) {
   PLUGIN_PRINTF(("PnaclCoordinator::Initialize (this=%p)\n",
                  static_cast<void*>(this)));
   CHECK(instance != NULL);

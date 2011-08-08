@@ -27,7 +27,7 @@ const int32_t kDataUriRequestStatusOk = 0;
 
 namespace plugin {
 
-void FileDownloader::Initialize(PluginPpapi* instance) {
+void FileDownloader::Initialize(Plugin* instance) {
   PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
                  static_cast<void*>(this)));
   CHECK(instance != NULL);

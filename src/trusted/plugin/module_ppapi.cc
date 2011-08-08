@@ -61,7 +61,7 @@ class ModulePpapi : public pp::Module {
   virtual pp::Instance* CreateInstance(PP_Instance pp_instance) {
     PLUGIN_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%"NACL_PRId32")\n",
                    pp_instance));
-    PluginPpapi* plugin = PluginPpapi::New(pp_instance);
+    Plugin* plugin = Plugin::New(pp_instance);
     PLUGIN_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
                    static_cast<void* >(plugin)));
     return plugin;

@@ -93,15 +93,13 @@ void PluginReverseInterface::Log_MainThreadContinuation(
   NaClLog(4,
           "PluginReverseInterface::Log_MainThreadContinuation(%s)\n",
           p->message.c_str());
-  plugin_->browser_interface()->AddToConsole(plugin_->instance_id(),
+  plugin_->browser_interface()->AddToConsole(static_cast<Plugin*>(plugin_),
                                              p->message);
 }
 
 bool PluginReverseInterface::EnumerateManifestKeys(
     std::set<nacl::string>* out_keys) {
-  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
-  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
-  Manifest const* mp = pplugin->manifest();
+  Manifest const* mp = plugin_->manifest();
 
   if (!mp->GetFileKeys(out_keys)) {
     return false;
@@ -193,13 +191,10 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
   UNREFERENCED_PARAMETER(err);
   // CallOnMainThread continuations always called with err == PP_OK.
 
-  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
-  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
-
   NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
 
   std::string mapped_url;
-  if (!pplugin->manifest()->ResolveKey(p->url, &mapped_url,
+  if (!plugin_->manifest()->ResolveKey(p->url, &mapped_url,
                                        p->error_info, p->is_portable)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
     // Failed, and error_info has the details on what happened.  Wake
@@ -222,7 +217,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       this,
       &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
       open_cont);
-  if (!pplugin->StreamAsFile(mapped_url, stream_cc.pp_completion_callback())) {
+  if (!plugin_->StreamAsFile(mapped_url, stream_cc.pp_completion_callback())) {
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: StreamAsFile failed\n");
     nacl::MutexLocker take(&mu_);
@@ -241,9 +236,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
 void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
     OpenManifestEntryResource* p,
     int32_t result) {
-  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
-  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
-
   NaClLog(4,
           "Entered StreamAsFile_MainThreadContinuation\n");
 
@@ -251,7 +243,7 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
   if (result == PP_OK) {
     NaClLog(4, "StreamAsFile_MainThreadContinuation: GetPOSIXFileDesc(%s)\n",
             p->url.c_str());
-    *p->out_desc = pplugin->GetPOSIXFileDesc(p->url);
+    *p->out_desc = plugin_->GetPOSIXFileDesc(p->url);
     NaClLog(4,
             "StreamAsFile_MainThreadContinuation: PP_OK, desc %d\n",
             *p->out_desc);
@@ -260,7 +252,7 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
             "StreamAsFile_MainThreadContinuation: !PP_OK, setting desc -1\n");
     *p->out_desc = -1;
     p->error_info->SetReport(ERROR_MANIFEST_OPEN,
-                             "PluginPpapi StreamAsFile failed at callback");
+                             "Plugin StreamAsFile failed at callback");
   }
   *p->op_complete_ptr = true;
   NaClXCondVarBroadcast(&cv_);

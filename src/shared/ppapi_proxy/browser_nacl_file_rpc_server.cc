@@ -36,7 +36,7 @@ void NaClFileRpcServer::StreamAsFile(
   if (remote_callback.func == NULL)
     return;
 
-  plugin::PluginPpapi* plugin = LookupBrowserPppForInstance(instance)->plugin();
+  plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
   // Will always call the callback on success or failure.
   bool success = plugin->StreamAsFile(url, remote_callback);
   DebugPrintf("NaClFile::StreamAsFile: success=%d\n", success);
@@ -64,8 +64,7 @@ void NaClFileRpcServer::GetFileDesc(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   if (DevInterfaceEnabled()) {
-    plugin::PluginPpapi* plugin =
-        LookupBrowserPppForInstance(instance)->plugin();
+    plugin::Plugin* plugin = LookupBrowserPppForInstance(instance)->plugin();
     int32_t posix_file_desc = plugin->GetPOSIXFileDesc(url);
     DebugPrintf("NaClFile::GetFileDesc: posix_file_desc=%"NACL_PRId32"\n",
                 posix_file_desc);

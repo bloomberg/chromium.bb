@@ -19,7 +19,7 @@
 #include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
 
 namespace plugin {
-class PluginPpapi;
+class Plugin;
 }
 
 struct PPP_InputEvent;
@@ -28,8 +28,7 @@ namespace ppapi_proxy {
 
 class BrowserPpp {
  public:
-  BrowserPpp(NaClSrpcChannel* main_channel,
-             plugin::PluginPpapi* plugin)
+  BrowserPpp(NaClSrpcChannel* main_channel, plugin::Plugin* plugin)
       : main_channel_(main_channel),
         plugin_pid_(0),
         plugin_(plugin),
@@ -72,7 +71,7 @@ class BrowserPpp {
 
   NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
-  plugin::PluginPpapi* plugin() { return plugin_; }
+  plugin::Plugin* plugin() { return plugin_; }
 
  private:
   // The "main" SRPC channel used to communicate with the plugin.
@@ -81,7 +80,7 @@ class BrowserPpp {
   // The PID of the plugin.
   int plugin_pid_;
   // Plugin that owns this proxy.
-  plugin::PluginPpapi* plugin_;
+  plugin::Plugin* plugin_;
 
   // Set on module initialization.
   const PPP_Instance* ppp_instance_interface_;

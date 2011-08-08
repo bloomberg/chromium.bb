@@ -23,7 +23,7 @@
 
 namespace plugin {
 
-class PluginPpapi;
+class Plugin;
 struct DoTranslateArgs;
 struct DoLinkArgs;
 
@@ -52,7 +52,7 @@ class PnaclCoordinator {
   virtual ~PnaclCoordinator();
 
   // Initialize() can only be called once during the lifetime of this instance.
-  void Initialize(PluginPpapi* instance);
+  void Initialize(Plugin* instance);
 
   void BitcodeToNative(const nacl::string& pexe_url,
                        const nacl::string& llc_url,
@@ -133,15 +133,15 @@ class PnaclCoordinator {
   // PPAPI specific.
   void PnaclNonPpapiError();
 
-  // Wrapper for PluginPpapi ReportLoadAbort.
+  // Wrapper for Plugin ReportLoadAbort.
   void ReportLoadAbort();
-  // Wrapper for PluginPpapi ReportLoadError.
+  // Wrapper for Plugin ReportLoadError.
   void ReportLoadError(const ErrorInfo& error);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 
-  PluginPpapi* instance_;
+  Plugin* instance_;
   pp::CompletionCallback translate_notify_callback_;
   pp::CompletionCallbackFactory<PnaclCoordinator> callback_factory_;
 

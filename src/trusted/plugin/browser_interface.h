@@ -17,7 +17,6 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/third_party/ppapi/cpp/instance.h"
-#include "native_client/src/trusted/plugin/api_defines.h"
 
 namespace pp {
 class InstancePrivate;
@@ -25,55 +24,25 @@ class InstancePrivate;
 
 namespace plugin {
 
-class ErrorInfo;
-class PortableHandle;
-class ScriptableHandle;
-
-// BrowserInterface represents the interface to the browser from
-// the plugin, independent of whether it is the PPAPI instance or not.
+// BrowserInterface represents the interface to the browser from the plugin.
 // I.e., when the plugin needs to request an alert, it uses these interfaces.
 class BrowserInterface {
  public:
-  virtual ~BrowserInterface() { }
+  BrowserInterface() : next_identifier(0) {}
+  ~BrowserInterface() { }
 
   // Functions for communication with the browser.
 
   // Convert a string to an identifier.
-  virtual uintptr_t StringToIdentifier(const nacl::string& str) = 0;
+  uintptr_t StringToIdentifier(const nacl::string& str);
   // Convert an identifier to a string.
-  virtual nacl::string IdentifierToString(uintptr_t ident) = 0;
-
-  // Write to the JavaScript console. Currently works in Chrome only, generates
-  // an alert in other browsers.
-  virtual void AddToConsole(InstanceIdentifier instance_id,
-                            const nacl::string& text) = 0;
-
-  // Creates a browser scriptable handle for a given portable handle.
-  // If handle is NULL, returns NULL.
-  virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle) = 0;
-};
-
-// Encapsulates an interface for communication with the browser
-// from a PPAPI NaCl plugin.
-class BrowserInterfacePpapi : public BrowserInterface {
- public:
-  BrowserInterfacePpapi() : next_identifier(0) {}
-  virtual ~BrowserInterfacePpapi() {}
-
-  // Convert a string to an identifier.
-  virtual uintptr_t StringToIdentifier(const nacl::string& str);
-  // Convert an identifier to a string.
-  virtual nacl::string IdentifierToString(uintptr_t ident);
+  nacl::string IdentifierToString(uintptr_t ident);
 
   // Write to the JavaScript console.
-  virtual void AddToConsole(InstanceIdentifier instance_id,
-                            const nacl::string& text);
-
-  // Creates a browser scriptable handle for a given portable handle.
-  virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle);
+  void AddToConsole(pp::InstancePrivate* instance, const nacl::string& text);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(BrowserInterfacePpapi);
+  NACL_DISALLOW_COPY_AND_ASSIGN(BrowserInterface);
 
   // Map strings used for property and method names to unique ids and back.
   typedef std::map<nacl::string, uintptr_t> StringToIdentifierMap;
@@ -82,14 +51,6 @@ class BrowserInterfacePpapi : public BrowserInterface {
   IdentifierToStringMap identifier_to_string_map_;
   uintptr_t next_identifier;  // will be incremented once used
 };
-
-// Convert from the API-independent instance identifier to the PPAPI
-// PP_Instance.
-pp::InstancePrivate* InstanceIdentifierToPPInstance(InstanceIdentifier id);
-// Convert from the PPAPI PP_Instance type to the API-independent instance
-// identifier.
-InstanceIdentifier PPInstanceToInstanceIdentifier(
-    pp::InstancePrivate* instance);
 
 }  // namespace plugin
 

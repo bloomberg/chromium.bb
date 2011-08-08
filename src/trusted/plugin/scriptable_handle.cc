@@ -25,11 +25,11 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/array_ppapi.h"
+#include "native_client/src/trusted/plugin/browser_interface.h"
+#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/method_map.h"
 #include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/plugin/var_utils.h"
 
@@ -43,6 +43,21 @@ namespace {
 
 std::set<const plugin::ScriptableHandle*>* g_ValidHandles = 0;
 
+void RememberValidHandle(const ScriptableHandle* handle) {
+  // Initialize the set.
+  // BUG: this is not thread safe.  We may leak sets, or worse, may not
+  // correctly insert valid handles into the set.
+  // TODO(sehr): use pthread_once or similar initialization.
+  if (NULL == g_ValidHandles) {
+    g_ValidHandles = new(std::nothrow) std::set<const ScriptableHandle*>;
+    if (NULL == g_ValidHandles) {
+      return;
+    }
+  }
+  // Remember the handle.
+  g_ValidHandles->insert(handle);
+}
+
 pp::Var Error(nacl::string call_name, const char* caller,
               const char* error, pp::Var* exception) {
   nacl::stringstream error_stream;
@@ -54,29 +69,140 @@ pp::Var Error(nacl::string call_name, const char* caller,
   // by the stream is destructed, causing a dangling pointer.
   std::string str = error_stream.str();
   const char* e = str.c_str();
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (%s)\n", caller, e));
+  PLUGIN_PRINTF(("ScriptableHandle::%s (%s)\n", caller, e));
   *exception = pp::Var(e);
   return pp::Var();
 }
 
-}  // namespace
+// Helper functionality common to HasProperty and HasMethod.
+bool HasCallType(Plugin* plugin,
+                 CallType call_type,
+                 nacl::string call_name,
+                 const char* caller) {
+  uintptr_t id = plugin->browser_interface()->StringToIdentifier(call_name);
+  PLUGIN_PRINTF(("ScriptableHandle::%s (id=%"NACL_PRIxPTR")\n",
+                 caller, id));
+  return plugin->HasMethod(id, call_type);
+}
 
-ScriptableHandle::ScriptableHandle(PortableHandle* handle) : handle_(handle) {
-  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p, handle=%p)\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(handle)));
-  // Initialize the set.
-  // BUG: this is not thread safe.  We may leak sets, or worse, may not
-  // correctly insert valid handles into the set.
-  // TODO(sehr): use pthread_once or similar initialization.
-  if (NULL == g_ValidHandles) {
-    g_ValidHandles = new(std::nothrow) std::set<const ScriptableHandle*>;
-    if (NULL == g_ValidHandles) {
-      return;
+// Helper functionality common to GetProperty, SetProperty and Call.
+// If |call_type| is PROPERTY_GET, ignores args and expects 1 return var.
+// If |call_type| is PROPERTY_SET, expects 1 arg and returns void var.
+// Sets |exception| on failure.
+pp::Var Invoke(Plugin* plugin,
+               CallType call_type,
+               nacl::string call_name,
+               const char* caller,
+               const std::vector<pp::Var>& args,
+               pp::Var* exception) {
+  uintptr_t id = plugin->browser_interface()->StringToIdentifier(call_name);
+
+  // Initialize input/output parameters.
+  SrpcParams params;
+  NaClSrpcArg** inputs = params.ins();
+  NaClSrpcArg** outputs = params.outs();
+  if (!plugin->InitParams(id, call_type, &params)) {
+    return Error(call_name, caller,
+                 "srpc parameter initialization failed", exception);
+  }
+  uint32_t input_length = params.InputLength();
+  int32_t output_length = params.OutputLength();
+  PLUGIN_PRINTF(("ScriptableHandle::%s (initialized %"NACL_PRIu32" ins, %"
+                 NACL_PRIu32" outs)\n", caller, input_length, output_length));
+
+  // Verify input/output parameter list length.
+  if (args.size() != params.SignatureLength()) {
+    return Error(call_name, caller,
+                 "incompatible srpc parameter list", exception);
+  }
+  PLUGIN_PRINTF(("ScriptableHandle::%s (verified signature)\n", caller));
+
+  // Marshall input parameters.
+  if (input_length > 0) {
+    assert(call_type != PROPERTY_GET);  // expect no inputs for "get"
+    for (int i = 0; (i < NACL_SRPC_MAX_ARGS) && (inputs[i] != NULL); ++i) {
+      if (!PPVarToNaClSrpcArg(args[i], inputs[i], exception)) {
+        return Error(call_name, caller,
+                     "srpc input marshalling failed", exception);
+      }
     }
   }
-  // Remember the scriptable handle.
-  g_ValidHandles->insert(this);
+  if (call_type == PROPERTY_SET) assert(input_length == 1);
+  PLUGIN_PRINTF(("ScriptableHandle::%s (marshalled inputs)\n", caller));
+
+  // Allocate array-typed output parameters.
+  if (args.size() > input_length) {
+    for (int i = 0; (i < NACL_SRPC_MAX_ARGS) && (outputs[i] != NULL); ++i) {
+      if (!PPVarToAllocateNaClSrpcArg(args[input_length + i],
+                                      outputs[i], exception)) {
+        return Error(call_name, caller, "srpc output array allocation failed",
+                     exception);
+      }
+    }
+  }
+  PLUGIN_PRINTF(("ScriptableHandle::%s (output array allocation done)\n",
+                 caller));
+
+  // Invoke.
+  if (!plugin->Invoke(id, call_type, &params)) {
+    nacl::string err = nacl::string(caller) + "('" + call_name + "') failed\n";
+    if (params.exception_string() != NULL) {
+      err = params.exception_string();
+    }
+    *exception = pp::Var(err.c_str());
+    return Error(call_name, caller, "invocation failed", exception);
+  }
+  PLUGIN_PRINTF(("ScriptableHandle::%s (invocation done)\n", caller));
+
+  // Marshall output parameters.
+  pp::Var retvar;
+  if (output_length > 0) {
+    assert(call_type != PROPERTY_SET);  // expect no outputs for "set"
+    retvar = NaClSrpcArgToPPVar(outputs[0], plugin, exception);
+    if (output_length > 1) {
+      ArrayPpapi* array = new(std::nothrow) ArrayPpapi(plugin);
+      if (array == NULL) {
+        *exception = pp::Var("failed to allocate output array");
+      } else {
+        array->SetProperty(pp::Var(0), retvar, exception);
+        for (int32_t i = 1; i < output_length; ++i) {
+          pp::Var v = NaClSrpcArgToPPVar(outputs[i], plugin, exception);
+          array->SetProperty(pp::Var(i), v, exception);
+        }
+      }
+
+      retvar = pp::VarPrivate(plugin, array);
+    }
+    if (!exception->is_undefined()) {
+      return Error(call_name, caller, "srpc output marshalling failed",
+                   exception);
+    }
+  }
+  if (call_type == PROPERTY_GET) assert(output_length == 1);
+  return retvar;
+}
+
+}  // namespace
+
+ScriptableHandle::ScriptableHandle(Plugin* plugin)
+  : var_(NULL), num_unref_calls_(0), plugin_(plugin), desc_handle_(NULL) {
+  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p, plugin=%p)\n",
+                 static_cast<void*>(this),
+                 static_cast<void*>(plugin)));
+  RememberValidHandle(this);
+  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p)\n",
+                 static_cast<void*>(this)));
+}
+
+ScriptableHandle::ScriptableHandle(DescBasedHandle* desc_handle)
+  : var_(NULL), num_unref_calls_(0), plugin_(NULL), desc_handle_(desc_handle) {
+  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p,"
+                 " desc_handle=%p)\n",
+                 static_cast<void*>(this),
+                 static_cast<void*>(desc_handle)));
+  RememberValidHandle(this);
+  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p)\n",
+                 static_cast<void*>(this)));
 }
 
 ScriptableHandle::~ScriptableHandle() {
@@ -88,7 +214,15 @@ ScriptableHandle::~ScriptableHandle() {
   }
   // Remove the scriptable handle from the set of valid handles.
   g_ValidHandles->erase(this);
-  // Handle deletion has been moved into derived classes.
+  // If handle is a plugin, the browser is deleting it (and might have
+  // already done so). Otherwise, delete here.
+  if (desc_handle_ != NULL) {
+    PLUGIN_PRINTF(("ScriptableHandle::~ScriptableHandle "
+                   "(this=%p, delete desc_handle=%p)\n",
+                   static_cast<void*>(this), static_cast<void*>(desc_handle_)));
+    delete desc_handle_;
+    desc_handle_ = NULL;
+  }
   PLUGIN_PRINTF(("ScriptableHandle::~ScriptableHandle (this=%p, return)\n",
                   static_cast<void*>(this)));
 }
@@ -117,189 +251,125 @@ void ScriptableHandle::Unref(ScriptableHandle** handle) {
   }
 }
 
-ScriptableHandlePpapi* ScriptableHandlePpapi::New(PortableHandle* handle) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::New (portable_handle=%p)\n",
-                 static_cast<void*>(handle)));
-  if (handle == NULL) {
+ScriptableHandle* ScriptableHandle::NewPlugin(Plugin* plugin) {
+  PLUGIN_PRINTF(("ScriptableHandle::NewPlugin (plugin=%p)\n",
+                 static_cast<void*>(plugin)));
+  if (plugin == NULL) {
     return NULL;
   }
-  ScriptableHandlePpapi* scriptable_handle =
-      new(std::nothrow) ScriptableHandlePpapi(handle);
+  ScriptableHandle* scriptable_handle =
+      new(std::nothrow) ScriptableHandle(plugin);
   if (scriptable_handle == NULL) {
     return NULL;
   }
-  scriptable_handle->set_handle(handle);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::New (return %p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::NewPlugin (return %p)\n",
                  static_cast<void*>(scriptable_handle)));
   return scriptable_handle;
 }
 
 
-bool ScriptableHandlePpapi::HasCallType(CallType call_type,
-                                        nacl::string call_name,
-                                        const char* caller) {
-  uintptr_t id = handle()->browser_interface()->StringToIdentifier(call_name);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (id=%"NACL_PRIxPTR")\n",
-                 caller, id));
-  return handle()->HasMethod(id, call_type);
+ScriptableHandle* ScriptableHandle::NewDescHandle(
+    DescBasedHandle* desc_handle) {
+  PLUGIN_PRINTF(("ScriptableHandle::NewDescHandle (desc_handle=%p)\n",
+                 static_cast<void*>(desc_handle)));
+  if (desc_handle == NULL) {
+    return NULL;
+  }
+  ScriptableHandle* scriptable_handle =
+      new(std::nothrow) ScriptableHandle(desc_handle);
+  if (scriptable_handle == NULL) {
+    return NULL;
+  }
+  PLUGIN_PRINTF(("ScriptableHandle::NewDescHandle (return %p)\n",
+                 static_cast<void*>(scriptable_handle)));
+  return scriptable_handle;
 }
 
 
-bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
-                                        pp::Var* exception) {
+bool ScriptableHandle::HasProperty(const pp::Var& name, pp::Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (this=%p, name=%s)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::HasProperty (this=%p, name=%s)\n",
                  static_cast<void*>(this), name.DebugString().c_str()));
+  if (plugin_ == NULL) {
+    return false;
+  }
   if (!name.is_string() && !name.is_int())
     return false;
-  bool has_property = HasCallType(PROPERTY_GET, name.AsString(), "HasProperty");
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (has_property=%d)\n",
+  bool has_property = HasCallType(plugin_,
+                                  PROPERTY_GET,
+                                  name.AsString(),
+                                  "HasProperty");
+  PLUGIN_PRINTF(("ScriptableHandle::HasProperty (has_property=%d)\n",
                  has_property));
   return has_property;
 }
 
 
-bool ScriptableHandlePpapi::HasMethod(const pp::Var& name, pp::Var* exception) {
+bool ScriptableHandle::HasMethod(const pp::Var& name, pp::Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (this=%p, name='%s')\n",
+  PLUGIN_PRINTF(("ScriptableHandle::HasMethod (this=%p, name='%s')\n",
                  static_cast<void*>(this), name.DebugString().c_str()));
+  if (plugin_ == NULL) {
+    return false;
+  }
   if (!name.is_string())
     return false;
-  bool has_method = HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (has_method=%d)\n",
+  bool has_method = HasCallType(plugin_,
+                                METHOD_CALL,
+                                name.AsString(),
+                                "HasMethod");
+  PLUGIN_PRINTF(("ScriptableHandle::HasMethod (has_method=%d)\n",
                  has_method));
   return has_method;
 }
 
 
-pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
-                                      nacl::string call_name,
-                                      const char* caller,
-                                      const std::vector<pp::Var>& args,
+pp::Var ScriptableHandle::GetProperty(const pp::Var& name,
                                       pp::Var* exception) {
-  uintptr_t id =
-      handle()->browser_interface()->StringToIdentifier(call_name);
-
-  // Initialize input/output parameters.
-  SrpcParams params;
-  NaClSrpcArg** inputs = params.ins();
-  NaClSrpcArg** outputs = params.outs();
-  if (!handle()->InitParams(id, call_type, &params)) {
-    return Error(call_name, caller,
-                 "srpc parameter initialization failed", exception);
-  }
-  uint32_t input_length = params.InputLength();
-  int32_t output_length = params.OutputLength();
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (initialized %"NACL_PRIu32" ins, %"
-                 NACL_PRIu32" outs)\n", caller, input_length, output_length));
-
-  // Verify input/output parameter list length.
-  if (args.size() != params.SignatureLength()) {
-    return Error(call_name, caller,
-                 "incompatible srpc parameter list", exception);
-  }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (verified signature)\n", caller));
-
-  // Marshall input parameters.
-  if (input_length > 0) {
-    assert(call_type != PROPERTY_GET);  // expect no inputs for "get"
-    for (int i = 0; (i < NACL_SRPC_MAX_ARGS) && (inputs[i] != NULL); ++i) {
-      if (!PPVarToNaClSrpcArg(args[i], inputs[i], exception)) {
-        return Error(call_name, caller,
-                     "srpc input marshalling failed", exception);
-      }
-    }
-  }
-  if (call_type == PROPERTY_SET) assert(input_length == 1);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (marshalled inputs)\n", caller));
-
-  // Allocate array-typed output parameters.
-  if (args.size() > input_length) {
-    for (int i = 0; (i < NACL_SRPC_MAX_ARGS) && (outputs[i] != NULL); ++i) {
-      if (!PPVarToAllocateNaClSrpcArg(args[input_length + i],
-                                      outputs[i], exception)) {
-        return Error(call_name, caller, "srpc output array allocation failed",
-                     exception);
-      }
-    }
-  }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (output array allocation done)\n",
-                 caller));
-
-  // Invoke.
-  if (!handle()->Invoke(id, call_type, &params)) {
-    nacl::string err = nacl::string(caller) + "('" + call_name + "') failed\n";
-    if (params.exception_string() != NULL) {
-      err = params.exception_string();
-    }
-    *exception = pp::Var(err.c_str());
-    return Error(call_name, caller, "invocation failed", exception);
-  }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (invocation done)\n", caller));
-
-  // Marshall output parameters.
-  pp::Var retvar;
-  PluginPpapi* plugin_ppapi = static_cast<PluginPpapi*>(handle()->plugin());
-  if (output_length > 0) {
-    assert(call_type != PROPERTY_SET);  // expect no outputs for "set"
-    retvar = NaClSrpcArgToPPVar(outputs[0], plugin_ppapi, exception);
-    if (output_length > 1) {
-      ArrayPpapi* array = new(std::nothrow) ArrayPpapi(plugin_ppapi);
-      if (array == NULL) {
-        *exception = pp::Var("failed to allocate output array");
-      } else {
-        array->SetProperty(pp::Var(0), retvar, exception);
-        for (int32_t i = 1; i < output_length; ++i) {
-          pp::Var v = NaClSrpcArgToPPVar(outputs[i], plugin_ppapi, exception);
-          array->SetProperty(pp::Var(i), v, exception);
-        }
-      }
-
-      retvar = pp::VarPrivate(plugin_ppapi, array);
-    }
-    if (!exception->is_undefined()) {
-      return Error(call_name, caller, "srpc output marshalling failed",
-                   exception);
-    }
-  }
-  if (call_type == PROPERTY_GET) assert(output_length == 1);
-  return retvar;
-}
-
-
-pp::Var ScriptableHandlePpapi::GetProperty(const pp::Var& name,
-                                           pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetProperty (name=%s)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::GetProperty (name=%s)\n",
                  name.DebugString().c_str()));
-  pp::Var property =
-      Invoke(PROPERTY_GET, NameAsString(name), "GetProperty",
-             std::vector<pp::Var>(), exception);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetProperty (property=%s)\n",
+  if (plugin_ == NULL) {
+    return pp::Var();
+  }
+  pp::Var property = Invoke(plugin_,
+                            PROPERTY_GET,
+                            NameAsString(name),
+                            "GetProperty",
+                            std::vector<pp::Var>(), exception);
+  PLUGIN_PRINTF(("ScriptableHandle::GetProperty (property=%s)\n",
                  property.DebugString().c_str()));
   return property;
 }
 
 
-void ScriptableHandlePpapi::SetProperty(const pp::Var& name,
-                                        const pp::Var& value,
-                                        pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::SetProperty (name=%s, value=%s)\n",
+void ScriptableHandle::SetProperty(const pp::Var& name,
+                                   const pp::Var& value,
+                                   pp::Var* exception) {
+  PLUGIN_PRINTF(("ScriptableHandle::SetProperty (name=%s, value=%s)\n",
                  name.DebugString().c_str(), value.DebugString().c_str()));
+  if (plugin_ == NULL) {
+    return;
+  }
   std::vector<pp::Var> args;
   args.push_back(pp::Var(pp::Var::DontManage(), value.pp_var()));
-  Invoke(PROPERTY_SET, NameAsString(name), "SetProperty", args, exception);
+  Invoke(plugin_,
+         PROPERTY_SET,
+         NameAsString(name),
+         "SetProperty",
+         args,
+         exception);
   std::string exception_string("NULL");
   if (exception != NULL) {
     exception_string = exception->DebugString();
   }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::SetProperty (exception=%s)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::SetProperty (exception=%s)\n",
                  exception_string.c_str()));
 }
 
 
-void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
-                                           pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::RemoveProperty (name=%s)\n",
+void ScriptableHandle::RemoveProperty(const pp::Var& name,
+                                      pp::Var* exception) {
+  PLUGIN_PRINTF(("ScriptableHandle::RemoveProperty (name=%s)\n",
                  name.DebugString().c_str()));
   Error(NameAsString(name), "RemoveProperty",
         "property removal is not supported", exception);
@@ -308,122 +378,100 @@ void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
 // TODO(polina): should methods also be added?
 // This is currently never called and the exact semantics is not clear.
 // http://code.google.com/p/chromium/issues/detail?id=51089
-void ScriptableHandlePpapi::GetAllPropertyNames(
-    std::vector<pp::Var>* properties,
-    pp::Var* exception) {
+void ScriptableHandle::GetAllPropertyNames(std::vector<pp::Var>* properties,
+                                           pp::Var* exception) {
   UNREFERENCED_PARAMETER(exception);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames ()\n"));
-  std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
+  PLUGIN_PRINTF(("ScriptableHandle::GetAllPropertyNames ()\n"));
+  if (plugin_ == NULL) {
+    return;
+  }
+  std::vector<uintptr_t>* ids = plugin_->GetPropertyIdentifiers();
   if (ids == NULL) {
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+    PLUGIN_PRINTF(("ScriptableHandle::GetAllPropertyNames "
                    "(ids=%p)\n", reinterpret_cast<void*>(ids)));
     return;
   }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+  PLUGIN_PRINTF(("ScriptableHandle::GetAllPropertyNames "
                  "(ids->size()=%"NACL_PRIuS")\n", ids->size()));
   for (size_t i = 0; i < ids->size(); ++i) {
     nacl::string name =
-        handle()->browser_interface()->IdentifierToString(ids->at(i));
+        plugin_->browser_interface()->IdentifierToString(ids->at(i));
     properties->push_back(pp::Var(name));
   }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+  PLUGIN_PRINTF(("ScriptableHandle::GetAllPropertyNames "
                  "(properties=%"NACL_PRIuS")\n", properties->size()));
 }
 
 
-pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
-                                    const std::vector<pp::Var>& args,
-                                    pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIuS
+pp::Var ScriptableHandle::Call(const pp::Var& name,
+                               const std::vector<pp::Var>& args,
+                               pp::Var* exception) {
+  PLUGIN_PRINTF(("ScriptableHandle::Call (name=%s, %"NACL_PRIuS
                  " args)\n", name.DebugString().c_str(), args.size()));
+  if (plugin_ == NULL) {
+    pp::Var();
+  }
   if (name.is_undefined())  // invoke default
     return pp::Var();
   assert(name.is_string());
-  pp::Var return_var =
-      Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (return=%s)\n",
+  pp::Var return_var = Invoke(plugin_,
+                              METHOD_CALL,
+                              name.AsString(),
+                              "Call",
+                              args,
+                              exception);
+  PLUGIN_PRINTF(("ScriptableHandle::Call (return=%s)\n",
                  return_var.DebugString().c_str()));
   return return_var;
 }
 
 
-pp::Var ScriptableHandlePpapi::Construct(const std::vector<pp::Var>& args,
-                                         pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Construct (%"NACL_PRIuS
+pp::Var ScriptableHandle::Construct(const std::vector<pp::Var>& args,
+                                    pp::Var* exception) {
+  PLUGIN_PRINTF(("ScriptableHandle::Construct (%"NACL_PRIuS
                  " args)\n", args.size()));
   return Error("constructor", "Construct", "constructor is not supported",
                exception);
 }
 
 
-ScriptableHandle* ScriptableHandlePpapi::AddRef() {
+ScriptableHandle* ScriptableHandle::AddRef() {
   // This is called when we are about to share this object with the browser,
   // and we need to make sure we have an internal plugin reference, so this
   // object doesn't get deallocated when the browser discards its references.
   if (var_ == NULL) {
-    PluginPpapi* plugin_ppapi = static_cast<PluginPpapi*>(handle()->plugin());
-    var_ = new(std::nothrow) pp::VarPrivate(plugin_ppapi, this);
+    var_ = new(std::nothrow) pp::VarPrivate(plugin_, this);
     CHECK(var_ != NULL);
   }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::AddRef (this=%p, var=%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::AddRef (this=%p, var=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(var_)));
   return this;
 }
 
 
-void ScriptableHandlePpapi::Unref() {
+void ScriptableHandle::Unref() {
   // We should have no more than one internal owner of this object, so this
   // should be called no more than once.
   CHECK(++num_unref_calls_ == 1);
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (this=%p, var=%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::Unref (this=%p, var=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(var_)));
   if (var_ != NULL) {
     // We have shared this with the browser while keeping our own var
     // reference, but we no longer need ours. If the browser has copies,
     // it will clean things up later, otherwise this object will get
     // deallocated right away.
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (delete var)\n"));
+    PLUGIN_PRINTF(("ScriptableHandle::Unref (delete var)\n"));
     pp::Var* var = var_;
     var_ = NULL;
     delete var;
   } else {
     // Neither the browser nor plugin ever var referenced this object,
     // so it can safely discarded.
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::Unref (delete this)\n"));
+    PLUGIN_PRINTF(("ScriptableHandle::Unref (delete this)\n"));
     CHECK(var_ == NULL);
     delete this;
   }
 }
 
-
-ScriptableHandlePpapi::ScriptableHandlePpapi(PortableHandle* handle)
-    : ScriptableHandle(handle), var_(NULL), num_unref_calls_(0) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi "
-                 "(this=%p, handle=%p)\n",
-                 static_cast<void*>(this), static_cast<void*>(handle)));
-  handle_is_plugin_ = (handle == handle->plugin());
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi "
-                 "(this=%p, handle_is_plugin=%d)\n",
-                 static_cast<void*>(this), handle_is_plugin_));
-}
-
-
-ScriptableHandlePpapi::~ScriptableHandlePpapi() {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
-                 "(this=%p, handle_is_plugin=%d)\n",
-                 static_cast<void*>(this), handle_is_plugin_));
-  // If handle is a plugin, the browser is deleting it (and might have
-  // already done so). Otherwise, delete here.
-  if (!handle_is_plugin_) {
-    PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
-                   "(this=%p, delete handle=%p)\n",
-                   static_cast<void*>(this), static_cast<void*>(handle())));
-    handle()->Delete();
-    set_handle(NULL);
-  }
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi "
-                 "(this=%p, return)\n",
-                 static_cast<void*>(this)));
-}
 
 }  // namespace plugin

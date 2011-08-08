@@ -66,7 +66,6 @@ common_inputs = [
     'plugin.cc',
     'pnacl_coordinator.cc',
     'pnacl_srpc_lib.cc',
-    'portable_handle.cc',
     'scriptable_handle.cc',
     'service_runtime.cc',
     'srpc_client.cc',
@@ -83,8 +82,6 @@ else:
   # Unrecognized architecture - this is a build failure.
   print "Unrecognized architecture: %s" % env['TARGET_ARCHITECTURE']
   Return()
-
-common_objs = plugin_env.ComponentObject(common_inputs)
 
 # The libraries used by both the PPAPI plugin.  They and the PPAPI specific
 # libraries must come before OS libraries, because they may generate references
@@ -133,18 +130,11 @@ if plugin_env.Bit('windows'):
 
 ppNaClPlugin = 'ppNaClPlugin'
 
-ppapi_env = plugin_env.Clone()
-
-# Set #define for NACL_PPAPI. Force the source files to rebuild with it. Use an
-# alternate prefix to avoid "two environments with different actions" error.
-ppapi_env.Append(CPPDEFINES = ['NACL_PPAPI'])
-ppapi_env.Replace(OBJPREFIX='ppapi_', SHOBJPREFIX='ppapi_');
-
 ppapi_libs = common_libs + [ 'ppapi_cpp', 'ppapi_browser', 'nonnacl_srpc' ]
-if ppapi_env['SHARED_LIBS_SPECIAL']:
-  ppapi_env.Append(LIBS=[l + '_shared' for l in ppapi_libs] + os_libs)
+if plugin_env['SHARED_LIBS_SPECIAL']:
+  plugin_env.Append(LIBS=[l + '_shared' for l in ppapi_libs] + os_libs)
 else:
-  ppapi_env.Append(LIBS=ppapi_libs + os_libs)
+  plugin_env.Append(LIBS=ppapi_libs + os_libs)
 
 if not env.Bit('mac'):  # linux, windows, arm
   # This builds with
@@ -152,9 +142,9 @@ if not env.Bit('mac'):  # linux, windows, arm
   # with the output going to
   #   scons-out/.../staging/libppNaClPlugin.so on Linux and
   #   scons-out/.../staging/ppNaClPlugin.dll on Windows.
-  ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
-                                            common_inputs,
-                                            no_import_lib=True)
+  ppapi_plugin = plugin_env.ComponentLibrary(ppNaClPlugin,
+                                             common_inputs,
+                                             no_import_lib=True)
 else:  # mac
   # This builds with
   #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr
@@ -164,22 +154,22 @@ else:  # mac
   # (the 2nd option has been disabled:
   # see ../nonnacl_util/osx/get_plugin_dirname.mm).
   REZ = '/Developer/Tools/Rez'
-  ppapi_env.Command(target='ppNaClPlugin.rsrc',
-                    source='osx_ppapi/ppNaClPlugin.r',
-                    action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
-  ppapi_plugin = ppapi_env.ComponentProgram(ppNaClPlugin,
-                                            common_inputs,
-                                            no_import_lib=True)
+  plugin_env.Command(target='ppNaClPlugin.rsrc',
+                     source='osx_ppapi/ppNaClPlugin.r',
+                     action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+  ppapi_plugin = plugin_env.ComponentProgram(ppNaClPlugin,
+                                             common_inputs,
+                                             no_import_lib=True)
   # Bundle pattern can be found in
   # site_scons/site_tools/target_platform_mac.py
   bundle_name = '${STAGING_DIR}/' + ppNaClPlugin + '.bundle'
-  ppapi_env.Bundle(bundle_name,
-                   BUNDLE_EXE = ppapi_plugin,
-                   BUNDLE_PKGINFO_FILENAME = 0,
-                   BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
-                   BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
+  plugin_env.Bundle(bundle_name,
+                    BUNDLE_EXE = ppapi_plugin,
+                    BUNDLE_PKGINFO_FILENAME = 0,
+                    BUNDLE_RESOURCES = 'ppNaClPlugin.rsrc',
+                    BUNDLE_INFO_PLIST = 'osx_ppapi/Info.plist')
 
-ppapi_env.Alias('plugin', ppapi_env.GetPPAPIPluginPath(False))
+plugin_env.Alias('plugin', plugin_env.GetPPAPIPluginPath(False))
 
 ###############################################################################
 # PPAPI Plugin Test

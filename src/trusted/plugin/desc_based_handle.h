@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+// OBSOLETE -- this class provides support for passing NaClDescs between
+// plugin instances.  This support only exists in SRPC-mode plugins.
+// TODO(polina): remove when SRPC descriptor passing is removed.
+
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DESC_BASED_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_DESC_BASED_HANDLE_H_
 
@@ -13,7 +17,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 struct NaClDesc;
@@ -27,23 +30,20 @@ namespace plugin {
 class Plugin;
 
 // DescBasedHandles are used to convey NaClDesc objects through JavaScript.
-class DescBasedHandle : public PortableHandle {
+class DescBasedHandle {
  public:
   // Creates a new DescBasedHandle using the specified plugin and wrapper.
   // Returns NULL if either plugin or wrapper is NULL.
-  static DescBasedHandle* New(Plugin* plugin, nacl::DescWrapper* wrapper);
-  virtual ~DescBasedHandle();
+  static DescBasedHandle* New(nacl::DescWrapper* wrapper);
+  ~DescBasedHandle();
 
-  virtual BrowserInterface* browser_interface() const;
-  virtual Plugin* plugin() const { return plugin_; }
   // Because the factory ensured that wrapper was not NULL, dereferencing it
   // here is always safe.
-  virtual NaClDesc* desc() const { return wrapper_->desc(); }
+  NaClDesc* desc() const { return wrapper_->desc(); }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(DescBasedHandle);
-  DescBasedHandle(Plugin* plugin, nacl::DescWrapper* wrapper);
-  Plugin* plugin_;
+  explicit DescBasedHandle(nacl::DescWrapper* wrapper);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper_;
 };
 

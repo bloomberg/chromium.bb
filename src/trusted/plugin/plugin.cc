@@ -101,14 +101,14 @@ bool NullPluginMethod(void* obj, SrpcParams* params) {
 }
 
 bool GetReadyStateProperty(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  Plugin* plugin = static_cast<Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->nacl_ready_state();
   return true;
 }
 
 bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  Plugin* plugin = static_cast<Plugin*>(obj);
   NaClDescRef(params->ins()[0]->u.hval);
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
@@ -130,7 +130,7 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
     plugin->ReportLoadError(error_info);
   }
   pp::VarPrivate* continuation =
-      reinterpret_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
+      static_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
   continuation->Call(pp::Var(), was_successful);
   return true;
 }
@@ -164,11 +164,10 @@ bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
                  obj, ins[0]->arrays.str, ins[1]->arrays.oval));
 
-  PluginPpapi* plugin =
-      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+  Plugin* plugin = static_cast<Plugin*>(obj);
   const char* url = ins[0]->arrays.str;
   // TODO(sehr,polina): Ensure that origin checks are performed here.
-  plugin->UrlAsNaClDesc(url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
+  plugin->UrlAsNaClDesc(url, *static_cast<pp::Var*>(ins[1]->arrays.oval));
   return true;
 }
 
@@ -176,8 +175,7 @@ bool GetLastError(void* obj, SrpcParams* params) {
   NaClSrpcArg** outs = params->outs();
   PLUGIN_PRINTF(("GetLastError (obj=%p)\n", obj));
 
-  PluginPpapi* plugin =
-      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+  Plugin* plugin = static_cast<Plugin*>(obj);
   outs[0]->arrays.str = strdup(plugin->last_error_string().c_str());
   return true;
 }
@@ -204,7 +202,7 @@ const uint32_t kSizeKBBuckets = 100;
 const PPB_UMA_Private* GetUMAInterface() {
   pp::Module *module = pp::Module::Get();
   CHECK(module);
-  return reinterpret_cast<const PPB_UMA_Private*>(
+  return static_cast<const PPB_UMA_Private*>(
       module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
 }
 
@@ -320,12 +318,12 @@ void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
 // the plugin.
 class FindAdapter : public pp::Find_Dev {
  public:
-  explicit FindAdapter(PluginPpapi* plugin)
+  explicit FindAdapter(Plugin* plugin)
     : pp::Find_Dev(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_find_ = reinterpret_cast<const PPP_Find_Dev*>(
+    ppp_find_ = static_cast<const PPP_Find_Dev*>(
         proxy->GetPluginInterface(PPP_FIND_DEV_INTERFACE));
   }
 
@@ -353,7 +351,7 @@ class FindAdapter : public pp::Find_Dev {
   }
 
  private:
-  PluginPpapi* plugin_;
+  Plugin* plugin_;
   const PPP_Find_Dev* ppp_find_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(FindAdapter);
@@ -364,12 +362,12 @@ class FindAdapter : public pp::Find_Dev {
 // the plugin.
 class PrintingAdapter : public pp::Printing_Dev {
  public:
-  explicit PrintingAdapter(PluginPpapi* plugin)
+  explicit PrintingAdapter(Plugin* plugin)
     : pp::Printing_Dev(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_printing_ = reinterpret_cast<const PPP_Printing_Dev*>(
+    ppp_printing_ = static_cast<const PPP_Printing_Dev*>(
         proxy->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
   }
 
@@ -407,7 +405,7 @@ class PrintingAdapter : public pp::Printing_Dev {
   }
 
  private:
-  PluginPpapi* plugin_;
+  Plugin* plugin_;
   const PPP_Printing_Dev* ppp_printing_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(PrintingAdapter);
@@ -418,12 +416,12 @@ class PrintingAdapter : public pp::Printing_Dev {
 // the plugin.
 class SelectionAdapter : public pp::Selection_Dev {
  public:
-  explicit SelectionAdapter(PluginPpapi* plugin)
+  explicit SelectionAdapter(Plugin* plugin)
     : pp::Selection_Dev(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_selection_ = reinterpret_cast<const PPP_Selection_Dev*>(
+    ppp_selection_ = static_cast<const PPP_Selection_Dev*>(
         proxy->GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
   }
 
@@ -437,7 +435,7 @@ class SelectionAdapter : public pp::Selection_Dev {
   }
 
  private:
-  PluginPpapi* plugin_;
+  Plugin* plugin_;
   const PPP_Selection_Dev* ppp_selection_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(SelectionAdapter);
@@ -448,14 +446,14 @@ class SelectionAdapter : public pp::Selection_Dev {
 // and PPP_Scrollbar_Dev calls to the plugin.
 class WidgetClientAdapter : public pp::WidgetClient_Dev {
  public:
-  explicit WidgetClientAdapter(PluginPpapi* plugin)
+  explicit WidgetClientAdapter(Plugin* plugin)
     : pp::WidgetClient_Dev(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_widget_ = reinterpret_cast<const PPP_Widget_Dev*>(
+    ppp_widget_ = static_cast<const PPP_Widget_Dev*>(
         proxy->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
-    ppp_scrollbar_ = reinterpret_cast<const PPP_Scrollbar_Dev*>(
+    ppp_scrollbar_ = static_cast<const PPP_Scrollbar_Dev*>(
         proxy->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
   }
 
@@ -476,7 +474,7 @@ class WidgetClientAdapter : public pp::WidgetClient_Dev {
   }
 
  private:
-  PluginPpapi* plugin_;
+  Plugin* plugin_;
   const PPP_Widget_Dev* ppp_widget_;
   const PPP_Scrollbar_Dev* ppp_scrollbar_;
 
@@ -488,12 +486,12 @@ class WidgetClientAdapter : public pp::WidgetClient_Dev {
 // the plugin.
 class ZoomAdapter : public pp::Zoom_Dev {
  public:
-  explicit ZoomAdapter(PluginPpapi* plugin)
+  explicit ZoomAdapter(Plugin* plugin)
     : pp::Zoom_Dev(plugin),
       plugin_(plugin) {
     BrowserPpp* proxy = plugin_->ppapi_proxy();
     CHECK(proxy != NULL);
-    ppp_zoom_ = reinterpret_cast<const PPP_Zoom_Dev*>(
+    ppp_zoom_ = static_cast<const PPP_Zoom_Dev*>(
         proxy->GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
   }
 
@@ -506,7 +504,7 @@ class ZoomAdapter : public pp::Zoom_Dev {
   }
 
  private:
-  PluginPpapi* plugin_;
+  Plugin* plugin_;
   const PPP_Zoom_Dev* ppp_zoom_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(ZoomAdapter);
@@ -518,7 +516,7 @@ class ZoomAdapter : public pp::Zoom_Dev {
 // block if the socket's buffer fills up.
 bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
                               nacl::DescWrapper** fds, int fds_count) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  Plugin* plugin = static_cast<Plugin*>(obj);
   if (plugin->main_service_runtime() == NULL) {
     params->set_exception_string("No subprocess running");
     return false;
@@ -562,7 +560,7 @@ bool Plugin::SendAsyncMessage0(void* obj, SrpcParams* params) {
 }
 
 bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  Plugin* plugin = static_cast<Plugin*>(obj);
   NaClDescRef(params->ins()[1]->u.hval);
   nacl::DescWrapper* fd_to_send =
     plugin->wrapper_factory()->MakeGeneric(params->ins()[1]->u.hval);
@@ -573,7 +571,7 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
 }
 
 bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
-  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  Plugin* plugin = static_cast<Plugin*>(obj);
   ErrorInfo error_info;
   if (!plugin->StartSrpcServices(&plugin->main_subprocess_, &error_info)) {
     params->set_exception_string(error_info.message().c_str());
@@ -652,7 +650,7 @@ bool Plugin::Invoke(uintptr_t method_id,
   MethodInfo* method_info = GetMethodInfo(method_id, call_type);
 
   if (NULL != method_info && NULL != method_info->function_ptr()) {
-    return method_info->function_ptr()(reinterpret_cast<void*>(this), params);
+    return method_info->function_ptr()(static_cast<void*>(this), params);
   }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
@@ -665,15 +663,12 @@ bool Plugin::Invoke(uintptr_t method_id,
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,
-                  InstanceIdentifier instance_id,
                   int argc,
                   char* argn[],
                   char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::Init (instance_id=%p)\n",
-                 reinterpret_cast<void*>(instance_id)));
+  PLUGIN_PRINTF(("Plugin::Init (instance=%p)\n", static_cast<void*>(this)));
 
   browser_interface_ = browser_interface;
-  instance_id_ = instance_id;
   // Remember the embed/object argn/argv pairs.
   argn_ = new(std::nothrow) char*[argc];
   argv_ = new(std::nothrow) char*[argc];
@@ -699,7 +694,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
     return false;
   }
   PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
-                 reinterpret_cast<void*>(wrapper_factory_)));
+                 static_cast<void*>(wrapper_factory_)));
 
   // Set up the scriptable methods for the plugin.
   LoadMethods();
@@ -707,19 +702,6 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.
   return true;
-}
-
-Plugin::Plugin()
-  : receive_thread_running_(false),
-    browser_interface_(NULL),
-    scriptable_handle_(NULL),
-    argc_(-1),
-    argn_(NULL),
-    argv_(NULL),
-    main_subprocess_(kMainSubprocessId, NULL, NULL),
-    nacl_ready_state_(UNSENT),
-    wrapper_factory_(NULL) {
-  PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
 }
 
 void Plugin::ShutDownSubprocesses() {
@@ -747,24 +729,6 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
-
-Plugin::~Plugin() {
-  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
-
-  // After invalidation, the browser does not respect reference counting,
-  // so we shut down here what we can and prevent attempts to shut down
-  // other linked structures in Deallocate.
-
-  // TODO(sehr,polina): We should not need to call ShutDownSubprocesses() here.
-  ShutDownSubprocesses();
-
-  delete wrapper_factory_;
-  delete browser_interface_;
-  delete[] argv_;
-  delete[] argn_;
-  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, return)\n",
-                 static_cast<void*>(this)));
-}
 
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
@@ -962,18 +926,17 @@ class ProgressEvent {
   uint64_t total_bytes_;
 };
 
-const char* const PluginPpapi::kNaClMIMEType = "application/x-nacl";
+const char* const Plugin::kNaClMIMEType = "application/x-nacl";
 
-bool PluginPpapi::IsForeignMIMEType() const {
+bool Plugin::IsForeignMIMEType() const {
   return
       !mime_type().empty() &&
       mime_type() != kNaClMIMEType;
 }
 
 
-bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
-  PluginPpapi* plugin =
-      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+bool Plugin::SetAsyncCallback(void* obj, SrpcParams* params) {
+  Plugin* plugin = static_cast<Plugin*>(obj);
   if (plugin->main_service_runtime() == NULL) {
     params->set_exception_string("No subprocess running");
     return false;
@@ -988,7 +951,7 @@ bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
     params->set_exception_string("Memory allocation failed");
     return false;
   }
-  args->callback = *reinterpret_cast<pp::Var*>(params->ins()[0]->arrays.oval);
+  args->callback = *static_cast<pp::Var*>(params->ins()[0]->arrays.oval);
   nacl::DescWrapper* socket =
       plugin->main_service_runtime()->async_receive_desc();
   NaClDescRef(socket->desc());
@@ -1014,16 +977,15 @@ bool PluginPpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   return true;
 }
 
-PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
-  PLUGIN_PRINTF(("PluginPpapi::New (pp_instance=%"NACL_PRId32")\n",
-                 pp_instance));
+Plugin* Plugin::New(PP_Instance pp_instance) {
+  PLUGIN_PRINTF(("Plugin::New (pp_instance=%"NACL_PRId32")\n", pp_instance));
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   if (!NaClHandlePassBrowserCtor()) {
     return NULL;
   }
 #endif
-  PluginPpapi* plugin = new(std::nothrow) PluginPpapi(pp_instance);
-  PLUGIN_PRINTF(("PluginPpapi::New (plugin=%p)\n", static_cast<void*>(plugin)));
+  Plugin* plugin = new(std::nothrow) Plugin(pp_instance);
+  PLUGIN_PRINTF(("Plugin::New (plugin=%p)\n", static_cast<void*>(plugin)));
   if (plugin == NULL) {
     return NULL;
   }
@@ -1034,33 +996,31 @@ PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
 // All failures of this function will show up as "Missing Plugin-in", so
 // there is no need to log to JS console that there was an initialization
 // failure. Note that module loading functions will log their own errors.
-bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-  PLUGIN_PRINTF(("PluginPpapi::Init (argc=%"NACL_PRIu32")\n", argc));
+bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  PLUGIN_PRINTF(("Plugin::Init (argc=%"NACL_PRIu32")\n", argc));
   HistogramEnumerateOsArch(GetSandboxISA());
   init_time_ = NaClGetTimeOfDayMicroseconds();
 
-  BrowserInterface* browser_interface =
-      static_cast<BrowserInterface*>(new(std::nothrow) BrowserInterfacePpapi);
+  BrowserInterface* browser_interface = new(std::nothrow) BrowserInterface;
   if (browser_interface == NULL) {
     return false;
   }
-  ScriptableHandle* handle = browser_interface->NewScriptableHandle(this);
+  ScriptableHandle* handle = ScriptableHandle::NewPlugin(this);
   if (handle == NULL) {
     return false;
   }
   set_scriptable_handle(handle);
-  PLUGIN_PRINTF(("PluginPpapi::Init (scriptable_handle=%p)\n",
+  PLUGIN_PRINTF(("Plugin::Init (scriptable_handle=%p)\n",
                  static_cast<void*>(scriptable_handle())));
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL) {
     return false;
   }
-  PLUGIN_PRINTF(("PluginPpapi::Init (url_util_=%p)\n",
+  PLUGIN_PRINTF(("Plugin::Init (url_util_=%p)\n",
                  static_cast<const void*>(url_util_)));
 
   bool status = Plugin::Init(
       browser_interface,
-      PPInstanceToInstanceIdentifier(static_cast<pp::InstancePrivate*>(this)),
       static_cast<int>(argc),
       // TODO(polina): Can we change the args on our end to be const to
       // avoid these ugly casts?
@@ -1085,21 +1045,19 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     // manifest.  This takes into account the setting of <base> tags that
     // precede the embed/object.
     CHECK(url_util_ != NULL);
-    pp::Var base_var =
-        url_util_->GetDocumentURL(
-            *InstanceIdentifierToPPInstance(instance_id()));
+    pp::Var base_var = url_util_->GetDocumentURL(*this);
     if (!base_var.is_string()) {
-      PLUGIN_PRINTF(("PluginPpapi::Init (unable to find document url)\n"));
+      PLUGIN_PRINTF(("Plugin::Init (unable to find document url)\n"));
       return false;
     }
     set_plugin_base_url(base_var.AsString());
     if (manifest_url == NULL) {
       // TODO(sehr,polina): this should be a hard error when scripting
       // the src property is no longer allowed.
-      PLUGIN_PRINTF(("PluginPpapi::Init:"
+      PLUGIN_PRINTF(("Plugin::Init:"
                      " WARNING: no 'src' property, so no manifest loaded.\n"));
       if (NULL != LookupArgument(kNaClManifestAttribute)) {
-        PLUGIN_PRINTF(("PluginPpapi::Init:"
+        PLUGIN_PRINTF(("Plugin::Init:"
                        " WARNING: 'nacl' property is incorrect. Use 'src'.\n"));
       }
     } else {
@@ -1118,20 +1076,31 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   // Export a property to allow us to get the last error description.
   AddPropertyGet(GetLastError, "lastError", "s");
 
-  PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
+  PLUGIN_PRINTF(("Plugin::Init (status=%d)\n", status));
   return status;
 }
 
 
-PluginPpapi::PluginPpapi(PP_Instance pp_instance)
+Plugin::Plugin(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
+      receive_thread_running_(false),
+      browser_interface_(NULL),
+      scriptable_handle_(NULL),
+      argc_(-1),
+      argn_(NULL),
+      argv_(NULL),
+      main_subprocess_(kMainSubprocessId, NULL, NULL),
+      nacl_ready_state_(UNSENT),
+      wrapper_factory_(NULL),
       last_error_string_(""),
       ppapi_proxy_(NULL),
       enable_dev_interface_(false),
       replayDidChangeView(false),
       replayHandleDocumentLoad(false),
+      init_time_(0),
+      ready_time_(0),
       nexe_size_(0) {
-  PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
+  PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
   nexe_downloader_.Initialize(this);
@@ -1140,10 +1109,10 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
 }
 
 
-PluginPpapi::~PluginPpapi() {
+Plugin::~Plugin() {
   int64_t shutdown_start = NaClGetTimeOfDayMicroseconds();
 
-  PLUGIN_PRINTF(("PluginPpapi::~PluginPpapi (this=%p, scriptable_handle=%p)\n",
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, scriptable_handle=%p)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(scriptable_handle())));
 
@@ -1166,16 +1135,26 @@ PluginPpapi::~PluginPpapi() {
   ScriptableHandle::Unref(&scriptable_handle_);
   NaClSrpcModuleFini();
 
+  // TODO(sehr,polina): We should not need to call ShutDownSubprocesses() here.
+  ShutDownSubprocesses();
+
+  delete wrapper_factory_;
+  delete browser_interface_;
+  delete[] argv_;
+  delete[] argn_;
+
   HistogramTimeSmall(
       "NaCl.Perf.ShutdownTime.Total",
       (NaClGetTimeOfDayMicroseconds() - shutdown_start)
           / NACL_MICROS_PER_MILLI);
+
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, return)\n",
+                 static_cast<void*>(this)));
 }
 
 
-void PluginPpapi::DidChangeView(const pp::Rect& position,
-                                const pp::Rect& clip) {
-  PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
+void Plugin::DidChangeView(const pp::Rect& position, const pp::Rect& clip) {
+  PLUGIN_PRINTF(("Plugin::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
 
   if (!BrowserPpp::is_valid(ppapi_proxy_)) {
@@ -1191,8 +1170,8 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
 }
 
 
-void PluginPpapi::DidChangeFocus(bool has_focus) {
-  PLUGIN_PRINTF(("PluginPpapi::DidChangeFocus (this=%p)\n",
+void Plugin::DidChangeFocus(bool has_focus) {
+  PLUGIN_PRINTF(("Plugin::DidChangeFocus (this=%p)\n",
                  static_cast<void*>(this)));
   if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     return;
@@ -1203,8 +1182,8 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
 }
 
 
-bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
-  PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
+bool Plugin::HandleInputEvent(const pp::InputEvent& event) {
+  PLUGIN_PRINTF(("Plugin::HandleInputEvent (this=%p)\n",
                  static_cast<void*>(this)));
   if (!BrowserPpp::is_valid(ppapi_proxy_) ||
       ppapi_proxy_->ppp_input_event_interface() == NULL) {
@@ -1213,14 +1192,14 @@ bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
     bool handled = PP_ToBool(
         ppapi_proxy_->ppp_input_event_interface()->HandleInputEvent(
             pp_instance(), event.pp_resource()));
-    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (handled=%d)\n", handled));
+    PLUGIN_PRINTF(("Plugin::HandleInputEvent (handled=%d)\n", handled));
     return handled;
   }
 }
 
 
-bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
-  PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",
+bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
+  PLUGIN_PRINTF(("Plugin::HandleDocumentLoad (this=%p)\n",
                  static_cast<void*>(this)));
   if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     // Store this event and replay it when the proxy becomes available.
@@ -1237,8 +1216,8 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 }
 
 
-void PluginPpapi::HandleMessage(const pp::Var& message) {
-  PLUGIN_PRINTF(("PluginPpapi::HandleMessage (this=%p)\n",
+void Plugin::HandleMessage(const pp::Var& message) {
+  PLUGIN_PRINTF(("Plugin::HandleMessage (this=%p)\n",
                  static_cast<void*>(this)));
   if (BrowserPpp::is_valid(ppapi_proxy_) &&
       ppapi_proxy_->ppp_messaging_interface() != NULL) {
@@ -1248,19 +1227,19 @@ void PluginPpapi::HandleMessage(const pp::Var& message) {
 }
 
 
-pp::Var PluginPpapi::GetInstanceObject() {
-  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (this=%p)\n",
+pp::Var Plugin::GetInstanceObject() {
+  PLUGIN_PRINTF(("Plugin::GetInstanceObject (this=%p)\n",
                  static_cast<void*>(this)));
   // The browser will unref when it discards the var for this object.
-  ScriptableHandlePpapi* handle =
-      static_cast<ScriptableHandlePpapi*>(scriptable_handle()->AddRef());
+  ScriptableHandle* handle =
+      static_cast<ScriptableHandle*>(scriptable_handle()->AddRef());
   pp::Var* handle_var = handle->var();
-  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, handle_var=%p)\n",
+  PLUGIN_PRINTF(("Plugin::GetInstanceObject (handle=%p, handle_var=%p)\n",
                  static_cast<void*>(handle), static_cast<void*>(handle_var)));
   return *handle_var;  // make a copy
 }
 
-void PluginPpapi::HistogramStartupTimeSmall(const std::string& name, float dt) {
+void Plugin::HistogramStartupTimeSmall(const std::string& name, float dt) {
   if (nexe_size_ > 0) {
     float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
     HistogramTimeSmall(name, static_cast<int64_t>(dt));
@@ -1268,8 +1247,7 @@ void PluginPpapi::HistogramStartupTimeSmall(const std::string& name, float dt) {
   }
 }
 
-void PluginPpapi::HistogramStartupTimeMedium(const std::string& name,
-                                             float dt) {
+void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
   if (nexe_size_ > 0) {
     float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
     HistogramTimeMedium(name, static_cast<int64_t>(dt));
@@ -1277,11 +1255,11 @@ void PluginPpapi::HistogramStartupTimeMedium(const std::string& name,
   }
 }
 
-void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
+void Plugin::NexeFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
-  PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   ErrorInfo error_info;
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
@@ -1341,12 +1319,12 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   }
 }
 
-void PluginPpapi::BitcodeDidTranslate(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::BitcodeDidTranslate (pp_error=%"NACL_PRId32")\n",
+void Plugin::BitcodeDidTranslate(int32_t pp_error) {
+  PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate (pp_error=%"NACL_PRId32")\n",
                  pp_error));
   if (pp_error != PP_OK) {
     // Error should have been reported by pnacl. Just return.
-    PLUGIN_PRINTF(("PluginPpapi::BitcodeDidTranslate error in Pnacl\n"));
+    PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate error in Pnacl\n"));
     return;
   }
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
@@ -1370,7 +1348,7 @@ void PluginPpapi::BitcodeDidTranslate(int32_t pp_error) {
 // Check manifest_url and return whether or not to enable PPAPI Dev interfaces.
 // Returning true here will enable the PPAPI Dev interfaces regardless of
 // the environment variable NACL_ENABLE_PPAPI_DEV.
-bool PluginPpapi::RequiresDevInterface(const nacl::string& manifest_url) {
+bool Plugin::RequiresDevInterface(const nacl::string& manifest_url) {
   const char* extensions[] = {
       "chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh/",  // PDF
   };
@@ -1382,10 +1360,10 @@ bool PluginPpapi::RequiresDevInterface(const nacl::string& manifest_url) {
   return false;
 }
 
-bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                        ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
-                 reinterpret_cast<void*>(srpc_channel)));
+bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
+                                   ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (srpc_channel=%p)\n",
+                 static_cast<void*>(srpc_channel)));
 
   // Log the amound of time that has passed between the trusted plugin being
   // initialized and the untrusted plugin being initialized.  This is (roughly)
@@ -1403,13 +1381,13 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     error_info->SetReport(
         ERROR_START_PROXY_CHECK_PPP,
         "could not find PPP_InitializeModule() - toolchain version mismatch?");
-    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%s)\n",
+    PLUGIN_PRINTF(("Plugin::StartProxiedExecution (%s)\n",
                    error_info->message().c_str()));
     return false;
   }
   nacl::scoped_ptr<BrowserPpp> ppapi_proxy(
       new(std::nothrow) BrowserPpp(srpc_channel, this));
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (ppapi_proxy=%p)\n",
                  static_cast<void*>(ppapi_proxy.get())));
   if (ppapi_proxy.get() == NULL) {
     error_info->SetReport(ERROR_START_PROXY_ALLOC,
@@ -1417,13 +1395,13 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     return false;
   }
   pp::Module* module = pp::Module::Get();
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module=%p)\n",
-                 reinterpret_cast<void*>(module)));
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (module=%p)\n",
+                 static_cast<void*>(module)));
   CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
   int32_t pp_error =
       ppapi_proxy->InitializeModule(module->pp_module(),
                                      module->get_browser_interface());
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (pp_error=%"
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
     error_info->SetReport(ERROR_START_PROXY_MODULE,
@@ -1432,15 +1410,15 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   }
   const PPP_Instance* instance_interface =
       ppapi_proxy->ppp_instance_interface();
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppp_instance=%p)\n",
-                 reinterpret_cast<const void*>(instance_interface)));
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (ppp_instance=%p)\n",
+                 static_cast<const void*>(instance_interface)));
   CHECK(instance_interface != NULL);  // Verified on module initialization.
   PP_Bool did_create = instance_interface->DidCreate(
       pp_instance(),
       argc(),
       const_cast<const char**>(argn()),
       const_cast<const char**>(argv()));
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (did_create=%d)\n",
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (did_create=%d)\n",
                  did_create));
   if (did_create == PP_FALSE) {
     error_info->SetReport(ERROR_START_PROXY_INSTANCE,
@@ -1469,7 +1447,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     replayHandleDocumentLoadURLLoader = pp::URLLoader();
   }
   bool is_valid_proxy = BrowserPpp::is_valid(ppapi_proxy_);
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (is_valid_proxy=%d)\n",
+  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (is_valid_proxy=%d)\n",
                  is_valid_proxy));
   if (!is_valid_proxy) {
     error_info->SetReport(ERROR_START_PROXY_CRASH,
@@ -1478,8 +1456,8 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   return is_valid_proxy;
 }
 
-void PluginPpapi::ReportDeadNexe() {
-  PLUGIN_PRINTF(("PluginPpapi::ReportDeadNexe\n"));
+void Plugin::ReportDeadNexe() {
+  PLUGIN_PRINTF(("Plugin::ReportDeadNexe\n"));
 
   if (nacl_ready_state() == DONE) {  // After loadEnd.
     int64_t crash_time = NaClGetTimeOfDayMicroseconds();
@@ -1502,9 +1480,9 @@ void PluginPpapi::ReportDeadNexe() {
   // will just get reported back as PP_ERROR_FAILED.
 }
 
-void PluginPpapi::ShutdownProxy() {
-  PLUGIN_PRINTF(("PluginPpapi::ShutdownProxy (ppapi_proxy=%p)\n",
-                reinterpret_cast<void*>(ppapi_proxy_)));
+void Plugin::ShutdownProxy() {
+  PLUGIN_PRINTF(("Plugin::ShutdownProxy (ppapi_proxy=%p)\n",
+                static_cast<void*>(ppapi_proxy_)));
   if (BrowserPpp::is_valid(ppapi_proxy_)) {
     ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
     if (BrowserPpp::is_valid(ppapi_proxy_)) {
@@ -1515,8 +1493,8 @@ void PluginPpapi::ShutdownProxy() {
   ppapi_proxy_ = NULL;
 }
 
-void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NaClManifestBufferReady (pp_error=%"
+void Plugin::NaClManifestBufferReady(int32_t pp_error) {
+  PLUGIN_PRINTF(("Plugin::NaClManifestBufferReady (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   ErrorInfo error_info;
   set_manifest_url(nexe_downloader_.url());
@@ -1552,8 +1530,8 @@ void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {
   ProcessNaClManifest(json_buffer.get());
 }
 
-void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
+void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
@@ -1562,7 +1540,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // plugin now, so that the full url is available to error handlers.
   set_manifest_url(nexe_downloader_.url());
   int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
-  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
+  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (file_desc=%"
                  NACL_PRId32")\n", file_desc));
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
@@ -1595,9 +1573,9 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     return;
   }
   FILE* json_file = fdopen(dup_file_desc, "rb");
-  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen "
+  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen "
                  "(dup_file_desc=%"NACL_PRId32", json_file=%p)\n",
-                 dup_file_desc, reinterpret_cast<void*>(json_file)));
+                 dup_file_desc, static_cast<void*>(json_file)));
   if (json_file == NULL) {
     CLOSE(dup_file_desc);
     error_info.SetReport(ERROR_MANIFEST_OPEN,
@@ -1623,7 +1601,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                                    json_file);
     if (bytes_this_read < bytes_to_read &&
         (feof(json_file) || ferror(json_file))) {
-      PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
+      PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen failed: "
                      "total_bytes_read=%"NACL_PRIuS" "
                      "bytes_to_read=%"NACL_PRIuS"\n",
                      total_bytes_read, bytes_to_read));
@@ -1645,7 +1623,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   ProcessNaClManifest(json_buffer.get());
 }
 
-void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
+void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_json.length() / 1024));
   nacl::string program_url;
@@ -1670,8 +1648,7 @@ void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
       if (SelectLLCURLFromManifest(&llc_url, &error_info) &&
           SelectLDURLFromManifest(&ld_url, &error_info)) {
         pp::CompletionCallback translate_callback =
-            callback_factory_.NewCallback(
-                &PluginPpapi::BitcodeDidTranslate);
+            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
         // Will always call the callback on success or failure.
         pnacl_.BitcodeToNative(program_url,
                                llc_url,
@@ -1681,7 +1658,7 @@ void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
       }
     } else {
       pp::CompletionCallback open_callback =
-          callback_factory_.NewRequiredCallback(&PluginPpapi::NexeFileDidOpen);
+          callback_factory_.NewRequiredCallback(&Plugin::NexeFileDidOpen);
       // Will always call the callback on success or failure.
       CHECK(
           nexe_downloader_.Open(program_url, DOWNLOAD_TO_FILE, open_callback));
@@ -1692,9 +1669,9 @@ void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
   ReportLoadError(error_info);
 }
 
-void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
-  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
-  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (plugin base url='%s')\n",
+void Plugin::RequestNaClManifest(const nacl::string& url) {
+  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (url='%s')\n", url.c_str()));
+  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (plugin base url='%s')\n",
                  plugin_base_url().c_str()));
   // The full URL of the manifest file is relative to the base url.
   CHECK(url_util_ != NULL);
@@ -1709,7 +1686,7 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
     ReportLoadError(error_info);
     return;
   }
-  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (resolved url='%s')\n",
+  PLUGIN_PRINTF(("Plugin::RequestNaClManifest (resolved url='%s')\n",
                  nmf_resolved_url.AsString().c_str()));
   set_manifest_base_url(nmf_resolved_url.AsString());
   set_manifest_url(url);
@@ -1723,16 +1700,14 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewRequiredCallback(
-            &PluginPpapi::NaClManifestBufferReady);
+        callback_factory_.NewRequiredCallback(&Plugin::NaClManifestBufferReady);
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_BUFFER,
                                 open_callback));
   } else {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewRequiredCallback(
-            &PluginPpapi::NaClManifestFileDidOpen);
+        callback_factory_.NewRequiredCallback(&Plugin::NaClManifestFileDidOpen);
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,
@@ -1741,9 +1716,9 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
 }
 
 
-bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
-                                    ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("PluginPpapi::SetManifestObject(): manifest_json='%s'.\n",
+bool Plugin::SetManifestObject(const nacl::string& manifest_json,
+                               ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("Plugin::SetManifestObject(): manifest_json='%s'.\n",
        manifest_json.c_str()));
   if (error_info == NULL)
     return false;
@@ -1755,11 +1730,11 @@ bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
   return true;
 }
 
-bool PluginPpapi::SelectProgramURLFromManifest(nacl::string* result,
-                                               ErrorInfo* error_info,
-                                               bool* is_portable) {
+bool Plugin::SelectProgramURLFromManifest(nacl::string* result,
+                                          ErrorInfo* error_info,
+                                          bool* is_portable) {
   const nacl::string sandbox_isa(GetSandboxISA());
-  PLUGIN_PRINTF(("PluginPpapi::SelectProgramURLFromManifest(): sandbox='%s'.\n",
+  PLUGIN_PRINTF(("Plugin::SelectProgramURLFromManifest(): sandbox='%s'.\n",
                  sandbox_isa.c_str()));
   if (result == NULL || error_info == NULL || manifest_ == NULL)
     return false;
@@ -1768,17 +1743,17 @@ bool PluginPpapi::SelectProgramURLFromManifest(nacl::string* result,
 
 // TODO(jvoung): get rid of these when we have a better hosting solution
 // for PNaCl's nexes.
-bool PluginPpapi::SelectLLCURLFromManifest(nacl::string* result,
-                                           ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("PluginPpapi::SelectLLCURLFromManifest()\n"));
+bool Plugin::SelectLLCURLFromManifest(nacl::string* result,
+                                      ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("Plugin::SelectLLCURLFromManifest()\n"));
   if (result == NULL || error_info == NULL || manifest_ == NULL)
     return false;
   return manifest_->GetLLCURL(result, error_info);
 }
 
-bool PluginPpapi::SelectLDURLFromManifest(nacl::string* result,
-                                          ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("PluginPpapi::SelectLDURLFromManifest()\n"));
+bool Plugin::SelectLDURLFromManifest(nacl::string* result,
+                                     ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("Plugin::SelectLDURLFromManifest()\n"));
   if (result == NULL || error_info == NULL || manifest_ == NULL)
     return false;
   return manifest_->GetLDURL(result, error_info);
@@ -1786,12 +1761,12 @@ bool PluginPpapi::SelectLDURLFromManifest(nacl::string* result,
 // end TODO(jvoung)
 
 
-void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
-                                             FileDownloader*& url_downloader,
-                                             pp::VarPrivate& js_callback) {
-  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpenForUrlAsNaClDesc "
+void Plugin::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
+                                        FileDownloader*& url_downloader,
+                                        pp::VarPrivate& js_callback) {
+  PLUGIN_PRINTF(("Plugin::UrlDidOpenForUrlAsNaClDesc "
                  "(pp_error=%"NACL_PRId32", url_downloader=%p)\n",
-                 pp_error, reinterpret_cast<void*>(url_downloader)));
+                 pp_error, static_cast<void*>(url_downloader)));
   url_downloaders_.erase(url_downloader);
   nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
 
@@ -1814,8 +1789,8 @@ void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
     return;
   }
 
-  ScriptableHandlePpapi* handle = ScriptableHandlePpapi::New(
-      DescBasedHandle::New(plugin(), scoped_desc_wrapper.get()));
+  ScriptableHandle* handle = ScriptableHandle::NewDescHandle(
+      DescBasedHandle::New(scoped_desc_wrapper.get()));
   if (handle == NULL) {
     js_callback.Call(pp::Var("onfail"), pp::Var("scriptable handle failed"));
     return;
@@ -1827,12 +1802,12 @@ void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
 }
 
 
-void PluginPpapi::UrlDidOpenForStreamAsFile(int32_t pp_error,
-                                            FileDownloader*& url_downloader,
-                                            PP_CompletionCallback callback) {
-  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpen (pp_error=%"NACL_PRId32
+void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
+                                       FileDownloader*& url_downloader,
+                                       PP_CompletionCallback callback) {
+  PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%"NACL_PRId32
                  ", url_downloader=%p)\n", pp_error,
-                 reinterpret_cast<void*>(url_downloader)));
+                 static_cast<void*>(url_downloader)));
   url_downloaders_.erase(url_downloader);
   nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
   int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
@@ -1847,8 +1822,8 @@ void PluginPpapi::UrlDidOpenForStreamAsFile(int32_t pp_error,
   }
 }
 
-int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
-  PLUGIN_PRINTF(("PluginPpapi::GetFileDesc (url=%s)\n", url.c_str()));
+int32_t Plugin::GetPOSIXFileDesc(const nacl::string& url) {
+  PLUGIN_PRINTF(("Plugin::GetFileDesc (url=%s)\n", url.c_str()));
   int32_t file_desc_ok_to_close = NACL_NO_FILE_DESC;
   std::map<nacl::string, int32_t>::iterator it = url_fd_map_.find(url);
   if (it != url_fd_map_.end())
@@ -1858,21 +1833,21 @@ int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
 
 // TODO(polina): reduce code duplication between UrlAsNaClDesc and StreamAsFile.
 
-void PluginPpapi::UrlAsNaClDesc(const nacl::string& url,
-                                pp::VarPrivate js_callback) {
-  PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc (url='%s')\n", url.c_str()));
+void Plugin::UrlAsNaClDesc(const nacl::string& url,
+                           pp::VarPrivate js_callback) {
+  PLUGIN_PRINTF(("Plugin::UrlAsNaClDesc (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
   pp::CompletionCallback open_callback =
       callback_factory_.NewRequiredCallback(
-          &PluginPpapi::UrlDidOpenForUrlAsNaClDesc, downloader, js_callback);
+          &Plugin::UrlDidOpenForUrlAsNaClDesc, downloader, js_callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
       url_util_->ResolveRelativeToURL(pp::Var(plugin_base_url()), url);
   if (!resolved_url.is_string()) {
-    PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc: "
+    PLUGIN_PRINTF(("Plugin::UrlAsNaClDesc: "
                    "could not resolve url \"%s\" relative to base \"%s\".",
                    url.c_str(),
                    plugin_base_url().c_str()));
@@ -1883,21 +1858,21 @@ void PluginPpapi::UrlAsNaClDesc(const nacl::string& url,
 }
 
 
-bool PluginPpapi::StreamAsFile(const nacl::string& url,
-                               PP_CompletionCallback callback) {
-  PLUGIN_PRINTF(("PluginPpapi::StreamAsFile (url='%s')\n", url.c_str()));
+bool Plugin::StreamAsFile(const nacl::string& url,
+                          PP_CompletionCallback callback) {
+  PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
   pp::CompletionCallback open_callback =
       callback_factory_.NewRequiredCallback(
-          &PluginPpapi::UrlDidOpenForStreamAsFile, downloader, callback);
+          &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
       url_util_->ResolveRelativeToURL(pp::Var(plugin_base_url()), url);
   if (!resolved_url.is_string()) {
-    PLUGIN_PRINTF(("PluginPpapi::StreamAsFile: "
+    PLUGIN_PRINTF(("Plugin::StreamAsFile: "
                    "could not resolve url \"%s\" relative to plugin \"%s\".",
                    url.c_str(),
                    plugin_base_url().c_str()));
@@ -1907,9 +1882,9 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
   return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
 }
 
-void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
-                                    uint64_t loaded_bytes,
-                                    uint64_t total_bytes) {
+void Plugin::ReportLoadSuccess(LengthComputable length_computable,
+                               uint64_t loaded_bytes,
+                               uint64_t total_bytes) {
   // Set the readyState attribute to indicate loaded.
   set_nacl_ready_state(DONE);
   // Inform JavaScript that loading was successful and is complete.
@@ -1925,8 +1900,8 @@ void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
 
 
 // TODO(ncbray): report UMA stats
-void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
-  PLUGIN_PRINTF(("PluginPpapi::ReportLoadError (error='%s')\n",
+void Plugin::ReportLoadError(const ErrorInfo& error_info) {
+  PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
                  error_info.message().c_str()));
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
@@ -1934,7 +1909,7 @@ void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
   nacl::string message = nacl::string("NaCl module load failed: ") +
       error_info.message();
   set_last_error_string(message);
-  browser_interface()->AddToConsole(instance_id(), message);
+  browser_interface()->AddToConsole(this, message);
   ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent("error",
@@ -1951,14 +1926,14 @@ void PluginPpapi::ReportLoadError(const ErrorInfo& error_info) {
 }
 
 
-void PluginPpapi::ReportLoadAbort() {
-  PLUGIN_PRINTF(("PluginPpapi::ReportLoadAbort\n"));
+void Plugin::ReportLoadAbort() {
+  PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);
-  browser_interface()->AddToConsole(instance_id(), error_string);
+  browser_interface()->AddToConsole(this, error_string);
   ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.
   EnqueueProgressEvent("abort",
@@ -1975,11 +1950,11 @@ void PluginPpapi::ReportLoadAbort() {
 }
 
 
-void PluginPpapi::EnqueueProgressEvent(const char* event_type,
-                                       LengthComputable length_computable,
-                                       uint64_t loaded_bytes,
-                                       uint64_t total_bytes) {
-  PLUGIN_PRINTF(("PluginPpapi::EnqueueProgressEvent ("
+void Plugin::EnqueueProgressEvent(const char* event_type,
+                                  LengthComputable length_computable,
+                                  uint64_t loaded_bytes,
+                                  uint64_t total_bytes) {
+  PLUGIN_PRINTF(("Plugin::EnqueueProgressEvent ("
                  "event_type='%s', length_computable=%d, "
                  "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
                  event_type,
@@ -1995,28 +1970,28 @@ void PluginPpapi::EnqueueProgressEvent(const char* event_type,
   // If/when EnqueueProgressEvent is callable from another thread, this
   // will need to change.
   pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&PluginPpapi::DispatchProgressEvent);
+      callback_factory_.NewCallback(&Plugin::DispatchProgressEvent);
   pp::Core* core = pp::Module::Get()->core();
   core->CallOnMainThread(0, callback, 0);
 }
 
-void PluginPpapi::ReportSelLdrLoadStatus(int status) {
+void Plugin::ReportSelLdrLoadStatus(int status) {
   HistogramEnumerateSelLdrLoadStatus(static_cast<NaClErrorCode>(status));
 }
 
-void PluginPpapi::DispatchProgressEvent(int32_t result) {
-  PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent (result=%"
+void Plugin::DispatchProgressEvent(int32_t result) {
+  PLUGIN_PRINTF(("Plugin::DispatchProgressEvent (result=%"
                  NACL_PRId32")\n", result));
   if (result < 0) {
     return;
   }
   if (progress_events_.empty()) {
-    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent: no pending events\n"));
+    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent: no pending events\n"));
     return;
   }
   nacl::scoped_ptr<ProgressEvent> event(progress_events_.front());
   progress_events_.pop();
-  PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent ("
+  PLUGIN_PRINTF(("Plugin::DispatchProgressEvent ("
                  "event_type='%s', length_computable=%d, "
                  "loaded=%"NACL_PRIu64", total=%"NACL_PRIu64")\n",
                  event->event_type(),
@@ -2040,14 +2015,14 @@ void PluginPpapi::DispatchProgressEvent(int32_t result) {
   pp::VarPrivate exception;
   pp::VarPrivate function_object = ExecuteScript(kEventClosureJS, &exception);
   if (!exception.is_undefined() || !function_object.is_object()) {
-    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
                    " Function object creation failed.\n"));
     return;
   }
   // Get the target of the event to be dispatched.
   pp::Var owner_element_object = GetOwnerElementObject();
   if (!owner_element_object.is_object()) {
-    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
                    " Couldn't get owner element object.\n"));
     NACL_NOTREACHED();
     return;
@@ -2065,12 +2040,12 @@ void PluginPpapi::DispatchProgressEvent(int32_t result) {
   const pp::Var default_method;
   function_object.Call(default_method, argc, argv, &exception);
   if (!exception.is_undefined()) {
-    PLUGIN_PRINTF(("PluginPpapi::DispatchProgressEvent:"
+    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
                    " event dispatch failed.\n"));
   }
 }
 
-UrlSchemeType PluginPpapi::GetUrlScheme(const std::string& url) {
+UrlSchemeType Plugin::GetUrlScheme(const std::string& url) {
   CHECK(url_util_ != NULL);
   PP_URLComponents_Dev comps;
   pp::Var canonicalized =

@@ -17,7 +17,7 @@
 
 namespace plugin {
 
-class PluginPpapi;
+class Plugin;
 
 typedef enum {
   DOWNLOAD_TO_FILE = 0 << 0,
@@ -44,7 +44,7 @@ class FileDownloader {
   ~FileDownloader() {}
 
   // Initialize() can only be called once during the lifetime of this instance.
-  void Initialize(PluginPpapi* instance);
+  void Initialize(Plugin* instance);
 
   // Issues a GET on |url| downloading the response into a file. The file is
   // then opened and a file descriptor is made available.
@@ -99,7 +99,7 @@ class FileDownloader {
   void URLReadBodyNotify(int32_t pp_error);
   void FileOpenNotify(int32_t pp_error);
 
-  PluginPpapi* instance_;
+  Plugin* instance_;
   nacl::string url_to_open_;
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;

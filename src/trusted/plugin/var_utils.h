@@ -30,7 +30,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
                         pp::Var* exception);
 
 pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg,
-                           PluginPpapi* plugin,
+                           Plugin* plugin,
                            pp::Var* exception);
 
 }  // namespace plugin

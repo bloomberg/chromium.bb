@@ -144,13 +144,13 @@ NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
     *exception = "incompatible argument: type is not scriptable object";
     return NULL;
   }
-  ScriptableHandlePpapi* scriptable_handle =
-      static_cast<ScriptableHandlePpapi*>(scriptable_object);
+  ScriptableHandle* scriptable_handle =
+      static_cast<ScriptableHandle*>(scriptable_object);
   if (!ScriptableHandle::is_valid(scriptable_handle)) {
     *exception = "incompatible argument: not a valid scriptable handle";
     return NULL;
   }
-  NaClDesc* nacl_desc = scriptable_handle->handle()->desc();
+  NaClDesc* nacl_desc = scriptable_handle->desc_handle()->desc();
   if (nacl_desc == NULL) {
     *exception = "incompatible argument: not a handle object";
     return NULL;
@@ -310,7 +310,7 @@ pp::Var ArrayElementToPPVar(int64_t array_element) {
 // Return a pp::Var constructed from |array_data|. Sets |exception| on error.
 template<typename T> pp::Var ArrayToPPVar(T* array_data,
                                           nacl_abi_size_t array_length,
-                                          PluginPpapi* plugin,
+                                          Plugin* plugin,
                                           pp::Var* exception) {
   ArrayPpapi* array = new(std::nothrow) ArrayPpapi(plugin);
   if (array == NULL) {
@@ -329,14 +329,13 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
 
 
 // Returns a pp::Var corresponding to |desc| or void. Sets |exception| on error.
-pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
-                        pp::Var* exception) {
+pp::Var NaClDescToPPVar(NaClDesc* desc, Plugin* plugin, pp::Var* exception) {
   nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
 
-  DescBasedHandle* desc_handle = DescBasedHandle::New(plugin, wrapper);
+  DescBasedHandle* desc_handle = DescBasedHandle::New(wrapper);
 
   pp::deprecated::ScriptableObject* object =
-      ScriptableHandlePpapi::New(desc_handle);
+      ScriptableHandle::NewDescHandle(desc_handle);
   if (object == NULL) {
     *exception = "incompatible argument: failed to create handle var";
     return pp::Var();
@@ -347,7 +346,7 @@ pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
 
 // Returns a pp::Var corresponding to |obj|. Only predeclared plugin methods
 // can return objects and they only return a ScriptableHandle that is actually
-// a ScriptableHandlePpapi.
+// a ScriptableHandle.
 pp::Var ObjectToPPVar(void* obj) {
   ScriptableHandle* handle = reinterpret_cast<ScriptableHandle*>(obj);
   // This confirms that this this is indeed a valid SriptableHandle that was
@@ -357,20 +356,16 @@ pp::Var ObjectToPPVar(void* obj) {
   // this CHECK will fail and remind the author to update this code to handle
   // arbitrary objects.
   CHECK(ScriptableHandle::is_valid(handle));
-  ScriptableHandlePpapi* handle_ppapi =
-      static_cast<ScriptableHandlePpapi*>(handle);
-  if (handle_ppapi->var() != NULL)
-    return *handle_ppapi->var();  // make a copy
+  if (handle->var() != NULL)
+    return *handle->var();  // make a copy
 
-  PluginPpapi* plugin_ppapi =
-      static_cast<PluginPpapi*>(handle_ppapi->handle()->plugin());
-  return pp::VarPrivate(plugin_ppapi, handle_ppapi);
+  return pp::VarPrivate(handle->plugin(), handle);
 }
 
 }  // namespace
 
 // Returns a pp::Var corresponding to |arg| or void. Sets |exception| on error.
-pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
+pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, Plugin* plugin,
                            pp::Var* exception) {
   PLUGIN_PRINTF(("  NaClSrpcArgToPPVar (arg->tag='%c')\n", arg->tag));
   pp::Var var;
