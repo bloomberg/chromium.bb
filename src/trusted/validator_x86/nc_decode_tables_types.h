@@ -31,6 +31,9 @@ typedef uint16_t NaClOpcodeArrayOffset;
 /* Special value used to denote NULL for an NaClOpcodeArrayOffset value. */
 #define NACL_OPCODE_NULL_OFFSET 0xFFFF
 
+/* Offset into generated table of prefix opcode lookups. */
+typedef uint16_t NaClPrefixOpcodeArrayOffset;
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_DECODE_TABLES_TYPES_H__ */

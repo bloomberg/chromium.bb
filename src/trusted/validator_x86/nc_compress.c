@@ -68,12 +68,12 @@ static void NaClInstOpCompress(NaClInstTables* inst_tables,
   size_t i;
   Bool found = FALSE;  /* until proven otherwise */
   if (NULL == inst) return;
-  if (inst->num_operands <= *inst_tables->ops_compressed_size) {
+  if (inst->num_operands <= inst_tables->ops_compressed_size) {
     /* Note: Be sure to not overflow compressed array by stopping when
      * there is no more room for the operands of the given instruction.
      */
     for (i = 0;
-         i <= *inst_tables->ops_compressed_size - inst->num_operands;
+         i <= inst_tables->ops_compressed_size - inst->num_operands;
          ++i) {
       size_t j;
       Bool matches = TRUE;  /* until proven otherwise */
@@ -95,20 +95,20 @@ static void NaClInstOpCompress(NaClInstTables* inst_tables,
   if (!found) {
     /* If reached, not in compressed table. Add. */
     size_t new_size =
-        *inst_tables->ops_compressed_size + inst->num_operands;
+        inst_tables->ops_compressed_size + inst->num_operands;
     if (new_size > NACL_MAX_OPERANDS_TOTAL) {
       NaClFatal("Not enough operand space to compress");
     }
     for (i = 0; i < inst->num_operands; ++i) {
-      size_t index = *inst_tables->ops_compressed_size + i;
+      size_t index = inst_tables->ops_compressed_size + i;
       inst_tables->ops_compressed[index].kind = inst->operands[i].kind;
       inst_tables->ops_compressed[index].flags = inst->operands[i].flags;
       inst_tables->ops_compressed[index].format_string =
           inst->operands[i].format_string;
     }
     inst->operands = inst_tables->ops_compressed +
-        *inst_tables->ops_compressed_size;
-    *inst_tables->ops_compressed_size = new_size;
+        inst_tables->ops_compressed_size;
+    inst_tables->ops_compressed_size = new_size;
   }
 }
 
@@ -132,14 +132,14 @@ static NaClModeledInst* NaClInstCompress(NaClInstTables* inst_tables,
   NaClInstOpCompress(inst_tables, inst);
 
   /* Now see if we already have such an instruction. If so, use it. */
-  for (i = 0; i < *inst_tables->inst_compressed_size; ++i) {
-    NaClModeledInst* comp_inst = (*inst_tables->inst_compressed)[i];
+  for (i = 0; i < inst_tables->inst_compressed_size; ++i) {
+    NaClModeledInst* comp_inst = inst_tables->inst_compressed[i];
     if (NaClInstSame(inst, comp_inst)) return comp_inst;
   }
 
   /* If reached, no such instruction exists, put it into the table. */
-  (*inst_tables->inst_compressed)[i] = inst;
-  ++(*inst_tables->inst_compressed_size);
+  inst_tables->inst_compressed[i] = inst;
+  ++inst_tables->inst_compressed_size;
   return inst;
 }
 
@@ -154,6 +154,133 @@ static void NaClOpNodeCompress(NaClInstTables* inst_tables,
   NaClOpNodeCompress(inst_tables, node->fail);
 }
 
+/* Finds the index to use for the given instruction, assuming
+ * it is a compressed instruction.
+ */
+NaClOpcodeArrayOffset NaClFindInstIndex(NaClInstTables* inst_tables,
+                                        const NaClModeledInst* inst) {
+  size_t i;
+  if (NULL == inst) return NACL_OPCODE_NULL_OFFSET;
+  for (i = 0; i < inst_tables->inst_compressed_size; ++i) {
+    /* Fail if number of compressed instructions matches
+     * special NULL constant.
+     */
+    if (i == NACL_OPCODE_NULL_OFFSET) {
+      continue;
+    }
+    if (inst == inst_tables->inst_compressed[i]) {
+      return (NaClOpcodeArrayOffset) i;
+    }
+  }
+  NaClFatal("Unable to find instruction index\n");
+  /* NOT REACHED */
+  return NACL_OPCODE_NULL_OFFSET;
+}
+
+/* The type for an array of opcode instruction lookups, for a
+ * given prefix.
+ */
+typedef NaClOpcodeArrayOffset NaClInstOpcodeTable[NCDTABLESIZE];
+
+/* Adds the given table into the array of prefix opcode entries. */
+static NaClPrefixOpcodeArrayOffset NaClOpcodeTableAdd(
+    NaClInstTables* inst_tables,
+    NaClInstOpcodeTable* table,
+    size_t table_size) {
+  size_t i;
+  size_t index;
+
+  /* First see if we can overlay the table onto the existing
+   * lookup entries.
+   */
+  if (table_size <= inst_tables->opcode_lookup_size) {
+    size_t cutoff = inst_tables->opcode_lookup_size - table_size;
+    for (i = 0; i <= cutoff; ++i) {
+      size_t j;
+      Bool found = TRUE;  /* until proven otherwise. */
+      for (j = 0; j < table_size; j++) {
+        if (inst_tables->opcode_lookup[i + j] != (*table)[j]) {
+          found = FALSE;
+          break;
+        }
+      }
+      if (found) {
+        return (NaClPrefixOpcodeArrayOffset) i;
+      }
+    }
+  }
+
+  /* If reached, unable to overlay. Add to end of lookup entries. */
+  if (inst_tables->opcode_lookup_size + table_size >=
+      NACL_MAX_PREFIX_OPCODE_ENTRIES) {
+    NaClFatal("prefix opcode lookup table overflow");
+  }
+  index = inst_tables->opcode_lookup_size;
+  for (i = 0; i < table_size; ++i) {
+    inst_tables->opcode_lookup[index + i] = (*table)[i];
+  }
+  inst_tables->opcode_lookup_size += table_size;
+  return (NaClOpcodeArrayOffset) index;
+}
+
+/* Compress prefix opcode lookups for the given prefix. */
+static void NaClOpcodeTableCompressPrefix(
+    NaClInstTables* inst_tables,
+    NaClInstPrefix prefix) {
+  size_t i;
+  size_t table_size;
+  NaClInstOpcodeTable opcode_table;
+  uint8_t first_entry = 0;
+  uint8_t last_entry = NCDTABLESIZE - 1;
+
+  /* Start by finding smallest region of opcodes for which
+   * the lookup values contain non-null entries.
+   */
+  for (i = 0; i < NCDTABLESIZE; ++i) {
+    if (NULL == inst_tables->inst_table[i][prefix]) {
+      first_entry = (uint8_t) i;
+    } else {
+      break;
+    }
+  }
+  for (i = last_entry; ; --i) {
+    if (NULL == inst_tables->inst_table[i][prefix]) {
+      last_entry = (uint8_t) i;
+      if (i == first_entry) break;
+    } else {
+      break;
+    }
+    if (i == 0) break; /* Added to deal with underflow. */
+  }
+
+  /* Define only values for the region found. */
+  table_size = (last_entry - first_entry) + 1;
+
+  /* Fill in remaining values. */
+  for (i = 0; i < table_size; ++i) {
+    opcode_table[i] = NaClFindInstIndex(
+        inst_tables,
+        inst_tables->inst_table[(int) first_entry + i][prefix]);
+  }
+
+  /* Install the minimized table into the compressed data structures. */
+  inst_tables->opcode_lookup_first[prefix] = first_entry;
+  inst_tables->opcode_lookup_last[prefix] = last_entry;
+  inst_tables->opcode_lookup_entry[prefix] =
+      NaClOpcodeTableAdd(inst_tables, &opcode_table, table_size);
+}
+
+/* Compress the prefix/opcode tables. Generates a single array of entries,
+ * and triples defining what portion of that array corresponds to
+ * the lookup table for a given prefix.
+ */
+static void NaClOpcodeTableCompress(NaClInstTables* inst_tables) {
+  NaClInstPrefix prefix;
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+    NaClOpcodeTableCompressPrefix(inst_tables, prefix);
+  }
+}
+
 /* Walks over the modeled instructions and replaces duplicate
  * operand entries.
  */
@@ -161,28 +288,35 @@ void NaClOpCompress(NaClInstTables* inst_tables) {
   int i;
   NaClInstPrefix prefix;
   fprintf(stderr, "Note: %"NACL_PRIuS" operands before compression, ",
-          *inst_tables->operands_size);
+          inst_tables->operands_size);
   /* Compress the undefined instruction. Note: Must appear first,
    * so that we know the location of undefined for static initialization
    * in ncdis_decode_tables.c
    */
-  *inst_tables->undefined_inst =
-      NaClInstCompress(inst_tables, *inst_tables->undefined_inst);
+  inst_tables->undefined_inst =
+      NaClInstCompress(inst_tables, inst_tables->undefined_inst);
 
   /* Compress all operands of instructions in the instruction opcode tables. */
   for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
     for (i = 0; i < NCDTABLESIZE; ++i) {
-      (*inst_tables->inst_table)[i][prefix]=
-          NaClInstCompress(inst_tables, (*inst_tables->inst_table)[i][prefix]);
+      inst_tables->inst_table[i][prefix]=
+          NaClInstCompress(inst_tables, inst_tables->inst_table[i][prefix]);
     }
   }
 
   /* Compress all operands of instructions in the instruction trie. */
-  NaClOpNodeCompress(inst_tables, *inst_tables->inst_node_root);
+  NaClOpNodeCompress(inst_tables, inst_tables->inst_node_root);
   fprintf(stderr, "%"NACL_PRIuS" after.\n",
-          *inst_tables->ops_compressed_size);
+          inst_tables->ops_compressed_size);
   fprintf(stderr, "Note: %"NACL_PRIuS" instruction before compression, "
           "%"NACL_PRIuS" after.\n",
           num_uncompressed_instructions,
-          *inst_tables->inst_compressed_size);
+          inst_tables->inst_compressed_size);
+
+  /* Compress the opcode table lookups. */
+  NaClOpcodeTableCompress(inst_tables);
+  fprintf(stderr, "Note: %d opcode table entries before compression, "
+          "%"NACL_PRIuS" after.\n",
+          NCDTABLESIZE * NaClInstPrefixEnumSize,
+          inst_tables->opcode_lookup_size);
 }

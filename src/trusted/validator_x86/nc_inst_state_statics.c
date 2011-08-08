@@ -771,8 +771,15 @@ static const NaClInst* NaClGetOpcodeInst(const NaClDecodeTables *tables,
 static const NaClInst* NaClGetPrefixOpcodeInst(const NaClDecodeTables *tables,
                                                NaClInstPrefix prefix,
                                                uint8_t opcode) {
-  return NaClGetOpcodeInst(tables,
-                           (*tables->inst_table)[prefix][opcode]);
+  const NaClPrefixOpcodeSelector* selector = &tables->opcode_selectors[prefix];
+  if ((opcode >= selector->first_opcode) &&
+      (opcode <= selector->last_opcode)) {
+    return NaClGetOpcodeInst(
+        tables,
+        tables->opcode_entries[
+            selector->table_offset + (opcode - selector->first_opcode)]);
+  }
+  return NULL;
 }
 
 /*

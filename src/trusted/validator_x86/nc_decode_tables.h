@@ -30,17 +30,32 @@ struct NaClInstNode;
 typedef NaClOpcodeArrayOffset
 NaclInstTableType[NaClInstPrefixEnumSize][NCDTABLESIZE];
 
+/* Defines the values used to look up an instruction in
+ * the opcode lookup table.
+ */
+typedef struct NaClPrefixOpcodeSelector {
+  /* The starting offset in the opcode lookup table where
+   * corresponding instructions are stored.
+   */
+  NaClPrefixOpcodeArrayOffset table_offset;
+  /* The smallest opcode for which there is a table entry. */
+  uint8_t first_opcode;
+  /* The largest opcode for which there is a table entry. */
+  uint8_t last_opcode;
+} NaClPrefixOpcodeSelector;
+
 /* Decoder tables used to decode instructions. */
 typedef struct NaClDecodeTables {
-  /* The table operands. */
+  /* The table of operands. */
   const struct NaClOp* operands_table;
+  /* The table of instructions. */
   const struct NaClInst* opcodes_table;
+  /* The table of instructions defined for prefix/opcode entries. */
+  const NaClOpcodeArrayOffset* opcode_entries;
+  /* The table of prefix/opcode selectors. */
+  const NaClPrefixOpcodeSelector* opcode_selectors;
   /* The definition of the undefined instruction. */
   const struct NaClInst* undefined;
-  /* The set of look up tables for opcode instructions, based
-   * on the instruction prefix, and the corresponding (first) opcode byte.
-   */
-  const NaclInstTableType* inst_table;
   /* The look up table that returns the corresponding prefix mask
    * for the byte value, or zero if the byte doesn't define a valid
    * prefix byte.
