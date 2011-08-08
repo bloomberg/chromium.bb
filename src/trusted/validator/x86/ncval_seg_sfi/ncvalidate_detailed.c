@@ -82,7 +82,6 @@ static  void NCInstCheckJmpz(const NCDecoderInst* dinst) {
      *    E9: jmp $Jx
      */
     NCInstBytesPtr opcode_1;
-    int32_t offset;
     NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
     offset = NCInstBytesInt32(&opcode_1);
   }
