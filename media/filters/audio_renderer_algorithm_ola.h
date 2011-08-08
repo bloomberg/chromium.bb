@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT AudioRendererAlgorithmOLA
-    : public AudioRendererAlgorithmBase {
+class AudioRendererAlgorithmOLA : public AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmOLA();
   virtual ~AudioRendererAlgorithmOLA();

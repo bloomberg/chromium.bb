@@ -25,7 +25,7 @@ namespace media {
 
 class StreamSample;
 
-class MEDIA_EXPORT PtsStream {
+class PtsStream {
  public:
   PtsStream();
   ~PtsStream();

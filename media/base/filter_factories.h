@@ -8,7 +8,6 @@
 #include<string>
 
 #include "base/callback_old.h"
-#include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
@@ -16,7 +15,7 @@ namespace media {
 class DataSource;
 
 // Asynchronous factory interface for building DataSource objects.
-class MEDIA_EXPORT DataSourceFactory {
+class DataSourceFactory {
  public:
   // Ownership of the DataSource is transferred through this callback.
   typedef Callback2<PipelineStatus, DataSource*>::Type BuildCallback;
@@ -34,7 +33,7 @@ class MEDIA_EXPORT DataSourceFactory {
 class Demuxer;
 
 // Asynchronous factory interface for building Demuxer objects.
-class MEDIA_EXPORT DemuxerFactory {
+class DemuxerFactory {
  public:
   // Ownership of the Demuxer is transferred through this callback.
   typedef Callback2<PipelineStatus, Demuxer*>::Type BuildCallback;

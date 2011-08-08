@@ -27,7 +27,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
+class AudioRendererBase : public AudioRenderer {
  public:
   AudioRendererBase();
   virtual ~AudioRendererBase();

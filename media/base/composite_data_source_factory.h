@@ -13,8 +13,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT CompositeDataSourceFactory
-    : public AsyncDataSourceFactoryBase {
+class CompositeDataSourceFactory : public AsyncDataSourceFactoryBase {
  public:
   CompositeDataSourceFactory();
   virtual ~CompositeDataSourceFactory();

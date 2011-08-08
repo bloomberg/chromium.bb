@@ -13,7 +13,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT MessageLoopFactoryImpl : public MessageLoopFactory {
+class MessageLoopFactoryImpl : public MessageLoopFactory {
  public:
   MessageLoopFactoryImpl();
 
