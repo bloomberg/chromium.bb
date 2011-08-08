@@ -90,14 +90,6 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragStart_: function(e) {
-      // TODO(estade): most visited dragging is disabled for now, remove this
-      // when it does something useful.
-      if (this.querySelector('.most-visited')) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
       // The user may start dragging again during a previous drag's finishing
       // animation.
       if (this.classList.contains('dragging'))
@@ -161,30 +153,32 @@ cr.define('ntp4', function() {
 
       setCurrentlyDraggingTile(null);
 
-      if (!this.tilePage) {
-        this.dragClone.firstChild.classList.add('deleting');
-        return;
+      // tilePage will be null if we've already been removed.
+      if (this.tilePage)
+        this.tilePage.positionTile_(this.index);
+
+      // Take an appropriate action with the drag clone.
+      if (this.landedOnTrash) {
+        this.dragClone.classList.add('deleting');
+      } else if (this.tilePage) {
+        if (this.tilePage.selected) {
+          // The tile's contents may have moved following the respositioning;
+          // adjust for that.
+          var contentDiffX = this.dragClone.firstChild.offsetLeft -
+              this.firstChild.offsetLeft;
+          var contentDiffY = this.dragClone.firstChild.offsetTop -
+              this.firstChild.offsetTop;
+          this.dragClone.style.left = (this.gridX + this.parentNode.offsetLeft -
+              contentDiffX) + 'px';
+          this.dragClone.style.top =
+              (this.gridY + this.parentNode.getBoundingClientRect().top -
+              contentDiffY) + 'px';
+        } else {
+          this.dragClone.classList.add('dropped-on-other-page');
+        }
       }
 
-      this.tilePage.positionTile_(this.index);
-
-      if (this.tilePage.selected) {
-        // The tile's contents may have moved following the respositioning;
-        // adjust for that.
-        var contentDiffX = this.dragClone.firstChild.offsetLeft -
-            this.firstChild.offsetLeft;
-        var contentDiffY = this.dragClone.firstChild.offsetTop -
-            this.firstChild.offsetTop;
-        this.dragClone.style.left = (this.gridX + this.parentNode.offsetLeft -
-            contentDiffX) + 'px';
-        this.dragClone.style.top =
-            (this.gridY + this.parentNode.getBoundingClientRect().top -
-            contentDiffY) + 'px';
-      } else {
-        // When we're showing another page and a drag fails or gets cancelled,
-        // the tile shrinks to a dot.
-        this.dragClone.firstChild.style.webkitTransform = 'scale(0)';
-      }
+      this.landedOnTrash = false;
     },
 
     /**
@@ -250,6 +244,8 @@ cr.define('ntp4', function() {
       clone.parentNode.removeChild(clone);
       this.eventTracker.remove(clone, 'webkitTransitionEnd');
       this.classList.remove('dragging');
+      if (this.firstChild.finalizeDrag)
+        this.firstChild.finalizeDrag();
     },
 
     /**
@@ -895,23 +891,20 @@ cr.define('ntp4', function() {
       if (!((index == this.dragItemIndex_) && this.withinPageDrag_)) {
         var adjustedIndex = this.currentDropIndex_ +
             (index > this.dragItemIndex_ ? 1 : 0);
-        if (currentlyDraggingTile) {
-          var originalPage = currentlyDraggingTile.tilePage;
+        if (this.withinPageDrag_) {
           this.tileGrid_.insertBefore(
               currentlyDraggingTile,
               this.tileElements_[adjustedIndex]);
-
-          if (originalPage != this)
-            originalPage.cleanupDrag();
           this.tileMoved(currentlyDraggingTile);
-
-          // Dropping the icon may cause topMargin to change, but changing it
-          // now would cause everything to move (annoying), so we leave it
-          // alone. The top margin will be re-calculated next time the window is
-          // resized or the page is selected.
         } else {
-          this.addOutsideData(e.dataTransfer, adjustedIndex);
+          this.addDragData(e.dataTransfer, adjustedIndex);
+          currentlyDraggingTile.tilePage.cleanupDrag();
         }
+
+        // Dropping the icon may cause topMargin to change, but changing it
+        // now would cause everything to move (annoying), so we leave it
+        // alone. The top margin will be re-calculated next time the window is
+        // resized or the page is selected.
       }
 
       this.classList.remove('animating-tile-page');
@@ -927,9 +920,8 @@ cr.define('ntp4', function() {
       if (originalPage == this)
         return;
 
-      this.tileGrid_.appendChild(currentlyDraggingTile);
+      this.addDragData(null, this.tileElements_.length - 1);
       originalPage.cleanupDrag();
-      this.tileMoved(currentlyDraggingTile);
     },
 
     /**
@@ -985,14 +977,12 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Called to accept a drag drop.
+     * Called to accept a drag drop. Will not be called for in-page drops.
      * @param {Object} dataTransfer The data transfer object that holds the drop
-     *     data.
+     *     data. This should only be used if currentlyDraggingTile is null.
      * @param {number} index The tile index at which the drop occurred.
      */
-    addOutsideData: function(dataTransfer, index) {
-      // This should not get called unless there is a non-default
-      // implementation.
+    addDragData: function(dataTransfer, index) {
       assert(false);
     },
 

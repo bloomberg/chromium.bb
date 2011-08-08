@@ -16,11 +16,11 @@
 
 /* Reserve space for the menu button even when it's hidden. */
 #recently-closed-menu-button[hidden],
-#footer.dragging-mode #recently-closed-menu-button {
+#footer.showing-trash-mode #recently-closed-menu-button {
   visibility: hidden;
 }
 
-#footer.dragging-mode #recently-closed-menu-button {
+#footer.showing-trash-mode #recently-closed-menu-button {
   opacity: 0;
   -webkit-transition-delay: 0;
 }

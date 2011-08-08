@@ -327,6 +327,26 @@ cr.define('ntp4', function() {
       menu.setupForApp(this);
       return menu.menu;
     },
+
+    /**
+     * Returns whether this element can be 'removed' from chrome (i.e. whether
+     * the user can drag it onto the trash and expect something to happen).
+     * @return {boolean} True if the app can be uninstalled.
+     */
+    canBeRemoved: function() {
+      return this.appData_.can_uninstall;
+    },
+
+    /**
+     * Uninstalls the app after it's been dropped on the trash.
+     */
+    removeFromChrome: function() {
+      chrome.send('uninstallApp', [this.appData_.id, true]);
+
+      var tile = this.parentNode;
+      tile.tilePage.cleanupDrag();
+      tile.parentNode.removeChild(tile);
+    },
   };
 
   var TilePage = ntp4.TilePage;
@@ -384,7 +404,31 @@ cr.define('ntp4', function() {
     },
 
     /** @inheritDoc */
-    addOutsideData: function(dataTransfer, index) {
+    addDragData: function(dataTransfer, index) {
+      var currentlyDraggingTile = ntp4.getCurrentlyDraggingTile();
+      if (currentlyDraggingTile) {
+        var tileContents = currentlyDraggingTile.firstChild;
+        if (tileContents.classList.contains('app')) {
+          this.tileGrid_.insertBefore(
+              currentlyDraggingTile,
+              this.tileElements_[index]);
+          this.tileMoved(currentlyDraggingTile);
+        } else if (tileContents.classList.contains('most-visited')) {
+          this.generateAppForLink(tileContents.data);
+        }
+      } else {
+        this.addOutsideData_(e.dataTransfer, index);
+      }
+    },
+
+    /**
+     * Adds drag data that has been dropped from a source that is not a tile.
+     * @param {Object} dataTransfer The data transfer object that holds drop
+     *     data.
+     * @param {number} index The index for the new data.
+     * @private
+     */
+    addOutsideData_: function(dataTransfer, index) {
       var url = dataTransfer.getData('url');
       assert(url);
       if (!url)
@@ -417,9 +461,12 @@ cr.define('ntp4', function() {
     /**
      * Creates a new crx-less app manifest and installs it.
      * @param {Object} data The data object describing the link. Must have |url|
-     * and |title| members.
+     *     and |title| members.
+     * TODO(estade): pass along an index.
      */
     generateAppForLink: function(data) {
+      assert(data.url != undefined);
+      assert(data.title != undefined);
       chrome.send('generateAppForLink', [data.url, data.title]);
     },
 

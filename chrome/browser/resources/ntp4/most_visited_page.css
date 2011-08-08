@@ -56,6 +56,10 @@ html[dir=rtl] .most-visited .close-button {
   -webkit-transition-delay: 0.5s;
 }
 
+.close-button:hover {
+  -webkit-transition-delay: 0;
+}
+
 .most-visited .favicon {
   background: no-repeat 5px 50%;
   background-size: 32px;
@@ -146,4 +150,16 @@ html[dir=rtl] .most-visited .close-button {
 
 .filler .thumbnail-wrapper {
   visibility: visible;
+}
+
+/* 'finishing-drag' is the state we are in after dropping on the trash can.
+ * Override opacity of the tile to 1, so that the new tile animation
+ * occurs simultaneously with the trash animation. */
+.tile.dragging.finishing-drag {
+  opacity: 1;
+}
+
+/* Don't display the new tile until there's something to show.  */
+.blacklisted {
+  opacity: 0;
 }

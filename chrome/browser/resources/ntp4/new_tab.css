@@ -159,7 +159,7 @@ body {
   -webkit-transition-delay: 0, 0.2s;
 }
 
-#footer.dragging-mode #trash {
+#footer.showing-trash-mode #trash {
   opacity: 1;
   top: 0;
   -webkit-transition-delay: 0, 0;

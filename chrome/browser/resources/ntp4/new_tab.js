@@ -459,7 +459,8 @@ cr.define('ntp4', function() {
     appendAppsPage(tempPage, '');
     updateSliderCards();
 
-    $('footer').classList.add('dragging-mode');
+    if (ntp4.getCurrentlyDraggingTile().firstChild.canBeRemoved())
+      $('footer').classList.add('showing-trash-mode');
   }
 
   /**
@@ -478,7 +479,7 @@ cr.define('ntp4', function() {
       saveAppPageName(tempPage, '');
     }
 
-    $('footer').classList.remove('dragging-mode');
+    $('footer').classList.remove('showing-trash-mode');
   }
 
   /**

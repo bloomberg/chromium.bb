@@ -33,11 +33,7 @@ cr.define('ntp4', function() {
       if (!tile)
         return false;
 
-      var app = tile.querySelector('.app');
-      if (!app)
-        return false;
-
-      return app.appData.can_uninstall;
+      return tile.firstChild.canBeRemoved();
     },
 
     /**
@@ -67,15 +63,8 @@ cr.define('ntp4', function() {
       e.preventDefault();
 
       var tile = ntp4.getCurrentlyDraggingTile();
-      var app = tile.querySelector('.app');
-      if (!app)
-        return;
-
-      chrome.send('uninstallApp', [app.appData.id, true]);
-
-      var page = tile.tilePage;
-      tile.parentNode.removeChild(tile);
-      page.cleanupDrag();
+      tile.firstChild.removeFromChrome();
+      tile.landedOnTrash = true;
     },
 
     /**

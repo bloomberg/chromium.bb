@@ -39,6 +39,10 @@ cr.define('ntp4', function() {
       return this.tile.index;
     },
 
+    get data() {
+      return this.data_;
+    },
+
     /**
      * Clears the DOM hierarchy for this node, setting it back to the default
      * for a blank thumbnail.
@@ -67,6 +71,12 @@ cr.define('ntp4', function() {
      * @param {Object} data A dictionary of relevant data for the page.
      */
     updateForData: function(data) {
+      if (this.classList.contains('blacklisted') && data) {
+        // Animate appearance of new tile.
+        this.classList.add('new-tile-contents');
+      }
+      this.classList.remove('blacklisted');
+
       if (!data || data.filler) {
         if (this.data_)
           this.reset();
@@ -78,7 +88,6 @@ cr.define('ntp4', function() {
       this.data_ = data;
       // TODO(estade): this shouldn't be focusable if the page isn't showing.
       this.tabIndex = 0;
-      this.classList.remove('filler');
 
       var faviconDiv = this.querySelector('.favicon');
       var faviconUrl = data.faviconUrl ||
@@ -99,6 +108,8 @@ cr.define('ntp4', function() {
           url(thumbnailUrl);
 
       this.href = data.url;
+
+      this.classList.remove('filler');
     },
 
     /**
@@ -148,6 +159,7 @@ cr.define('ntp4', function() {
       chrome.send('blacklistURLFromMostVisited', [this.data_.url]);
       this.reset();
       chrome.send('getMostVisited');
+      this.classList.add('blacklisted');
     },
 
     showUndoNotification_: function() {
@@ -188,6 +200,32 @@ cr.define('ntp4', function() {
       this.style.left = x + 'px';
       this.style.right = x + 'px';
       this.style.top = y + 'px';
+    },
+
+    /**
+     * Returns whether this element can be 'removed' from chrome (i.e. whether
+     * the user can drag it onto the trash and expect something to happen).
+     * @return {boolean} True, since most visited pages can always be
+     *     blacklisted.
+     */
+    canBeRemoved: function() {
+      return true;
+    },
+
+    /**
+     * Removes this element from chrome, i.e. blacklists it.
+     */
+    removeFromChrome: function() {
+      this.blacklist_();
+      this.parentNode.classList.add('finishing-drag');
+    },
+
+    /**
+     * Called when a drag of this tile has ended (after all animations have
+     * finished).
+     */
+    finalizeDrag: function() {
+      this.parentNode.classList.remove('finishing-drag');
     },
   };
 
