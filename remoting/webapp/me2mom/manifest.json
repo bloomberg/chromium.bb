@@ -1,5 +1,5 @@
 {
-  "name": "__MSG_webappName__ NAME_SUFFIX",
+  "name": "__MSG_productNameAndVersion__ NAME_SUFFIX",
   "version": "1.0.UNIQUE_VERSION",
   "description": "__MSG_webappDescription__",
   "default_locale": "en",

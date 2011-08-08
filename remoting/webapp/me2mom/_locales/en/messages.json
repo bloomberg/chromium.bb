@@ -112,7 +112,7 @@
     "description": "Logout button, visible if the user has authenticated"
   },
   "messageAuthorize": {
-    "message": "In order to use IT2Me you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
+    "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
     "description": "Text shown when the app first starts, or if the access token is invalidated"
   },
   "messageGenerating": {
@@ -149,9 +149,11 @@
     "message": "OK",
     "description": "Label for general-purpose OK buttons"
   },
-  "pageTitle": {
-    "message": "Chromoting",
-    "description": "Title of the main page"
+  "productName": {
+    "message": "Chromoting"
+  },
+  "productNameAndVersion": {
+    "message": "Chromoting v1.0"
   },
   "scaleButton": {
     "message": "Fit Screen",
@@ -174,11 +176,7 @@
     "description": "Message displayed while the access code is verified"
   },
   "webappDescription": {
-    "message": "IT2Me-style remote support in Chrome.",
+    "message": "Remote support in Chrome.",
     "description": "Web-app description"
-  },
-  "webappName": {
-    "message": "Remoting IT2Me",
-    "description": "Web-app name"
   }
 }
