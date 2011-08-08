@@ -18,7 +18,7 @@ class AutofillScanner;
 // A form field that can parse either a FullNameField or a FirstLastNameField.
 class NameField : public FormField {
  public:
-  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   NameField() {}
@@ -36,7 +36,6 @@ class NameField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(NameFieldTest, FirstMiddleLastEmpty);
   FRIEND_TEST_ALL_PREFIXES(NameFieldTest, MiddleInitial);
   FRIEND_TEST_ALL_PREFIXES(NameFieldTest, MiddleInitialAtEnd);
-  FRIEND_TEST_ALL_PREFIXES(NameFieldTest, ECMLFirstMiddleLast);
 
   DISALLOW_COPY_AND_ASSIGN(NameField);
 };

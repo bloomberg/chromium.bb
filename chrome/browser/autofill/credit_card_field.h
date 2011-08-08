@@ -19,7 +19,7 @@ class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
-  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   // FormField:
@@ -27,9 +27,7 @@ class CreditCardField : public FormField {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseMiniumCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseMiniumCreditCardEcml);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCardEcml);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear2);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest,

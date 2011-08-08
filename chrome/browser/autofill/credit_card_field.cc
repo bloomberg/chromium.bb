@@ -11,18 +11,14 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using autofill::GetEcmlPattern;
-
 // static
-FormField* CreditCardField::Parse(AutofillScanner* scanner,
-                                        bool is_ecml) {
+FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -41,17 +37,12 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
     // usually appears at the end).
     if (credit_card_field->cardholder_ == NULL) {
       string16 name_pattern;
-      if (is_ecml) {
-        name_pattern = GetEcmlPattern(kEcmlCardHolder);
+      if (fields == 0 || credit_card_field->expiration_month_) {
+        // at beginning or end
+        name_pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_ON_CARD_RE);
       } else {
-        if (fields == 0 || credit_card_field->expiration_month_) {
-          // at beginning or end
-          name_pattern = l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_NAME_ON_CARD_RE);
-        } else {
-          name_pattern = l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_NAME_ON_CARD_CONTEXTUAL_RE);
-        }
+        name_pattern = l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_NAME_ON_CARD_CONTEXTUAL_RE);
       }
 
       if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
@@ -63,7 +54,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
       // and "clnm".
       scanner->SaveCursor();
       const AutofillField* first;
-      if (!is_ecml && ParseField(scanner, ASCIIToUTF16("^cfnm"), &first) &&
+      if (ParseField(scanner, ASCIIToUTF16("^cfnm"), &first) &&
           ParseField(scanner, ASCIIToUTF16("^clnm"),
                      &credit_card_field->cardholder_last_)) {
         credit_card_field->cardholder_ = first;
@@ -77,23 +68,14 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
     // has a plethora of names; we've seen "verification #",
     // "verification number", "card identification number" and others listed
     // in the |pattern| below.
-    string16 pattern;
-    if (is_ecml)
-      pattern = GetEcmlPattern(kEcmlCardVerification);
-    else
-      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_CVC_RE);
-
+    string16 pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_CVC_RE);
     if (!credit_card_field->verification_ &&
         ParseField(scanner, pattern, &credit_card_field->verification_)) {
       continue;
     }
     // TODO(jhawkins): Parse the type select control.
 
-    if (is_ecml)
-      pattern = GetEcmlPattern(kEcmlCardNumber);
-    else
-      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_NUMBER_RE);
-
+    pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_NUMBER_RE);
     if (!credit_card_field->number_ &&
         ParseField(scanner, pattern, &credit_card_field->number_)) {
       continue;
@@ -115,20 +97,12 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
       // Toolbar Bug 51451: indeed, simply matching "month" is too general for
       //   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
       // Instead, we match only words beginning with "month".
-      if (is_ecml)
-        pattern = GetEcmlPattern(kEcmlCardExpireMonth);
-      else
-        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
-
+      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
       if ((!credit_card_field->expiration_month_ ||
            credit_card_field->expiration_month_->IsEmpty()) &&
           ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                               &credit_card_field->expiration_month_)) {
-        if (is_ecml)
-          pattern = GetEcmlPattern(kEcmlCardExpireYear);
-        else
-          pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
-
+        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
         if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                                  &credit_card_field->expiration_year_)) {
           scanner->RewindTo(saved_cursor);
@@ -136,11 +110,6 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
         }
         continue;
       }
-    }
-
-    if (ParseFieldSpecifics(scanner, GetEcmlPattern(kEcmlCardExpireDay),
-                            MATCH_DEFAULT | MATCH_SELECT, NULL)) {
-      continue;
     }
 
     // Some pages (e.g. ExpediaBilling.html) have a "card description"

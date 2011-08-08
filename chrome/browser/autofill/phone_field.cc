@@ -9,15 +9,12 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using autofill::GetEcmlPattern;
 
 // Phone field grammars - first matched grammar will be parsed. Grammars are
 // separated by { REGEX_SEPARATOR, FIELD_NONE, 0 }. Suffix and extension are
@@ -110,12 +107,9 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
 PhoneField::~PhoneField() {}
 
 // static
-FormField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* PhoneField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
-
-  if (is_ecml)
-    return ParseECML(scanner);
 
   scoped_ptr<PhoneField> phone_field(new PhoneField);
 
@@ -126,20 +120,6 @@ FormField* PhoneField::Parse(AutofillScanner* scanner, bool is_ecml) {
     phone_field->SetPhoneType(static_cast<PhoneField::PhoneType>(i));
     if (ParseInternal(phone_field.get(), scanner, i == HOME_PHONE))
       return phone_field.release();
-  }
-
-  return NULL;
-}
-
-// static
-FormField* PhoneField::ParseECML(AutofillScanner* scanner) {
-  string16 pattern(GetEcmlPattern(kEcmlShipToPhone, kEcmlBillToPhone, '|'));
-
-  const AutofillField* field;
-  if (ParseField(scanner, pattern, &field)) {
-    PhoneField* phone_field = new PhoneField();
-    phone_field->parsed_phone_fields_[FIELD_PHONE] = field;
-    return phone_field;
   }
 
   return NULL;

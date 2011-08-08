@@ -135,8 +135,6 @@
         'browser/autofill/autofill_country.h',
         'browser/autofill/autofill_download.cc',
         'browser/autofill/autofill_download.h',
-        'browser/autofill/autofill_ecml.cc',
-        'browser/autofill/autofill_ecml.h',
         'browser/autofill/autofill_feedback_infobar_delegate.cc',
         'browser/autofill/autofill_feedback_infobar_delegate.h',
         'browser/autofill/autofill_field.cc',

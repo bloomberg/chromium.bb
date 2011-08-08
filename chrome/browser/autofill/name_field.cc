@@ -8,13 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using autofill::GetEcmlPattern;
 
 namespace {
 
@@ -40,8 +37,7 @@ class FirstLastNameField : public NameField {
  public:
   static FirstLastNameField* ParseSpecificName(AutofillScanner* scanner);
   static FirstLastNameField* ParseComponentNames(AutofillScanner* scanner);
-  static FirstLastNameField* ParseEcmlName(AutofillScanner* scanner);
-  static FirstLastNameField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FirstLastNameField* Parse(AutofillScanner* scanner);
 
  protected:
   // FormField:
@@ -60,13 +56,13 @@ class FirstLastNameField : public NameField {
 
 }  // namespace
 
-FormField* NameField::Parse(AutofillScanner* scanner, bool is_ecml) {
+FormField* NameField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 
   // Try FirstLastNameField first since it's more specific.
-  NameField* field = FirstLastNameField::Parse(scanner, is_ecml);
-  if (!field && !is_ecml)
+  NameField* field = FirstLastNameField::Parse(scanner);
+  if (!field)
     field = FullNameField::Parse(scanner);
   return field;
 }
@@ -202,32 +198,7 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
   return NULL;
 }
 
-FirstLastNameField* FirstLastNameField::ParseEcmlName(
-    AutofillScanner* scanner) {
-  scoped_ptr<FirstLastNameField> field(new FirstLastNameField);
-  scanner->SaveCursor();
-
-  string16 pattern = GetEcmlPattern(kEcmlShipToFirstName,
-                                    kEcmlBillToFirstName, '|');
-  if (!ParseField(scanner, pattern, &field->first_name_))
-    return NULL;
-
-  pattern = GetEcmlPattern(kEcmlShipToMiddleName, kEcmlBillToMiddleName, '|');
-  ParseField(scanner, pattern, &field->middle_name_);
-
-  pattern = GetEcmlPattern(kEcmlShipToLastName, kEcmlBillToLastName, '|');
-  if (ParseField(scanner, pattern, &field->last_name_))
-    return field.release();
-
-  scanner->Rewind();
-  return NULL;
-}
-
-FirstLastNameField* FirstLastNameField::Parse(AutofillScanner* scanner,
-                                              bool is_ecml) {
-  if (is_ecml)
-    return ParseEcmlName(scanner);
-
+FirstLastNameField* FirstLastNameField::Parse(AutofillScanner* scanner) {
   FirstLastNameField* field = ParseSpecificName(scanner);
   if (!field)
     field = ParseComponentNames(scanner);

@@ -21,7 +21,7 @@ class AutofillScanner;
 
 class AddressField : public FormField {
  public:
-  static FormField* Parse(AutofillScanner* scanner, bool is_ecml);
+  static FormField* Parse(AutofillScanner* scanner);
 
   // Tries to determine the billing/shipping type of this address.
   AddressType FindType() const;
@@ -34,42 +34,29 @@ class AddressField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressBilling);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressShipping);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseThreeLineAddress);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddressEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCity);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCityEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseState);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseStateEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseZip);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseZipEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseStateAndZipOneLabel);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCountry);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCountryEcml);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddressMissingLabel);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCompany);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCompanyEcml);
 
   AddressField();
 
   static bool ParseCompany(AutofillScanner* scanner,
-                           bool is_ecml,
                            AddressField* address_field);
   static bool ParseAddressLines(AutofillScanner* scanner,
-                                bool is_ecml,
                                 AddressField* address_field);
   static bool ParseCountry(AutofillScanner* scanner,
-                           bool is_ecml,
                            AddressField* address_field);
   static bool ParseZipCode(AutofillScanner* scanner,
-                           bool is_ecml,
                            AddressField* address_field);
   static bool ParseCity(AutofillScanner* scanner,
-                        bool is_ecml,
                         AddressField* address_field);
   static bool ParseState(AutofillScanner* scanner,
-                         bool is_ecml,
                          AddressField* address_field);
 
   // Looks for an address type in the given text, which the caller must

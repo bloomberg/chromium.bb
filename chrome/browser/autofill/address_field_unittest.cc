@@ -5,7 +5,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_ecml.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
@@ -22,8 +21,8 @@ class AddressFieldTest : public testing::Test {
   FieldTypeMap field_type_map_;
 
   // Downcast for tests.
-  static AddressField* Parse(AutofillScanner* scanner, bool is_ecml) {
-    return static_cast<AddressField*>(AddressField::Parse(scanner, is_ecml));
+  static AddressField* Parse(AutofillScanner* scanner) {
+    return static_cast<AddressField*>(AddressField::Parse(scanner));
   }
 
  private:
@@ -32,14 +31,14 @@ class AddressFieldTest : public testing::Test {
 
 TEST_F(AddressFieldTest, Empty) {
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_EQ(static_cast<AddressField*>(NULL), field_.get());
 }
 
 TEST_F(AddressFieldTest, NonParse) {
   list_.push_back(new AutofillField);
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_EQ(static_cast<AddressField*>(NULL), field_.get());
 }
 
@@ -53,7 +52,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
                                                false),
                         ASCIIToUTF16("addr1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -72,7 +71,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
                                                false),
                         ASCIIToUTF16("addr1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kBillingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -91,27 +90,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
                                                false),
                         ASCIIToUTF16("addr1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
-}
-
-TEST_F(AddressFieldTest, ParseOneLineAddressEcml) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                 ASCIIToUTF16(kEcmlShipToAddress1),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-          ASCIIToUTF16("addr1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -138,7 +117,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
                                                false),
                         ASCIIToUTF16("addr2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -176,7 +155,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
                                                false),
                         ASCIIToUTF16("addr3")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -190,38 +169,6 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
       field_type_map_.find(ASCIIToUTF16("addr3")) == field_type_map_.end());
 }
 
-TEST_F(AddressFieldTest, ParseTwoLineAddressEcml) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                 ASCIIToUTF16(kEcmlShipToAddress1),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-          ASCIIToUTF16("addr1")));
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(string16(),
-                                 ASCIIToUTF16(kEcmlShipToAddress2),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-          ASCIIToUTF16("addr2")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
-}
-
 TEST_F(AddressFieldTest, ParseCity) {
   list_.push_back(
       new AutofillField(webkit_glue::FormField(ASCIIToUTF16("City"),
@@ -232,28 +179,9 @@ TEST_F(AddressFieldTest, ParseCity) {
                                                false),
                         ASCIIToUTF16("city1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_CITY, field_type_map_[ASCIIToUTF16("city1")]);
-}
-
-TEST_F(AddressFieldTest, ParseCityEcml) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("City"),
-                                               ASCIIToUTF16(kEcmlShipToCity),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("city1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("city1")) != field_type_map_.end());
@@ -270,29 +198,9 @@ TEST_F(AddressFieldTest, ParseState) {
                                                false),
                         ASCIIToUTF16("state1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_STATE, field_type_map_[ASCIIToUTF16("state1")]);
-}
-
-TEST_F(AddressFieldTest, ParseStateEcml) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(ASCIIToUTF16("State"),
-                                 ASCIIToUTF16(kEcmlShipToStateProv),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-          ASCIIToUTF16("state1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("state1")) != field_type_map_.end());
@@ -309,29 +217,9 @@ TEST_F(AddressFieldTest, ParseZip) {
                                                false),
                         ASCIIToUTF16("zip1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_ZIP, field_type_map_[ASCIIToUTF16("zip1")]);
-}
-
-TEST_F(AddressFieldTest, ParseZipEcml) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(ASCIIToUTF16("Zip"),
-                                 ASCIIToUTF16(kEcmlShipToPostalCode),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-                        ASCIIToUTF16("zip1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("zip1")) != field_type_map_.end());
@@ -360,7 +248,7 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
               false),
           ASCIIToUTF16("zip")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -382,28 +270,9 @@ TEST_F(AddressFieldTest, ParseCountry) {
                                                false),
                         ASCIIToUTF16("country1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
-  EXPECT_EQ(ADDRESS_HOME_COUNTRY, field_type_map_[ASCIIToUTF16("country1")]);
-}
-
-TEST_F(AddressFieldTest, ParseCountryEcml) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Country"),
-                                               ASCIIToUTF16(kEcmlShipToCountry),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("country1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("country1")) != field_type_map_.end());
@@ -428,7 +297,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
                                                false),
                         ASCIIToUTF16("addr2")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
@@ -450,29 +319,9 @@ TEST_F(AddressFieldTest, ParseCompany) {
                                                false),
                         ASCIIToUTF16("company1")));
   AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, false));
+  field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
   EXPECT_EQ(kGenericAddress, field_->FindType());
-  ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
-  EXPECT_EQ(COMPANY_NAME, field_type_map_[ASCIIToUTF16("company1")]);
-}
-
-TEST_F(AddressFieldTest, ParseCompanyEcml) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(ASCIIToUTF16("Company"),
-                                 ASCIIToUTF16(kEcmlShipToCompanyName),
-                                 string16(),
-                                 ASCIIToUTF16("text"),
-                                 0,
-                                 false),
-          ASCIIToUTF16("company1")));
-  AutofillScanner scanner(list_.get());
-  field_.reset(Parse(&scanner, true));
-  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
-  EXPECT_EQ(kShippingAddress, field_->FindType());
   ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("company1")) != field_type_map_.end());
