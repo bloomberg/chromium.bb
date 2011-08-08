@@ -15,7 +15,6 @@
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/shared_impl/audio_impl.h"
-#include "ppapi/thunk/ppb_audio_trusted_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
@@ -49,7 +48,6 @@ class PPB_AudioConfig_Impl : public Resource,
 // AudioImpl so it can be shared with the proxy.
 class PPB_Audio_Impl : public Resource,
                        public ::ppapi::AudioImpl,
-                       public ::ppapi::thunk::PPB_AudioTrusted_API,
                        public PluginDelegate::PlatformAudio::Client {
  public:
   // Trusted initialization. You must call Init after this.
@@ -73,14 +71,11 @@ class PPB_Audio_Impl : public Resource,
 
   // ResourceObjectBase overrides.
   virtual ::ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API();
-  virtual ::ppapi::thunk::PPB_AudioTrusted_API* AsPPB_AudioTrusted_API();
 
   // PPB_Audio_API implementation.
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartPlayback() OVERRIDE;
   virtual PP_Bool StopPlayback() OVERRIDE;
-
-  // PPB_AudioTrusted_API implementation.
   virtual int32_t OpenTrusted(PP_Resource config_id,
                               PP_CompletionCallback create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;

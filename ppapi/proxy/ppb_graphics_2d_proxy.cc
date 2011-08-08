@@ -240,16 +240,12 @@ void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
 }
 
 void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
-  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+  EnterHostFromHostResourceForceCallback<PPB_Graphics2D_API> enter(
+      graphics_2d, callback_factory_,
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
-  int32_t result = ppb_graphics_2d_target()->Flush(
-      graphics_2d.host_resource(), callback.pp_completion_callback());
-  if (result != PP_OK_COMPLETIONPENDING) {
-    // There was some error, so we won't get a flush callback. We need to now
-    // issue the ACK to the plugin hears about the error. This will also clean
-    // up the data associated with the callback.
-    callback.Run(result);
-  }
+  if (enter.failed())
+    return;
+  enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
 void PPB_Graphics2D_Proxy::OnMsgFlushACK(const HostResource& host_resource,
