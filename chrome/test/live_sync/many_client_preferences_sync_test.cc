@@ -7,6 +7,9 @@
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/preferences_helper.h"
 
+using preferences_helper::BooleanPrefMatches;
+using preferences_helper::ChangeBooleanPref;
+
 class ManyClientPreferencesSyncTest : public LiveSyncTest {
  public:
   ManyClientPreferencesSyncTest() : LiveSyncTest(MANY_CLIENT) {}
@@ -19,10 +22,8 @@ class ManyClientPreferencesSyncTest : public LiveSyncTest {
 // TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
 IN_PROC_BROWSER_TEST_F(ManyClientPreferencesSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(
-      prefs::kHomePageIsNewTabPage));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(
-      prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

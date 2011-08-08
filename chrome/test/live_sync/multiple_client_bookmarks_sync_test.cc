@@ -7,6 +7,9 @@
 #include "chrome/test/live_sync/bookmarks_helper.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
+using bookmarks_helper::AddURL;
+using bookmarks_helper::AllModelsMatch;
+
 class MultipleClientBookmarksSyncTest : public LiveSyncTest {
  public:
   MultipleClientBookmarksSyncTest() : LiveSyncTest(MULTIPLE_CLIENT) {}
@@ -20,10 +23,9 @@ IN_PROC_BROWSER_TEST_F(MultipleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(BookmarksHelper::AddURL(
-        i, base::StringPrintf(L"Google URL %d", i),
-            GURL(StringPrintf("http://www.google.com/%d", i))) != NULL);
+    ASSERT_TRUE(AddURL(i, base::StringPrintf(L"Google URL %d", i),
+        GURL(StringPrintf("http://www.google.com/%d", i))) != NULL);
   }
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+  ASSERT_TRUE(AllModelsMatch());
 }

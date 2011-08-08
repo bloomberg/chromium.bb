@@ -8,10 +8,25 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_typed_urls_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/typed_urls_helper.h"
+
+using typed_urls_helper::AddUrlToHistory;
+using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
+using typed_urls_helper::DeleteUrlFromHistory;
+using typed_urls_helper::GetTypedUrlsFromClient;
+
+class TwoClientTypedUrlsSyncTest : public LiveSyncTest {
+ public:
+  TwoClientTypedUrlsSyncTest() : LiveSyncTest(TWO_CLIENT) {}
+  virtual ~TwoClientTypedUrlsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoClientTypedUrlsSyncTest);
+};
 
 // TCM: 3728323
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, Add) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -31,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, Add) {
 }
 
 // TCM: 3705291
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddThenDelete) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenDelete) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -60,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddThenDelete) {
 }
 
 // TCM: 3643277
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, DisableEnableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
   const string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
   const string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -91,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, DisableEnableSync) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddOneDeleteOther) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -121,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest, AddOneDeleteOther) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        AddOneDeleteOtherAddAgain) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
@@ -161,6 +176,3 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveTypedUrlsSyncTest,
   // Both clients should have this URL added again.
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
-
-
-

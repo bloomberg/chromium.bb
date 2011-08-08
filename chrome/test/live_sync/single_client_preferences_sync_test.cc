@@ -7,6 +7,9 @@
 #include "chrome/test/live_sync/preferences_helper.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
+using preferences_helper::BooleanPrefMatches;
+using preferences_helper::ChangeBooleanPref;
+
 class SingleClientPreferencesSyncTest : public LiveSyncTest {
  public:
   SingleClientPreferencesSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
@@ -18,11 +21,9 @@ class SingleClientPreferencesSyncTest : public LiveSyncTest {
 
 IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(
-      prefs::kHomePageIsNewTabPage));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
+  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for prefs change."));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(
-      prefs::kHomePageIsNewTabPage));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

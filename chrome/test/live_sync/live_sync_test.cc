@@ -114,7 +114,7 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       use_verifier_(true),
       test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
-  SyncDatatypeHelper::AssociateWithTest(this);
+  sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {
       num_clients_ = 1;

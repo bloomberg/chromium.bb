@@ -6,11 +6,25 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_typed_urls_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/typed_urls_helper.h"
+
+using typed_urls_helper::AddUrlToHistory;
+using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
+using typed_urls_helper::GetTypedUrlsFromClient;
 
 const std::string kSanityHistoryUrl = "http://www.sanity-history.google.com";
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveTypedUrlsSyncTest, Sanity) {
+class SingleClientTypedUrlsSyncTest : public LiveSyncTest {
+ public:
+  SingleClientTypedUrlsSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
+  virtual ~SingleClientTypedUrlsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientTypedUrlsSyncTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());

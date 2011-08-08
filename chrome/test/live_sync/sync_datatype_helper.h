@@ -10,25 +10,17 @@
 
 class LiveSyncTest;
 
-class SyncDatatypeHelper {
- public:
-  // Associates an instance of LiveSyncTest with a SyncDatatypeHelper. Must be
-  // called before any of the methods in the helper subclasses can be used.
-  static void AssociateWithTest(LiveSyncTest* test);
+namespace sync_datatype_helper {
 
-  // Returns |test_| after making sure it is a valid pointer.
-  static LiveSyncTest* test();
+// Associates an instance of LiveSyncTest with sync_datatype_helper. Must be
+// called before any of the methods in the per-datatype helper namespaces can be
+// used.
+void AssociateWithTest(LiveSyncTest* test);
 
- protected:
-  SyncDatatypeHelper();
-  virtual ~SyncDatatypeHelper();
+// Returns a pointer to the instance of LiveSyncTest associated with the
+// per-datatype helpers after making sure it is valid.
+LiveSyncTest* test();
 
- private:
-  // The LiveSyncTest instance associated with this helper object.
-  static LiveSyncTest* test_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncDatatypeHelper);
-};
-
+}  // namespace sync_datatype_helper
 
 #endif  // CHROME_TEST_LIVE_SYNC_SYNC_DATATYPE_HELPER_H_

@@ -7,6 +7,14 @@
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
+using bookmarks_helper::AddURL;
+using bookmarks_helper::AllModelsMatch;
+using bookmarks_helper::GetBookmarkBarNode;
+using bookmarks_helper::IndexedURL;
+using bookmarks_helper::IndexedURLTitle;
+using bookmarks_helper::Remove;
+using bookmarks_helper::SetURL;
+
 // TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
 // datatypes into a performance test base class, once it is possible to do so.
 static const int kNumBookmarks = 150;
@@ -52,30 +60,29 @@ class BookmarksSyncPerfTest : public LiveSyncTest {
 
 void BookmarksSyncPerfTest::AddURLs(int profile, int num_urls) {
   for (int i = 0; i < num_urls; ++i) {
-    ASSERT_TRUE(BookmarksHelper::AddURL(
+    ASSERT_TRUE(AddURL(
         profile, 0, NextIndexedURLTitle(), GURL(NextIndexedURL())) != NULL);
   }
 }
 
 void BookmarksSyncPerfTest::UpdateURLs(int profile) {
   for (int i = 0;
-       i < BookmarksHelper::GetBookmarkBarNode(profile)->child_count();
+       i < GetBookmarkBarNode(profile)->child_count();
        ++i) {
-    ASSERT_TRUE(BookmarksHelper::SetURL(
-        profile, BookmarksHelper::GetBookmarkBarNode(profile)->GetChild(i),
-            GURL(NextIndexedURL())));
+    ASSERT_TRUE(SetURL(profile,
+                       GetBookmarkBarNode(profile)->GetChild(i),
+                       GURL(NextIndexedURL())));
   }
 }
 
 void BookmarksSyncPerfTest::RemoveURLs(int profile) {
-  while (!BookmarksHelper::GetBookmarkBarNode(profile)->empty()) {
-    BookmarksHelper::Remove(
-        profile, BookmarksHelper::GetBookmarkBarNode(profile), 0);
+  while (!GetBookmarkBarNode(profile)->empty()) {
+    Remove(profile, GetBookmarkBarNode(profile), 0);
   }
 }
 
 int BookmarksSyncPerfTest::GetURLCount(int profile) {
-  return BookmarksHelper::GetBookmarkBarNode(profile)->child_count();
+  return GetBookmarkBarNode(profile)->child_count();
 }
 
 void BookmarksSyncPerfTest::Cleanup() {
@@ -83,16 +90,16 @@ void BookmarksSyncPerfTest::Cleanup() {
     RemoveURLs(i);
   }
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_EQ(0, BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+  ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
+  ASSERT_TRUE(AllModelsMatch());
 }
 
 std::string BookmarksSyncPerfTest::NextIndexedURL() {
-  return BookmarksHelper::IndexedURL(url_number_++);
+  return IndexedURL(url_number_++);
 }
 
 std::wstring BookmarksSyncPerfTest::NextIndexedURLTitle() {
-  return BookmarksHelper::IndexedURLTitle(url_title_number_++);
+  return IndexedURLTitle(url_title_number_++);
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
@@ -127,26 +134,24 @@ IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, DISABLED_Benchmark) {
     AddURLs(0, num_bookmarks);
     base::TimeDelta dt_add =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_bookmarks,
-              BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
+    ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Add: " << num_bookmarks << " "
             << dt_add.InSecondsF();
 
     UpdateURLs(0);
     base::TimeDelta dt_update =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_bookmarks,
-              BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
+    ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Update: " << num_bookmarks << " "
             << dt_update.InSecondsF();
 
     RemoveURLs(0);
     base::TimeDelta dt_delete =
         SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(0, BookmarksHelper::GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+    ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
+    ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Delete: " << num_bookmarks << " "
             << dt_delete.InSecondsF();
 

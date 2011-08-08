@@ -12,6 +12,13 @@
 #include "chrome/test/live_sync/bookmarks_helper.h"
 #include "chrome/test/live_sync/preferences_helper.h"
 
+using bookmarks_helper::AddURL;
+using bookmarks_helper::IndexedURL;
+using bookmarks_helper::IndexedURLTitle;
+
+using preferences_helper::BooleanPrefMatches;
+using preferences_helper::ChangeBooleanPref;
+
 class MigrationErrorsTest : public LiveSyncTest {
  public:
   MigrationErrorsTest() : LiveSyncTest(TWO_CLIENT) {}
@@ -32,10 +39,10 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigratePrefsThenModifyBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 
   // Phase 2: Trigger a preference migration on the server.
   syncable::ModelTypeSet migrate_types;
@@ -43,15 +50,14 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigratePrefsThenModifyBookmark) {
   TriggerMigrationDoneError(migrate_types);
 
   // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(BookmarksHelper::AddURL(0, BookmarksHelper::IndexedURLTitle(0),
-      GURL(BookmarksHelper::IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }
 
 // Triggers a server migration on two datatypes, then makes a local
@@ -66,10 +72,10 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 
   // Phase 2: Trigger a migration on the server.
   syncable::ModelTypeSet migrate_types;
@@ -78,15 +84,14 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
   TriggerMigrationDoneError(migrate_types);
 
   // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(BookmarksHelper::AddURL(0, BookmarksHelper::IndexedURLTitle(0),
-      GURL(BookmarksHelper::IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }
 
 // Migrate every datatype in sequence; the catch being that the server
@@ -100,10 +105,10 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithoutNigori) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 
   // Phase 2: Queue up a horrendous number of migrations on the server.
   // Let the first nudge be a datatype that's neither prefs nor bookmarks.
@@ -121,15 +126,14 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithoutNigori) {
   }
 
   // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(BookmarksHelper::AddURL(0, BookmarksHelper::IndexedURLTitle(0),
-      GURL(BookmarksHelper::IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithNigori) {
@@ -141,10 +145,10 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithNigori) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 
   // Phase 2: Queue up a horrendous number of migrations on the server.
   // Let the first nudge be a datatype that's neither prefs nor bookmarks.
@@ -163,13 +167,12 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithNigori) {
   }
 
   // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(BookmarksHelper::AddURL(0, BookmarksHelper::IndexedURLTitle(0),
-      GURL(BookmarksHelper::IndexedURL(0))) != NULL);
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
-  PreferencesHelper::ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(PreferencesHelper::BooleanPrefMatches(prefs::kShowHomeButton));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }

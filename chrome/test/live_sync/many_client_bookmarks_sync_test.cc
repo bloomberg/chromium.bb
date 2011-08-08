@@ -7,6 +7,9 @@
 #include "chrome/test/live_sync/bookmarks_helper.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
+using bookmarks_helper::AddURL;
+using bookmarks_helper::AllModelsMatch;
+
 class ManyClientBookmarksSyncTest : public LiveSyncTest {
  public:
   ManyClientBookmarksSyncTest() : LiveSyncTest(MANY_CLIENT) {}
@@ -19,8 +22,7 @@ class ManyClientBookmarksSyncTest : public LiveSyncTest {
 // TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
 IN_PROC_BROWSER_TEST_F(ManyClientBookmarksSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BookmarksHelper::AddURL(
-      0, L"Google URL", GURL("http://www.google.com/")) != NULL);
+  ASSERT_TRUE(AddURL(0, L"Google URL", GURL("http://www.google.com/")) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
-  ASSERT_TRUE(BookmarksHelper::AllModelsMatch());
+  ASSERT_TRUE(AllModelsMatch());
 }

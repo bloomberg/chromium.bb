@@ -8,10 +8,24 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_typed_urls_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/typed_urls_helper.h"
+
+using typed_urls_helper::AddUrlToHistory;
+using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
+using typed_urls_helper::GetTypedUrlsFromClient;
+
+class MultipleClientTypedUrlsSyncTest : public LiveSyncTest {
+ public:
+  MultipleClientTypedUrlsSyncTest() : LiveSyncTest(MULTIPLE_CLIENT) {}
+  virtual ~MultipleClientTypedUrlsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultipleClientTypedUrlsSyncTest);
+};
 
 // TCM: 3728323
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, AddToOne) {
+IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToOne) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -30,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, AddToOne) {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveTypedUrlsSyncTest, AddToAll) {
+IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToAll) {
   const string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-all-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

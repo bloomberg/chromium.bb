@@ -10,78 +10,66 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 
-PreferencesHelper::PreferencesHelper() {}
+using sync_datatype_helper::test;
 
-PreferencesHelper::~PreferencesHelper() {}
+namespace preferences_helper {
 
-// static
-PrefService* PreferencesHelper::GetPrefs(int index) {
+PrefService* GetPrefs(int index) {
   return test()->GetProfile(index)->GetPrefs();
 }
 
-// static
-PrefService* PreferencesHelper::GetVerifierPrefs() {
+PrefService* GetVerifierPrefs() {
   return test()->verifier()->GetPrefs();
 }
 
-// static
-void PreferencesHelper::ChangeBooleanPref(int index, const char* pref_name) {
+void ChangeBooleanPref(int index, const char* pref_name) {
   bool new_value = !GetPrefs(index)->GetBoolean(pref_name);
   GetPrefs(index)->SetBoolean(pref_name, new_value);
   if (test()->use_verifier())
     GetVerifierPrefs()->SetBoolean(pref_name, new_value);
 }
 
-// static
-void PreferencesHelper::ChangeIntegerPref(int index,
-                                          const char* pref_name,
-                                          int new_value) {
+void ChangeIntegerPref(int index, const char* pref_name, int new_value) {
   GetPrefs(index)->SetInteger(pref_name, new_value);
   if (test()->use_verifier())
     GetVerifierPrefs()->SetInteger(pref_name, new_value);
 }
 
-// static
-void PreferencesHelper::ChangeDoublePref(int index,
-                                         const char* pref_name,
-                                         double new_value) {
+void ChangeDoublePref(int index, const char* pref_name, double new_value) {
   GetPrefs(index)->SetDouble(pref_name, new_value);
   if (test()->use_verifier())
     GetVerifierPrefs()->SetDouble(pref_name, new_value);
 }
 
-// static
-void PreferencesHelper::ChangeStringPref(int index,
-                                         const char* pref_name,
-                                         const std::string& new_value) {
+void ChangeStringPref(int index,
+                      const char* pref_name,
+                      const std::string& new_value) {
   GetPrefs(index)->SetString(pref_name, new_value);
   if (test()->use_verifier())
     GetVerifierPrefs()->SetString(pref_name, new_value);
 }
 
-// static
-void PreferencesHelper::AppendStringPref(int index,
-                                         const char* pref_name,
-                                         const std::string& append_value) {
+void AppendStringPref(int index,
+                      const char* pref_name,
+                      const std::string& append_value) {
   ChangeStringPref(index,
                    pref_name,
                    GetPrefs(index)->GetString(pref_name) + append_value);
 }
 
-// static
-void PreferencesHelper::ChangeFilePathPref(int index,
-                                           const char* pref_name,
-                                           const FilePath& new_value) {
+void ChangeFilePathPref(int index,
+                        const char* pref_name,
+                        const FilePath& new_value) {
   GetPrefs(index)->SetFilePath(pref_name, new_value);
   if (test()->use_verifier())
     GetVerifierPrefs()->SetFilePath(pref_name, new_value);
 }
 
-// static
-void PreferencesHelper::ChangeListPref(int index,
-                                       const char* pref_name,
-                                       const ListValue& new_value) {
+void ChangeListPref(int index,
+                    const char* pref_name,
+                    const ListValue& new_value) {
   {
     ListPrefUpdate update(GetPrefs(index), pref_name);
     ListValue* list = update.Get();
@@ -103,8 +91,7 @@ void PreferencesHelper::ChangeListPref(int index,
   }
 }
 
-// static
-bool PreferencesHelper::BooleanPrefMatches(const char* pref_name) {
+bool BooleanPrefMatches(const char* pref_name) {
   bool reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetBoolean(pref_name);
@@ -121,8 +108,7 @@ bool PreferencesHelper::BooleanPrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::IntegerPrefMatches(const char* pref_name) {
+bool IntegerPrefMatches(const char* pref_name) {
   int reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetInteger(pref_name);
@@ -139,8 +125,7 @@ bool PreferencesHelper::IntegerPrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::DoublePrefMatches(const char* pref_name) {
+bool DoublePrefMatches(const char* pref_name) {
   double reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetDouble(pref_name);
@@ -157,8 +142,7 @@ bool PreferencesHelper::DoublePrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::StringPrefMatches(const char* pref_name) {
+bool StringPrefMatches(const char* pref_name) {
   std::string reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetString(pref_name);
@@ -175,8 +159,7 @@ bool PreferencesHelper::StringPrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::FilePathPrefMatches(const char* pref_name) {
+bool FilePathPrefMatches(const char* pref_name) {
   FilePath reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetFilePath(pref_name);
@@ -193,8 +176,7 @@ bool PreferencesHelper::FilePathPrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::ListPrefMatches(const char* pref_name) {
+bool ListPrefMatches(const char* pref_name) {
   const ListValue* reference_value;
   if (test()->use_verifier()) {
     reference_value = GetVerifierPrefs()->GetList(pref_name);
@@ -211,13 +193,13 @@ bool PreferencesHelper::ListPrefMatches(const char* pref_name) {
   return true;
 }
 
-// static
-bool PreferencesHelper::EnableEncryption(int index) {
+bool EnableEncryption(int index) {
   return test()->GetClient(index)->EnableEncryptionForType(
       syncable::PREFERENCES);
 }
 
-// static
-bool PreferencesHelper::IsEncrypted(int index) {
+bool IsEncrypted(int index) {
   return test()->GetClient(index)->IsTypeEncrypted(syncable::PREFERENCES);
 }
+
+}  // namespace preferences_helper

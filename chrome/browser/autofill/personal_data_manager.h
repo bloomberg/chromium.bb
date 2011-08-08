@@ -26,6 +26,10 @@ class AutofillMetrics;
 class FormStructure;
 class Profile;
 
+namespace autofill_helper {
+void SetProfiles(int, std::vector<AutofillProfile>*);
+}
+
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
@@ -141,12 +145,12 @@ class PersonalDataManager
   // Make sure that only Profile and certain tests can create an instance of
   // PersonalDataManager.
   friend class base::RefCountedThreadSafe<PersonalDataManager>;
-  friend class AutofillHelper;
   friend class AutofillMergeTest;
   friend class PersonalDataManagerTest;
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
   friend class TestingAutomationProvider;
+  friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
 
   PersonalDataManager();
   virtual ~PersonalDataManager();

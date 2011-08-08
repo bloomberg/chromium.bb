@@ -6,22 +6,24 @@
 
 #include "chrome/test/live_sync/live_sync_test.h"
 
-SyncDatatypeHelper::SyncDatatypeHelper() {}
+namespace {
 
-SyncDatatypeHelper::~SyncDatatypeHelper() {}
+// The LiveSyncTest instance associated with sync_datatype_helper.
+static LiveSyncTest* test = NULL;
 
-// static
-void SyncDatatypeHelper::AssociateWithTest(LiveSyncTest* test) {
+}  // namespace
+
+namespace sync_datatype_helper {
+
+void AssociateWithTest(LiveSyncTest* test) {
   ASSERT_TRUE(test != NULL) << "Cannot associate with null test.";
-  ASSERT_TRUE(test_ == NULL) << "Already associated with a test.";
-  test_ = test;
+  ASSERT_TRUE(::test == NULL) << "Already associated with a test.";
+  ::test = test;
 }
 
-// static
-LiveSyncTest* SyncDatatypeHelper::test() {
-  EXPECT_TRUE(test_ != NULL) << "Must call AssociateWithTest first.";
-  return test_;
+LiveSyncTest* test() {
+  EXPECT_TRUE(::test != NULL) << "Must call AssociateWithTest first.";
+  return ::test;
 }
 
-// static
-LiveSyncTest* SyncDatatypeHelper::test_ = NULL;
+}  // namespace sync_datatype_helper

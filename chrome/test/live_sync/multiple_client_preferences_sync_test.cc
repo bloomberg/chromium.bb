@@ -8,6 +8,9 @@
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/preferences_helper.h"
 
+using preferences_helper::ChangeListPref;
+using preferences_helper::ListPrefMatches;
+
 class MultipleClientPreferencesSyncTest : public LiveSyncTest {
  public:
   MultipleClientPreferencesSyncTest() : LiveSyncTest(MULTIPLE_CLIENT) {}
@@ -25,10 +28,9 @@ IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity) {
     ListValue urls;
     urls.Append(Value::CreateStringValue(
         base::StringPrintf("http://www.google.com/%d", i)));
-    PreferencesHelper::ChangeListPref(i, prefs::kURLsToRestoreOnStartup, urls);
+    ChangeListPref(i, prefs::kURLsToRestoreOnStartup, urls);
   }
 
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(PreferencesHelper::ListPrefMatches(
-      prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(ListPrefMatches(prefs::kURLsToRestoreOnStartup));
 }

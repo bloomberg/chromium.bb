@@ -4,8 +4,14 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
-#include "chrome/test/live_sync/live_typed_urls_sync_test.h"
+#include "chrome/test/live_sync/typed_urls_helper.h"
+
+using typed_urls_helper::AddUrlToHistory;
+using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
+using typed_urls_helper::DeleteUrlFromHistory;
+using typed_urls_helper::GetTypedUrlsFromClient;
 
 // TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
 // datatypes into a performance test base class, once it is possible to do so.
@@ -15,9 +21,11 @@ static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                           150, 175, 200, 225, 250, 300, 350,
                                           400, 500};
 
-class TypedUrlsSyncPerfTest: public TwoClientLiveTypedUrlsSyncTest {
+class TypedUrlsSyncPerfTest : public LiveSyncTest {
  public:
-  TypedUrlsSyncPerfTest() : url_number_(0) {}
+  TypedUrlsSyncPerfTest()
+      : LiveSyncTest(TWO_CLIENT),
+        url_number_(0) {}
 
   // Adds |num_urls| new unique typed urls to |profile|.
   void AddURLs(int profile, int num_urls);
@@ -31,7 +39,7 @@ class TypedUrlsSyncPerfTest: public TwoClientLiveTypedUrlsSyncTest {
   // Returns the number of typed urls stored in |profile|.
   int GetURLCount(int profile);
 
-  // Remvoes all typed urls for all profiles.  Called between benchmark
+  // Removes all typed urls for all profiles.  Called between benchmark
   // iterations.
   void Cleanup();
 

@@ -15,13 +15,16 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "webkit/glue/form_field.h"
 
 using base::WaitableEvent;
+using sync_datatype_helper::test;
 using testing::_;
 
 namespace {
+
 class GetAllAutofillEntries
     : public base::RefCountedThreadSafe<GetAllAutofillEntries> {
  public:
@@ -80,12 +83,9 @@ class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
 
 }  // namespace
 
-AutofillHelper::AutofillHelper() {}
+namespace autofill_helper {
 
-AutofillHelper::~AutofillHelper() {}
-
-// static
-AutofillProfile AutofillHelper::CreateAutofillProfile(ProfileType type) {
+AutofillProfile CreateAutofillProfile(ProfileType type) {
   AutofillProfile profile;
   switch (type) {
     case PROFILE_MARION:
@@ -120,18 +120,15 @@ AutofillProfile AutofillHelper::CreateAutofillProfile(ProfileType type) {
   return profile;
 }
 
-// static
-WebDataService* AutofillHelper::GetWebDataService(int index) {
+WebDataService* GetWebDataService(int index) {
   return test()->GetProfile(index)->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
-// static
-PersonalDataManager* AutofillHelper::GetPersonalDataManager(int index) {
+PersonalDataManager* GetPersonalDataManager(int index) {
   return test()->GetProfile(index)->GetPersonalDataManager();
 }
 
-// static
-void AutofillHelper::AddKeys(int profile,
+void AddKeys(int profile,
                              const std::set<AutofillKey>& keys) {
   std::vector<webkit_glue::FormField> form_fields;
   for (std::set<AutofillKey>::const_iterator i = keys.begin();
@@ -157,8 +154,7 @@ void AutofillHelper::AddKeys(int profile,
   done_event.Wait();
 }
 
-// static
-void AutofillHelper::RemoveKey(int profile, const AutofillKey& key) {
+void RemoveKey(int profile, const AutofillKey& key) {
   WaitableEvent done_event(false, false);
   scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
       new AutofillDBThreadObserverHelper());
@@ -171,8 +167,7 @@ void AutofillHelper::RemoveKey(int profile, const AutofillKey& key) {
   done_event.Wait();
 }
 
-// static
-std::set<AutofillEntry> AutofillHelper::GetAllKeys(int profile) {
+std::set<AutofillEntry> GetAllKeys(int profile) {
   WebDataService* wds = GetWebDataService(profile);
   scoped_refptr<GetAllAutofillEntries> get_all_entries =
       new GetAllAutofillEntries(wds);
@@ -186,14 +181,11 @@ std::set<AutofillEntry> AutofillHelper::GetAllKeys(int profile) {
   return all_keys;
 }
 
-// static
-bool AutofillHelper::KeysMatch(int profile_a, int profile_b) {
+bool KeysMatch(int profile_a, int profile_b) {
   return GetAllKeys(profile_a) == GetAllKeys(profile_b);
 }
 
-// static
-void AutofillHelper::SetProfiles(
-    int profile, std::vector<AutofillProfile>* autofill_profiles) {
+void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());
@@ -204,30 +196,26 @@ void AutofillHelper::SetProfiles(
   pdm->RemoveObserver(&observer);
 }
 
-// static
-void AutofillHelper::AddProfile(int profile,
-                                const AutofillProfile& autofill_profile) {
+void AddProfile(int profile, const AutofillProfile& autofill_profile) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i)
     autofill_profiles.push_back(*all_profiles[i]);
   autofill_profiles.push_back(autofill_profile);
-  SetProfiles(profile, &autofill_profiles);
+  autofill_helper::SetProfiles(profile, &autofill_profiles);
 }
 
-// static
-void AutofillHelper::RemoveProfile(int profile, const std::string& guid) {
+void RemoveProfile(int profile, const std::string& guid) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     if (all_profiles[i]->guid() != guid)
       autofill_profiles.push_back(*all_profiles[i]);
   }
-  SetProfiles(profile, &autofill_profiles);
+  autofill_helper::SetProfiles(profile, &autofill_profiles);
 }
 
-// static
-void AutofillHelper::UpdateProfile(int profile,
+void UpdateProfile(int profile,
                                    const std::string& guid,
                                    const AutofillType& type,
                                    const string16& value) {
@@ -238,11 +226,10 @@ void AutofillHelper::UpdateProfile(int profile,
     if (all_profiles[i]->guid() == guid)
       profiles.back().SetInfo(type.field_type(), value);
   }
-  SetProfiles(profile, &profiles);
+  autofill_helper::SetProfiles(profile, &profiles);
 }
 
-// static
-const std::vector<AutofillProfile*>& AutofillHelper::GetAllProfiles(
+const std::vector<AutofillProfile*>& GetAllProfiles(
     int profile) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataChanged()).
@@ -255,13 +242,11 @@ const std::vector<AutofillProfile*>& AutofillHelper::GetAllProfiles(
   return pdm->web_profiles();
 }
 
-// static
-int AutofillHelper::GetProfileCount(int profile) {
+int GetProfileCount(int profile) {
   return GetAllProfiles(profile).size();
 }
 
-// static
-bool AutofillHelper::ProfilesMatch(int profile_a, int profile_b) {
+bool ProfilesMatch(int profile_a, int profile_b) {
   const std::vector<AutofillProfile*>& autofill_profiles_a =
       GetAllProfiles(profile_a);
   std::map<std::string, AutofillProfile> autofill_profiles_a_map;
@@ -296,8 +281,7 @@ bool AutofillHelper::ProfilesMatch(int profile_a, int profile_b) {
   return true;
 }
 
-// static
-bool AutofillHelper::AllProfilesMatch() {
+bool AllProfilesMatch() {
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesMatch(0, i)) {
       LOG(ERROR) << "Profile " << i << "does not contain the same autofill "
@@ -307,3 +291,5 @@ bool AutofillHelper::AllProfilesMatch() {
   }
   return true;
 }
+
+}  // namespace autofill_helper
