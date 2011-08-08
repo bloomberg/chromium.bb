@@ -256,75 +256,10 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (void)performMouseDownAction:(NSEvent*)theEvent {
-  int eventMask = NSLeftMouseUpMask | NSMouseEnteredMask | NSMouseExitedMask |
-      NSLeftMouseDraggedMask;
-
-  BOOL keepGoing = YES;
   [[self target] performSelector:[self action] withObject:self];
   self.actionHasFired = YES;
-
-  DraggableButton* insideBtn = nil;
-
-  while (keepGoing) {
-    theEvent = [[self window] nextEventMatchingMask:eventMask];
-    if (!theEvent)
-      continue;
-
-    NSPoint mouseLoc = [self convertPoint:[theEvent locationInWindow]
-                                 fromView:nil];
-    BOOL isInside = [self mouse:mouseLoc inRect:[self bounds]];
-
-    switch ([theEvent type]) {
-      case NSMouseEntered:
-      case NSMouseExited: {
-        NSView* trackedView = (NSView*)[[theEvent trackingArea] owner];
-        if (trackedView && [trackedView isKindOfClass:[self class]]) {
-          BookmarkButton* btn = static_cast<BookmarkButton*>(trackedView);
-          if (![btn acceptsTrackInFrom:self])
-            break;
-          if ([theEvent type] == NSMouseEntered) {
-            [[NSCursor arrowCursor] set];
-            [[btn cell] mouseEntered:theEvent];
-            insideBtn = btn;
-          } else {
-            [[btn cell] mouseExited:theEvent];
-            if (insideBtn == btn)
-              insideBtn = nil;
-          }
-        }
-        break;
-      }
-      case NSLeftMouseDragged: {
-        if (insideBtn)
-          [insideBtn mouseDragged:theEvent];
-        break;
-      }
-      case NSLeftMouseUp: {
-        self.durationMouseWasDown = [theEvent timestamp] - self.whenMouseDown;
-        if (!isInside && insideBtn && insideBtn != self) {
-          // Has tracked onto another BookmarkButton menu item, and released,
-          // so fire its action.
-          [[insideBtn target] performSelector:[insideBtn action]
-                                   withObject:insideBtn];
-
-        } else {
-          [self secondaryMouseUpAction:isInside];
-          [[self cell] mouseExited:theEvent];
-          [[insideBtn cell] mouseExited:theEvent];
-        }
-        keepGoing = NO;
-        break;
-      }
-      default:
-        /* Ignore any other kind of event. */
-        break;
-    }
-  }
 }
 
-
-
-// mouseEntered: and mouseExited: are called from our
 // BookmarkButtonCell.  We redirect this information to our delegate.
 // The controller can then perform menu-like actions (e.g. "hover over
 // to open menu").
@@ -352,8 +287,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (BOOL)canBecomeKeyView {
-  // If button is an item in a folder menu, don't become key.
-  return ![[self cell] isFolderButtonCell];
+  return NO;
 }
 
 // This only gets called after a click that wasn't a drag, and only on folders.

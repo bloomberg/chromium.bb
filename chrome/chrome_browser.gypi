@@ -2316,8 +2316,6 @@
         'browser/ui/cocoa/bookmarks/bookmark_bar_constants.h',
         'browser/ui/cocoa/bookmarks/bookmark_bar_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_bar_controller.mm',
-        'browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h',
-        'browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_state.h',

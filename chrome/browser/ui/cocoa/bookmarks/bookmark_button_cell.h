@@ -55,8 +55,6 @@ class BookmarkNode;
 // Set the color of text in this cell.
 - (void)setTextColor:(NSColor*)color;
 
-- (BOOL)isFolderButtonCell;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BUTTON_CELL_H_

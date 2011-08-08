@@ -1722,7 +1722,6 @@
         'browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_bridge_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_controller_unittest.mm',
-        'browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_bar_unittest_helper.h',

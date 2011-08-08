@@ -210,7 +210,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)addButtonsToView;
 - (void)centerNoItemsLabel;
 - (void)setNodeForBarMenu;
-- (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
 - (BOOL)animationEnabled;
 
@@ -326,7 +325,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self watchForExitEvent:NO];
   [super dealloc];
 }
 
@@ -519,7 +517,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 #pragma mark Actions
 
 - (IBAction)openBookmark:(id)sender {
-  BOOL isMenuItem = [[sender cell] isFolderButtonCell];
+  BOOL isMenuItem = [sender isFolder];
   BOOL animate = isMenuItem && [self animationEnabled];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
@@ -777,59 +775,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // (And hide the button, too.)
     [offTheSideButton_ setHidden:YES];
   }
-}
-
-// Main menubar observation code, so we can know to close our fake menus if the
-// user clicks on the actual menubar, as multiple unconnected menus sharing
-// the screen looks weird.
-// Needed because the hookForEvent method doesn't see the click on the menubar.
-
-// Gets called when the menubar is clicked.
-- (void)begunTracking:(NSNotification *)notification {
-  [self closeFolderAndStopTrackingMenus];
-}
-
-// Install the callback.
-- (void)startObservingMenubar {
-  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-  [nc addObserver:self
-         selector:@selector(begunTracking:)
-             name:NSMenuDidBeginTrackingNotification
-           object:[NSApp mainMenu]];
-}
-
-// Remove the callback.
-- (void)stopObservingMenubar {
-  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:self
-                name:NSMenuDidBeginTrackingNotification
-              object:[NSApp mainMenu]];
-}
-
-// End of menubar observation code.
-
-// Begin (or end) watching for a click outside this window.  Unlike
-// normal NSWindows, bookmark folder "fake menu" windows do not become
-// key or main.  Thus, traditional notification (e.g. WillResignKey)
-// won't work.  Our strategy is to watch (at the app level) for a
-// "click outside" these windows to detect when they logically lose
-// focus.
-- (void)watchForExitEvent:(BOOL)watch {
-  CrApplication* app = static_cast<CrApplication*>([NSApplication
-                                                    sharedApplication]);
-  DCHECK([app isKindOfClass:[CrApplication class]]);
-  if (watch) {
-    if (!watchingForExitEvent_) {
-      [app addEventHook:self];
-      [self startObservingMenubar];
-    }
-  } else {
-    if (watchingForExitEvent_) {
-      [app removeEventHook:self];
-      [self stopObservingMenubar];
-    }
-  }
-  watchingForExitEvent_ = watch;
 }
 
 // Keep the "no items" label centered in response to a frame size change.
@@ -1703,58 +1648,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [[otherBookmarksButton_ cell] setTextColor:color];
 }
 
-// Return YES if the event indicates an exit from the bookmark bar
-// folder menus.  E.g. "click outside" of the area we are watching.
-// At this time we are watching the area that includes all popup
-// bookmark folder windows.
-- (BOOL)isEventAnExitEvent:(NSEvent*)event {
-  NSWindow* eventWindow = [event window];
-  NSWindow* myWindow = [[self view] window];
-  switch ([event type]) {
-    case NSLeftMouseDown:
-    case NSRightMouseDown:
-      // If the click is in my window but NOT in the bookmark bar, consider
-      // it a click 'outside'. Clicks directly on an active button (i.e. one
-      // that is a folder and for which its folder menu is showing) are 'in'.
-      // All other clicks on the bookmarks bar are counted as 'outside'
-      // because they should close any open bookmark folder menu.
-      if (eventWindow == myWindow) {
-        NSView* hitView =
-            [[eventWindow contentView] hitTest:[event locationInWindow]];
-        if (hitView == [folderController_ parentButton])
-          return NO;
-        if (![hitView isDescendantOf:[self view]] || hitView == buttonView_)
-          return YES;
-      }
-      break;
-    case NSKeyDown: {
-      // Event hooks often see the same keydown event twice due to the way key
-      // events get dispatched and redispatched, so ignore if this keydown
-      // event has the EXACT same timestamp as the previous keydown.
-      static NSTimeInterval lastKeyDownEventTime;
-      NSTimeInterval thisTime = [event timestamp];
-      if (lastKeyDownEventTime != thisTime) {
-        lastKeyDownEventTime = thisTime;
-        if ([event modifierFlags] & NSCommandKeyMask)
-          return YES;
-      }
-      return NO;
-    }
-    case NSKeyUp:
-      return NO;
-    case NSLeftMouseDragged:
-      // We can get here with the following sequence:
-      // - open a bookmark folder
-      // - right-click (and unclick) on it to open context menu
-      // - move mouse to window titlebar then click-drag it by the titlebar
-      // http://crbug.com/49333
-      return NO;
-    default:
-      break;
-  }
-  return NO;
-}
-
 #pragma mark Drag & Drop
 
 // Find something like std::is_between<T>?  I can't believe one doesn't exist.
@@ -2241,7 +2134,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Close all bookmark folders.  "Folder" here is the fake menu for
 // bookmark folders, not a button context menu.
 - (void)closeAllBookmarkFolders {
-  [self watchForExitEvent:NO];
   [folderController_ closeMenu];
   folderController_ = nil;
 }
@@ -2428,10 +2320,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [folderController_ autorelease];
   [folderController_ openMenu];
 
-  // Only BookmarkBarController has this; the
-  // BookmarkBarFolderController does not.
-  [self watchForExitEvent:YES];
-
   // No longer need to hold the lock; the folderController_ now owns it.
   [browserController releaseBarVisibilityForOwner:self
                                     withAnimation:NO
@@ -2581,14 +2469,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (bookmarkModel_->bookmark_bar_node() == node)
     return self;
   return nil;
-}
-
-#pragma mark BookmarkButtonControllerProtocol
-
-// NOT an override of a standard Cocoa call made to NSViewControllers.
-- (void)hookForEvent:(NSEvent*)theEvent {
-  if ([self isEventAnExitEvent:theEvent])
-    [self closeFolderAndStopTrackingMenus];
 }
 
 #pragma mark TestingAPI Only
