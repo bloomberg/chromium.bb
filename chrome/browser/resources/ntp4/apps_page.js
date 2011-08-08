@@ -181,15 +181,23 @@ cr.define('ntp4', function() {
       var appContents = this.ownerDocument.createElement('div');
       appContents.className = 'app-contents';
 
+      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
+        this.useSmallIcon_ = true;
+
       var appImg = this.ownerDocument.createElement('img');
-      appImg.src = this.appData_.icon_big;
-      // We use a mask of the same image so CSS rules can highlight just the
-      // image when it's touched.
-      appImg.style.WebkitMaskImage = url(this.appData_.icon_big);
-      // We put a click handler just on the app image - so clicking on the
-      // margins between apps doesn't do anything.
-      appImg.addEventListener('click', this.onClick_.bind(this));
-      appContents.appendChild(appImg);
+      appImg.src = this.useSmallIcon_ ? this.appData_.icon_small :
+                                        this.appData_.icon_big;
+      if (this.useSmallIcon_) {
+        var imgDiv = this.ownerDocument.createElement('div');
+        imgDiv.className = 'app-icon-div';
+        imgDiv.appendChild(appImg);
+        imgDiv.addEventListener('click', this.onClick_.bind(this));
+        this.imgDiv_ = imgDiv;
+        appContents.appendChild(imgDiv);
+      } else {
+        appImg.addEventListener('click', this.onClick_.bind(this));
+        appContents.appendChild(appImg);
+      }
       this.appImg_ = appImg;
 
       var appSpan = this.ownerDocument.createElement('span');
@@ -277,7 +285,10 @@ cr.define('ntp4', function() {
      */
     setBounds: function(size, x, y) {
       var imgSize = size * APP_IMG_SIZE_FRACTION;
-      this.appImg_.style.width = this.appImg_.style.height = imgSize + 'px';
+      this.appImg_.style.width = this.appImg_.style.height =
+          this.useSmallIcon_ ? '32px' : imgSize + 'px';
+
+
       this.style.width = this.style.height = size + 'px';
       if (this.isStore_)
         this.appsPromoExtras_.style.left = size + (imgSize - size) / 2 + 'px';

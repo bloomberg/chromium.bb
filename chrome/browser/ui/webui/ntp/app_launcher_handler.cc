@@ -116,16 +116,18 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                        DictionaryValue* value) {
   bool enabled = service->IsExtensionEnabled(extension->id()) &&
       !service->GetTerminatedExtension(extension->id());
+  bool icon_big_exists = true;
   GURL icon_big =
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_LARGE,
                                       ExtensionIconSet::MATCH_EXACTLY,
-                                      !enabled);
+                                      !enabled, &icon_big_exists);
+  bool icon_small_exists = true;
   GURL icon_small =
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_BITTY,
                                       ExtensionIconSet::MATCH_BIGGER,
-                                      !enabled);
+                                      !enabled, &icon_small_exists);
 
   value->Clear();
   value->SetString("id", extension->id());
@@ -137,7 +139,9 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetBoolean("can_uninstall",
                     Extension::UserMayDisable(extension->location()));
   value->SetString("icon_big", icon_big.spec());
+  value->SetBoolean("icon_big_exists", icon_big_exists);
   value->SetString("icon_small", icon_small.spec());
+  value->SetBoolean("icon_small_exists", icon_small_exists);
   value->SetInteger("launch_container", extension->launch_container());
   ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
@@ -685,7 +689,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
-  string16 url;
+  std::string url;
   CHECK(args->GetString(0, &url));
 
   string16 title;
@@ -713,7 +717,6 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
     return;
   }
 
-  // TODO(gbillock): get page thumb from thumbnail db/history svc?
   FaviconService::Handle h = favicon_service->GetFaviconForURL(
       launch_url, history::FAVICON, &favicon_consumer_,
       NewCallback(this, &AppLauncherHandler::OnFaviconForApp));

@@ -554,7 +554,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
         ExtensionIconSource::GetIconURL(extension,
                                         Extension::EXTENSION_ICON_BITTY,
                                         ExtensionIconSet::MATCH_BIGGER,
-                                        false);     // grayscale
+                                        false, NULL);     // grayscale
     task->SetString("iconUrl", icon.spec());
     result_list->Append(task);
   }
