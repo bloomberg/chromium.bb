@@ -598,21 +598,19 @@ remoting.disconnect = function() {
   }
 }
 
-/** If the client is connected, or the host is shared, prompt before closing.
+/**
+ * If the client is connected, or the host is shared, prompt before closing.
  *
  * @return {(string|void)} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
-  var messageId = null;
-  if (remoting.getMajorMode() == remoting.AppMode.HOST &&
-      remoting.currentMode != remoting.AppMode.HOST_UNSHARED) {
-    messageId = 'closePromptHost';
-  } else if (remoting.getMajorMode() == remoting.AppMode.IN_SESSION ||
-             remoting.currentMode == remoting.AppMode.CLIENT_CONNECTING) {
-    messageId = 'closePromptClient';
-  }
-  if (messageId) {
-    var result = chrome.i18n.getMessage(messageId);
+  // Prompt to close if the host is in any state other than unshared, or if the
+  // client is connecting or has already connected.
+  if ((remoting.getMajorMode() == remoting.AppMode.HOST &&
+       remoting.currentMode != remoting.AppMode.HOST_UNSHARED) ||
+      remoting.getMajorMode() == remoting.AppMode.IN_SESSION ||
+      remoting.currentMode == remoting.AppMode.CLIENT_CONNECTING) {
+    var result = chrome.i18n.getMessage('closePrompt');
     return result;
   }
 }
