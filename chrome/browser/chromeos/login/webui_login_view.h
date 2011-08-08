@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "views/view.h"
 
@@ -97,16 +98,24 @@ class WebUILoginView : public views::View,
   DOMView* webui_login_;
 
  private:
+  // Map type for the accelerator-to-identifier map.
+  typedef std::map<views::Accelerator, std::string> AccelMap;
+
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have
   // RenderWidgetHostViewViews working.
   views::Widget* status_window_;
 
-  views::Accelerator accel_toggle_accessibility_;
+  // Converts keyboard events on the TabContents to accelerators.
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  // Maps installed accelerators to OOBE webui accelerator identifiers.
+  AccelMap accel_map_;
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;

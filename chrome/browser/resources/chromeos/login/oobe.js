@@ -12,7 +12,12 @@ var localStrings = new LocalStrings();
 
 cr.define('cr.ui', function() {
   const SCREEN_SIGNIN = 'signin';
+  const SCREEN_GAIA_SIGNIN = 'gaia-signin';
   const SCREEN_ACCOUNT_PICKER = 'account-picker';
+
+  /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
+  const ACCELERATOR_ACCESSIBILITY = 'accessibility';
+  const ACCELERATOR_ENROLLMENT = 'enrollment';
 
   /**
   * Constructs an Out of box controller. It manages initialization of screens,
@@ -46,25 +51,19 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Oobe keydown handler.
+     * Handle accelerators.
+     * @param {string} name Accelerator name.
      */
-    oobeKeyDown: function(e) {
-      var keystroke = String.fromCharCode(e.keyCode);
-      switch (keystroke) {
-        case 'Z':
-          if (e.altKey && e.ctrlKey) {
-            chrome.send('toggleAccessibility', []);
-            break;
-          }
-        case 'E':
-          var currentStepId = this.screens_[this.currentStep_];
-          if (currentStepId == SCREEN_SIGNIN) {
-            if (e.altKey && e.ctrlKey) {
-              chrome.send('toggleEnrollmentScreen', []);
-              break;
-            }
-          }
-      } // switch
+    handleAccelerator: function(name) {
+      if (name == ACCELERATOR_ACCESSIBILITY) {
+        chrome.send('toggleAccessibility', []);
+      } else if (ACCELERATOR_ENROLLMENT) {
+        var currentStepId = this.screens_[this.currentStep_];
+        if (currentStepId == SCREEN_SIGNIN ||
+            currentStepId == SCREEN_GAIA_SIGNIN) {
+          chrome.send('toggleEnrollmentScreen', []);
+        }
+      }
     },
 
     /**
@@ -291,11 +290,17 @@ cr.define('cr.ui', function() {
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
     });
 
-    document.addEventListener('keydown', function(e) {
-      Oobe.getInstance().oobeKeyDown(e);
-    }, true);
-
     chrome.send('screenStateInitialize', []);
+  };
+
+  /**
+   * Handle accelerators. These are passed from native code instead of a JS
+   * event handler in order to make sure that embedded iframes cannot swallow
+   * them.
+   * @param {string} name Accelerator name.
+   */
+  Oobe.handleAccelerator = function(name) {
+    Oobe.getInstance().handleAccelerator(name);
   };
 
   /**

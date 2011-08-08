@@ -23,6 +23,10 @@ namespace {
 
 const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 
+// These strings must be kept in sync with handleAccelerator() in oobe.js.
+const char kAccelNameAccessibility[] = "accessibility";
+const char kAccelNameEnrollment[] = "enrollment";
+
 }  // namespace
 
 namespace chromeos {
@@ -36,13 +40,14 @@ WebUILoginView::WebUILoginView()
     : status_area_(NULL),
       profile_(NULL),
       webui_login_(NULL),
-      status_window_(NULL),
-      accel_toggle_accessibility_(
-          views::Accelerator(ui::VKEY_Z, false, true, true)) {
-  // Accelerator events will be sent to this window until the WebUI dialog gains
-  // focus via keyboard or mouse input, so we have to watch for the
-  // accessibility hotkey here as well.
-  AddAccelerator(accel_toggle_accessibility_);
+      status_window_(NULL) {
+  accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
+      kAccelNameAccessibility;
+  accel_map_[views::Accelerator(ui::VKEY_E, false, true, true)] =
+      kAccelNameEnrollment;
+
+  for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
+    AddAccelerator(i->first);
 }
 
 WebUILoginView::~WebUILoginView() {
@@ -67,11 +72,20 @@ std::string WebUILoginView::GetClassName() const {
 
 bool WebUILoginView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator == accel_toggle_accessibility_) {
-    accessibility::ToggleAccessibility(GetWebUI());
-  } else {
+  AccelMap::const_iterator entry = accel_map_.find(accelerator);
+  if (entry == accel_map_.end())
     return false;
+
+  if (!webui_login_)
+    return true;
+
+  WebUI* web_ui = webui_login_->tab_contents()->web_ui();
+  if (web_ui) {
+    base::StringValue accel_name(entry->second);
+    web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
+                                   accel_name);
   }
+
   return true;
 }
 
@@ -216,6 +230,11 @@ bool WebUILoginView::TakeFocus(bool reverse) {
   // Forward the focus back to web contents.
   webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
   return true;
+}
+
+void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                        GetFocusManager());
 }
 
 }  // namespace chromeos
