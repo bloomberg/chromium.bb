@@ -30,6 +30,7 @@ class BrowserPpp {
  public:
   BrowserPpp(NaClSrpcChannel* main_channel, plugin::Plugin* plugin)
       : main_channel_(main_channel),
+        is_nexe_alive_(true),
         plugin_pid_(0),
         plugin_(plugin),
         ppp_instance_interface_(NULL),
@@ -43,8 +44,9 @@ class BrowserPpp {
   int32_t InitializeModule(PP_Module module_id,
                            PPB_GetInterface get_browser_interface);
 
-  void ShutdownChannel();
-  void ShutdownModule();  // PPP_ShutdownModule + ShutdownChannel.
+  // Joins upcall thread, drops references to channel (owned by plugin),
+  // calls plugin side shutdown, but not user's PPP_ShutdownModule.
+  void ShutdownModule();
   // Returns an interface pointer or NULL.
   const void* GetPluginInterface(const char* interface_name);
   // Returns an interface pointer or fails on a NULL CHECK.
@@ -64,7 +66,7 @@ class BrowserPpp {
     return ppp_input_event_interface_;
   }
 
-  bool is_valid() const { return (main_channel_ != NULL); }
+  bool is_valid() const { return is_nexe_alive_; }
   static bool is_valid(BrowserPpp* proxy) {
     return (proxy != NULL && proxy->is_valid());
   }
@@ -75,8 +77,9 @@ class BrowserPpp {
 
  private:
   // The "main" SRPC channel used to communicate with the plugin.
-  // NULL if proxy has been shutdown or nexe crashed.
+  // NULL if proxy has been shut down.
   NaClSrpcChannel* main_channel_;
+  bool is_nexe_alive_;
   // The PID of the plugin.
   int plugin_pid_;
   // Plugin that owns this proxy.

@@ -209,9 +209,6 @@ uma_test_files = [
     env.File('${STAGING_DIR}/ppapi_crash_in_callback_%s${PROGSUFFIX}'
              % platform),
     env.File('${STAGING_DIR}/ppapi_crash_in_callback.nmf'),
-    env.File('${STAGING_DIR}/ppapi_crash_on_shutdown_%s${PROGSUFFIX}'
-             % platform),
-    env.File('${STAGING_DIR}/ppapi_crash_on_shutdown.nmf'),
     ] + CreateDefaultDeps('ppapi_ppb_core')
 
 

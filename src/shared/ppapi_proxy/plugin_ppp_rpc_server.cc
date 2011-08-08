@@ -127,7 +127,8 @@ void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   DebugPrintf("PPP_ShutdownModule\n");
-  ::PPP_ShutdownModule();
+  // We do NOT call ::PPP_ShutdownModule as it cannot do anything useful
+  // at this point while still having an ability to hang the browser.
   ppapi_proxy::UnsetModuleIdForSrpcChannel(rpc->channel);
   StopUpcallSrpcChannel();
   // TODO(sehr, polina): do we even need this function?

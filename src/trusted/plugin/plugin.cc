@@ -1483,12 +1483,11 @@ void Plugin::ReportDeadNexe() {
 void Plugin::ShutdownProxy() {
   PLUGIN_PRINTF(("Plugin::ShutdownProxy (ppapi_proxy=%p)\n",
                 static_cast<void*>(ppapi_proxy_)));
-  if (BrowserPpp::is_valid(ppapi_proxy_)) {
-    ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
-    if (BrowserPpp::is_valid(ppapi_proxy_)) {
-      ppapi_proxy_->ShutdownModule();
-    }
-  }
+  // We do not call remote PPP_Instance::DidDestroy because the untrusted
+  // side can no longer take full advantage of mostly asynchronous Pepper
+  // per-Instance interfaces at this point.
+  if (BrowserPpp::is_valid(ppapi_proxy_))
+    ppapi_proxy_->ShutdownModule();
   delete ppapi_proxy_;
   ppapi_proxy_ = NULL;
 }

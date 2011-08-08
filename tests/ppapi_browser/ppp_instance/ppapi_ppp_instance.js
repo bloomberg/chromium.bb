@@ -62,14 +62,8 @@ function setupTests(tester, plugin) {
   // PPP_Instance::HandleDocumentLoad is only used with full-frame plugins.
   // This is tested in tests/ppapi_browser/extension_mime_handler/
 
-  tester.addAsyncTest('PPP_Instance::DidDestroy', function(test) {
-    // Destroy the plugin triggering PPP_Instance::DidDestroy.
-    // A message should be logged to stdout.
-    plugin.parentNode.removeChild(plugin);
-    // Unfortunately, PPB_Messaging is a per-instance interface, so
-    // posting messages from PPP_Instance::DidDestory does not work.
-    // TODO(polina): Is there a different way to detect this from JavaScript?
-    // For now just pass explicitely.
-    test.pass();
-  });
+  // PPP_Instance::DidDestroy is never invoked in the untrusted code.
+  // We could wait for a crash event from it, but CallOnMainThread semantics
+  // on shutdown are still buggy, so it might never come even if the function
+  // triggered. Plus waiting for something not to happen makes the test flaky.
 }

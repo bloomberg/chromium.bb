@@ -30,14 +30,11 @@ PP_Bool DidCreate(PP_Instance instance,
   return status;
 }
 
+// This should never be called.
 void DidDestroy(PP_Instance instance) {
   printf("--- PPP_Instance::DidDestroy\n");
   CHECK(instance == pp_instance());
-  // TEST_PASSED has no effect from this function.
-  // TODO(polina): how else can I test this programmatically?
-  // One option is to use golden files. The other option is to crash the nexe
-  // and rely on a status event when we implement crash detection in the
-  // trusted plugin.
+  NACL_NOTREACHED();
 }
 
 void DidChangeView(PP_Instance instance,

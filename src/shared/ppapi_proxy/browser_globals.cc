@@ -167,10 +167,11 @@ NaClSrpcChannel* GetMainSrpcChannel(PP_Instance instance) {
 }
 
 void CleanUpAfterDeadNexe(PP_Instance instance) {
+  DebugPrintf("CleanUpAfterDeadNexe\n");
   BrowserPpp* proxy = LookupBrowserPppForInstance(instance);
   if (proxy == NULL)
     return;
-  proxy->ShutdownChannel();
+  proxy->ShutdownModule();
   proxy->plugin()->ReportDeadNexe();  // Deletes the proxy.
 }
 
