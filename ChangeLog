@@ -1,3 +1,8 @@
+2011-08-08  Michel Such  <michel.such@free.fr>
+
+	* tables/fr-bfu-comp8.utb:
+	* tables/fr-bfu-comp6.utb: Updated French tables.
+
 2011-06-28  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/Makefile.am (table_files): Added the table provided by

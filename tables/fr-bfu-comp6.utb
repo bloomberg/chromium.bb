@@ -117,11 +117,19 @@ punctuation \X0091 6   # [left signle quotation mark] (private use one)
 punctuation \X0092 3   # [right single quotation mark] (private use two)
 punctuation \X0093 3   # [left double quotation mark] (set transmit state)
 punctuation \X0094 6   # [right double quotation mark] (cancel character)
-punctuation - 36		trait d'union
+punctuation - 36  # (hyphen)
+sign \X200e 0  # (left to right mark)
+sign \X200f 0  # (right to left mark)
+sign \X2013 4  # (en dash)
+sign \X2014 45  # (en dash)
 punctuation \X2018 6
 punctuation \X2019 3
-sign \X2022 1245	bullet
+sign \X201c 3
+sign \X201d 6
+sign \X2022 1245  # (bullet)
 sign \X2026 256	8230	MS Word smart ellipsis
+sign \X25cf 35
+sign \Xf0b7 1245
 punctuation \X00AB 2356
 punctuation \X00BB 2356
 

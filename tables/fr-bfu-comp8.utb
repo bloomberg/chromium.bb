@@ -118,10 +118,18 @@ punctuation \X0091 68   # [left signle quotation mark] (private use one)
 punctuation \X0092 37   # [right single quotation mark] (private use two)
 punctuation \X0093 378   # [left double quotation mark] (set transmit state)
 punctuation \X0094 678   # [right double quotation mark] (cancel character)
+sign \X200e 0  # (left to right mark)
+sign \X200f 0  # (right to left mark)
+sign \X2013 478  # (en dash)
+sign \X2014 4578  # (em dash)
 punctuation \X2018 68
 punctuation \X2019 37
-sign \X2022 124578	bullet
+sign \X201c 378
+sign \X201d 678
+sign \X2022 124578  # (bullet)
 sign \X2026 368	8230 MS Word smart ellipsis
+sign \X25cf 35
+sign \Xf0b7 124578
 punctuation \X00AB 23568   # left-pointing double angle quotation mark
 punctuation \X00BB 23567   # right-pointing double angle quotation mark
 
