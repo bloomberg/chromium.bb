@@ -1758,6 +1758,14 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   if (rvh != render_view_host())
     return;
 
+  // Ignore renderer unresponsive event if debugger is attached to the tab
+  // since the event may be a result of the renderer sitting on a breakpoint.
+  // See http://crbug.com/65458
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  if (devtools_manager &&
+      devtools_manager->GetDevToolsClientHostFor(rvh) != NULL)
+    return;
+
   if (is_during_unload) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.

@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/browser/debugger/devtools_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,8 @@ TestingBrowserProcess::TestingBrowserProcess()
     : module_ref_count_(0),
       app_locale_("en"),
       local_state_(NULL),
-      io_thread_(NULL) {
+      io_thread_(NULL),
+      devtools_manager_(NULL) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -96,7 +98,7 @@ ThumbnailGenerator* TestingBrowserProcess::GetThumbnailGenerator() {
 }
 
 DevToolsManager* TestingBrowserProcess::devtools_manager() {
-  return NULL;
+  return devtools_manager_.get();
 }
 
 SidebarManager* TestingBrowserProcess::sidebar_manager() {
@@ -260,6 +262,10 @@ void TestingBrowserProcess::SetGoogleURLTracker(
 
 void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
   io_thread_ = io_thread;
+}
+
+void TestingBrowserProcess::SetDevToolsManager(DevToolsManager* manager) {
+  devtools_manager_.reset(manager);
 }
 
 ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
