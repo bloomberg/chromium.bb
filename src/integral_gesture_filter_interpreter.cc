@@ -75,4 +75,14 @@ void IntegralGestureFilterInterpreter::SetHardwareProperties(
   next_->SetHardwareProperties(hw_props);
 }
 
+void IntegralGestureFilterInterpreter::Configure(GesturesPropProvider* pp,
+                                                 void* data) {
+  next_->Configure(pp, data);
+}
+
+void IntegralGestureFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
+                                                   void* data) {
+  next_->Deconfigure(pp, data);
+}
+
 }  // namespace gestures

@@ -166,9 +166,9 @@ void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
   if (prop_provider_ == pp && prop_provider_data_ == data)
     return;
   if (prop_provider_)
-  { /* Free and NULL any allocated properties */ }
+    interpreter_->Deconfigure(pp, data);
   prop_provider_ = pp;
   prop_provider_data_ = data;
   if (prop_provider_)
-  { /* Reallocate and initialize properties */ }
+    interpreter_->Configure(pp, data);
 }

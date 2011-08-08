@@ -95,4 +95,14 @@ void ScalingFilterInterpreter::SetHardwareProperties(
   next_->SetHardwareProperties(friendly_props);
 }
 
+void ScalingFilterInterpreter::Configure(GesturesPropProvider* pp,
+                                         void* data) {
+  next_->Configure(pp, data);
+}
+
+void ScalingFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
+                                           void* data) {
+  next_->Deconfigure(pp, data);
+}
+
 }  // namespace gestures

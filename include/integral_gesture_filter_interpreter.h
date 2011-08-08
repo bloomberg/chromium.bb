@@ -31,6 +31,10 @@ class IntegralGestureFilterInterpreter : public Interpreter {
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
+  virtual void Configure(GesturesPropProvider* pp, void* data);
+
+  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
+
  private:
   void HandleGesture(Gesture* gs);
 

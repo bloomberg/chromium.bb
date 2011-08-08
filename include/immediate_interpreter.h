@@ -77,6 +77,10 @@ class ImmediateInterpreter : public Interpreter {
   void set_tap_timeout(stime_t timeout) { tap_timeout_ = timeout; }
   void set_tap_drag_timeout(stime_t timeout) { tap_drag_timeout_ = timeout; }
 
+  virtual void Configure(GesturesPropProvider* pp, void* data);
+
+  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
+
  private:
   // Returns true iff the fingers in hwstate are the same ones in prev_state_
   bool SameFingers(const HardwareState& hwstate) const;

@@ -41,6 +41,12 @@ class Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) = 0;
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops) {}
+
+  // Allows the interpreter to register properties.
+  virtual void Configure(GesturesPropProvider* pp, void* data) {}
+
+  // Allows the interpreter to unregister its registered properties.
+  virtual void Deconfigure(GesturesPropProvider* pp, void* data) {}
 };
 
 }  // namespace gestures

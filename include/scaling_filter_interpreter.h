@@ -46,6 +46,10 @@ class ScalingFilterInterpreter : public Interpreter {
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
+  virtual void Configure(GesturesPropProvider* pp, void* data);
+
+  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
+
  private:
   void ScaleHardwareState(HardwareState* hwstate);
   void ScaleGesture(Gesture* gs);

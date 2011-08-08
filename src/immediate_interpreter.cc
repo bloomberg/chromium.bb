@@ -875,4 +875,8 @@ void ImmediateInterpreter::SetHardwareProperties(
                                             sizeof(FingerState)));
 }
 
+void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) { }
+
+void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) { }
+
 }  // namespace gestures
