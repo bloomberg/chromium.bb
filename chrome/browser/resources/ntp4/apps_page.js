@@ -417,7 +417,7 @@ cr.define('ntp4', function() {
           this.generateAppForLink(tileContents.data);
         }
       } else {
-        this.addOutsideData_(e.dataTransfer, index);
+        this.addOutsideData_(dataTransfer, index);
       }
     },
 
