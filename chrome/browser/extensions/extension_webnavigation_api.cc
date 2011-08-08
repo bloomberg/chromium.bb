@@ -344,6 +344,9 @@ void ExtensionWebNavigationEventRouter::Init() {
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
                    NotificationService::AllSources());
+    registrar_.Add(this,
+                   content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+                   NotificationService::AllSources());
   }
 }
 
@@ -358,6 +361,10 @@ void ExtensionWebNavigationEventRouter::Observe(
 
     case content::NOTIFICATION_TAB_ADDED:
       TabAdded(Details<TabContents>(details).ptr());
+      break;
+
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+      TabDestroyed(Source<TabContents>(source).ptr());
       break;
 
     default:
@@ -419,6 +426,17 @@ void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
   pending_tab_contents_.erase(iter);
 }
 
+void ExtensionWebNavigationEventRouter::TabDestroyed(
+    TabContents* tab_contents) {
+  pending_tab_contents_.erase(tab_contents);
+  for (std::map<TabContents*, PendingTabContents>::iterator i =
+           pending_tab_contents_.begin(); i != pending_tab_contents_.end(); ) {
+    if (i->second.source_tab_contents == tab_contents)
+      pending_tab_contents_.erase(i++);
+    else
+      ++i;
+  }
+}
 
 // ExtensionWebNavigationTabObserver ------------------------------------------
 

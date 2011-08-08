@@ -198,6 +198,10 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // of such an event and creates a JSON formated extension event from it.
   void TabAdded(TabContents* tab_contents);
 
+  // Handler for NOTIFICATION_TAB_CONTENTS_DESTROYED. If |tab_contents| is
+  // in |pending_tab_contents_|, it is removed.
+  void TabDestroyed(TabContents* tab_contents);
+
   // Mapping pointers to TabContents objects to information about how they got
   // created.
   std::map<TabContents*, PendingTabContents> pending_tab_contents_;
