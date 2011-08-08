@@ -20,6 +20,7 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/chrome_application_mac.h"
@@ -73,7 +74,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   chrome_application_mac::RegisterCrApp();
 #endif
 
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;
+#if defined(OS_WIN)
+  // Unless we're running on desktop GL, we don't need a UI message
+  // loop, so avoid its use to work around apparent problems with some
+  // third-party software.
+  message_loop_type = MessageLoop::TYPE_IO;
+  if (command_line.HasSwitch(switches::kUseGL) &&
+      command_line.GetSwitchValueASCII(switches::kUseGL) ==
+          gfx::kGLImplementationDesktopName) {
+      message_loop_type = MessageLoop::TYPE_UI;
+  }
+#endif
+
+  MessageLoop main_message_loop(message_loop_type);
   base::PlatformThread::SetName("CrGpuMain");
 
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
