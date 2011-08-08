@@ -37,7 +37,7 @@ class AutocompletePopupContentsView : public views::View,
                                 OmniboxView* omnibox_view,
                                 AutocompleteEditModel* edit_model,
                                 Profile* profile,
-                                const views::View* location_bar);
+                                views::View* location_bar);
   virtual ~AutocompletePopupContentsView();
 
   // Returns the bounds the popup should be shown at. This is the display bounds
@@ -144,7 +144,7 @@ class AutocompletePopupContentsView : public views::View,
   OmniboxView* omnibox_view_;
 
   // An object that the popup positions itself against.
-  const views::View* location_bar_;
+  views::View* location_bar_;
 
   // Our border, which can compute our desired bounds.
   const BubbleBorder* bubble_border_;

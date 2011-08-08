@@ -230,7 +230,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    const views::View* location_bar)
+    views::View* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       opt_in_view_(NULL),
       omnibox_view_(omnibox_view),
@@ -357,7 +357,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.can_activate = false;
     params.transparent = true;
-    params.parent = location_bar_->GetWidget()->GetNativeView();
+    params.parent_widget = location_bar_->GetWidget();
     params.bounds = GetPopupBounds();
     popup_->Init(params);
     popup_->SetContentsView(this);

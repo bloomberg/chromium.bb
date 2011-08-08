@@ -48,7 +48,7 @@ class TouchAutocompletePopupContentsView
                                      OmniboxView* omnibox_view,
                                      AutocompleteEditModel* edit_model,
                                      Profile* profile,
-                                     const views::View* location_bar);
+                                     views::View* location_bar);
   virtual ~TouchAutocompletePopupContentsView();
 
   // AutocompletePopupContentsView:

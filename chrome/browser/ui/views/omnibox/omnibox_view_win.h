@@ -69,7 +69,7 @@ class OmniboxViewWin
                  Profile* profile,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
-                 const views::View* location_bar);
+                 views::View* location_bar);
   ~OmniboxViewWin();
 
   views::View* parent_view() const;

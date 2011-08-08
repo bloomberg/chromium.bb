@@ -140,7 +140,7 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
                                    Profile* profile,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
-                                   const views::View* location_bar)
+                                   views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(CreatePopupView(profile, location_bar)),
       controller_(controller),
@@ -690,7 +690,7 @@ void OmniboxViewViews::SelectRange(size_t caret, size_t end) {
 
 AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     Profile* profile,
-    const View* location_bar) {
+    View* location_bar) {
 #if defined(TOUCH_UI)
   typedef TouchAutocompletePopupContentsView AutocompleteContentsView;
 #else
