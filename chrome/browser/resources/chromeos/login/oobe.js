@@ -81,6 +81,26 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Updates a step's css classes to reflect left, current, or right position.
+     * @param {number} stepIndex step index.
+     * @param {string} state one of 'left', 'current', 'right'.
+     */
+    updateStep_: function(stepIndex, state) {
+      var stepId = this.screens_[stepIndex];
+      var step = $(stepId);
+      var header = $('header-' + stepId);
+      var states = [ 'left', 'right', 'current' ];
+      for (var i = 0; i < states.length; ++i) {
+        if (states[i] != state) {
+          step.classList.remove(states[i]);
+          header.classList.remove(states[i]);
+        }
+      }
+      step.classList.add(state);
+      header.classList.add(state);
+    },
+
+    /**
      * Switches to the next OOBE step.
      * @param {number} nextStepIndex Index of the next step.
      */
@@ -88,7 +108,6 @@ cr.define('cr.ui', function() {
       var currentStepId = this.screens_[this.currentStep_];
       var nextStepId = this.screens_[nextStepIndex];
       var oldStep = $(currentStepId);
-      var oldHeader = $('header-' + currentStepId);
       var newStep = $(nextStepId);
       var newHeader = $('header-' + nextStepId);
 
@@ -100,15 +119,13 @@ cr.define('cr.ui', function() {
       if (Oobe.isOobeUI()) {
         // Start gliding animation for OOBE steps.
         if (nextStepIndex > this.currentStep_) {
-          oldHeader.classList.add('left');
-          oldStep.classList.add('left');
-          newHeader.classList.remove('right');
-          newStep.classList.remove('right');
+          for (var i = this.currentStep_; i < nextStepIndex; ++i)
+            this.updateStep_(i, 'left');
+          this.updateStep_(nextStepIndex, 'current');
         } else if (nextStepIndex < this.currentStep_) {
-          oldHeader.classList.add('right');
-          oldStep.classList.add('right');
-          newHeader.classList.remove('left');
-          newStep.classList.remove('left');
+          for (var i = this.currentStep_; i > nextStepIndex; --i)
+            this.updateStep_(i, 'right');
+          this.updateStep_(nextStepIndex, 'current');
         }
       } else {
         // Start fading animation for login display.
