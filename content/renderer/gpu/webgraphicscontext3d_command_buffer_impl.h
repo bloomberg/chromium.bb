@@ -69,6 +69,8 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void reshape(int width, int height);
 
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
+  virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
+                                   WebGLId framebuffer, int width, int height);
 
   virtual WebGLId getPlatformTextureId();
   virtual void prepareTexture();

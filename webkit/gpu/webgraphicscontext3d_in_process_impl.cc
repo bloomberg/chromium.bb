@@ -588,8 +588,9 @@ void WebGraphicsContext3DInProcessImpl::FlipVertically(
 #endif
 
 bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
-    unsigned char* pixels, size_t bufferSize) {
-  if (bufferSize != static_cast<size_t>(4 * width() * height()))
+    unsigned char* pixels, size_t bufferSize, WebGLId framebuffer,
+    int width, int height) {
+  if (bufferSize != static_cast<size_t>(4 * width * height))
     return false;
 
   makeContextCurrent();
@@ -601,8 +602,14 @@ bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
   // vertical flip is only a temporary solution anyway until Chrome
   // is fully GPU composited, it wasn't worth the complexity.
 
-  ResolveMultisampledFramebuffer(0, 0, cached_width_, cached_height_);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  // In this implementation fbo_, not 0, is the drawing buffer, so
+  // special-case that.
+  if (framebuffer == 0)
+    framebuffer = fbo_;
+
+  if (framebuffer == fbo_)
+    ResolveMultisampledFramebuffer(0, 0, width, height);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
 
   GLint pack_alignment = 4;
   bool must_restore_pack_alignment = false;
@@ -616,13 +623,13 @@ bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
     // FIXME: consider testing for presence of GL_OES_read_format
     // and GL_EXT_read_format_bgra, and using GL_BGRA_EXT here
     // directly.
-    glReadPixels(0, 0, cached_width_, cached_height_,
+    glReadPixels(0, 0, width, height,
                  GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     for (size_t i = 0; i < bufferSize; i += 4) {
       std::swap(pixels[i], pixels[i + 2]);
     }
   } else {
-    glReadPixels(0, 0, cached_width_, cached_height_,
+    glReadPixels(0, 0, width, height,
                  GL_BGRA, GL_UNSIGNED_BYTE, pixels);
   }
 
@@ -633,10 +640,15 @@ bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (pixels)
-    FlipVertically(pixels, cached_width_, cached_height_);
+    FlipVertically(pixels, width, height);
 #endif
 
   return true;
+}
+
+bool WebGraphicsContext3DInProcessImpl::readBackFramebuffer(
+    unsigned char* pixels, size_t bufferSize) {
+  return readBackFramebuffer(pixels, bufferSize, fbo_, width(), height());
 }
 
 void WebGraphicsContext3DInProcessImpl::synthesizeGLError(WGC3Denum error) {

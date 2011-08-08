@@ -822,10 +822,13 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::FlipVertically(
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
     unsigned char* pixels,
-    size_t buffer_size) {
+    size_t buffer_size,
+    WebGLId framebuffer,
+    int width,
+    int height) {
   // TODO(gmam): See if we can comment this in.
   // ClearContext();
-  if (buffer_size != static_cast<size_t>(4 * width() * height())) {
+  if (buffer_size != static_cast<size_t>(4 * width * height)) {
     return false;
   }
 
@@ -836,11 +839,11 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
   // vertical flip is only a temporary solution anyway until Chrome
   // is fully GPU composited, it wasn't worth the complexity.
 
-  bool mustRestoreFBO = (bound_fbo_ != 0);
+  bool mustRestoreFBO = (bound_fbo_ != framebuffer);
   if (mustRestoreFBO) {
-    gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+    gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   }
-   gl_->ReadPixels(0, 0, cached_width_, cached_height_,
+   gl_->ReadPixels(0, 0, width, height,
                    GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Swizzle red and blue channels
@@ -855,11 +858,17 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   if (pixels) {
-    FlipVertically(pixels, cached_width_, cached_height_);
+    FlipVertically(pixels, width, height);
   }
 #endif
 
   return true;
+}
+
+bool WebGraphicsContext3DInProcessCommandBufferImpl::readBackFramebuffer(
+    unsigned char* pixels,
+    size_t buffer_size) {
+  return readBackFramebuffer(pixels, buffer_size, 0, width(), height());
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::synthesizeGLError(
