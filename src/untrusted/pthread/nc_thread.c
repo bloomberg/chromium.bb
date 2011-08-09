@@ -66,10 +66,6 @@ pthread_cond_t __nc_last_thread_cond;
 /* number of threads currently running in this NaCl module */
 int __nc_running_threads_counter;
 
-/*
- * Array for TSD keys status management. */
-tsd_status_t __nc_thread_specific_storage[PTHREAD_KEYS_MAX];
-
 /* we have two queues of memory blocks - one for each type */
 STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
 /* We need a counter for each queue to keep track of number of blocks */
@@ -262,23 +258,6 @@ static void nc_release_tls_node(nc_thread_memory_block_t *block) {
   }
 }
 
-/* Implements this, atomically:
- *  old = *ptr;
- *  if (*ptr == old_value)
- *    *ptr = new_value;
- *  return old;
- */
-static AtomicInt32 CompareAndSwap(volatile AtomicInt32* ptr,
-                                  AtomicInt32 old_value,
-                                  AtomicInt32 new_value) {
-  /* GCC intrinsic; see:
-   * http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html.
-   * The x86-{32,64} compilers generate inline code.  The ARM
-   * implementation is external: instrincs/crt1_arm.S.
-   */
-  return __sync_val_compare_and_swap(ptr, old_value, new_value);
-}
-
 uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
   nc_basic_thread_data_t *basic_data =
       HASH_ENTRY_TO_ENTRY_TYPE(entry, nc_basic_thread_data, hash_entry);
@@ -300,7 +279,6 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   tdb->joinable = PTHREAD_CREATE_JOINABLE;
   tdb->join_waiting = 0;
 
-  tdb->thread_specific_data = NULL;
   tdb->tls_node = NULL;
   tdb->stack_node = NULL;
 
@@ -577,36 +555,10 @@ void pthread_exit (void* retval) {
   nc_basic_thread_data_t    *basic_data = tdb->basic_data;
   pthread_t                 thread_id = basic_data->thread_id;
   int                       joinable = tdb->joinable;
-  unsigned int              generation;
 
   /* call the destruction functions for TSD */
-  if (tdb->exiting_without_returning) {
-    int destruction_iterations;
-    for (destruction_iterations = 0;
-        destruction_iterations < PTHREAD_DESTRUCTOR_ITERATIONS;
-        destruction_iterations++) {
-      int i = 0;
-      int nothing_to_do = 1;
-      for (i = 0; i < PTHREAD_KEYS_MAX; i++) {
-        void (*destructor)(void*) =
-            __nc_thread_specific_storage[i].destruction_callback;
-        if ((KEY_ALLOCATED(generation =
-                __nc_thread_specific_storage[i].generation)) &&
-            (tdb->thread_specific_data != NULL) &&
-            (tdb->thread_specific_data[i].generation == generation) &&
-            (tdb->thread_specific_data[i].ptr != NULL) &&
-            (NULL != destructor)) {
-          void *tmp = tdb->thread_specific_data[i].ptr;
-          tdb->thread_specific_data[i].ptr = NULL;
-          destructor(tmp);
-          nothing_to_do = 0;
-        }
-      }
-      if (nothing_to_do) {
-        break;
-      }
-    }
-  }
+  if (tdb->exiting_without_returning)
+    __nc_tsd_exit();
 
   __newlib_thread_exit();
 
@@ -755,89 +707,6 @@ pthread_t pthread_self(void) {
 
 int pthread_equal (pthread_t thread1, pthread_t thread2) {
   return (thread1 == thread2);
-}
-
-/* Thread-specific data functions */
-
-int pthread_key_create (pthread_key_t *key,
-                        void (*destr_function) (void *)) {
-  int i;
-  unsigned int generation;
-  for (i=0; i<PTHREAD_KEYS_MAX; ++i) {
-    if (!KEY_ALLOCATED(generation =
-            __nc_thread_specific_storage[i].generation) &&
-        /* A key is not reusable after UINT_MAX-1 generations -
-         * the last even generation */
-        (__nc_thread_specific_storage[i].generation != UINT_MAX - 1) &&
-        (generation == CompareAndSwap(
-            (AtomicInt32*) &__nc_thread_specific_storage[i].generation,
-            generation,
-            generation + 1))) {
-      *key = i;
-      __nc_thread_specific_storage[i].destruction_callback = destr_function;
-      return 0;
-    }
-  }
-
-  return EAGAIN;
-}
-
-int pthread_key_delete (pthread_key_t key) {
-  unsigned int generation;
-  if ((key > PTHREAD_KEYS_MAX - 1) ||
-      !KEY_ALLOCATED(generation =
-          __nc_thread_specific_storage[key].generation)) {
-    return EINVAL;
-  }
-
-  if (generation !=
-      CompareAndSwap(
-          (AtomicInt32*) &__nc_thread_specific_storage[key].generation,
-          generation,
-          generation + 1)) {
-    /* Somebody incremented the generation counter before we did, i.e. the key
-     * has already been deleted.
-     */
-    return EINVAL;
-  }
-
-  __nc_thread_specific_storage[key].destruction_callback = NULL;
-  return 0;
-}
-
-int pthread_setspecific (pthread_key_t key,
-                         const void *pointer) {
-  nc_thread_descriptor_t *tdb = nc_get_tdb();
-  unsigned int generation;
-
-  if ((key > PTHREAD_KEYS_MAX - 1) ||
-      !KEY_ALLOCATED(generation =
-          __nc_thread_specific_storage[key].generation)) {
-      return EINVAL;
-  }
-
-  /* Allocate the memory for this thread's TSD - we actually need it */
-  if (NULL == tdb->thread_specific_data) {
-    tdb->thread_specific_data = calloc(PTHREAD_KEYS_MAX, sizeof(tsd_t));
-    if (tdb->thread_specific_data == NULL) {
-      return EINVAL;
-    }
-  }
-
-  tdb->thread_specific_data[key].generation = generation;
-  tdb->thread_specific_data[key].ptr = (void*) pointer;
-  return 0;
-}
-
-void *pthread_getspecific (pthread_key_t key) {
-  nc_thread_descriptor_t *tdb = nc_get_tdb();
-  if (!tdb->thread_specific_data ||
-      (key > PTHREAD_KEYS_MAX - 1) ||
-      (tdb->thread_specific_data[key].generation !=
-          __nc_thread_specific_storage[key].generation)) {
-    return NULL;
-  }
-  return tdb->thread_specific_data[key].ptr;
 }
 
 int pthread_setschedprio(pthread_t thread_id, int prio) {
@@ -1005,3 +874,12 @@ void __local_lock_release(_LOCK_T* lock) {
 void __local_lock_release_recursive(_LOCK_T* lock) {
   __local_lock_release(lock);
 }
+
+/*
+ * We include this directly in this file rather than compiling it
+ * separately because there is some code (e.g. libstdc++) that uses weak
+ * references to all pthread functions, but conditionalizes its calls only
+ * on one symbol.  So if these functions are in another file in a library
+ * archive, they might not be linked in by static linking.
+ */
+#include "native_client/src/untrusted/pthread/nc_tsd.c"

@@ -1,9 +1,8 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
-
 
 /*
  * Native Client pthreads implementation layer
@@ -45,13 +44,11 @@ typedef enum {
   MAX_MEMORY_TYPE
 } nc_thread_memory_block_type_t;
 
-struct tsd;
 struct nc_basic_thread_data;
 
 /* This struct defines the layout of the TDB */
 typedef struct {
   void *tls_base;  /* tls accesses are made relative to this base */
-  struct tsd *thread_specific_data;  /* used for set/get_specific */
   int joinable;
   int join_waiting;
   nc_thread_memory_block_t *stack_node;
@@ -75,25 +72,6 @@ typedef struct nc_basic_thread_data {
 
 #define MEMORY_BLOCK_ALLOCATION_SIZE(real_size) \
   (sizeof(nc_thread_memory_block_t) + (real_size))
-
-/* Structures for handling thread-specific data.  */
-
-typedef struct {
-  void (*destruction_callback)(void *p);
-  unsigned int generation;
-} tsd_status_t;
-
-/* A key is free when its generation is even (starting with 0). */
-#define KEY_ALLOCATED(Generation) (((Generation) & 1) == 1)
-
-typedef struct tsd {
-  unsigned int generation;
-  void *ptr;
-} tsd_t;
-
-#define INVALID_HANDLE (-1)
-
-#define PTHREAD_DESTRUCTOR_ITERATIONS 4
 
 #ifdef __cplusplus
 }
