@@ -17,7 +17,6 @@ is started for that shard and the output is identical to gtest's output.
 from cStringIO import StringIO
 import optparse
 import os
-import pty
 import Queue
 import random
 import re
@@ -26,7 +25,7 @@ import sys
 import threading
 
 
-SS_USAGE = "Usage: python %prog [options] path/to/test [gtest_args]"
+SS_USAGE = "python %prog [options] path/to/test [gtest_args]"
 SS_DEFAULT_NUM_CORES = 4
 SS_DEFAULT_SHARDS_PER_CORE = 5 # num_shards = cores * SHARDS_PER_CORE
 SS_DEFAULT_RUNS_PER_CORE = 1 # num_workers = cores * RUNS_PER_CORE
