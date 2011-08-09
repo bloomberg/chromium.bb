@@ -7,6 +7,9 @@ AudioRendererHostTest.*
 ##################################################
 # un-analyzed Dr. Memory bugs:
 
+# http://code.google.com/p/drmemory/issues/detail?id=548
+DownloadManagerTest.StartDownload
+
 ##################################################
 # Chromium bugs:
 
