@@ -22,11 +22,11 @@ class Instance;
 /// A generic type used for passing data types between the module and the page.
 class Var {
  public:
-  /// Special value passed to constructor to make </code>NULL<code>.
+  /// Special value passed to constructor to make <code>NULL</code>.
   struct Null {};
 
   /// Default constructor. Creates a <code>Var</code> of type
-  /// </code>Undefined</code>.
+  /// <code>Undefined</code>.
   Var();
 
   /// A constructor used to create a <code>Var</code> of type <code>Null</code>.
@@ -54,7 +54,7 @@ class Var {
   Var(const std::string& utf8_str);  // Must be encoded in UTF-8.
 
   /// PassRef can be used to construct a <code>Var</code> with a
-  /// <code>PP_Var</code> when the </code>PP_Var</code>
+  /// <code>PP_Var</code> when the <code>PP_Var</code>
   /// already has had its reference count incremented.  For example:
   /// <code>pp::Var my_var(PassRef(), my_pp_var);</code>
   struct PassRef {};
@@ -123,10 +123,10 @@ class Var {
 
   /// This function determines if this <code>Var</code> is a string value.
   ///
-  /// @return True if this <code>Var </code>is a string, otherwise False.
+  /// @return True if this <code>Var</code> is a string, otherwise False.
   bool is_string() const { return var_.type == PP_VARTYPE_STRING; }
 
-  /// This function determines if this </ode>Var</code> is an object.
+  /// This function determines if this <code>Var</code> is an object.
   ///
   /// @return True if this  <code>Var</code> is an object, otherwise False.
   bool is_object() const { return var_.type == PP_VARTYPE_OBJECT; }

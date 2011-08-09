@@ -80,10 +80,10 @@ class Rect {
   }
 
   /// A constructor accepting a pointer to a <code>Point</code> representing
-  /// the origin of the rectangle and a pointer to a Size representing the
-  /// height and width.
+  /// the origin of the rectangle and a pointer to a <code>Size</code>
+  /// representing the height and width.
   ///
-  /// @param[in] origin A pointer to a <code>Point<code> representing the
+  /// @param[in] origin A pointer to a <code>Point</code> representing the
   /// upper-left starting coordinate.
   /// @param[in] size A pointer to a <code>Size</code> representing the height
   /// and width.
@@ -358,7 +358,7 @@ class Rect {
   /// Subtract() computes the rectangle resulting from subtracting
   /// <code>rect</code> from this Rect.  If <code>rect</code>does not intersect
   /// completely in either the x or y direction, then <code>*this</code> is
-  /// returned. If <code>rect<code> contains <code>this</code>, then an empty
+  /// returned. If <code>rect</code> contains <code>this</code>, then an empty
   /// <code>Rect</code> is returned.
   ///
   /// @param[in] rect A pointer to a <code>Rect</code>.

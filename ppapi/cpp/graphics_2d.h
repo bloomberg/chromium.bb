@@ -108,9 +108,9 @@ class Graphics2D : public Resource {
   /// left of the context's internal backing store. Then the pixels contained
   /// in <code>src_rect</code> will be copied into the backing store. This
   /// means that the rectangle being painted will be at <code>src_rect</code>
-  /// offset by <code>top_left/code>.
+  /// offset by <code>top_left</code>.
   ///
-  /// The <code>src_rect/code> is specified in the coordinate system of the
+  /// The <code>src_rect</code> is specified in the coordinate system of the
   /// image being painted, not the context. For the common case of copying the
   /// entire image, you may specify an empty <code>src_rect</code>.
   ///
