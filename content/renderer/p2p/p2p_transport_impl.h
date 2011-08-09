@@ -66,10 +66,6 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   void OnReadableState(cricket::TransportChannel* channel);
   void OnWriteableState(cricket::TransportChannel* channel);
 
-  std::string SerializeCandidate(const cricket::Candidate& candidate);
-  bool DeserializeCandidate(const std::string& address,
-                            cricket::Candidate* candidate);
-
   void OnTcpConnected(int result);
 
   std::string name_;

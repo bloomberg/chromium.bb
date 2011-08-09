@@ -5,13 +5,19 @@
 #ifndef JINGLE_GLUE_UTILS_H_
 #define JINGLE_GLUE_UTILS_H_
 
+#include <string>
+
 namespace net {
 class IPEndPoint;
 }  // namespace net
 
 namespace talk_base {
-  class SocketAddress;
+class SocketAddress;
 }  // namespace talk_base
+
+namespace cricket {
+class Candidate;
+}  // namespace cricket
 
 namespace jingle_glue {
 
@@ -22,6 +28,11 @@ bool IPEndPointToSocketAddress(const net::IPEndPoint& address_chrome,
                                talk_base::SocketAddress* address_lj);
 bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address_lj,
                                net::IPEndPoint* address_chrome);
+
+// Helper functions to serialize and deserialize P2P candidates.
+std::string SerializeP2PCandidate(const cricket::Candidate& candidate);
+bool DeserializeP2PCandidate(const std::string& address,
+                             cricket::Candidate* candidate);
 
 }  // namespace jingle_glue
 

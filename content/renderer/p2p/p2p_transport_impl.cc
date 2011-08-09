@@ -4,14 +4,13 @@
 
 #include "content/renderer/p2p/p2p_transport_impl.h"
 
-#include "base/values.h"
-#include "content/common/json_value_serializer.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/render_view.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
@@ -90,7 +89,8 @@ bool P2PTransportImpl::Init(const std::string& name,
 
 bool P2PTransportImpl::AddRemoteCandidate(const std::string& address) {
   cricket::Candidate candidate;
-  if (!DeserializeCandidate(address, &candidate)) {
+  if (!jingle_glue::DeserializeP2PCandidate(address, &candidate)) {
+    LOG(ERROR) << "Failed to parse candidate " << address;
     return false;
   }
 
@@ -105,7 +105,8 @@ void P2PTransportImpl::OnRequestSignaling() {
 void P2PTransportImpl::OnCandidateReady(
     cricket::TransportChannelImpl* channel,
     const cricket::Candidate& candidate) {
-  event_handler_->OnCandidateReady(SerializeCandidate(candidate));
+  event_handler_->OnCandidateReady(
+      jingle_glue::SerializeP2PCandidate(candidate));
 }
 
 void P2PTransportImpl::OnReadableState(cricket::TransportChannel* channel) {
@@ -116,71 +117,6 @@ void P2PTransportImpl::OnReadableState(cricket::TransportChannel* channel) {
 void P2PTransportImpl::OnWriteableState(cricket::TransportChannel* channel) {
   state_ = static_cast<State>(state_ | STATE_WRITABLE);
   event_handler_->OnStateChange(state_);
-}
-
-std::string P2PTransportImpl::SerializeCandidate(
-    const cricket::Candidate& candidate) {
-
-  // TODO(sergeyu): Use SDP to format candidates?
-  DictionaryValue value;
-  value.SetString("name", candidate.name());
-  value.SetString("ip", candidate.address().IPAsString());
-  value.SetInteger("port", candidate.address().port());
-  value.SetString("type", candidate.type());
-  value.SetString("protocol", candidate.protocol());
-  value.SetString("username", candidate.username());
-  value.SetString("password", candidate.password());
-  value.SetDouble("preference", candidate.preference());
-  value.SetInteger("generation", candidate.generation());
-
-  std::string result;
-  JSONStringValueSerializer serializer(&result);
-  serializer.Serialize(value);
-  return result;
-}
-
-bool P2PTransportImpl::DeserializeCandidate(const std::string& address,
-                                            cricket::Candidate* candidate) {
-  JSONStringValueSerializer deserializer(address);
-  scoped_ptr<Value> value(deserializer.Deserialize(NULL, NULL));
-  if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
-    return false;
-  }
-
-  DictionaryValue* dic_value = static_cast<DictionaryValue*>(value.get());
-
-  std::string name;
-  std::string ip;
-  int port;
-  std::string type;
-  std::string protocol;
-  std::string username;
-  std::string password;
-  double preference;
-  int generation;
-
-  if (!dic_value->GetString("name", &name) ||
-      !dic_value->GetString("ip", &ip) ||
-      !dic_value->GetInteger("port", &port) ||
-      !dic_value->GetString("type", &type) ||
-      !dic_value->GetString("protocol", &protocol) ||
-      !dic_value->GetString("username", &username) ||
-      !dic_value->GetString("password", &password) ||
-      !dic_value->GetDouble("preference", &preference) ||
-      !dic_value->GetInteger("generation", &generation)) {
-    return false;
-  }
-
-  candidate->set_name(name);
-  candidate->set_address(talk_base::SocketAddress(ip, port));
-  candidate->set_type(type);
-  candidate->set_protocol(protocol);
-  candidate->set_username(username);
-  candidate->set_password(password);
-  candidate->set_preference(static_cast<float>(preference));
-  candidate->set_generation(generation);
-
-  return true;
 }
 
 net::Socket* P2PTransportImpl::GetChannel() {
