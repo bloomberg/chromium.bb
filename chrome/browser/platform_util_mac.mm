@@ -152,32 +152,4 @@ bool IsVisible(gfx::NativeView view) {
           [[view window] isVisible]);
 }
 
-void SimpleErrorBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message) {
-  // Ignore the title; it's the window title on other platforms and ignorable.
-  NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-  [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
-  [alert setMessageText:base::SysUTF16ToNSString(message)];
-  [alert setAlertStyle:NSWarningAlertStyle];
-  [alert runModal];
-}
-
-bool SimpleYesNoBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message) {
-  // Ignore the title; it's the window title on other platforms and ignorable.
-  NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-  [alert setMessageText:base::SysUTF16ToNSString(message)];
-  [alert setAlertStyle:NSWarningAlertStyle];
-
-  [alert addButtonWithTitle:
-      l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
-  [alert addButtonWithTitle:
-      l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)];
-
-  NSInteger result = [alert runModal];
-  return result == NSAlertFirstButtonReturn;
-}
-
 }  // namespace platform_util

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/platform_util.h"
+#include "chrome/browser/simple_message_box.h"
 
 // No AddRef required when using ExtensionErrorReporter with RunnableMethod.
 // This is okay since the ExtensionErrorReporter is a singleton that lives until
@@ -55,9 +55,9 @@ void ExtensionErrorReporter::ReportError(const std::string& message,
   LOG(ERROR) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
-    platform_util::SimpleErrorBox(NULL,
-                                  UTF8ToUTF16("Extension error"),
-                                  UTF8ToUTF16(message));
+    browser::ShowErrorBox(NULL,
+                          UTF8ToUTF16("Extension error"),
+                          UTF8ToUTF16(message));
   }
 }
 

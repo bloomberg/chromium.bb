@@ -43,19 +43,6 @@ void ActivateWindow(gfx::NativeWindow window);
 // whether the view has the visible attribute set.
 bool IsVisible(gfx::NativeView view);
 
-// Pops up an error box with an OK button. If |parent| is non-null, the box
-// will be modal on it. (On Mac, it is always app-modal.) Generally speaking,
-// this function should not be used for much. Infobars are preferred.
-void SimpleErrorBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message);
-
-// Pops up a dialog box with two buttons (Yes/No), with the default button of
-// Yes. If |parent| is non-null, the box will be modal on it. (On Mac, it is
-// always app-modal.) Returns true if the Yes button was chosen.
-bool SimpleYesNoBox(gfx::NativeWindow parent,
-                    const string16& title,
-                    const string16& message);
-}
+}  // platform_util
 
 #endif  // CHROME_BROWSER_PLATFORM_UTIL_H_

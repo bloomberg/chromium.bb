@@ -18,7 +18,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_constants.h"

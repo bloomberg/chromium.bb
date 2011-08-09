@@ -16,9 +16,9 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -191,7 +191,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
       IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
       base::IntToString16(child_count));
   string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  return platform_util::SimpleYesNoBox(parent, title, message);
+  return browser::ShowYesNoBox(parent, title, message);
 }
 
 // Comparison function that compares based on date modified of the two nodes.
@@ -731,7 +731,7 @@ bool NodeHasURLs(const BookmarkNode* node) {
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
   DCHECK(node && node->is_folder() && !node->empty());
-  return platform_util::SimpleYesNoBox(window,
+  return browser::ShowYesNoBox(window,
       l10n_util::GetStringUTF16(IDS_DELETE),
       l10n_util::GetStringFUTF16Int(IDS_BOOMARK_EDITOR_CONFIRM_DELETE,
                                     ChildURLCountTotal(node)));

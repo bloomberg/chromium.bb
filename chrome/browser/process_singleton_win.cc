@@ -14,9 +14,9 @@
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_startup.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -144,11 +144,9 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
   // If there is a visible browser window, ask the user before killing it.
   if (visible_window) {
-    std::wstring text =
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE));
-    std::wstring caption =
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    if (!platform_util::SimpleYesNoBox(NULL, caption, text)) {
+    string16 text = l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE);
+    string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    if (!browser::ShowYesNoBox(NULL, caption, text)) {
       // The user denied. Quit silently.
       return PROCESS_NOTIFIED;
     }

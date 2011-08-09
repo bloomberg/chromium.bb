@@ -10,8 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/media/media_player.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/browser/browser_thread.h"
@@ -218,7 +218,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
-          &platform_util::SimpleErrorBox,
+          &browser::ShowErrorBox,
           static_cast<gfx::NativeWindow>(NULL),
           l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_TITLE),
           l10n_util::GetStringFUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE,

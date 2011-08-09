@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/profile_error_dialog.h"
 
-#include "chrome/browser/platform_util.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,7 +16,7 @@ void ShowProfileErrorDialog(int message_id) {
   // Parent the dialog to the current browser. During startup there may be no
   // browser.
   Browser* browser = BrowserList::GetLastActive();
-  platform_util::SimpleErrorBox(
+  browser::ShowErrorBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringUTF16(message_id));

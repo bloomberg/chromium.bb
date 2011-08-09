@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
 
-#include "chrome/browser/platform_util.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,7 +62,7 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
                           HungWindowResponseCallback,
                           reinterpret_cast<ULONG_PTR>(this));
       current_hung_plugin_window_ = hung_window;
-      if (platform_util::SimpleYesNoBox(NULL, title, msg)) {
+      if (browser::ShowYesNoBox(NULL, title, msg)) {
         *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
       } else {
         // If the user choses to ignore the hung window warning, the

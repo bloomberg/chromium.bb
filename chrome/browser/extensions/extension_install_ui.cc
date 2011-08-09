@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -205,7 +205,7 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (disable_failure_ui_for_tests)
     return;
-  platform_util::SimpleErrorBox(
+  browser::ShowErrorBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
       UTF8ToUTF16(error));
