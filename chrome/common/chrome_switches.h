@@ -30,7 +30,6 @@ extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowScriptingGallery[];
 extern const char kAllowWebSocketProxy[];
 extern const char kAllowWebUICompositing[];
-extern const char kAllowWebUIOobe[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
@@ -281,7 +280,6 @@ extern const char kWinHttpProxyResolver[];
 
 #if defined(OS_CHROMEOS)
 extern const char kWebUILogin[];
-extern const char kWebUIGaiaLogin[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];

@@ -40,10 +40,6 @@ const char kAllowWebSocketProxy[]           = "allow-websocket-proxy";
 // Allow compositing on chrome:// pages.
 const char kAllowWebUICompositing[]         = "allow-webui-compositing";
 
-// Allows WebUI based OOBE. Note, WebUI will be used iff kWebUILogin is also
-// true.
-const char kAllowWebUIOobe[]                = "allow-webui-oobe";
-
 // This prevents Chrome from requiring authorization to run certain widely
 // installed but less commonly used plug-ins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
@@ -1024,14 +1020,11 @@ const char kVersion[]                       = "version";
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
 #if defined(OS_CHROMEOS)
-// Enable WebUI based login screens.
+// Enable WebUI based OOBE and login.
 const char kWebUILogin[]                    = "webui-login";
 
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
-
-// Enable WebUI login screen hosted by GAIA authentication extension.
-const char kWebUIGaiaLogin[]                = "webui-gaia-login";
 
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";

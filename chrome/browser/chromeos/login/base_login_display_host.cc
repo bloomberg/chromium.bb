@@ -144,7 +144,7 @@ void BaseLoginDisplayHost::StartWizard(
   // is done before new controller creation.
   wizard_controller_.reset();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAllowWebUIOobe)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
     wizard_controller_.reset(CreateWizardController());
   } else {
     // Force views based implementation.

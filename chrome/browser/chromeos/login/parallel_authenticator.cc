@@ -60,7 +60,7 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       checked_for_localaccount_(false),
       using_oauth_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUIGaiaLogin) &&
+              switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kSkipOAuthLogin)) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());

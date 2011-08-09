@@ -344,6 +344,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableShortcutsProvider)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "webui-login",
+    IDS_SYNC_SETUP_TITLE,
+    IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kWebUILogin)
+  },
+#endif
   {
     "memory-widget",
     IDS_FLAGS_MEMORY_WIDGET_NAME,

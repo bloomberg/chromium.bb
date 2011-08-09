@@ -62,7 +62,7 @@ SigninScreenHandler::SigninScreenHandler()
       oobe_ui_(false),
       extension_driven_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUIGaiaLogin)) {
+              switches::kWebUILogin)) {
   delegate_->SetWebUIHandler(this);
 }
 

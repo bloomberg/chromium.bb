@@ -52,7 +52,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       auth_mode_(AUTH_MODE_INTERNAL),
       using_oauth_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUIGaiaLogin) &&
+              switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)),
       method_factory_(this) {
