@@ -109,6 +109,87 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   nap->static_text_end += page_pad;
 }
 
+/*
+ * Basic address space layout sanity check.
+ */
+NaClErrorCode NaClCheckAddressSpaceLayoutSanity(struct NaClApp *nap,
+                                                uintptr_t rodata_end,
+                                                uintptr_t data_end,
+                                                uintptr_t max_vaddr) {
+  if (0 != nap->data_start) {
+    if (data_end != max_vaddr) {
+      NaClLog(LOG_INFO, "data segment is not last\n");
+      return LOAD_DATA_NOT_LAST_SEGMENT;
+    }
+  } else if (0 != nap->rodata_start) {
+    if (NaClRoundAllocPage(rodata_end) != max_vaddr) {
+      /*
+       * This should be unreachable, but we include it just for
+       * completeness.
+       *
+       * Here is why it is unreachable:
+       *
+       * NaClPhdrChecks checks the test segment starting address.  The
+       * only allowed loaded segments are text, data, and rodata.
+       * Thus unless the rodata is in the trampoline region, it must
+       * be after the text.  And NaClElfImageValidateProgramHeaders
+       * ensures that all segments start after the trampoline region.
+       */
+      NaClLog(LOG_INFO, "no data segment, but rodata segment is not last\n");
+      return LOAD_NO_DATA_BUT_RODATA_NOT_LAST_SEGMENT;
+    }
+  }
+  if (0 != nap->rodata_start && 0 != nap->data_start) {
+    if (rodata_end > nap->data_start) {
+      NaClLog(LOG_INFO, "rodata_overlaps data.\n");
+      return LOAD_RODATA_OVERLAPS_DATA;
+    }
+  }
+  if (0 != nap->rodata_start) {
+    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->rodata_start) {
+      return LOAD_TEXT_OVERLAPS_RODATA;
+    }
+  } else if (0 != nap->data_start) {
+    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->data_start) {
+      return LOAD_TEXT_OVERLAPS_DATA;
+    }
+  }
+  if (0 != nap->rodata_start &&
+      NaClRoundAllocPage(nap->rodata_start) != nap->rodata_start) {
+    NaClLog(LOG_INFO, "rodata_start not a multiple of allocation size\n");
+    return LOAD_BAD_RODATA_ALIGNMENT;
+  }
+  if (0 != nap->data_start &&
+      NaClRoundAllocPage(nap->data_start) != nap->data_start) {
+    NaClLog(LOG_INFO, "data_start not a multiple of allocation size\n");
+    return LOAD_BAD_DATA_ALIGNMENT;
+  }
+  return LOAD_OK;
+}
+
+void NaClLogAddressSpaceLayout(struct NaClApp *nap) {
+  NaClLog(2, "NaClApp addr space layout:\n");
+  NaClLog(2, "nap->static_text_end    = 0x%016"NACL_PRIxPTR"\n",
+          nap->static_text_end);
+  NaClLog(2, "nap->dynamic_text_start = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_start);
+  NaClLog(2, "nap->dynamic_text_end   = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_end);
+  NaClLog(2, "nap->rodata_start       = 0x%016"NACL_PRIxPTR"\n",
+          nap->rodata_start);
+  NaClLog(2, "nap->data_start         = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_start);
+  NaClLog(2, "nap->data_end           = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_end);
+  NaClLog(2, "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
+          nap->break_addr);
+  NaClLog(2, "nap->initial_entry_pt   = 0x%016"NACL_PRIxPTR"\n",
+          nap->initial_entry_pt);
+  NaClLog(2, "nap->user_entry_pt      = 0x%016"NACL_PRIxPTR"\n",
+          nap->user_entry_pt);
+  NaClLog(2, "nap->bundle_size        = 0x%x\n", nap->bundle_size);
+}
+
 NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
                               struct NaClApp   *nap) {
   NaClErrorCode       ret = LOAD_INTERNAL;
@@ -195,102 +276,17 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->bundle_size = NACL_INSTR_BLOCK_SIZE;
 
   nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
-
-  NaClLog(2,
-          "NaClApp addr space layout:\n");
-  NaClLog(2,
-          "nap->static_text_end    = 0x%016"NACL_PRIxPTR"\n",
-          nap->static_text_end);
-  NaClLog(2,
-          "nap->dynamic_text_start = 0x%016"NACL_PRIxPTR"\n",
-          nap->dynamic_text_start);
-  NaClLog(2,
-          "nap->dynamic_text_end   = 0x%016"NACL_PRIxPTR"\n",
-          nap->dynamic_text_end);
-  NaClLog(2,
-          "nap->rodata_start       = 0x%016"NACL_PRIxPTR"\n",
-          nap->rodata_start);
-  NaClLog(2,
-          "nap->data_start         = 0x%016"NACL_PRIxPTR"\n",
-          nap->data_start);
-  NaClLog(2,
-          "nap->data_end           = 0x%016"NACL_PRIxPTR"\n",
-          nap->data_end);
-  NaClLog(2,
-          "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
-          nap->break_addr);
-  NaClLog(2,
-          "nap->initial_entry_pt   = 0x%016"NACL_PRIxPTR"\n",
-          nap->initial_entry_pt);
-  NaClLog(2,
-          "nap->user_entry_pt      = 0x%016"NACL_PRIxPTR"\n",
-          nap->user_entry_pt);
-  NaClLog(2,
-          "nap->bundle_size        = 0x%x\n",
-          nap->bundle_size);
+  NaClLogAddressSpaceLayout(nap);
 
   if (!NaClAddrIsValidEntryPt(nap, nap->initial_entry_pt)) {
     ret = LOAD_BAD_ENTRY;
     goto done;
   }
 
-  /*
-   * Basic address space layout sanity check.
-   */
-  if (0 != nap->data_start) {
-    if (data_end != max_vaddr) {
-      NaClLog(LOG_INFO, "data segment is not last\n");
-      ret = LOAD_DATA_NOT_LAST_SEGMENT;
-      goto done;
-    }
-  } else if (0 != nap->rodata_start) {
-    if (NaClRoundAllocPage(rodata_end) != max_vaddr) {
-      /*
-       * This should be unreachable, but we include it just for
-       * completeness.
-       *
-       * Here is why it is unreachable:
-       *
-       * NaClPhdrChecks checks the test segment starting address.  The
-       * only allowed loaded segments are text, data, and rodata.
-       * Thus unless the rodata is in the trampoline region, it must
-       * be after the text.  And NaClElfImageValidateProgramHeaders
-       * ensures that all segments start after the trampoline region.
-       */
-      NaClLog(LOG_INFO, "no data segment, but rodata segment is not last\n");
-      ret = LOAD_NO_DATA_BUT_RODATA_NOT_LAST_SEGMENT;
-      goto done;
-    }
-  }
-  if (0 != nap->rodata_start && 0 != nap->data_start) {
-    if (rodata_end > nap->data_start) {
-      NaClLog(LOG_INFO, "rodata_overlaps data.\n");
-      ret = LOAD_RODATA_OVERLAPS_DATA;
-      goto done;
-    }
-  }
-  if (0 != nap->rodata_start) {
-    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->rodata_start) {
-      ret = LOAD_TEXT_OVERLAPS_RODATA;
-      goto done;
-    }
-  } else if (0 != nap->data_start) {
-    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->data_start) {
-      ret = LOAD_TEXT_OVERLAPS_DATA;
-      goto done;
-    }
-  }
-
-  if (0 != nap->rodata_start &&
-      NaClRoundAllocPage(nap->rodata_start) != nap->rodata_start) {
-    NaClLog(LOG_INFO, "rodata_start not a multiple of allocation size\n");
-    ret = LOAD_BAD_RODATA_ALIGNMENT;
-    goto done;
-  }
-  if (0 != nap->data_start &&
-      NaClRoundAllocPage(nap->data_start) != nap->data_start) {
-    NaClLog(LOG_INFO, "data_start not a multiple of allocation size\n");
-    ret = LOAD_BAD_DATA_ALIGNMENT;
+  subret = NaClCheckAddressSpaceLayoutSanity(nap, rodata_end, data_end,
+                                             max_vaddr);
+  if (LOAD_OK != subret) {
+    ret = subret;
     goto done;
   }
 
@@ -409,14 +405,10 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 #endif
 
   NaClLog(2, "Installing trampoline\n");
-
   NaClLoadTrampoline(nap);
 
   NaClLog(2, "Installing springboard\n");
-
   NaClLoadSpringboard(nap);
-
-  NaClLog(2, "Applying memory protection\n");
 
   /*
    * NaClMemoryProtect also initializes the mem_map w/ information
@@ -425,44 +417,15 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
    * The contents of the dynamic text region will get remapped as
    * non-writable.
    */
+  NaClLog(2, "Applying memory protection\n");
   subret = NaClMemoryProtection(nap);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
-  NaClLog(2,
-          "NaClAppLoadFile done; addr space layout:\n");
-  NaClLog(2,
-          "nap->static_text_end    = 0x%016"NACL_PRIxPTR"\n",
-          nap->static_text_end);
-  NaClLog(2,
-          "nap->dynamic_text_start = 0x%016"NACL_PRIxPTR"\n",
-          nap->dynamic_text_start);
-  NaClLog(2,
-          "nap->dynamic_text_end   = 0x%016"NACL_PRIxPTR"\n",
-          nap->dynamic_text_end);
-  NaClLog(2,
-          "nap->rodata_start       = 0x%016"NACL_PRIxPTR"\n",
-          nap->rodata_start);
-  NaClLog(2,
-          "nap->data_start         = 0x%016"NACL_PRIxPTR"\n",
-          nap->data_start);
-  NaClLog(2,
-          "nap->data_end           = 0x%016"NACL_PRIxPTR"\n",
-          nap->data_end);
-  NaClLog(2,
-          "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
-          nap->break_addr);
-  NaClLog(2,
-          "nap->initial_entry_pt   = 0x%016"NACL_PRIxPTR"\n",
-          nap->initial_entry_pt);
-  NaClLog(2,
-          "nap->user_entry_pt      = 0x%016"NACL_PRIxPTR"\n",
-          nap->user_entry_pt);
-  NaClLog(2,
-          "nap->bundle_size        = 0x%x\n",
-          nap->bundle_size);
 
+  NaClLog(2, "NaClAppLoadFile done; ");
+  NaClLogAddressSpaceLayout(nap);
   ret = LOAD_OK;
 done:
   NaClElfImageDelete(image);
