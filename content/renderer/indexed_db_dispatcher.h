@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -159,7 +159,6 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnBlocked(int32 response_id);
   void OnAbort(int32 transaction_id);
   void OnComplete(int32 transaction_id);
-  void OnTimeout(int32 transaction_id);
   void OnVersionChange(int32 database_id, const string16& newVersion);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be

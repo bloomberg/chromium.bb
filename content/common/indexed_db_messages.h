@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,8 +162,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksBlocked,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksAbort,
                      int32 /* transaction_id */)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksComplete,
-                     int32 /* transaction_id */)
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksTimeout,
                      int32 /* transaction_id */)
 
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksVersionChange,

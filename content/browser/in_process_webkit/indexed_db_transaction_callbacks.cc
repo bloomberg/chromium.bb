@@ -27,8 +27,3 @@ void IndexedDBTransactionCallbacks::onComplete() {
   dispatcher_host_->Send(
       new IndexedDBMsg_TransactionCallbacksComplete(transaction_id_));
 }
-
-void IndexedDBTransactionCallbacks::onTimeout() {
-  dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksTimeout(transaction_id_));
-}

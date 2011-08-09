@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,6 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksComplete, OnComplete)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksTimeout, OnTimeout)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksVersionChange,
                         OnVersionChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -434,13 +433,6 @@ void IndexedDBDispatcher::OnComplete(int32 transaction_id) {
   WebIDBTransactionCallbacks* callbacks =
       pending_transaction_callbacks_.Lookup(transaction_id);
   callbacks->onComplete();
-  pending_transaction_callbacks_.Remove(transaction_id);
-}
-
-void IndexedDBDispatcher::OnTimeout(int32 transaction_id) {
-  WebIDBTransactionCallbacks* callbacks =
-      pending_transaction_callbacks_.Lookup(transaction_id);
-  callbacks->onTimeout();
   pending_transaction_callbacks_.Remove(transaction_id);
 }
 

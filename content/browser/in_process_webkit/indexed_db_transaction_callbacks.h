@@ -21,7 +21,6 @@ class IndexedDBTransactionCallbacks
 
   virtual void onAbort();
   virtual void onComplete();
-  virtual void onTimeout();
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
