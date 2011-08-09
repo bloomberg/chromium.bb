@@ -65,7 +65,7 @@ code_point_to_category(HB_UChar32 cp) {
                               sizeof(struct category_property),
                               category_property_cmp);
   if (!vprop)
-    return HB_NoCategory;
+    return HB_Other_NotAssigned;
 
   return ((const struct category_property *) vprop)->category;
 }

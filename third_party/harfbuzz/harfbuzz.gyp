@@ -25,6 +25,7 @@
             'src/harfbuzz-tibetan.c',
             'src/harfbuzz-khmer.c',
             'src/harfbuzz-indic.cpp',
+            'src/harfbuzz-greek.c',
             'src/harfbuzz-hebrew.c',
             'src/harfbuzz-arabic.c',
             'src/harfbuzz-hangul.c',

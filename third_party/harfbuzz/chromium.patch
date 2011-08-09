@@ -1,8 +1,16 @@
 diff --git a/contrib/harfbuzz-unicode.c b/contrib/harfbuzz-unicode.c
-index 51dd4ea..cb7a85b 100644
+index 049e0ca..86458d0 100644
 --- a/contrib/harfbuzz-unicode.c
 +++ b/contrib/harfbuzz-unicode.c
-@@ -171,7 +171,10 @@ hb_utf16_script_run_prev(unsigned *num_code_points, HB_ScriptItem *output,
+@@ -120,7 +120,6 @@ hb_utf16_script_run_next(unsigned *num_code_points, HB_ScriptItem *output,
+         current_script = script;
+         continue;
+       } else if (script == HB_Script_Inherited) {
+-        current_script = script;
+         continue;
+       } else {
+         *iter = prev_iter;
+@@ -171,7 +170,10 @@ hb_utf16_script_run_prev(unsigned *num_code_points, HB_ScriptItem *output,
          current_script = script;
          continue;
        } else if (script == HB_Script_Inherited) {
@@ -14,11 +22,23 @@ index 51dd4ea..cb7a85b 100644
          continue;
        } else {
          *iter = prev_iter;
+diff --git a/src/harfbuzz-arabic.c b/src/harfbuzz-arabic.c
+index 3837087..ce2ca6c 100644
+--- a/src/harfbuzz-arabic.c
++++ b/src/harfbuzz-arabic.c
+@@ -1107,6 +1107,7 @@ HB_Bool HB_ArabicShape(HB_ShaperItem *item)
+     assert(item->item.script == HB_Script_Arabic || item->item.script == HB_Script_Syriac
+            || item->item.script == HB_Script_Nko);
+ 
++    item->shaperFlags |= HB_ShaperFlag_ForceMarksToZeroWidth;
+ #ifndef NO_OPENTYPE
+ 
+     if (HB_SelectScript(item, item->item.script == HB_Script_Arabic ? arabic_features : syriac_features)) {
 diff --git a/src/harfbuzz-gpos.c b/src/harfbuzz-gpos.c
-index 356dc01..db5ea0a 100644
+index a216005..7bd3b3b 100644
 --- a/src/harfbuzz-gpos.c
 +++ b/src/harfbuzz-gpos.c
-@@ -2976,6 +2976,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
+@@ -3012,6 +3012,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
      j--;
    }
  
@@ -29,10 +49,10 @@ index 356dc01..db5ea0a 100644
  			  &mark2_index );
    if ( error )
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
-index f3ec8e1..2b52221 100644
+index ce4d4ac..0f50799 100644
 --- a/src/harfbuzz-shaper.cpp
 +++ b/src/harfbuzz-shaper.cpp
-@@ -433,7 +433,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
+@@ -430,7 +430,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
  
      // ### zeroWidth and justification are missing here!!!!!
  
@@ -41,7 +61,7 @@ index f3ec8e1..2b52221 100644
  
  //     qDebug("QScriptEngine::heuristicSetGlyphAttributes, num_glyphs=%d", item->num_glyphs);
      HB_GlyphAttributes *attributes = item->attributes;
-@@ -451,7 +451,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
+@@ -448,7 +448,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
          }
          ++glyph_pos;
      }
@@ -49,11 +69,12 @@ index f3ec8e1..2b52221 100644
  
      // first char in a run is never (treated as) a mark
      int cStart = 0;
-@@ -1151,10 +1150,11 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
+@@ -1151,10 +1150,12 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
          return false;
      face->tmpLogClusters = tmpLogClusters;
  
 +    const int itemLength = item->item.length;
++    assert(itemLength > 0);
      for (int i = 0; i < face->length; ++i) {
          hb_buffer_add_glyph(face->buffer, item->glyphs[i], properties ? properties[i] : 0, i);
          face->tmpAttributes[i] = item->attributes[i];
@@ -62,3 +83,54 @@ index f3ec8e1..2b52221 100644
      }
  
  #ifdef OT_DEBUG
+@@ -1190,6 +1191,24 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
+     return true;
+ }
+ 
++/* See comments near the definition of HB_ShaperFlag_ForceMarksToZeroWidth for a description
++   of why this function exists. */
++void HB_FixupZeroWidth(HB_ShaperItem *item)
++{
++    HB_UShort property;
++
++    if (!item->face->gdef)
++        return;
++
++    for (unsigned int i = 0; i < item->num_glyphs; ++i) {
++        /* If the glyph is a mark, force its advance to zero. */
++        if (HB_GDEF_Get_Glyph_Property (item->face->gdef, item->glyphs[i], &property) == HB_Err_Ok &&
++            property == HB_GDEF_MARK) {
++            item->advances[i] = 0;
++        }
++    }
++}
++
+ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool doLogClusters)
+ {
+     HB_Face face = item->face;
+@@ -1204,6 +1223,8 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
+ 
+     if (!face->glyphs_substituted && !glyphs_positioned) {
+         HB_GetGlyphAdvances(item);
++        if (item->face->current_flags & HB_ShaperFlag_ForceMarksToZeroWidth)
++            HB_FixupZeroWidth(item);
+         return true; // nothing to do for us
+     }
+ 
+diff --git a/src/harfbuzz-shaper.h b/src/harfbuzz-shaper.h
+index ab5c07a..72c9aa3 100644
+--- a/src/harfbuzz-shaper.h
++++ b/src/harfbuzz-shaper.h
+@@ -170,7 +170,11 @@ typedef enum {
+ typedef enum {
+     HB_ShaperFlag_Default = 0,
+     HB_ShaperFlag_NoKerning = 1,
+-    HB_ShaperFlag_UseDesignMetrics = 2
++    HB_ShaperFlag_UseDesignMetrics = 1 << 1,
++    /* Arabic vowels in some fonts (Times New Roman, at least) have
++       non-zero advances, when they should be zero.  Setting this shaper
++       flag causes us to zero out the advances for mark glyphs. */
++    HB_ShaperFlag_ForceMarksToZeroWidth = 1 << 2
+ } HB_ShaperFlag;
+ 
+ /* 

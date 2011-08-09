@@ -136,13 +136,13 @@ HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32
     return HB_Err_Ok;
 }
 
-void hb_getGlyphMetrics(HB_Font font, HB_Glyph glyph, HB_GlyphMetrics *metrics)
+void hb_getGlyphMetrics(HB_Font, HB_Glyph, HB_GlyphMetrics *metrics)
 {
     // ###
     metrics->x = metrics->y = metrics->width = metrics->height = metrics->xOffset = metrics->yOffset = 0;
 }
 
-HB_Fixed hb_getFontMetric(HB_Font font, HB_FontMetric metric)
+HB_Fixed hb_getFontMetric(HB_Font, HB_FontMetric )
 {
     return 0; // ####
 }
@@ -169,6 +169,8 @@ public slots:
     void initTestCase();
     void cleanupTestCase();
 private slots:
+    void greek();
+
     void devanagari();
     void bengali();
     void gurmukhi();
@@ -178,9 +180,10 @@ private slots:
     void telugu();
     void kannada();
     void malayalam();
-    // sinhala missing
+    void sinhala();
 
     void khmer();
+    void nko();
     void linearB();
 };
 
@@ -202,18 +205,25 @@ void tst_QScriptEngine::cleanupTestCase()
     FT_Done_FreeType(freetype);
 }
 
-struct ShapeTable {
-    unsigned short unicode[16];
-    unsigned short glyphs[16];
-};
-
-static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
+class Shaper
 {
-    QString str = QString::fromUtf16( s->unicode );
-
-    HB_Face hbFace = HB_NewFace(face, hb_getSFntTable);
+public:
+    Shaper(FT_Face face, HB_Script script, const QString &str);
 
     HB_FontRec hbFont;
+    HB_ShaperItem shaper_item;
+    QVarLengthArray<HB_Glyph> hb_glyphs;
+    QVarLengthArray<HB_GlyphAttributes> hb_attributes;
+    QVarLengthArray<HB_Fixed> hb_advances;
+    QVarLengthArray<HB_FixedPoint> hb_offsets;
+    QVarLengthArray<unsigned short> hb_logClusters;
+
+};
+
+Shaper::Shaper(FT_Face face, HB_Script script, const QString &str)
+{
+    HB_Face hbFace = HB_NewFace(face, hb_getSFntTable);
+
     hbFont.klass = &hb_fontClass;
     hbFont.userData = face;
     hbFont.x_ppem  = face->size->metrics.x_ppem;
@@ -221,7 +231,6 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     hbFont.x_scale = face->size->metrics.x_scale;
     hbFont.y_scale = face->size->metrics.y_scale;
 
-    HB_ShaperItem shaper_item;
     shaper_item.kerning_applied = false;
     shaper_item.string = reinterpret_cast<const HB_UChar16 *>(str.constData());
     shaper_item.stringLength = str.length();
@@ -236,11 +245,6 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     shaper_item.glyphIndicesPresent = false;
     shaper_item.initialGlyphCount = 0;
 
-    QVarLengthArray<HB_Glyph> hb_glyphs(shaper_item.num_glyphs);
-    QVarLengthArray<HB_GlyphAttributes> hb_attributes(shaper_item.num_glyphs);
-    QVarLengthArray<HB_Fixed> hb_advances(shaper_item.num_glyphs);
-    QVarLengthArray<HB_FixedPoint> hb_offsets(shaper_item.num_glyphs);
-    QVarLengthArray<unsigned short> hb_logClusters(shaper_item.num_glyphs);
 
     while (1) {
         hb_glyphs.resize(shaper_item.num_glyphs);
@@ -262,10 +266,66 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
 
         if (HB_ShapeItem(&shaper_item))
             break;
-
     }
 
     HB_FreeFace(hbFace);
+}
+
+
+static bool decomposedShaping(FT_Face face, HB_Script script, const QChar &ch)
+{
+    QString uc = QString().append(ch);
+    Shaper shaper(face, script, uc);
+
+    uc = uc.normalized(QString::NormalizationForm_D);
+    Shaper decomposed(face, script, uc);
+
+    if( shaper.shaper_item.num_glyphs != decomposed.shaper_item.num_glyphs )
+        goto error;
+
+    for (unsigned int i = 0; i < shaper.shaper_item.num_glyphs; ++i) {
+        if ((shaper.shaper_item.glyphs[i]&0xffffff) != (decomposed.shaper_item.glyphs[i]&0xffffff))
+            goto error;
+    }
+    return true;
+ error:
+    QString str = "";
+    int i = 0;
+    while (i < uc.length()) {
+        str += QString("%1 ").arg(uc[i].unicode(), 4, 16);
+        ++i;
+    }
+    qDebug("%s: decomposedShaping of char %4x failed\n    decomposedString: %s\n   nglyphs=%d, decomposed nglyphs %d",
+           face->family_name,
+           ch.unicode(), str.toLatin1().data(),
+           shaper.shaper_item.num_glyphs,
+           decomposed.shaper_item.num_glyphs);
+
+    str = "";
+    i = 0;
+    while (i < shaper.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(shaper.shaper_item.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    composed glyph result   = %s", str.toLatin1().constData());
+    str = "";
+    i = 0;
+    while (i < decomposed.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(decomposed.shaper_item.glyphs[i], 4, 16);
+        ++i;
+    }
+    qDebug("    decomposed glyph result = %s", str.toLatin1().constData());
+    return false;
+}
+
+struct ShapeTable {
+    unsigned short unicode[16];
+    unsigned short glyphs[16];
+};
+
+static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
+{
+    Shaper shaper(face, script, QString::fromUtf16( s->unicode ));
 
     hb_uint32 nglyphs = 0;
     const unsigned short *g = s->glyphs;
@@ -274,16 +334,16 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
 	g++;
     }
 
-    if( nglyphs != shaper_item.num_glyphs )
+    if( nglyphs != shaper.shaper_item.num_glyphs )
 	goto error;
 
     for (hb_uint32 i = 0; i < nglyphs; ++i) {
-	if ((shaper_item.glyphs[i]&0xffffff) != s->glyphs[i])
+        if ((shaper.shaper_item.glyphs[i]&0xffffff) != s->glyphs[i])
 	    goto error;
     }
     return true;
  error:
-    str = "";
+    QString str = "";
     const unsigned short *uc = s->unicode;
     while (*uc) {
 	str += QString("%1 ").arg(*uc, 4, 16);
@@ -292,17 +352,77 @@ static bool shaping(FT_Face face, const ShapeTable *s, HB_Script script)
     qDebug("%s: shaping of string %s failed, nglyphs=%d, expected %d",
            face->family_name,
            str.toLatin1().constData(),
-           shaper_item.num_glyphs, nglyphs);
+           shaper.shaper_item.num_glyphs, nglyphs);
 
     str = "";
     hb_uint32 i = 0;
-    while (i < shaper_item.num_glyphs) {
-	str += QString("%1 ").arg(shaper_item.glyphs[i], 4, 16);
+    while (i < shaper.shaper_item.num_glyphs) {
+        str += QString("%1 ").arg(shaper.shaper_item.glyphs[i], 4, 16);
 	++i;
     }
     qDebug("    glyph result = %s", str.toLatin1().constData());
     return false;
 }
+
+
+void tst_QScriptEngine::greek()
+{
+    FT_Face face = loadFace("DejaVuSans.ttf");
+    if (face) {
+        for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+            QString str;
+            str.append(uc);
+            if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                //qDebug() << "skipping" << hex << uc;
+                continue;
+            }
+            if (uc == 0x1fc1 || uc == 0x1fed)
+                continue;
+            QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
+        }
+        FT_Done_Face(face);
+    } else {
+        QSKIP("couln't find DejaVu Sans", SkipAll);
+    }
+
+
+    face = loadFace("SBL_grk.ttf");
+    if (face) {
+        for (int uc = 0x1f00; uc <= 0x1fff; ++uc) {
+            QString str;
+            str.append(uc);
+            if (str.normalized(QString::NormalizationForm_D).normalized(QString::NormalizationForm_C) != str) {
+                //qDebug() << "skipping" << hex << uc;
+                continue;
+            }
+            if (uc == 0x1fc1 || uc == 0x1fed)
+                continue;
+            QVERIFY( decomposedShaping(face, HB_Script_Greek, QChar(uc)) );
+
+        }
+
+        const ShapeTable shape_table [] = {
+            { { 0x3b1, 0x300, 0x313, 0x0 },
+              { 0xb8, 0x3d3, 0x3c7, 0x0 } },
+            { { 0x3b1, 0x313, 0x300, 0x0 },
+              { 0xd4, 0x0 } },
+
+            { {0}, {0} }
+        };
+
+
+        const ShapeTable *s = shape_table;
+        while (s->unicode[0]) {
+            QVERIFY( shaping(face, s, HB_Script_Greek) );
+            ++s;
+        }
+
+        FT_Done_Face(face);
+    } else {
+        QSKIP("couln't find DejaVu Sans", SkipAll);
+    }
+}
+
 
 void tst_QScriptEngine::devanagari()
 {
@@ -510,6 +630,17 @@ void tst_QScriptEngine::bengali()
                   { 0x151, 0x276, 0x172, 0x143, 0x0 } },
                 { { 0x9b0, 0x9cd, 0x995, 0x9be, 0x983, 0x0 },
                   { 0x151, 0x276, 0x172, 0x144, 0x0 } }, 
+                // test decomposed two parts matras
+                { { 0x995, 0x9c7, 0x9be, 0x0 },
+                  { 0x179, 0x151, 0x172, 0x0 } },
+                { { 0x995, 0x9c7, 0x9d7, 0x0 },
+                  { 0x179, 0x151, 0x17e, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x191, 0x17d, 0x168, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -638,15 +769,21 @@ void tst_QScriptEngine::bengali()
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0x09a8, 0x09cd, 0x09af, 0x0 },
-		  { 0x0192, 0x0 } },
+                  { 0x01ca, 0x0 } },
 		{ { 0x09b8, 0x09cd, 0x09af, 0x0 },
-		  { 0x01d6, 0x0 } },
+                  { 0x020e, 0x0 } },
 		{ { 0x09b6, 0x09cd, 0x09af, 0x0 },
-		  { 0x01bc, 0x0 } },
+                  { 0x01f4, 0x0 } },
 		{ { 0x09b7, 0x09cd, 0x09af, 0x0 },
-		  { 0x01c6, 0x0 } },
+                  { 0x01fe, 0x0 } },
 		{ { 0x09b0, 0x09cd, 0x09a8, 0x09cd, 0x200d, 0x0 },
-		  { 0xd3, 0x12f, 0x0 } },
+                  { 0x10b, 0x167, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x11c, 0xa1, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -668,7 +805,7 @@ void tst_QScriptEngine::bengali()
 void tst_QScriptEngine::gurmukhi()
 {
     {
-        FT_Face face = loadFace("lohit.punjabi.1.1.ttf");
+        FT_Face face = loadFace("lohit_pa.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xA15, 0xA4D, 0xa39, 0x0 },
@@ -823,8 +960,9 @@ void tst_QScriptEngine::telugu()
                   { 0xe6, 0xb3, 0x83, 0x0 } },
                 { { 0xc15, 0xc4d, 0xc30, 0xc48, 0x0 },
                   { 0xe6, 0xb3, 0x9f, 0x0 } }, 
-		{ {0}, {0} }
-
+                { { 0xc15, 0xc46, 0xc56, 0x0 },
+                  { 0xe6, 0xb3, 0x0 } },
+                { {0}, {0} }
             };
 
 	    const ShapeTable *s = shape_table;
@@ -867,7 +1005,6 @@ void tst_QScriptEngine::kannada()
 		  { 0x0036, 0x00c1, 0x0 } },
 		{ { 0x0cb0, 0x0ccd, 0x200d, 0x0c95, 0x0 },
 		  { 0x0050, 0x00a7, 0x0 } },
-
 		{ {0}, {0} }
 	    };
 
@@ -891,6 +1028,17 @@ void tst_QScriptEngine::kannada()
 		  { 0x00b0, 0x006c, 0x0 } },
 		{ { 0x0cb7, 0x0ccd, 0x0 },
 		  { 0x0163, 0x0 } },
+                { { 0xc95, 0xcbf, 0xcd5, 0x0 },
+                  { 0x114, 0x73, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcd5, 0x0 },
+                  { 0x90, 0x6c, 0x73, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcd6, 0x0 },
+                  { 0x90, 0x6c, 0x74, 0x0 } },
+                { { 0xc95, 0xcc6, 0xcc2, 0x0 },
+                  { 0x90, 0x6c, 0x69, 0x0 } },
+                { { 0xc95, 0xcca, 0xcd5, 0x0 },
+                  { 0x90, 0x6c, 0x69, 0x73, 0x0 } },
+
 
 		{ {0}, {0} }
 	    };
@@ -943,7 +1091,16 @@ void tst_QScriptEngine::malayalam()
 		  { 0x009e, 0x0 } },
 		{ { 0x0d30, 0x0d4d, 0x200d, 0x0 },
 		  { 0x009e, 0x0 } },
-
+                { { 0xd15, 0xd46, 0xd3e, 0x0 },
+                  { 0x5e, 0x34, 0x58, 0x0 } },
+                { { 0xd15, 0xd47, 0xd3e, 0x0 },
+                  { 0x5f, 0x34, 0x58, 0x0 } },
+                { { 0xd15, 0xd46, 0xd57, 0x0 },
+                  { 0x5e, 0x34, 0x65, 0x0 } },
+                { { 0xd15, 0xd57, 0x0 },
+                  { 0x34, 0x65, 0x0 } },
+                { { 0xd1f, 0xd4d, 0xd1f, 0xd41, 0xd4d, 0x0 },
+                  { 0x69, 0x5b, 0x64, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -960,8 +1117,73 @@ void tst_QScriptEngine::malayalam()
 	    QSKIP("couln't find AkrutiMal2Normal.ttf", SkipAll);
 	}
     }
+
+    {
+        FT_Face face = loadFace("Rachana.ttf");
+        if (face) {
+            const ShapeTable shape_table [] = {
+                { { 0xd37, 0xd4d, 0xd1f, 0xd4d, 0xd30, 0xd40, 0x0 },
+                  { 0x385, 0xa3, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+                { { 0xd33, 0xd4d, 0xd33, 0x0 },
+                  { 0x3f8, 0x0 } },
+                { { 0xd2f, 0xd4d, 0xd15, 0xd4d, 0xd15, 0xd41, 0x0 },
+                  { 0x2ff, 0x0 } },
+                { { 0xd30, 0xd4d, 0x200d, 0xd35, 0xd4d, 0xd35, 0x0 },
+                  { 0xf3, 0x350, 0x0 } },
+
+                { {0}, {0} }
+            };
+
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Malayalam) );
+                ++s;
+            }
+
+            FT_Done_Face(face);
+        } else {
+            QSKIP("couln't find Rachana.ttf", SkipAll);
+        }
+    }
+
 }
 
+void tst_QScriptEngine::sinhala()
+{
+    {
+        FT_Face face = loadFace("FM-MalithiUW46.ttf");
+        if (face) {
+            const ShapeTable shape_table [] = {
+                { { 0xd9a, 0xdd9, 0xdcf, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x0 } },
+                { { 0xd9a, 0xdd9, 0xddf, 0x0 },
+                  { 0x4a, 0x61, 0x50, 0x0 } },
+                { { 0xd9a, 0xdd9, 0xdca, 0x0 },
+                  { 0x4a, 0x62, 0x0 } },
+                { { 0xd9a, 0xddc, 0xdca, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x41, 0x0 } },
+                { { 0xd9a, 0xdda, 0x0 },
+                  { 0x4a, 0x62, 0x0 } },
+                { { 0xd9a, 0xddd, 0x0 },
+                  { 0x4a, 0x61, 0x42, 0x41, 0x0 } },
+                { {0}, {0} }
+            };
+
+            const ShapeTable *s = shape_table;
+            while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Sinhala) );
+                ++s;
+            }
+
+            FT_Done_Face(face);
+        } else {
+            QSKIP("couln't find FM-MalithiUW46.ttf", SkipAll);
+        }
+    }
+}
 
 
 void tst_QScriptEngine::khmer()
@@ -1005,10 +1227,44 @@ void tst_QScriptEngine::khmer()
     }
 }
 
+void tst_QScriptEngine::nko()
+{
+    {
+        FT_Face face = loadFace("DejaVuSans.ttf");
+        if (face) {
+	    const ShapeTable shape_table [] = {
+                { { 0x7ca, 0x0 },
+                  { 0x5c1, 0x0 } },
+                { { 0x7ca, 0x7ca, 0x0 },
+                  { 0x14db, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5ec, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x5ec, 0x14d9, 0x0 } },
+                { {0}, {0} }
+	    };
+
+
+	    const ShapeTable *s = shape_table;
+	    while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Nko) );
+		++s;
+	    }
+
+            FT_Done_Face(face);
+	} else {
+	    QSKIP("couln't find DejaVuSans.ttf", SkipAll);
+	}
+    }
+}
+
+
 void tst_QScriptEngine::linearB()
 {
     {
-        FT_Face face = loadFace("PENUTURE.TTF");
+        FT_Face face = loadFace("penuture.ttf");
         if (face) {
 	    const ShapeTable shape_table [] = {
 		{ { 0xd800, 0xdc01, 0xd800, 0xdc02, 0xd800, 0xdc03,  0 },

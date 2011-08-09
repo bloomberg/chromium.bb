@@ -183,18 +183,15 @@ static void calcLineBreaks(const HB_UChar16 *uc, hb_uint32 len, HB_CharAttribute
         if (ncls >= HB_LineBreak_CR)
             goto next;
 
-        // two complex chars (thai or lao), thai_attributes might override, but here we do a best guess
-	if (cls == HB_LineBreak_SA && ncls == HB_LineBreak_SA) {
-            lineBreakType = HB_Break;
-            goto next;
-        }
-
         {
             int tcls = ncls;
+            // for south east asian chars that require a complex (dictionary analysis), the unicode
+            // standard recommends to treat them as AL. thai_attributes and other attribute methods that
+            // do dictionary analysis can override
             if (tcls >= HB_LineBreak_SA)
-                tcls = HB_LineBreak_ID;
+                tcls = HB_LineBreak_AL;
             if (cls >= HB_LineBreak_SA)
-                cls = HB_LineBreak_ID;
+                cls = HB_LineBreak_AL;
 
             int brk = breakTable[cls][tcls];
             switch (brk) {
@@ -586,7 +583,7 @@ const HB_ScriptEngine HB_ScriptEngines[] = {
     // Common
     { HB_BasicShape, 0},
     // Greek
-    { HB_BasicShape, 0},
+    { HB_GreekShape, 0},
     // Cyrillic
     { HB_BasicShape, 0},
     // Armenian
@@ -974,11 +971,12 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     face->glyphs_substituted = false;
     face->buffer = 0;
 
-    HB_Error error;
+    HB_Error error = HB_Err_Ok;
     HB_Stream stream;
     HB_Stream gdefStream;
 
     gdefStream = getTableStream(font, tableFunc, TTAG_GDEF);
+    error = HB_Err_Not_Covered;
     if (!gdefStream || (error = HB_Load_GDEF_Table(gdefStream, &face->gdef))) {
         //DEBUG("error loading gdef table: %d", error);
         face->gdef = 0;
@@ -986,6 +984,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
 
     //DEBUG() << "trying to load gsub table";
     stream = getTableStream(font, tableFunc, TTAG_GSUB);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GSUB_Table(stream, &face->gsub, face->gdef, gdefStream))) {
         face->gsub = 0;
         if (error != HB_Err_Not_Covered) {
@@ -997,6 +996,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     _hb_close_stream(stream);
 
     stream = getTableStream(font, tableFunc, TTAG_GPOS);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GPOS_Table(stream, &face->gpos, face->gdef, gdefStream))) {
         face->gpos = 0;
         DEBUG("error loading gpos table: %d", error);

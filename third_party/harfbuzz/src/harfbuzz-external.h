@@ -52,8 +52,6 @@ typedef enum {
 
 typedef enum 
 {
-    HB_NoCategory,
-
     HB_Mark_NonSpacing,          /*   Mn */
     HB_Mark_SpacingCombining,    /*   Mc */
     HB_Mark_Enclosing,           /*   Me */
@@ -146,11 +144,7 @@ HB_CharCategory HB_GetUnicodeCharCategory(HB_UChar32 ch);
 int HB_GetUnicodeCharCombiningClass(HB_UChar32 ch);
 HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch);
 
-void *HB_Library_Resolve(const char *library, const char *symbol);
-
-void *HB_TextCodecForMib(int mib);
-char *HB_TextCodec_ConvertFromUnicode(void *codec, const HB_UChar16 *unicode, hb_uint32 length, hb_uint32 *outputLength);
-void HB_TextCodec_FreeResult(char *);
+void *HB_Library_Resolve(const char *library, int version, const char *symbol);
 
 HB_END_HEADER
 
