@@ -10679,13 +10679,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Connecting to <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
       </message>
       <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button">
-        Continue »
+        Continue
       </message>
       <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
       </message>
       <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
-        Sign In
+        Sign in
       </message>
       <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
         with your Google Account
@@ -10709,7 +10709,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change picture
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE" desc="Title for the password changed dialog box">
-        Sign In
+        Sign in
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
         Your password has changed
@@ -10754,7 +10754,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Help
       </message>
       <message name="IDS_LOGIN_CAPTCHA_DIALOG_TITLE" desc="Title shown for captcha input dialog">
-        Sign In
+        Sign in
       </message>
      <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
         Type the characters you see in the picture below.
@@ -11335,10 +11335,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA screen.">
-        « Back
+        Back
       </message>
       <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
-        Accept and continue »
+        Accept and continue
       </message>
       <message name="IDS_EULA_SYSTEM_SECURITY_SETTING" desc="Link from the EULA wizard screen and title of the according dialog box">
         System security setting
