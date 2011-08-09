@@ -657,6 +657,11 @@ LEAK
 *!TestURLRequestContextGetter::GetURLRequestContext
 *!URLFetcher::Core::StartURLRequest
 
+# This test intentionally leaks an object and checks that it's never deleted
+LEAK
+...
+*!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+
 ############################
 # Real issues in Chromium
 
@@ -751,6 +756,15 @@ LEAK
 *!TestingProfile::CreateRequestContext
 *!*ProfileSyncService*::SetUp
 
+# http://crbug.com/78784
+LEAK
+...
+*!RenderWidgetHost::WasHidden
+
+LEAK
+...
+*!RenderWidgetHost::WasRestored
+
 # http://crbug.com/81522
 LEAK
 *!operator new
@@ -836,6 +850,11 @@ LEAK
 *!browser_sync::WeakHandle<browser_sync::JsBackend>::*
 *!sync_api::SyncManager::SyncInternal::Init
 
+# http://crbug.com/91491
+LEAK
+...
+*!CrxUpdateService::ProcessPendingItems
+
 # http://crbug.com/92026
 UNINITIALIZED READ
 softokn3.dll!FC_GetFunctionList
@@ -851,6 +870,11 @@ softokn3.dll!NSC_ModuleDBFunc
 LEAK
 ...
 *!`anonymous namespace'::ConflictingDllsTest::ExecuteImpl
+
+# http://crbug.com/92150
+LEAK
+...
+*!BookmarkEditorView::Init
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
