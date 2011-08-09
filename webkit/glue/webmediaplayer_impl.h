@@ -17,30 +17,25 @@
 // WebVideoRenderer
 //   Video renderer object.
 //
-// WebMediaPlayerImpl::Proxy
-//   Proxies methods calls from the media pipeline to WebKit.
-//
 // WebKit::WebMediaPlayerClient
 //   WebKit client of this media player object.
 //
 // The following diagram shows the relationship of these objects:
 //   (note: ref-counted reference is marked by a "r".)
 //
-// WebMediaPlayerImpl ------> PipelineImpl
-//    |            ^               | r
-//    |            |               v
-//    |            |        WebVideoRenderer
-//    |            |          ^ r
-//    |            |          |
-//    |      r     |    r     |
-//    .------>   Proxy  <-----.
+// WebMediaPlayerClient (WebKit object)
+//    ^
 //    |
-//    |
-//    v
-// WebMediaPlayerClient
+// WebMediaPlayerImpl ---> PipelineImpl
+//    |        ^                  |
+//    |        |                  v r
+//    |        |        WebVideoRenderer
+//    |        |          |       ^ r
+//    |   r    |          v r     |
+//    '---> WebMediaPlayerProxy --'
 //
-// Notice that Proxy and WebVideoRenderer are referencing each other. This
-// interdependency has to be treated carefully.
+// Notice that WebMediaPlayerProxy and WebVideoRenderer are referencing each
+// other. This interdependency has to be treated carefully.
 //
 // Other issues:
 // During tear down of the whole browser or a tab, the DOM tree may not be
@@ -56,20 +51,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/threading/thread.h"
-#include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
-#include "media/filters/chunk_demuxer.h"
-#include "media/filters/chunk_demuxer_client.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
-#include "webkit/glue/media/web_data_source.h"
 
 class GURL;
 
@@ -85,108 +72,13 @@ namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
 class MediaStreamClient;
+class WebMediaPlayerProxy;
 class WebVideoRenderer;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
       public MessageLoop::DestructionObserver {
  public:
-  // A proxy class that dispatches method calls from the media pipeline to
-  // WebKit. Since there are multiple threads in the media pipeline and there's
-  // need for the media pipeline to call to WebKit, e.g. repaint requests,
-  // initialization events, etc, we have this class to bridge all method calls
-  // from the media pipeline on different threads and serialize these calls
-  // on the render thread.
-  // Because of the nature of this object that it works with different threads,
-  // it is made ref-counted.
-  class Proxy
-      : public base::RefCountedThreadSafe<Proxy>,
-        public media::ChunkDemuxerClient {
-   public:
-    Proxy(MessageLoop* render_loop,
-          WebMediaPlayerImpl* webmediaplayer);
-
-    // Methods for Filter -> WebMediaPlayerImpl communication.
-    void Repaint();
-    void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
-    WebDataSourceBuildObserverHack* GetBuildObserver();
-
-    // Methods for WebMediaPlayerImpl -> Filter communication.
-    void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
-    void SetSize(const gfx::Rect& rect);
-    void Detach();
-    void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
-    void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
-    bool HasSingleOrigin();
-    void AbortDataSources();
-
-    // Methods for PipelineImpl -> WebMediaPlayerImpl communication.
-    void PipelineInitializationCallback(media::PipelineStatus status);
-    void PipelineSeekCallback(media::PipelineStatus status);
-    void PipelineEndedCallback(media::PipelineStatus status);
-    void PipelineErrorCallback(media::PipelineStatus error);
-    void NetworkEventCallback(media::PipelineStatus status);
-
-    // Methods for ChunkDemuxerClient interface.
-    virtual void DemuxerOpened(media::ChunkDemuxer* demuxer);
-    virtual void DemuxerClosed();
-
-    // Methods for Demuxer communication.
-    void DemuxerFlush();
-    bool DemuxerAppend(const uint8* data, size_t length);
-    void DemuxerEndOfStream(media::PipelineStatus status);
-    void DemuxerShutdown();
-
-    void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
-    void DemuxerClosedTask();
-
-    // Returns the message loop used by the proxy.
-    MessageLoop* message_loop() { return render_loop_; }
-
-   private:
-    friend class base::RefCountedThreadSafe<Proxy>;
-
-    virtual ~Proxy();
-
-    // Adds a data source to data_sources_.
-    void AddDataSource(WebDataSource* data_source);
-
-    // Invoke |webmediaplayer_| to perform a repaint.
-    void RepaintTask();
-
-    // Notify |webmediaplayer_| that initialization has finished.
-    void PipelineInitializationTask(media::PipelineStatus status);
-
-    // Notify |webmediaplayer_| that a seek has finished.
-    void PipelineSeekTask(media::PipelineStatus status);
-
-    // Notify |webmediaplayer_| that the media has ended.
-    void PipelineEndedTask(media::PipelineStatus status);
-
-    // Notify |webmediaplayer_| that a pipeline error has occurred during
-    // playback.
-    void PipelineErrorTask(media::PipelineStatus error);
-
-    // Notify |webmediaplayer_| that there's a network event.
-    void NetworkEventTask(media::PipelineStatus status);
-
-    // The render message loop where WebKit lives.
-    MessageLoop* render_loop_;
-    WebMediaPlayerImpl* webmediaplayer_;
-
-    base::Lock data_sources_lock_;
-    typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
-    DataSourceList data_sources_;
-    scoped_ptr<WebDataSourceBuildObserverHack> build_observer_;
-
-    scoped_refptr<WebVideoRenderer> video_renderer_;
-
-    base::Lock lock_;
-    int outstanding_repaints_;
-
-    scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
-  };
-
   // Construct a WebMediaPlayerImpl with reference to the client, and media
   // filter collection. By providing the filter collection the implementor can
   // provide more specific media filters that does resource loading and
@@ -297,15 +189,10 @@ class WebMediaPlayerImpl
   void Repaint();
 
   void OnPipelineInitialize(media::PipelineStatus status);
-
   void OnPipelineSeek(media::PipelineStatus status);
-
   void OnPipelineEnded(media::PipelineStatus status);
-
   void OnPipelineError(media::PipelineStatus error);
-
   void OnNetworkEvent(media::PipelineStatus status);
-
   void OnDemuxerOpened();
 
  private:
@@ -358,7 +245,7 @@ class WebMediaPlayerImpl
 
   WebKit::WebMediaPlayerClient* client_;
 
-  scoped_refptr<Proxy> proxy_;
+  scoped_refptr<WebMediaPlayerProxy> proxy_;
 
   MediaStreamClient* media_stream_client_;
 

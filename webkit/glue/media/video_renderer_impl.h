@@ -1,11 +1,6 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// The video renderer implementation to be use by the media pipeline. It lives
-// inside video renderer thread and also WebKit's main thread. We need to be
-// extra careful about members shared by two different threads, especially
-// video frame buffers.
 
 #ifndef WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 #define WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
@@ -14,34 +9,35 @@
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/media/web_video_renderer.h"
-#include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {
 
+// The video renderer implementation to be use by the media pipeline. It lives
+// inside video renderer thread and also WebKit's main thread. We need to be
+// extra careful about members shared by two different threads, especially
+// video frame buffers.
 class VideoRendererImpl : public WebVideoRenderer {
  public:
   explicit VideoRendererImpl(bool pts_logging);
   virtual ~VideoRendererImpl();
 
   // WebVideoRenderer implementation.
-  virtual void SetWebMediaPlayerImplProxy(WebMediaPlayerImpl::Proxy* proxy);
-  virtual void SetRect(const gfx::Rect& rect);
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
-  virtual void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
-  virtual void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
+  virtual void SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) OVERRIDE;
+  virtual void SetRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) OVERRIDE;
+  virtual void GetCurrentFrame(
+      scoped_refptr<media::VideoFrame>* frame_out) OVERRIDE;
+  virtual void PutCurrentFrame(
+      scoped_refptr<media::VideoFrame> frame) OVERRIDE;
 
  protected:
-  // Method called by VideoRendererBase during initialization.
-  virtual bool OnInitialize(media::VideoDecoder* decoder);
-
-  // Method called by the VideoRendererBase when stopping.
-  virtual void OnStop(media::FilterCallback* callback);
-
-  // Method called by the VideoRendererBase when a frame is available.
-  virtual void OnFrameAvailable();
+  // VideoRendererBase implementation.
+  virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
+  virtual void OnStop(media::FilterCallback* callback) OVERRIDE;
+  virtual void OnFrameAvailable() OVERRIDE;
 
  private:
   // Determine the conditions to perform fast paint. Returns true if we can do
@@ -60,11 +56,8 @@ class VideoRendererImpl : public WebVideoRenderer {
                  SkCanvas* canvas,
                  const gfx::Rect& dest_rect);
 
-  void TransformToSkIRect(const SkMatrix& matrix, const gfx::Rect& src_rect,
-                          SkIRect* dest_rect);
-
   // Pointer to our parent object that is called to request repaints.
-  scoped_refptr<WebMediaPlayerImpl::Proxy> proxy_;
+  scoped_refptr<WebMediaPlayerProxy> proxy_;
 
   // An RGB bitmap used to convert the video frames.
   SkBitmap bitmap_;

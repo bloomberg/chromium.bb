@@ -4,9 +4,24 @@
 
 #include "webkit/glue/media/video_renderer_impl.h"
 
+#include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-#include "webkit/glue/webmediaplayer_impl.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "webkit/glue/webmediaplayer_proxy.h"
+
+// Transform destination rect to local coordinates.
+static void TransformToSkIRect(const SkMatrix& matrix,
+                               const gfx::Rect& src_rect,
+                               SkIRect* dest_rect) {
+  SkRect transformed_rect;
+  SkRect skia_dest_rect;
+  skia_dest_rect.iset(src_rect.x(), src_rect.y(),
+                      src_rect.right(), src_rect.bottom());
+  matrix.mapRect(&transformed_rect, skia_dest_rect);
+  transformed_rect.round(dest_rect);
+}
 
 namespace webkit_glue {
 
@@ -37,13 +52,11 @@ void VideoRendererImpl::OnFrameAvailable() {
   proxy_->Repaint();
 }
 
-void VideoRendererImpl::SetWebMediaPlayerImplProxy(
-    WebMediaPlayerImpl::Proxy* proxy) {
+void VideoRendererImpl::SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) {
   proxy_ = proxy;
 }
 
-void VideoRendererImpl::SetRect(const gfx::Rect& rect) {
-}
+void VideoRendererImpl::SetRect(const gfx::Rect& rect) {}
 
 // This method is always called on the renderer's thread.
 void VideoRendererImpl::Paint(SkCanvas* canvas,
@@ -297,18 +310,6 @@ void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
                            media::FILTER_BILINEAR);
     bitmap.unlockPixels();
   }
-}
-
-void VideoRendererImpl::TransformToSkIRect(const SkMatrix& matrix,
-                                           const gfx::Rect& src_rect,
-                                           SkIRect* dest_rect) {
-    // Transform destination rect to local coordinates.
-    SkRect transformed_rect;
-    SkRect skia_dest_rect;
-    skia_dest_rect.iset(src_rect.x(), src_rect.y(),
-                        src_rect.right(), src_rect.bottom());
-    matrix.mapRect(&transformed_rect, skia_dest_rect);
-    transformed_rect.round(dest_rect);
 }
 
 }  // namespace webkit_glue
