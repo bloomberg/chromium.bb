@@ -1,6 +1,0 @@
-{
-  "name": "webRequest",
-  "version": "1.0",
-  "description": "Tests the webRequest API.",
-  "permissions": ["experimental", "tabs", "http://*/*"]
-}

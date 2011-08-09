@@ -1,0 +1,7 @@
+{
+  "name": "request",
+  "version": "1.0",
+  "description": "Tests the webRequest API events.",
+  "permissions": ["experimental", "tabs", "http://*/*"],
+  "background_page": "test.html"
+}
