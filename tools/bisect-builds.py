@@ -199,21 +199,37 @@ def UnzipFilenameToDir(filename, dir):
     sys.exit(1)
 
 
-def FetchRevision(context, rev, filename, quit_event=None):
+def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
   """Downloads and unzips revision |rev|.
   @param context A PathContext instance.
   @param rev The Chromium revision number/tag to download.
   @param filename The destination for the downloaded file.
   @param quit_event A threading.Event which will be set by the master thread to
                     indicate that the download should be aborted.
+  @param progress_event A threading.Event which will be set by the master thread
+                    to indicate that the progress of the download should be
+                    displayed.
   """
   def ReportHook(blocknum, blocksize, totalsize):
     if quit_event and quit_event.is_set():
      raise RuntimeError("Aborting download of revision %d" % rev)
+    if progress_event and progress_event.is_set():
+      size = blocknum * blocksize
+      if totalsize == -1:  # Total size not known.
+        progress = "Received %d bytes" % size
+      else:
+        size = min(totalsize, size)
+        progress = "Received %d of %d bytes, %.2f%%" % (
+            size, totalsize, 100.0 * size / totalsize)
+      # Send a \r to let all progress messages use just one line of output.
+      sys.stdout.write("\r" + progress)
+      sys.stdout.flush()
 
   download_url = context.GetDownloadURL(rev)
   try:
     urllib.urlretrieve(download_url, filename, ReportHook)
+    if progress_event and progress_event.is_set():
+      print()
   except RuntimeError, e:
     pass
 
@@ -248,7 +264,7 @@ def AskIsGoodBuild(rev, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('\nRevision %d is [(g)ood/(b)ad/(q)uit]: ' % int(rev))
+    response = raw_input('Revision %d is [(g)ood/(b)ad/(q)uit]: ' % int(rev))
     if response and response in ('g', 'b'):
       return response == 'g'
     if response and response == 'q':
@@ -295,6 +311,8 @@ def Bisect(platform,
   _GetDownloadPath = lambda rev: os.path.join(cwd,
       '%d-%s' % (rev, context.archive_name))
 
+  print "Downloading list of known revisions..."
+
   revlist = context.GetRevList()
 
   # Get a list of revisions to bisect across.
@@ -308,8 +326,11 @@ def Bisect(platform,
   pivot = bad / 2
   rev = revlist[pivot]
   zipfile = _GetDownloadPath(rev)
+  progress_event = threading.Event()
+  progress_event.set()
   print "Downloading revision %d..." % rev
-  FetchRevision(context, rev, zipfile)
+  FetchRevision(context, rev, zipfile,
+                quit_event=None, progress_event=progress_event)
 
   # Binary search time!
   while zipfile and bad - good > 1:
@@ -323,8 +344,13 @@ def Bisect(platform,
     if down_pivot != pivot and down_pivot != good:
       down_rev = revlist[down_pivot]
       down_zipfile = _GetDownloadPath(down_rev)
-      down_event = threading.Event()
-      fetchargs = (context, down_rev, down_zipfile, down_event)
+      down_quit_event = threading.Event()
+      down_progress_event = threading.Event()
+      fetchargs = (context,
+                   down_rev,
+                   down_zipfile,
+                   down_quit_event,
+                   down_progress_event)
       down_thread = threading.Thread(target=FetchRevision,
                                      name='down_fetch',
                                      args=fetchargs)
@@ -335,8 +361,13 @@ def Bisect(platform,
     if up_pivot != pivot and up_pivot != bad:
       up_rev = revlist[up_pivot]
       up_zipfile = _GetDownloadPath(up_rev)
-      up_event = threading.Event()
-      fetchargs = (context, up_rev, up_zipfile, up_event)
+      up_quit_event = threading.Event()
+      up_progress_event = threading.Event()
+      fetchargs = (context,
+                   up_rev,
+                   up_zipfile,
+                   up_quit_event,
+                   up_progress_event)
       up_thread = threading.Thread(target=FetchRevision,
                                    name='up_fetch',
                                    args=fetchargs)
@@ -358,26 +389,29 @@ def Bisect(platform,
       if predicate(rev, status, stdout, stderr):
         good = pivot
         if down_thread:
-          down_event.set()  # Kill the download of older revision.
+          down_quit_event.set()  # Kill the download of older revision.
           down_thread.join()
           os.unlink(down_zipfile)
         if up_thread:
           print "Downloading revision %d..." % up_rev
+          up_progress_event.set()  # Display progress of download.
           up_thread.join()  # Wait for newer revision to finish downloading.
           pivot = up_pivot
           zipfile = up_zipfile
       else:
         bad = pivot
         if up_thread:
-          up_event.set()  # Kill download of newer revision.
+          up_quit_event.set()  # Kill download of newer revision.
           up_thread.join()
           os.unlink(up_zipfile)
         if down_thread:
           print "Downloading revision %d..." % down_rev
+          down_progress_event.set()  # Display progress of download.
           down_thread.join()  # Wait for older revision to finish downloading.
           pivot = down_pivot
           zipfile = down_zipfile
     except SystemExit:
+      print "Cleaning up..."
       for f in [down_zipfile, up_zipfile]:
         try:
           os.unlink(f)
