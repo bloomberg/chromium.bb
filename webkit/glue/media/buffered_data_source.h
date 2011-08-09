@@ -51,7 +51,7 @@ class BufferedDataSource : public WebDataSource {
 
   // webkit_glue::WebDataSource implementation.
   virtual void Initialize(const std::string& url,
-                          media::PipelineStatusCallback* callback);
+                          const media::PipelineStatusCB& callback);
   virtual void CancelInitialize();
   virtual bool HasSingleOrigin();
   virtual void Abort();
@@ -98,7 +98,7 @@ class BufferedDataSource : public WebDataSource {
   // Calls |read_callback_| and reset all read parameters.
   void DoneRead_Locked(int error);
 
-  // Calls |initialize_callback_| and reset it.
+  // Calls |initialize_cb_| and reset it.
   void DoneInitialization_Locked(media::PipelineStatus status);
 
   // Callback method for |loader_| if URL for the resource requested is using
@@ -154,7 +154,7 @@ class BufferedDataSource : public WebDataSource {
   bool network_activity_;
 
   // Callback method from the pipeline for initialization.
-  scoped_ptr<media::PipelineStatusCallback> initialize_callback_;
+  media::PipelineStatusCB initialize_cb_;
 
   // Read parameters received from the Read() method call.
   scoped_ptr<media::DataSource::ReadCallback> read_callback_;

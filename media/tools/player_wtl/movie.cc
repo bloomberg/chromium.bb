@@ -132,7 +132,7 @@ void Movie::SetPosition(float position) {
   int64 us = static_cast<int64>(position * 1000000);
   base::TimeDelta time = base::TimeDelta::FromMicroseconds(us);
   if (pipeline_)
-    pipeline_->Seek(time, NULL);
+    pipeline_->Seek(time, media::PipelineStatusCB());
 }
 
 
@@ -174,7 +174,7 @@ bool Movie::GetDumpYuvFileEnable() {
 // Teardown.
 void Movie::Close() {
   if (pipeline_) {
-    pipeline_->Stop(NULL);
+    pipeline_->Stop(media::PipelineStatusCB());
     pipeline_ = NULL;
   }
 

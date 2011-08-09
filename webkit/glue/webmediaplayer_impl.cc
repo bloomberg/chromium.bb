@@ -132,12 +132,12 @@ bool WebMediaPlayerImpl::Initialize(
 
   // Set our pipeline callbacks.
   pipeline_->Init(
-      NewCallback(proxy_.get(),
-                  &WebMediaPlayerProxy::PipelineEndedCallback),
-      NewCallback(proxy_.get(),
-                  &WebMediaPlayerProxy::PipelineErrorCallback),
-      NewCallback(proxy_.get(),
-                  &WebMediaPlayerProxy::NetworkEventCallback));
+      base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback,
+                 proxy_.get()),
+      base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback,
+                 proxy_.get()),
+      base::Bind(&WebMediaPlayerProxy::NetworkEventCallback,
+                 proxy_.get()));
 
   // A simple data source that keeps all data in memory.
   scoped_ptr<media::DataSourceFactory> simple_data_source_factory(
@@ -232,8 +232,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   pipeline_->Start(
       filter_collection_.release(),
       url.spec(),
-      NewCallback(proxy_.get(),
-                  &WebMediaPlayerProxy::PipelineInitializationCallback));
+      base::Bind(&WebMediaPlayerProxy::PipelineInitializationCallback,
+                 proxy_.get()));
+
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 }
 
@@ -301,8 +302,8 @@ void WebMediaPlayerImpl::seek(float seconds) {
   // Kick off the asynchronous seek!
   pipeline_->Seek(
       seek_time,
-      NewCallback(proxy_.get(),
-                  &WebMediaPlayerProxy::PipelineSeekCallback));
+      base::Bind(&WebMediaPlayerProxy::PipelineSeekCallback,
+                 proxy_.get()));
 }
 
 void WebMediaPlayerImpl::setEndTime(float seconds) {

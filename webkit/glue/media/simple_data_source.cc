@@ -83,17 +83,17 @@ void SimpleDataSource::Stop(media::FilterCallback* callback) {
 
 void SimpleDataSource::Initialize(
     const std::string& url,
-    media::PipelineStatusCallback* callback) {
-  // Reference to prevent destruction while inside the |initialize_callback_|
+    const media::PipelineStatusCB& callback) {
+  // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   scoped_refptr<SimpleDataSource> destruction_guard(this);
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(state_, UNINITIALIZED);
-    DCHECK(callback);
+    DCHECK(!callback.is_null());
     state_ = INITIALIZING;
-    initialize_callback_.reset(callback);
+    initialize_cb_ = callback;
 
     // Validate the URL.
     url_ = GURL(url);
@@ -110,9 +110,9 @@ void SimpleDataSource::Initialize(
 
 void SimpleDataSource::CancelInitialize() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(initialize_callback_.get());
+  DCHECK(!initialize_cb_.is_null());
   state_ = STOPPED;
-  initialize_callback_.reset();
+  initialize_cb_.Reset();
 
   // Post a task to the render thread to cancel loading the resource.
   render_loop_->PostTask(FROM_HERE,
@@ -205,7 +205,7 @@ void SimpleDataSource::didFinishLoading(
     WebKit::WebURLLoader* loader,
     double finishTime) {
   DCHECK(MessageLoop::current() == render_loop_);
-  // Reference to prevent destruction while inside the |initialize_callback_|
+  // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   scoped_refptr<SimpleDataSource> destruction_guard(this);
@@ -233,7 +233,7 @@ void SimpleDataSource::didFail(
     WebKit::WebURLLoader* loader,
     const WebKit::WebURLError& error) {
   DCHECK(MessageLoop::current() == render_loop_);
-  // Reference to prevent destruction while inside the |initialize_callback_|
+  // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   scoped_refptr<SimpleDataSource> destruction_guard(this);
@@ -269,7 +269,7 @@ void SimpleDataSource::Abort() {
 
 void SimpleDataSource::StartTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-  // Reference to prevent destruction while inside the |initialize_callback_|
+  // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   scoped_refptr<SimpleDataSource> destruction_guard(this);
@@ -344,9 +344,8 @@ void SimpleDataSource::DoneInitialization_Locked(bool success) {
     url_loader_.reset();
   }
 
-  scoped_ptr<media::PipelineStatusCallback> initialize_callback(
-      initialize_callback_.release());
-  initialize_callback->Run(status);
+  initialize_cb_.Run(status);
+  initialize_cb_.Reset();
 }
 
 void SimpleDataSource::UpdateHostState() {

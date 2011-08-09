@@ -198,7 +198,7 @@ class BufferedDataSourceTest : public testing::Test {
 
     // Actual initialization of the data source.
     data_source_->Initialize(url,
-        media::NewExpectedStatusCallback(expected_init_status));
+        media::NewExpectedStatusCB(expected_init_status));
     message_loop_->RunAllPending();
 
     if (initialized_ok) {

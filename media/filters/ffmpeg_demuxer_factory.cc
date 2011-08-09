@@ -2,11 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 
 namespace media {
+
+static void DemuxerInitDone(DemuxerFactory::BuildCallback* cb,
+                            const scoped_refptr<FFmpegDemuxer>& demuxer,
+                            PipelineStatus status) {
+  scoped_ptr<DemuxerFactory::BuildCallback> callback(cb);
+  if (status != PIPELINE_OK) {
+    callback->Run(status, static_cast<Demuxer*>(NULL));
+    return;
+  }
+
+  callback->Run(PIPELINE_OK, demuxer.get());
+}
+
 
 FFmpegDemuxerFactory::FFmpegDemuxerFactory(
     DataSourceFactory* data_source_factory,
@@ -15,34 +29,11 @@ FFmpegDemuxerFactory::FFmpegDemuxerFactory(
 
 FFmpegDemuxerFactory::~FFmpegDemuxerFactory() {}
 
-// This and the next class are one-offs whose raison d'etre is the lack of
-// currying functionality in base/callback_old.h's machinery.  Once media/
-// PipelineStatusCallback and {DataSource,Demuxer}Factory::BuildCallback are
-// migrated to the new base/callback.h machinery these should be removed and
-// replaced with currying calls to base::Bind().
-class DemuxerCallbackAsPipelineStatusCallback : public PipelineStatusCallback {
- public:
-  DemuxerCallbackAsPipelineStatusCallback(
-      DemuxerFactory::BuildCallback* cb,
-      Demuxer* demuxer)
-      : cb_(cb), demuxer_(demuxer) {
-    DCHECK(cb_.get() && demuxer_);
-  }
-
-  virtual ~DemuxerCallbackAsPipelineStatusCallback() {}
-
-  virtual void RunWithParams(const Tuple1<PipelineStatus>& params) {
-    cb_->Run(params.a, demuxer_);
-  }
-
- private:
-  scoped_ptr<DemuxerFactory::BuildCallback> cb_;
-  scoped_refptr<Demuxer> demuxer_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DemuxerCallbackAsPipelineStatusCallback);
-};
-
-// See comments on DemuxerCallbackAsPipelineStatusCallback above.
+// This class is a one-off whose raison d'etre is the lack of
+// currying functionality in base/callback_old.h's machinery.  Once
+// {DataSource,Demuxer}Factory::BuildCallback are migrated to the new
+// base/callback.h machinery these should be removed and replaced
+// with currying calls to base::Bind().
 class DemuxerCallbackAsDataSourceCallback
     : public DataSourceFactory::BuildCallback {
  public:
@@ -66,7 +57,7 @@ class DemuxerCallbackAsDataSourceCallback
     scoped_refptr<FFmpegDemuxer> demuxer = new FFmpegDemuxer(loop_);
     demuxer->Initialize(
         data_source,
-        new DemuxerCallbackAsPipelineStatusCallback(cb_.release(), demuxer));
+        base::Bind(&DemuxerInitDone, cb_.release(), demuxer));
   }
 
  private:

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "media/base/filters.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
@@ -64,7 +65,7 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void InitializeDataSource(const char* url,
-                            media::MockStatusCallback* callback) {
+                            const media::PipelineStatusCB& callback) {
     gurl_ = GURL(url);
 
     url_loader_ = new NiceMock<MockWebURLLoader>();
@@ -164,21 +165,21 @@ class SimpleDataSourceTest : public testing::Test {
 
 TEST_F(SimpleDataSourceTest, InitializeHTTP) {
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded(false);
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeHTTPS) {
   InitializeDataSource(kHttpsUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded(false);
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFile) {
   InitializeDataSource(kFileUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded(true);
   DestroyDataSource();
 }
@@ -197,7 +198,7 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
   EXPECT_CALL(host_, SetBufferedBytes(sizeof(kDataUrlDecoded)));
 
   data_source_->Initialize(kDataUrl,
-      media::NewExpectedStatusCallback(media::PIPELINE_OK));
+      media::NewExpectedStatusCB(media::PIPELINE_OK));
   MessageLoop::current()->RunAllPending();
 
   DestroyDataSource();
@@ -205,27 +206,29 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
 
 TEST_F(SimpleDataSourceTest, RequestFailed) {
   InitializeDataSource(kHttpUrl,
-      media::NewExpectedStatusCallback(media::PIPELINE_ERROR_NETWORK));
+      media::NewExpectedStatusCB(media::PIPELINE_ERROR_NETWORK));
   RequestFailed();
   DestroyDataSource();
+}
+
+static void OnStatusCB(bool* called, media::PipelineStatus status) {
+  *called = true;
 }
 
 TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
   // The callback should be deleted, but not executed.
   // TODO(scherkus): should this really be the behaviour?  Seems strange...
-  StrictMock<media::MockStatusCallback>* callback =
-      new StrictMock<media::MockStatusCallback>();
-  EXPECT_CALL(*callback, Destructor());
-
-  InitializeDataSource(kHttpUrl, callback);
+  bool was_called = false;
+  InitializeDataSource(kHttpUrl, base::Bind(&OnStatusCB, &was_called));
 
   EXPECT_CALL(*url_loader_, cancel());
   DestroyDataSource();
+  EXPECT_FALSE(was_called);
 }
 
 TEST_F(SimpleDataSourceTest, AsyncRead) {
   InitializeDataSource(kFileUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded(true);
   AsyncRead();
   DestroyDataSource();
@@ -237,14 +240,14 @@ TEST_F(SimpleDataSourceTest, AsyncRead) {
 TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   // Make sure no redirect case works as expected.
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   RequestSucceeded(false);
   EXPECT_TRUE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
   // Test redirect to the same domain.
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
   RequestSucceeded(false);
   EXPECT_TRUE(data_source_->HasSingleOrigin());
@@ -252,7 +255,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
 
   // Test redirect twice to the same domain.
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToSameDomainUrl2);
   RequestSucceeded(false);
@@ -261,7 +264,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
 
   // Test redirect to a different domain.
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   RequestSucceeded(false);
   EXPECT_FALSE(data_source_->HasSingleOrigin());
@@ -269,7 +272,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
 
   // Test redirect to the same domain and then to a different domain.
   InitializeDataSource(kHttpUrl,
-                       media::NewExpectedStatusCallback(media::PIPELINE_OK));
+                       media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   RequestSucceeded(false);

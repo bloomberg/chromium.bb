@@ -4,6 +4,7 @@
 
 #include "webkit/glue/media/web_data_source_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/media_log.h"
 
@@ -86,7 +87,8 @@ WebDataSourceFactory::BuildRequest::~BuildRequest() {
 }
 
 void WebDataSourceFactory::BuildRequest::DoStart() {
-  data_source_->Initialize(url(), NewCallback(this, &BuildRequest::InitDone));
+  data_source_->Initialize(url(), base::Bind(&BuildRequest::InitDone,
+                                             base::Unretained(this)));
 }
 
 void WebDataSourceFactory::BuildRequest::InitDone(

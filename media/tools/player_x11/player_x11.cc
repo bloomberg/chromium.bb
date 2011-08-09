@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -117,7 +118,7 @@ bool InitPipeline(MessageLoop* message_loop,
   note.Wait();
   if (note.status() != media::PIPELINE_OK) {
     std::cout << "InitPipeline: " << note.status() << std::endl;
-    (*pipeline)->Stop(NULL);
+    (*pipeline)->Stop(media::PipelineStatusCB());
     return false;
   }
 
@@ -138,7 +139,8 @@ void PeriodicalUpdate(
     // interrupt signal was received during last time period.
     // Quit message_loop only when pipeline is fully stopped.
     MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
-    pipeline->Stop(NewCallback(quitter, &MessageLoopQuitter::Quit));
+    pipeline->Stop(base::Bind(&MessageLoopQuitter::Quit,
+                              base::Unretained(quitter)));
     return;
   }
 
@@ -162,7 +164,7 @@ void PeriodicalUpdate(
                        &border_width,
                        &depth);
           base::TimeDelta time = pipeline->GetMediaDuration();
-          pipeline->Seek(time*e.xbutton.x/width, NULL);
+          pipeline->Seek(time*e.xbutton.x/width, media::PipelineStatusCB());
         }
         break;
       case KeyPress:
@@ -172,7 +174,8 @@ void PeriodicalUpdate(
             g_running = false;
             // Quit message_loop only when pipeline is fully stopped.
             MessageLoopQuitter* quitter = new MessageLoopQuitter(message_loop);
-            pipeline->Stop(NewCallback(quitter, &MessageLoopQuitter::Quit));
+            pipeline->Stop(base::Bind(&MessageLoopQuitter::Quit,
+                                      base::Unretained(quitter)));
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f) // paused
