@@ -6,16 +6,12 @@
 
 #include <set>
 
-#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/testing_browser_process_test.h"
-#include "net/base/cookie_monster.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.cc"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -38,20 +34,11 @@ const GURL kOrigin3(kTestkOrigin3);
 
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
  public:
-  BrowsingDataRemoverTester()
-      : start_(false),
-        already_quit_(false) {}
+  BrowsingDataRemoverTester() {}
   virtual ~BrowsingDataRemoverTester() {}
 
   void BlockUntilNotified() {
-    if (!already_quit_) {
-      DCHECK(!start_);
-      start_ = true;
-      MessageLoop::current()->Run();
-    } else {
-      DCHECK(!start_);
-      already_quit_ = false;
-    }
+    MessageLoop::current()->Run();
   }
 
  protected:
@@ -61,77 +48,14 @@ class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
   }
 
   void Notify() {
-    if (start_) {
-      DCHECK(!already_quit_);
-      MessageLoop::current()->Quit();
-      start_ = false;
-    } else {
-      DCHECK(!already_quit_);
-      already_quit_ = true;
-    }
+    MessageLoop::current()->Quit();
   }
 
  private:
-  // Helps prevent from running message_loop, if the callback invoked
-  // immediately.
-  bool start_;
-  bool already_quit_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTester);
 };
 
 // Testers -------------------------------------------------------------------
-
-class RemoveCookieTester : public BrowsingDataRemoverTester {
- public:
-  explicit RemoveCookieTester(TestingProfile* profile)
-      : get_cookie_success_(false) {
-    profile->CreateRequestContext();
-    monster_ = profile->GetRequestContext()->GetURLRequestContext()->
-        cookie_store()->GetCookieMonster();
-  }
-
-  // Returns true, if the given cookie exists in the cookie store.
-  bool ContainsCookie() {
-    get_cookie_success_ = false;
-    monster_->GetCookiesWithOptionsAsync(
-        kOrigin1, net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::GetCookieCallback,
-                   base::Unretained(this)));
-    BlockUntilNotified();
-    return get_cookie_success_;
-  }
-
-  void AddCookie() {
-    monster_->SetCookieWithOptionsAsync(
-        kOrigin1, "A=1", net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::SetCookieCallback,
-                   base::Unretained(this)));
-    BlockUntilNotified();
-  }
-
- private:
-  void GetCookieCallback(const std::string& cookies) {
-    if (cookies == "A=1") {
-      get_cookie_success_ = true;
-    } else {
-      EXPECT_EQ(cookies, "");
-      get_cookie_success_ = false;
-    }
-    Notify();
-  }
-
-  void SetCookieCallback(bool result) {
-    ASSERT_TRUE(result);
-    Notify();
-  }
-
-  bool get_cookie_success_;
-
-  net::CookieStore* monster_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
-};
 
 class RemoveHistoryTester : public BrowsingDataRemoverTester {
  public:
@@ -295,19 +219,6 @@ class BrowsingDataRemoverTest : public TestingBrowserProcessTest {
 };
 
 // Tests ---------------------------------------------------------------------
-
-TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
-  scoped_ptr<RemoveCookieTester> tester(
-      new RemoveCookieTester(GetProfile()));
-
-  tester->AddCookie();
-  ASSERT_TRUE(tester->ContainsCookie());
-
-  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
-      base::Time::Now(), BrowsingDataRemover::REMOVE_COOKIES, tester.get());
-
-  EXPECT_FALSE(tester->ContainsCookie());
-}
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
   scoped_ptr<RemoveHistoryTester> tester(
