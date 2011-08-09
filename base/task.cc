@@ -53,11 +53,9 @@ TaskClosureAdapter::~TaskClosureAdapter() {
 }
 
 void TaskClosureAdapter::Run() {
-  if (task_) {
-    task_->Run();
-    delete task_;
-    task_ = NULL;
-  }
+  task_->Run();
+  delete task_;
+  task_ = NULL;
 }
 
 // Don't leak tasks by default.
