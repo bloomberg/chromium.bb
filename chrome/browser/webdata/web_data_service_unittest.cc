@@ -129,13 +129,10 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   void AppendFormField(const string16& name,
                        const string16& value,
                        std::vector<webkit_glue::FormField>* form_fields) {
-    form_fields->push_back(
-        webkit_glue::FormField(string16(),
-                               name,
-                               value,
-                               string16(),
-                               0,
-                               false));
+    webkit_glue::FormField field;
+    field.name = name;
+    field.value = value;
+    form_fields->push_back(field);
   }
 
   string16 name1_;

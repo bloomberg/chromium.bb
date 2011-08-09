@@ -24,6 +24,7 @@
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
+using webkit_glue::FormField;
 using WebKit::WebInputElement;
 
 namespace {
@@ -124,78 +125,69 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   FormData form;
   form.method = ASCIIToUTF16("post");
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
-                                               ASCIIToUTF16("username"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("firstname"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
-                                               ASCIIToUTF16("lastname"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
-                                               ASCIIToUTF16("email"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email2"),
-                                               ASCIIToUTF16("email2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("password"),
-                                               ASCIIToUTF16("password"),
-                                               string16(),
-                                               ASCIIToUTF16("password"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("Submit"),
-                                               string16(),
-                                               ASCIIToUTF16("submit"),
-                                               0,
-                                               false));
+
+  FormField field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email2");
+  field.name = ASCIIToUTF16("email2");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = ASCIIToUTF16("password");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("Submit");
+  field.form_control_type = ASCIIToUTF16("submit");
+  form.fields.push_back(field);
 
   FormStructure *form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures;
   form_structures.push_back(form_structure);
 
   form.fields.clear();
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("address"),
-                                               ASCIIToUTF16("address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("address2"),
-                                               ASCIIToUTF16("address2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("city"),
-                                               ASCIIToUTF16("city"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("Submit"),
-                                               string16(),
-                                               ASCIIToUTF16("submit"),
-                                               0,
-                                               false));
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address2");
+  field.name = ASCIIToUTF16("address2");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("city");
+  field.name = ASCIIToUTF16("city");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("Submit");
+  field.form_control_type = ASCIIToUTF16("submit");
+  form.fields.push_back(field);
+
   form_structure = new FormStructure(form);
   form_structures.push_back(form_structure);
 
@@ -300,12 +292,10 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(NULL, fetcher);
 
   // Modify form structures to miss the cache.
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address line 2"),
-                                               ASCIIToUTF16("address2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
+  field.label = ASCIIToUTF16("Address line 2");
+  field.name = ASCIIToUTF16("address2");
+  field.form_control_type = ASCIIToUTF16("text");
+  form.fields.push_back(field);
   form_structure = new FormStructure(form);
   form_structures.push_back(form_structure);
 
@@ -373,46 +363,39 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
 
   FormData form;
   form.method = ASCIIToUTF16("post");
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
-                                               ASCIIToUTF16("username"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("firstname"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
-                                               ASCIIToUTF16("lastname"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
+
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
   FormStructure *form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures0;
   form_structures0.push_back(form_structure);
 
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
-                                               ASCIIToUTF16("email"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  // Slightly different form - so different request.
+  // Add a slightly different form, which should result in a different request.
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
   form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures1;
   form_structures1.push_back(form_structure);
 
-  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email2"),
-                                               ASCIIToUTF16("email2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false));
-  // Slightly different form - so different request.
+  // Add another slightly different form, which should also result in a
+  // different request.
+  field.label = ASCIIToUTF16("email2");
+  field.name = ASCIIToUTF16("email2");
+  form.fields.push_back(field);
   form_structure = new FormStructure(form);
   ScopedVector<FormStructure> form_structures2;
   form_structures2.push_back(form_structure);

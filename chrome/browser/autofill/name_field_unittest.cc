@@ -30,30 +30,21 @@ class NameFieldTest : public testing::Test {
 };
 
 TEST_F(NameFieldTest, FirstMiddleLast) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("First"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Middle Name"),
-                                               ASCIIToUTF16("Middle"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
-                                               ASCIIToUTF16("Last"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("First");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("Middle Name");
+  field.name = ASCIIToUTF16("Middle");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("Last");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -70,30 +61,21 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
 }
 
 TEST_F(NameFieldTest, FirstMiddleLast2) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("firstName"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("middleName"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("lastName"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("firstName");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("middleName");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("lastName");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -110,22 +92,17 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
 }
 
 TEST_F(NameFieldTest, FirstLast) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("last_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -139,22 +116,17 @@ TEST_F(NameFieldTest, FirstLast) {
 }
 
 TEST_F(NameFieldTest, FirstLast2) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Name"),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Name"),
-                                               ASCIIToUTF16("last_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -168,30 +140,21 @@ TEST_F(NameFieldTest, FirstLast2) {
 }
 
 TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("First  Name"),
-                                               ASCIIToUTF16("first  name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Middle  Name"),
-                                               ASCIIToUTF16("middle  name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Last  Name"),
-                                               ASCIIToUTF16("last  name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("First  Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("Middle  Name");
+  field.name = ASCIIToUTF16("middle_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = ASCIIToUTF16("Last  Name");
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -208,22 +171,17 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
 }
 
 TEST_F(NameFieldTest, FirstLastEmpty) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Name"),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("last_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+    field.label = string16();
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -237,30 +195,21 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
 }
 
 TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Name"),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("middle_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("last_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("middle_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -277,30 +226,21 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
 }
 
 TEST_F(NameFieldTest, MiddleInitial) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("MI"),
-                                               ASCIIToUTF16("middle_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
-                                               ASCIIToUTF16("last_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("MI");
+  field.name = ASCIIToUTF16("middle_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("last_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
@@ -317,22 +257,17 @@ TEST_F(NameFieldTest, MiddleInitial) {
 }
 
 TEST_F(NameFieldTest, MiddleInitialNoLastName) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("First Name"),
-                                               ASCIIToUTF16("first_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("MI"),
-                                               ASCIIToUTF16("middle_name"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("first_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("MI");
+  field.name = ASCIIToUTF16("middle_name");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
@@ -341,30 +276,21 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
 // This case is from the dell.com checkout page.  The middle initial "mi" string
 // came at the end following other descriptive text.  http://crbug.com/45123.
 TEST_F(NameFieldTest, MiddleInitialAtEnd) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("XXXnameXXXfirst"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("XXXnameXXXmi"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("XXXnameXXXlast"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("name3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("XXXnameXXXfirst");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("XXXnameXXXmi");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("XXXnameXXXlast");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<NameField*>(NULL), field_.get());

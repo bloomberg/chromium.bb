@@ -271,24 +271,28 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
 
   autofill_test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
   autofill_test::CreateTestFormField(
       "Empty", "empty", "", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
   autofill_test::CreateTestFormField(
       "Unknown", "unknown", "garbage", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
   autofill_test::CreateTestFormField(
       "Select", "select", "USA", "select-one", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
   server_types.push_back(NO_SERVER_DATA);
@@ -529,16 +533,19 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   server_types.push_back(NAME_FULL);
   autofill_test::CreateTestFormField(
       "Both mismatch", "mismatch", "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(PHONE_HOME_NUMBER);
   autofill_test::CreateTestFormField(
       "Only heuristics match", "mixed", "Memphis", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(ADDRESS_HOME_CITY);
   server_types.push_back(PHONE_HOME_NUMBER);
   autofill_test::CreateTestFormField(
       "Unknown", "unknown", "garbage", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
   server_types.push_back(UNKNOWN_TYPE);
@@ -721,24 +728,28 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 
   autofill_test::CreateTestFormField(
       "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
   autofill_test::CreateTestFormField(
       "Empty", "empty", "", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
   autofill_test::CreateTestFormField(
       "Unknown", "unknown", "garbage", "text", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(EMAIL_ADDRESS);
 
   autofill_test::CreateTestFormField(
       "Select", "select", "USA", "select-one", &field);
+  field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(UNKNOWN_TYPE);
   server_types.push_back(NO_SERVER_DATA);

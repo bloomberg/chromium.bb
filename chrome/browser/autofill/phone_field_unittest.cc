@@ -43,14 +43,13 @@ TEST_F(PhoneFieldTest, NonParse) {
 }
 
 TEST_F(PhoneFieldTest, ParseOneLinePhone) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
-                                               ASCIIToUTF16("phone"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("phone1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -61,22 +60,17 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
 }
 
 TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
-                                               ASCIIToUTF16("area code"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("areacode1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
-                                               ASCIIToUTF16("phone"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("phone1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Area Code");
+  field.name = ASCIIToUTF16("area code");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -85,8 +79,8 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("phone1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("phone1")]);
+      field_type_map_.find(ASCIIToUTF16("phone2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("phone2")]);
 }
 
 TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
@@ -95,38 +89,29 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
   // <country code> - <area code> - <phone>. The only distinguishing feature is
   // size: <prefix> is no bigger than 3 characters, and <suffix> is no bigger
   // than 4.
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone:"),
-                                               ASCIIToUTF16("dayphone1"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("areacode1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("-"),
-                                               ASCIIToUTF16("dayphone2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               3,
-                                               false),
-                        ASCIIToUTF16("prefix1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("-"),
-                                               ASCIIToUTF16("dayphone3"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               4,
-                                               false),
-                        ASCIIToUTF16("suffix1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("ext.:"),
-                                               ASCIIToUTF16("dayphone4"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("ext1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Phone:");
+  field.name = ASCIIToUTF16("dayphone1");
+  field.max_length = 0;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
+
+  field.label = ASCIIToUTF16("-");
+  field.name = ASCIIToUTF16("dayphone2");
+  field.max_length = 3;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("prefix2")));
+
+  field.label = ASCIIToUTF16("-");
+  field.name = ASCIIToUTF16("dayphone3");
+  field.max_length = 4;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("suffix3")));
+
+  field.label = ASCIIToUTF16("ext.:");
+  field.name = ASCIIToUTF16("dayphone4");
+  field.max_length = 0;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("ext4")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -135,41 +120,34 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("prefix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("prefix1")]);
+      field_type_map_.find(ASCIIToUTF16("prefix2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("prefix2")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
+      field_type_map_.find(ASCIIToUTF16("suffix3")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix3")]);
+  EXPECT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("ext4")) == field_type_map_.end());
 }
 
 // This scenario of explicitly labeled "prefix" and "suffix" phone numbers
 // encountered in http://crbug.com/40694 with page
 // https://www.wrapables.com/jsp/Signup.jsp.
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone:"),
-                                               ASCIIToUTF16("area"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("areacode1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("prefix"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("prefix1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("suffix"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("suffix1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Phone:");
+  field.name = ASCIIToUTF16("area");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("prefix");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("prefix2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("suffix");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("suffix3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -178,38 +156,32 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_HOME_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("prefix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("prefix1")]);
+      field_type_map_.find(ASCIIToUTF16("prefix2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("prefix2")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
+      field_type_map_.find(ASCIIToUTF16("suffix3")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix3")]);
 }
 
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("("),
-                                               ASCIIToUTF16("phone1"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               3,
-                                               false),
-                        ASCIIToUTF16("phone1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16(")"),
-                                               ASCIIToUTF16("phone2"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               3,
-                                               false),
-                        ASCIIToUTF16("phone2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("phone3"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               4,
-                                               false),
-                        ASCIIToUTF16("phone3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("(");
+  field.name = ASCIIToUTF16("phone1");
+  field.max_length = 3;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone1")));
+
+  field.label = ASCIIToUTF16(")");
+  field.name = ASCIIToUTF16("phone2");
+  field.max_length = 3;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("phone3");
+  field.max_length = 4;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -226,14 +198,13 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
 }
 
 TEST_F(PhoneFieldTest, ParseOneLineFax) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),
-                                               ASCIIToUTF16("fax"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("fax1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Fax");
+  field.name = ASCIIToUTF16("fax");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("fax1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -244,22 +215,17 @@ TEST_F(PhoneFieldTest, ParseOneLineFax) {
 }
 
 TEST_F(PhoneFieldTest, ParseTwoLineFax) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
-                                               ASCIIToUTF16("area code"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("areacode1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),
-                                               ASCIIToUTF16("fax"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("fax1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Area Code");
+  field.name = ASCIIToUTF16("area code");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
+
+  field.label = ASCIIToUTF16("Fax");
+  field.name = ASCIIToUTF16("fax");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("fax2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -269,35 +235,26 @@ TEST_F(PhoneFieldTest, ParseTwoLineFax) {
   // It should be FAX, based on the other phone in the group.
   EXPECT_EQ(PHONE_FAX_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("fax1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("fax1")]);
+      field_type_map_.find(ASCIIToUTF16("fax2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("fax2")]);
 }
 
 TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Fax:"),
-                                               ASCIIToUTF16("area"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("areacode1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("prefix"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("prefix1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("suffix"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("suffix1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Fax:");
+  field.name = ASCIIToUTF16("area");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("prefix");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("prefix2")));
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("suffix");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("suffix3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
@@ -306,32 +263,29 @@ TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
       field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
   EXPECT_EQ(PHONE_FAX_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("prefix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("prefix1")]);
+      field_type_map_.find(ASCIIToUTF16("prefix2")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("prefix2")]);
   ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
-  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
+      field_type_map_.find(ASCIIToUTF16("suffix3")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("suffix3")]);
 }
 
 TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
   // Phone in format <country code>:3 - <city and number>:10
   // The |maxlength| is considered, otherwise it's too broad.
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone Number"),
-                                               ASCIIToUTF16("CountryCode"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               3,
-                                               false),
-                        ASCIIToUTF16("country")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Phone Number"),
-                                               ASCIIToUTF16("PhoneNumber"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               10,
-                                               false),
-                        ASCIIToUTF16("phone")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Phone Number");
+  field.name = ASCIIToUTF16("CountryCode");
+  field.max_length = 3;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("country")));
+
+  field.label = ASCIIToUTF16("Phone Number");
+  field.name = ASCIIToUTF16("PhoneNumber");
+  field.max_length = 10;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("phone")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());

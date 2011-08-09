@@ -46,27 +46,26 @@ TEST_F(RenderViewTest, SendForms) {
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(3UL, forms[0].fields.size());
-  EXPECT_TRUE(forms[0].fields[0].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("firstname"),
-                string16(),
-                ASCIIToUTF16("text"),
-                WebInputElement::defaultMaxLength(),
-                false))) << forms[0].fields[0];
-  EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("middlename"),
-                string16(),
-                ASCIIToUTF16("text"),
-                WebInputElement::defaultMaxLength(),
-                false))) << forms[0].fields[1];
-  EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("state"),
-                ASCIIToUTF16("?"),
-                ASCIIToUTF16("select-one"),
-                0,
-                false))) << forms[0].fields[2];
+
+  FormField expected;
+
+  expected.name = ASCIIToUTF16("firstname");
+  expected.value = string16();
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[0]);
+
+  expected.name = ASCIIToUTF16("middlename");
+  expected.value = string16();
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[1]);
+
+  expected.name = ASCIIToUTF16("state");
+  expected.value = ASCIIToUTF16("?");
+  expected.form_control_type = ASCIIToUTF16("select-one");
+  expected.max_length = 0;
+  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[2]);
 
   // Verify that |didAcceptAutofillSuggestion()| sends the expected number of
   // fields.
@@ -93,27 +92,24 @@ TEST_F(RenderViewTest, SendForms) {
   AutofillHostMsg_FillAutofillFormData::Read(message2, &params2);
   const FormData& form2 = params2.b;
   ASSERT_EQ(3UL, form2.fields.size());
-  EXPECT_TRUE(form2.fields[0].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("firstname"),
-                string16(),
-                ASCIIToUTF16("text"),
-                WebInputElement::defaultMaxLength(),
-                false))) << form2.fields[0];
-  EXPECT_TRUE(form2.fields[1].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("middlename"),
-                string16(),
-                ASCIIToUTF16("text"),
-                WebInputElement::defaultMaxLength(),
-                false))) << form2.fields[1];
-  EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("state"),
-                ASCIIToUTF16("?"),
-                ASCIIToUTF16("select-one"),
-                0,
-                false))) << form2.fields[2];
+
+  expected.name = ASCIIToUTF16("firstname");
+  expected.value = string16();
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[0]);
+
+  expected.name = ASCIIToUTF16("middlename");
+  expected.value = string16();
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[1]);
+
+  expected.name = ASCIIToUTF16("state");
+  expected.value = ASCIIToUTF16("?");
+  expected.form_control_type = ASCIIToUTF16("select-one");
+  expected.max_length = 0;
+  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[2]);
 }
 
 TEST_F(RenderViewTest, FillFormElement) {

@@ -43,14 +43,13 @@ TEST_F(AddressFieldTest, NonParse) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddress) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                               ASCIIToUTF16("address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -62,14 +61,13 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                               ASCIIToUTF16("billingAddress"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("billingAddress");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -81,14 +79,13 @@ TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
 }
 
 TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                               ASCIIToUTF16("shippingAddress"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("shippingAddress");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -100,22 +97,17 @@ TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
 }
 
 TEST_F(AddressFieldTest, ParseTwoLineAddress) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                               ASCIIToUTF16("address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               string16(),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
+  field.label = string16();
+  field.name = string16();
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -130,30 +122,21 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseThreeLineAddress) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address Line1"),
-                                               ASCIIToUTF16("Address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address Line2"),
-                                               ASCIIToUTF16("Address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr2")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address Line3"),
-                                               ASCIIToUTF16("Address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr3")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address Line1");
+  field.name = ASCIIToUTF16("Address1");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
+  field.label = ASCIIToUTF16("Address Line2");
+  field.name = ASCIIToUTF16("Address2");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
+
+  field.label = ASCIIToUTF16("Address Line3");
+  field.name = ASCIIToUTF16("Address3");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr3")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -170,14 +153,13 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
 }
 
 TEST_F(AddressFieldTest, ParseCity) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("City"),
-                                               ASCIIToUTF16("city"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("city1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("city1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -189,14 +171,13 @@ TEST_F(AddressFieldTest, ParseCity) {
 }
 
 TEST_F(AddressFieldTest, ParseState) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("State"),
-                                               ASCIIToUTF16("state"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("state1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("state1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -208,14 +189,13 @@ TEST_F(AddressFieldTest, ParseState) {
 }
 
 TEST_F(AddressFieldTest, ParseZip) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Zip"),
-                                               ASCIIToUTF16("zip"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("zip1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Zip");
+  field.name = ASCIIToUTF16("zip");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("zip1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -227,26 +207,17 @@ TEST_F(AddressFieldTest, ParseZip) {
 }
 
 TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(
-              ASCIIToUTF16("State/Province, Zip/Postal Code"),
-              ASCIIToUTF16("state"),
-              string16(),
-              ASCIIToUTF16("text"),
-              0,
-              false),
-          ASCIIToUTF16("state")));
-  list_.push_back(
-      new AutofillField(
-          webkit_glue::FormField(
-              ASCIIToUTF16("State/Province, Zip/Postal Code"),
-              ASCIIToUTF16("zip"),
-              string16(),
-              ASCIIToUTF16("text"),
-              0,
-              false),
-          ASCIIToUTF16("zip")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
+  field.name = ASCIIToUTF16("state");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("state")));
+
+  field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
+  field.name = ASCIIToUTF16("zip");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("zip")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -261,14 +232,13 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
 }
 
 TEST_F(AddressFieldTest, ParseCountry) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Country"),
-                                               ASCIIToUTF16("country"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("country1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("country1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -280,22 +250,17 @@ TEST_F(AddressFieldTest, ParseCountry) {
 }
 
 TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Address"),
-                                               ASCIIToUTF16("address"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr1")));
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(string16(),
-                                               ASCIIToUTF16("bogus"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("addr2")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+
+  field.label = ASCIIToUTF16("");
+  field.name = ASCIIToUTF16("bogus");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
@@ -310,14 +275,13 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
 }
 
 TEST_F(AddressFieldTest, ParseCompany) {
-  list_.push_back(
-      new AutofillField(webkit_glue::FormField(ASCIIToUTF16("Company"),
-                                               ASCIIToUTF16("company"),
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0,
-                                               false),
-                        ASCIIToUTF16("company1")));
+  webkit_glue::FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("Company");
+  field.name = ASCIIToUTF16("company");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("company1")));
+
   AutofillScanner scanner(list_.get());
   field_.reset(Parse(&scanner));
   ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());

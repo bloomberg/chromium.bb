@@ -20,9 +20,10 @@ void CreateTestFormField(const char* label,
                          const char* value,
                          const char* type,
                          webkit_glue::FormField* field) {
-  *field = webkit_glue::FormField(ASCIIToUTF16(label), ASCIIToUTF16(name),
-                                  ASCIIToUTF16(value), ASCIIToUTF16(type), 0,
-                                  false);
+  field->label = ASCIIToUTF16(label);
+  field->name = ASCIIToUTF16(name);
+  field->value = ASCIIToUTF16(value);
+  field->form_control_type = ASCIIToUTF16(type);
 }
 
 inline void check_and_set(

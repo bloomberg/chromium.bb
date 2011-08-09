@@ -136,12 +136,10 @@ void AddKeys(int profile,
   for (std::set<AutofillKey>::const_iterator i = keys.begin();
        i != keys.end();
        ++i) {
-    form_fields.push_back(webkit_glue::FormField(string16(),
-                                                 (*i).name(),
-                                                 (*i).value(),
-                                                 string16(),
-                                                 0,
-                                                 false));
+    webkit_glue::FormField field;
+    field.name = i->name();
+    field.value = i->value();
+    form_fields.push_back(field);
   }
 
   WaitableEvent done_event(false, false);

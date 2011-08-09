@@ -139,44 +139,23 @@ TEST_F(AutofillTableTest, Autofill) {
   // Simulate the submission of a handful of entries in a field called "Name",
   // some more often than others.
   AutofillChangeList changes;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Kent"),
-                  string16(),
-                  0,
-                  false),
-        &changes));
+    field.value = ASCIIToUTF16("Clark Kent");
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
   }
   for (int i = 0; i < 3; i++) {
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Sutter"),
-                  string16(),
-                  0,
-                  false),
-        &changes));
+    field.value = ASCIIToUTF16("Clark Sutter");
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
   }
   for (int i = 0; i < 2; i++) {
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Favorite Color"),
-                  ASCIIToUTF16("Green"),
-                  string16(),
-                  0,
-                  false),
-        &changes));
+    field.name = ASCIIToUTF16("Favorite Color");
+    field.value = ASCIIToUTF16("Green");
+    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
   }
 
   int count = 0;
@@ -184,37 +163,24 @@ TEST_F(AutofillTableTest, Autofill) {
 
   // We have added the name Clark Kent 5 times, so count should be 5 and pair_id
   // should be somthing non-zero.
-  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Clark Kent"),
-                string16(),
-                0,
-                false),
-      &pair_id, &count));
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Clark Kent");
+  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(field, &pair_id,
+                                                                &count));
   EXPECT_EQ(5, count);
   EXPECT_NE(0, pair_id);
 
   // Storing in the data base should be case sensitive, so there should be no
   // database entry for clark kent lowercase.
-  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("clark kent"),
-                string16(),
-                0,
-                false),
-      &pair_id, &count));
+  field.value = ASCIIToUTF16("clark kent");
+  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(field, &pair_id,
+                                                                &count));
   EXPECT_EQ(0, count);
 
-  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
-      FormField(string16(),
-                ASCIIToUTF16("Favorite Color"),
-                ASCIIToUTF16("Green"),
-                string16(),
-                0,
-                false),
-      &pair_id, &count));
+  field.name = ASCIIToUTF16("Favorite Color");
+  field.value = ASCIIToUTF16("Green");
+  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(field, &pair_id,
+                                                                &count));
   EXPECT_EQ(2, count);
 
   // This is meant to get a list of suggestions for Name.  The empty prefix
@@ -274,14 +240,10 @@ TEST_F(AutofillTableTest, Autofill) {
     EXPECT_EQ(expected_changes[i], changes[i]);
   }
 
-  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Clark Kent"),
-                string16(),
-                0,
-                false),
-      &pair_id, &count));
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Clark Kent");
+  EXPECT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(field, &pair_id,
+                                                                &count));
   EXPECT_EQ(0, count);
 
   EXPECT_TRUE(db.GetAutofillTable()->GetFormValuesForElementName(
@@ -290,38 +252,18 @@ TEST_F(AutofillTableTest, Autofill) {
 
   // Now add some values with empty strings.
   const string16 kValue = ASCIIToUTF16("  toto   ");
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-          ASCIIToUTF16("blank"),
-          string16(),
-          string16(),
-          0,
-          false),
-      &changes));
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-          ASCIIToUTF16("blank"),
-          ASCIIToUTF16(" "),
-          string16(),
-          0,
-          false),
-      &changes));
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-          ASCIIToUTF16("blank"),
-          ASCIIToUTF16("      "),
-          string16(),
-          0,
-          false),
-      &changes));
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-          ASCIIToUTF16("blank"),
-          kValue,
-          string16(),
-          0,
-          false),
-      &changes));
+  field.name = ASCIIToUTF16("blank");
+  field.value = string16();
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+  field.name = ASCIIToUTF16("blank");
+  field.value = ASCIIToUTF16(" ");
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+  field.name = ASCIIToUTF16("blank");
+  field.value = ASCIIToUTF16("      ");
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
+  field.name = ASCIIToUTF16("blank");
+  field.value = kValue;
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
 
   // They should be stored normally as the DB layer does not check for empty
   // values.
@@ -350,24 +292,13 @@ TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      t1));
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      t2));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t1));
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t2));
 
   changes.clear();
   EXPECT_TRUE(db.GetAutofillTable()->RemoveFormElementsAddedBetween(
@@ -397,15 +328,11 @@ TEST_F(AutofillTableTest, Autofill_AddChanges) {
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      t1));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t1));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ(AutofillChange(AutofillChange::ADD,
                            AutofillKey(ASCIIToUTF16("Name"),
@@ -413,15 +340,8 @@ TEST_F(AutofillTableTest, Autofill_AddChanges) {
             changes[0]);
 
   changes.clear();
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      t2));
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t2));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ(AutofillChange(AutofillChange::UPDATE,
                            AutofillKey(ASCIIToUTF16("Name"),
@@ -438,12 +358,9 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
   entries.push_back(entry);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field(string16(),
-                  ASCIIToUTF16("foo"),
-                  ASCIIToUTF16("bar"),
-                  string16(),
-                  0,
-                  false);
+  FormField field;
+  field.name = ASCIIToUTF16("foo");
+  field.value = ASCIIToUTF16("bar");
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
@@ -466,12 +383,9 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
   entries.push_back(entry);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field(string16(),
-                  ASCIIToUTF16("foo"),
-                  ASCIIToUTF16("bar"),
-                  string16(),
-                  0,
-                  false);
+  FormField field;
+  field.name = ASCIIToUTF16("foo");
+  field.value = ASCIIToUTF16("bar");
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
@@ -514,12 +428,9 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
   entries.push_back(entry1);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field0(string16(),
-                   ASCIIToUTF16("foo"),
-                   ASCIIToUTF16("bar0"),
-                   string16(),
-                   0,
-                   false);
+  FormField field0;
+  field0.name = ASCIIToUTF16("foo");
+  field0.value = ASCIIToUTF16("bar0");
   int64 pair_id;
   int count;
   ASSERT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
@@ -527,12 +438,9 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
   EXPECT_LE(0, pair_id);
   EXPECT_EQ(1, count);
 
-  FormField field1(string16(),
-                   ASCIIToUTF16("foo"),
-                   ASCIIToUTF16("bar1"),
-                   string16(),
-                   0,
-                   false);
+  FormField field1;
+  field1.name = ASCIIToUTF16("foo");
+  field1.value = ASCIIToUTF16("bar1");
   ASSERT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
       field1, &pair_id, &count));
   EXPECT_LE(0, pair_id);
@@ -545,14 +453,10 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
 
   AutofillChangeList changes;
   // Add a form field.  This will be replaced.
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
 
   AutofillEntry entry(MakeAutofillEntry("Name", "Superman", 1, 2));
   std::vector<AutofillEntry> entries;
@@ -575,15 +479,10 @@ TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
 
   AutofillChangeList changes;
   // Add a form field.  This will NOT be replaced.
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                existing.key().name(),
-                existing.key().value(),
-                string16(),
-                0,
-                false),
-      &changes,
-      t));
+  FormField field;
+  field.name = existing.key().name();
+  field.value = existing.key().value();
+  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t));
   AutofillEntry entry(MakeAutofillEntry("Name", "Clark Kent", 1, 2));
   std::vector<AutofillEntry> entries;
   entries.push_back(entry);
@@ -609,30 +508,22 @@ TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
   // first value of each gets added. Related to security issue:
   // http://crbug.com/51727.
   std::vector<FormField> elements;
-  elements.push_back(FormField(string16(),
-                               ASCIIToUTF16("firstname"),
-                               ASCIIToUTF16("Joe"),
-                               string16(),
-                               0,
-                               false));
-  elements.push_back(FormField(string16(),
-                               ASCIIToUTF16("firstname"),
-                               ASCIIToUTF16("Jane"),
-                               string16(),
-                               0,
-                               false));
-  elements.push_back(FormField(string16(),
-                               ASCIIToUTF16("lastname"),
-                               ASCIIToUTF16("Smith"),
-                               string16(),
-                               0,
-                               false));
-  elements.push_back(FormField(string16(),
-                               ASCIIToUTF16("lastname"),
-                               ASCIIToUTF16("Jones"),
-                               string16(),
-                               0,
-                               false));
+  FormField field;
+  field.name = ASCIIToUTF16("firstname");
+  field.value = ASCIIToUTF16("Joe");
+  elements.push_back(field);
+
+  field.name = ASCIIToUTF16("firstname");
+  field.value = ASCIIToUTF16("Jane");
+  elements.push_back(field);
+
+  field.name = ASCIIToUTF16("lastname");
+  field.value = ASCIIToUTF16("Smith");
+  elements.push_back(field);
+
+  field.name = ASCIIToUTF16("lastname");
+  field.value = ASCIIToUTF16("Jones");
+  elements.push_back(field);
 
   std::vector<AutofillChange> changes;
   db.GetAutofillTable()->AddFormFieldValuesTime(elements, &changes, t);
@@ -1462,15 +1353,12 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
 
   time_t start = 0;
   std::vector<Time> timestamps1;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      Time::FromTimeT(start)));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+                                                   Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
   std::string key1("NameSuperman");
   name_value_times_map.insert(std::pair<std::string,
@@ -1507,15 +1395,12 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
   time_t start = 0;
 
   std::vector<Time> timestamps1;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
-                string16(),
-                0,
-                false),
-      &changes,
-      Time::FromTimeT(start)));
+  FormField field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+                                                   Time::FromTimeT(start)));
   timestamps1.push_back(Time::FromTimeT(start));
   std::string key1("NameSuperman");
   name_value_times_map.insert(std::pair<std::string,
@@ -1523,15 +1408,11 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
 
   start++;
   std::vector<Time> timestamps2;
-  EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-      FormField(string16(),
-                ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Clark Kent"),
-                string16(),
-                0,
-                false),
-      &changes,
-      Time::FromTimeT(start)));
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Clark Kent");
+  EXPECT_TRUE(
+      db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+                                                   Time::FromTimeT(start)));
   timestamps2.push_back(Time::FromTimeT(start));
   std::string key2("NameClark Kent");
   name_value_times_map.insert(std::pair<std::string,
@@ -1572,15 +1453,12 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
   time_t start = 0;
   std::vector<Time> timestamps;
   for (int i = 0; i < 2; i++) {
-    EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(
-        FormField(string16(),
-                  ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Superman"),
-                  string16(),
-                  0,
-                  false),
-        &changes,
-        Time::FromTimeT(start)));
+    FormField field;
+    field.name = ASCIIToUTF16("Name");
+    field.value = ASCIIToUTF16("Superman");
+    EXPECT_TRUE(
+        db.GetAutofillTable()->AddFormFieldValueTime(field, &changes,
+                                                     Time::FromTimeT(start)));
     timestamps.push_back(Time::FromTimeT(start));
     start++;
   }

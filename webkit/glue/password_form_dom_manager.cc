@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,29 +36,21 @@ void PasswordFormDomManager::InitFillData(
     const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
     PasswordFormFillData* result) {
-  DCHECK(preferred_match);
+  // Note that many of the |FormField| members are not initialized for
+  // |username_field| and |password_field| because they are currently not used
+  // by the password autocomplete code.
+  FormField username_field;
+  username_field.name = form_on_page.username_element;
+  username_field.value = preferred_match->username_value;
+  FormField password_field;
+  password_field.name = form_on_page.password_element;
+  password_field.value = preferred_match->password_value;
+
   // Fill basic form data.
   result->basic_data.origin = form_on_page.origin;
   result->basic_data.action = form_on_page.action;
-  // Three of the parameters below are set to default values because they are
-  // currently not used by the password autocomplete code:
-  // * The form control type is initialized to an empty string.
-  // * The field |max_length| is initialized to 0.
-  // * The field autofilled state is initialized to false.
-  result->basic_data.fields.push_back(
-      FormField(string16(),
-                form_on_page.username_element,
-                preferred_match->username_value,
-                string16(),
-                0,
-                false));
-  result->basic_data.fields.push_back(
-      FormField(string16(),
-                form_on_page.password_element,
-                preferred_match->password_value,
-                string16(),
-                0,
-                false));
+  result->basic_data.fields.push_back(username_field);
+  result->basic_data.fields.push_back(password_field);
   result->wait_for_username = wait_for_username_before_autofill;
 
   // Copy additional username/value pairs.

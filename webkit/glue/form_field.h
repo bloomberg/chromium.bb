@@ -15,24 +15,14 @@ namespace webkit_glue {
 // Stores information about a field in a form.
 struct FormField {
   FormField();
-  FormField(const string16& label,
-            const string16& name,
-            const string16& value,
-            const string16& form_control_type,
-            int max_length,
-            bool is_autofilled);
   virtual ~FormField();
 
-  // Equality tests for identity which does not include |value_| or |size_|.
-  // Use |StrictlyEqualsHack| method to test all members.
+  // Equality tests for identity which does not include |value| or
+  // |is_autofilled|.
   // TODO(dhollowa): These operators need to be revised when we implement field
   // ids.
   bool operator==(const FormField& field) const;
   bool operator!=(const FormField& field) const;
-
-  // Test equality of all data members.
-  // TODO(dhollowa): This will be removed when we implement field ids.
-  bool StrictlyEqualsHack(const FormField& field) const;
 
   string16 label;
   string16 name;
@@ -51,5 +41,17 @@ struct FormField {
 std::ostream& operator<<(std::ostream& os, const FormField& field);
 
 }  // namespace webkit_glue
+
+// Prefer to use this macro in place of |EXPECT_EQ()| for comparing |FormField|s
+// in test code.
+#define EXPECT_FORM_FIELD_EQUALS(expected, actual) \
+  do { \
+    EXPECT_EQ(expected.label, actual.label); \
+    EXPECT_EQ(expected.name, actual.name); \
+    EXPECT_EQ(expected.value, actual.value); \
+    EXPECT_EQ(expected.form_control_type, actual.form_control_type); \
+    EXPECT_EQ(expected.max_length, actual.max_length); \
+    EXPECT_EQ(expected.is_autofilled, actual.is_autofilled); \
+  } while (0)
 
 #endif  // WEBKIT_GLUE_FORM_FIELD_H_

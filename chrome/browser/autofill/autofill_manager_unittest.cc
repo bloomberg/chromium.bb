@@ -257,6 +257,18 @@ void ExpectSuggestions(int page_id,
   }
 }
 
+void ExpectFilledField(const char* expected_label,
+                       const char* expected_name,
+                       const char* expected_value,
+                       const char* expected_form_control_type,
+                       const webkit_glue::FormField& field) {
+  SCOPED_TRACE(expected_label);
+  EXPECT_EQ(UTF8ToUTF16(expected_label), field.label);
+  EXPECT_EQ(UTF8ToUTF16(expected_name), field.name);
+  EXPECT_EQ(UTF8ToUTF16(expected_value), field.value);
+  EXPECT_EQ(UTF8ToUTF16(expected_form_control_type), field.form_control_type);
+}
+
 // Verifies that the |filled_form| has been filled with the given data.
 // Verifies address fields if |has_address_fields| is true, and verifies
 // credit card fields if |has_credit_card_fields| is true. Verifies both if both
@@ -308,68 +320,52 @@ void ExpectFilledForm(int page_id,
 
   FormField field;
   if (has_address_fields) {
-    autofill_test::CreateTestFormField(
-        "First Name", "firstname", first, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[0]));
-    autofill_test::CreateTestFormField(
-        "Middle Name", "middlename", middle, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[1]));
-    autofill_test::CreateTestFormField(
-        "Last Name", "lastname", last, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[2]));
-    autofill_test::CreateTestFormField(
-        "Address Line 1", "addr1", address1, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[3]));
-    autofill_test::CreateTestFormField(
-        "Address Line 2", "addr2", address2, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[4]));
-    autofill_test::CreateTestFormField(
-        "City", "city", city, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[5]));
-    autofill_test::CreateTestFormField(
-        "State", "state", state, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[6]));
-    autofill_test::CreateTestFormField(
-        "Postal Code", "zipcode", postal_code, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[7]));
-    autofill_test::CreateTestFormField(
-        "Country", "country", country, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[8]));
-    autofill_test::CreateTestFormField(
-        "Phone Number", "phonenumber", phone, "tel", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[9]));
-    autofill_test::CreateTestFormField(
-        "Fax", "fax", fax, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[10]));
-    autofill_test::CreateTestFormField(
-        "Email", "email", email, "email", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[11]));
+    ExpectFilledField("First Name", "firstname", first, "text",
+                      filled_form.fields[0]);
+    ExpectFilledField("Middle Name", "middlename", middle, "text",
+                      filled_form.fields[1]);
+    ExpectFilledField("Last Name", "lastname", last, "text",
+                      filled_form.fields[2]);
+    ExpectFilledField("Address Line 1", "addr1", address1, "text",
+                      filled_form.fields[3]);
+    ExpectFilledField("Address Line 2", "addr2", address2, "text",
+                      filled_form.fields[4]);
+    ExpectFilledField("City", "city", city, "text",
+                      filled_form.fields[5]);
+    ExpectFilledField("State", "state", state, "text",
+                      filled_form.fields[6]);
+    ExpectFilledField("Postal Code", "zipcode", postal_code, "text",
+                      filled_form.fields[7]);
+    ExpectFilledField("Country", "country", country, "text",
+                      filled_form.fields[8]);
+    ExpectFilledField("Phone Number", "phonenumber", phone, "tel",
+                      filled_form.fields[9]);
+    ExpectFilledField("Fax", "fax", fax, "text",
+                      filled_form.fields[10]);
+    ExpectFilledField("Email", "email", email, "email",
+                      filled_form.fields[11]);
   }
 
   if (has_credit_card_fields) {
     size_t offset = has_address_fields? kAddressFormSize : 0;
-    autofill_test::CreateTestFormField(
-        "Name on Card", "nameoncard", name_on_card, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 0]));
-    autofill_test::CreateTestFormField(
-        "Card Number", "cardnumber", card_number, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 1]));
+    ExpectFilledField("Name on Card", "nameoncard", name_on_card, "text",
+                      filled_form.fields[offset + 0]);
+    ExpectFilledField("Card Number", "cardnumber", card_number, "text",
+                      filled_form.fields[offset + 1]);
     if (use_month_type) {
       std::string exp_year = expiration_year;
       std::string exp_month = expiration_month;
       std::string date;
       if (!exp_year.empty() && !exp_month.empty())
         date = exp_year + "-" + exp_month;
-      autofill_test::CreateTestFormField(
-          "Expiration Date", "ccmonth", date.c_str(), "month", &field);
-      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 2]));
+
+      ExpectFilledField("Expiration Date", "ccmonth", date.c_str(), "month",
+                        filled_form.fields[offset + 2]);
     } else {
-      autofill_test::CreateTestFormField(
-          "Expiration Date", "ccmonth", expiration_month, "text", &field);
-      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 2]));
-      autofill_test::CreateTestFormField(
-          "", "ccyear", expiration_year, "text", &field);
-      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 3]));
+      ExpectFilledField("Expiration Date", "ccmonth", expiration_month, "text",
+                        filled_form.fields[offset + 2]);
+      ExpectFilledField("", "ccyear", expiration_year, "text",
+                        filled_form.fields[offset + 3]);
     }
   }
 }

@@ -24,20 +24,6 @@ FormField::FormField()
       is_autofilled(false) {
 }
 
-FormField::FormField(const string16& label,
-                     const string16& name,
-                     const string16& value,
-                     const string16& form_control_type,
-                     int max_length,
-                     bool is_autofilled)
-  : label(label),
-    name(name),
-    value(value),
-    form_control_type(form_control_type),
-    max_length(max_length),
-    is_autofilled(is_autofilled) {
-}
-
 FormField::~FormField() {
 }
 
@@ -54,14 +40,6 @@ bool FormField::operator!=(const FormField& field) const {
   return !operator==(field);
 }
 
-bool FormField::StrictlyEqualsHack(const FormField& field) const {
-  return (label == field.label &&
-          name == field.name &&
-          value == field.value &&
-          form_control_type == field.form_control_type &&
-          max_length == field.max_length);
-}
-
 std::ostream& operator<<(std::ostream& os, const FormField& field) {
   return os
       << UTF16ToUTF8(field.label)
@@ -72,7 +50,9 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << " "
       << UTF16ToUTF8(field.form_control_type)
       << " "
-      << field.max_length;
+      << field.max_length
+      << " "
+      << (field.is_autofilled ? "true" : "false");
 }
 
 }  // namespace webkit_glue
