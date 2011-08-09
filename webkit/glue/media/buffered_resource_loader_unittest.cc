@@ -7,6 +7,7 @@
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
+#include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
@@ -99,7 +100,8 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     url_loader_ = new NiceMock<MockWebURLLoader>();
     loader_ = new BufferedResourceLoader(gurl_,
-                                         first_position_, last_position_);
+                                         first_position_, last_position_,
+                                         new media::MediaLog());
     loader_->SetURLLoaderForTest(url_loader_);
   }
 

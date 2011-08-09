@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/test/test_timeouts.h"
+#include "media/base/media_log.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
@@ -50,7 +51,7 @@ enum NetworkState {
 class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(MessageLoop* message_loop, WebFrame* frame)
-      : BufferedDataSource(message_loop, frame) {
+      : BufferedDataSource(message_loop, frame, new media::MediaLog()) {
   }
 
   virtual base::TimeDelta GetTimeoutMilliseconds() {
@@ -68,7 +69,8 @@ class MockBufferedDataSource : public BufferedDataSource {
 
 class MockBufferedResourceLoader : public BufferedResourceLoader {
  public:
-  MockBufferedResourceLoader() : BufferedResourceLoader(GURL(), 0, 0) {
+  MockBufferedResourceLoader()
+      : BufferedResourceLoader(GURL(), 0, 0, new media::MediaLog()) {
   }
 
   MOCK_METHOD3(Start, void(net::CompletionCallback* read_callback,

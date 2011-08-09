@@ -5,6 +5,7 @@
 #include "webkit/glue/media/buffered_data_source.h"
 
 #include "media/base/filter_host.h"
+#include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "webkit/glue/media/web_data_source_factory.h"
 #include "webkit/glue/webkit_glue.h"
@@ -23,22 +24,25 @@ static const int kInitialReadBufferSize = 32768;
 static const int kNumCacheMissRetries = 3;
 
 static WebDataSource* NewBufferedDataSource(MessageLoop* render_loop,
-                                            WebKit::WebFrame* frame) {
-  return new BufferedDataSource(render_loop, frame);
+                                            WebKit::WebFrame* frame,
+                                            media::MediaLog* media_log) {
+  return new BufferedDataSource(render_loop, frame, media_log);
 }
 
 // static
 media::DataSourceFactory* BufferedDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
+    media::MediaLog* media_log,
     WebDataSourceBuildObserverHack* build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, &NewBufferedDataSource,
-                                  build_observer);
+  return new WebDataSourceFactory(render_loop, frame, media_log,
+                                  &NewBufferedDataSource, build_observer);
 }
 
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
-    WebFrame* frame)
+    WebFrame* frame,
+    media::MediaLog* media_log)
     : total_bytes_(kPositionNotSpecified),
       buffered_bytes_(0),
       loaded_(false),
@@ -60,7 +64,8 @@ BufferedDataSource::BufferedDataSource(
       media_has_played_(false),
       preload_(media::METADATA),
       using_range_request_(true),
-      cache_miss_retries_left_(kNumCacheMissRetries) {
+      cache_miss_retries_left_(kNumCacheMissRetries),
+      media_log_(media_log) {
 }
 
 BufferedDataSource::~BufferedDataSource() {}
@@ -74,7 +79,8 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
 
   return new BufferedResourceLoader(url_,
                                     first_byte_position,
-                                    last_byte_position);
+                                    last_byte_position,
+                                    media_log_);
 }
 
 void BufferedDataSource::set_host(media::FilterHost* host) {

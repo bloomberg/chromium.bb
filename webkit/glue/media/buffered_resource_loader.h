@@ -20,6 +20,10 @@
 #include "webkit/glue/media/web_data_source.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
+namespace media {
+class MediaLog;
+}
+
 namespace webkit_glue {
 
 const int64 kPositionNotSpecified = -1;
@@ -54,7 +58,8 @@ class BufferedResourceLoader
   // |kPositionNotSpecified| for not specified.
   BufferedResourceLoader(const GURL& url,
                          int64 first_byte_position,
-                         int64 last_byte_position);
+                         int64 last_byte_position,
+                         media::MediaLog* media_log);
 
   // Start the resource loading with the specified URL and range.
   // This method operates in asynchronous mode. Once there's a response from the
@@ -211,6 +216,9 @@ class BufferedResourceLoader
   // Helper function that returns true if a range request was specified.
   bool IsRangeRequest() const;
 
+  // Log everything interesting to |media_log_|.
+  void Log();
+
   // A sliding window of buffer.
   scoped_ptr<media::SeekableBuffer> buffer_;
 
@@ -263,6 +271,8 @@ class BufferedResourceLoader
 
   // Used to ensure mocks for unittests are used instead of reset in Start().
   bool keep_test_loader_;
+
+  scoped_refptr<media::MediaLog> media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };

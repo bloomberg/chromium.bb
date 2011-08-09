@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "media/base/filter_host.h"
+#include "media/base/media_log.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -26,7 +27,8 @@ namespace webkit_glue {
 static const char kDataScheme[] = "data";
 
 static WebDataSource* NewSimpleDataSource(MessageLoop* render_loop,
-                                          WebKit::WebFrame* frame) {
+                                          WebKit::WebFrame* frame,
+                                          media::MediaLog* media_log) {
   return new SimpleDataSource(render_loop, frame);
 }
 
@@ -34,9 +36,10 @@ static WebDataSource* NewSimpleDataSource(MessageLoop* render_loop,
 media::DataSourceFactory* SimpleDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
+    media::MediaLog* media_log,
     WebDataSourceBuildObserverHack* build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, &NewSimpleDataSource,
-                                  build_observer);
+  return new WebDataSourceFactory(render_loop, frame, media_log,
+                                  &NewSimpleDataSource, build_observer);
 }
 
 SimpleDataSource::SimpleDataSource(

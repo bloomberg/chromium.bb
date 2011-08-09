@@ -338,7 +338,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
-  media_log_->AddEventOfType(media::MediaLogEvent::CREATING);
+  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::CREATING));
 }
 
 bool WebMediaPlayerImpl::Initialize(
@@ -374,11 +374,13 @@ bool WebMediaPlayerImpl::Initialize(
   // A simple data source that keeps all data in memory.
   scoped_ptr<media::DataSourceFactory> simple_data_source_factory(
       SimpleDataSource::CreateFactory(MessageLoop::current(), frame,
+                                      media_log_,
                                       proxy_->GetBuildObserver()));
 
   // A sophisticated data source that does memory caching.
   scoped_ptr<media::DataSourceFactory> buffered_data_source_factory(
       BufferedDataSource::CreateFactory(MessageLoop::current(), frame,
+                                        media_log_,
                                         proxy_->GetBuildObserver()));
 
   scoped_ptr<media::CompositeDataSourceFactory> data_source_factory(
@@ -425,7 +427,8 @@ bool WebMediaPlayerImpl::Initialize(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
-  media_log_->AddEventOfType(media::MediaLogEvent::DESTROYING);
+  media_log_->AddEvent(
+      media_log_->CreateEvent(media::MediaLogEvent::DESTROYING));
   Destroy();
 
   // Finally tell the |main_loop_| we don't want to be notified of destruction
@@ -464,7 +467,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       NewCallback(proxy_.get(),
                   &WebMediaPlayerImpl::Proxy::PipelineInitializationCallback));
 
-  media_log_->Load(url.spec());
+  media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 }
 
 void WebMediaPlayerImpl::cancelLoad() {
@@ -477,7 +480,7 @@ void WebMediaPlayerImpl::play() {
   paused_ = false;
   pipeline_->SetPlaybackRate(playback_rate_);
 
-  media_log_->AddEventOfType(media::MediaLogEvent::PLAY);
+  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
 }
 
 void WebMediaPlayerImpl::pause() {
@@ -487,7 +490,7 @@ void WebMediaPlayerImpl::pause() {
   pipeline_->SetPlaybackRate(0.0f);
   paused_time_ = pipeline_->GetCurrentTime();
 
-  media_log_->AddEventOfType(media::MediaLogEvent::PAUSE);
+  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {

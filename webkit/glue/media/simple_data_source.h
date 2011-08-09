@@ -27,6 +27,10 @@
 class MessageLoop;
 class WebMediaPlayerDelegateImpl;
 
+namespace media {
+class MediaLog;
+}
+
 namespace webkit_glue {
 
 class SimpleDataSource
@@ -37,6 +41,7 @@ class SimpleDataSource
   static media::DataSourceFactory* CreateFactory(
       MessageLoop* render_loop,
       WebKit::WebFrame* frame,
+      media::MediaLog* media_log,
       WebDataSourceBuildObserverHack* build_observer);
 
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);

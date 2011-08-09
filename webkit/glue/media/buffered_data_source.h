@@ -14,6 +14,10 @@
 #include "media/base/filters.h"
 #include "webkit/glue/media/buffered_resource_loader.h"
 
+namespace media {
+class MediaLog;
+}
+
 namespace webkit_glue {
 
 class BufferedDataSource : public WebDataSource {
@@ -22,10 +26,12 @@ class BufferedDataSource : public WebDataSource {
   static media::DataSourceFactory* CreateFactory(
       MessageLoop* render_loop,
       WebKit::WebFrame* frame,
+      media::MediaLog* media_log,
       WebDataSourceBuildObserverHack* build_observer);
 
   BufferedDataSource(MessageLoop* render_loop,
-                     WebKit::WebFrame* frame);
+                     WebKit::WebFrame* frame,
+                     media::MediaLog* media_log);
 
   virtual ~BufferedDataSource();
 
@@ -201,6 +207,8 @@ class BufferedDataSource : public WebDataSource {
 
   // Number of cache miss retries left.
   int cache_miss_retries_left_;
+
+  scoped_refptr<media::MediaLog> media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };

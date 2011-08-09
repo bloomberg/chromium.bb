@@ -5,6 +5,7 @@
 #include "webkit/glue/media/web_data_source_factory.h"
 
 #include "base/logging.h"
+#include "media/base/media_log.h"
 
 namespace webkit_glue {
 
@@ -32,22 +33,25 @@ class WebDataSourceFactory::BuildRequest
 WebDataSourceFactory::WebDataSourceFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
+    media::MediaLog* media_log,
     FactoryFunction factory_function,
     WebDataSourceBuildObserverHack* build_observer)
     : render_loop_(render_loop),
       frame_(frame),
+      media_log_(media_log),
       factory_function_(factory_function),
       build_observer_(build_observer) {
   DCHECK(render_loop_);
   DCHECK(frame_);
+  DCHECK(media_log_);
   DCHECK(factory_function_);
 }
 
 WebDataSourceFactory::~WebDataSourceFactory() {}
 
 media::DataSourceFactory* WebDataSourceFactory::Clone() const {
-  return new WebDataSourceFactory(render_loop_, frame_, factory_function_,
-                                  build_observer_);
+  return new WebDataSourceFactory(render_loop_, frame_, media_log_,
+                                  factory_function_, build_observer_);
 }
 
 bool WebDataSourceFactory::AllowRequests() const {
@@ -57,7 +61,8 @@ bool WebDataSourceFactory::AllowRequests() const {
 media::AsyncDataSourceFactoryBase::BuildRequest*
 WebDataSourceFactory::CreateRequest(const std::string& url,
                                     BuildCallback* callback) {
-  WebDataSource* data_source = factory_function_(render_loop_, frame_);
+  WebDataSource* data_source = factory_function_(render_loop_, frame_,
+                                                 media_log_);
 
   return new WebDataSourceFactory::BuildRequest(url, callback, data_source,
                                                 build_observer_);

@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -54,7 +55,8 @@ static const int kForwardWaitThreshold = 2 * kMegabyte;
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,
     int64 first_byte_position,
-    int64 last_byte_position)
+    int64 last_byte_position,
+    media::MediaLog* media_log)
     : buffer_(new media::SeekableBuffer(kBackwardCapacity, kForwardCapacity)),
       deferred_(false),
       defer_strategy_(kReadThenDefer),
@@ -76,7 +78,8 @@ BufferedResourceLoader::BufferedResourceLoader(
       read_buffer_(NULL),
       first_offset_(0),
       last_offset_(0),
-      keep_test_loader_(false) {
+      keep_test_loader_(false),
+      media_log_(media_log) {
 }
 
 BufferedResourceLoader::~BufferedResourceLoader() {
@@ -399,6 +402,7 @@ void BufferedResourceLoader::didReceiveData(
 
   // Notify that we have received some data.
   NotifyNetworkEvent();
+  Log();
 }
 
 void BufferedResourceLoader::didDownloadData(
@@ -677,6 +681,7 @@ void BufferedResourceLoader::DoneRead(int error) {
   read_buffer_ = NULL;
   first_offset_ = 0;
   last_offset_ = 0;
+  Log();
 }
 
 void BufferedResourceLoader::DoneStart(int error) {
@@ -691,6 +696,16 @@ void BufferedResourceLoader::NotifyNetworkEvent() {
 
 bool BufferedResourceLoader::IsRangeRequest() const {
   return first_byte_position_ != kPositionNotSpecified;
+}
+
+void BufferedResourceLoader::Log() {
+  if (buffer_.get()) {
+    media_log_->AddEvent(
+        media_log_->CreateBufferedExtentsChangedEvent(
+            offset_ - buffer_->backward_bytes(),
+            offset_,
+            offset_ + buffer_->forward_bytes()));
+  }
 }
 
 }  // namespace webkit_glue
