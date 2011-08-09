@@ -9,8 +9,6 @@ catgets/tst-catgets
 crypt/sha512c-test
 crypt/sha512test
 csu/tst-atomic-long
-# Static linking is broken right now - this means csu/tst-empty fails.
-csu/tst-empty
 debug/tst-chk4
 debug/tst-chk5
 debug/tst-chk6
@@ -216,10 +214,7 @@ posix/tst-spawn
 posix/tst-vfork3
 posix/wordexp-test
 resource/bug-ulimit1
-rt/tst-aio2
-rt/tst-aio3
 rt/tst-aio4
-rt/tst-aio5
 rt/tst-aio6
 rt/tst-aio7
 signal/tst-signal
