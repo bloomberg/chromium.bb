@@ -110,7 +110,7 @@ def UploadIrtBinary(status, context):
       if os.environ.get('ARCHIVE_IRT') == '1':
         Command(
           context,
-          cmd=['toolchain/linux_x86_newlib/bin/nacl-strip',
+          cmd=['toolchain/linux_x86_newlib/bin/x86_64-nacl-strip',
                '--strip-debug',
                irt_path,
                '-o', stripped_irt_path])
