@@ -48,11 +48,8 @@ class DumpVideo {
  public:
   DumpVideo() : expected_size_(0) {}
   void StartDump(int width, int height) {
-    // Create an FilePath that works on all platforms. There should
-    // be a better way.
-    FilePath file_name =
-        FilePath::FromWStringHack(StringPrintf(L"dump_w%d_h%d.yuv", width,
-                                               height));
+    FilePath file_name = FilePath(
+        StringPrintf(FILE_PATH_LITERAL("dump_w%d_h%d.yuv"), width, height));
     file_.reset(file_util::OpenFile(file_name, "wb"));
     expected_size_ = width * height * 3 / 2;
   }

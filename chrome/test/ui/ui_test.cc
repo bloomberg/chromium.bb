@@ -117,8 +117,8 @@ void UITestBase::SetUp() {
   // We don't want to reset the ProxyLauncher's state in those cases.
   if (!launcher_.get())
     launcher_.reset(CreateProxyLauncher());
-  launcher_->AssertAppNotRunning(L"Please close any other instances "
-                                 L"of the app before testing.");
+  launcher_->AssertAppNotRunning("Please close any other instances "
+                                 "of the app before testing.");
 
   JavaScriptExecutionController::set_timeout(
       TestTimeouts::action_max_timeout_ms());

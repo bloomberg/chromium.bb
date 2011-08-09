@@ -148,8 +148,8 @@ void ProxyLauncher::CloseBrowserAndServer() {
   // TODO(jhughes): figure out why this is necessary at all, and fix it
   if (!in_process_renderer_)
     AssertAppNotRunning(
-        StringPrintf(L"Unable to quit all browser processes. Original PID %d",
-                     &process_id_));
+        StringPrintf("Unable to quit all browser processes. Original PID %d",
+                     process_id_));
 
   DisconnectFromRunningBrowser();
 }
@@ -309,17 +309,17 @@ void ProxyLauncher::TerminateBrowser() {
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
 }
 
-void ProxyLauncher::AssertAppNotRunning(const std::wstring& error_message) {
-  std::wstring final_error_message(error_message);
+void ProxyLauncher::AssertAppNotRunning(const std::string& error_message) {
+  std::string final_error_message(error_message);
 
   ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
   if (!processes.empty()) {
-    final_error_message += L" Leftover PIDs: [";
+    final_error_message += " Leftover PIDs: [";
     for (ChromeProcessList::const_iterator it = processes.begin();
          it != processes.end(); ++it) {
-      final_error_message += StringPrintf(L" %d", *it);
+      final_error_message += StringPrintf(" %d", *it);
     }
-    final_error_message += L" ]";
+    final_error_message += " ]";
   }
   ASSERT_TRUE(processes.empty()) << final_error_message;
 }

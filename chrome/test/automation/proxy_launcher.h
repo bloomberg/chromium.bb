@@ -108,7 +108,7 @@ class ProxyLauncher {
 
   // Check that no processes related to Chrome exist, displaying
   // the given message if any do.
-  void AssertAppNotRunning(const std::wstring& error_message);
+  void AssertAppNotRunning(const std::string& error_message);
 
   // Wait for the browser process to shut down on its own (i.e. as a result of
   // some action that your test has taken). If it has exited within |timeout|,
