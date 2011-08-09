@@ -30,9 +30,9 @@ def main():
   args = list()
   args.append("/usr/bin/ld.bfd")
   for arg in sys.argv[1:]:
-    if arg == "-Wl,--threads":
+    if arg == "-Wl,--threads" or arg == "--threads":
       continue
-    if arg == "-Wl,--thread-count=4":
+    if arg == "-Wl,--thread-count=4" or arg == "--thread-count=4":
       continue
     args.append(arg)
   print("ld_bfd/ld: exec ", args)
