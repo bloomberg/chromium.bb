@@ -21,6 +21,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
 
 using ppapi::StringVar;
@@ -136,7 +137,7 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
   accessor.object()->ppp_class()->SetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
       result_converter.exception());
-  Var::PluginReleasePPVar(value_var);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(value_var);
   return result_converter.CheckExceptionForNoResult();
 }
 
@@ -201,8 +202,9 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
 
   // Release the PP_Var that the plugin allocated. On success, they will all
   // be converted to NPVariants, and on failure, we want them to just go away.
+  ::ppapi::VarTracker* var_tracker = ResourceTracker::Get()->GetVarTracker();
   for (uint32_t i = 0; i < property_count; ++i)
-    Var::PluginReleasePPVar(properties[i]);
+    var_tracker->ReleaseVar(properties[i]);
   free(properties);
   return result_converter.success();
 }

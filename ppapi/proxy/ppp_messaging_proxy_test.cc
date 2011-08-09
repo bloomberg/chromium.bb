@@ -9,6 +9,9 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/var.h"
+
+using ::ppapi::StringVar;
 
 namespace pp {
 namespace proxy {
@@ -126,14 +129,14 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
   handle_message_called.Wait();
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
-  const std::string* received_string =
-      plugin().var_tracker().GetExistingString(received_var);
-  ASSERT_TRUE(received_string);
-  EXPECT_EQ(kTestString, *received_string);
+
+  scoped_refptr<StringVar> received_string(StringVar::FromPPVar(received_var));
+  ASSERT_TRUE(received_string.get());
+  EXPECT_EQ(kTestString, received_string->value());
   // Now release the var, and the string should go away (because the ref
   // count should be one).
-  plugin().var_tracker().Release(received_var);
-  EXPECT_FALSE(plugin().var_tracker().GetExistingString(received_var));
+  plugin().var_tracker().ReleaseVar(received_var);
+  EXPECT_FALSE(StringVar::FromPPVar(received_var).get());
 }
 
 }  // namespace proxy

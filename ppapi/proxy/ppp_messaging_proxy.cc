@@ -8,6 +8,7 @@
 
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -78,7 +79,7 @@ void PPP_Messaging_Proxy::OnMsgHandleMessage(
   PP_Var received_var(message_data.Get(dispatcher()));
   // SerializedVarReceiveInput will decrement the reference count, but we want
   // to give the recipient a reference.
-  PluginVarTracker::GetInstance()->AddRef(received_var);
+  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(received_var);
   ppp_messaging_target()->HandleMessage(instance, received_var);
 }
 

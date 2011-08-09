@@ -609,7 +609,8 @@ string16 PluginInstance::GetSelectedText(bool html) {
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
                                                            PP_FromBool(html));
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
-  Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
+  // Release the ref the plugin transfered to us.
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
   if (!string)
     return string16();
   return UTF8ToUTF16(string->value());
@@ -626,7 +627,8 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   p.y = point.y();
   PP_Var rv = plugin_pdf_interface_->GetLinkAtPosition(pp_instance(), p);
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
-  Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
+  // Release the ref the plugin transfered to us.
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
   if (!string)
     return string16();
   return UTF8ToUTF16(string->value());

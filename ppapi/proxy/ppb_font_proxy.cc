@@ -13,10 +13,12 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::WebKitForwarding;
@@ -28,12 +30,11 @@ namespace {
 
 bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
                         WebKitForwarding::Font::TextRun* output) {
-  const std::string* str = PluginVarTracker::GetInstance()->GetExistingString(
-      run->text);
+  scoped_refptr<StringVar> str(StringVar::FromPPVar(run->text));
   if (!str)
     return false;
 
-  output->text = *str;
+  output->text = str->value();
   output->rtl = PP_ToBool(run->rtl);
   output->override_direction = PP_ToBool(run->override_direction);
   return true;
@@ -82,10 +83,7 @@ PP_Var PPB_Font_Proxy::GetFontFamilies(PP_Instance instance) {
         new PpapiHostMsg_PPBFont_GetFontFamilies(&families));
   }
 
-  PP_Var result;
-  result.type = PP_VARTYPE_STRING;
-  result.value.as_id = PluginVarTracker::GetInstance()->MakeString(families);
-  return result;
+  return StringVar::StringToPPVar(0, families);
 }
 
 bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -99,8 +97,7 @@ Font::Font(const HostResource& resource,
     : PluginResource(resource),
       webkit_event_(false, false) {
   TRACE_EVENT0("ppapi proxy", "Font::Font");
-  const std::string* face = PluginVarTracker::GetInstance()->GetExistingString(
-      desc.face);
+  scoped_refptr<StringVar> face(StringVar::FromPPVar(desc.face));
 
   WebKitForwarding* forwarding = GetDispatcher()->GetWebKitForwarding();
 
@@ -108,7 +105,7 @@ Font::Font(const HostResource& resource,
   RunOnWebKitThread(base::Bind(&WebKitForwarding::CreateFontForwarding,
                                base::Unretained(forwarding),
                                &webkit_event_, desc,
-                               face ? *face : std::string(),
+                               face.get() ? face->value() : std::string(),
                                GetDispatcher()->preferences(),
                                &result));
   font_forwarding_.reset(result);
@@ -135,13 +132,10 @@ PP_Bool Font::Describe(PP_FontDescription_Dev* description,
                                &webkit_event_, description, &face, metrics,
                                &result));
 
-  if (result == PP_TRUE) {
-    description->face.type = PP_VARTYPE_STRING;
-    description->face.value.as_id =
-        PluginVarTracker::GetInstance()->MakeString(face);
-  } else {
-    description->face.type = PP_VARTYPE_UNDEFINED;
-  }
+  if (PP_ToBool(result))
+    description->face = StringVar::StringToPPVar(0, face);
+  else
+    description->face = PP_MakeUndefined();
   return result;
 }
 

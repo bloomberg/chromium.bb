@@ -216,14 +216,15 @@ TEST_F(ResourceTrackerTest, ReuseVar) {
   }
 
   // Remove both of the refs we made above.
-  tracker().UnrefVar(static_cast<int32_t>(pp_object2.value.as_id));
-  tracker().UnrefVar(static_cast<int32_t>(pp_object1.value.as_id));
+  ::ppapi::VarTracker* var_tracker = tracker().GetVarTracker();
+  var_tracker->ReleaseVar(static_cast<int32_t>(pp_object2.value.as_id));
+  var_tracker->ReleaseVar(static_cast<int32_t>(pp_object1.value.as_id));
 
   // Releasing the resource should free the internal ref, and so making a new
   // one now should generate a new ID.
   PP_Var pp_object3 = NPObjectToPPVar(instance(), npobject.get());
   EXPECT_NE(pp_object1.value.as_id, pp_object3.value.as_id);
-  tracker().UnrefVar(static_cast<int32_t>(pp_object3.value.as_id));
+  var_tracker->ReleaseVar(static_cast<int32_t>(pp_object3.value.as_id));
 }
 
 }  // namespace ppapi

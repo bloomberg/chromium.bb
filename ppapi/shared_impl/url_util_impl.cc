@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/url_util_impl.h"
 
 #include "googleurl/src/gurl.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 
@@ -40,48 +41,42 @@ void ConvertComponents(const url_parse::Parsed& input,
 }  // namespace
 
 // static
-PP_Var URLUtilImpl::Canonicalize(StringFromVar string_from_var,
-                                 VarFromUtf8 var_from_utf8,
-                                 PP_Module pp_module,
+PP_Var URLUtilImpl::Canonicalize(PP_Module pp_module,
                                  PP_Var url,
                                  PP_URLComponents_Dev* components) {
-  const std::string* url_string = string_from_var(url);
+  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
     return PP_MakeNull();
-  return GenerateURLReturn(var_from_utf8, pp_module,
-                           GURL(*url_string), components);
+  return GenerateURLReturn(pp_module, GURL(url_string->value()), components);
 }
 
 // static
-PP_Var URLUtilImpl::ResolveRelativeToURL(StringFromVar string_from_var,
-                                         VarFromUtf8 var_from_utf8,
-                                         PP_Module pp_module,
+PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Module pp_module,
                                          PP_Var base_url,
                                          PP_Var relative,
                                          PP_URLComponents_Dev* components) {
-  const std::string* base_url_string = string_from_var(base_url);
-  const std::string* relative_string = string_from_var(relative);
+  scoped_refptr<StringVar> base_url_string(StringVar::FromPPVar(base_url));
+  scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
   if (!base_url_string || !relative_string)
     return PP_MakeNull();
 
-  GURL base_gurl(*base_url_string);
+  GURL base_gurl(base_url_string->value());
   if (!base_gurl.is_valid())
     return PP_MakeNull();
-  return GenerateURLReturn(var_from_utf8, pp_module,
-                           base_gurl.Resolve(*relative_string),
+  return GenerateURLReturn(pp_module,
+                           base_gurl.Resolve(relative_string->value()),
                            components);
 }
 
 // static
-PP_Bool URLUtilImpl::IsSameSecurityOrigin(StringFromVar string_from_var,
-                                          PP_Var url_a, PP_Var url_b) {
-  const std::string* url_a_string = string_from_var(url_a);
-  const std::string* url_b_string = string_from_var(url_b);
+PP_Bool URLUtilImpl::IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
+  scoped_refptr<StringVar> url_a_string(StringVar::FromPPVar(url_a));
+  scoped_refptr<StringVar> url_b_string(StringVar::FromPPVar(url_b));
   if (!url_a_string || !url_b_string)
     return PP_FALSE;
 
-  GURL gurl_a(*url_a_string);
-  GURL gurl_b(*url_b_string);
+  GURL gurl_a(url_a_string->value());
+  GURL gurl_b(url_b_string->value());
   if (!gurl_a.is_valid() || !gurl_b.is_valid())
     return PP_FALSE;
 
@@ -90,15 +85,13 @@ PP_Bool URLUtilImpl::IsSameSecurityOrigin(StringFromVar string_from_var,
 
 // Used for returning the given GURL from a PPAPI function, with an optional
 // out param indicating the components.
-PP_Var URLUtilImpl::GenerateURLReturn(VarFromUtf8 var_from_utf8,
-                                      PP_Module module,
+PP_Var URLUtilImpl::GenerateURLReturn(PP_Module module,
                                       const GURL& url,
                                       PP_URLComponents_Dev* components) {
   if (!url.is_valid())
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
-  return var_from_utf8(module, url.possibly_invalid_spec().c_str(),
-      static_cast<uint32_t>(url.possibly_invalid_spec().size()));
+  return StringVar::StringToPPVar(module, url.possibly_invalid_spec());
 }
 
 }  // namespace ppapi

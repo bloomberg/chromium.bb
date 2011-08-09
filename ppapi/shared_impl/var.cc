@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/var_tracker.h"
 
 namespace ppapi {
 
@@ -60,22 +61,6 @@ std::string Var::PPVarToLogString(PP_Var var) {
   }
 }
 
-// static
-void Var::PluginAddRefPPVar(PP_Var var) {
-  if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
-    if (!TrackerBase::Get()->AddRefVar(static_cast<int32>(var.value.as_id)))
-      DLOG(WARNING) << "AddRefVar()ing a nonexistent string/object var.";
-  }
-}
-
-// static
-void Var::PluginReleasePPVar(PP_Var var) {
-  if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
-    if (!TrackerBase::Get()->UnrefVar(static_cast<int32>(var.value.as_id)))
-      DLOG(WARNING) << "ReleaseVar()ing a nonexistent string/object var.";
-  }
-}
-
 StringVar* Var::AsStringVar() {
   return NULL;
 }
@@ -84,12 +69,16 @@ NPObjectVar* Var::AsNPObjectVar() {
   return NULL;
 }
 
+ProxyObjectVar* Var::AsProxyObjectVar() {
+  return NULL;
+}
+
 int32 Var::GetExistingVarID() const {
   return var_id_;
 }
 
 int32 Var::GetOrCreateVarID() {
-  TrackerBase* tracker = TrackerBase::Get();
+  VarTracker* tracker = TrackerBase::Get()->GetVarTracker();
   if (var_id_) {
     if (!tracker->AddRefVar(var_id_))
       return 0;
@@ -99,6 +88,11 @@ int32 Var::GetOrCreateVarID() {
       return 0;
   }
   return var_id_;
+}
+
+void Var::AssignVarID(int32 id) {
+  DCHECK(!var_id_);  // Must not have already been generated.
+  var_id_ = id;
 }
 
 // StringVar -------------------------------------------------------------------
@@ -126,6 +120,10 @@ PP_Var StringVar::GetPPVar() {
   return result;
 }
 
+PP_VarType StringVar::GetType() const {
+  return PP_VARTYPE_STRING;
+}
+
 // static
 PP_Var StringVar::StringToPPVar(PP_Module module, const std::string& var) {
   return StringToPPVar(module, var.c_str(), var.size());
@@ -145,7 +143,7 @@ scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
     return scoped_refptr<StringVar>();
   scoped_refptr<Var> var_object(
-      TrackerBase::Get()->GetVar(static_cast<int32>(var.value.as_id)));
+      TrackerBase::Get()->GetVarTracker()->GetVar(var));
   if (!var_object)
     return scoped_refptr<StringVar>();
   return scoped_refptr<StringVar>(var_object->AsStringVar());

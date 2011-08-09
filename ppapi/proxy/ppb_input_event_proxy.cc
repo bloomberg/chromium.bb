@@ -10,6 +10,7 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::InputEventData;
@@ -48,10 +49,7 @@ PPB_InputEvent_API* InputEvent::AsPPB_InputEvent_API() {
 }
 
 PP_Var InputEvent::StringToPPVar(const std::string& str) {
-  PP_Var ret;
-  ret.type = PP_VARTYPE_STRING;
-  ret.value.as_id = PluginVarTracker::GetInstance()->MakeString(str);
-  return ret;
+  return ppapi::StringVar::StringToPPVar(0, str);
 }
 
 namespace {

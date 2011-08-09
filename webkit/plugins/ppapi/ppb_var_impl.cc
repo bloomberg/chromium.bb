@@ -169,6 +169,14 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
 
 // PPB_Var methods -------------------------------------------------------------
 
+void AddRefVar(PP_Var var) {
+  ResourceTracker::Get()->GetVarTracker()->AddRefVar(var);
+}
+
+void ReleaseVar(PP_Var var) {
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(var);
+}
+
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
   return StringVar::StringToPPVar(module, data, len);
 }
@@ -418,8 +426,8 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module module_id,
 }
 
 const PPB_Var_Deprecated var_deprecated_interface = {
-  &Var::PluginAddRefPPVar,
-  &Var::PluginReleasePPVar,
+  &AddRefVar,
+  &ReleaseVar,
   &VarFromUtf8,
   &VarToUtf8,
   &HasPropertyDeprecated,
@@ -436,8 +444,8 @@ const PPB_Var_Deprecated var_deprecated_interface = {
 };
 
 const PPB_Var var_interface = {
-  &Var::PluginAddRefPPVar,
-  &Var::PluginReleasePPVar,
+  &AddRefVar,
+  &ReleaseVar,
   &VarFromUtf8,
   &VarToUtf8
 };

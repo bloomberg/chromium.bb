@@ -39,13 +39,6 @@ PP_Module GetModuleFromVar(PP_Var string_var) {
   return str->pp_module();
 }
 
-const std::string* StringFromVar(PP_Var var) {
-  scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
-  if (!string)
-    return NULL;
-  return &string->value();
-}
-
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
 // the instance is invalid, returns false and |*security_origin| will be
@@ -62,20 +55,14 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 }
 
 PP_Var Canonicalize(PP_Var url, PP_URLComponents_Dev* components) {
-  return URLUtilImpl::Canonicalize(&StringFromVar,
-                                   PPB_Var_Impl::GetVarInterface()->VarFromUtf8,
-                                   GetModuleFromVar(url),
-                                   url, components);
+  return URLUtilImpl::Canonicalize(GetModuleFromVar(url), url, components);
 }
 
 PP_Var ResolveRelativeToURL(PP_Var base_url,
                             PP_Var relative,
                             PP_URLComponents_Dev* components) {
-  return URLUtilImpl::ResolveRelativeToURL(
-      &StringFromVar,
-      PPB_Var_Impl::GetVarInterface()->VarFromUtf8,
-      GetModuleFromVar(base_url),
-      base_url, relative, components);
+  return URLUtilImpl::ResolveRelativeToURL(GetModuleFromVar(base_url),
+                                           base_url, relative, components);
 }
 
 PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
@@ -92,14 +79,13 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
   WebKit::WebElement plugin_element = instance->container()->element();
   GURL document_url = plugin_element.document().baseURL();
   return URLUtilImpl::GenerateURLReturn(
-      PPB_Var_Impl::GetVarInterface()->VarFromUtf8,
       instance->module()->pp_module(),
       document_url.Resolve(relative_string->value()),
       components);
 }
 
 PP_Bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
-  return URLUtilImpl::IsSameSecurityOrigin(&StringFromVar, url_a, url_b);
+  return URLUtilImpl::IsSameSecurityOrigin(url_a, url_b);
 }
 
 PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) {
@@ -137,10 +123,8 @@ PP_Var GetDocumentURL(PP_Instance instance_id,
     return PP_MakeNull();
 
   WebKit::WebDocument document = instance->container()->element().document();
-  return URLUtilImpl::GenerateURLReturn(
-      PPB_Var_Impl::GetVarInterface()->VarFromUtf8,
-      instance->module()->pp_module(),
-      document.url(), components);
+  return URLUtilImpl::GenerateURLReturn(instance->module()->pp_module(),
+                                        document.url(), components);
 }
 
 PP_Var GetPluginInstanceURL(PP_Instance instance_id,
@@ -150,10 +134,8 @@ PP_Var GetPluginInstanceURL(PP_Instance instance_id,
     return PP_MakeNull();
 
   const GURL& url = instance->plugin_url();
-  return URLUtilImpl::GenerateURLReturn(
-      PPB_Var_Impl::GetVarInterface()->VarFromUtf8,
-      instance->module()->pp_module(),
-      url, components);
+  return URLUtilImpl::GenerateURLReturn(instance->module()->pp_module(),
+                                        url, components);
 }
 
 const PPB_URLUtil_Dev ppb_url_util = {

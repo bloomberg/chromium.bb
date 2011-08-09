@@ -57,7 +57,8 @@ PluginResourceTracker::ResourceInfo::operator=(
 // Start counting resources at a high number to avoid collisions with vars (to
 // help debugging).
 PluginResourceTracker::PluginResourceTracker()
-    : last_resource_id_(0x00100000) {
+    : var_tracker_test_override_(NULL),
+      last_resource_id_(0x00100000) {
 }
 
 PluginResourceTracker::~PluginResourceTracker() {
@@ -148,32 +149,8 @@ PP_Instance PluginResourceTracker::GetInstanceForResource(
   return found->second.resource->instance();
 }
 
-int32 PluginResourceTracker::AddVar(ppapi::Var* var) {
-  // TODO(brettw) implement this when the proxy uses the Var object in the
-  // plugin process.
-  NOTREACHED();
-  return 0;
-}
-
-scoped_refptr<ppapi::Var> PluginResourceTracker::GetVar(int32 var_id) const {
-  // TODO(brettw) implement this when the proxy uses the Var object in the
-  // plugin process.
-  NOTREACHED();
-  return scoped_refptr<ppapi::Var>();
-}
-
-bool PluginResourceTracker::AddRefVar(int32 var_id) {
-  // TODO(brettw) implement this when the proxy uses the Var object in the
-  // plugin process.
-  NOTREACHED();
-  return false;
-}
-
-bool PluginResourceTracker::UnrefVar(int32 var_id) {
-  // TODO(brettw) implement this when the proxy uses the Var object in the
-  // plugin process.
-  NOTREACHED();
-  return false;
+ppapi::VarTracker* PluginResourceTracker::GetVarTracker() {
+  return &var_tracker();
 }
 
 void PluginResourceTracker::ReleasePluginResourceRef(

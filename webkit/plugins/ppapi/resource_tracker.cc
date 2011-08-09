@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -23,35 +24,11 @@
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
+using ppapi::CheckIdType;
+using ppapi::MakeTypedId;
 using ppapi::NPObjectVar;
+using ppapi::PPIdType;
 using ppapi::Var;
-
-enum PPIdType {
-  PP_ID_TYPE_MODULE,
-  PP_ID_TYPE_INSTANCE,
-  PP_ID_TYPE_RESOURCE,
-  PP_ID_TYPE_VAR,
-  PP_ID_TYPE_COUNT
-};
-
-static const unsigned int kPPIdTypeBits = 2;
-COMPILE_ASSERT(PP_ID_TYPE_COUNT <= (1<<kPPIdTypeBits),
-               kPPIdTypeBits_is_too_small_for_all_id_types);
-
-static const int32 kMaxPPIdType =
-    std::numeric_limits<int32>::max() >> kPPIdTypeBits;
-
-template <typename T> static inline T MakeTypedId(T value, PPIdType type) {
-  return (value << kPPIdTypeBits) | static_cast<T>(type);
-}
-
-template <typename T> static inline bool CheckIdType(T id, PPIdType type) {
-  // 0 is a valid resource.
-  if (!id)
-    return true;
-  const T mask = (static_cast<T>(1) << kPPIdTypeBits) - 1;
-  return (id & mask) == type;
-}
 
 namespace webkit {
 namespace ppapi {
@@ -89,7 +66,7 @@ struct ResourceTracker::InstanceData {
 };
 
 scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
-  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
+  DLOG_IF(ERROR, !CheckIdType(res, ::ppapi::PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::const_iterator result = live_resources_.find(res);
   if (result == live_resources_.end()) {
@@ -103,8 +80,7 @@ ResourceTracker* ResourceTracker::global_tracker_ = NULL;
 ResourceTracker* ResourceTracker::singleton_override_ = NULL;
 
 ResourceTracker::ResourceTracker()
-    : last_resource_id_(0),
-      last_var_id_(0) {
+    : last_resource_id_(0) {
   // Wire up the new shared resource tracker base to use our implementation.
   ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
@@ -145,11 +121,12 @@ void ResourceTracker::ResourceDestroyed(Resource* resource) {
 PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // If the plugin manages to create 1 billion resources, don't do crazy stuff.
   if (last_resource_id_ ==
-      (std::numeric_limits<PP_Resource>::max() >> kPPIdTypeBits))
+      (std::numeric_limits<PP_Resource>::max() >> ::ppapi::kPPIdTypeBits))
     return 0;
 
   // Add the resource with plugin use-count 1.
-  PP_Resource new_id = MakeTypedId(++last_resource_id_, PP_ID_TYPE_RESOURCE);
+  PP_Resource new_id = MakeTypedId(++last_resource_id_,
+                                   ::ppapi::PP_ID_TYPE_RESOURCE);
   live_resources_.insert(std::make_pair(new_id, std::make_pair(resource, 1)));
 
   // Track associated with the instance.
@@ -160,7 +137,7 @@ PP_Resource ResourceTracker::AddResource(Resource* resource) {
 }
 
 bool ResourceTracker::AddRefResource(PP_Resource res) {
-  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
+  DLOG_IF(ERROR, !CheckIdType(res, ::ppapi::PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::iterator i = live_resources_.find(res);
   if (i != live_resources_.end()) {
@@ -175,7 +152,7 @@ bool ResourceTracker::AddRefResource(PP_Resource res) {
 }
 
 bool ResourceTracker::UnrefResource(PP_Resource res) {
-  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
+  DLOG_IF(ERROR, !CheckIdType(res, ::ppapi::PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::iterator i = live_resources_.find(res);
   if (i != live_resources_.end()) {
@@ -197,7 +174,7 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
 
 void ResourceTracker::CleanupInstanceData(PP_Instance instance,
                                           bool delete_instance) {
-  DLOG_IF(ERROR, !CheckIdType(instance, PP_ID_TYPE_INSTANCE))
+  DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end()) {
@@ -270,7 +247,7 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
 
 ::ppapi::ResourceObjectBase* ResourceTracker::GetResourceAPI(
     PP_Resource res) {
-  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
+  DLOG_IF(ERROR, !CheckIdType(res, ::ppapi::PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
   ResourceMap::const_iterator result = live_resources_.find(res);
   if (result == live_resources_.end())
@@ -327,55 +304,8 @@ PP_Instance ResourceTracker::GetInstanceForResource(PP_Resource pp_resource) {
   return resource->instance()->pp_instance();
 }
 
-int32 ResourceTracker::AddVar(Var* var) {
-  // If the plugin manages to create 1B strings...
-  if (last_var_id_ == kMaxPPIdType)
-    return 0;
-
-  // Validate the module.
-  if (!GetModule(var->pp_module()))
-    return 0;
-
-  // Add the resource with plugin use-count 1.
-  int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
-  live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));
-
-  return new_id;
-}
-
-scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {
-  DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
-      << var_id << " is not a PP_Var ID.";
-  VarMap::const_iterator result = live_vars_.find(var_id);
-  if (result == live_vars_.end())
-    return scoped_refptr<Var>();
-  return result->second.first;
-}
-
-bool ResourceTracker::AddRefVar(int32 var_id) {
-  DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
-      << var_id << " is not a PP_Var ID.";
-  VarMap::iterator i = live_vars_.find(var_id);
-  if (i != live_vars_.end()) {
-    // We don't protect against overflow, since a plugin as malicious as to ref
-    // once per every byte in the address space could have just as well unrefed
-    // one time too many.
-    ++i->second.second;
-    return true;
-  }
-  return false;
-}
-
-bool ResourceTracker::UnrefVar(int32 var_id) {
-  DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
-      << var_id << " is not a PP_Var ID.";
-  VarMap::iterator i = live_vars_.find(var_id);
-  if (i != live_vars_.end()) {
-    if (!--i->second.second)
-      live_vars_.erase(i);
-    return true;
-  }
-  return false;
+::ppapi::VarTracker* ResourceTracker::GetVarTracker() {
+  return &var_tracker_;
 }
 
 void ResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {
@@ -426,7 +356,7 @@ PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
   PP_Instance new_instance;
   do {
     new_instance = MakeTypedId(static_cast<PP_Instance>(base::RandUint64()),
-                               PP_ID_TYPE_INSTANCE);
+                               ::ppapi::PP_ID_TYPE_INSTANCE);
   } while (!new_instance ||
            instance_map_.find(new_instance) != instance_map_.end() ||
            !instance->module()->ReserveInstanceID(new_instance));
@@ -445,7 +375,7 @@ void ResourceTracker::InstanceCrashed(PP_Instance instance) {
 }
 
 PluginInstance* ResourceTracker::GetInstance(PP_Instance instance) {
-  DLOG_IF(ERROR, !CheckIdType(instance, PP_ID_TYPE_INSTANCE))
+  DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
@@ -465,7 +395,7 @@ PP_Module ResourceTracker::AddModule(PluginModule* module) {
   PP_Module new_module;
   do {
     new_module = MakeTypedId(static_cast<PP_Module>(base::RandUint64()),
-                             PP_ID_TYPE_MODULE);
+                             ::ppapi::PP_ID_TYPE_MODULE);
   } while (!new_module ||
            module_map_.find(new_module) != module_map_.end());
   module_map_[new_module] = module;
@@ -473,7 +403,7 @@ PP_Module ResourceTracker::AddModule(PluginModule* module) {
 }
 
 void ResourceTracker::ModuleDeleted(PP_Module module) {
-  DLOG_IF(ERROR, !CheckIdType(module, PP_ID_TYPE_MODULE))
+  DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
   if (found == module_map_.end()) {
@@ -484,7 +414,7 @@ void ResourceTracker::ModuleDeleted(PP_Module module) {
 }
 
 PluginModule* ResourceTracker::GetModule(PP_Module module) {
-  DLOG_IF(ERROR, !CheckIdType(module, PP_ID_TYPE_MODULE))
+  DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
   if (found == module_map_.end())

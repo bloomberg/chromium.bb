@@ -6,13 +6,17 @@
 
 #include "base/logging.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/var.h"
+
+using ppapi::StringVar;
 
 namespace pp {
 namespace proxy {
 
 PluginVarSerializationRules::PluginVarSerializationRules()
-    : var_tracker_(PluginVarTracker::GetInstance()) {
+    : var_tracker_(&PluginResourceTracker::GetInstance()->var_tracker()) {
 }
 
 PluginVarSerializationRules::~PluginVarSerializationRules() {
@@ -26,9 +30,9 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
 
   // Retrieve the string to use for IPC.
   if (var.type == PP_VARTYPE_STRING) {
-    const std::string* var_string = var_tracker_->GetExistingString(var);
-    if (var_string)
-      *str_val = *var_string;
+    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(var));
+    if (string_var.get())
+      *str_val = string_var->value();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";
   }
@@ -39,13 +43,8 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     const PP_Var& var,
     const std::string* str_val,
     Dispatcher* dispatcher) {
-  if (var.type == PP_VARTYPE_STRING) {
-    // Convert the string to the context of the current process.
-    PP_Var ret;
-    ret.type = PP_VARTYPE_STRING;
-    ret.value.as_id = var_tracker_->MakeString(*str_val);
-    return ret;
-  }
+  if (var.type == PP_VARTYPE_STRING)
+    return StringVar::StringToPPVar(0, *str_val);
 
   if (var.type == PP_VARTYPE_OBJECT) {
     DCHECK(dispatcher->IsPlugin());
@@ -59,7 +58,7 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
 void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
   if (var.type == PP_VARTYPE_STRING) {
     // Destroy the string BeginReceiveCallerOwned created above.
-    var_tracker_->Release(var);
+    var_tracker_->ReleaseVar(var);
   } else if (var.type == PP_VARTYPE_OBJECT) {
     var_tracker_->StopTrackingObjectWithNoReference(var);
   }
@@ -68,13 +67,8 @@ void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
 PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
                                                    const std::string& str_val,
                                                    Dispatcher* dispatcher) {
-  if (var.type == PP_VARTYPE_STRING) {
-    // Convert the string to the context of the current process.
-    PP_Var ret;
-    ret.type = PP_VARTYPE_STRING;
-    ret.value.as_id = var_tracker_->MakeString(str_val);
-    return ret;
-  }
+  if (var.type == PP_VARTYPE_STRING)
+    return StringVar::StringToPPVar(0, str_val);
 
   // Overview of sending an object with "pass ref" from the browser to the
   // plugin:
@@ -124,9 +118,9 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
     return var_tracker_->GetHostObject(var);
 
   if (var.type == PP_VARTYPE_STRING) {
-    const std::string* var_string = var_tracker_->GetExistingString(var);
-    if (var_string)
-      *str_val = *var_string;
+    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(var));
+    if (string_var.get())
+      *str_val = string_var->value();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";
   }
@@ -146,7 +140,7 @@ void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
 }
 
 void PluginVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {
-  var_tracker_->Release(var);
+  var_tracker_->ReleaseVar(var);
 }
 
 }  // namespace proxy

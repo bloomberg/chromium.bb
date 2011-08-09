@@ -12,18 +12,10 @@ namespace proxy {
 
 namespace {
 
-PP_Var MakeObject(PluginVarTracker::VarID object_id) {
+PP_Var MakeObject(int32 object_id) {
   PP_Var ret;
   ret.type = PP_VARTYPE_OBJECT;
   ret.value.as_id = object_id;
-  return ret;
-}
-
-// Creates a PP_Var from the given string ID.
-PP_Var MakeString(PluginVarTracker::VarID string_id) {
-  PP_Var ret;
-  ret.type = PP_VARTYPE_STRING;
-  ret.value.as_id = string_id;
   return ret;
 }
 
@@ -36,7 +28,7 @@ class PluginVarTrackerTest : public PluginProxyTest {
  protected:
   // Asserts that there is a unique "release object" IPC message in the test
   // sink. This will return the var ID from the message or -1 if none found.
-  PluginVarTracker::VarID GetObjectIDForUniqueReleaseObject() {
+  int32 GetObjectIDForUniqueReleaseObject() {
     const IPC::Message* release_msg = sink().GetUniqueMessageMatching(
         PpapiHostMsg_PPBVar_ReleaseObject::ID);
     if (!release_msg)
@@ -47,23 +39,6 @@ class PluginVarTrackerTest : public PluginProxyTest {
     return id.a;
   }
 };
-
-TEST_F(PluginVarTrackerTest, Strings) {
-  std::string str("Hello");
-  PluginVarTracker::VarID str_id1 = var_tracker().MakeString(str);
-  EXPECT_NE(0, str_id1);
-
-  PluginVarTracker::VarID str_id2 = var_tracker().MakeString(
-      str.c_str(), static_cast<uint32_t>(str.size()));
-  EXPECT_NE(0, str_id2);
-
-  // Make sure the strings come out the other end.
-  const std::string* result =
-      var_tracker().GetExistingString(MakeString(str_id1));
-  EXPECT_EQ(str, *result);
-  result = var_tracker().GetExistingString(MakeString(str_id2));
-  EXPECT_EQ(str, *result);
-}
 
 TEST_F(PluginVarTrackerTest, GetHostObject) {
   PP_Var host_object = MakeObject(12345);
@@ -76,7 +51,7 @@ TEST_F(PluginVarTrackerTest, GetHostObject) {
   EXPECT_EQ(PP_VARTYPE_OBJECT, host_object2.type);
   EXPECT_EQ(host_object.value.as_id, host_object2.value.as_id);
 
-  var_tracker().Release(plugin_object);
+  var_tracker().ReleaseVar(plugin_object);
 }
 
 TEST_F(PluginVarTrackerTest, ReceiveObjectPassRef) {
@@ -106,9 +81,9 @@ TEST_F(PluginVarTrackerTest, ReceiveObjectPassRef) {
 
   // Release the object, one ref at a time. The second release should free
   // the tracking data and send a release message to the browser.
-  var_tracker().Release(plugin_object);
+  var_tracker().ReleaseVar(plugin_object);
   EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
-  var_tracker().Release(plugin_object);
+  var_tracker().ReleaseVar(plugin_object);
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_object));
   EXPECT_EQ(host_object.value.as_id, GetObjectIDForUniqueReleaseObject());
 }
@@ -129,7 +104,7 @@ TEST_F(PluginVarTrackerTest, FreeTrackedAndReferencedObject) {
 
   // Free via the refcount, this should release the object to the browser but
   // maintain the tracked object.
-  var_tracker().Release(plugin_var);
+  var_tracker().ReleaseVar(plugin_var);
   EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_var));
   EXPECT_EQ(1u, sink().message_count());
   EXPECT_EQ(host_object.value.as_id, GetObjectIDForUniqueReleaseObject());
@@ -156,7 +131,7 @@ TEST_F(PluginVarTrackerTest, FreeTrackedAndReferencedObject) {
   EXPECT_EQ(0u, sink().message_count());
 
   // Now free via the refcount, this should delete it.
-  var_tracker().Release(plugin_var);
+  var_tracker().ReleaseVar(plugin_var);
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_var));
   EXPECT_EQ(host_object.value.as_id, GetObjectIDForUniqueReleaseObject());
 }

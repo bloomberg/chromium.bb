@@ -39,6 +39,7 @@ class NPObjectVar : public Var {
   // Var overrides.
   virtual NPObjectVar* AsNPObjectVar() OVERRIDE;
   virtual PP_Var GetPPVar() OVERRIDE;
+  virtual PP_VarType GetType() const OVERRIDE;
 
   // Returns the underlying NPObject corresponding to this NPObjectVar.
   // Guaranteed non-NULL.

@@ -148,6 +148,8 @@
         'proxy/proxy_channel.h',
         'proxy/proxy_module.cc',
         'proxy/proxy_module.h',
+        'proxy/proxy_object_var.cc',
+        'proxy/proxy_object_var.h',
         'proxy/resource_creation_proxy.cc',
         'proxy/resource_creation_proxy.h',
         'proxy/serialized_flash_menu.cc',

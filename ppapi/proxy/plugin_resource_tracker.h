@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/host_resource.h"
+#include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/tracker_base.h"
 
 template<typename T> struct DefaultSingletonTraits;
@@ -59,17 +60,23 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
   PP_Resource PluginResourceForHostResource(
       const HostResource& resource) const;
 
+  PluginVarTracker& var_tracker() {
+    return var_tracker_test_override_ ? *var_tracker_test_override_
+                                      : var_tracker_;
+  }
+
+  void set_var_tracker_test_override(PluginVarTracker* t) {
+    var_tracker_test_override_ = t;
+  }
+
   // TrackerBase.
-  virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
+  virtual ppapi::ResourceObjectBase* GetResourceAPI(
       PP_Resource res) OVERRIDE;
-  virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
+  virtual ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
       pp::proxy::InterfaceID id) OVERRIDE;
   virtual PP_Instance GetInstanceForResource(PP_Resource resource) OVERRIDE;
-  virtual int32 AddVar(ppapi::Var* var);
-  virtual scoped_refptr< ::ppapi::Var > GetVar(int32 var_id) const;
-  virtual bool AddRefVar(int32 var_id);
-  virtual bool UnrefVar(int32 var_id);
+  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;
@@ -93,6 +100,17 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
 
   void ReleasePluginResourceRef(const PP_Resource& var,
                                 bool notify_browser_on_release);
+
+  // Use the var_tracker_test_override_ instead if it's non-NULL.
+  //
+  // TODO(brettw) this should be somehow separated out from here. I'm thinking
+  // of some global object that manages PPAPI globals, including separate var
+  // and resource trackers.
+  PluginVarTracker var_tracker_;
+
+  // Non-owning pointer to a var tracker mock used by tests. NULL when no
+  // test implementation is provided.
+  PluginVarTracker* var_tracker_test_override_;
 
   // Map of plugin resource IDs to the information tracking that resource.
   typedef std::map<PP_Resource, ResourceInfo> ResourceMap;

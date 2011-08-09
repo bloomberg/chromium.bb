@@ -10,12 +10,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_module.h"
-
-struct PP_Var;
+#include "ppapi/c/pp_var.h"
 
 namespace ppapi {
 
 class NPObjectVar;
+class ProxyObjectVar;
 class StringVar;
 
 // Var -------------------------------------------------------------------------
@@ -30,42 +30,16 @@ class Var : public base::RefCounted<Var> {
   // Returns a string representing the given var for logging purposes.
   static std::string PPVarToLogString(PP_Var var);
 
-  // Provides access to the manual refcounting of a PP_Var from the plugin's
-  // perspective. This is different than the AddRef/Release on this scoped
-  // object. This uses the ResourceTracker, which keeps a separate "plugin
-  // refcount" that prevents the plugin from messing up our refcounting or
-  // freeing something out from under us.
-  //
-  // You should not generally need to use these functions. However, if you
-  // call a plugin function that returns a var, it will transfer a ref to us
-  // (the caller) which in the case of a string or object var will need to
-  // be released.
-  //
-  // Example, assuming we're expecting the plugin to return a string:
-  //   PP_Var rv = some_ppp_interface->DoSomething(a, b, c);
-  //
-  //   // Get the string value. This will take a reference to the object which
-  //   // will prevent it from being deleted out from under us when we call
-  //   // PluginReleasePPVar().
-  //   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
-  //
-  //   // Release the reference the plugin gave us when returning the value.
-  //   // This is legal to do for all types of vars.
-  //   Var::PluginReleasePPVar(rv);
-  //
-  //   // Use the string.
-  //   if (!string)
-  //     return false;  // It didn't return a proper string.
-  //   UseTheString(string->value());
-  static void PluginAddRefPPVar(PP_Var var);
-  static void PluginReleasePPVar(PP_Var var);
-
   virtual StringVar* AsStringVar();
   virtual NPObjectVar* AsNPObjectVar();
+  virtual ProxyObjectVar* AsProxyObjectVar();
 
   // Creates a PP_Var corresponding to this object. The return value will have
   // one reference addrefed on behalf of the caller.
   virtual PP_Var GetPPVar() = 0;
+
+  // Returns the type of this var.
+  virtual PP_VarType GetType() const = 0;
 
   // Returns the ID corresponing to the string or object if it exists already,
   // or 0 if an ID hasn't been generated for this object (the plugin is holding
@@ -88,6 +62,10 @@ class Var : public base::RefCounted<Var> {
   // This function will take a reference to the var that will be passed to the
   // caller.
   int32 GetOrCreateVarID();
+
+  // Sets the internal object ID. This assumes that the ID hasn't been set
+  // before. This is used in cases where the ID is generated externally.
+  void AssignVarID(int32 id);
 
  private:
   PP_Module pp_module_;
@@ -120,6 +98,7 @@ class StringVar : public Var {
   // Var override.
   virtual StringVar* AsStringVar() OVERRIDE;
   virtual PP_Var GetPPVar() OVERRIDE;
+  virtual PP_VarType GetType() const OVERRIDE;
 
   // Helper function to create a PP_Var of type string that contains a copy of
   // the given string. The input data must be valid UTF-8 encoded text, if it

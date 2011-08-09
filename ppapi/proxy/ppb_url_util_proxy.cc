@@ -9,32 +9,22 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/url_util_impl.h"
+#include "ppapi/shared_impl/var.h"
+
+using ppapi::StringVar;
+using ppapi::URLUtilImpl;
 
 namespace pp {
 namespace proxy {
 
-using ppapi::URLUtilImpl;
-
 namespace {
-
-URLUtilImpl::VarFromUtf8 GetVarFromUtf8() {
-  const PPB_Var_Deprecated* var_deprecated =
-      static_cast<const PPB_Var_Deprecated*>(
-          PluginDispatcher::GetInterfaceFromDispatcher(
-              PPB_VAR_DEPRECATED_INTERFACE));
-  return var_deprecated->VarFromUtf8;
-}
-
-const std::string* GetStringFromVar(PP_Var var) {
-  return PluginVarTracker::GetInstance()->GetExistingString(var);
-}
 
 PP_Var Canonicalize(PP_Var url,
                     PP_URLComponents_Dev* components) {
-  return URLUtilImpl::Canonicalize(&GetStringFromVar, GetVarFromUtf8(),
-                                   0, url, components);
+  return URLUtilImpl::Canonicalize(0, url, components);
 }
 
 // Helper function for the functions below that optionally take a components
@@ -49,20 +39,19 @@ PP_Var ConvertComponentsAndReturnURL(PP_Var url,
   if (!components)
     return url;  // Common case - plugin doesn't care about parsing.
 
-  const std::string* url_string = GetStringFromVar(url);
+  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
     return url;
 
   PP_Var result = Canonicalize(url, components);
-  PluginVarTracker::GetInstance()->Release(url);
+  PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(url);
   return result;
 }
 
 PP_Var ResolveRelativeToURL(PP_Var base_url,
                             PP_Var relative,
                             PP_URLComponents_Dev* components) {
-  return URLUtilImpl::ResolveRelativeToURL(&GetStringFromVar, GetVarFromUtf8(),
-                                           0, base_url, relative, components);
+  return URLUtilImpl::ResolveRelativeToURL(0, base_url, relative, components);
 }
 
 PP_Var ResolveRelativeToDocument(PP_Instance instance,
@@ -81,7 +70,7 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance,
 }
 
 PP_Bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
-  return URLUtilImpl::IsSameSecurityOrigin(&GetStringFromVar, url_a, url_b);
+  return URLUtilImpl::IsSameSecurityOrigin(url_a, url_b);
 }
 
 PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) {

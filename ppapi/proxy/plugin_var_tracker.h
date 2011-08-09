@@ -8,13 +8,20 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 
 struct PPB_Var;
 
 template<typename T> struct DefaultSingletonTraits;
+
+namespace ppapi {
+class ProxyObjectVar;
+}
 
 namespace pp {
 namespace proxy {
@@ -22,54 +29,25 @@ namespace proxy {
 class PluginDispatcher;
 
 // Tracks live strings and objects in the plugin process.
-//
-// This object maintains its own object IDs that are used by the plugin. These
-// IDs can be mapped to the renderer that created them, and that renderer's ID.
-// This way, we can maintain multiple renderers each giving us objects, and the
-// plugin can work with them using a uniform set of unique IDs.
-//
-// We maintain our own reference count for objects.  a single ref in the
-// renderer process whenever we have a nonzero refcount in the plugin process.
-// This allows AddRef and Release to not initiate too much IPC chat.
-//
-// In addition to the local reference count, we also maintain "tracked objects"
-// which are objects that the plugin is aware of, but doesn't hold a reference
-// to. This will happen when the plugin is passed an object as an argument from
-// the host (renderer) but where a reference is not passed.
-class PluginVarTracker {
+class PluginVarTracker : public ppapi::VarTracker {
  public:
-  typedef int64_t VarID;
-
-  // Called by tests that want to specify a specific VarTracker. This allows
-  // them to use a unique one each time and avoids singletons sticking around
-  // across tests.
-  static void SetInstanceForTest(PluginVarTracker* tracker);
-
-  // Returns the global var tracker for the plugin object.
-  static PluginVarTracker* GetInstance();
-
-  // Allocates a string and returns the ID of it. The refcount will be 1.
-  VarID MakeString(const std::string& str);
-  VarID MakeString(const char* str, uint32_t len);
-
-  // Returns a pointer to the given string if it exists, or NULL if the var
-  // isn't a string var.
-  const std::string* GetExistingString(const PP_Var& plugin_var) const;
-
-  void AddRef(const PP_Var& plugin_var);
-  void Release(const PP_Var& plugin_var);
+  PluginVarTracker();
+  ~PluginVarTracker();
 
   // Manages tracking for receiving a VARTYPE_OBJECT from the remote side
   // (either the plugin or the renderer) that has already had its reference
   // count incremented on behalf of the caller.
   PP_Var ReceiveObjectPassRef(const PP_Var& var, PluginDispatcher* dispatcher);
 
+  // See the comment in var_tracker.h for more about what a tracked object is.
+  // This adds and releases the "track_with_no_reference_count" for a given
+  // object.
   PP_Var TrackObjectWithNoReference(const PP_Var& host_var,
                                     PluginDispatcher* dispatcher);
   void StopTrackingObjectWithNoReference(const PP_Var& plugin_var);
 
   // Returns the host var for the corresponding plugin object var. The object
-  // should be a VARTYPE_OBJECT
+  // should be a VARTYPE_OBJECT. The reference count is not affeceted.
   PP_Var GetHostObject(const PP_Var& plugin_object) const;
 
   PluginDispatcher* DispatcherForPluginObject(
@@ -86,34 +64,20 @@ class PluginVarTracker {
   int GetRefCountForObject(const PP_Var& plugin_object);
   int GetTrackedWithNoReferenceCountForObject(const PP_Var& plugin_object);
 
+ protected:
+  // VarTracker protected overrides.
+  virtual int32 AddVarInternal(::ppapi::Var* var, AddVarRefMode mode) OVERRIDE;
+  virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) OVERRIDE;
+  virtual void ObjectGettingZeroRef(VarMap::iterator iter) OVERRIDE;
+  virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) OVERRIDE;
+
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;
   friend class PluginProxyTestHarness;
 
-  class RefCountedString : public base::RefCounted<RefCountedString> {
-   public:
-    RefCountedString() {
-    }
-    RefCountedString(const std::string& str) : value_(str) {
-    }
-    RefCountedString(const char* data, size_t len)
-        : value_(data, len) {
-    }
-
-    const std::string& value() const { return value_; }
-
-   private:
-    std::string value_;
-
-    // Ensure only base::RefCounted can delete a RefCountedString.
-    friend void base::RefCounted<RefCountedString>::Release() const;
-    virtual ~RefCountedString() {}
-  };
-  typedef scoped_refptr<RefCountedString> RefCountedStringPtr;
-
   // Represents a var as received from the host.
   struct HostVar {
-    HostVar(PluginDispatcher* d, int64_t i);
+    HostVar(PluginDispatcher* d, int32 i);
 
     bool operator<(const HostVar& other) const;
 
@@ -124,70 +88,32 @@ class PluginVarTracker {
     // The object ID that the host generated to identify the object. This is
     // unique only within that host: different hosts could give us different
     // objects with the same ID.
-    VarID host_object_id;
+    int32 host_object_id;
   };
 
-  // The information associated with a var object in the plugin.
-  struct PluginVarInfo {
-    PluginVarInfo(const HostVar& host_var);
-
-    // Maps back to the original var in the host.
-    HostVar host_var;
-
-    // Explicit reference count. This value is affected by the renderer calling
-    // AddRef and Release. A nonzero value here is represented by a single
-    // reference in the host on our behalf (this reduces IPC traffic).
-    int32_t ref_count;
-
-    // Tracked object count (see class comment above).
-    //
-    // "TrackObjectWithNoReference" might be called recursively in rare cases.
-    // For example, say the host calls a plugin function with an object as an
-    // argument, and in response, the plugin calls a host function that then
-    // calls another (or the same) plugin function with the same object.
-    //
-    // This value tracks the number of calls to TrackObjectWithNoReference so
-    // we know when we can stop tracking this object.
-    int32_t track_with_no_reference_count;
-  };
-
-  typedef std::map<int64_t, PluginVarInfo> PluginVarInfoMap;
-
-  PluginVarTracker();
-  ~PluginVarTracker();
+  // Returns the existing var ID for the given object var, creating and
+  // assigning an ID to it if necessary. This does not affect the reference
+  // count, so in the creation case the refcount will be 0. It's assumed in
+  // this case the caller will either adjust the refcount or the
+  // track_with_no_reference_count.
+  PP_Var GetOrCreateObjectVarID(ppapi::ProxyObjectVar* object);
 
   // Sends an addref or release message to the browser for the given object ID.
-  void SendAddRefObjectMsg(const HostVar& host_var);
-  void SendReleaseObjectMsg(const HostVar& host_var);
+  void SendAddRefObjectMsg(const ppapi::ProxyObjectVar& proxy_object);
+  void SendReleaseObjectMsg(const ppapi::ProxyObjectVar& proxy_object);
 
-  PluginVarInfoMap::iterator FindOrMakePluginVarFromHostVar(
+  // Looks up the given host var. If we already know about it, returns a
+  // reference to the already-tracked object. If it doesn't creates a new one
+  // and returns it. If it's created, it's not added to the map.
+  scoped_refptr<ppapi::ProxyObjectVar> FindOrMakePluginVarFromHostVar(
       const PP_Var& var,
       PluginDispatcher* dispatcher);
 
-  // Checks the reference counds of the given plugin var info and removes the
-  // tracking information if necessary. We're done with the object when its
-  // explicit reference count and its "tracked with no reference" count both
-  // reach zero.
-  void DeletePluginVarInfoIfNecessary(PluginVarInfoMap::iterator iter);
-
-  // Tracks all information about plugin vars.
-  PluginVarInfoMap plugin_var_info_;
-
-  // Maps host vars to plugin vars. This allows us to know if we've previously
-  // seen a host var and re-use the information.
-  typedef std::map<HostVar, VarID> HostVarToPluginVarMap;
+  // Maps host vars in the host to IDs in the plugin process.
+  typedef std::map<HostVar, int32> HostVarToPluginVarMap;
   HostVarToPluginVarMap host_var_to_plugin_var_;
 
-  // Maps plugin var IDs to ref counted strings.
-  typedef std::map<VarID, RefCountedStringPtr> VarIDStringMap;
-  VarIDStringMap var_id_to_string_;
-
-  // The last plugin PP_Var ID we've handed out. This must be unique for the
-  // process.
-  VarID last_plugin_var_id_;
-
-  // Get a new Var ID and increment last_plugin_var_id_.
-  VarID GetNewVarID();
+  DISALLOW_COPY_AND_ASSIGN(PluginVarTracker);
 };
 
 }  // namespace proxy

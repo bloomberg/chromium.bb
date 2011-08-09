@@ -75,8 +75,10 @@ FileRef::FileRef(const PPBFileRef_CreateInfo& info)
 }
 
 FileRef::~FileRef() {
-  PluginVarTracker::GetInstance()->Release(path_);
-  PluginVarTracker::GetInstance()->Release(name_);
+  PluginVarTracker& var_tracker =
+      PluginResourceTracker::GetInstance()->var_tracker();
+  var_tracker.ReleaseVar(path_);
+  var_tracker.ReleaseVar(name_);
 }
 
 PPB_FileRef_API* FileRef::AsPPB_FileRef_API() {
@@ -88,12 +90,12 @@ PP_FileSystemType FileRef::GetFileSystemType() const {
 }
 
 PP_Var FileRef::GetName() const {
-  PluginVarTracker::GetInstance()->AddRef(name_);
+  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(name_);
   return name_;
 }
 
 PP_Var FileRef::GetPath() const {
-  PluginVarTracker::GetInstance()->AddRef(path_);
+  PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(path_);
   return path_;
 }
 

@@ -159,7 +159,7 @@ PPResultAndExceptionToNPResult::~PPResultAndExceptionToNPResult() {
   // been lost.
   DCHECK(checked_exception_);
 
-  NPObjectVar::PluginReleasePPVar(exception_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(exception_);
 }
 
 // Call this with the return value of the PPAPI function. It will convert
@@ -184,7 +184,7 @@ bool PPResultAndExceptionToNPResult::SetResult(PP_Var result) {
   // No matter what happened, we need to release the reference to the
   // value passed in. On success, a reference to this value will be in
   // the np_result_.
-  ::ppapi::Var::PluginReleasePPVar(result);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(result);
   return success_;
 }
 
@@ -237,8 +237,9 @@ PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
 }
 
 PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
+  ::ppapi::VarTracker* var_tracker = ResourceTracker::Get()->GetVarTracker();
   for (size_t i = 0; i < size_; i++)
-    ::ppapi::Var::PluginReleasePPVar(array_[i]);
+    var_tracker->ReleaseVar(array_[i]);
 }
 
 // PPVarFromNPObject -----------------------------------------------------------
@@ -248,7 +249,7 @@ PPVarFromNPObject::PPVarFromNPObject(PluginInstance* instance, NPObject* object)
 }
 
 PPVarFromNPObject::~PPVarFromNPObject() {
-  ::ppapi::Var::PluginReleasePPVar(var_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(var_);
 }
 
 // NPObjectAccessorWithIdentifier ----------------------------------------------
@@ -268,7 +269,7 @@ NPObjectAccessorWithIdentifier::NPObjectAccessorWithIdentifier(
 }
 
 NPObjectAccessorWithIdentifier::~NPObjectAccessorWithIdentifier() {
-  ::ppapi::Var::PluginReleasePPVar(identifier_);
+  ResourceTracker::Get()->GetVarTracker()->ReleaseVar(identifier_);
 }
 
 // TryCatch --------------------------------------------------------------------

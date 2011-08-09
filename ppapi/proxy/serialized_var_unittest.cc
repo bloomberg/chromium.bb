@@ -99,9 +99,9 @@ TEST_F(SerializedVarTest, PluginReceiveInput) {
     // release it, we should still be tracking the object since the
     // ReceiveInputs keep the "track_with_no_reference_count" alive until
     // they're destroyed.
-    var_tracker().AddRef(plugin_object);
+    var_tracker().AddRefVar(plugin_object);
     EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
-    var_tracker().Release(plugin_object);
+    var_tracker().ReleaseVar(plugin_object);
     EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_object));
     EXPECT_EQ(2u, sink().message_count());
   }
@@ -143,13 +143,13 @@ TEST_F(SerializedVarTest, PluginReceiveReturn) {
   EXPECT_EQ(1u, sink().message_count());
 
   // Manually release one refcount, it shouldn't have sent any more messages.
-  var_tracker().Release(plugin_object);
+  var_tracker().ReleaseVar(plugin_object);
   EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
   EXPECT_EQ(1u, sink().message_count());
 
   // Manually release the last refcount, it should have freed it and sent a
   // release message to the browser.
-  var_tracker().Release(plugin_object);
+  var_tracker().ReleaseVar(plugin_object);
   EXPECT_EQ(-1, var_tracker().GetRefCountForObject(plugin_object));
   EXPECT_EQ(2u, sink().message_count());
 }

@@ -21,6 +21,7 @@
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/var_tracker.h"
 
 typedef struct NPObject NPObject;
 
@@ -63,21 +64,16 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   // Returns the number of resources associated with this module.
   uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
 
-  // ResourceTrackerBase.
+  // TrackerBase.
   virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
       PP_Resource res) OVERRIDE;
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance pp_instance,
       pp::proxy::InterfaceID id) OVERRIDE;
   virtual PP_Instance GetInstanceForResource(PP_Resource resource) OVERRIDE;
+  virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
 
   // PP_Vars -------------------------------------------------------------------
-
-  // TrackerBase implementation.
-  virtual int32 AddVar(::ppapi::Var* var) OVERRIDE;
-  virtual scoped_refptr< ::ppapi::Var > GetVar(int32 var_id) const OVERRIDE;
-  virtual bool AddRefVar(int32 var_id) OVERRIDE;
-  virtual bool UnrefVar(int32 var_id) OVERRIDE;
 
   // Tracks all live NPObjectVar. This is so we can map between instance +
   // NPObject and get the NPObjectVar corresponding to it. This Add/Remove
@@ -182,9 +178,10 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   // See SetSingletonOverride above.
   static ResourceTracker* singleton_override_;
 
-  // Last assigned resource & var ID.
+  // Last assigned resource ID.
   PP_Resource last_resource_id_;
-  int32 last_var_id_;
+
+  ::ppapi::VarTracker var_tracker_;
 
   // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
   // This use count is different then Resource's RefCount, and is manipulated

@@ -36,10 +36,12 @@
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
 using ppapi::InputEventData;
+using ppapi::StringVar;
 using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
@@ -206,15 +208,17 @@ PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
       type != PP_INPUTEVENT_TYPE_KEYUP &&
       type != PP_INPUTEVENT_TYPE_CHAR)
     return 0;
-  PluginVarTracker* tracker = PluginVarTracker::GetInstance();
-
   ppapi::InputEventData data;
   data.event_type = type;
   data.event_time_stamp = time_stamp;
   data.event_modifiers = modifiers;
   data.key_code = key_code;
-  if (character_text.type == PP_VARTYPE_STRING)
-    data.character_text = *tracker->GetExistingString(character_text);
+  if (character_text.type == PP_VARTYPE_STRING) {
+    scoped_refptr<StringVar> text_str(StringVar::FromPPVar(character_text));
+    if (!text_str)
+      return 0;
+    data.character_text = text_str->value();
+  }
 
   return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
 }

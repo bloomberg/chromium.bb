@@ -46,6 +46,10 @@ PP_Var NPObjectVar::GetPPVar() {
   return result;
 }
 
+PP_VarType NPObjectVar::GetType() const {
+  return PP_VARTYPE_OBJECT;
+}
+
 void NPObjectVar::InstanceDeleted() {
   DCHECK(pp_instance_);
   pp_instance_ = 0;
@@ -55,8 +59,8 @@ void NPObjectVar::InstanceDeleted() {
 scoped_refptr<NPObjectVar> NPObjectVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_OBJECT)
     return scoped_refptr<NPObjectVar>(NULL);
-  scoped_refptr<Var> var_object(webkit::ppapi::ResourceTracker::Get()->GetVar(
-      static_cast<int32>(var.value.as_id)));
+  scoped_refptr<Var> var_object(
+      webkit::ppapi::ResourceTracker::Get()->GetVarTracker()->GetVar(var));
   if (!var_object)
     return scoped_refptr<NPObjectVar>();
   return scoped_refptr<NPObjectVar>(var_object->AsNPObjectVar());
