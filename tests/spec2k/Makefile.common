@@ -151,8 +151,8 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ######################################################################
 ## NACL-GCC TOOLCHAINS
 ######################################################################
-NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl-gcc
-NACL_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/nacl-gcc \
+NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/x86_64-nacl-gcc
+NACL_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
 		-B $(NNACL_NEWLIB_SDK32)/lib \
 		-I $(NNACL_NEWLIB_SDK32)/include
 
