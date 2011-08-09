@@ -334,24 +334,19 @@ bool ElementSelectedCommand::DoesPost() {
 }
 
 void ElementSelectedCommand::ExecuteGet(Response* const response) {
-  ListValue args;
-  args.Append(element.ToValue());
-
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_SELECTED);
-
-  Value* result = NULL;
-  Error* error = session_->ExecuteScript(script, &args, &result);
+  bool is_selected;
+  Error* error = session_->IsOptionElementSelected(
+      session_->current_target(), element, &is_selected);
   if (error) {
     response->SetError(error);
     return;
   }
-  response->SetValue(result);
+  response->SetValue(Value::CreateBooleanValue(is_selected));
 }
 
 void ElementSelectedCommand::ExecutePost(Response* const response) {
-  Error* error = session_->SelectOptionElement(
-      session_->current_target(), element);
+  Error* error = session_->SetOptionElementSelected(
+      session_->current_target(), element, true);
   if (error) {
     response->SetError(error);
     return;

@@ -918,11 +918,33 @@ Error* Session::IsElementEnabled(const FrameId& frame_id,
   return NULL;
 }
 
-Error* Session::SelectOptionElement(const FrameId& frame_id,
-                                    const WebElementId& element) {
+Error* Session::IsOptionElementSelected(const FrameId& frame_id,
+                                        const WebElementId& element,
+                                        bool* is_selected) {
   ListValue args;
   args.Append(element.ToValue());
-  args.Append(Value::CreateBooleanValue(true));
+
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::IS_SELECTED);
+
+  Value* result = NULL;
+  Error* error = ExecuteScript(frame_id, script, &args, &result);
+  if (error)
+    return error;
+  scoped_ptr<Value> scoped_result(result);
+  if (!result->GetAsBoolean(is_selected)) {
+    return new Error(kUnknownError, "isSelected atom returned non-boolean: " +
+                         JsonStringify(result));
+  }
+  return NULL;
+}
+
+Error* Session::SetOptionElementSelected(const FrameId& frame_id,
+                                         const WebElementId& element,
+                                         bool selected) {
+  ListValue args;
+  args.Append(element.ToValue());
+  args.Append(Value::CreateBooleanValue(selected));
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::SET_SELECTED);
@@ -931,6 +953,16 @@ Error* Session::SelectOptionElement(const FrameId& frame_id,
   Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
   return error;
+}
+
+Error* Session::ToggleOptionElement(const FrameId& frame_id,
+                                    const WebElementId& element) {
+  bool is_selected;
+  Error* error = IsOptionElementSelected(frame_id, element, &is_selected);
+  if (error)
+    return error;
+
+  return SetOptionElementSelected(frame_id, element, !is_selected);
 }
 
 Error* Session::GetElementTagName(const FrameId& frame_id,

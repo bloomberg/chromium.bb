@@ -8,6 +8,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/web_element_id.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "ui/gfx/point.h"
@@ -44,7 +45,38 @@ void MoveAndClickCommand::ExecutePost(Response* response) {
   }
 
   if (tag_name == "option") {
-    error = session_->SelectOptionElement(session_->current_target(), element);
+    const char* kCanOptionBeToggledScript =
+        "return (function(option) {"
+        "  var select = option.parentElement;"
+        "  if (!select || select.tagName.toLowerCase() != 'select')"
+        "    throw new Error('Option element is not in a select');"
+        "  return select.multiple;"
+        "}).apply(null, arguments);";
+    ListValue args;
+    args.Append(element.ToValue());
+    Value* value = NULL;
+    error = session_->ExecuteScript(
+        session_->current_target(), kCanOptionBeToggledScript, &args, &value);
+    if (error) {
+      response->SetError(error);
+      return;
+    }
+    scoped_ptr<Value> scoped_value(value);
+    bool can_be_toggled;
+    if (!value->GetAsBoolean(&can_be_toggled)) {
+      response->SetError(
+          new Error(kUnknownError, "canOptionBeToggled returned non-boolean: " +
+                        JsonStringify(value)));
+      return;
+    }
+
+    if (can_be_toggled) {
+      error = session_->ToggleOptionElement(
+          session_->current_target(), element);
+    } else {
+      error = session_->SetOptionElementSelected(
+          session_->current_target(), element, true);
+    }
   } else {
     gfx::Point location;
     error = session_->GetClickableLocation(element, &location);

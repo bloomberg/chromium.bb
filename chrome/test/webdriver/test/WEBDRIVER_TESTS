@@ -32,8 +32,6 @@
     'executing_async_javascript_test',
     'executing_javascript_test',
     'form_handling_tests',
-    # crbug.com/90994.
-    '-form_handling_tests.FormHandlingTests.testTogglingAnOptionShouldToggleOptionsInAMultiSelect',
     'frame_switching_tests',
     # Test is asserting the wrong thing.
     '-frame_switching_tests.FrameSwitchingTest.testShouldReturnFrameTitleNotWindowTitle',

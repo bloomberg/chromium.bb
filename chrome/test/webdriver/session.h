@@ -248,8 +248,20 @@ class Session {
                           const WebElementId& element,
                           bool* is_enabled);
 
-  // Sets the given option element as selected.
-  Error* SelectOptionElement(const FrameId& frame_id,
+  // Gets whether the option element is currently selected.
+  Error* IsOptionElementSelected(const FrameId& frame_id,
+                                 const WebElementId& element,
+                                 bool* is_selected);
+
+  // Set the selection state of the given option element. The option element
+  // must support multi selection if |selected| is false.
+  Error* SetOptionElementSelected(const FrameId& frame_id,
+                                  const WebElementId& element,
+                                  bool selected);
+
+  // Toggles the option element's selection state. The option element should
+  // support multi selection.
+  Error* ToggleOptionElement(const FrameId& frame_id,
                              const WebElementId& element);
 
   // Gets the tag name of the given element.
