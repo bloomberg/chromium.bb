@@ -84,6 +84,9 @@ be available for now. -->
     <output filename="chromium_strings_da.pak" type="data_package" lang="da" />
     <output filename="chromium_strings_de.pak" type="data_package" lang="de" />
     <output filename="chromium_strings_el.pak" type="data_package" lang="el" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_en-AU.pak" type="data_package" lang="en-AU" />
+    </if>
     <output filename="chromium_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="chromium_strings_en-US.pak" type="data_package" lang="en" />
     <if expr="pp_ifdef('use_third_party_translations')">
@@ -163,6 +166,7 @@ be available for now. -->
       <file path="../../third_party/launchpad_translations/chromium_strings_cs.xtb" lang="cs" />
       <file path="../../third_party/launchpad_translations/chromium_strings_da.xtb" lang="da" />
       <file path="../../third_party/launchpad_translations/chromium_strings_de.xtb" lang="de" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_en-AU.xtb" lang="en-AU" />
       <file path="../../third_party/launchpad_translations/chromium_strings_eo.xtb" lang="eo" />
       <file path="../../third_party/launchpad_translations/chromium_strings_es.xtb" lang="es" />
       <file path="../../third_party/launchpad_translations/chromium_strings_et.xtb" lang="et" />

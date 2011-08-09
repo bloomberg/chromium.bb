@@ -19,7 +19,7 @@
 <translation id="1892670850488572691">(תכנית)</translation>
 <translation id="2034493627456664629">אין נקודות עצירה</translation>
 <translation id="2098305189700762159">לא נמצאה</translation>
-<translation id="2170606215056882663">הצגת סיכומים וזמנים עצמאיים באחוזים.</translation>
+<translation id="2170606215056882663">הצג זמנים מסוכמים וזמנים עצמאיים באחוזים.</translation>
 <translation id="2215182539621589286"><ph name="ERRORS_COUNT"/> שגיאות, <ph name="WARNINGS_COUNT"/> אזהרות</translation>
 <translation id="2288623059494346417">מאפיינים</translation>
 <translation id="2315805297948832311">הפרדת הפונקציה הנבחרת.</translation>
@@ -139,4 +139,25 @@
 <translation id="9162230117499798906">שינוי <ph name="COUNT"/> בסגנון</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="964811242908289581">שגיאה <ph name="COUNT"/></translation>
+<translation id="1015536732094484178"><ph name="EVENT"/> - פרטים</translation>
+<translation id="1062798188241579840">צבעים הקסדצימליים</translation>
+<translation id="1169028494908542778">שחזור לגרסה הזו</translation>
+<translation id="1215014271600658849">הצגת ספירות וגדלים כאחוזים.</translation>
+<translation id="1272268244580491898">הפעלת נקודות עצירה</translation>
+<translation id="137671950541962857">נאסף</translation>
+<translation id="1383876407941801731">חיפוש</translation>
+<translation id="1451049628911401385">שורה הקודמת/הבאה</translation>
+<translation id="1507648903387903382">כלל עיצוב חדש</translation>
+<translation id="1521283072525575706">מערכת קבצים אינה זמינה.</translation>
+<translation id="1639239467298939599">בטעינה</translation>
+<translation id="1644861063548770358">מחיקת רכיב</translation>
+<translation id="1654944857563611006">קוד מצב</translation>
+<translation id="1768404365792104093">פקודה הבאה/הקודמת</translation>
+<translation id="1801042861827795142">סיום הטעינה</translation>
+<translation id="1823768272150895732">גופן</translation>
+<translation id="1927081658806650620">הרכיב הנבחר בלבד</translation>
+<translation id="1970347183234422155">מטען בקשה</translation>
+<translation id="2071167425364270751">&lt;המקור אינו זמין&gt;</translation>
+<translation id="2161656808144014275">טקסט</translation>
+<translation id="2187217037175158938">אין מאזינים לאירועים</translation>
 </translationbundle>

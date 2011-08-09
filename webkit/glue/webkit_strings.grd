@@ -119,6 +119,9 @@ below:
     <output filename="webkit_strings_da.pak" type="data_package" lang="da" />
     <output filename="webkit_strings_de.pak" type="data_package" lang="de" />
     <output filename="webkit_strings_el.pak" type="data_package" lang="el" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="webkit_strings_en-AU.pak" type="data_package" lang="en-AU" />
+    </if>
     <output filename="webkit_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="webkit_strings_en-US.pak" type="data_package" lang="en" />
     <if expr="pp_ifdef('use_third_party_translations')">
@@ -202,6 +205,7 @@ below:
     <file path="resources/webkit_strings_da.xtb" lang="da" />
     <file path="resources/webkit_strings_de.xtb" lang="de" />
     <file path="resources/webkit_strings_el.xtb" lang="el" />
+    <file path="../../third_party/launchpad_translations/webkit_strings_en-AU.xtb" lang="en-AU" />
     <file path="resources/webkit_strings_en-GB.xtb" lang="en-GB" />
     <file path="resources/webkit_strings_es.xtb" lang="es" />
     <file path="resources/webkit_strings_es-419.xtb" lang="es-419" />

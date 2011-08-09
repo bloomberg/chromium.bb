@@ -714,13 +714,11 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="2444609190341826949">Ensin la contraseña,  les otres contraseñes y datos cifraos nun se van sincronizar nesti equipu.</translation>
 <translation id="2461687051570989462">Accede a les tos imprentadores dende cualquier equipu o teléfonu intelixente. <ph name="BEGIN_LINK"/>Saber más<ph name="END_LINK"/></translation>
 <translation id="2466804342846034717">Introduz la contraseña correcta enriba y, de siguío, escribi los carauteres qu'apaecen na imaxe d'abaxo.</translation>
-<translation id="2476990193835943955">Caltén Control, Alt o Mayús pa ver los atayos&lt;br&gt;de tecláu pa los modificadores.</translation>
 <translation id="2480626392695177423">Alternar mou de puntuación d'anchu mediu o completu</translation>
 <translation id="2604243255129603442">Desactivóse <ph name="NAME_OF_EXTENSION"/>. Si dexes de sincronizar los marcadores, pues reactivala na páxina d'estensiones, accesible al traviés del menú de ferramientes.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> nun pudo completar la instalación, pero continuará executándose dende la imaxe de discu.</translation>
 <translation id="2635102990349508383">Los detalles de la cuenta entá nun s'introduxeron.</translation>
 <translation id="2653266418988778031">Si desanicies el certificáu de CA, el restolador yá nun va poder confiar en dengún certificáu emitíu por esa entidá emisora de certificaos.</translation>
-<translation id="2662952950313424742">Sirvidor DNS especificáu pol sirvidor, qu'usará Chrome pa resoluciones DNS en vez del predetermináu.</translation>
 <translation id="2674170444375937751">¿De xuru que quies desaniciar estes páxines del historial?</translation>
 <translation id="2686759344028411998">Nun pudo deteutase dengún de los módulos cargaos.</translation>
 <translation id="2756651186786928409">Nun cambiar les tecles de modificación.</translation>
@@ -1298,23 +1296,18 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="4013794286379809233">Robla otra vuelta</translation>
 <translation id="4018133169783460046">Amosar <ph name="PRODUCT_NAME"/> nesta llingua</translation>
 <translation id="154603084978752493">Amestar como mo&amp;tor de gueta...</translation>
-<translation id="104086161873270383">Perfil nuevu</translation>
 <translation id="1086573544069171115">Amestar imprentadores de la nube...</translation>
 <translation id="1090126737595388931">Nun hai aplicaciones executándose en segundu planu</translation>
-<translation id="1142012852508714031">Nome del perfil</translation>
 <translation id="1185611560928829188">Llista máxica (<ph name="MAGIC_COUNT"/>)</translation>
 <translation id="1243196447546764522">Afitar el bloquéu de cookies de terceros</translation>
 <translation id="1282227640663454719">La robla del formulariu <ph name="FORM_SIGNATURE"/> ye pa <ph name="FORM_URL"/>.</translation>
 <translation id="1368725949478140659">Cargar de toes maneres</translation>
-<translation id="1376877080032948260">Desaniciar perfil...</translation>
 <translation id="1436784010935106834">Desaniciaos</translation>
 <translation id="1459967076783105826">Guetar motores amestaos por estensiones</translation>
 <translation id="1588870296199743671">Abrir enllaz con...</translation>
 <translation id="1751752860232137596">Activar la implementación esperimental de desplazamientu suave.</translation>
 <translation id="1783075131180517613">Anova la to contraseña de sincronización.</translation>
-<translation id="1834398142751010799">Perfil nuevu</translation>
 <translation id="197288927597451399">Caltener</translation>
-<translation id="2065605535667375562">Iconu de perfil</translation>
 <translation id="2189470649391435617">Redimensionar a la derecha</translation>
 <translation id="2345435964258511234">Desactiva la sincronización la frecuencia de refrescu vertical de la pantalla cuando s'utiliza'l renderizáu con GPU.
         Esto permite que la tasa d'imáxenes por segundu esceda 60 Hz. Anque ye útil pa pruebes de rendimientu, tamién pue causar un efeutu de rasgáu visual cuando la imaxe s'anova rápidamente.</translation>
@@ -1327,7 +1320,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="3058072209957292419">Configuración de ip estática esperimental</translation>
 <translation id="3436440123324878555">Mercar plan...</translation>
 <translation id="3452884066206827415">Precargar el motor de gueta predetermináu pa Instant.</translation>
-<translation id="356785714429487785"><ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="3595946410121365924">Redimensionar a la izquierda</translation>
 <translation id="3668823961463113931">Remanadores</translation>
 <translation id="3672159315667503033"><ph name="URL"/> quier atroxar permanentemente datos de gran tamañu nel equipu llocal.</translation>
@@ -1369,7 +1361,6 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="4880827082731008257">Guetar nel historial</translation>
 <translation id="48838266408104654">&amp;Xestor de xeres</translation>
 <translation id="4973698491777102067">Desaniciar los siguientes elementos dende:</translation>
-<translation id="4980066111423877353">Desaniciar perfil...</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5042992464904238023">Conteníu de la web</translation>
 <translation id="5101042277149003567">Abrir tolos marcadores</translation>
@@ -1500,4 +1491,5 @@ un certificáu válidu d'otra entidá emisora.</translation>
 <translation id="9219103736887031265">Imáxenes</translation>
 <translation id="939736085109172342">Carpeta Nueva</translation>
 <translation id="940425055435005472">Tamañu de la fonte:</translation>
+<translation id="1954982207163873487">Amosar menú de la llave fixa</translation>
 </translationbundle>

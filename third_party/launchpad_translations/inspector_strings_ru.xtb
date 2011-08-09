@@ -167,4 +167,74 @@
 <translation id="4156072768474272260">Время ответа</translation>
 <translation id="8765263675224758228">1 - <ph name="LAST_LINE"/></translation>
 <translation id="886930082991257706"><ph name="NAME"/> (<ph name="SIZE"/>)</translation>
+<translation id="1471549911969958014">Приостановлено на точке прерывания \&quot;<ph name="BREAKPOINT"/>\&quot;, установленной на <ph name="NODE"/>, поскольку его потомок <ph name="CHILD"/> был удалён.</translation>
+<translation id="1708703581063682228">Приостановлено на точке прерывания \&quot;<ph name="BREAKPOINT"/>\&quot;, установленной на <ph name="NODE"/>, поскольку новый потомок был добавлен к его наследнику <ph name="CHILD"/>.</translation>
+<translation id="2187217037175158938">Нет обработчков событий</translation>
+<translation id="2359808026110333948">Продолжить</translation>
+<translation id="2384522206906920960">Изменить атрибут</translation>
+<translation id="2403051638416974630">Управление</translation>
+<translation id="2448312741937722512">Тип</translation>
+<translation id="2499326669217188700">новый</translation>
+<translation id="2585982364983498644">(<ph name="X"/>, <ph name="Y"/>)</translation>
+<translation id="2586657967955657006">Буфер обмена</translation>
+<translation id="2660779039299703961">Событие</translation>
+<translation id="2712822772848061154">Вызов функции</translation>
+<translation id="2739191690716947896">Отладка</translation>
+<translation id="2787301409000765636">Время ожидания</translation>
+<translation id="2803765297292272769">Отрисовка</translation>
+<translation id="2836784866826176182">Остановлено на контрольной точке \&quot;<ph name="NAME"/>\&quot;, установленной в <ph name="LOCATION"/>.</translation>
+<translation id="2894816874009266926">База данных не найдена.</translation>
+<translation id="2971424273970731397">Протокол HTTP</translation>
+<translation id="3010825681353851814"><ph name="SIGN"/><ph name="VALUE"/>%%</translation>
+<translation id="3049858878589819824">Отключить контрольную точку</translation>
+<translation id="3077477444163267975">Окно стилей</translation>
+<translation id="3084452240056471321">Ведение журнала XMLHttpRequest</translation>
+<translation id="3129687551880844787">Хранилище сеансов</translation>
+<translation id="3202131003361292969">Путь</translation>
+<translation id="3278501001215972235">Остановлено на контрольной точке \&quot;<ph name="BREAKPOINT"/>\&quot;, установленной в  <ph name="NODE"/>, поскольку к этому узлу был добавлен новый потомок.</translation>
+<translation id="3288262520198260549">Отправить запрос</translation>
+<translation id="3387873041565926208">Получите снимок кучи, нажав кнопку <ph name="BUTTON"/> на строке состояния.</translation>
+<translation id="3442522329146629199">Показать записи продолжительностью менее <ph name="TIME"/></translation>
+<translation id="3466326894725069228">Локальные файлы</translation>
+<translation id="3490160943926483091">Повторения</translation>
+<translation id="3587482841069643663">Все</translation>
+<translation id="3715281739000626361">Получение</translation>
+<translation id="3798002618172578547">(оригинал)</translation>
+<translation id="3966786746991005676">заполнение</translation>
+<translation id="4015869299329981179">(невозможно расшифровать значение)</translation>
+<translation id="4067394776038365023">Добавить точку прерывания</translation>
+<translation id="4085960679600739946">Открыть папку в файловом менеджере</translation>
+<translation id="4275663329226226506">Мультимедиа</translation>
+<translation id="4279459213339949730">Выполнить команду</translation>
+<translation id="430089115801637957">Запись…</translation>
+<translation id="4332530925589974171">ЗАПИСИ</translation>
+<translation id="4341979764901859772">Показаны <ph name="DISPLAYED_COUNT"/> из <ph name="TOTAL_COUNT"/> зарегистрированных записей</translation>
+<translation id="4380494639778700150">Командная строка</translation>
+<translation id="4399074272412234706">Блокировка</translation>
+<translation id="4404400199667265958">Хронология</translation>
+<translation id="4415583656415968050">Следующий/предыдущий вызов кадра</translation>
+<translation id="4447945128078372094">Постоянная файловая система</translation>
+<translation id="4491109536499578614">Изображение</translation>
+<translation id="4505083617939040110">Источник</translation>
+<translation id="4510290974676570902">Тип MIME</translation>
+<translation id="4522570452068850558">Свойства</translation>
+<translation id="4561649714117979875">WebSockets</translation>
+<translation id="4584326581222680212">Выйти</translation>
+<translation id="4588170590087229653">Приостановлено на точке прерывания JavaScript.</translation>
+<translation id="4622105813163822093">Запросить Cookies</translation>
+<translation id="4625897288034475385"><ph name="DURATION"/> (в <ph name="TIME"/>)</translation>
+<translation id="4680840512092646727">Временная файловая система</translation>
+<translation id="4710372660833450782">Увеличить/уменьшить на <ph name="VALUE"/></translation>
+<translation id="4756974516033204540">Снимок <ph name="NUMBER"/></translation>
+<translation id="478482426871697879">[пусто]</translation>
+<translation id="484355523267079305">Получить отклик</translation>
+<translation id="4850582513716689876">Стиль оформления</translation>
+<translation id="4919559949551957080">Формат сценария.</translation>
+<translation id="492139119201427519">Заимствован из</translation>
+<translation id="4934072863752329939">РЕЗУЛЬТАТЫ</translation>
+<translation id="4985509611418653372">Выполнить</translation>
+<translation id="5019580642216388802">&lt;узел&gt;</translation>
+<translation id="5037676449506322593">Выделить всё</translation>
+<translation id="5056412143720059012"><ph name="BYTES"/> принято</translation>
+<translation id="5077392757361473280">Изменить точку прерывания...</translation>
 </translationbundle>

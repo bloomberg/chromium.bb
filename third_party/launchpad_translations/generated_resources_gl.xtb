@@ -415,7 +415,7 @@
 <translation id="2422927186524098759">Barra lateral</translation>
 <translation id="2423017480076849397">Acceda e comparta impresoras en liña con <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="2423578206845792524">Gar&amp;dar imaxe como...</translation>
-<translation id="2430043402233747791">Activar só para unha sesión</translation>
+<translation id="2430043402233747791">Permitir só para unha sesión</translation>
 <translation id="2433507940547922241">Aparencia</translation>
 <translation id="2435457462613246316">Mostrar o contrasinal</translation>
 <translation id="2440604414813129000">Ver códig&amp;o fonte</translation>
@@ -486,7 +486,6 @@
 <translation id="2649911884196340328">O certificado de seguranza do servidor conten erros!</translation>
 <translation id="2653266418988778031">Se elimina un certificado dunha entidade de acreditación (EA), o seu navegador xa non confiará en ningún certificado emitido por esa CA.</translation>
 <translation id="265390580714150011">Valor do campo</translation>
-<translation id="2662952950313424742">Servidor DNS especificado polo usuario, que usará Chrome para a resolución DNS no canto do predeterminado.</translation>
 <translation id="2670965183549957348">Método de entrada Chewing</translation>
 <translation id="2674170444375937751">Está seguro de que quere eliminar estas páxinas do historial?</translation>
 <translation id="2678063897982469759">Activar de novo</translation>
@@ -1449,7 +1448,7 @@
 <translation id="5976160379964388480">Outros</translation>
 <translation id="5979421442488174909">&amp;Traducir ao <ph name="LANGUAGE"/></translation>
 <translation id="5981759340456370804">Estados para «nerds»</translation>
-<translation id="5984992849064510607">Engade unha entrada «Usar lapelas laterais» ao menú de contexto da franxa de lapelas. Use isto para cambiar a localización das lapelas da parte superior (a súa localización predeterminada) ao lateral. Isto é útil en monitores panorámicos.</translation>
+<translation id="5984992849064510607">Engade unha entrada «Usar lapelas laterais» ao menú de contexto da barra de lapelas. Use isto para cambiar a localización das lapelas da parte superior (a súa localización predeterminada) ao lateral. Isto é útil en monitores panorámicos.</translation>
 <translation id="5986279928654338866">o servidor <ph name="DOMAIN"/> require un nome de usuario e un contrasinal</translation>
 <translation id="5988520580879236902">Inspeccionar vistas activas:</translation>
 <translation id="5988840637546770870">A canle de desenvolvemento é onde se proban as ideas, pero as veces  pode ser moi inestábel. Continúe con tino.</translation>
@@ -1893,7 +1892,6 @@
 <translation id="7554791636758816595">Nova lapela</translation>
 <translation id="7564146504836211400">Cookies e outros datos</translation>
 <translation id="756445078718366910">Abrir xanela do navegador</translation>
-<translation id="7564847347806291057">Rematar proceso</translation>
 <translation id="7566499939565597189">1234qweras</translation>
 <translation id="7567293639574541773">I&amp;nspeccionar elemento</translation>
 <translation id="7568593326407688803">Esta páxina está escrita en <ph name="ORIGINAL_LANGUAGE"/> Quere traducila?</translation>
@@ -1952,7 +1950,6 @@
 <translation id="7789962463072032349">deter</translation>
 <translation id="7791543448312431591">Engadir</translation>
 <translation id="7793343764764530903">Activou <ph name="CLOUD_PRINT_NAME"/> satisfactoriamente. <ph name="PRODUCT_NAME"/> rexistrou as impresoras nesta máquina con &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt;. Agora xa pode imprimir nas súas impresoras desde calquera web ou aplicativo móbil con <ph name="CLOUD_PRINT_NAME"/> activada.</translation>
-<translation id="77999321721642562">Co tempo, a área que aparece a seguir mostrará os oito sitios máis visitados.</translation>
 <translation id="7800304661137206267">La conexión foi cifrada mediante <ph name="CIPHER"/>, con <ph name="MAC"/> para a autenticación da mensaxe e con <ph name="KX"/> como mecanismo de intercambio de chaves.</translation>
 <translation id="7802488492289385605">Entrada de xaponés de Google (para teclado dvorak estadounidense)</translation>
 <translation id="780301667611848630">Non, grazas</translation>
@@ -2090,7 +2087,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="8190193592390505034">Conectando a <ph name="PROVIDER_NAME"/></translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8200772114523450471">Continuar</translation>
-<translation id="8202390211066742724">Enderezo do servidor DNS especificado polo usuario.</translation>
 <translation id="8203365863660628138">Confirmar instalación</translation>
 <translation id="8208216423136871611">Non gardar</translation>
 <translation id="8210608804940886430">Av Páx</translation>
@@ -2108,7 +2104,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="8250690786522693009">Latín</translation>
 <translation id="8251578425305135684">Miniatura retirada</translation>
 <translation id="825608351287166772">Os certificados teñen un período de validez, como calquera outro documento de identidade (por exemplo, un pasaporte). O certificado presentado ao seu navegador aínda non é válido. Cando un certificado está fora do período de validez, non é necesario gardar algúns dos datos sobre o estado do mesmo (se foi revogado e se xa non é de confianza). Polo tanto, non é posíbel verificar que o certificado sexa fiábel. Non debe continuar.</translation>
-<translation id="8258002508340330928">Está seguro?</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8265096285667890932">Utilizar as lapelas laterais</translation>
 <translation id="8265562484034134517">Importar datos desde outro navegador...</translation>
@@ -2488,7 +2483,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE"/> - <ph name="SUBPAGE_TITLE"/></translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2333340435262918287">Os seus cambios serán efectivos a próxima vez que volva a iniciar <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2476990193835943955">Manteña Control, Alt ou Maiús para ver os atallos&lt;br&gt;de teclado para os modificadores.</translation>
 <translation id="2503458975635466059">Semella que o perfil está a ser empregado polo proceso <ph name="PROCESS_ID"/> no equipo <ph name="HOST_NAME"/>.  Se ten certeza de que ningún outro proceso está a empregar este perfil, elimine o ficheiro <ph name="LOCK_FILE"/> e volva a iniciar <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2799223571221894425">Volver iniciar</translation>
 <translation id="2900139581179749587">Voz non recoñecida.</translation>
@@ -2625,9 +2619,7 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4665674675433053715">Páxina «Nova lapela» experimental</translation>
 <translation id="5105855035535475848">Fixar lapelas</translation>
 <translation id="5453029940327926427">Pechar lapelas</translation>
-<translation id="5542132724887566711">Perfil</translation>
 <translation id="5829990587040054282">Bloqueo de pantalla ou apagado</translation>
-<translation id="5910680277043747137">Se desexa permitir que varias persoas poidan usar e personalizar Chrome, pode crear perfís adicionais.</translation>
 <translation id="6025294537656405544">Tamaño mínimo do tipo de letra</translation>
 <translation id="6252594924928912846">Personalizar a configuración da sincronización</translation>
 <translation id="6648524591329069940">Tipo de letra Serif</translation>
@@ -3132,9 +3124,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="1954982207163873487">Mostrar o menú da chave inglesa</translation>
 <translation id="3011284594919057757">Sobre Flash</translation>
 <translation id="3058072209957292419">Configuración experimenta de IP estático</translation>
-<translation id="356785714429487785"><ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="4535127706710932914">Perfil predeterminado</translation>
-<translation id="5359095000408548198">Novo <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="642282551015776456">Non é posíbel empregar este nome como nome de ficheiro ou cartafol</translation>
 <translation id="6894066781028910720">Abrir o administrador de ficheiros</translation>
 <translation id="7460131386973988868">Activa a configuración de IP estático. E posíbel que non funcione.</translation>
@@ -3162,14 +3151,10 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="8306243285620593545">Enfocar a icona de estado</translation>
 <translation id="8418240940464873056">Modo «hanja»</translation>
 <translation id="9049835026521739061">Modo «hangul»</translation>
-<translation id="104086161873270383">Novo perfil</translation>
 <translation id="112818052757437142">O directorio nomeado «$1» xa existe. Escolla un nome diferente.</translation>
-<translation id="1142012852508714031">Nome do perfil</translation>
 <translation id="1282227640663454719">O formulario de sinatura <ph name="FORM_SIGNATURE"/> é para <ph name="FORM_URL"/>.</translation>
 <translation id="154603084978752493">En&amp;gadir motor de busca...</translation>
 <translation id="1588870296199743671">Abrir a ligazón con...</translation>
-<translation id="1834398142751010799">Novo perfil</translation>
-<translation id="2065605535667375562">Icona do perfil</translation>
 <translation id="2189470649391435617">Axustar tamaño á dereita</translation>
 <translation id="2889064240420137087">Abrir a ligazón con...</translation>
 <translation id="2951310213712249777">Prerenderización da caixa multifunción</translation>
@@ -3188,37 +3173,25 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="3719388386220274270">Enviar comentarios adicionais sobre o completado automático</translation>
 <translation id="4008217099472149670">Non é posíbel dispor de conexións seguras por mor do antivirus Kaspersky</translation>
 <translation id="434849659521617751">Seleccionado un directorio</translation>
-<translation id="4536111748245793305">Perfil <ph name="VALUE"/></translation>
 <translation id="5342221287123687807">Restaurar o tema predeterminado</translation>
 <translation id="5685236799358487266">Engadir como mo&amp;tor de busca...</translation>
 <translation id="5835133142369577970">Especifique o nome do cartafol</translation>
 <translation id="6021987327127625071">Seleccionados $1directorios</translation>
-<translation id="6173478701774033550">Icona do perfil</translation>
 <translation id="6745789064498140868">Imprimir <ph name="PREVIEW_TAB_TITLE"/></translation>
-<translation id="7325521623703686754">Escolla un nome e un «avatar», a seguir prema en Crear para crear un novo perfil</translation>
 <translation id="7415834062450491574">Enviar comentarios a Google.</translation>
 <translation id="7523913831415327888">$1 elementos seleccionados, $2</translation>
-<translation id="7609538960069667341">Crear un novo perfil <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="7651319298187296870">É necesario acceder para o certificado de usuario.</translation>
 <translation id="7737525395960596244">Axude a mellorar o completado automático. Con esta opción activada, de cando en vez Chrome pediralle que envíe información adicional para o equipo de completado automático.</translation>
 <translation id="7871467315479343122">Axude a que o completado automático mellore.</translation>
-<translation id="8048178988014360106">Crear un novo perfil <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="8059178146866384858">Xa existe un ficheiro nomeado «$1». Escolla un nome diferente.</translation>
 <translation id="8456681095658380701">Nome incorrecto</translation>
-<translation id="8558056454375650717">Un peril <ph name="SHORT_PRODUCT_NAME"/> conten
-      un conxunto de marcadores, historial de navegación, contrasinais gardadas, e os temas.
-      Se vostede necesita administrar a configuración por separado pode crear varios perfís. 
-      Por exemplo, pode utilizar un perfil, e o seu amigo pode utilizar outro.</translation>
-<translation id="8586353611925512169">Nome do perfil</translation>
 <translation id="8789464255255332543">Non é posíbel imprimir, xa que a páxina que tentou imprimir foi pechada.</translation>
 <translation id="1046059554679513793">A modo, este nome xa existe!</translation>
 <translation id="1086573544069171115">Engadir impresoras na «nube»</translation>
 <translation id="1105057716440030352">Importar marcadores desde un ficheiro HTML...</translation>
 <translation id="1146204723345436916">Importar marcadores desde un ficheiro HTML...</translation>
-<translation id="1224582695479061572">Crear un novo perfil:</translation>
 <translation id="1335810654854159539">Algunhas preferencias foron desactivadas polo administrador.</translation>
 <translation id="1368725949478140659">Cargar igualmente</translation>
-<translation id="1376877080032948260">Eliminar perfil...</translation>
 <translation id="1459967076783105826">Motores de busca engadidos por algunha extensión</translation>
 <translation id="148557595510244003">Algunhas opcións foron desactivadas polo administrador.</translation>
 <translation id="1648797160541174252">Proxy de rede para <ph name="NETWORK_NAME"/></translation>
@@ -3226,7 +3199,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="1776712937009046120">Engadir usuario</translation>
 <translation id="1783075131180517613">Actualice a súa frase de paso de sincronización.</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD"/>Moito coidado:<ph name="END_BOLD"/>  Estes ficheiros son temporais, e poden seren eliminados automaticamente pada facer espazo no disco.  <ph name="BEGIN_LINK"/>Saber máis<ph name="END_LINK"/></translation>
-<translation id="1847198727512820188">Nome do perfil:</translation>
 <translation id="1902427289834481011">Retirar de <ph name="SHORT_PRODUCT_NAME"/>.</translation>
 <translation id="1906805647949588115">Activar a xanela 8</translation>
 <translation id="2042078858148122628">O servidor en
@@ -3260,7 +3232,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="3096212521773120572">Activar a xanela 6</translation>
 <translation id="3291862315280588024">Ir ao inicio da palabra anterior</translation>
 <translation id="3325146402434751578">Estabelecer ou administrar as impresoras en <ph name="CLOUD_PRINT_NAME"/></translation>
-<translation id="3471666855124033748">Esta páxina ten un script non seguro.</translation>
 <translation id="361846151613043842">Activar a xanela 1</translation>
 <translation id="3648607100222897006">Estas funcionalidades experimentais poden cambiar, romperse ou desaparecer en calquera momento. Non garantimos de ningunha forma o que poida suceder se activa estes experimentos e o seu navegador entra en «combustión espontánea». Bromas aparte, o seu navegador pode eliminar todos os seus datos, ou verse comprometida a súa intimidade e seguranza de moitas maneiras. Calquera experimento que active será activado para todos os usuarios deste navegador. Continúe con moito tino.</translation>
 <translation id="3714633008798122362">calendario web</translation>
@@ -3287,8 +3258,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4146671046252289537">Ir a fin da seguinte palabra</translation>
 <translation id="4220188427073615244">Inicie sesión usando: <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="4284105660453474798">Está seguro que desexa eliminar «$1»?</translation>
-<translation id="4388353399237186340"><ph name="PROFILE_NAME"/> (perfil actual)</translation>
-<translation id="4510781427281143276">Eliminar o perfil</translation>
 <translation id="4580526846085481512">Está seguro que desexa eliminar «$1» elementos?</translation>
 <translation id="4583537898417244378">Ficheiro incorrecto ou estragado.</translation>
 <translation id="462551743132815358">Pechar o arquivo</translation>
@@ -3297,20 +3266,14 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="4781649528196590732">Pór en foco o panel anterior</translation>
 <translation id="4808139931410481934">Activar a xanela 2</translation>
 <translation id="4883178195103750615">Exportar marcadores a un ficheiro HTML...</translation>
-<translation id="4980066111423877353">Eliminar perfil...</translation>
-<translation id="4988364749377710401">Administrar perfil</translation>
 <translation id="5261073535210137151">Este cartafol contén <ph name="COUNT"/> marcadores. Está seguro de que quere eliminalo?</translation>
 <translation id="5293659407874396561"><ph name="SUBJECT"/> (<ph name="ISSUER"/>)</translation>
-<translation id="540323899562948110">Personalizar perfil...</translation>
-<translation id="5548400724382318984">Administrar perfil</translation>
 <translation id="5560242443494923856">Activar os «atallos de teclado» na caixa multifunción</translation>
 <translation id="5653352175373198541">Empregue o menú de rede (arriba á dereita) para conectarse a Internet para completar a configuración do seu Chromebook.</translation>
 <translation id="5704318649385838512">O «Bloq Maiús» está activado\nPrema ambas teclas de maiúsculas para cancelar</translation>
 <translation id="5829401023154985950">Administrar...</translation>
 <translation id="5887772116581657016">categoríaDeNegocios</translation>
 <translation id="5979681173469464041">Pór en foco o seguinte panel</translation>
-<translation id="608057490819882785">Está seguro que quere eliminar o perfil «<ph name="PROFILE_NAME"/>» e todos os datos asociados con el deste equipo? Isto non terá volta atrás!</translation>
-<translation id="6093803049406781019">Eliminar o perfil</translation>
 <translation id="6186893483313227582">Icona <ph name="VALUE"/></translation>
 <translation id="620329680124578183">Non cargar (recomendado)</translation>
 <translation id="6231148928368101651">Paneis</translation>
@@ -3321,8 +3284,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="6463782637635274853">Pegando...</translation>
 <translation id="662720828712108508">Permitir que <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) abra todas as ligazóns <ph name="PROTOCOL"/> no canto de <ph name="REPLACED_HANDLER_TITLE"/>?</translation>
 <translation id="6718553273653596934">Non é posíbel abrir o que xa está aberto «$1»: $2</translation>
-<translation id="672826849891626219">Icona do perfil:</translation>
-<translation id="68673033339624707">Crear un novo perfil ...</translation>
 <translation id="6921968934403058457">Activar as extensións experimentais para abrir as xanelas do panel fora do marco do navegador.</translation>
 <translation id="6937266377577518989">Selección copiada no portapapeis.</translation>
 <translation id="6998579716604177680">Algúns axustes foron desactivados polo administrador e outros están a seren administrados por unha extensión.</translation>
@@ -3336,9 +3297,6 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="7475292478930529311">As preferencias do complemento foron desactivadas</translation>
 <translation id="7582582252461552277">Preferir esta rede</translation>
 <translation id="7661266386772591122">Exportar marcadores a un ficheiro HTML...</translation>
-<translation id="7704257085511986521">Icona do perfil:</translation>
-<translation id="7739677892468726004">Personalizar perfil...</translation>
-<translation id="7927948142484020408">Nome do perfil:</translation>
 <translation id="793703748056186466">Algúns axustes están a seren administrados por unha extensión.</translation>
 <translation id="7984180109798553540">Para maior seguranza, <ph name="PRODUCT_NAME"/> cifrará os seus datos.</translation>
 <translation id="810066391692572978">Este ficheiro ten características non admitidas.</translation>
@@ -3356,6 +3314,68 @@ Garde o seu ficheiro de chave nalgún sito seguro, xa que precisarao para crear 
 <translation id="901834265349196618">correo</translation>
 <translation id="9023317578768157226">Permitir que <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) abra todas as ligazóns <ph name="PROTOCOL"/>?</translation>
 <translation id="9071761050483587943">Activar o acceso automático aos sitios de Google</translation>
-<translation id="911943169624683514">Actualice a súa frase de paso de sincronización.</translation>
 <translation id="926145120297878023">Lembra os resultados seleccionados habitualmente sobre a base dos resultados de autocompletado do termo de busca na caixa multifunción e ofrece os URL a próxima vez que se escribe o mesmo termo de busca.</translation>
+<translation id="1051694321716046412">Personalizar o usuario...</translation>
+<translation id="1055276160337268034">A extensión «<ph name="EXTENSION_NAME"/>» solicitou permisos adicionais.</translation>
+<translation id="1417363496376480406">Administrar o usuario</translation>
+<translation id="1630086885871290594">Letrista</translation>
+<translation id="1790550373387225389">Entrar nol modo de presentación</translation>
+<translation id="1846638227267398173">Novo usuario</translation>
+<translation id="2028531481946156667">Non foi posíbel iniciar o proceso de formatado.</translation>
+<translation id="2148756636027685713">Rematou o formatado</translation>
+<translation id="2760297631986865803">Personalizar o usuario...</translation>
+<translation id="2790759706655765283">Páxina web oficial dos editores</translation>
+<translation id="2841013758207633010">Tempo</translation>
+<translation id="3210492393564338011">Eliminar o usuario</translation>
+<translation id="3270450410717929853">Poderá acceder a:</translation>
+<translation id="3297788108165652516">Esta rede compártese con outros usuarios.</translation>
+<translation id="3305389145870741612">O proceso de formatado pode levar algúns segundos. Agarde.</translation>
+<translation id="3330206034087160972">Saír do modo de presentación</translation>
+<translation id="3414856743105198592">O formatado do medio extraíbel borrará todos os datos. Desexa continuar?</translation>
+<translation id="3504135463003295723">Nome do grupo:</translation>
+<translation id="3619051884944784882">&amp;Rematar o proceso</translation>
+<translation id="3750372538542737662">Administrar o usuario</translation>
+<translation id="3813510441224209252">Pendente de formatar</translation>
+<translation id="3973347941002960835">Icona:</translation>
+<translation id="4002066346123236978">Título</translation>
+<translation id="4191334393248735295">Duración</translation>
+<translation id="4236660184841105427">Mostrar todos os ficheiros</translation>
+<translation id="4264154755694493263">Cando se instala un aplicativo, mostrase sempre unha burbulla que apunta ao botón «Nova lapela» na barra de lapelas no canto de abrir unha nova lapela.</translation>
+<translation id="4315903906955301944">Páxina web oficial do ficheiro de son</translation>
+<translation id="4375848860086443985">Compositor</translation>
+<translation id="4389091756366370506">Usuario <ph name="VALUE"/></translation>
+<translation id="4631887759990505102">Intérprete</translation>
+<translation id="4656525291320872047">Mostrar o estado da memoria</translation>
+<translation id="475088594373173692">Primeiro usuario</translation>
+<translation id="4969785127455456148">Álbum</translation>
+<translation id="5064044884033187473">Prpietario do ficheiro</translation>
+<translation id="5488640658880603382">Está seguro que quere eliminar o perfil «<ph name="PROFILE_NAME"/>» e todos os datos asociados con el deste equipo? Isto non terá volta atrás!</translation>
+<translation id="5512653252560939721">O certificado de usuario debe estar gardado no hardware.</translation>
+<translation id="5698727907125761952">Interprete oficial</translation>
+<translation id="5866801229574126103">Eliminar o usuario</translation>
+<translation id="6015796118275082299">Ano</translation>
+<translation id="6224481128663248237">O formatado rematou satisfactoriamente.</translation>
+<translation id="6368046945223687609">Atraso da lista de reprodución</translation>
+<translation id="6374830905869502056">Codificado por</translation>
+<translation id="6510391806634703461">Novo usuario</translation>
+<translation id="6615455863669487791">Mostrar</translation>
+<translation id="6645984541666123347">Mostra, na área de estado, a cantidade de memoria dispoñíbel. Prema no menú para obter máis información sobre a memoria do sistema.</translation>
+<translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
+<translation id="6923900367903210484">Dereitos de autoría</translation>
+<translation id="7317938878466090505"><ph name="PROFILE_NAME"/> (actual)</translation>
+<translation id="7326487563595667270">Burbulla de instalación de novos aplicativos</translation>
+<translation id="7359657277149375382">Tipo de ficheiro</translation>
+<translation id="7493310265090961755">Banda</translation>
+<translation id="750509436279396091">Abrir o cartafol de descargas</translation>
+<translation id="794676567536738329">Confirmar os permisos</translation>
+<translation id="7972819274674941125">Aviso de dereitos de autoría</translation>
+<translation id="8002980609684534974">Número de pista</translation>
+<translation id="8142041167538903585">Ollo! produciuse algún erro durante o formatado...</translation>
+<translation id="8263231521757761563">Manexadores activos de protocolo</translation>
+<translation id="8375667793438132385">Permitir <ph name="INTENT_HANDLE_TITLE"/> (<ph name="INTENT_HANDLE_HOSTNAME"/>) para manexar os intentos?</translation>
+<translation id="8707481173455612936">Páxina web oficial da orixe do son</translation>
+<translation id="8848519885565996859">Ligazón URL do cadro, definida polo usuario</translation>
+<translation id="8895199537967505002">BPM</translation>
+<translation id="8943392635470173207">Usar <ph name="INTENT_HANDLER_TITLE"/></translation>
+<translation id="8997135628821231"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>] (<ph name="DEVICE"/>)</translation>
 </translationbundle>

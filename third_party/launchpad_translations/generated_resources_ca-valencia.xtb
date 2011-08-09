@@ -494,7 +494,6 @@
 <translation id="2461687051570989462">Accediu a les impressores des de qualsevol equip o telèfon intel·ligent. <ph name="BEGIN_LINK"/>Més informació<ph name="END_LINK"/></translation>
 <translation id="2462724976360937186">Identificador de clau d'entitat emissora de certificats</translation>
 <translation id="2466804342846034717">Introduïu la contrasenya correcta a dalt i, a continuació, escriviu els caràcters que veieu a la imatge inferior.</translation>
-<translation id="2476990193835943955">Manteniu premudes les tecles Control, Alt o Maj per veure les dreceres&lt;br&gt;del teclat per a estos modificadors.</translation>
 <translation id="2480626392695177423">Commuta el mode de puntuació d'amplada completa/mitja amplada</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2485056306054380289">Certificat de CA del servidor:</translation>
@@ -559,7 +558,6 @@
 <translation id="2653266418988778031">Si suprimiu una entitat emissora de certificats, el vostre navegador ja no confiarà en cap certificat emés per aquella entitat.</translation>
 <translation id="265390580714150011">Valor del camp</translation>
 <translation id="2655386581175833247">Certificat d'usuari:</translation>
-<translation id="2662952950313424742">Servidor DNS especificat per l'usuari que Google Chrome utilitzarà per a resolucions DNS en comptes de fer servir els valors predeterminats del sistema.</translation>
 <translation id="2670965183549957348">Mètode d'entrada de chewing</translation>
 <translation id="2674170444375937751">Estàs segur que vols suprimir estes pàgines de l'historial?</translation>
 <translation id="2678063897982469759">Torna a activar</translation>
@@ -1515,7 +1513,6 @@
 <translation id="5530864958284331435">$1 fitxers seleccionats, $2</translation>
 <translation id="5538092967727216836">Torna a carregar el marc</translation>
 <translation id="5538307496474303926">S'està netejant...</translation>
-<translation id="5542132724887566711">Perfil</translation>
 <translation id="5546865291508181392">Cerca</translation>
 <translation id="5548207786079516019">Esta és una instal·lació secundària de <ph name="PRODUCT_NAME"/> i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="5550431144454300634">Corregeix l'entrada automàticament</translation>
@@ -1672,7 +1669,6 @@
 <translation id="5904093760909470684">Configuració del servidor intermediari</translation>
 <translation id="5906065664303289925">Adreça del maquinari:</translation>
 <translation id="5910363049092958439">Al&amp;ça la imatge com a...</translation>
-<translation id="5910680277043747137">Si voleu permetre que diverses persones utilitzen i personalitzin Chrome, podeu crear perfils addicionals.</translation>
 <translation id="5912378097832178659">&amp;Edita els motors de cerca...</translation>
 <translation id="5917011688104426363">Passa la barra d'adreces a primer pla en mode de cerca</translation>
 <translation id="5920618722884262402">Bloqueja les paraules ofensives</translation>
@@ -2213,7 +2209,6 @@
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7564146504836211400">Galetes i altres dades</translation>
 <translation id="756445078718366910">Obri una finestra del navegador</translation>
-<translation id="7564847347806291057">Finalitza el procés</translation>
 <translation id="7567293639574541773">I&amp;nspecciona l'element</translation>
 <translation id="7568593326407688803">Esta pàgina està en<ph name="ORIGINAL_LANGUAGE"/>Voleu traduir-la?</translation>
 <translation id="7568790562536448087">Actualització</translation>
@@ -2283,7 +2278,6 @@
 <translation id="7789962463072032349">pausa</translation>
 <translation id="7791543448312431591">Afig</translation>
 <translation id="7793343764764530903">Heu activat <ph name="CLOUD_PRINT_NAME"/> correctament! <ph name="PRODUCT_NAME"/> ha registrat les impressores en este equip amb &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt;. Ja podeu imprimir-hi des de qualsevol aplicació web o mòbil activada per a <ph name="CLOUD_PRINT_NAME"/>!</translation>
-<translation id="77999321721642562">Amb el temps, l'àrea anterior mostrarà els 8 llocs que visiteu amb més freqüència.</translation>
 <translation id="7800304661137206267">La connexió està encriptada mitjançant <ph name="CIPHER"/>, amb <ph name="MAC"/> per a l'autenticació de missatges i amb <ph name="KX"/> com a mecanisme d'intercanvi clau.</translation>
 <translation id="7802488492289385605">Mètode d'entrada japonés de Google (per a teclat Dvorak nord-americà)</translation>
 <translation id="780301667611848630">No, gràcies</translation>
@@ -2436,7 +2430,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8190193592390505034">S'està connectant amb <ph name="PROVIDER_NAME"/></translation>
 <translation id="8190698733819146287">Personalitza els idiomes i l'entrada...</translation>
 <translation id="8200772114523450471">Reempren</translation>
-<translation id="8202390211066742724">Adreça del servidor DNS especificada per l'usuari.</translation>
 <translation id="8203365863660628138">Confirma la instal·lació</translation>
 <translation id="8205333955675906842">Tipus de lletra Sans-Serif</translation>
 <translation id="8208216423136871611">No alces</translation>
@@ -2455,7 +2448,6 @@ Alceu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8250690786522693009">Llatí</translation>
 <translation id="8251578425305135684">S'ha eliminat la miniatura.</translation>
 <translation id="825608351287166772">Els certificats tenen un període de validesa, com qualsevol altre document d'identitat (com ara, un passaport). El certificat que s'ha presentat al teu navegador encara no és vàlid. Quan un certificat està fora del període de validesa, no és necessari mantindre algunes de les dades sobre l'estat del certificat (si s'ha revocat i ja no és de confiança). Per tant, no és possible verificar que este certificat siga fiable. No hauries de continuar.</translation>
-<translation id="8258002508340330928">N'esteu segur?</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8265096285667890932">Utilitza les pestanyes laterals</translation>
 <translation id="8265562484034134517">Importa les dades des d'un altre navegador...</translation>

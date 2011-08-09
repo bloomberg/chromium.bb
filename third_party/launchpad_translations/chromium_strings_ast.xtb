@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ast">
 <translation id="1185134272377778587">Tocante a Chromium</translation>
-<translation id="1105130903706696483">Chromium nun se zarró correctamente. Pa volver a abrir les páxinas que teníes abiertes, calca Restaurar.</translation>
+<translation id="1105130903706696483">Chromium nun se zarró correutamente. Pa volver a abrir les páxines que teníes abiertes, calca Restaurar.</translation>
 <translation id="1221340462641866827">Chromium OS nun permite executar una aplicación esterna pa remanar enllaces <ph name="SCHEME"/>. L'enllaz solicitáu ye <ph name="PROTOLINK"/>.</translation>
 <translation id="1293235220023151515">Alcontróse una instalación conflictiva de Chromium nel sistema. Desinstálala ya inténtalo de nueves.</translation>
 <translation id="1708666629004767631">Hai disponible una versión nueva y más segura de Chromium.</translation>
@@ -104,4 +104,8 @@
 <translation id="872034308864968620">Permite a Chromium executase en segundu planu</translation>
 <translation id="1774152462503052664">Permitir a Chromium executase en segundu planu</translation>
 <translation id="6714487516757221107">Nun s'alcontró una instalación de Chromium o Chromium Frame p'anovar.</translation>
+<translation id="3748537968684000502">Tas viendo una páxina segura de Chromium.</translation>
+<translation id="5211087808649701653">Llanzar diálogu d'imprentación nativu</translation>
+<translation id="5763345311842154236">Galería de temes de Chromium</translation>
+<translation id="8628626585870903697">Chromium nun incluye el visor PDF requeríu pal funcionamientu de la vista previa d'imprentación.</translation>
 </translationbundle>
