@@ -57,6 +57,8 @@ static const char* kResourceTypeStrings[] = {
   "script",
   "image",
   "object",
+  "xmlhttprequest",
+  "other",
   "other",
 };
 
@@ -67,7 +69,14 @@ static ResourceType::Type kResourceTypeValues[] = {
   ResourceType::SCRIPT,
   ResourceType::IMAGE,
   ResourceType::OBJECT,
+  ResourceType::XHR,
   ResourceType::LAST_TYPE,  // represents "other"
+  // TODO(jochen): We duplicate the last entry, so the array's size is not a
+  // power of two. If it is, this triggers a bug in gcc 4.4 in Release builds
+  // (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43949). Once we use a version
+  // of gcc with this bug fixed, or the array is changed so this duplicate
+  // entry is no longer required, this should be removed.
+  ResourceType::LAST_TYPE,
 };
 
 COMPILE_ASSERT(
