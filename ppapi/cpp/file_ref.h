@@ -30,7 +30,7 @@ class FileRef : public Resource {
  /// A constructor used to create a <code>FileRef</code> and associate it with
   /// the provided <code>Instance</code>.
   ///
-  /// @param[in] instance An <code>Instance</code>.
+  /// @param[in] resource An <code>Instance</code>.
   explicit FileRef(PP_Resource resource);
 
   /// A special structure used by the constructor that does not increment the
@@ -92,7 +92,7 @@ class FileRef : public Resource {
   /// <strong>Note:</strong> Use MakeDirectoryIncludingAncestors() to create
   /// parent directories.
   ///
-  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of MakeDirectory().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
@@ -103,7 +103,7 @@ class FileRef : public Resource {
   /// system as well as any parent directories. It is not valid to make a
   /// directory in the external file system.
   ///
-  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of MakeDirectoryIncludingAncestors().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
@@ -115,7 +115,7 @@ class FileRef : public Resource {
   ///
   /// @param[in] last_access_time The last time the file was accessed.
   /// @param[in] last_modified_time The last time the file was modified.
-  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of Touch().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
@@ -128,7 +128,7 @@ class FileRef : public Resource {
   /// file or directory that is in use.  It is not valid to delete a file in
   /// the external file system.
   ///
-  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of Delete().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
@@ -141,7 +141,7 @@ class FileRef : public Resource {
   ///
   /// @param[in] new_file_ref A <code>FileRef</code> corresponding to a new
   /// file reference.
-  /// @param[in] callback A <code>CompletionCallback</code> to be called upon
+  /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of Rename().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
