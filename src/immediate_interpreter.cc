@@ -22,40 +22,6 @@ namespace gestures {
 
 namespace {
 
-// TODO(adlr): make these configurable:
-const float kPalmPressure = 100.0;
-
-// Block movement for 40ms after fingers change
-const stime_t kChangeTimeout = 0.04;
-
-// Wait 200ms to lock into a gesture:
-const stime_t kGestureEvaluationTimeout = 0.2;
-
-// If two fingers have a pressure difference greater than this, we assume
-// one is a thumb.
-const float kTwoFingerPressureDiffThresh = 17.0;
-
-// If two fingers are closer than this distance (in millimeters), they are
-// eligible for two-finger scroll and right click.
-const float kTwoFingersCloseDistanceThresh = 40.0;
-
-// Consider scroll vs pointing when a finger has moved at least this distance
-// (mm).
-const float kTwoFingerScrollDistThresh = 2.0;
-
-// If doing a scroll, only one finger needs to move. The other finger can move
-// up to this distance in the opposite direction (mm).
-const float kScrollStationaryFingerMaxDist = 1.0;
-
-// Height of the bottom zone in millimeters
-const float kBottomZoneSize = 10;
-
-// Time to evaluate left vs right click, 30ms
-const stime_t kButtonEvaluationTimeout = 0.03;
-
-// A finger that taps can move up to this distance during the tap
-const float kTapMoveDist = 1.0;  // mm
-
 float MaxMag(float a, float b) {
   if (fabsf(a) > fabsf(b))
     return a;
@@ -161,7 +127,17 @@ ImmediateInterpreter::ImmediateInterpreter()
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_timeout_(0.2),
-      tap_drag_timeout_(0.7) {
+      tap_drag_timeout_(0.7),
+      tap_move_dist_(1.0),
+      palm_pressure_(100.0),
+      change_timeout_(0.04),
+      evaluation_timeout_(0.2),
+      two_finger_pressure_diff_thresh_(17.0),
+      two_finger_close_distance_thresh_(40.0),
+      two_finger_scroll_distance_thresh_(2.0),
+      scroll_stationary_finger_max_distance_(1.0),
+      bottom_zone_size_(10),
+      button_evaluation_timeout_(0.03) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -246,7 +222,7 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
 
     // TODO(adlr): handle low-pressure palms at edge of pad by inserting them
     // into pending_palm_
-    if (fs.pressure >= kPalmPressure) {
+    if (fs.pressure >= palm_pressure_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
       pending_palm_.erase(fs.tracking_id);
@@ -291,7 +267,8 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
-  if (hwstate.timestamp < changed_time_ + kChangeTimeout) {
+
+  if (hwstate.timestamp < changed_time_ + change_timeout_) {
     current_gesture_type_ = kGestureTypeNull;
     return;
   }
@@ -309,7 +286,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
   } else if (num_gesturing == 1) {
     current_gesture_type_ = kGestureTypeMove;
   } else if (num_gesturing == 2) {
-    if (hwstate.timestamp - changed_time_ < kGestureEvaluationTimeout ||
+    if (hwstate.timestamp - changed_time_ < evaluation_timeout_ ||
         current_gesture_type_ == kGestureTypeNull) {
       const FingerState* fingers[] = {
         hwstate.GetFingerState(*gs_fingers.begin()),
@@ -340,14 +317,14 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger2) const {
   // First, make sure the pressure difference isn't too great
   float pdiff = fabsf(finger1.pressure - finger2.pressure);
-  if (pdiff > kTwoFingerPressureDiffThresh)
+  if (pdiff > two_finger_pressure_diff_thresh_)
     return false;
   float xdist = fabsf(finger1.position_x - finger2.position_x);
   float ydist = fabsf(finger1.position_x - finger2.position_x);
 
   // Next, make sure distance between fingers isn't too great
   if ((xdist * xdist + ydist * ydist) >
-      (kTwoFingersCloseDistanceThresh * kTwoFingersCloseDistanceThresh))
+      (two_finger_close_distance_thresh_ * two_finger_close_distance_thresh_))
     return false;
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,
@@ -376,22 +353,19 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   float small_dx = MinMag(dx1, dx2);
   float small_dy = MinMag(dy1, dy2);
 
-  // Thresholds
-  float scroll_thresh = kTwoFingerScrollDistThresh;
-
   if (fabsf(large_dx) > fabsf(large_dy)) {
     // consider horizontal scroll
-    if (fabsf(large_dx) < scroll_thresh)
+    if (fabsf(large_dx) < two_finger_scroll_distance_thresh_)
       return kGestureTypeNull;
-    if (fabsf(small_dx) < kScrollStationaryFingerMaxDist)
+    if (fabsf(small_dx) < scroll_stationary_finger_max_distance_)
       small_dx = 0.0;
     return ((large_dx * small_dx) >= 0.0) ?  // same direction
         kGestureTypeScroll : kGestureTypeNull;
   } else {
     // consider vertical scroll
-    if (fabsf(large_dy) < scroll_thresh)
+    if (fabsf(large_dy) < two_finger_scroll_distance_thresh_)
       return kGestureTypeNull;
-    if (fabsf(small_dy) < kScrollStationaryFingerMaxDist)
+    if (fabsf(small_dy) < scroll_stationary_finger_max_distance_)
       small_dy = 0.0;
     return ((large_dy * small_dy) >= 0.0) ?  // same direction
         kGestureTypeScroll : kGestureTypeNull;
@@ -576,7 +550,7 @@ void ImmediateInterpreter::UpdateTapState(
           *hwstate, added_fingers, removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
-          tap_record_.Moving(*hwstate, kTapMoveDist));
+          tap_record_.Moving(*hwstate, tap_move_dist_));
       if (tap_record_.TapComplete()) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcTapComplete, now);
@@ -584,7 +558,7 @@ void ImmediateInterpreter::UpdateTapState(
           *buttons_down = *buttons_up = tap_record_.TapType();
           SetTapToClickState(kTtcIdle, now);
         }
-      } else if (tap_record_.Moving(*hwstate, kTapMoveDist)) {
+      } else if (tap_record_.Moving(*hwstate, tap_move_dist_)) {
         SetTapToClickState(kTtcIdle, now);
       }
       break;
@@ -611,7 +585,7 @@ void ImmediateInterpreter::UpdateTapState(
       if (hwstate)
         tap_record_.Update(
             *hwstate, added_fingers, removed_fingers, dead_fingers);
-      if (is_timeout || tap_record_.Moving(*hwstate, kTapMoveDist)) {
+      if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcDrag, now);
         } else {
@@ -635,7 +609,7 @@ void ImmediateInterpreter::UpdateTapState(
         SetTapToClickState(kTtcDragRelease, now);
       }
       if (tap_record_.TapType() != GESTURES_BUTTON_LEFT &&
-          now - tap_to_click_state_entered_ <= kGestureEvaluationTimeout) {
+          now - tap_to_click_state_entered_ <= evaluation_timeout_) {
         // We thought we were dragging, but actually we're doing a
         // non-tap-to-click multitouch gesture.
         *buttons_up = GESTURES_BUTTON_LEFT;
@@ -672,7 +646,7 @@ void ImmediateInterpreter::UpdateTapState(
         Log("not timeout but hwstate is NULL?!");
         break;
       }
-      if (tap_record_.Moving(*hwstate, kTapMoveDist))
+      if (tap_record_.Moving(*hwstate, tap_move_dist_))
         SetTapToClickState(kTtcDrag, now);
       break;
   }
@@ -705,7 +679,7 @@ void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
 bool ImmediateInterpreter::FingerInDampenedZone(
     const FingerState& finger) const {
   // TODO(adlr): cache thresh
-  float thresh = hw_props_.bottom - kBottomZoneSize;
+  float thresh = hw_props_.bottom - bottom_zone_size_;
   return finger.position_y > thresh;
 }
 
@@ -751,7 +725,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   if (phys_down_edge) {
     button_type_ = GESTURES_BUTTON_LEFT;
     sent_button_down_ = false;
-    button_down_timeout_ = hwstate.timestamp + kButtonEvaluationTimeout;
+    button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_;
   }
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);

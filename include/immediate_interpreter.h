@@ -198,14 +198,38 @@ class ImmediateInterpreter : public Interpreter {
 
   TapRecord tap_record_;
 
-  // General time limit for tap gestures
-  stime_t tap_timeout_;
-
-  // How long it takes to stop dragging when you let go of the touchpad.
-  stime_t tap_drag_timeout_;
-
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
+
+  // Properties
+
+  // General time limit [s] for tap gestures
+  stime_t tap_timeout_;
+  // Time [s] it takes to stop dragging when you let go of the touchpad
+  stime_t tap_drag_timeout_;
+  // Distance [mm] a finger can move and still register a tap
+  double tap_move_dist_;
+  // Maximum pressure above which a finger is considered a palm
+  double palm_pressure_;
+  // Time [s] to block movement after number or identify of fingers change
+  stime_t change_timeout_;
+  // Time [s] to wait before locking on to a gesture
+  stime_t evaluation_timeout_;
+  // If two fingers have a pressure difference greater than this, we assume
+  // one is a thumb.
+  double two_finger_pressure_diff_thresh_;
+  // Maximum distance [mm] two fingers may be separated and still be eligible
+  // for a two-finger gesture (e.g., scroll / tap / click)
+  double two_finger_close_distance_thresh_;
+  // Consider scroll vs pointing if finger moves at least this distance [mm]
+  double two_finger_scroll_distance_thresh_;
+  // During a scroll one finger determines scroll speed and direction.
+  // Maximum distance [mm] the other finger can move in opposite direction
+  double scroll_stationary_finger_max_distance_;
+  // Height [mm] of the bottom zone
+  double bottom_zone_size_;
+  // Time [s] to evaluate number of fingers for a click
+  stime_t button_evaluation_timeout_;
 };
 
 }  // namespace gestures
