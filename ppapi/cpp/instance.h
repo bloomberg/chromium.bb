@@ -6,10 +6,7 @@
 #define PPAPI_CPP_INSTANCE_H_
 
 /// @file
-/// Defines the C++ wrapper for a plugin instance.
-///
-/// @addtogroup CPP
-/// @{
+/// Defines the C++ wrapper for an instance.
 
 #include <map>
 #include <string>
@@ -38,80 +35,85 @@ class Widget_Dev;
 
 class Instance {
  public:
-  /// Construction of an instance should only be done in response to a browser
-  /// request in Module::CreateInstance. Otherwise, the instance will lack the
-  /// proper bookkeeping in the browser and in the C++ wrapper.
+  /// Default constructor. Construction of an instance should only be done in
+  /// response to a browser request in <code>Module::CreateInstance</code>.
+  /// Otherwise, the instance will lack the proper bookkeeping in the browser
+  /// and in the C++ wrapper.
   ///
   /// Init() will be called immediately after the constructor. This allows you
   /// to perform initialization tasks that can fail and to report that failure
   /// to the browser.
   explicit Instance(PP_Instance instance);
 
-  /// When the instance is removed from the web page, the pp::Instance object
-  /// will be deleted. You should never delete the Instance object yourself
-  /// since the lifetime is handled by the C++ wrapper and is controlled by the
-  /// browser's calls to the PPP_Instance interface.
+  /// Destructor. When the instance is removed from the web page,
+  /// the <code>pp::Instance</code> object will be deleted. You should never
+  /// delete the <code>Instance</code> object yourself since the lifetime is
+  /// handled by the C++ wrapper and is controlled by the browser's calls to
+  /// the <code>PPP_Instance</code> interface.
   ///
-  /// The PP_Instance identifier will still be valid during this call so the
-  /// plugin can perform cleanup-related tasks. Once this function returns, the
-  /// PP_Instance handle will be invalid. This means that you can't do any
-  /// asynchronous operations like network requests or file writes from this
-  /// destructor since they will be immediately canceled.
+  /// The <code>PP_Instance</code> identifier will still be valid during this
+  /// call so the instance can perform cleanup-related tasks. Once this function
+  /// returns, the <code>PP_Instance</code> handle will be invalid. This means
+  /// that you can't do any asynchronous operations such as network requests or
+  /// file writes from this destructor since they will be immediately canceled.
   ///
-  /// <strong>Important note:</strong> This function will always be skipped on
-  /// untrusted (Native Client) implementations. This function may be skipped
-  /// in certain circumstances when Chrome does "fast shutdown". Fast shutdown
-  /// will happen in some cases when all plugin instances are being deleted,
-  /// and no cleanup functions will be called. The module will just be unloaded
-  /// and the process terminated.
+  /// <strong>Note:</strong> This function may be skipped in certain
+  /// call so the instance can perform cleanup-related tasks. Once this function
+  /// returns, the <code>PP_Instance</code> handle will be invalid. This means
+  /// that you can't do any asynchronous operations such as network requests or
+  /// file writes from this destructor since they will be immediately canceled.
   virtual ~Instance();
 
-  /// Returns the PP_Instance identifying this object. When using the PPAPI C++
-  /// wrappers this is not normally necessary, but is required when using the
-  /// lower-level C APIs.
+  /// This function returns the <code>PP_Instance</code> identifying this
+  /// object. When using the PPAPI C++ wrappers this is not normally necessary,
+  /// but is required when using the lower-level C APIs.
   PP_Instance pp_instance() const { return pp_instance_; }
 
-  /// Initializes this plugin with the given arguments. This will be called
-  /// immediately after the instance object is constructed.
+  /// Init() initializes this instance with the provided arguments. This
+  /// function will be called immediately after the instance object is
+  /// constructed.
   ///
-  /// @param[in] argc The number of arguments contained in @a argn and @a argv.
+  /// @param[in] argc The number of arguments contained in <code>argn</code>
+  /// and <code>argv</code>.
   ///
   /// @param[in] argn An array of argument names.  These argument names are
-  /// supplied in the <embed> tag, for example:
-  /// <embed id="nacl_module" dimensions="2"> will produce two argument
-  /// names: "id" and "dimensions."
+  /// supplied in the \<embed\> tag, for example:
+  /// <code>\<embed id="nacl_module" dimensions="2"\></code> will produce two
+  /// argument names: "id" and "dimensions".
   ///
   /// @param[in] argv An array of argument values.  These are the values of the
-  /// arguments listed in the <embed> tag, for example
-  /// <embed id="nacl_module" dimensions="2"> will produce two argument
-  /// values: "nacl_module" and "2".  The indices of these values match the
-  /// indices of the corresponding names in @a argn.
+  /// arguments listed in the \<embed\> tag, for example
+  /// <code>\<embed id="nacl_module" dimensions="2"\></code> will produce two
+  /// argument values: "nacl_module" and "2".  The indices of these values
+  /// match the indices of the corresponding names in <code>argn</code>.
   ///
-  /// @return True on success. Returning false causes the plugin
+  /// @return True on success. Returning false causes the instance to be
   /// instance to be deleted and no other functions to be called.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
   /// @{
-  /// @name PPP_Instance methods for the plugin to override:
+  /// @name PPP_Instance methods for the module to override:
 
-  /// Notification that the position, the size, or the clip rectangle of the
-  /// element in the browser that corresponds to this instance has changed.
+  /// DidChangeView() is called when the position, the size, or the clip
+  /// rectangle of the element in the browser that corresponds to this
+  /// instance has changed.
   ///
-  /// A typical implementation will check the size of the @a position argument
-  /// and reallocate the graphics context when a different size is received.
-  /// Note that this function will be called for scroll events where the size
-  /// doesn't change, so you should always check that the size is actually
-  /// different before doing any reallocations.
+  /// A typical implementation will check the size of the <code>position</code>
+  /// argument and reallocate the graphics context when a different size is
+  /// received. Note that this function will be called for scroll events where
+  /// the size doesn't change, so you should always check that the size is
+  /// actually different before doing any reallocations.
   ///
-  /// @param[in] position The location on the page of the instance. This is
-  /// relative to the top left corner of the viewport, which changes as the
-  /// page is scrolled. Generally the size of this value will be used to create
-  /// a graphics device, and the position is ignored (most things are relative
-  /// to the instance so the absolute position isn't useful in most cases).
+  /// @param[in] position The location on the page of the instance. The
+  /// position is relative to the top left corner of the viewport, which changes
+  /// as the page is scrolled. Generally the size of this value will be used to
+  /// create a graphics device, and the position is ignored (most things are
+  /// relative to the instance so the absolute position isn't useful in most
+  /// cases).
   ///
   /// @param[in] clip The visible region of the instance. This is relative to
-  /// the top left of the plugin's coordinate system (not the page).  If the
-  /// plugin is invisible, @a clip will be (0, 0, 0, 0).
+  /// the top left of the instance's coordinate system (not the page).  If the
+  /// instance is invisible, <code>clip</code> will be (0, 0, 0, 0).
   ///
   /// It's recommended to check for invisible instances and to stop
   /// generating graphics updates in this case to save system resources. It's
@@ -123,21 +125,21 @@ class Instance {
   /// content in the exposed regions).
   virtual void DidChangeView(const Rect& position, const Rect& clip);
 
-  /// Notification that the instance has gained or lost focus. Having focus
-  /// means that keyboard events will be sent to the instance. An instance's
-  /// default condition is that it will not have focus.
+  /// DidChangeFocus() is called when an instance has gained or lost focus.
+  /// Having focus means that keyboard events will be sent to the instance.
+  /// An instance's default condition is that it will not have focus.
   ///
-  /// Note: clicks on instances will give focus only if you handle the
-  /// click event. Return @a true from HandleInputEvent to signal that the click
-  /// event was handled. Otherwise the browser will bubble the event and give
-  /// focus to the element on the page that actually did end up consuming it.
-  /// If you're not getting focus, check to make sure you're returning true from
-  /// the mouse click in HandleInputEvent.
+  /// <strong>Note:</strong>Clicks on instances will give focus only if you
+  /// handle the click event. Return <code>true</code> from HandleInputEvent to
+  /// signal that the click event was handled. Otherwise the browser will bubble
+  /// the event and give focus to the element on the page that actually did end
+  /// up consuming it. If you're not getting focus, check to make sure you're
+  /// returning true from the mouse click in <code>HandleInputEvent</code>.
   ///
   /// @param[in] has_focus Indicates the new focused state of the instance.
   virtual void DidChangeFocus(bool has_focus);
 
-  /// Function for receiving input events from the browser. The default
+  /// HandleInputEvent() handles input events from the browser. The default
   /// implementation does nothing and returns false.
   ///
   /// In order to receive input events, you must register for them by calling
@@ -165,40 +167,43 @@ class Instance {
   /// resource during this call. Unless you take a reference to the resource
   /// to hold it for later, you don't need to release it.
   ///
-  /// \note If you're not receiving input events, make sure you register for the
-  /// event classes you want by calling RequestInputEvents or
-  /// RequestFilteringInputEvents. If you're still not receiving keyboard input
-  /// events, make sure you're returning true (or using a non-filtered event
-  /// handler) for mouse events. Otherwise, the instance will not receive focus
-  /// and keyboard events will not be sent.
+  /// <strong>Note: </strong>If you're not receiving input events, make sure
+  /// you register for the event classes you want by calling
+  /// <code>RequestInputEvents</code> or
+  /// <code>RequestFilteringInputEvents</code>. If you're still not receiving
+  /// keyboard input events, make sure you're returning true (or using a
+  /// non-filtered event handler) for mouse events. Otherwise, the instance will
+  /// not receive focus and keyboard events will not be sent.
   ///
-  /// \see RequestInputEvents and RequestFilteringInputEvents
+  /// Refer to <code>RequestInputEvents</code> and
+  /// <code>RequestFilteringInputEvents</code> for further information.
   ///
   /// @return true if the event was handled, false if not. If you have
   /// registered to filter this class of events by calling
-  /// RequestFilteringInputEvents, and you return false, the event will
-  /// be forwarded to the page (and eventually the browser) for the default
-  /// handling. For non-filtered events, the return value will be ignored.
+  /// <code>RequestFilteringInputEvents</code>, and you return false,
+  /// the event will be forwarded to the page (and eventually the browser)
+  /// for the default handling. For non-filtered events, the return value
+  /// will be ignored.
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 
-  /// Notification of a data stream available after an instance was created
-  /// based on the MIME type of a DOMWindow navigation. This only applies to
-  /// modules that are pre-registered to handle certain MIME types. If you
-  /// haven't specifically registered to handle a MIME type or aren't positive
-  /// this applies to you, you can ignore this function. The default
-  /// implementation just returns false.
+  /// HandleDocumentLoad() is called after Init() for a full-frame
+  /// instance that was instantiated based on the MIME type of a DOMWindow
+  /// navigation. This situation only applies to modules that are
+  /// pre-registered to handle certain MIME types. If you haven't specifically
+  /// registered to handle a MIME type or aren't positive this applies to you,
+  /// your implementation of this function can just return false.
   ///
-  /// The given url_loader corresponds to a URLLoader object that is
-  /// already opened. Its response headers may be queried using GetResponseInfo.
-  /// If you want to use the URLLoader to read data, you will need to save a
-  /// copy of it or the underlying resource will be freed when this function
-  /// returns and the load will be canceled.
+  /// The given url_loader corresponds to a <code>URLLoader</code> object that
+  /// is already opened. Its response headers may be queried using
+  /// GetResponseInfo(). If you want to use the <code>URLLoader</code> to read
+  /// data, you will need to save a copy of it or the underlying resource will
+  /// be freed when this function returns and the load will be canceled.
   ///
   /// This method returns false if the module cannot handle the data. In
-  /// response to this method, the module should call ReadResponseBody to read
+  /// response to this method, the module should call ReadResponseBody() to read
   /// the incoming data.
   ///
-  /// @param[in] url_loader A PP_Resource an open PPB_URLLoader instance.
+  /// @param[in] url_loader An open <code>URLLoader</code> instance.
   ///
   /// @return true if the data was handled, false otherwise.
   virtual bool HandleDocumentLoad(const URLLoader& url_loader);
@@ -256,7 +261,7 @@ class Instance {
   /// Binding a device will invalidate that portion of the web page to flush the
   /// contents of the new device to the screen.
   ///
-  /// @param[in] graphics A Graphics2D object to bind.
+  /// @param[in] graphics A <code>Graphics2D</code> to bind.
   ///
   /// @return true if bind was successful or false if the device was not the
   /// correct type. On success, a reference to the device will be held by the
@@ -277,15 +282,11 @@ class Instance {
   /// navigation or the page specifies an iframe to a resource with a MIME
   /// type registered by the module.
   ///
-  /// @return True if the instance is full-frame, false if not.
+  /// @return true if the instance is full-frame, false if not.
   bool IsFullFrame();
 
-  /// Request that input events corresponding to the given input events are
-  /// delivered to the instance.
-  ///
-  /// You can not use this function to request keyboard events
-  /// (PP_INPUTEVENT_CLASS_KEYBOARD). You must use RequestFilteringInputEvents()
-  /// for this class of input.
+  /// RequestInputEvents() requests that input events corresponding to the
+  /// given input events are delivered to the instance.
   ///
   /// By default, no input events are delivered. Call this function with the
   /// classes of events you are interested in to have them be delivered to
@@ -303,29 +304,33 @@ class Instance {
   /// the page.
   ///
   /// When requesting input events through this function, the events will be
-  /// delivered and <i>not</i> bubbled to the page. This means that even if you
-  /// aren't interested in the message, no other parts of the page will get
-  /// a crack at the message.
+  /// delivered and <em>not</em> bubbled to the page. This means that even if
+  /// you aren't interested in the message, no other parts of the page will get
+  /// the message.
   ///
-  /// Example:
+  /// <strong>Example:</strong>
+  ///
+  /// @code
   ///   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   ///   RequestFilteringInputEvents(
   ///       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
   ///
-  /// @param event_classes A combination of flags from PP_InputEvent_Class that
-  /// identifies the classes of events the instance is requesting. The flags
-  /// are combined by logically ORing their values.
+  /// @endcode
   ///
-  /// @return PP_OK if the operation succeeded, PP_ERROR_BADARGUMENT if instance
-  /// is invalid, or PP_ERROR_NOTSUPPORTED if one of the event class bits were
+  /// @param event_classes A combination of flags from
+  /// <code>PP_InputEvent_Class</code> that identifies the classes of events
+  /// the instance is requesting. The flags are combined by logically ORing
+  /// their values.
+  ///
+  /// @return <code>PP_OK</code> if the operation succeeded,
+  /// <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or
+  /// <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were
   /// illegal. In the case of an invalid bit, all valid bits will be applied
-  /// and only the illegal bits will be ignored. The most common cause of a
-  /// PP_ERROR_NOTSUPPORTED return value is requesting keyboard events, these
-  /// must use RequestFilteringInputEvents().
+  /// and only the illegal bits will be ignored.
   int32_t RequestInputEvents(uint32_t event_classes);
 
-  /// Request that input events corresponding to the given input events are
-  /// delivered to the instance for filtering.
+  /// RequestFilteringInputEvents() requests that input events corresponding
+  /// to the given input events are delivered to the instance for filtering.
   ///
   /// By default, no input events are delivered. In most cases you would
   /// register to receive events by calling RequestInputEvents(). In some cases,
@@ -341,39 +346,47 @@ class Instance {
   /// the input event, rather than sending the input event asynchronously. This
   /// can have significant overhead.
   ///
-  /// Example:
+  /// <strong>Example:</strong>
+  ///
+  /// @code
+  ///
   ///   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   ///   RequestFilteringInputEvents(
   ///       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
   ///
-  /// @return PP_OK if the operation succeeded, PP_ERROR_BADARGUMENT if instance
-  /// is invalid, or PP_ERROR_NOTSUPPORTED if one of the event class bits were
+  /// @endcode
+  ////
+  /// @return <code>PP_OK</code> if the operation succeeded,
+  /// <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or
+  /// <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were
   /// illegal. In the case of an invalid bit, all valid bits will be applied
   /// and only the illegal bits will be ignored.
   int32_t RequestFilteringInputEvents(uint32_t event_classes);
 
-  /// Request that input events corresponding to the given input classes no
-  /// longer be delivered to the instance.
+  /// ClearInputEventRequest() requests that input events corresponding to the
+  /// given input classes no longer be delivered to the instance.
   ///
   /// By default, no input events are delivered. If you have previously
-  /// requested input events via RequestInputEvents() or
+  /// requested input events using RequestInputEvents() or
   /// RequestFilteringInputEvents(), this function will unregister handling
   /// for the given instance. This will allow greater browser performance for
   /// those events.
   ///
-  /// Note that you may still get some input events after clearing the flag if
-  /// they were dispatched before the request was cleared. For example, if
-  /// there are 3 mouse move events waiting to be delivered, and you clear the
-  /// mouse event class during the processing of the first one, you'll still
-  /// receive the next two. You just won't get more events generated.
+  /// <strong>Note: </strong> You may still get some input events after
+  /// clearing the flag if they were dispatched before the request was cleared.
+  /// For example, if there are 3 mouse move events waiting to be delivered,
+  /// and you clear the mouse event class during the processing of the first
+  /// one, you'll still receive the next two. You just won't get more events
+  /// generated.
   ///
-  /// @param event_classes A combination of flags from PP_InputEvent_Class that
-  /// identifies the classes of events the instance is no longer interested in.
+  /// @param event_classes A combination of flags from
+  /// <code>PP_InputEvent_Class</code> that identifies the classes of events the
+  /// instance is no longer interested in.
   void ClearInputEventRequest(uint32_t event_classes);
 
   /// PostMessage() asynchronously invokes any listeners for message events on
   /// the DOM element for the given instance. A call to PostMessage() will
-  // /not block while the message is processed.
+  /// not block while the message is processed.
   ///
   /// @param[in] message A <code>Var</code> containing the data to be sent to
   /// JavaScript.
@@ -423,7 +436,7 @@ class Instance {
 
   /// @}
 
-  /// Associates a plugin instance with an interface,
+  /// AddPerInstanceObject() associates an instance with an interface,
   /// creating an object... {PENDING: clarify!}
   ///
   /// Many optional interfaces are associated with a plugin instance. For
@@ -470,8 +483,5 @@ class Instance {
 };
 
 }  // namespace pp
-
-/// @}
-/// End addtogroup CPP
 
 #endif  // PPAPI_CPP_INSTANCE_H_
