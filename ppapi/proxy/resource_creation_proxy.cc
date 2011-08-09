@@ -31,6 +31,7 @@
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
+#include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
@@ -293,8 +294,7 @@ PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
-  NOTIMPLEMENTED();
-  return 0;
+  return PPB_VideoCapture_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoDecoder(

@@ -80,6 +80,7 @@
 #include "ppapi/proxy/ppb_url_util_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppb_var_proxy.h"
+#include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
@@ -164,6 +165,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_URLUtil_Proxy::GetInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
   AddPPB(PPB_Var_Proxy::GetInfo());
+  AddPPB(PPB_VideoCapture_Proxy::GetInfo());
   AddPPB(PPB_VideoDecoder_Proxy::GetInfo());
 
 #ifdef ENABLE_FLAPPER_HACKS
@@ -176,6 +178,7 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_Instance_Proxy::GetInfo1_0());
   AddPPP(PPP_Messaging_Proxy::GetInfo());
+  AddPPP(PPP_VideoCapture_Proxy::GetInfo());
   AddPPP(PPP_VideoDecoder_Proxy::GetInfo());
 }
 

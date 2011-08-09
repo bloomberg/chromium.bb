@@ -113,6 +113,12 @@ struct PPBURLLoader_UpdateProgress_Params {
   int64_t total_bytes_to_be_received;
 };
 
+struct PPPVideoCapture_Buffer {
+  pp::proxy::HostResource resource;
+  uint32_t size;
+  base::SharedMemoryHandle handle;
+};
+
 #if defined(OS_WIN)
 typedef HANDLE ImageHandle;
 #elif defined(OS_MACOSX)

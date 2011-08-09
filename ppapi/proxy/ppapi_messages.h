@@ -18,6 +18,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
+#include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
@@ -69,6 +70,18 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_Picture_Dev)
   IPC_STRUCT_TRAITS_MEMBER(picture_buffer_id)
   IPC_STRUCT_TRAITS_MEMBER(bitstream_buffer_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_VideoCaptureDeviceInfo_Dev)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+  IPC_STRUCT_TRAITS_MEMBER(frames_per_second)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(pp::proxy::PPPVideoCapture_Buffer)
+  IPC_STRUCT_TRAITS_MEMBER(resource)
+  IPC_STRUCT_TRAITS_MEMBER(handle)
+  IPC_STRUCT_TRAITS_MEMBER(size)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
@@ -329,6 +342,22 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                     pp::proxy::HostResource /* loader */,
                     int32 /* result */,
                     std::string /* data */)
+
+// PPP_VideoCapture_Dev
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPPVideoCapture_OnDeviceInfo,
+    pp::proxy::HostResource /* video_capture */,
+    PP_VideoCaptureDeviceInfo_Dev /* info */,
+    std::vector<pp::proxy::PPPVideoCapture_Buffer> /* buffers */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnStatus,
+                    pp::proxy::HostResource /* video_capture */,
+                    uint32_t /* status */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnError,
+                    pp::proxy::HostResource /* video_capture */,
+                    uint32_t /* error_code */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnBufferReady,
+                    pp::proxy::HostResource /* video_capture */,
+                    uint32_t /* buffer */)
 
 // PPB_VideoDecoder_Dev.
 // (Messages from renderer to plugin to notify it to run callbacks.)
@@ -945,6 +974,21 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
                            pp::proxy::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
                            pp::proxy::ImageHandle /* result */)
+
+// PPB_VideoCapture_Dev.
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVideoCapture_Create,
+                           PP_Instance /* instance */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBVideoCapture_StartCapture,
+                    pp::proxy::HostResource /* video_capture */,
+                    PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
+                    uint32_t /* buffer_count */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoCapture_ReuseBuffer,
+                    pp::proxy::HostResource /* video_capture */,
+                    uint32_t /* buffer */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StopCapture,
+                    pp::proxy::HostResource /* video_capture */)
+
 // PPB_VideoDecoder.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVideoDecoder_Create,
                            PP_Instance /* instance */,

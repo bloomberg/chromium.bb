@@ -34,6 +34,7 @@
   F(URLLoader) \
   F(URLRequestInfo) \
   F(URLResponseInfo) \
+  F(VideoCapture) \
   F(VideoDecoder)
 
 namespace pp {

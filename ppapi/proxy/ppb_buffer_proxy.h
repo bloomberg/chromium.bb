@@ -56,6 +56,9 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          uint32_t size);
+  static PP_Resource AddProxyResource(const HostResource& resource,
+                                      base::SharedMemoryHandle shm_handle,
+                                      uint32_t size);
 
   const PPB_Buffer_Dev* ppb_buffer_target() const {
     return static_cast<const PPB_Buffer_Dev*>(target_interface());

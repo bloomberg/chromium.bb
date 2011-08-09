@@ -108,7 +108,15 @@ PP_Resource PPB_Buffer_Proxy::CreateProxyResource(PP_Instance instance,
   if (result.is_null() || !base::SharedMemory::IsHandleValid(shm_handle))
     return 0;
 
-  linked_ptr<Buffer> object(new Buffer(result, shm_handle, size));
+  return AddProxyResource(result, shm_handle, size);
+}
+
+// static
+PP_Resource PPB_Buffer_Proxy::AddProxyResource(
+    const HostResource& resource,
+    base::SharedMemoryHandle shm_handle,
+    uint32_t size) {
+  linked_ptr<Buffer> object(new Buffer(resource, shm_handle, size));
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
