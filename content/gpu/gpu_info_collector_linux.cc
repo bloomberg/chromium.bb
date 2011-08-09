@@ -18,6 +18,7 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace {
@@ -210,6 +211,11 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
 bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
+    return false;
+  }
 
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
