@@ -50,25 +50,36 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequest) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(RunExtensionTest("webrequest/api")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_api.html")) << message_;
 }
 
-// http://crbug.com/91715
-#if defined(OS_MACOSX)
-#define MAYBE_WebRequestEvents DISABLED_WebRequestEvents
-#else
-#define MAYBE_WebRequestEvents WebRequestEvents
-#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestSimple) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestEvents) {
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_simple.html")) <<
+      message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
     switches::kEnableExperimentalExtensionApis);
 
+  // Needed for the auth tests.
   CancelLoginDialog login_dialog_helper;
 
-  ASSERT_TRUE(RunExtensionTest("webrequest/events")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_complex.html")) <<
+    message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_blocking.html")) <<
+      message_;
 }

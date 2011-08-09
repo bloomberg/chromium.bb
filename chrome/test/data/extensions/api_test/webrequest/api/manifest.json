@@ -1,7 +1,0 @@
-{
-  "name": "api",
-  "version": "1.0",
-  "description": "Tests that the webRequest API exists.",
-  "permissions": ["experimental"],
-  "background_page": "test.html"
-}
