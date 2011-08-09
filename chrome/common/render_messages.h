@@ -211,16 +211,6 @@ IPC_MESSAGE_CONTROL2(ViewMsg_SetFieldTrialGroup,
 #if defined(USE_TCMALLOC)
 // Asks the renderer to send back tcmalloc stats.
 IPC_MESSAGE_CONTROL0(ViewMsg_GetRendererTcmalloc)
-// Asks the renderer to enable/disable Tcmalloc heap profiling.
-// Note: filename_prefix arg is effectively ignored since the render process
-// will be unable to write files to disk. Instead use WriteTcmallocHeapProfile
-// to write a profile file.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetTcmallocHeapProfiling,
-                     bool /* enable profiling */,
-                     std::string /* filename prefix for profiles */)
-// Asks the renderer to write the Tcmalloc heap profile to a file.
-IPC_MESSAGE_CONTROL1(ViewMsg_WriteTcmallocHeapProfile,
-                     FilePath::StringType /* filepath */)
 #endif
 
 // Asks the renderer to send back V8 heap stats.
@@ -424,12 +414,9 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererHistograms,
 
 #if defined USE_TCMALLOC
 // Send back tcmalloc stats output.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_RendererTcmalloc,
+IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererTcmalloc,
+                     int          /* pid */,
                      std::string  /* tcmalloc debug output */)
-// Send back tcmalloc profile to write to a file.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_WriteTcmallocHeapProfile_ACK,
-                     FilePath::StringType  /* filepath */,
-                     std::string  /* heap profile */)
 #endif
 
 // Sends back stats about the V8 heap.

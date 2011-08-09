@@ -43,9 +43,6 @@ class MemoryMenuButton : public StatusAreaButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // Execute command id for each renderer. Used for heap profiling.
-  void SendCommandToRenderers(int id);
-
   // Create and initialize menu if not already present.
   void EnsureMenu();
 
