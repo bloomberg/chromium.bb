@@ -878,6 +878,7 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     binhost_bucket = self._build_config['binhost_bucket']
     binhost_key = self._build_config['binhost_key']
     binhost_base_url = self._build_config['binhost_base_url']
+    use_binhost_package_file = self._build_config['use_binhost_package_file']
     git_sync = self._build_config['git_sync']
     binhosts = []
     extra_args = []
@@ -907,7 +908,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
                   self._build_root, builder_board, overlay_config,
                   self._prebuilt_type, self._chrome_rev,
                   self._options.buildnumber, binhost_bucket, binhost_key,
-                  binhost_base_url, git_sync, extra_args + ['--skip-upload'])
+                  binhost_base_url, use_binhost_package_file, git_sync,
+                  extra_args + ['--skip-upload'])
 
         # Master pfq should upload host preflight prebuilts.
         if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
@@ -928,7 +930,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     commands.UploadPrebuilts(
         self._build_root, board, overlay_config, prebuilt_type,
         self._chrome_rev, self._options.buildnumber,
-        binhost_bucket, binhost_key, binhost_base_url, git_sync, extra_args)
+        binhost_bucket, binhost_key, binhost_base_url,
+        use_binhost_package_file, git_sync, extra_args)
 
 
 class PublishUprevChangesStage(NonHaltingBuilderStage):

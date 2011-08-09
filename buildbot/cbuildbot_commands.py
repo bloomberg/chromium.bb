@@ -6,6 +6,7 @@
 
 import constants
 import os
+import re
 import shutil
 
 from chromite.buildbot import repository
@@ -24,7 +25,7 @@ _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
 _GSUTIL_PATH = '/b/scripts/slave/gsutil'
 _GS_GEN_INDEX = '/b/scripts/gsd_generate_index/gsd_generate_index.py'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
-
+_BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 
 # =========================== Command Helpers =================================
 
@@ -472,11 +473,46 @@ def UprevPush(buildroot, board, overlays, dryrun):
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
+def AddPackagesForPrebuilt(filename):
+  """Add list of packages for upload.
+
+  Process a file that lists all the packages that can be uploaded to the
+  package prebuilt bucket and generates the command line args for prebuilt.py.
+
+  Args:
+    filename: file with the package full name (category/name-version), one
+              package per line.
+
+  Returns:
+    A list of parameters for prebuilt.py. For example:
+    ['--packages=net-misc/dhcp', '--packages=app-admin/eselect-python']
+  """
+  try:
+    cmd = []
+    package_file = open( filename, 'r')
+    # Get only the package name and category. For example, given
+    # "app-arch/xz-utils-4.999.9_beta" get "app-arch/xz-utils".
+    reg_ex = re.compile('\w+[-]*\w+/\w+[-]*[a-zA-Z]+')
+    for line in package_file:
+      match = reg_ex.match(line)
+      if match is not None:
+        package_name = match.group()
+        cmd.extend(['--packages=' + package_name])
+    package_file.close()
+    return cmd
+  except IOError as (errno, strerror):
+    cros_lib.Warning('Problem with package file %s' % filename)
+    cros_lib.Warning('Skipping uploading of prebuilts.')
+    cros_lib.Warning('ERROR(%d): %s' % (errno, strerror) )
+    return None
+
+
 def UploadPrebuilts(buildroot, board, overlay_config, category,
                     chrome_rev, buildnumber,
                     binhost_bucket=None,
                     binhost_key=None,
                     binhost_base_url=None,
+                    use_binhost_package_file=False,
                     git_sync=False,
                     extra_args=[]):
   """Upload prebuilts.
@@ -498,6 +534,9 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     binhost_base_url: base url for prebuilt.py. If None the parameter
                       --binhost-base-url is absent.
     git_sync: boolean that enables --git-sync prebuilt.py parameter.
+    use_binhost_package_file: use the File that contains the packages to upload
+                              to the binhost. If it equals False then all
+                              packages are selected.
     extra_args: Extra args to send to prebuilt.py.
   """
   cwd = os.path.dirname(__file__)
@@ -507,6 +546,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
 
   if binhost_base_url is not None:
     cmd.extend(['--binhost-base-url', binhost_base_url])
+
   if binhost_bucket is not None:
     cmd.extend(['--upload', binhost_bucket])
   elif overlay_config == 'public':
@@ -517,6 +557,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     upload_bucket = 'gs://%s/%s/%d/prebuilts/' % (bucket_board, category,
                     buildnumber)
     cmd.extend(['--upload', upload_bucket])
+
   if overlay_config in ('private', 'both'):
     cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
 
@@ -542,6 +583,16 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
 
   if category == constants.CHROME_PFQ_TYPE:
     cmd.extend(['--packages=chromeos-chrome'])
+
+  if use_binhost_package_file:
+    filename = os.path.join(buildroot, 'chroot', 'build', board,
+                            _BINHOST_PACKAGE_FILE.lstrip('/'))
+    cmd_packages = AddPackagesForPrebuilt(filename)
+    if cmd_packages:
+      cmd.extend(cmd_packages)
+    else:
+      # If there is any problem with the packages file do not upload anything.
+      return
 
   if git_sync:
     cmd.extend(['--git-sync'])

@@ -1020,6 +1020,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
         self.build_config['binhost_bucket'],
         self.build_config['binhost_key'],
         self.build_config['binhost_base_url'],
+        self.build_config['use_binhost_package_file'],
         self.build_config['git_sync'],
         mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 
@@ -1041,6 +1042,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
         self.build_config['binhost_bucket'],
         self.build_config['binhost_key'],
         self.build_config['binhost_base_url'],
+        self.build_config['use_binhost_package_file'],
         self.build_config['git_sync'],
         mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 

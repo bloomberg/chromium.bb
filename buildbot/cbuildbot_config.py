@@ -100,6 +100,8 @@ binhost_key -- Parameter --key for prebuilt.py. If it equals None the default
                values are used, which depend on the build type.
 binhost_base_url -- Parameter --binhost-base-url for prebuilt.py. If it equals
                     None default value is used.
+use_binhost_package_file -- Flag that is used to decide whether to use the
+                            file with the packages to upload to the binhost.
 git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
 """
 
@@ -191,6 +193,7 @@ default = {
   'binhost_bucket' : None,
   'binhost_key' : None,
   'binhost_base_url' : None,
+  'use_binhost_package_file' : False,
   'git_sync' : False,
 }
 
@@ -573,6 +576,14 @@ add_config('arm-tegra2_seaboard-tangent-private-bin',
 
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
+  # TODO(arkaitzr): move these options to 'release' once they have been tested.
+  'overlays' : 'public',
+  'prebuilts' : True,
+  'binhost_bucket' : 'gs://chromeos-dev-installer',
+  'binhost_key' : 'RELEASE_BINHOST',
+  'binhost_base_url' : 'http://commondatastorage.googleapis.com/chromeos-dev-installer',
+  'use_binhost_package_file' : True,
+  'git_sync' : False,
 }])
 
 add_config('x86-alex-release', [internal, full, official, release, {
@@ -613,13 +624,4 @@ add_config('arm-tegra2_arthur-release', [
 add_config('arm-tegra2_kaen-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_kaen',
-}])
-add_config('x86-mario-binhost', [internal, full, official, release, {
-  'board' : 'x86-mario',
-  # TODO(arkaitzr): move these options to 'release' once they have been tested.
-  'prebuilts' : True,
-  'binhost_bucket' : 'gs://chromeos-dev-installer',
-  'binhost_key' : 'RELEASE_BINHOST',
-  'binhost_base_url' : 'http://commondatastorage.googleapis.com/chromeos-dev-installer',
-  'git_sync' : False,
 }])
