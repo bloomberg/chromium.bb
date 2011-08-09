@@ -701,10 +701,6 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   web_app->is_bookmark_app = true;
   web_app->title = title;
   web_app->app_url = launch_url;
-  WebApplicationInfo::IconInfo icon;
-  icon.url = GURL();
-  icon.width = icon.height = 16;
-  web_app->icons.push_back(icon);
 
   Profile* profile = web_ui_->GetProfile();
   FaviconService* favicon_service =
@@ -741,13 +737,16 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
                                          history::FaviconData data) {
   scoped_ptr<WebApplicationInfo> web_app(
       favicon_consumer_.GetClientDataForCurrentRequest());
-  CHECK(!web_app->icons.empty());
+  WebApplicationInfo::IconInfo icon;
+  web_app->icons.push_back(icon);
   if (data.is_valid() && gfx::PNGCodec::Decode(data.image_data->front(),
                                                data.image_data->size(),
                                                &(web_app->icons[0].data))) {
     web_app->icons[0].url = GURL();
     web_app->icons[0].width = web_app->icons[0].data.width();
     web_app->icons[0].height = web_app->icons[0].data.height();
+  } else {
+    web_app->icons.clear();
   }
 
   scoped_refptr<CrxInstaller> installer(
