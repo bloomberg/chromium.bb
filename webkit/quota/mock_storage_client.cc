@@ -84,6 +84,15 @@ void MockStorageClient::ModifyOriginAndNotify(
       id(), origin_url, type, delta, IncrementMockTime());
 }
 
+void MockStorageClient::TouchAllOriginsAndNotify() {
+  for (OriginDataMap::const_iterator itr = origin_data_.begin();
+       itr != origin_data_.end();
+       ++itr) {
+    quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
+        id(), itr->first.first, itr->first.second, 0, IncrementMockTime());
+  }
+}
+
 void MockStorageClient::AddOriginToErrorSet(
     const GURL& origin_url, StorageType type) {
   error_origins_.insert(make_pair(origin_url, type));

@@ -41,6 +41,13 @@ static const char kKeyModified[] = "modified";
 static const char kKeyPersistent[] = "persistent";
 static const char kKeyTemporary[] = "temporary";
 
+static const char kKeyTotalUsage[] = "totalUsage";
+static const char kKeyTemporaryUsage[] = "temporaryUsage";
+static const char kKeyPersistentUsage[] = "persistentUsage";
+static const char kKeyPersistentQuota[] = "persistentQuota";
+
+static const int64 kNegligibleUsage = 1024;  // 1KiB
+
 // Encodes a pointer value into a hex string.
 std::string PointerToHexString(const void* pointer) {
   return base::HexEncode(&pointer, sizeof(pointer));
@@ -65,7 +72,7 @@ std::string GetTreeNodeId(CookieTreeNode* node) {
   return PointerToHexString(node);
 }
 
-void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
+bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                                  DictionaryValue* dict) {
   // Use node's address as an id for WebUI to look it up.
   dict->SetString(kKeyId, PointerToHexString(&node));
@@ -190,12 +197,36 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       break;
     }
+    case CookieTreeNode::DetailedInfo::TYPE_QUOTA: {
+      dict->SetString(kKeyType, "quota");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
+
+      const BrowsingDataQuotaHelper::QuotaInfo& quota_info =
+          *node.GetDetailedInfo().quota_info;
+      if (quota_info.temporary_usage + quota_info.persistent_usage <=
+          kNegligibleUsage)
+        return false;
+
+      dict->SetString(kKeyOrigin, quota_info.host);
+      dict->SetString(kKeyTotalUsage,
+                      UTF16ToUTF8(ui::FormatBytes(
+                          quota_info.temporary_usage +
+                          quota_info.persistent_usage)));
+      dict->SetString(kKeyTemporaryUsage,
+                      UTF16ToUTF8(ui::FormatBytes(
+                          quota_info.temporary_usage)));
+      dict->SetString(kKeyPersistentUsage,
+                      UTF16ToUTF8(ui::FormatBytes(
+                          quota_info.persistent_usage)));
+      break;
+    }
     default:
 #if defined(OS_MACOSX)
       dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
 #endif
       break;
   }
+  return true;
 }
 
 void GetChildNodeList(CookieTreeNode* parent, int start, int count,
@@ -203,8 +234,10 @@ void GetChildNodeList(CookieTreeNode* parent, int start, int count,
   for (int i = 0; i < count; ++i) {
     DictionaryValue* dict = new DictionaryValue;
     CookieTreeNode* child = parent->GetChild(start + i);
-    GetCookieTreeNodeDictionary(*child, dict);
-    nodes->Append(dict);
+    if (GetCookieTreeNodeDictionary(*child, dict))
+      nodes->Append(dict);
+    else
+      delete dict;
   }
 }
 
