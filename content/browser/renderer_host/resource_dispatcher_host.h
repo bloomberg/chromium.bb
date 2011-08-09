@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/child_process_info.h"
@@ -40,6 +41,7 @@ class ResourceHandler;
 class ResourceMessageFilter;
 class SaveFileManager;
 class SSLClientAuthHandler;
+class TabContents;
 class WebKitThread;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
@@ -200,6 +202,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                                int bytes_read) OVERRIDE;
 
   void OnResponseCompleted(net::URLRequest* request);
+
+  void OnUserGesture(TabContents* tab);
 
   // Helper functions to get the dispatcher's request info for the request.
   // If the dispatcher didn't create the request then NULL is returned.
@@ -501,6 +505,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   //   (max_outstanding_requests_cost_per_process_ /
   //       kAvgBytesPerOutstandingRequest)
   int max_outstanding_requests_cost_per_process_;
+
+  // Time of the last user gesture. Stored so that we can add a load
+  // flag to requests occurring soon after a gesture to indicate they
+  // may be because of explicit user action.
+  base::TimeTicks last_user_gesture_time_;
 
   // Used during IPC message dispatching so that the handlers can get a pointer
   // to the source of the message.

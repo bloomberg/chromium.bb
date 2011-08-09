@@ -1742,7 +1742,7 @@ void TabContents::OnUserGesture() {
   ResourceDispatcherHost* rdh =
       content::GetContentClient()->browser()->GetResourceDispatcherHost();
   if (rdh)  // NULL in unittests.
-    rdh->download_request_limiter()->OnUserGesture(this);
+    rdh->OnUserGesture(this);
 }
 
 void TabContents::OnIgnoredUIEvent() {

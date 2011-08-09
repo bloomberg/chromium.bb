@@ -18,7 +18,6 @@
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
-#include "base/time.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -115,6 +114,14 @@ const int kMaxPendingDataMessages = 20;
 // See delcaration of |max_outstanding_requests_cost_per_process_| for details.
 // This bound is 25MB, which allows for around 6000 outstanding requests.
 const int kMaxOutstandingRequestsCostPerProcess = 26214400;
+
+// The number of milliseconds after noting a user gesture that we will
+// tag newly-created URLRequest objects with the
+// net::LOAD_MAYBE_USER_GESTURE load flag. This is a fairly arbitrary
+// guess at how long to expect direct impact from a user gesture, but
+// this should be OK as the load flag is a best-effort thing only,
+// rather than being intended as fully accurate.
+const int kUserGestureWindowMs = 3500;
 
 // All possible error codes from the network module. Note that the error codes
 // are all positive (since histograms expect positive sample values).
@@ -1409,6 +1416,12 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
   DCHECK(!request->is_pending());
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
+  if ((TimeTicks::Now() - last_user_gesture_time_) <
+      TimeDelta::FromMilliseconds(kUserGestureWindowMs)) {
+    request->set_load_flags(
+        request->load_flags() | net::LOAD_MAYBE_USER_GESTURE);
+  }
+
   // Add the memory estimate that starting this request will consume.
   info->set_memory_cost(CalculateApproximateMemoryCost(request));
   int memory_cost = IncrementOutstandingRequestsMemoryCost(info->memory_cost(),
@@ -1672,6 +1685,12 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   }
   // If the handler's OnResponseCompleted returns false, we are deferring the
   // call until later.  We will notify the world and clean up when we resume.
+}
+
+void ResourceDispatcherHost::OnUserGesture(TabContents* tab) {
+  download_request_limiter()->OnUserGesture(tab);
+
+  last_user_gesture_time_ = TimeTicks::Now();
 }
 
 // static
