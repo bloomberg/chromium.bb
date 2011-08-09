@@ -65,7 +65,6 @@ extern const FilePath::CharType kThumbnailsFilename[];
 extern const FilePath::CharType kNewTabThumbnailsFilename[];
 extern const FilePath::CharType kTopSitesFilename[];
 extern const wchar_t kUserDataDirname[];
-extern const FilePath::CharType kUserScriptsDirname[];
 extern const FilePath::CharType kWebDataFilename[];
 extern const FilePath::CharType kBookmarksFileName[];
 extern const FilePath::CharType kHistoryBookmarksFileName[];

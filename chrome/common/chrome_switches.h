@@ -276,7 +276,6 @@ extern const char kIgnoreCertificateErrors[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
-extern const char kUserScriptsDir[];
 extern const char kVersion[];
 extern const char kWinHttpProxyResolver[];
 

@@ -1016,9 +1016,6 @@ const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 // for all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
-// directory to locate user scripts in as an over-ride of the default
-const char kUserScriptsDir[]                = "user-scripts-dir";
-
 // Print version information and quit.
 const char kVersion[]                       = "version";
 
