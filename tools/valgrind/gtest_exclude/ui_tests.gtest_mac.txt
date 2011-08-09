@@ -106,6 +106,7 @@ AutomationProxyTest.GetBrowserWindow
 AutomationProxyTest.GetBrowserWindowCount
 AutomationProxyTest.GetCurrentURL
 AutomationProxyTest.GoBackForward
+AutomationProxyTest.NavigateToURLAsync
 AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest2.GetTabTitle
 AutomationProxyTest4.NumberValueIsEchoedByDomAutomationController
@@ -113,6 +114,7 @@ AutomationProxyTest4.StringValueIsEchoedByDomAutomationController
 AutomatedUITestBase.OpenNewTab
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
 DOMStorageTest.EventLayoutTests
+DOMStorageTest.SessionStorageLayoutTests
 ErrorPageTest.IFrameDNSError_Basic
 ExtensionProxyUITest.EnableDisable
 HistoryTester.ConsiderSlowRedirectAsUserInitiated
@@ -127,6 +129,7 @@ OutOfProcessPPAPITest.Core
 OutOfProcessPPAPITest.Memory
 OutOfProcessPPAPITest.PaintAggregator
 OutOfProcessPPAPITest.URLUtil
+OutOfProcessPPAPITest.VideoDecoder
 PPAPITest.Buffer
 PPAPITest.CharSet
 PPAPITest.FileIO
@@ -294,3 +297,7 @@ SessionHistoryTest.BasicBackForward
 
 # http://crbug.com/91163
 AutomatedUITestBase.OpenCloseBrowserWindowWithAccelerator
+
+# http://crbug.com/92177
+CustomHandlerMailStartupTest.CustomHandlerMailStartup
+CustomHandlerWebcalStartupTest.CustomHandlerWebcalStartup
