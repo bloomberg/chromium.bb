@@ -78,6 +78,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_NO_RIGHT_CLICK = 32768,  // Linux
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
     PLUGIN_QUIRK_REPARENT_IN_BROWSER = 131072,  // Windows
+    PLUGIN_QUIRK_PATCH_GETKEYSTATE = 262144,  // Windows
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -374,6 +375,9 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // SetCursor interceptor for windowless plugins.
   static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
+
+  // GetKeyStatePatch interceptor for UIPI Flash plugin.
+  static SHORT WINAPI GetKeyStatePatch(int vkey);
 
   // RegEnumKeyExW interceptor.
   static LONG WINAPI RegEnumKeyExWPatch(

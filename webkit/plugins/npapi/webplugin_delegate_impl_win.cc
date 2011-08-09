@@ -86,6 +86,39 @@ base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_set_cursor(
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
     base::LINKER_INITIALIZED);
 
+// Helper object for patching the GetKeyState API.
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_key_state(
+    base::LINKER_INITIALIZED);
+
+// Saved key state globals and helper access functions.
+SHORT (WINAPI *g_iat_orig_get_key_state)(int vkey);
+typedef size_t SavedStateType;
+const size_t kBitsPerType = sizeof(SavedStateType) * 8;
+// Bit array of key state corresponding to virtual key index (0=up, 1=down).
+SavedStateType g_saved_key_state[256 / kBitsPerType];
+
+bool GetSavedKeyState(WPARAM vkey) {
+  CHECK_LT(vkey, kBitsPerType * sizeof(g_saved_key_state));
+  if (g_saved_key_state[vkey / kBitsPerType] & 1 << (vkey % kBitsPerType))
+    return true;
+  return false;
+}
+
+void SetSavedKeyState(WPARAM vkey) {
+  CHECK_LT(vkey, kBitsPerType * sizeof(g_saved_key_state));
+  g_saved_key_state[vkey / kBitsPerType] |= 1 << (vkey % kBitsPerType);
+}
+
+void UnsetSavedKeyState(WPARAM vkey) {
+  CHECK_LT(vkey, kBitsPerType * sizeof(g_saved_key_state));
+  g_saved_key_state[vkey / kBitsPerType] &= ~(1 << (vkey % kBitsPerType));
+}
+
+void ClearSavedKeyState() {
+  memset(g_saved_key_state, 0, sizeof(g_saved_key_state));
+}
+
+
 // http://crbug.com/16114
 // Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
 // is never called with NPNWindoTypeDrawable and NPWindow set to NULL.
@@ -257,6 +290,15 @@ LRESULT CALLBACK WebPluginDelegateImpl::MouseHookProc(
   return CallNextHookEx(NULL, code, wParam, lParam);
 }
 
+// In addition to the key state we maintain, we also mask in the original
+// return value. This is done because system keys (e.g. tab, enter, shift)
+// and toggles (e.g. capslock, numlock) don't ever seem to be blocked.
+SHORT WINAPI WebPluginDelegateImpl::GetKeyStatePatch(int vkey) {
+  if (GetSavedKeyState(vkey))
+    return g_iat_orig_get_key_state(vkey) | 0x8000;
+  return g_iat_orig_get_key_state(vkey);
+}
+
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     PluginInstance *instance)
@@ -299,8 +341,11 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
     quirks_ |= PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS;
     quirks_ |= PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE;
-    if (filename == kBuiltinFlashPlugin)
-      quirks_ |= PLUGIN_QUIRK_REPARENT_IN_BROWSER;
+    if (filename == kBuiltinFlashPlugin &&
+        base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      quirks_ |= PLUGIN_QUIRK_REPARENT_IN_BROWSER |
+                 PLUGIN_QUIRK_PATCH_GETKEYSTATE;
+    }
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     int major_version = GetPluginMajorVersion(plugin_info);
@@ -439,6 +484,17 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Patch(
         L"wmpdxm.dll", "advapi32.dll", "RegEnumKeyExW",
         WebPluginDelegateImpl::RegEnumKeyExWPatch);
+  }
+
+  // Under UIPI the key state does not get forwarded properly to the child
+  // plugin window. So, instead we track the key state manually and intercept
+  // GetKeyState.
+  if ((quirks_ & PLUGIN_QUIRK_PATCH_GETKEYSTATE) &&
+      !g_iat_patch_get_key_state.Pointer()->is_patched()) {
+    g_iat_orig_get_key_state = ::GetKeyState;
+    g_iat_patch_get_key_state.Pointer()->Patch(
+        L"gcswf32.dll", "user32.dll", "GetKeyState",
+        WebPluginDelegateImpl::GetKeyStatePatch);
   }
 
   return true;
@@ -939,6 +995,31 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     WebPluginDelegateImpl::ThrottleMessage(delegate->plugin_wnd_proc_, hwnd,
                                            message, wparam, lparam);
     return FALSE;
+  }
+
+  // Track the keystate to work around a UIPI issue.
+  if (delegate->GetQuirks() & PLUGIN_QUIRK_PATCH_GETKEYSTATE) {
+    switch (message) {
+      case WM_KEYDOWN:
+        SetSavedKeyState(wparam);
+        break;
+
+      case WM_KEYUP:
+        UnsetSavedKeyState(wparam);
+        break;
+
+      // Clear out the saved keystate whenever the Flash thread loses focus.
+      case WM_KILLFOCUS:
+      case WM_SETFOCUS:
+        if (::GetCurrentThreadId() != ::GetWindowThreadProcessId(
+            reinterpret_cast<HWND>(wparam), NULL)) {
+          ClearSavedKeyState();
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   LRESULT result;
