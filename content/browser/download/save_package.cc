@@ -364,21 +364,9 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
                                    bool need_html_ext,
                                    FilePath::StringType* generated_name) {
   // TODO(jungshik): Figure out the referrer charset when having one
-  // makes sense and pass it to GetSuggestedFilename.
-  string16 suggested_name =
-      net::GetSuggestedFilename(url, disposition, "", "",
-                                ASCIIToUTF16(kDefaultSaveName));
-
-  // TODO(evan): this code is totally wrong -- we should just generate
-  // Unicode filenames and do all this encoding switching at the end.
-  // However, I'm just shuffling wrong code around, at least not adding
-  // to it.
-#if defined(OS_WIN)
-  FilePath file_path = FilePath(suggested_name);
-#else
-  FilePath file_path = FilePath(
-      base::SysWideToNativeMB(UTF16ToWide(suggested_name)));
-#endif
+  // makes sense and pass it to GenerateFileName.
+  FilePath file_path = net::GenerateFileName(url, disposition, "", "", "",
+                                             ASCIIToUTF16(kDefaultSaveName));
 
   DCHECK(!file_path.empty());
   FilePath::StringType pure_file_name =
@@ -1233,8 +1221,10 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
                                SavePackageType type) {
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
-  download_util::GenerateSafeFileName(tab_contents()->contents_mime_type(),
-                                      &saved_main_file_path_);
+  // TODO(asanka): This call may block on IO and shouldn't be made
+  // from the UI thread.  See http://crbug.com/61827.
+  net::GenerateSafeFileName(tab_contents()->contents_mime_type(),
+                            &saved_main_file_path_);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
   save_type_ = type;

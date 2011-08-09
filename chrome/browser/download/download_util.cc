@@ -99,103 +99,18 @@ static const int kMaxUniqueFiles = 100;
 
 namespace {
 
-#if defined(OS_WIN)
-// Returns whether the specified extension is automatically integrated into the
-// windows shell.
-bool IsShellIntegratedExtension(const string16& extension) {
-  string16 extension_lower = StringToLowerASCII(extension);
-
-  static const wchar_t* const integrated_extensions[] = {
-    // See <http://msdn.microsoft.com/en-us/library/ms811694.aspx>.
-    L"local",
-    // Right-clicking on shortcuts can be magical.
-    L"lnk",
-  };
-
-  for (int i = 0; i < arraysize(integrated_extensions); ++i) {
-    if (extension_lower == integrated_extensions[i])
-      return true;
-  }
-
-  // See <http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html>.
-  // That vulnerability report is not exactly on point, but files become magical
-  // if their end in a CLSID.  Here we block extensions that look like CLSIDs.
-  if (!extension_lower.empty() && extension_lower[0] == L'{' &&
-      extension_lower[extension_lower.length() - 1] == L'}')
-    return true;
-
-  return false;
-}
-
-// Returns whether the specified file name is a reserved name on windows.
-// This includes names like "com2.zip" (which correspond to devices) and
-// desktop.ini and thumbs.db which have special meaning to the windows shell.
-bool IsReservedName(const string16& filename) {
-  // This list is taken from the MSDN article "Naming a file"
-  // http://msdn2.microsoft.com/en-us/library/aa365247(VS.85).aspx
-  // I also added clock$ because GetSaveFileName seems to consider it as a
-  // reserved name too.
-  static const wchar_t* const known_devices[] = {
-    L"con", L"prn", L"aux", L"nul", L"com1", L"com2", L"com3", L"com4", L"com5",
-    L"com6", L"com7", L"com8", L"com9", L"lpt1", L"lpt2", L"lpt3", L"lpt4",
-    L"lpt5", L"lpt6", L"lpt7", L"lpt8", L"lpt9", L"clock$"
-  };
-  string16 filename_lower = StringToLowerASCII(filename);
-
-  for (int i = 0; i < arraysize(known_devices); ++i) {
-    // Exact match.
-    if (filename_lower == known_devices[i])
-      return true;
-    // Starts with "DEVICE.".
-    if (filename_lower.find(string16(known_devices[i]) + L".") == 0)
-      return true;
-  }
-
-  static const wchar_t* const magic_names[] = {
-    // These file names are used by the "Customize folder" feature of the shell.
-    L"desktop.ini",
-    L"thumbs.db",
-  };
-
-  for (int i = 0; i < arraysize(magic_names); ++i) {
-    if (filename_lower == magic_names[i])
-      return true;
-  }
-
-  return false;
-}
-#endif  // OS_WIN
-
 void GenerateFileNameInternal(const GURL& url,
                               const std::string& content_disposition,
                               const std::string& referrer_charset,
                               const std::string& suggested_name,
                               const std::string& mime_type,
                               FilePath* generated_name) {
-
   string16 default_file_name(
       l10n_util::GetStringUTF16(IDS_DEFAULT_DOWNLOAD_FILENAME));
 
-  string16 new_name = net::GetSuggestedFilename(GURL(url),
-                                                content_disposition,
-                                                referrer_charset,
-                                                suggested_name,
-                                                default_file_name);
-
-  // TODO(evan): this code is totally wrong -- we should just generate
-  // Unicode filenames and do all this encoding switching at the end.
-  // However, I'm just shuffling wrong code around, at least not adding
-  // to it.
-#if defined(OS_WIN)
-  *generated_name = FilePath(new_name);
-#else
-  *generated_name = FilePath(
-      base::SysWideToNativeMB(UTF16ToWide(new_name)));
-#endif
-
-  DCHECK(!generated_name->empty());
-
-  GenerateSafeFileName(mime_type, generated_name);
+  *generated_name = net::GenerateFileName(url, content_disposition,
+                                          referrer_charset, suggested_name,
+                                          mime_type, default_file_name);
 }
 
 // All possible error codes from the network module. Note that the error codes
@@ -251,43 +166,6 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
   return (download_path == desktop_dir);
 }
 
-void GenerateExtension(const FilePath& file_name,
-                       const std::string& mime_type,
-                       FilePath::StringType* generated_extension) {
-  // We're worried about two things here:
-  //
-  // 1) Usability.  If the site fails to provide a file extension, we want to
-  //    guess a reasonable file extension based on the content type.
-  //
-  // 2) Shell integration.  Some file extensions automatically integrate with
-  //    the shell.  We block these extensions to prevent a malicious web site
-  //    from integrating with the user's shell.
-
-  // See if our file name already contains an extension.
-  FilePath::StringType extension = file_name.Extension();
-  if (!extension.empty())
-    extension.erase(extension.begin());  // Erase preceding '.'.
-
-#if defined(OS_WIN)
-  static const FilePath::CharType default_extension[] =
-      FILE_PATH_LITERAL("download");
-
-  // Rename shell-integrated extensions.
-  if (IsShellIntegratedExtension(extension))
-    extension.assign(default_extension);
-#endif
-
-  if (extension.empty()) {
-    // The GetPreferredExtensionForMimeType call will end up going to disk.  Do
-    // this on another thread to avoid slowing the IO thread.
-    // http://crbug.com/61827
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    net::GetPreferredExtensionForMimeType(mime_type, &extension);
-  }
-
-  generated_extension->swap(extension);
-}
-
 void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                  FilePath* generated_name) {
   GenerateFileNameInternal(download_item.GetURL(),
@@ -302,39 +180,9 @@ void GenerateFileNameFromSuggestedName(const GURL& url,
                                        const std::string& suggested_name,
                                        const std::string& mime_type,
                                        FilePath* generated_name) {
+  // TODO(asanka): We should pass in a valid referrer_charset here.
   GenerateFileNameInternal(url, std::string(), std::string(),
                            suggested_name, mime_type, generated_name);
-}
-
-void GenerateFileName(const GURL& url,
-                      const std::string& content_disposition,
-                      const std::string& referrer_charset,
-                      const std::string& mime_type,
-                      FilePath* generated_name) {
-  GenerateFileNameInternal(url, content_disposition, referrer_charset,
-                           std::string(), mime_type, generated_name);
-}
-
-void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
-  // Make sure we get the right file extension
-  FilePath::StringType extension;
-  GenerateExtension(*file_name, mime_type, &extension);
-  *file_name = file_name->ReplaceExtension(extension);
-
-#if defined(OS_WIN)
-  // Prepend "_" to the file name if it's a reserved name
-  FilePath::StringType leaf_name = file_name->BaseName().value();
-  DCHECK(!leaf_name.empty());
-  if (IsReservedName(leaf_name)) {
-    leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
-    *file_name = file_name->DirName();
-    if (file_name->value() == FilePath::kCurrentDirectory) {
-      *file_name = FilePath(leaf_name);
-    } else {
-      *file_name = file_name->Append(leaf_name);
-    }
-  }
-#endif
 }
 
 void RecordDownloadCount(DownloadCountTypes type) {
@@ -959,27 +807,6 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path) {
   }
 
   return -1;
-}
-
-namespace {
-
-// NOTE: If index is 0, deletes files that do not have the " (nnn)" appended.
-void DeleteUniqueDownloadFile(const FilePath& path, int index) {
-  FilePath new_path(path);
-  if (index > 0)
-    AppendNumberToPath(&new_path, index);
-  file_util::Delete(new_path, false);
-}
-
-}  // namespace
-
-void EraseUniqueDownloadFiles(const FilePath& path) {
-  FilePath cr_path = GetCrDownloadPath(path);
-
-  for (int index = 0; index <= kMaxUniqueFiles; ++index) {
-    DeleteUniqueDownloadFile(path, index);
-    DeleteUniqueDownloadFile(cr_path, index);
-  }
 }
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {

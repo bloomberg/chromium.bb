@@ -60,30 +60,19 @@ bool CreateTemporaryFileForDownload(FilePath* path);
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const FilePath& download_path);
 
-// Create an extension based on the file name and mime type.
-void GenerateExtension(const FilePath& file_name,
-                       const std::string& mime_type,
-                       FilePath::StringType* generated_extension);
-
-// Create a file name based on the response from the server.
+// Generate a filename based on the response from the server.  Similar
+// in operation to net::GenerateFileName(), but uses a localized
+// default name.
 void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                  FilePath* generated_name);
 
+// Generate a filename based on the URL, a suggested name and a MIME
+// type.  Similar in operation to net::GenerateFileName(), but uses a
+// localized default name.
 void GenerateFileNameFromSuggestedName(const GURL& url,
                                        const std::string& suggested_name,
                                        const std::string& mime_type,
                                        FilePath* generated_name);
-
-void GenerateFileName(const GURL& url,
-                      const std::string& content_disposition,
-                      const std::string& referrer_charset,
-                      const std::string& mime_type,
-                      FilePath* generated_name);
-
-// Used to make sure we have a safe file extension and filename for a
-// download.  |file_name| can either be just the file name or it can be a
-// full path to a file.
-void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name);
 
 // Download progress animations ------------------------------------------------
 
@@ -269,10 +258,6 @@ void NotifyDownloadInitiated(int render_process_id, int render_view_id);
 // If |path| does not exist, 0 is returned.  If it fails to find such
 // a number, -1 is returned.
 int GetUniquePathNumberWithCrDownload(const FilePath& path);
-
-// Erases all downloaded files with the specified path and name prefix.
-// Used by download UI tests to clean up the download directory.
-void EraseUniqueDownloadFiles(const FilePath& path_prefix);
 
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);

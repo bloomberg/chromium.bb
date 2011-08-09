@@ -1401,7 +1401,6 @@
         'browser/download/download_request_limiter_unittest.cc',
         'browser/download/download_safe_browsing_client_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
-        'browser/download/download_util_unittest.cc',
         'browser/download/mock_download_manager.h',
         'browser/download/mock_download_manager_delegate.cc',
         'browser/download/mock_download_manager_delegate.h',
