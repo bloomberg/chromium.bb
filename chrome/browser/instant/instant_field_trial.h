@@ -12,7 +12,13 @@
 class Profile;
 
 // This class manages the Instant field trial. Each user is in exactly one of
-// two field trial groups: Control or Experiment.
+// three field trial groups: Inactive, Control or Experiment.
+// - Inactive users are those who have played with the Instant option in the
+//   Preferences page, or those for whom group policy provides an override, or
+//   those with an incognito profile, etc. The field trial is inactive for such
+//   users, so their Instant preference setting is respected. The field trial is
+//   also initially inactive (until activated in BrowserMain), so testing is not
+//   affected by the field trial.
 // - Control and Experiment are all the other users, i.e., those who have never
 //   touched the Preferences option. Some percentage of these users are chosen
 //   into the Experiment group and get Instant enabled automatically. The rest
@@ -20,13 +26,6 @@ class Profile;
 // - Control and Experiment are further split into two subgroups each, in order
 //   to detect bias between them (when analyzing metrics). The subgroups are
 //   treated identically for all other purposes.
-//
-// There is a possibility that the field trial is not active.
-// - Inactive users are those who have played with the Instant option in the
-//   Preferences page, or those for whom group policy provides an override, or
-//   those with an incognito profile, etc. The field trial is inactive for such
-//   users, so their Instant preference setting is respected. The field trial is
-//   initially inactive so testing is not affected by the field trial.
 class InstantFieldTrial {
  public:
   enum Group {
@@ -38,7 +37,7 @@ class InstantFieldTrial {
   };
 
   // Activate the field trial. Before this call, all calls to GetGroup will
-  // return INACTIVE.
+  // return INACTIVE. *** MUST NOT BE CALLED MORE THAN ONCE. ***
   static void Activate();
 
   // Return the field trial group this profile belongs to.

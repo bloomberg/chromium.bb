@@ -95,7 +95,6 @@ extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
 extern const char kInstantEnabledOnce[];
 extern const char kInstantEnabledTime[];
-extern const char kInstantFieldTrialRandomDraw[];
 extern const char kInstantPromo[];
 extern const char kMultipleProfilePrefMigration[];
 extern const char kNetworkPredictionEnabled[];

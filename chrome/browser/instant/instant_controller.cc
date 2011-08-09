@@ -76,9 +76,6 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterInt64Pref(prefs::kInstantEnabledTime,
                            false,
                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kInstantFieldTrialRandomDraw,
-                             base::RandInt(0, 9999),
-                             PrefService::UNSYNCABLE_PREF);
   PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 

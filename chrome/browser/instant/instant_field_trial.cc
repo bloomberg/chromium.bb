@@ -4,24 +4,40 @@
 
 #include "chrome/browser/instant/instant_field_trial.h"
 
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
-bool field_trial_active_ = false;
+
+// Field trial IDs of the control and experiment groups. Though they are not
+// literally "const", they are set only once, in Activate() below.
+int g_control_group_id_1 = 0;
+int g_control_group_id_2 = 0;
+int g_experiment_group_id_1 = 0;
+int g_experiment_group_id_2 = 0;
+
 }
 
 // static
 void InstantFieldTrial::Activate() {
-  field_trial_active_ = true;
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("Instant", 1000, "InstantInactive", 2012, 1, 1));
+
+  // One-time randomization is disabled if the user hasn't opted-in to UMA.
+  if (!base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    return;
+  trial->UseOneTimeRandomization();
+
+  g_control_group_id_1 = trial->AppendGroup("InstantControl1", 450);  // 45%
+  g_control_group_id_2 = trial->AppendGroup("InstantControl2", 450);  // 45%
+  g_experiment_group_id_1 = trial->AppendGroup("InstantExperiment1", 50);  // 5%
+  g_experiment_group_id_2 = trial->AppendGroup("InstantExperiment2", 50);  // 5%
 }
 
 // static
 InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
-  if (!field_trial_active_)
-    return INACTIVE;
-
   if (profile->IsOffTheRecord())
     return INACTIVE;
 
@@ -33,11 +49,18 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
     return INACTIVE;
   }
 
-  const int random = prefs->GetInteger(prefs::kInstantFieldTrialRandomDraw);
-  return random < 4500 ? CONTROL1 :    // 45%
-         random < 9000 ? CONTROL2 :    // 45%
-         random < 9500 ? EXPERIMENT1   //  5%
-                       : EXPERIMENT2;  //  5%
+  const int group = base::FieldTrialList::FindValue("Instant");
+
+  if (group == base::FieldTrial::kNotFinalized ||
+      group == base::FieldTrial::kDefaultGroupNumber) {
+    return INACTIVE;
+  }
+
+  return group == g_control_group_id_1    ? CONTROL1 :
+         group == g_control_group_id_2    ? CONTROL2 :
+         group == g_experiment_group_id_1 ? EXPERIMENT1 :
+         group == g_experiment_group_id_2 ? EXPERIMENT2
+                                          : INACTIVE;
 }
 
 // static
