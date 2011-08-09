@@ -274,9 +274,13 @@ enum {
       [window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
 
     // Set the window to participate in Lion Fullscreen mode.  Setting this flag
-    // has no effect on Snow Leopard or earlier.
+    // has no effect on Snow Leopard or earlier.  Popups and the devtools panel
+    // can share a fullscreen space with a tabbed window, but they can not be
+    // primary fullscreen windows.
     NSUInteger collectionBehavior = [window collectionBehavior];
-    collectionBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+    collectionBehavior |= browser_->type() == Browser::TYPE_TABBED ?
+                          NSWindowCollectionBehaviorFullScreenPrimary :
+                          NSWindowCollectionBehaviorFullScreenAuxiliary;
     [window setCollectionBehavior:collectionBehavior];
 
     // Get the most appropriate size for the window, then enforce the

@@ -852,6 +852,9 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window {
   [self deregisterForContentViewResizeNotifications];
+
+  // Force a relayout to try and get the window back into a reasonable state.
+  [self layoutSubviews];
 }
 
 - (void)enableBarVisibilityUpdates {

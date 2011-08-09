@@ -894,7 +894,10 @@ gfx::Rect InstantLoader::GetOmniboxBoundsInTermsOfPreview() {
 
   // In the current Chrome UI, these must always be true so they sanity check
   // the above operations. In a future UI, these may be removed or adjusted.
-  DCHECK_EQ(0, intersection.y());
+  // There is no point in sanity-checking |intersection.y()| because the omnibox
+  // can be placed anywhere vertically relative to the preview (for example, in
+  // Mac fullscreen mode, the omnibox is entirely enclosed by the preview
+  // bounds).
   DCHECK_LE(0, intersection.x());
   DCHECK_LE(0, intersection.width());
   DCHECK_LE(0, intersection.height());

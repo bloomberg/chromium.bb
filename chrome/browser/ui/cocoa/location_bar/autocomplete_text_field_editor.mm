@@ -398,12 +398,14 @@ BOOL ThePasteboardIsTooDamnBig() {
   }
 
   // If the escape key was pressed and no revert happened and we're in
-  // fullscreen mode, make it resign key.
+  // fullscreen mode, give focus to the web contents, which may dismiss the
+  // overlay.
   if (cmd == @selector(cancelOperation:)) {
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForView:self];
-    if ([windowController inPresentationMode]) {
+    if ([windowController isFullscreen]) {
       [windowController focusTabContents];
+      textChangedByKeyEvents_ = NO;
       return;
     }
   }
