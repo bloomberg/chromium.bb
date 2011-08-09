@@ -41,25 +41,34 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
   // data is used: "Hollywood, CA"
   AutofillProfile profile00;
   autofill_test::SetProfileInfo(&profile00, "", "Mitchell", "",
-      "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA", "91601", "US",
+      "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
       "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile00));
   string16 summary00 = profile00.Label();
   EXPECT_EQ(ASCIIToUTF16("Hollywood, CA"), summary00);
 
-  // Case 1: "<address>"
+  // Case 1: "<address>" without line 2.
   AutofillProfile profile1;
   autofill_test::SetProfileInfo(&profile1, "", "Mitchell", "",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "", "Hollywood", "CA",
       "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile1));
   string16 summary1 = profile1.Label();
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary1);
 
+  // Case 1a: "<address>" with line 2.
+  AutofillProfile profile1a;
+  autofill_test::SetProfileInfo(&profile1a, "", "Mitchell", "",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "16505678910", "78127654321");
+  EXPECT_TRUE(UpdateProfileLabel(&profile1a));
+  string16 summary1a = profile1a.Label();
+  EXPECT_EQ(ASCIIToUTF16("123 Zoo St., unit 5"), summary1a);
+
   // Case 2: "<lastname>"
   AutofillProfile profile2;
   autofill_test::SetProfileInfo(&profile2, "", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA",
+      "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
       "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile2));
   string16 summary2 = profile2.Label();
@@ -69,7 +78,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
   // Case 3: "<lastname>, <address>"
   AutofillProfile profile3;
   autofill_test::SetProfileInfo(&profile3, "", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+      "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "",
       "Hollywood", "CA", "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile3));
   string16 summary3 = profile3.Label();
@@ -78,7 +87,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
   // Case 4: "<firstname>"
   AutofillProfile profile4;
   autofill_test::SetProfileInfo(&profile4, "Marion", "Mitchell", "",
-      "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA", "91601", "US",
+      "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
       "16505678910", "01987654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile4));
   string16 summary4 = profile4.Label();
@@ -96,7 +105,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
   // Case 6: "<firstname> <lastname>"
   AutofillProfile profile6;
   autofill_test::SetProfileInfo(&profile6, "Marion", "Mitchell",
-      "Morrison", "johnwayne@me.xyz", "Fox", "", "unit 5", "Hollywood", "CA",
+      "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
       "91601", "US", "16505678910", "78127654321");
   EXPECT_TRUE(UpdateProfileLabel(&profile6));
   string16 summary6 = profile6.Label();
