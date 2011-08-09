@@ -199,7 +199,7 @@ def RunLLC(infile, outfile, filetype):
   return 0
 
 def RunLLCSRPC():
-  CheckPresenceSelUniversal()
+  CheckTranslatorPrerequisites()
   infile = env.getone("input")
   outfile = env.getone("output")
   flags = env.get("LLC_FLAGS")

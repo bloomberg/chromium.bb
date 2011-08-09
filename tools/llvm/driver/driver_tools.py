@@ -119,8 +119,16 @@ INITIAL_ENV = {
 
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
-  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error ' +
+  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
                           '${USE_EMULATOR ? -Q --command-prefix ${EMULATOR}}',
+
+  'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
+  'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
+  'IRT_STAGING_X8664'   : '${SCONS_OUT}/nacl_irt-x86-64/staging',
+  'IRT_STAGING_ARM'     : '${SCONS_OUT}/nacl_irt-arm/staging',
+  # The irt_core.nexe should suffice for the sandboxed translators, since
+  # they do not use PPAPI.
+  'IRT_BLOB'            : '${IRT_STAGING}/irt_core.nexe',
 
   'EMULATOR'            : '${EMULATOR_%ARCH%}',
   'EMULATOR_X8632'      : '',
@@ -1646,15 +1654,19 @@ def DriverExit(code):
   TempFiles.wipe()
   sys.exit(code)
 
-def CheckPresenceSelUniversal():
-  'Assert that both sel_universal and sel_ldr exist'
+def CheckTranslatorPrerequisites():
+  """ Assert that the scons artifacts for running the sandboxed translator
+      exist: sel_universal, sel_ldr and the irt blob. """
   sel_universal = env.getone('SEL_UNIVERSAL')
   if not pathtools.exists(sel_universal):
     Log.Fatal('Could not find sel_universal [%s]', sel_universal)
-
   sel_ldr = env.getone('SEL_LDR')
   if not pathtools.exists(sel_ldr):
     Log.Fatal('Could not find sel_ldr [%s]', sel_ldr)
+  irt_blob = env.getone('IRT_BLOB')
+  if not pathtools.exists(irt_blob):
+    Log.Fatal('Could not find irt_blob [%s]', irt_blob)
+
 
 def DriverOpen(filename, mode, fail_ok = False):
   try:

@@ -475,7 +475,7 @@ def DetectArch(inputs):
 
 
 def RunLDSRPC():
-  CheckPresenceSelUniversal()
+  CheckTranslatorPrerequisites()
   # The "main" input file is the application's combined object file.
   all_inputs = env.get('inputs')
 
