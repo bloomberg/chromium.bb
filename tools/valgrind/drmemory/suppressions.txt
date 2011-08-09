@@ -728,6 +728,7 @@ LEAK
 
 # http://crbug.com/74413
 LEAK
+...
 *!operator new
 *!net::HttpAuthHandlerFactory::CreateDefault
 
@@ -740,6 +741,12 @@ LEAK
 LEAK
 *!operator new
 *!disk_cache::BackendImpl::NewEntry
+
+# http://crbug.com/75247
+LEAK
+...
+*!operator new
+*!AutofillDownloadTestHelper::AutofillDownloadTestHelper
 
 # http://crbug.com/76354
 LEAK
@@ -875,6 +882,12 @@ LEAK
 LEAK
 ...
 *!BookmarkEditorView::Init
+
+# http://crbug.com/92166
+LEAK
+...
+*!operator new
+*!views::NativeWidgetWin::OnCreate
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
