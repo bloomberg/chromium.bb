@@ -74,7 +74,11 @@ const char kPrefIncognitoEnabled[] = "incognito";
 
 // A preference to control whether an extension is allowed to inject script in
 // pages with file URLs.
-const char kPrefAllowFileAccess[] = "allowFileAccess";
+const char kPrefAllowFileAccess[] = "newAllowFileAccess";
+// TODO(jstritar): As part of fixing http://crbug.com/91577, we revoked all
+// extension file access by renaming the pref. We should eventually clean up
+// the old flag and possibly go back to that name.
+// const char kPrefAllowFileAccessOld[] = "allowFileAccess";
 
 // A preference set by the web store to indicate login information for
 // purchased apps.

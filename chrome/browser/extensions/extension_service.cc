@@ -2207,7 +2207,7 @@ void ExtensionService::OnExtensionInstalled(
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.
-  if (Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
+  if (Extension::ShouldAlwaysAllowFileAccess(extension->location()) &&
       !extension_prefs_->HasAllowFileAccessSetting(id)) {
     extension_prefs_->SetAllowFileAccess(id, true);
   }

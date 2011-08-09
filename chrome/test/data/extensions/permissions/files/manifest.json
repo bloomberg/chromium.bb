@@ -1,0 +1,5 @@
+{
+  "name": "file access extension",
+  "version": "1",
+  "permissions": ["file:///*"]
+}
