@@ -183,7 +183,7 @@ void JingleSessionManager::OnSessionCreate(
   // Allow local connections if neccessary.
   cricket_session->set_allow_local_ips(allow_local_ips_);
 
-  // If this is an outcoming session the session object is already created.
+  // If this is an incoming session, create a JingleSession on top of it.
   if (incoming) {
     DCHECK(!certificate_.empty());
     DCHECK(private_key_.get());

@@ -21,21 +21,21 @@ namespace {
 // Labels for use when exporting the SSL master keys.
 const char kClientSslExporterLabel[] = "EXPORTER-remoting-channel-auth-client";
 
-// Size of the HMAC-SHA-1 authentication digest.
-const size_t kAuthDigestLength = 20;
+// Size of the HMAC-SHA-256 authentication digest.
+const size_t kAuthDigestLength = 32;
 
 // static
 bool GetAuthBytes(const std::string& shared_secret,
                   const std::string& key_material,
                   std::string* auth_bytes) {
   // Generate auth digest based on the keying material and shared secret.
-  crypto::HMAC response(crypto::HMAC::SHA1);
-  if (!response.Init(shared_secret)) {
+  crypto::HMAC response(crypto::HMAC::SHA256);
+  if (!response.Init(key_material)) {
     NOTREACHED() << "HMAC::Init failed";
     return false;
   }
   unsigned char out_bytes[kAuthDigestLength];
-  if (!response.Sign(key_material, out_bytes, kAuthDigestLength)) {
+  if (!response.Sign(shared_secret, out_bytes, kAuthDigestLength)) {
     NOTREACHED() << "HMAC::Sign failed";
     return false;
   }
