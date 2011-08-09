@@ -57,7 +57,7 @@ ThemeInstallBubbleViewGtk::ThemeInstallBubbleViewGtk(GtkWidget* parent)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      NotificationService::AllSources());
+      NotificationService::AllBrowserContextsAndSources());
 
   // Close when we are installing an extension, not a theme.
   registrar_.Add(
