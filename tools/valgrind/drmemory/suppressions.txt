@@ -473,6 +473,13 @@ mscms.dll!*
 GDI32.dll!*
 *!IconUtil::Create*HICON*
 
+# http://crbug.com/92152
+LEAK
+...
+USER32.dll!CreateWindowExW
+*!views::TooltipManagerWin::Init
+*!views::TooltipManagerWin::TooltipManagerWin
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -839,6 +846,11 @@ UNINITIALIZED READ
 freebl3.dll!FREEBL_GetVector
 ...
 softokn3.dll!NSC_ModuleDBFunc
+
+# http://crbug.com/92150
+LEAK
+...
+*!`anonymous namespace'::ConflictingDllsTest::ExecuteImpl
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
