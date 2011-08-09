@@ -111,7 +111,6 @@ hr.bottom {
   left: -20px;
 }
 
-
 .step {
   -webkit-transition: left .2s, opacity .2s, visibility .2s ease-in-out;
   left: 0;
@@ -359,12 +358,11 @@ button {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-transition: 0.25s opacity;
-  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
-                                      rgba(127, 127, 127, 0.5) 35%,
-                                      rgba(0, 0, 0, 0.7));
+  background: #fff;
   bottom: 0;
   display: -webkit-box;
   left: 0;
+  opacity: 0.75;
   padding-bottom: 130px;
   padding: 20px;
   position: fixed;
