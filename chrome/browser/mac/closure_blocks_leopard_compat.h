@@ -24,7 +24,7 @@
 // In any target (in the GYP sense) where you use blocks, you must also depend
 // on the closure_blocks_leopard_compat target to ensure that these symbols
 // will be available at link time, even when the 10.5 SDK is in use. This
-// This allows the continued use of the 10.5 SDK, which does not contain these
+// allows the continued use of the 10.5 SDK, which does not contain these
 // symbols.
 //
 // This does not relieve you of the responsibility to not use blocks on
@@ -40,17 +40,16 @@
 // qualifies, as do sufficiently recent versions of clang. GCC 4.2 as shipped
 // with Xcode 3.1 for Mac OS X 10.5 does not qualify.
 
-// _NSConcreteGlobalBlock and _NSConcreteStackBlock are a private
-// implementation details of libclosure defined in
-// libclosure/libclosure-38/Block_private.h, but they're exposed from
-// libSystem as public symbols, and the block-enabled compiler will emit code
-// that references these symbols. Because the symbols aren't present in 10.5's
-// libSystem, they must be declared as weak imports in any file that uses
-// blocks. Any block-using file must #include this header to guarantee that
-// the symbols will show up in linked output as weak imports when compiling
-// for a 10.5 deployment target. Because the symbols are always present in
-// 10.6 and higher, they do not need to be a weak imports when the deployment
-// target is at least 10.6.
+// _NSConcreteGlobalBlock and _NSConcreteStackBlock are private implementation
+// details of libclosure defined in libclosure/libclosure-38/Block_private.h,
+// but they're exposed from libSystem as public symbols, and the block-enabled
+// compiler will emit code that references these symbols. Because the symbols
+// aren't present in 10.5's libSystem, they must be declared as weak imports
+// in any file that uses blocks. Any block-using file must #include this
+// header to guarantee that the symbols will show up in linked output as weak
+// imports when compiling for a 10.5 deployment target. Because the symbols
+// are always present in 10.6 and higher, they do not need to be a weak
+// imports when the deployment target is at least 10.6.
 //
 // Both GCC and clang emit references to these symbols, providing implicit
 // declarations as needed, but respecting any user declaration when present.

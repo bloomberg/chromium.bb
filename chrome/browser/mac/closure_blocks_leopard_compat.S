@@ -5,18 +5,18 @@
 # Definitions of symbols that may be needed at runtime but aren't necessarily
 # present in the SDK chosen for compilation.
 #
-# This file provides a symbols for _NSConcreteGlobalBlock and
+# This file provides symbols for _NSConcreteGlobalBlock and
 # _NSConcreteStackBlock, normally present in libSystem.dylib and provided by
 # by libclosure-38/data.c in Mac OS X 10.6 and later. When using the 10.5 SDK,
-# the symbol is not present. This file's definition can be used with extreme
+# the symbols are not present. This file's definition can be used with extreme
 # care in an application that needs to use the 10.5 SDK in conjunction with
 # blocks.
 #
-# This file cooperates with the build system (closure_leopard_compat.gyp) to
-# produce a dynamic library that, when linked against, causes dependents to
-# look in libSystem for the symbols provided here. It also cooperates with a
-# header (block.h) that causes dependents to treat the symbols provided here
-# as weak imports, critical for the resultant output to be loadable on 10.5.
+# This file cooperates with the build system to produce a dynamic library
+# that, when linked against, causes dependents to look in libSystem for the
+# symbols provided here. It also cooperates with a header that causes
+# dependents to treat the symbols provided here as weak imports, critical for
+# the resultant output to be loadable on 10.5.
 
 # To simplify things, this file assumes it's being built with the 10.5 SDK,
 # a deployment target of 10.5, and is producing 32-bit x86 code. Other
