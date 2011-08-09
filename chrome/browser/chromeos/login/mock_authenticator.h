@@ -67,13 +67,9 @@ class MockAuthenticator : public Authenticator {
                          const std::string& login_token,
                          const std::string& login_captcha) {}
 
-  virtual std::string EncryptToken(const std::string& token) {
-    return std::string();
-  }
+  virtual std::string EncryptToken(const std::string& token);
 
-  virtual std::string DecryptToken(const std::string& encrypted_token) {
-    return std::string();
-  }
+  virtual std::string DecryptToken(const std::string& encrypted_token);
 
   virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
                                        const std::string& oauth1_secret) {}
