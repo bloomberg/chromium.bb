@@ -49,7 +49,10 @@ struct UI_EXPORT StyleRange {
 
 typedef std::vector<StyleRange> StyleRanges;
 
-// TODO(msw): Distinguish between logical character and glyph?
+// TODO(msw): Distinguish between logical character stops and glyph stops?
+// CHARACTER_BREAK cursor movements should stop at neighboring characters.
+// WORD_BREAK cursor movements should stop at the nearest word boundaries.
+// LINE_BREAK cursor movements should stop at the text ends as shown on screen.
 enum BreakType {
   CHARACTER_BREAK,
   WORD_BREAK,
@@ -186,9 +189,6 @@ class UI_EXPORT RenderText {
   // Moves the cursor left or right. Cursor movement is visual, meaning that
   // left and right are relative to screen, not the directionality of the text.
   // If |select| is false, the selection range is emptied at the new position.
-  // If |break_type| is CHARACTER_BREAK, move to the neighboring character.
-  // If |break_type| is WORD_BREAK, move to the nearest word boundary.
-  // If |break_type| is LINE_BREAK, move to text edge as shown on screen.
   void MoveCursorLeft(BreakType break_type, bool select);
   void MoveCursorRight(BreakType break_type, bool select);
 
@@ -263,12 +263,15 @@ class UI_EXPORT RenderText {
 
   const StyleRanges& style_ranges() const { return style_ranges_; }
 
-  // Get the cursor position that visually neighbors |position|.
-  // If |move_by_word| is true, return the neighboring word delimiter position.
-  virtual SelectionModel GetLeftCursorPosition(const SelectionModel& current,
-                                               bool move_by_word);
-  virtual SelectionModel GetRightCursorPosition(const SelectionModel& current,
-                                                bool move_by_word);
+  // Get the selection model that visually neighbors |position| by |break_type|.
+  // The returned value represents a cursor/caret position without a selection.
+  virtual SelectionModel GetLeftSelectionModel(const SelectionModel& current,
+                                               BreakType break_type);
+  virtual SelectionModel GetRightSelectionModel(const SelectionModel& current,
+                                                BreakType break_type);
+
+  // Get the logical index of the grapheme preceeding the argument |position|.
+  virtual size_t GetIndexOfPreviousGrapheme(size_t position) const;
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.

@@ -182,64 +182,52 @@ void RenderText::SetCursorPosition(const size_t position) {
   SelectionModel sel(selection_model());
   sel.set_selection_start(position);
   sel.set_selection_end(position);
+  sel.set_caret_pos(GetIndexOfPreviousGrapheme(position));
+  sel.set_caret_placement(SelectionModel::TRAILING);
   SetSelectionModel(sel);
 }
 
 void RenderText::MoveCursorLeft(BreakType break_type, bool select) {
-  if (break_type == LINE_BREAK) {
-    SelectionModel selection(GetSelectionStart(), 0,
-                             0, SelectionModel::LEADING);
-    if (!select)
-      selection.set_selection_start(selection.selection_end());
-    MoveCursorTo(selection);
-    return;
-  }
-  SelectionModel position = selection_model_;
+  SelectionModel position(selection_model());
+  position.set_selection_start(GetCursorPosition());
   // Cancelling a selection moves to the edge of the selection.
-  if (!EmptySelection() && !select) {
+  if (break_type != LINE_BREAK && !EmptySelection() && !select) {
     // Use the selection start if it is left of the selection end.
     SelectionModel selection_start(GetSelectionStart(), GetSelectionStart(),
-        GetSelectionStart(), SelectionModel::LEADING);
+                                   SelectionModel::LEADING);
     if (GetCursorBounds(selection_start, false).x() <
         GetCursorBounds(position, false).x())
       position = selection_start;
-    // If |move_by_word|, use the nearest word boundary left of the selection.
+    // For word breaks, use the nearest word boundary left of the selection.
     if (break_type == WORD_BREAK)
-      position = GetLeftCursorPosition(position, true);
+      position = GetLeftSelectionModel(position, break_type);
   } else {
-    position = GetLeftCursorPosition(position, break_type == WORD_BREAK);
+    position = GetLeftSelectionModel(position, break_type);
   }
-  if (!select)
-    position.set_selection_start(position.selection_end());
+  if (select)
+    position.set_selection_start(GetSelectionStart());
   MoveCursorTo(position);
 }
 
 void RenderText::MoveCursorRight(BreakType break_type, bool select) {
-  if (break_type == LINE_BREAK) {
-    SelectionModel selection(GetSelectionStart(), text().length(),
-        text().length(), SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
-    if (!select)
-      selection.set_selection_start(selection.selection_end());
-    MoveCursorTo(selection);
-    return;
-  }
-  SelectionModel position = selection_model_;
+  SelectionModel position(selection_model());
+  position.set_selection_start(GetCursorPosition());
   // Cancelling a selection moves to the edge of the selection.
-  if (!EmptySelection() && !select) {
+  if (break_type != LINE_BREAK && !EmptySelection() && !select) {
     // Use the selection start if it is right of the selection end.
     SelectionModel selection_start(GetSelectionStart(), GetSelectionStart(),
-        GetSelectionStart(), SelectionModel::LEADING);
+                                   SelectionModel::LEADING);
     if (GetCursorBounds(selection_start, false).x() >
         GetCursorBounds(position, false).x())
       position = selection_start;
-    // If |move_by_word|, use the nearest word boundary right of the selection.
+    // For word breaks, use the nearest word boundary right of the selection.
     if (break_type == WORD_BREAK)
-      position = GetRightCursorPosition(position, true);
+      position = GetRightSelectionModel(position, break_type);
   } else {
-    position = GetRightCursorPosition(position, break_type == WORD_BREAK);
+    position = GetRightSelectionModel(position, break_type);
   }
-  if (!select)
-    position.set_selection_start(position.selection_end());
+  if (select)
+    position.set_selection_start(GetSelectionStart());
   MoveCursorTo(position);
 }
 
@@ -253,8 +241,6 @@ bool RenderText::MoveCursorTo(const Point& point, bool select) {
   SelectionModel selection = FindCursorPosition(point);
   if (select)
     selection.set_selection_start(GetSelectionStart());
-  else
-    selection.set_selection_start(selection.selection_end());
   return MoveCursorTo(selection);
 }
 
@@ -267,7 +253,9 @@ bool RenderText::IsPointInSelection(const Point& point) {
 }
 
 void RenderText::ClearSelection() {
-  SetCursorPosition(GetCursorPosition());
+  SelectionModel sel(selection_model());
+  sel.set_selection_start(GetCursorPosition());
+  SetSelectionModel(sel);
 }
 
 void RenderText::SelectAll() {
@@ -503,15 +491,15 @@ RenderText::RenderText()
       display_offset_() {
 }
 
-SelectionModel RenderText::GetLeftCursorPosition(const SelectionModel& current,
-                                                 bool move_by_word) {
-  size_t position = current.selection_end();
-  SelectionModel left = current;
-  if (!move_by_word) {
-    left.set_selection_end(std::max(static_cast<long>(position - 1),
-                                    static_cast<long>(0)));
-    return left;
-  }
+SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
+                                                 BreakType break_type) {
+  if (break_type == LINE_BREAK)
+    return SelectionModel(0, 0, SelectionModel::LEADING);
+  size_t pos = std::max(static_cast<long>(current.selection_end() - 1),
+                        static_cast<long>(0));
+  if (break_type == CHARACTER_BREAK)
+    return SelectionModel(pos, pos, SelectionModel::LEADING);
+
   // Notes: We always iterate words from the begining.
   // This is probably fast enough for our usage, but we may
   // want to modify WordIterator so that it can start from the
@@ -519,59 +507,54 @@ SelectionModel RenderText::GetLeftCursorPosition(const SelectionModel& current,
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
   DCHECK(success);
-  if (!success) {
-    left.set_selection_end(position);
-    return left;
-  }
-  int last = 0;
+  if (!success)
+    return current;
   while (iter.Advance()) {
     if (iter.IsWord()) {
       size_t begin = iter.pos() - iter.GetString().length();
-      if (begin == position) {
+      if (begin == current.selection_end()) {
         // The cursor is at the beginning of a word.
         // Move to previous word.
         break;
-      } else if (iter.pos() >= position) {
+      } else if (iter.pos() >= current.selection_end()) {
         // The cursor is in the middle or at the end of a word.
         // Move to the top of current word.
-        last = begin;
+        pos = begin;
         break;
       } else {
-        last = iter.pos() - iter.GetString().length();
+        pos = iter.pos() - iter.GetString().length();
       }
     }
   }
 
-  left.set_selection_end(last);
-  return left;
+  return SelectionModel(pos, pos, SelectionModel::LEADING);
 }
 
-SelectionModel RenderText::GetRightCursorPosition(const SelectionModel& current,
-                                                  bool move_by_word) {
-  size_t position = current.selection_end();
-  SelectionModel right = current;
-
-  if (!move_by_word) {
-    right.set_selection_end(std::min(position + 1, text().length()));
-    return right;
-  }
+SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
+                                                  BreakType break_type) {
+  if (break_type == LINE_BREAK)
+    return SelectionModel(text().length(),
+        GetIndexOfPreviousGrapheme(text().length()), SelectionModel::TRAILING);
+  size_t pos = std::min(current.selection_end() + 1, text().length());
+  if (break_type == CHARACTER_BREAK)
+    return SelectionModel(pos, pos, SelectionModel::LEADING);
 
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
   DCHECK(success);
-  if (!success) {
-    right.set_selection_end(position);
-    return right;
-  }
-  size_t pos = 0;
+  if (!success)
+    return current;
   while (iter.Advance()) {
     pos = iter.pos();
-    if (iter.IsWord() && pos > position) {
+    if (iter.IsWord() && pos > current.selection_end())
       break;
-    }
   }
-  right.set_selection_end(pos);
-  return right;
+  return SelectionModel(pos, pos, SelectionModel::LEADING);
+}
+
+size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) const {
+  // TODO(msw): Handle complex script.
+  return std::max(static_cast<int>(position - 1), static_cast<int>(0));
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
