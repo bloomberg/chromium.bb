@@ -489,4 +489,70 @@ TEST_F(PrefProviderTest, SyncObsoletePref) {
   provider.ShutdownOnUIThread();
 }
 
+
+TEST_F(PrefProviderTest, FixOrRemoveMalformedPatternKeysFromObsoletePref) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  // Set obsolete preference for content settings pattern.
+  scoped_ptr<DictionaryValue> settings_dictionary(new DictionaryValue());
+  settings_dictionary->SetInteger("cookies", 2);
+  settings_dictionary->SetInteger("images", 2);
+  settings_dictionary->SetInteger("popups", 2);
+  scoped_ptr<DictionaryValue> all_settings_dictionary(new DictionaryValue());
+  // Good pattern key.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.example.com", settings_dictionary->DeepCopy());
+  // Bad pattern key that will be ignored since there is already a good pattern
+  // key for the primary patter of the bad pattern key.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.example.com,", settings_dictionary->DeepCopy());
+
+  // Bad pattern key that should be removed.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.broken.com*", settings_dictionary->DeepCopy());
+
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.bar.com,", settings_dictionary->DeepCopy());
+
+  // Bad pattern key with a trailing comma that is supposed to be fixed.
+  // A trailing comma means that the secondary pattern string is empty and hence
+  // invalid.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.foo.com,", settings_dictionary->DeepCopy());
+  // Bad pattern key with an invalid secondary pattern that should be removed.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.foo.com,error*", settings_dictionary->DeepCopy());
+  // Pattern keys with valid pattern pairs.
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.foo.com,[*.]bar.com", settings_dictionary->DeepCopy());
+  prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
+  all_settings_dictionary->SetWithoutPathExpansion(
+      "http://www.example2.com,*", settings_dictionary->DeepCopy());
+  prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
+
+  content_settings::PrefProvider provider(prefs, false);
+
+  // Tests that the broken pattern keys got fixed or removed.
+  const DictionaryValue* patterns_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  EXPECT_EQ(4U, patterns_dictionary->size());
+  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.example.com"));
+  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.bar.com"));
+  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.foo.com"));
+  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.example2.com"));
+
+  // Broken pattern keys that should be removed
+  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.bar.com,"));
+  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.foo.com,"));
+  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.foo.com,error*"));
+  EXPECT_FALSE(patterns_dictionary->HasKey(
+      "http://www.foo.com,[*.]bar.com"));
+  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.example2.com,*"));
+
+  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.broken.com*"));
+
+  provider.ShutdownOnUIThread();
+}
+
 }  // namespace content_settings

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 
-#include <list>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -29,6 +30,9 @@
 #include "net/base/net_util.h"
 
 namespace {
+
+typedef std::pair<std::string, std::string> StringPair;
+typedef std::map<std::string, std::string> StringMap;
 
 // The preference keys where resource identifiers are stored for
 // ContentSettingsType values that support resource identifiers.
@@ -964,42 +968,80 @@ void PrefProvider::MigrateObsoletePopupsPref() {
 
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatterns) && !is_incognito_) {
-    const DictionaryValue* all_settings_dictionary =
+    const DictionaryValue* patterns_dictionary =
       prefs_->GetDictionary(prefs::kContentSettingsPatterns);
 
-    DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
-    DictionaryValue* exceptions_dictionary;
-    exceptions_dictionary = update.Get();
-    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys();
-         ++i) {
-      const std::string& key(*i);
-      if (key.empty())
-        continue;
+    // A map with an old key, new key mapping. If the new key is empty then the
+    // value for the old key will be removed.
+    StringMap keys_to_change;
 
-      // Validate pattern string and skip it if it is invalid.
-      std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
-          ParsePatternString(key);
-      const ContentSettingsPattern& primary_pattern = pattern_pair.first;
-      if (!primary_pattern.IsValid()) {
-        LOG(DFATAL) << "Invalid pattern strings: " << key;
-        continue;
+    {
+      DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
+      DictionaryValue* pattern_pairs_dictionary = update.Get();
+      for (DictionaryValue::key_iterator i(
+               patterns_dictionary->begin_keys());
+           i != patterns_dictionary->end_keys();
+           ++i) {
+        const std::string& key(*i);
+        // Remove broken pattern keys and fix keys with pattern pairs.
+        size_t sep_pos = key.find(",");
+        ContentSettingsPattern pattern =
+            ContentSettingsPattern::FromString(key.substr(0, sep_pos));
+
+        // Save the key if it contains a invalid patterns to remove it later.
+        // Continue and don't try to migrate the broken pattern key.
+        if (!pattern.IsValid()) {
+          keys_to_change[key] = "";
+          continue;
+        }
+
+        // If the key contains a pattern pair, then remove the secondary
+        // pattern from the key.
+        if (sep_pos != std::string::npos) {
+          // If the dictionary already has a key that equals the primary pattern
+          // of the corrupted pattern pair key, don't fix the key but remove it.
+          if (patterns_dictionary->HasKey(pattern.ToString())) {
+            keys_to_change[key] = "";
+            continue;
+          }
+
+          // If there is more than one key with a pattern pair that has the same
+          // valid primary pattern, then the value of the last key processed
+          // will win and  overwrite the value any previous key.
+          keys_to_change[key] = pattern.ToString();
+        }
+
+        // Copy dictionary value.
+        DictionaryValue* dictionary = NULL;
+        bool found = patterns_dictionary->GetDictionaryWithoutPathExpansion(
+            key, &dictionary);
+        DCHECK(found);
+        std::string new_key = CreatePatternString(
+            pattern, ContentSettingsPattern::Wildcard());
+        // Existing values are overwritten.
+        pattern_pairs_dictionary->SetWithoutPathExpansion(
+            new_key, dictionary->DeepCopy());
       }
+    }
 
-      // Copy dictionary value.
-      // Get old settings.
-      DictionaryValue* dictionary = NULL;
-      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          key, &dictionary);
-      DCHECK(found);
-
-      // Create new dictionary key.
-      std::string new_pattern_str = CreatePatternString(
-          primary_pattern, ContentSettingsPattern::Wildcard());
-
-      // Existing values are overwritten.
-      exceptions_dictionary->SetWithoutPathExpansion(
-          new_pattern_str, dictionary->DeepCopy());
+    {
+      DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatterns);
+      DictionaryValue* mutable_patterns_dictionary = update.Get();
+      // Fix broken pattern strings.
+      for (StringMap::iterator i(keys_to_change.begin());
+           i != keys_to_change.end();
+           ++i) {
+        const StringPair& pattern_str_pair(*i);
+        Value* dict_ptr = NULL;
+        bool found = mutable_patterns_dictionary->RemoveWithoutPathExpansion(
+            pattern_str_pair.first, &dict_ptr);
+        scoped_ptr<Value> dict(dict_ptr);
+        DCHECK(found);
+        if (!pattern_str_pair.second.empty()) {
+          mutable_patterns_dictionary->SetWithoutPathExpansion(
+              pattern_str_pair.second, dict.release());
+        }
+      }
     }
   }
 }
