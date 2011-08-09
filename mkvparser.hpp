@@ -149,9 +149,6 @@ class SimpleBlock : public BlockEntry
 public:
     SimpleBlock(Cluster*, long index, long long start, long long size);
 
-    //bool EOS() const;
-    //const Cluster* GetCluster() const;
-    //long GetIndex() const;
     Kind GetKind() const;
     const Block* GetBlock() const;
 
@@ -172,25 +169,22 @@ public:
         long index,
         long long block_start, //absolute pos of block's payload
         long long block_size,  //size of block's payload
-        short prev,
-        short next);
+        long long prev,
+        long long next,
+        long long duration);
 
-    //bool EOS() const;
-    //const Cluster* GetCluster() const;
-    //long GetIndex() const;
     Kind GetKind() const;
     const Block* GetBlock() const;
 
-    short GetPrevTimeCode() const;  //relative to block's time
-    short GetNextTimeCode() const;  //as above
+    long long GetPrevTimeCode() const;  //relative to block's time
+    long long GetNextTimeCode() const;  //as above
+    long long GetDuration() const;
 
 private:
-    //BlockGroup(Cluster*, size_t, unsigned long);
-    //void ParseBlock(long long start, long long size);
-
     Block m_block;
-    const short m_prev;
-    const short m_next;
+    const long long m_prev;
+    const long long m_next;
+    const long long m_duration;
 
 };
 

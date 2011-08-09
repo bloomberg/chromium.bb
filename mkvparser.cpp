@@ -7254,59 +7254,74 @@ void Cluster::CreateBlockGroup(
     long long pos = st;
     const long long stop = st + sz;
 
-    short prev = 0;
-    short next = 0;
-    //bool bReferenceBlock = false;
+    //For WebM files, there is a bias towards previous reference times
+    //(in order to support alt-ref frames, which refer back to the previous
+    //keyframe).  Normally a 0 value is not possible, but here we tenatively
+    //allow 0 as the value of a reference frame, with the interpretation
+    //that this is a "previous" reference time.
+
+    long long prev = 1;  //nonce
+    long long next = 0;  //nonce
+    long long duration = -1;  //really, this is unsigned
 
     long long bpos = -1;
     long long bsize = -1;
 
     while (pos < stop)
     {
-        short t;
+        long len;
+        const long long id = ReadUInt(pReader, pos, len);
+        assert(id >= 0);  //TODO
+        assert((pos + len) <= stop);
 
-        if (Match(pReader, pos, 0x7B, t))
+        pos += len;  //consume ID
+
+        const long long size = ReadUInt(pReader, pos, len);
+        assert(size >= 0);  //TODO
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume size
+
+        if (id == 0x21) //Block ID
         {
-            if (t < 0)
-                prev = t;
-            else if (t > 0)
-                next = t;
-            else
-                assert(false);
-
-            //bReferenceBlock = true;
-        }
-        else
-        {
-            long len;
-            const long long id = ReadUInt(pReader, pos, len);
-            assert(id >= 0);  //TODO
-            assert((pos + len) <= stop);
-
-            pos += len;  //consume ID
-
-            const long long size = ReadUInt(pReader, pos, len);
-            assert(size >= 0);  //TODO
-            assert((pos + len) <= stop);
-
-            pos += len;  //consume size
-
-            if ((id == 0x21) && (bpos < 0)) //Block ID
+            if (bpos < 0) //Block ID
             {
                 bpos = pos;
                 bsize = size;
             }
-
-            pos += size;  //consume payload
-            assert(pos <= stop);
         }
+        else if (id == 0x1B)  //Duration ID
+        {
+            assert(size <= 8);
+
+            duration = UnserializeUInt(pReader, pos, size);
+            assert(duration >= 0);  //TODO
+        }
+        else if (id == 0x7B)  //ReferenceBlock
+        {
+            assert(size <= 8);
+            const long size_ = static_cast<long>(size);
+
+            long long time;
+
+            long status = UnserializeInt(pReader, pos, size_, time);
+            assert(status == 0);  //TODO
+
+            if (time <= 0)  //see note above
+                prev = time;
+            else  //weird
+                next = time;
+        }
+
+        pos += size;  //consume payload
+        assert(pos <= stop);
     }
 
     assert(pos == stop);
     assert(bpos >= 0);
     assert(bsize >= 0);
 
-    *ppEntry++ = new BlockGroup(this_, idx, bpos, bsize, prev, next);
+    *ppEntry++ = new BlockGroup(this_, idx, bpos, bsize, prev, next, duration);
 }
 
 
@@ -7872,14 +7887,16 @@ BlockGroup::BlockGroup(
     long idx,
     long long block_start,
     long long block_size,
-    short prev,
-    short next) :
+    long long prev,
+    long long next,
+    long long duration) :
     BlockEntry(pCluster, idx),
     m_block(block_start, block_size, pCluster->m_pSegment->m_pReader),
     m_prev(prev),
-    m_next(next)
+    m_next(next),
+    m_duration(duration)
 {
-    m_block.SetKey((prev == 0) && (next == 0));
+    m_block.SetKey((prev > 0) && (next <= 0));
 }
 
 
@@ -7912,13 +7929,13 @@ const Block* BlockGroup::GetBlock() const
 }
 
 
-short BlockGroup::GetPrevTimeCode() const
+long long BlockGroup::GetPrevTimeCode() const
 {
     return m_prev;
 }
 
 
-short BlockGroup::GetNextTimeCode() const
+long long BlockGroup::GetNextTimeCode() const
 {
     return m_next;
 }
