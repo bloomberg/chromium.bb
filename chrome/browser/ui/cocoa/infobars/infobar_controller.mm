@@ -26,6 +26,9 @@ namespace {
 // Durations set to match the default SlideAnimation duration.
 const float kAnimateOpenDuration = 0.12;
 const float kAnimateCloseDuration = 0.12;
+
+// The baseline shift for text in the NSTextView.
+const float kTextBaselineShift = -1.0;
 }
 
 // This simple subclass of |NSTextView| just doesn't show the (text) cursor
@@ -233,6 +236,8 @@ const float kAnimateCloseDuration = 0.12;
                  forKey:NSFontAttributeName];
   [attributes setObject:[NSCursor arrowCursor]
                  forKey:NSCursorAttributeName];
+  [attributes setObject:[NSNumber numberWithFloat:kTextBaselineShift]
+                 forKey:NSBaselineOffsetAttributeName];
   scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:message
                                       attributes:attributes]);
@@ -321,9 +326,8 @@ const float kAnimateCloseDuration = 0.12;
     linkOffset = [message length];
   }
   // Create an attributes dictionary for the entire message.  We have
-  // to expicitly set the font the control's font.  We also override
-  // the cursor to give us the normal cursor rather than the text
-  // insertion cursor.
+  // to explicitly set the control's font.  We also override the cursor to give
+  // us the normal cursor rather than the text insertion cursor.
   NSMutableDictionary* linkAttributes = [NSMutableDictionary dictionary];
   [linkAttributes setObject:[NSCursor arrowCursor]
                      forKey:NSCursorAttributeName];
@@ -356,6 +360,11 @@ const float kAnimateCloseDuration = 0.12;
                                       attributes:linkAttributes]);
   [infoText.get() insertAttributedString:attributedString.get()
                                  atIndex:linkOffset];
+  // The entire text needs a baseline shift.
+  [infoText addAttribute:NSBaselineOffsetAttributeName
+                   value:[NSNumber numberWithDouble:kTextBaselineShift]
+                   range:NSMakeRange(0, [infoText length])];
+
   // Update the label view with the new text.
   [[label_.get() textStorage] setAttributedString:infoText];
 }

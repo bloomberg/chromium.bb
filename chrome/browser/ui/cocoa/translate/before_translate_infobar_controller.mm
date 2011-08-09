@@ -19,6 +19,10 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
   NSButton* button = [[NSButton alloc] init];
   [button setTitle:base::SysUTF16ToNSString(title)];
   [button setBezelStyle:NSTexturedRoundedBezelStyle];
+  // Round textured buttons have a different font size than the default button.
+  NSFont* font = [NSFont systemFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  [[button cell] setFont:font];
   return button;
 }
 
