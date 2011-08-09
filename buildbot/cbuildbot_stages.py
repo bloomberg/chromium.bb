@@ -269,8 +269,8 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
 class CleanUpStage(BuilderStage):
   """Stages that cleans up build artifacts from previous runs.
 
-  This stage cleans up previous KVM state, temporary git commits, and
-  clobbers.
+  This stage cleans up previous KVM state, temporary git commits,
+  clobbers, and wipes tmp inside the chroot.
   """
   def _PerformStage(self):
     if not self._options.buildbot and self._options.clobber:
@@ -284,6 +284,12 @@ class CleanUpStage(BuilderStage):
       commands.PreFlightRinse(self._build_root)
       commands.CleanupChromeKeywordsFile(self._build_config['board'],
                                          self._build_root)
+      chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
+      if os.path.exists(chroot_tmpdir):
+        cros_lib.RunCommand(['sudo', 'rm', '-rf', chroot_tmpdir],
+                            print_cmd=False)
+        cros_lib.RunCommand(['sudo', 'mkdir', '--mode', '1777', chroot_tmpdir],
+                            print_cmd=False)
 
 
 class SyncStage(BuilderStage):
