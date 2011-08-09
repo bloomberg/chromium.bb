@@ -371,4 +371,5 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         review_match = reviewed_on_re.match(line)
         if review_match:
           review = review_match.group(1)
-          self._PrintLink(current_author, review)
+          _, _, change_number = review.rpartition('/')
+          self._PrintLink('%s:%s' % (current_author, change_number), review)

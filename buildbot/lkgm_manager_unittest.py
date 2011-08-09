@@ -406,7 +406,7 @@ class LKGMManagerTest(mox.MoxTestBase):
                         print_cmd=False, redirect_stdout=True,
                         cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
     self.manager._PrintLink(
-        'fake', 'http://gerrit.chromium.org/gerrit/1234')
+        'fake:1234', 'http://gerrit.chromium.org/gerrit/1234')
     self.mox.ReplayAll()
     self.manager.GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()
