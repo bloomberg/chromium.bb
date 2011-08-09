@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/render_process_observer.h"
 
@@ -49,6 +50,8 @@ class ChromeRenderProcessObserver : public RenderProcessObserver {
   void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
                             const std::string& group_name);
   void OnGetRendererTcmalloc();
+  void OnSetTcmallocHeapProfiling(bool profiling, const std::string& prefix);
+  void OnWriteTcmallocHeapProfile(const FilePath::StringType& filename);
   void OnGetV8HeapStats();
   void OnPurgeMemory();
 

@@ -33,6 +33,7 @@
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
@@ -407,6 +408,10 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetTcmallocHeapProfiling,
+                        OnSetTcmallocHeapProfiling)
+    IPC_MESSAGE_HANDLER(ViewMsg_WriteTcmallocHeapProfile,
+                        OnWriteTcmallocHeapProfile)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
     IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats, OnGetCacheResourceStats)
@@ -458,11 +463,35 @@ void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
 void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
   std::string result;
   char buffer[1024 * 32];
-  base::ProcessId pid = base::GetCurrentProcId();
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   result.append(buffer);
-  Send(new ViewHostMsg_RendererTcmalloc(pid, result));
+  Send(new ViewHostMsg_RendererTcmalloc(result));
 }
+
+void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
+    bool profiling, const std::string& filename_prefix) {
+  if (profiling)
+    HeapProfilerStart(filename_prefix.c_str());
+  else
+    HeapProfilerStop();
+}
+
+void ChromeRenderProcessObserver::OnWriteTcmallocHeapProfile(
+    const FilePath::StringType& filename) {
+  if (!IsHeapProfilerRunning())
+    return;
+  char* profile = GetHeapProfile();
+  if (!profile) {
+    LOG(WARNING) << "Unable to get heap profile.";
+    return;
+  }
+  // The render process can not write to a file, so copy the result into
+  // a string and pass it to the handler (which runs on the browser host).
+  std::string result(profile);
+  delete profile;
+  Send(new ViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
+}
+
 #endif
 
 void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
