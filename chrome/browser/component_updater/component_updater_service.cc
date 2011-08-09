@@ -344,6 +344,7 @@ ComponentUpdateService::Status CrxUpdateService::Stop() {
 // long one.
 void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(url_fetcher_.get() == NULL);
   CHECK(!timer_.IsRunning());
   // It could be the case that Stop() had been called while a url request
   // or unpacking was in flight, if so we arrive here but |running_| is
@@ -351,17 +352,18 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   if (!running_)
     return;
 
+  int64 delay = step_delay ? config_->StepDelay() : config_->NextCheckDelay();
+
   if (!step_delay) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
         Source<ComponentUpdateService>(this),
         NotificationService::NoDetails());
     // Zero is only used for unit tests.
-    if (0 == config_->NextCheckDelay())
+    if (0 == delay)
       return;
   }
 
-  int64 delay = step_delay ? config_->StepDelay() : config_->NextCheckDelay();
   timer_.Start(base::TimeDelta::FromSeconds(delay),
                this, &CrxUpdateService::ProcessPendingItems);
 }
@@ -489,7 +491,7 @@ void CrxUpdateService::ProcessPendingItems() {
   for (UpdateItems::const_iterator it = work_items_.begin();
        it != work_items_.end(); ++it) {
     CrxUpdateItem* item = *it;
-    if ((item->status != CrxUpdateItem::kNoUpdate) ||
+    if ((item->status != CrxUpdateItem::kNoUpdate) &&
         (item->status != CrxUpdateItem::kUpToDate))
       continue;
     base::TimeDelta delta = base::Time::Now() - item->last_check;
@@ -532,11 +534,12 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
   if (FetchSuccess(*source)) {
     std::string xml;
     source->GetResponseAsString(&xml);
+    url_fetcher_.reset();
     ParseManifest(xml);
   } else {
+    url_fetcher_.reset();
     CrxUpdateService::OnParseUpdateManifestFailed("network error");
   }
-  url_fetcher_.reset();
 }
 
 // Parsing the manifest is either done right now for tests or in a sandboxed
@@ -577,16 +580,21 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
       continue;  // Not updating this component now.
 
     if (it->version.empty()) {
+      // No version means no update available.
       crx->status = CrxUpdateItem::kNoUpdate;
-      continue;  // No version means no update available.
+      continue;
     }
     if (!IsVersionNewer(crx->component.version, it->version)) {
+      // Our component is up to date.
       crx->status = CrxUpdateItem::kUpToDate;
-      continue;  // Our component is up to date.
+      continue;
     }
     if (!it->browser_min_version.empty()) {
-      if (IsVersionNewer(chrome_version_, it->browser_min_version))
-        continue;  // Does not apply for this version.
+      if (IsVersionNewer(chrome_version_, it->browser_min_version)) {
+        // Does not apply for this chrome version.
+        crx->status = CrxUpdateItem::kNoUpdate;
+        continue;
+      }
     }
     // All test passed. Queue an upgrade for this component and fire the
     // notifications.
@@ -599,6 +607,11 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
         Source<std::string>(&crx->id),
         NotificationService::NoDetails());
   }
+
+  // All the components that are not mentioned in the manifest we
+  // consider them up to date.
+  ChangeItemStatus(CrxUpdateItem::kChecking, CrxUpdateItem::kUpToDate);
+
   // If there are updates pending we do a short wait.
   ScheduleNextRun(update_pending ? true : false);
 }
@@ -624,6 +637,7 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kNoUpdate);
     DCHECK_EQ(count, 1ul);
+    url_fetcher_.reset();
     ScheduleNextRun(false);
   } else {
     FilePath temp_crx_path;
@@ -631,6 +645,8 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kUpdating);
     DCHECK_EQ(count, 1ul);
+    url_fetcher_.reset();
+
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_COMPONENT_UPDATE_READY,
         Source<std::string>(&context->id),
@@ -642,8 +658,6 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
                           temp_crx_path),
         config_->StepDelay());
   }
-
-  url_fetcher_.reset();
 }
 
 // Install consists of digital signature verification, unpacking and then

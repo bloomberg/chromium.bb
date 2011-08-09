@@ -30,6 +30,9 @@ namespace {
 // and loops faster. In actual usage it takes hours do to a full cycle.
 class TestConfigurator : public ComponentUpdateService::Configurator {
  public:
+  TestConfigurator() : times_(1) {
+  }
+
   virtual int InitialDelay() OVERRIDE { return 0; }
 
   virtual int NextCheckDelay() OVERRIDE {
@@ -37,6 +40,9 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
     // to happen. In test we normally only test one cycle so it is a good
     // time to break from the test messageloop Run() method so the test can
     // finish.
+    if (--times_ > 0)
+      return 1;
+
     MessageLoop::current()->Quit();
     return 0;
   }
@@ -59,6 +65,12 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   // Don't use the utility process to decode files.
   virtual bool InProcess() OVERRIDE { return true; }
+
+  // Set how many update checks are called, the default value is just once.
+  void SetLoopCount(int times) { times_ = times; }
+
+ private:
+  int times_;
 };
 
 class TestInstaller : public ComponentInstaller {
@@ -110,10 +122,10 @@ const char header_ok_reply[] =
 // Common fixture for all the component updater tests.
 class ComponentUpdaterTest : public TestingBrowserProcessTest {
  public:
-  ComponentUpdaterTest() : component_updater_(NULL) {
+  ComponentUpdaterTest() : component_updater_(NULL), test_config_(NULL) {
     // The component updater instance under test.
-    component_updater_.reset(
-        ComponentUpdateServiceFactory(new TestConfigurator));
+    test_config_ = new TestConfigurator;
+    component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
     // The test directory is chrome/test/data/components.
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("components");
@@ -150,10 +162,15 @@ class ComponentUpdaterTest : public TestingBrowserProcessTest {
     return notification_tracker_;
   }
 
+  TestConfigurator* test_configurator() {
+    return test_config_;
+  }
+
  private:
   scoped_ptr<ComponentUpdateService> component_updater_;
   FilePath test_data_dir_;
   TestNotificationTracker notification_tracker_;
+  TestConfigurator* test_config_;
 };
 
 // Verify that our test fixture work and the component updater can
@@ -208,6 +225,8 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
                            header_ok_reply,
                            test_file("updatecheck_reply_1.xml"));
 
+  // We loop twice, but there are no updates so we expect two sleep messages.
+  test_configurator()->SetLoopCount(2);
   component_updater()->Start();
 
   ASSERT_EQ(1ul, notification_tracker().size());
@@ -216,9 +235,39 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   message_loop.Run();
 
-  ASSERT_EQ(2ul, notification_tracker().size());
+  ASSERT_EQ(3ul, notification_tracker().size());
   TestNotificationTracker::Event ev2 = notification_tracker().at(1);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
+  TestNotificationTracker::Event ev3 = notification_tracker().at(2);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
+  EXPECT_EQ(2, interceptor->hit_count());
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  component_updater()->Stop();
+
+  // Loop twice again but this case we simulate a server error by returning
+  // an empty file.
+
+  interceptor->SetResponse(expected_update_url,
+                           header_ok_reply,
+                           test_file("updatecheck_reply_empty"));
+
+  notification_tracker().Reset();
+  test_configurator()->SetLoopCount(2);
+  component_updater()->Start();
+
+  message_loop.Run();
+
+  ASSERT_EQ(3ul, notification_tracker().size());
+  ev1 = notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev1.type);
+  ev2 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
+  ev3 = notification_tracker().at(2);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev2.type);
+  EXPECT_EQ(4, interceptor->hit_count());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());

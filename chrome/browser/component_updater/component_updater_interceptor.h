@@ -33,8 +33,11 @@ class ComponentUpdateInterceptor
                    const std::string& headers,
                    const FilePath& path);
 
+  // Returns how many requests have been issued that have a stored reply.
+  int hit_count() const { return hit_count_; }
+
  private:
-  // When computing matches, this ignores the query parameters of the url. 
+  // When computing matches, this ignores the query parameters of the url.
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) OVERRIDE;
 
   friend class base::RefCountedThreadSafe<ComponentUpdateInterceptor>;
@@ -48,6 +51,7 @@ class ComponentUpdateInterceptor
 
   typedef std::map<GURL, Response> ResponseMap;
   ResponseMap responses_;
+  int hit_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUpdateInterceptor);
 };

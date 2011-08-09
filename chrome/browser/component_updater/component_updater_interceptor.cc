@@ -9,7 +9,8 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-ComponentUpdateInterceptor::ComponentUpdateInterceptor() {
+ComponentUpdateInterceptor::ComponentUpdateInterceptor()
+  : hit_count_(0) {
   net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
 }
 
@@ -34,6 +35,7 @@ net::URLRequestJob* ComponentUpdateInterceptor::MaybeIntercept(
     return NULL;
   }
   const Response& response = it->second;
+  ++hit_count_;
 
   std::string contents;
   EXPECT_TRUE(file_util::ReadFileToString(response.data_path, &contents));
