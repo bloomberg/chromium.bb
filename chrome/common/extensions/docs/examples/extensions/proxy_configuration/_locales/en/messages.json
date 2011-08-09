@@ -1,6 +1,6 @@
 {
   "extName":  {
-    "message": "Proxy Settings",
+    "message": "Proxy Extension API Sample",
     "description": "The extension name."
   },
   "extDescription": {
