@@ -444,7 +444,8 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      stack_ptr,
-                                   uintptr_t      sys_tls) NACL_WUR;
+                                   uintptr_t      sys_tls,
+                                   uint32_t       user_tls2) NACL_WUR;
 
 void NaClLoadTrampoline(struct NaClApp *nap);
 

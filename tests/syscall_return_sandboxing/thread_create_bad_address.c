@@ -39,15 +39,15 @@ int main() {
 
   /* First do a sanity check to ensure that we can successfully call
      the thread_create syscall directly. */
-  rc = NACL_SYSCALL(thread_create)(func_addr, stack_top, tls);
+  rc = NACL_SYSCALL(thread_create)(func_addr, stack_top, tls, 0);
   assert(rc == 0);
 
-  rc = NACL_SYSCALL(thread_create)(func_addr + 1, stack_top, tls);
+  rc = NACL_SYSCALL(thread_create)(func_addr + 1, stack_top, tls, 0);
   assert(rc == -EINVAL);
 
   /* Addresses above 1GB are outside of our address space. */
   bad_func_addr = (char *) 0x40000000;
-  rc = NACL_SYSCALL(thread_create)(bad_func_addr, stack_top, tls);
+  rc = NACL_SYSCALL(thread_create)(bad_func_addr, stack_top, tls, 0);
   assert(rc == -EFAULT);
 
   return 0;

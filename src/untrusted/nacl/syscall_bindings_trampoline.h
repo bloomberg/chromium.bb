@@ -111,7 +111,8 @@ typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 typedef void (*TYPE_nacl_thread_exit) (int32_t *stack_flag);
 typedef int (*TYPE_nacl_thread_create) (void *start_user_address,
                                         void *stack,
-                                        void *thread_ptr);
+                                        void *thread_ptr,
+                                        void *second_thread_ptr);
 typedef int (*TYPE_nacl_thread_nice) (const int nice);
 
 /* ============================================================ */

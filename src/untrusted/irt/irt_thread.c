@@ -9,7 +9,7 @@
 
 static int nacl_irt_thread_create(void *start_user_address, void *stack,
                                   void *thread_ptr) {
-  return -NACL_SYSCALL(thread_create)(start_user_address, stack, thread_ptr);
+  return -NACL_SYSCALL(thread_create)(start_user_address, stack, thread_ptr, 0);
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {

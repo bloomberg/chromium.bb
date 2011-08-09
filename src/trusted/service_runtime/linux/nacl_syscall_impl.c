@@ -478,8 +478,10 @@ int32_t NaClSysTls_Init(struct NaClAppThread  *natp,
 int32_t NaClSysThread_Create(struct NaClAppThread *natp,
                              void                 *prog_ctr,
                              void                 *stack_ptr,
-                             void                 *thread_ptr) {
-  return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, thread_ptr);
+                             void                 *thread_ptr,
+                             void                 *second_thread_ptr) {
+  return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, thread_ptr,
+                                    second_thread_ptr);
 }
 
 int32_t NaClSysTls_Get(struct NaClAppThread *natp) {

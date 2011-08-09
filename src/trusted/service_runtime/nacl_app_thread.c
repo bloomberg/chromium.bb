@@ -63,7 +63,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
                       uint32_t              tls_idx,
-                      uintptr_t             sys_tls) {
+                      uintptr_t             sys_tls,
+                      uint32_t              user_tls2) {
   int                         rv;
   uint64_t                    thread_idx;
 
@@ -94,7 +95,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tls = sys_tls;
-  natp->tls2 = 0;
+  natp->tls2 = user_tls2;
 
   natp->dynamic_delete_generation = 0;
 
@@ -150,7 +151,8 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
-                              uintptr_t             sys_tls) {
+                              uintptr_t             sys_tls,
+                              uint32_t              user_tls2) {
   uint32_t  tls_idx;
 
   /*
@@ -183,5 +185,6 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                            usr_entry,
                            usr_stack_ptr,
                            tls_idx,
-                           sys_tls);
+                           sys_tls,
+                           user_tls2);
 }

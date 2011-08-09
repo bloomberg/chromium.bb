@@ -148,7 +148,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
                       uint32_t              tls_idx,
-                      uintptr_t             sys_tls) NACL_WUR;
+                      uintptr_t             sys_tls,
+                      uint32_t              usr_tls2) NACL_WUR;
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 
@@ -164,7 +165,8 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
-                              uintptr_t             sys_tls_base) NACL_WUR;
+                              uintptr_t             sys_tls_base,
+                              uint32_t              usr_tls2) NACL_WUR;
 
 EXTERN_C_END
 

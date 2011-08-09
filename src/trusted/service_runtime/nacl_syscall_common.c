@@ -2298,7 +2298,8 @@ cleanup:
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *prog_ctr,
                                    void                 *stack_ptr,
-                                   void                 *thread_ptr) {
+                                   void                 *thread_ptr,
+                                   void                 *second_thread_ptr) {
   int32_t     retval = -NACL_ABI_EINVAL;
   uintptr_t   sys_tls;
   uintptr_t   sys_stack;
@@ -2347,7 +2348,8 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,
                                       sys_stack,
-                                      sys_tls);
+                                      sys_tls,
+                                      (uint32_t) (uintptr_t) second_thread_ptr);
 
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
