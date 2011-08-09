@@ -30,8 +30,8 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface) {
   GLuint format =
       static_cast<GLSurfaceOSMesa*>(compatible_surface)->GetFormat();
   context_ = OSMesaCreateContextExt(format,
-                                    24,  // depth bits
-                                    8,  // stencil bits
+                                    0,  // depth bits
+                                    0,  // stencil bits
                                     0,  // accum bits
                                     share_handle);
   if (!context_) {

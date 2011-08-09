@@ -27,8 +27,8 @@ const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
   8, 0,                    // 8 bit alpha
   0,                       // No accumulation buffer.
   0, 0, 0, 0,              // Ignore accumulation bits.
-  24,                      // 24 bit z-buffer size.
-  8,                       // 8-bit stencil buffer.
+  0,                       // no z-buffer.
+  0,                       // no stencil buffer.
   0,                       // No aux buffer.
   PFD_MAIN_PLANE,          // Main drawing plane (not overlay).
   0,                       // Reserved.
