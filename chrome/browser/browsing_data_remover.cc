@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -71,6 +72,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_history_(false),
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_networking_history_(false),
+      waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
@@ -93,6 +95,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_history_(false),
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_networking_history_(false),
+      waiting_for_clear_cookies_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
@@ -104,6 +107,7 @@ BrowsingDataRemover::~BrowsingDataRemover() {
 
 void BrowsingDataRemover::Remove(int remove_mask) {
   DCHECK(!removing_);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   removing_ = true;
 
   if (remove_mask & REMOVE_HISTORY) {
@@ -179,14 +183,14 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   if (remove_mask & REMOVE_COOKIES) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
-    net::CookieMonster* cookie_monster = NULL;
     net::URLRequestContextGetter* rq_context = profile_->GetRequestContext();
     if (rq_context) {
-      cookie_monster = rq_context->DONTUSEME_GetCookieStore()->
-          GetCookieMonster();
+      waiting_for_clear_cookies_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
+                     base::Unretained(this), base::Unretained(rq_context)));
     }
-    if (cookie_monster)
-      cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
 
     // REMOVE_COOKIES is actually "cookies and other site data" so we make sure
     // to remove other data such local databases, STS state, etc. These only can
@@ -531,4 +535,32 @@ void BrowsingDataRemover::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
   waiting_for_clear_lso_data_ = false;
   NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&BrowsingDataRemover::OnClearedCookies,
+                   base::Unretained(this), num_deleted));
+    return;
+  }
+
+  waiting_for_clear_cookies_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearCookiesOnIOThread(
+    net::URLRequestContextGetter* rq_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::CookieMonster* cookie_monster = rq_context->
+      GetURLRequestContext()->cookie_store()->GetCookieMonster();
+  if (cookie_monster) {
+      cookie_monster->DeleteAllCreatedBetweenAsync(
+          delete_begin_, delete_end_, true,
+          base::Bind(&BrowsingDataRemover::OnClearedCookies,
+                     base::Unretained(this)));
+  } else {
+    OnClearedCookies(0);
+  }
 }
