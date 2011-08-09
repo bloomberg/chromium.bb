@@ -90,8 +90,8 @@ void PrintWebViewHelper::PrintPageInternal(
                                           params.params.dpi);
 
   // Render page for printing.
-  RenderPage(params.params, &scale_factor, page_number, false, frame,
-             &metafile);
+  metafile.reset(RenderPage(params.params, &scale_factor, page_number, false,
+                            frame, metafile.get()));
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
@@ -127,19 +127,17 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   float scale_factor = static_cast<float>(print_params.desired_dpi /
                                           print_params.dpi);
 
-  // |metafile| is needed for RenderPage() below. |metafile| will not take the
-  // ownership of |print_preview_context_| metafile.
-  scoped_ptr<Metafile> metafile(print_preview_context_.metafile());
-
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  RenderPage(print_params, &scale_factor, page_number, true,
-             print_preview_context_.frame(), &metafile);
+  printing::Metafile* render_page_result =
+      RenderPage(print_params, &scale_factor, page_number, true,
+                 print_preview_context_.frame(),
+                 print_preview_context_.metafile());
+  // In the preview flow, RenderPage will never return a new metafile.
+  DCHECK_EQ(render_page_result, print_preview_context_.metafile());
 
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
-  // Release since |print_preview_context_| is the real owner.
-  metafile.release();
   scoped_ptr<printing::Metafile> page_metafile;
   if (print_preview_context_.IsModifiable()) {
     page_metafile.reset(
@@ -148,9 +146,9 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   PreviewPageRendered(page_number, page_metafile.get());
 }
 
-void PrintWebViewHelper::RenderPage(
+Metafile* PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
-    bool is_preview, WebFrame* frame, scoped_ptr<Metafile>* metafile) {
+    bool is_preview, WebFrame* frame, Metafile* metafile) {
   PageSizeMargins page_layout_in_points;
   GetPageSizeAndMarginsInPoints(frame, page_number, params,
                                 &page_layout_in_points);
@@ -178,17 +176,15 @@ void PrintWebViewHelper::RenderPage(
       static_cast<int>(page_layout_in_points.margin_top),
       static_cast<int>(page_layout_in_points.content_width),
       static_cast<int>(page_layout_in_points.content_height));
-  SkDevice* device = (*metafile)->StartPageForVectorCanvas(
+  SkDevice* device = metafile->StartPageForVectorCanvas(
       page_size, content_area, frame->getPrintPageShrink(page_number));
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it
   // can't be a stack object.
   SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
   canvas->unref();  // SkRefPtr and new both took a reference.
-  if (is_preview) {
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(),
-                                                       metafile->get());
-  }
+  if (is_preview)
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
 
   float webkit_scale_factor = frame->printPage(page_number, canvas.get());
   if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
@@ -199,7 +195,7 @@ void PrintWebViewHelper::RenderPage(
     *scale_factor /= webkit_scale_factor;
   }
 
-  bool result = (*metafile)->FinishPage();
+  bool result = metafile->FinishPage();
   DCHECK(result);
 
   if (!params.supports_alpha_blend) {
@@ -210,10 +206,10 @@ void PrintWebViewHelper::RenderPage(
     if (platform_device && platform_device->AlphaBlendUsed()) {
       // Currently, we handle alpha blend transparency for a single page.
       // Therefore, expecting a metafile with page count 1.
-      DCHECK_EQ(1U, (*metafile)->GetPageCount());
+      DCHECK_EQ(1U, metafile->GetPageCount());
 
       // Close the device context to retrieve the compiled metafile.
-      if (!(*metafile)->FinishDocument())
+      if (!metafile->FinishDocument())
         NOTREACHED();
 
       // Page used alpha blend, but printer doesn't support it.  Rewrite the
@@ -235,26 +231,27 @@ void PrintWebViewHelper::RenderPage(
       HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
       FillRect(bitmap_dc, &rect, whiteBrush);
 
-      scoped_ptr<Metafile> metafile2(new printing::NativeMetafile);
+      Metafile* metafile2(new printing::NativeMetafile);
       metafile2->Init();
       HDC hdc = metafile2->context();
       DCHECK(hdc);
       skia::InitializeDC(hdc);
 
-      RECT metafile_bounds = (*metafile)->GetPageBounds(1).ToRECT();
+      RECT metafile_bounds = metafile->GetPageBounds(1).ToRECT();
       // Process the old metafile, placing all non-AlphaBlend calls into the
       // new metafile, and copying the results of all the AlphaBlend calls
       // from the bitmap DC.
       EnumEnhMetaFile(hdc,
-                      (*metafile)->emf(),
+                      metafile->emf(),
                       EnhMetaFileProc,
                       &bitmap_dc,
                       &metafile_bounds);
 
       SelectObject(bitmap_dc, old_bitmap);
-      metafile->reset(metafile2.release());
+      return metafile2;
     }
   }
+  return metafile;
 }
 
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
