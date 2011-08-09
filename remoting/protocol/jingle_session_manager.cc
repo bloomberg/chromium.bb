@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/host_resolver.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/jingle_signaling_connector.h"
@@ -29,24 +30,28 @@ namespace protocol {
 
 // static
 JingleSessionManager* JingleSessionManager::CreateNotSandboxed() {
-  return new JingleSessionManager(NULL, NULL, NULL);
+  return new JingleSessionManager(NULL, NULL, NULL, NULL);
 }
 
 // static
 JingleSessionManager* JingleSessionManager::CreateSandboxed(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
+    HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* port_allocator_session_factory) {
   return new JingleSessionManager(network_manager, socket_factory,
+                                  host_resolver_factory,
                                   port_allocator_session_factory);
 }
 
 JingleSessionManager::JingleSessionManager(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
+    HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* port_allocator_session_factory)
     : network_manager_(network_manager),
       socket_factory_(socket_factory),
+      host_resolver_factory_(host_resolver_factory),
       port_allocator_session_factory_(port_allocator_session_factory),
       signal_strategy_(NULL),
       allow_nat_traversal_(false),
@@ -121,7 +126,8 @@ void JingleSessionManager::Init(
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (allow_nat_traversal) {
     jingle_info_request_.reset(
-        new JingleInfoRequest(signal_strategy_->CreateIqRequest()));
+        new JingleInfoRequest(signal_strategy_->CreateIqRequest(),
+                              host_resolver_factory_.get()));
     jingle_info_request_->Send(base::Bind(
         &JingleSessionManager::OnJingleInfo, base::Unretained(this)));
   } else {

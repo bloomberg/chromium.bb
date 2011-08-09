@@ -32,7 +32,7 @@
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/client/ipc_host_resolver.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_port_allocator_session.h"
@@ -40,6 +40,7 @@
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
+#include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -180,6 +181,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   IpcNetworkManager* network_manager = NULL;
   IpcPacketSocketFactory* socket_factory = NULL;
+  HostResolverFactory* host_resolver_factory = NULL;
   PortAllocatorSessionFactory* session_factory =
       CreatePepperPortAllocatorSessionFactory(this);
 
@@ -189,11 +191,12 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
     VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
     network_manager = new IpcNetworkManager(socket_dispatcher);
     socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
+    host_resolver_factory = new IpcHostResolverFactory(socket_dispatcher);
   }
 
   host_connection_.reset(new protocol::ConnectionToHost(
       context_.network_message_loop(), network_manager, socket_factory,
-      session_factory, enable_client_nat_traversal_));
+      host_resolver_factory, session_factory, enable_client_nat_traversal_));
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),
                                               view_proxy_));

@@ -5,12 +5,14 @@
 #ifndef REMOTING_JINGLE_GLUE_JINGLE_INFO_REQUEST_H_
 #define REMOTING_JINGLE_GLUE_JINGLE_INFO_REQUEST_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/libjingle/source/talk/base/sigslot.h"
 
 class Task;
 
@@ -25,6 +27,8 @@ class SocketAddress;
 namespace remoting {
 
 class IqRequest;
+class HostResolver;
+class HostResolverFactory;
 
 // JingleInfoRequest handles requesting STUN/Relay infromation from
 // the Google Talk network. The query is made when Send() is
@@ -35,7 +39,7 @@ class IqRequest;
 // created on.
 //
 // TODO(ajwong): Add support for a timeout.
-class JingleInfoRequest {
+class JingleInfoRequest : public sigslot::has_slots<> {
  public:
   // Callback to receive the Jingle configuration settings.  The argumetns are
   // passed by pointer so the receive may call swap on them.  The receiver does
@@ -45,16 +49,28 @@ class JingleInfoRequest {
       const std::string&, const std::vector<std::string>&,
       const std::vector<talk_base::SocketAddress>&)> OnJingleInfoCallback;
 
-  explicit JingleInfoRequest(IqRequest* request);
-  ~JingleInfoRequest();
+  explicit JingleInfoRequest(IqRequest* request,
+                             HostResolverFactory* host_resolver_factory);
+  virtual ~JingleInfoRequest();
 
   void Send(const OnJingleInfoCallback& callback);
 
  private:
-  void OnResponse(const buzz::XmlElement* stanza);
+  struct PendingDnsRequest;
 
+  void OnResponse(const buzz::XmlElement* stanza);
+  void OnStunAddressResponse(HostResolver* resolver,
+                             const talk_base::SocketAddress& address);
+
+  HostResolverFactory* host_resolver_factory_;
   scoped_ptr<IqRequest> request_;
   OnJingleInfoCallback on_jingle_info_cb_;
+
+  std::vector<std::string> relay_hosts_;
+  std::vector<talk_base::SocketAddress> stun_hosts_;
+  std::string relay_token_;
+
+  std::set<HostResolver*> stun_dns_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleInfoRequest);
 };

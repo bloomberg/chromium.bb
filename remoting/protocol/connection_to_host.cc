@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/host_resolver.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -28,11 +29,13 @@ ConnectionToHost::ConnectionToHost(
     MessageLoop* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
+    HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* session_factory,
     bool allow_nat_traversal)
     : message_loop_(message_loop),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
+      host_resolver_factory_(host_resolver_factory),
       port_allocator_session_factory_(session_factory),
       allow_nat_traversal_(allow_nat_traversal),
       state_(STATE_EMPTY),
@@ -107,6 +110,7 @@ void ConnectionToHost::InitSession() {
   JingleSessionManager* session_manager =
       JingleSessionManager::CreateSandboxed(
           network_manager_.release(), socket_factory_.release(),
+          host_resolver_factory_.release(),
           port_allocator_session_factory_.release());
 
   // TODO(ajwong): Make this a command switch when we're more stable.

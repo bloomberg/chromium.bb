@@ -496,6 +496,8 @@
         'client/frame_consumer.h',
         'client/input_handler.cc',
         'client/input_handler.h',
+        'client/ipc_host_resolver.cc',
+        'client/ipc_host_resolver.h',
         'client/rectangle_update_decoder.cc',
         'client/rectangle_update_decoder.h',
       ],
@@ -559,6 +561,8 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
+        'jingle_glue/host_resolver.cc',
+        'jingle_glue/host_resolver.h',
         'jingle_glue/http_port_allocator.cc',
         'jingle_glue/http_port_allocator.h',
         'jingle_glue/iq_request.cc',

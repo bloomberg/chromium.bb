@@ -5,7 +5,11 @@
 #include "remoting/jingle_glue/jingle_info_request.h"
 
 #include "base/task.h"
+#include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "net/base/net_util.h"
+#include "remoting/jingle_glue/host_resolver.h"
 #include "remoting/jingle_glue/iq_request.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -13,12 +17,17 @@
 
 namespace remoting {
 
-JingleInfoRequest::JingleInfoRequest(IqRequest* request)
-    : request_(request) {
+
+JingleInfoRequest::JingleInfoRequest(IqRequest* request,
+                                     HostResolverFactory* host_resolver_factory)
+    : host_resolver_factory_(host_resolver_factory),
+      request_(request) {
   request_->set_callback(NewCallback(this, &JingleInfoRequest::OnResponse));
 }
 
 JingleInfoRequest::~JingleInfoRequest() {
+  STLDeleteContainerPointers(stun_dns_requests_.begin(),
+                             stun_dns_requests_.end());
 }
 
 void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
@@ -28,10 +37,6 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
 }
 
 void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
-  std::vector<std::string> relay_hosts;
-  std::vector<talk_base::SocketAddress> stun_hosts;
-  std::string relay_token;
-
   const buzz::XmlElement* query =
       stanza->FirstNamed(buzz::QN_JINGLE_INFO_QUERY);
   if (query == NULL) {
@@ -53,7 +58,12 @@ void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
         if (!base::StringToInt(port_str, &port)) {
           LOG(WARNING) << "Unable to parse port in stanza" << stanza->Str();
         } else {
-          stun_hosts.push_back(talk_base::SocketAddress(host, port));
+          net::IPAddressNumber ip_number;
+          HostResolver* resolver = host_resolver_factory_->CreateHostResolver();
+          stun_dns_requests_.insert(resolver);
+          resolver->SignalDone.connect(
+              this, &JingleInfoRequest::OnStunAddressResponse);
+          resolver->Resolve(talk_base::SocketAddress(host, port));
         }
       }
     }
@@ -61,19 +71,31 @@ void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
 
   const buzz::XmlElement* relay = query->FirstNamed(buzz::QN_JINGLE_INFO_RELAY);
   if (relay) {
-    relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
+    relay_token_ = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
     for (const buzz::XmlElement* server =
          relay->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
          server != NULL;
          server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
       std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
-      if (host != buzz::STR_EMPTY) {
-        relay_hosts.push_back(host);
-      }
+      if (host != buzz::STR_EMPTY)
+        relay_hosts_.push_back(host);
     }
   }
 
-  on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
+  if (stun_dns_requests_.empty())
+    on_jingle_info_cb_.Run(relay_token_, relay_hosts_, stun_hosts_);
+}
+
+void JingleInfoRequest::OnStunAddressResponse(
+    HostResolver* resolver, const talk_base::SocketAddress& address) {
+  if (!address.IsNil())
+    stun_hosts_.push_back(address);
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE, resolver);
+  stun_dns_requests_.erase(resolver);
+
+  if (stun_dns_requests_.empty())
+    on_jingle_info_cb_.Run(relay_token_, relay_hosts_, stun_hosts_);
 }
 
 }  // namespace remoting

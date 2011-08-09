@@ -27,6 +27,7 @@ class PacketSocketFactory;
 namespace remoting {
 
 class JingleThread;
+class HostResolverFactory;
 class PortAllocatorSessionFactory;
 class XmppProxy;
 class VideoPacket;
@@ -76,6 +77,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   ConnectionToHost(MessageLoop* network_message_loop,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
+                   HostResolverFactory* host_resolver_factory,
                    PortAllocatorSessionFactory* session_factory,
                    bool allow_nat_traversal);
   virtual ~ConnectionToHost();
@@ -131,6 +133,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   MessageLoop* message_loop_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  scoped_ptr<HostResolverFactory> host_resolver_factory_;
   scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
   bool allow_nat_traversal_;
 
