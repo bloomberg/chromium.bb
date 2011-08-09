@@ -2144,7 +2144,7 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     NativeWidgetDelegate* delegate) {
-  if (Widget::IsPureViews() &&
+  if (Widget::IsPureViews() && ViewsDelegate::views_delegate &&
       ViewsDelegate::views_delegate->GetDefaultParentView()) {
     return new NativeWidgetViews(delegate);
   }
