@@ -675,9 +675,9 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   for (size_t i = 0; i < arraysize(hwsgs_full); ++i) {
     string desc;
     if (i < arraysize(hwsgs))
-      desc = StringPrintf("State %lu", i);
+      desc = StringPrintf("State %u", i);
     else
-      desc = StringPrintf("State %lu (resting thumb)", i - arraysize(hwsgs));
+      desc = StringPrintf("State %u (resting thumb)", i - arraysize(hwsgs));
 
     unsigned bdown = 0;
     unsigned bup = 0;
