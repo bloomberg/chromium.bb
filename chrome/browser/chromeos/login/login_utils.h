@@ -81,6 +81,9 @@ class LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
+  // Starts OAuth2 token retrieval and kicks off services that depend on it.
+  virtual void StartTokenServices(Profile* profile) = 0;
+
   // Supply credentials for sync and others to use.
   virtual void StartSync(
       Profile* profile,

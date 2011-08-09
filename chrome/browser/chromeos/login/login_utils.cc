@@ -284,6 +284,10 @@ class LoginUtilsImpl : public LoginUtils,
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
 
+  // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
+  // in |user_profile|) and kicks off internal services that depend on them.
+  virtual void StartTokenServices(Profile* user_profile) OVERRIDE;
+
   // Supply credentials for sync and others to use.
   virtual void StartSync(
       Profile* profile,
@@ -588,6 +592,16 @@ void LoginUtilsImpl::FetchCookies(
   cf->AttemptFetch(credentials.data);
 }
 
+void LoginUtilsImpl::StartTokenServices(Profile* user_profile) {
+  std::string oauth1_token;
+  std::string oauth1_secret;
+  if (!ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret))
+    return;
+
+  FetchSecondaryTokens(user_profile->GetOffTheRecordProfile(), oauth1_token,
+                       oauth1_secret);
+}
+
 void LoginUtilsImpl::StartSync(
     Profile* user_profile,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
@@ -870,14 +884,21 @@ void LoginUtilsImpl::FetchSecondaryTokens(Profile* offrecord_profile,
 }
 
 bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
-                                     std::string* token,
-                                     std::string* secret) {
+                                           std::string* token,
+                                           std::string* secret) {
   PrefService* pref_service = user_profile->GetPrefs();
-  *token = pref_service->GetString(prefs::kOAuth1Token);
-  *secret = pref_service->GetString(prefs::kOAuth1Secret);
-  if (!token->length() || !secret->length())
+  std::string encoded_token = pref_service->GetString(prefs::kOAuth1Token);
+  std::string encoded_secret = pref_service->GetString(prefs::kOAuth1Secret);
+  if (!encoded_token.length() || !encoded_secret.length())
     return false;
 
+  std::string decoded_token = authenticator_->DecryptToken(encoded_token);
+  std::string decoded_secret = authenticator_->DecryptToken(encoded_secret);
+  if (!decoded_token.length() || !decoded_secret.length())
+    return false;
+
+  *token = decoded_token;
+  *secret = decoded_secret;
   return true;
 }
 
@@ -886,8 +907,10 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
                                             const std::string& secret) {
   // First store OAuth1 token + service for the current user profile...
   PrefService* pref_service = user_profile->GetPrefs();
-  pref_service->SetString(prefs::kOAuth1Token, token);
-  pref_service->SetString(prefs::kOAuth1Secret, secret);
+  pref_service->SetString(prefs::kOAuth1Token,
+                          authenticator_->EncryptToken(token));
+  pref_service->SetString(prefs::kOAuth1Secret,
+                          authenticator_->EncryptToken(secret));
 
   // ...then record the presence of valid OAuth token for this account in local
   // state as well.

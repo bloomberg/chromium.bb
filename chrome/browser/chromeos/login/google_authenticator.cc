@@ -412,6 +412,17 @@ void GoogleAuthenticator::VerifyOAuth1AccessToken(
   NOTIMPLEMENTED();
 }
 
+std::string GoogleAuthenticator::EncryptToken(const std::string& unused) {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+std::string GoogleAuthenticator::DecryptToken(const std::string& unused) {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+
 void GoogleAuthenticator::LoadSystemSalt() {
   if (!system_salt_.empty())
     return;

@@ -147,6 +147,8 @@ class ParallelAuthenticator : public Authenticator,
                          const std::string& login_captcha) OVERRIDE;
   virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
       const std::string& oauth1_secret) OVERRIDE;
+  virtual std::string EncryptToken(const std::string& token) OVERRIDE;
+  virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
 
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
@@ -238,13 +240,10 @@ class ParallelAuthenticator : public Authenticator,
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
 
-  // Converts the binary data |binary| into an ascii hex string and stores
-  // it in |hex_string|.  Not guaranteed to be NULL-terminated.
-  // Returns false if |hex_string| is too small, true otherwise.
-  static bool BinaryToHex(const std::vector<unsigned char>& binary,
-                          const unsigned int binary_len,
-                          char* hex_string,
-                          const unsigned int len);
+  // Returns the ascii encoding of user supplemental key.
+  // TODO(zelidrag): http://crosbug.com/18905. Replace this with a key from
+  // nssdb instead.
+  std::string UserSupplementalKeyAsAscii();
 
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).

@@ -178,6 +178,8 @@ void LoginPerformer::OnProfileCreated(Profile* profile, Status status) {
     // was performed via ClientLogin. We don't need this in the case when
     // we use extension + OAuth1 access token check flow.
     LoginUtils::Get()->FetchCookies(profile, credentials_);
+  } else {
+    LoginUtils::Get()->StartTokenServices(profile);
   }
   LoginUtils::Get()->StartSync(profile, credentials_);
   credentials_ = GaiaAuthConsumer::ClientLoginResult();

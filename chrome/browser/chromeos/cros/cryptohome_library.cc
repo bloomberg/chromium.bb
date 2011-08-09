@@ -11,6 +11,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 
+namespace {
+  const char kStubSystemSalt[] = "stub_system_salt";
+}
+
 namespace chromeos {
 
 // This class handles the interaction with the ChromeOS cryptohome library APIs.
@@ -349,8 +353,9 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   CryptohomeBlob GetSystemSalt() {
     CryptohomeBlob salt = CryptohomeBlob();
-    salt.push_back(0);
-    salt.push_back(0);
+    for (size_t i = 0; i < strlen(kStubSystemSalt); i++)
+      salt.push_back(static_cast<unsigned char>(kStubSystemSalt[i]));
+
     return salt;
   }
 
