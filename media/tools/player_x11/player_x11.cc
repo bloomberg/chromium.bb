@@ -16,6 +16,7 @@
 #include "media/base/callback.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
@@ -108,7 +109,7 @@ bool InitPipeline(MessageLoop* message_loop,
     collection->AddAudioRenderer(new media::NullAudioRenderer());
 
   // Create the pipeline and start it.
-  *pipeline = new media::PipelineImpl(message_loop);
+  *pipeline = new media::PipelineImpl(message_loop, new media::MediaLog());
   media::PipelineStatusNotification note;
   (*pipeline)->Start(collection.release(), filename, note.Callback());
 

@@ -8,6 +8,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
+#include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/adaptive_demuxer.h"
@@ -67,7 +68,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   MessageLoop* pipeline_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
-  pipeline_ = new PipelineImpl(pipeline_loop);
+  pipeline_ = new PipelineImpl(pipeline_loop, new media::MediaLog());
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());

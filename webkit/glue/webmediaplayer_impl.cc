@@ -338,7 +338,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
-  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::CREATING));
+  media_log_->AddEvent(
+      media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 }
 
 bool WebMediaPlayerImpl::Initialize(
@@ -352,7 +353,7 @@ bool WebMediaPlayerImpl::Initialize(
     return false;
   }
 
-  pipeline_ = new media::PipelineImpl(pipeline_message_loop);
+  pipeline_ = new media::PipelineImpl(pipeline_message_loop, media_log_);
 
   // Also we want to be notified of |main_loop_| destruction.
   main_loop_->AddDestructionObserver(this);
@@ -427,9 +428,9 @@ bool WebMediaPlayerImpl::Initialize(
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
-  media_log_->AddEvent(
-      media_log_->CreateEvent(media::MediaLogEvent::DESTROYING));
   Destroy();
+  media_log_->AddEvent(
+      media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
   // Finally tell the |main_loop_| we don't want to be notified of destruction
   // event.
@@ -517,6 +518,8 @@ void WebMediaPlayerImpl::seek(float seconds) {
     GetClient()->timeChanged();
     return;
   }
+
+  media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
 
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
