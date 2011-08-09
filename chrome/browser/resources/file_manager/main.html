@@ -110,7 +110,6 @@
          >[TITLE]</div>
     <div class=dialog-header>
       <div class=breadcrumbs></div>
-      <!-- TODO(rginda): Add icons instead of unicode glyphs -->
       <button class=detail-view tabindex=4
               ><img src='images/icon-detail-view.png'></button
       ><button class=thumbnail-view tabindex=5
@@ -122,9 +121,15 @@
               ></button>
     </div>
     <div class=dialog-body>
-      <div class=list-container>
-        <div class=detail-table tabindex=0></div>
-        <grid class=thumbnail-grid tabindex=0></grid>
+      <div class=left-column>
+        <div class=list-container>
+          <div class=detail-table tabindex=0></div>
+          <grid class=thumbnail-grid tabindex=0></grid>
+        </div>
+        <div class=downloads-warning>
+          <img src=images/warning_icon_square_26x26.png>
+          <div></div>
+        </div>
       </div>
       <div class=preview-container>
         <div class=table-header style='width:100%'>

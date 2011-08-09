@@ -167,11 +167,6 @@ FileManager.prototype = {
   const RIGHT_TRIANGLE = '\u25b8';
 
   /**
-   * The DirectoryEntry.fullPath value of the Downloads directory.
-   */
-  const DOWNLOADS_DIRECTORY = '/Downloads';
-
-  /**
    * The DirectoryEntry.fullPath value of the directory containing externally
    * mounted removable storage volumes.
    */
@@ -182,6 +177,22 @@ FileManager.prototype = {
    * mounted archive file volumes.
    */
   const ARCHIVE_DIRECTORY = '/archive';
+
+  /**
+   * The DirectoryEntry.fullPath value of the downloads directory.
+   */
+  const DOWNLOADS_DIRECTORY = '/Downloads';
+
+  /**
+   * Height of the downloads folder warning, in px.
+   */
+  const DOWNLOADS_WARNING_HEIGHT = '57px';
+
+  /**
+   * Location of the FAQ about the downloads directory.
+   */
+  const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
+      'answer.py?hl=en&answer=1061547';
 
   /**
    * Mnemonics for the second parameter of the changeDirectory method.
@@ -565,6 +576,15 @@ FileManager.prototype = {
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
     this.copyButton_ = this.dialogDom_.querySelector('.clipboard-copy');
     this.pasteButton_ = this.dialogDom_.querySelector('.clipboard-paste');
+
+    this.downloadsWarning_ =
+        this.dialogDom_.querySelector('.downloads-warning');
+    var html = util.htmlUnescape(strf('DOWNLOADS_DIRECTORY_WARNING',
+                                      DOWNLOADS_FAQ_URL));
+    // TODO(rginda): Fix this string in the grd file to include the target
+    // attribute, post R14.
+    html = html.replace('<a href=', '<a target=new_ href=');
+    this.downloadsWarning_.lastElementChild.innerHTML = html;
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
@@ -1004,6 +1024,11 @@ FileManager.prototype = {
    */
   FileManager.prototype.onPopState_ = function(event) {
     this.changeDirectory(event.state, CD_NO_HISTORY);
+  };
+
+  FileManager.prototype.requestResize_ = function(timeout) {
+    var self = this;
+    setTimeout(function() { self.onResize_() }, timeout || 0);
   };
 
   /**
@@ -2347,6 +2372,20 @@ FileManager.prototype = {
                         location.href);
     }
 
+    if (this.currentDirEntry_.fullPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
+        DOWNLOADS_DIRECTORY) {
+      if (this.downloadsWarning_.style.height != DOWNLOADS_WARNING_HEIGHT) {
+        // Current path starts with DOWNLOADS_DIRECTORY, show the warning.
+        this.downloadsWarning_.style.height = DOWNLOADS_WARNING_HEIGHT;
+        this.requestResize_(100);
+      }
+    } else {
+      if (this.downloadsWarning_.style.height != '0') {
+        this.downloadsWarning_.style.height = '0';
+        this.requestResize_(100);
+      }
+    }
+
     this.updateCommands_();
     this.updateOkButton_();
 
@@ -2408,8 +2447,8 @@ FileManager.prototype = {
       // commonly hidden patterns might be nice too.
       if (self.filterFiles_) {
         spliceArgs = spliceArgs.filter(function(e) {
-            return e.name.substr(0, 1) != '.';
-          });
+          return e.name.substr(0, 1) != '.';
+        });
       }
 
       spliceArgs.unshift(0, 0);  // index, deleteCount

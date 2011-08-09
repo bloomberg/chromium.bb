@@ -125,11 +125,38 @@ button.thumbnail-view > img {
   top: 1px;
 }
 
-.list-container {
+.left-column {
+  display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+}
+
+.list-container {
   display: -webkit-box;
+  -webkit-box-flex: 1;
   position: relative;
+}
+
+.downloads-warning {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  height: 0;
+  -webkit-transition: height 0.07s linear;
+  background-color: #f0f0f0;
+  font-size: 13px;
+  color: #666;
+  -webkit-box-align: center;
+  overflow: hidden;
+}
+
+.downloads-warning img {
+  display: -webkit-box;
+  padding: 15px;
+}
+
+.downloads-warning div {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
 }
 
 /* The cr.ui.Grid representing the detailed file list. */

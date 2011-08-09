@@ -63,6 +63,7 @@
 
         <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />
+	<include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
 
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_COPY" file="file_manager/images/button-icon-copy.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_PASTE" file="file_manager/images/button-icon-paste.png" type="BINDATA" />

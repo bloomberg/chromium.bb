@@ -57,6 +57,16 @@ var util = {
     return code;
   },
 
+  htmlUnescape: function(str) {
+    return str.replace(/&(lt|gt|amp);/g, function(entity) {
+      switch (entity) {
+        case '&lt;': return '<';
+        case '&gt;': return '>';
+        case '&amp;': return '&';
+      }
+    });
+  },
+
   /**
    * Given a list of Entries, recurse any DirectoryEntries, and call back
    * with a list of all file and directory entries encountered (including the
