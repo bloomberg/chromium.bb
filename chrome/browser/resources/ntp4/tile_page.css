@@ -26,14 +26,17 @@
   position: relative;
   text-align: center;
   width: 100%;
+  /* TODO(estade): this mask is disabled for technical reasons. It negatively
+   * impacts performance of page switching, also it causes problems with Mac
+   * text: http://crbug.com/86955
   -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, black 30px);
+  */
   /* The following four properties are necessary so that the mask won't clip
    * the scrollbar. */
   box-sizing: border-box;
-  /* Scrollbar + balance right padding.  */
-  padding-left: 26px;
-  /* Same width as the scrollbar. */
-  padding-right: 13px;
+  /* Scrollbar width(13px) + balance right padding.  */
+  padding-left: 93px;
+  padding-right: 80px;
   /* Don't apply clip mask to padding. */
   -webkit-mask-clip: content-box;
 }
