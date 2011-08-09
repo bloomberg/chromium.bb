@@ -27,6 +27,11 @@ Buffer_Dev::Buffer_Dev(const Buffer_Dev& other)
   Init();
 }
 
+Buffer_Dev::Buffer_Dev(PP_Resource resource)
+    : Resource(resource) {
+  Init();
+}
+
 Buffer_Dev::Buffer_Dev(Instance* instance, uint32_t size)
     : data_(NULL),
       size_(0) {

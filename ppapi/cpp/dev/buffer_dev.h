@@ -16,6 +16,7 @@ class Buffer_Dev : public Resource {
   // Creates an is_null() Buffer object.
   Buffer_Dev();
   Buffer_Dev(const Buffer_Dev& other);
+  explicit Buffer_Dev(PP_Resource resource);
 
   // Creates & Maps a new Buffer in the browser with the given size. The
   // resulting object will be is_null() if either Create() or Map() fails.
