@@ -1,7 +1,7 @@
 /*
- * Copyright 2010  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -12,6 +12,8 @@
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>
 
+#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
 
 int send_message(int sock_fd, char *data, size_t data_size,
                  int *fds, int fds_size) {
@@ -94,6 +96,10 @@ const uint8_t srpc_reply_message[] = {
 int keep_plugin_happy() {
   int sock_fd;
   char buf[100];
+
+  if (!NaClSrpcModuleInit())
+    return -1;
+  NaClPluginLowLevelInitializationComplete();
 
   sock_fd = imc_accept(3);
   if (sock_fd < 0)

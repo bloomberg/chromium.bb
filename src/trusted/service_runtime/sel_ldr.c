@@ -137,10 +137,10 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->service_address = NULL;
   nap->secure_service = NULL;
   nap->manifest_proxy = NULL;
+  nap->kern_service = NULL;
   nap->reverse_client = NULL;
   nap->reverse_channel_initialization_state =
       NACL_REVERSE_CHANNEL_UNINITIALIZED;
-  nap->manifest_service = NULL;
 
   if (!NaClMutexCtor(&nap->mu)) {
     goto cleanup_dynamic_load_mutex;

@@ -41,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -210,6 +211,8 @@ struct NaClApp {
   struct NaClThread               reverse_setup_thread;
   /* used only during setup, thread dtors before exiting */
   struct NaClManifestProxy        *manifest_proxy;
+  struct NaClKernService          *kern_service;
+
   struct NaClSecureReverseClient  *reverse_client;
   enum NaClReverseChannelInitializationState {
     NACL_REVERSE_CHANNEL_UNINITIALIZED,
@@ -218,7 +221,6 @@ struct NaClApp {
   }                               reverse_channel_initialization_state;
   struct NaClSrpcChannel          reverse_channel;
 
-  struct NaClManifestProxy        *manifest_service;
 
   NaClErrorCode             module_load_status;
   int                       module_may_start;

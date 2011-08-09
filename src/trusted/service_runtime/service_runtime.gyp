@@ -41,6 +41,7 @@
           'nacl_closure.c',
           'nacl_desc_effector_ldr.c',
           'nacl_globals.c',
+          'nacl_kern_services.c',
           'nacl_memory_object.c',
           'nacl_signal_common.c',
           'nacl_stack_safety.c',

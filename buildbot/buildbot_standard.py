@@ -288,10 +288,14 @@ def BuildScript(status, context):
     with Step('pyauto_tests', status, halt_on_fail=False):
       SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
 
-  if do_dso_tests:
-    with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
-      SCons(context, browser_test=True,
-            args=['SILENT=1', 'dynamic_library_browser_tests'])
+  # TODO(bsy): retained in case the test(s) are revived to use the new
+  # manifest file API.  Remove when __launchExecutableFromFd is removed
+  # if the tests haven't been moved over to the new API.
+  #
+  # if do_dso_tests:
+  #   with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
+  #     SCons(context, browser_test=True,
+  #           args=['SILENT=1', 'dynamic_library_browser_tests'])
 
   # IRT is incompatible with glibc startup hacks.
   # See http://code.google.com/p/nativeclient/issues/detail?id=2092

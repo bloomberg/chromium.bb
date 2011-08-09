@@ -366,6 +366,11 @@ int NaClManifestProxyConnectionFactory(
   rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
                                          NACL_REVERSE_CONTROL_ADD_CHANNEL,
                                          &bool_status);
+  if (NACL_SRPC_RESULT_OK != rpc_result) {
+    NaClLog(LOG_FATAL,
+            "NaClManifestProxyConnectionFactory: add channel RPC failed: %d",
+            rpc_result);
+  }
   NaClLog(4,
           "NaClManifestProxyConnectionFactory: Start status %d\n", bool_status);
 

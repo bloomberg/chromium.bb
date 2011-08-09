@@ -27,6 +27,8 @@
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
+#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
+// for pp::VarPrivate
 #include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
 #include "native_client/src/third_party/ppapi/cpp/rect.h"
 #include "native_client/src/third_party/ppapi/cpp/url_loader.h"
@@ -104,11 +106,50 @@ class Plugin : public pp::InstancePrivate {
 
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
+  //
+  // Starts NaCl module but does not wait until low-level
+  // initialization (e.g., ld.so dynamic loading of manifest files) is
+  // done.  The module will become ready later, asynchronously.  Other
+  // event handlers should block until the module is ready before
+  // trying to communicate with it, i.e., until nacl_ready_state is
+  // DONE.  Note, however, we already have another mechanism that
+  // prevents event delivery: StartJSObjectProxy plumbs through
+  // NaClSubprocess to SrpcClient which upcalls
+  // Plugin::StartProxiedExecution, which sets ppapi_proxy_.  And NULL
+  // == ppapi_proxy_ prevents events from being delivered, even if
+  // nacl_ready_state is DONE.
+  //
+  // NB: currently we do not time out, so if the untrusted code
+  // does not signal that it is ready, then we will deadlock the main
+  // thread of the renderer on this subsequent event delivery.  We
+  // should include a time-out at which point we declare the
+  // nacl_ready_state to be done, and let the normal crash detection
+  // mechanism(s) take over.
+  //
   // Updates nacl_module_origin() and nacl_module_url().
-  bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
+                      pp::CompletionCallback init_done_cb);
+
+  // Finish hooking interfaces up, after low-level initialization is
+  // complete.
+  bool LoadNaClModuleContinuationIntern(ErrorInfo* error_info);
+
+  // Continuation for LaunchExecutableFromFd
+  void LaunchExecutableFromFdContinuation(int32_t pp_error);
+  pp::CompletionCallback MakeLaunchExecutableFromFdCallback(
+      pp::VarPrivate js_continuation);
+
+  // Continuation for starting SRPC/JSProxy services as appropriate.
+  // This is invoked as a callback when the NaCl module makes the
+  // init_done reverse RPC to tell us that low-level initialization
+  // such as ld.so processing is done.  That initialization requires
+  // that the main thread be free in order to do Pepper
+  // main-thread-only operations such as file processing.
+  bool LoadNaClModuleContinuation(int32_t pp_error);
 
   // Load support.
   // A helper SRPC NaCl module can be loaded given a DescWrapper.
+  // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns kInvalidNaClSubprocessId or the ID of the new helper NaCl module.
   NaClSubprocessId LoadHelperNaClModule(nacl::DescWrapper* wrapper,
@@ -317,11 +358,13 @@ class Plugin : public pp::InstancePrivate {
                                nacl::DescWrapper** fds, int fds_count);
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
+
   // Help load a nacl module, from the file specified in wrapper.
   // This will fully initialize the |subprocess| if the load was successful.
   bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                             NaClSubprocess* subprocess,
-                            ErrorInfo* error_info);
+                            ErrorInfo* error_info,
+                            pp::CompletionCallback init_done_cb);
   bool StartSrpcServices(NaClSubprocess* subprocess, ErrorInfo* error_info);
   bool StartSrpcServicesCommon(NaClSubprocess* subprocess,
                                ErrorInfo* error_info);
@@ -337,11 +380,13 @@ class Plugin : public pp::InstancePrivate {
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.
   void NexeFileDidOpen(int32_t pp_error);
+  void NexeFileDidOpenContinuation(int32_t pp_error);
 
   // Callback used when a .nexe is translated from bitcode.  If the translation
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.
   void BitcodeDidTranslate(int32_t pp_error);
+  void BitcodeDidTranslateContinuation(int32_t pp_error);
 
   // NaCl ISA selection manifest file support.  The manifest file is specified
   // using the "nacl" attribute in the <embed> tag.  First, the manifest URL (or
@@ -490,6 +535,12 @@ class Plugin : public pp::InstancePrivate {
   nacl::scoped_ptr<pp::Selection_Dev> selection_adapter_;
   nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
   nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
+
+  // used for LaunchExecutableFromFd -- scaffolding, to be removed
+  // once ld.so dynamic loading / file interfaces stabilizes
+  pp::VarPrivate js_continuation_;
+  // used for NexeFileDidOpenContinuation
+  int64_t load_start_;
 
   int64_t init_time_;
   int64_t ready_time_;

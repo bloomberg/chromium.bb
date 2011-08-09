@@ -31,6 +31,9 @@ class ReverseInterface : public RefCountBase {
   // debugging, messaging
   virtual void Log(nacl::string message) = 0;
 
+  // Startup handshake
+  virtual void StartupInitializationComplete() = 0;
+
   // Name service use.
   //
   // Some of these functions require that the actual operation be done

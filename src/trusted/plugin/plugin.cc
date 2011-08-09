@@ -106,6 +106,7 @@ bool GetReadyStateProperty(void* obj, SrpcParams* params) {
   return true;
 }
 
+// Used only by temporary ld.so infrastructure
 bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
   Plugin* plugin = static_cast<Plugin*>(obj);
@@ -119,19 +120,16 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
                                Plugin::kUnknownBytes,
                                Plugin::kUnknownBytes);
   ErrorInfo error_info;
-  bool was_successful = plugin->LoadNaClModule(wrapper.get(), &error_info);
-  // Set the readyState attribute to indicate ready to start.
-  if (was_successful) {
-    plugin->ReportLoadSuccess(Plugin::LENGTH_IS_NOT_COMPUTABLE,
-                              Plugin::kUnknownBytes,
-                              Plugin::kUnknownBytes);
-  } else {
+  pp::VarPrivate continuation =
+      *static_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
+  bool was_successful = plugin->LoadNaClModule(
+      wrapper.get(), &error_info,
+      plugin->MakeLaunchExecutableFromFdCallback(continuation));
+
+  if (!was_successful) {
     error_info.PrependMessage("__launchExecutableFromFd failed: ");
     plugin->ReportLoadError(error_info);
   }
-  pp::VarPrivate* continuation =
-      static_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
-  continuation->Call(pp::Var(), was_successful);
   return true;
 }
 
@@ -729,11 +727,13 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
-
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
-                                  ErrorInfo* error_info) {
-  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(this);
+                                  ErrorInfo* error_info,
+                                  pp::CompletionCallback init_done_cb) {
+  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(
+      this,
+      init_done_cb);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
@@ -801,14 +801,56 @@ bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            ErrorInfo* error_info) {
+                            ErrorInfo* error_info,
+                            pp::CompletionCallback init_done_cb) {
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
-  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info)
-        && StartSrpcServicesCommon(&main_subprocess_, error_info)
+  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info,
+                             init_done_cb))) {
+    return false;
+  }
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
+                 main_subprocess_.detailed_description().c_str()));
+  return true;
+}
+
+// BUG(bsy):  this code MUST be deleted prior to public release.
+// Calling out to JavaScript from trusted code is UNSAFE.
+void Plugin::LaunchExecutableFromFdContinuation(int32_t pp_error) {
+  bool was_successful;
+  ErrorInfo error_info;
+
+  UNREFERENCED_PARAMETER(pp_error);
+  NaClLog(4, "Entered LaunchExecutableFromFdContinuation\n");
+  was_successful = LoadNaClModuleContinuationIntern(&error_info);
+  if (was_successful) {
+    // Set the readyState attribute to indicate ready to start.
+    ReportLoadSuccess(Plugin::LENGTH_IS_NOT_COMPUTABLE,
+                      Plugin::kUnknownBytes,
+                      Plugin::kUnknownBytes);
+  } else {
+    error_info.PrependMessage("__launchExecutableFromFd failed: ");
+    ReportLoadError(error_info);
+  }
+  js_continuation_.Call(pp::Var(), was_successful);
+  // should invalidate js_continuation_.
+}
+
+// BUG(bsy) If JavaScript code invokes __launchExecutableFromFd twice
+// in succession without waiting for the completion callback, we may
+// call the wrong continuation.  (This is temporary scaffolding.)
+pp::CompletionCallback Plugin::MakeLaunchExecutableFromFdCallback(
+    pp::VarPrivate js_continuation) {
+  js_continuation_ = js_continuation;
+  return callback_factory_.NewCallback(
+      &Plugin::LaunchExecutableFromFdContinuation);
+}
+
+bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
+  if (!(StartSrpcServicesCommon(&main_subprocess_, error_info)
         && StartJSObjectProxy(&main_subprocess_, error_info))) {
     return false;
   }
@@ -828,7 +870,16 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
     return kInvalidNaClSubprocessId;
   }
 
-  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info)
+  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info,
+                             pp::BlockUntilComplete())
+        // We need not wait for the init_done callback.  We can block
+        // here in StartSrpcServicesCommon, since helper NaCl modules
+        // are spawned from a private thread.
+        //
+        // NB: More refactoring might be needed, however, if helper
+        // NaCl modules have their own manifest.  Currently the
+        // manifest is a per-plugin-instance object, not a per
+        // NaClSubprocess object.
         && StartSrpcServicesCommon(nacl_subprocess.get(), error_info))) {
     return kInvalidNaClSubprocessId;
   }
@@ -1300,23 +1351,45 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
                        nexe_bytes_read,
                        nexe_bytes_read);
 
-  int64_t load_start = NaClGetTimeOfDayMicroseconds();
+  load_start_ = NaClGetTimeOfDayMicroseconds();
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
-  bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
+  NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
+  bool was_successful = LoadNaClModule(
+      wrapper.get(), &error_info,
+      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
+
+  if (!was_successful) {
+    ReportLoadError(error_info);
+  }
+}
+
+void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
+  ErrorInfo error_info;
+  bool was_successful;
+
+  UNREFERENCED_PARAMETER(pp_error);
+  NaClLog(4, "Entered NexeFileDidOpenContinuation\n");
+  NaClLog(4, "NexeFileDidOpenContinuation: invoking"
+          " LoadNaClModuleContinuationIntern\n");
+  was_successful = LoadNaClModuleContinuationIntern(&error_info);
   if (was_successful) {
+    NaClLog(4, "NexeFileDidOpenContinuation: success;"
+            " setting histograms\n");
     ready_time_ = NaClGetTimeOfDayMicroseconds();
     HistogramStartupTimeSmall(
         "NaCl.Perf.StartupTime.LoadModule",
-        static_cast<float>(ready_time_ - load_start) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time_ - load_start_) / NACL_MICROS_PER_MILLI);
     HistogramStartupTimeMedium(
         "NaCl.Perf.StartupTime.Total",
         static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
 
-    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_bytes_read, nexe_bytes_read);
+    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_size_, nexe_size_);
   } else {
+    NaClLog(4, "NexeFileDidOpenContinuation: failed.");
     ReportLoadError(error_info);
   }
+  NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -1335,7 +1408,21 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(pnacl_.ReleaseTranslatedFD());
   ErrorInfo error_info;
-  bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
+  bool was_successful = LoadNaClModule(
+      wrapper.get(), &error_info,
+      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
+
+  if (!was_successful) {
+    ReportLoadError(error_info);
+  }
+}
+
+void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
+  ErrorInfo error_info;
+  bool was_successful = LoadNaClModuleContinuationIntern(&error_info);
+
+  NaClLog(4, "Entered BitcodeDidTranslateContinuation\n");
+  UNREFERENCED_PARAMETER(pp_error);
   if (was_successful) {
     ReportLoadSuccess(LENGTH_IS_NOT_COMPUTABLE,
                       kUnknownBytes,

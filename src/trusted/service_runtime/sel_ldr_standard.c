@@ -34,6 +34,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
+#include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
 #include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -471,10 +472,42 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
 
 int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   struct NaClManifestProxy                    *manifest_proxy = NULL;
-  int                                         rv;
+  struct NaClKernService                      *kern_service = NULL;
+  int                                         rv = 0;
   enum NaClReverseChannelInitializationState  init_state;
 
   NaClNameServiceLaunch(nap->name_service);
+
+  kern_service = (struct NaClKernService *) malloc(sizeof *kern_service);
+  if (NULL == kern_service) {
+    NaClLog(LOG_ERROR,
+            "NaClAppLaunchServiceThreads: No memory for kern service\n");
+    goto done;
+  }
+
+  if (!NaClKernServiceCtor(kern_service,
+                           NaClAddrSpSquattingThreadIfFactoryFunction,
+                           (void *) nap,
+                           nap)) {
+    NaClLog(LOG_ERROR,
+            "NaClAppLaunchServiceThreads: KernServiceCtor failed\n");
+    free(kern_service);
+    kern_service = NULL;
+    goto done;
+  }
+
+  if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
+                                           kern_service)) {
+    NaClLog(LOG_ERROR,
+            "NaClAppLaunchServiceThreads: KernService start service failed\n");
+    goto done;
+  }
+  /*
+   * NB: StartServiceThread grabbed another reference to kern_service,
+   * used by the service thread.  Closing the connection capability
+   * should cause the service thread to shut down and in turn release
+   * that reference.
+   */
 
   /*
    * The locking here isn't really needed.  Here is why:
@@ -511,12 +544,17 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   if (NACL_REVERSE_CHANNEL_INITIALIZED != init_state) {
     NaClLog(3,
             ("NaClAppLaunchServiceThreads: no reverse channel;"
-             " NOT launching manifest proxy\n"));
+             " launched kernel services.\n"));
+    NaClLog(3,
+            ("NaClAppLaunchServiceThreads: no reverse channel;"
+             " NOT launching manifest proxy.\n"));
+    nap->kern_service = kern_service;
+    kern_service = NULL;
+
     rv = 1;
     goto done;
   }
 
-  rv = 0;
   /*
    * Allocate/construct the manifest proxy without grabbing global
    * locks.
@@ -533,14 +571,19 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   manifest_proxy = (struct NaClManifestProxy *) malloc(sizeof *manifest_proxy);
   if (NULL == manifest_proxy) {
     NaClLog(LOG_ERROR, "No memory for manifest proxy\n");
-    goto manifest_proxy_alloc_failure;
+    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    goto done;
   }
   if (!NaClManifestProxyCtor(manifest_proxy,
                              NaClAddrSpSquattingThreadIfFactoryFunction,
                              (void *) nap,
                              nap)) {
     NaClLog(LOG_ERROR, "ManifestProxyCtor failed\n");
-    goto manifest_proxy_ctor_failure;
+    /* do not leave a non-NULL pointer to a not-fully constructed object */
+    free(manifest_proxy);
+    manifest_proxy = NULL;
+    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    goto done;
   }
 
   /*
@@ -549,33 +592,55 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
   if (!NaClSimpleServiceStartServiceThread((struct NaClSimpleService *)
                                            manifest_proxy)) {
     NaClLog(LOG_ERROR, "ManifestProxy start service failed\n");
-    NaClRefCountUnref((struct NaClRefCount *) manifest_proxy);
-    manifest_proxy = NULL;
-    goto manifest_proxy_start_failed;
+    NaClDescUnref(kern_service->base.bound_and_cap[1]);
+    goto done;
   }
 
   NaClXMutexLock(&nap->mu);
   CHECK(NULL == nap->manifest_proxy);
+  CHECK(NULL == nap->kern_service);
 
   nap->manifest_proxy = manifest_proxy;
   manifest_proxy = NULL;
-
-  NaClLog(3,
-          ("NaClAppLaunchServiceThreads: adding manifest proxy to"
-           " name service\n"));
-  (*NACL_VTBL(NaClNameService, nap->name_service)->
-   CreateDescEntry)(nap->name_service,
-                    "ManifestNameService", NACL_ABI_O_RDWR,
-                    NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
-
+  nap->kern_service = kern_service;
+  kern_service = NULL;
+  NaClXMutexUnlock(&nap->mu);
   rv = 1;
+
+done:
+  NaClXMutexLock(&nap->mu);
+  if (NULL != nap->manifest_proxy) {
+    NaClLog(3,
+            ("NaClAppLaunchServiceThreads: adding manifest proxy to"
+             " name service\n"));
+    (*NACL_VTBL(NaClNameService, nap->name_service)->
+     CreateDescEntry)(nap->name_service,
+                      "ManifestNameService", NACL_ABI_O_RDWR,
+                      NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
+  }
+  if (NULL != nap->kern_service) {
+    NaClLog(3,
+            ("NaClAppLaunchServiceThreads: adding kernel service to"
+             " name service\n"));
+    (*NACL_VTBL(NaClNameService, nap->name_service)->
+     CreateDescEntry)(nap->name_service,
+                      "KernelService", NACL_ABI_O_RDWR,
+                      NaClDescRef(nap->kern_service->base.bound_and_cap[1]));
+  }
+
   NaClXMutexUnlock(&nap->mu);
 
-manifest_proxy_start_failed:
-manifest_proxy_ctor_failure:
-  free(manifest_proxy);
-manifest_proxy_alloc_failure:
-done:
+  /*
+   * Single exit path.
+   *
+   * Error cleanup invariant.  No service thread should be running
+   * (modulo asynchronous shutdown).  Automatic variables refer to
+   * fully constructed objects if non-NULL, and when ownership is
+   * transferred to the NaClApp object the corresponding automatic
+   * variable is set to NULL.
+   */
+  NaClRefCountSafeUnref((struct NaClRefCount *) manifest_proxy);
+  NaClRefCountSafeUnref((struct NaClRefCount *) kern_service);
   return rv;
 }
 

@@ -75,6 +75,29 @@ void RevLog(NaClSrpcRpc* rpc,
   }
 }
 
+void ModuleInitDoneRpc(NaClSrpcRpc* rpc,
+                       NaClSrpcArg** in_args,
+                       NaClSrpcArg** out_args,
+                       NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  NaClSrpcClosureRunner on_return(done);
+
+  UNREFERENCED_PARAMETER(in_args);
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(4, "Entered ModuleInitDone\n");
+  NaClLog(4, "service: 0x%"NACL_PRIxPTR, (uintptr_t) service);
+  if (NULL == service->reverse_interface()) {
+    NaClLog(4, "ModuleInitDone: no reverse_interface.  Nothing to do\n");
+  } else {
+    NaClLog(4, "ModuleInitDone: invoking StartupInitializationComplete\n");
+    service->reverse_interface()->StartupInitializationComplete();
+  }
+  NaClLog(4, "Leaving ModuleInitDoneRpc\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 // Manifest name service, internal APIs.
 //
 // Manifest file lookups result in read-only file descriptors with a
@@ -334,6 +357,7 @@ NaClSrpcHandlerDesc const ReverseService::handlers[] = {
   { NACL_REVERSE_CONTROL_TEST, Test, },
   { NACL_REVERSE_CONTROL_LOG, RevLog, },
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, AddChannel, },
+  { NACL_REVERSE_CONTROL_INIT_DONE, ModuleInitDoneRpc, },
   { NACL_MANIFEST_LIST, ManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, ManifestLookupRpc, },
   { NACL_MANIFEST_UNREF, ManifestUnrefRpc, },

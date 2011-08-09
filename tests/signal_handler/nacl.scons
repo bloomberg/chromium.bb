@@ -9,12 +9,15 @@ trusted_env = env.get('TRUSTED_ENV')
 if trusted_env is None:
   Return()
 
-crash_test_nexe = env.ComponentProgram('crash_test', 'crash_test.c',
-                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+crash_test_nexe = env.ComponentProgram('crash_test',
+                                       'crash_test.c',
+                                       EXTRA_LIBS=['imc_syscalls',
+                                                   '${NONIRT_LIBS}'])
+
 crash_in_syscall_nexe = env.ComponentProgram('crash_in_syscall',
                                              'crash_in_syscall.c',
                                              EXTRA_LIBS=['imc_syscalls',
-                                                         '${NONIRT_LIBS}'])
+                                                   '${NONIRT_LIBS}'])
 nodes = []
 
 # Test that crashes in untrusted code are recognised as such.

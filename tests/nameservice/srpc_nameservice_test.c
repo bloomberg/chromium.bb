@@ -205,38 +205,44 @@ void ManifestTest(NaClSrpcRpc *rpc,
                   NaClSrpcArg **in_args,
                   NaClSrpcArg **out_args,
                   NaClSrpcClosure *done) {
-  struct StringBuffer sb;
-  int                 status;
-  int                 manifest;
+  struct StringBuffer     sb;
+  NaClSrpcError           rpc_result;
+  int                     status;
+  int                     manifest;
+  int                     manifest_conn;
+  struct NaClSrpcChannel  manifest_channel;
 
   /* just get the descriptor for now */
   StringBufferCtor(&sb);
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeBySignature(&ns_channel, NACL_NAME_SERVICE_LOOKUP,
-                                "ManifestNameService", O_RDWR,
-                                &status, &manifest)) {
-    fprintf(stderr, "nameservice lookup failed, status %d\n", status);
+      (rpc_result =
+       NaClSrpcInvokeBySignature(&ns_channel, NACL_NAME_SERVICE_LOOKUP,
+                                 "ManifestNameService", O_RDWR,
+                                 &status, &manifest))) {
+    StringBufferPrintf(&sb, "nameservice lookup RPC failed (%d)\n", rpc_result);
+    goto done;
   }
   StringBufferPrintf(&sb, "Got manifest descriptor %d\n", manifest);
-  if (-1 != manifest) {
-    /* connect to manifest name server */
-    int manifest_conn;
-    struct NaClSrpcChannel manifest_channel;
-
-    manifest_conn = imc_connect(manifest);
-    StringBufferPrintf(&sb, "got manifest connection %d\n", manifest_conn);
-    if (-1 == manifest_conn) {
-      StringBufferPrintf(&sb, "could not connect\n");
-      goto done;
-    }
-    close(manifest);
-    if (!NaClSrpcClientCtor(&manifest_channel, manifest_conn)) {
-      StringBufferPrintf(&sb, "could not build srpc client\n");
-      goto done;
-    }
-    StringBufferDiscardOutput(&sb);
-    StringBufferPrintf(&sb, "ManifestTest: basic connectivity ok\n");
+  if (-1 == manifest) {
+    fprintf(stderr, "nameservice lookup failed, status %d\n", status);
+    goto done;
   }
+  /* connect to manifest name server */
+
+  manifest_conn = imc_connect(manifest);
+  StringBufferPrintf(&sb, "got manifest connection %d\n", manifest_conn);
+  if (-1 == manifest_conn) {
+    StringBufferPrintf(&sb, "could not connect\n");
+    goto done;
+  }
+  close(manifest);
+  if (!NaClSrpcClientCtor(&manifest_channel, manifest_conn)) {
+    StringBufferPrintf(&sb, "could not build srpc client\n");
+    goto done;
+  }
+  StringBufferDiscardOutput(&sb);
+  StringBufferPrintf(&sb, "ManifestTest: basic connectivity ok\n");
+
  done:
   out_args[0]->arrays.str = strdup(sb.buffer);
   rpc->result = NACL_SRPC_RESULT_OK;

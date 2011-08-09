@@ -12,7 +12,9 @@ env.Replicate('${STAGING_DIR}',
 async_nexe_name = 'async_message_test_%s' % env.get('TARGET_FULLARCH')
 async_message_prog = env.ComponentProgram(
     async_nexe_name, 'async_message_test.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}', 'imc_syscalls'])
+    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
+                'srpc', 'platform', 'gio', 'imc', 'imc_syscalls', 'pthread'
+                ])
 
 test_files = [
     env.File('${STAGING_DIR}/nacltest.js'),

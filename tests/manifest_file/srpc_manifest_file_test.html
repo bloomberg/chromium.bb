@@ -10,7 +10,10 @@
 
 function testMethods(tester, server) {
   tester.addTest('namedump', function() {
-    assertEqual('nbytes = 33\nManifestNameService\nSecureRandom\n',
+    assertEqual('nbytes = 47\n'
+                +'KernelService\n'
+                +'ManifestNameService\n'
+                +'SecureRandom\n',
                 server.namedump());
   })
   tester.addTest('manifest_test', function() {

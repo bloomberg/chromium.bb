@@ -23,6 +23,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
+#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+
 namespace nacl {
 class DescWrapper;
 struct SelLdrLauncher;
@@ -89,13 +91,16 @@ struct CloseManifestEntryResource {
 class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
-                         Plugin* plugin);
+                         Plugin* plugin,
+                         pp::CompletionCallback init_done_cb);
 
   virtual ~PluginReverseInterface();
 
   void ShutDown();
 
   virtual void Log(nacl::string message);
+
+  virtual void StartupInitializationComplete();
 
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* out_keys);
 
@@ -126,6 +131,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   NaClMutex mu_;
   NaClCondVar cv_;
   bool shutting_down_;
+
+  pp::CompletionCallback init_done_cb_;
 };
 
 //  ServiceRuntime abstracts a NativeClient sel_ldr instance.
@@ -133,7 +140,8 @@ class ServiceRuntime {
  public:
   // TODO(sehr): This class should also implement factory methods, using the
   // Start method below.
-  explicit ServiceRuntime(Plugin* plugin);
+  ServiceRuntime(Plugin* plugin,
+                 pp::CompletionCallback init_done_cb);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 

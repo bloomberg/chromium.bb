@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
 
 #define BOUND_SOCKET 3
 
@@ -35,6 +36,7 @@ int NaClSrpcAcceptClientOnThread(const struct NaClSrpcHandlerDesc* methods) {
   struct WorkerData *worker_data = NULL;
   pthread_t worker_tid;
 
+  NaClPluginLowLevelInitializationComplete();
   sock_fd = imc_accept(BOUND_SOCKET);
   if (sock_fd == -1) {
     goto done;

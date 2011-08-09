@@ -74,3 +74,42 @@ env.AddNodeToTestSuite(node,
                       'run_pm_manifest_file_chrome_browser_test',
                       is_broken=env.PPAPIBrowserTesterIsBroken())
 
+
+# post message, pre-init version
+
+pm_pi_mf_obj = env.ComponentObject('pm_pre_init_manifest_file_test.o',
+                                   'pm_pre_init_manifest_file_test.cc')
+pm_pi_mf_nexe_name = ('pm_pre_init_manifest_file_test_%s'
+                      % env.get('TARGET_FULLARCH'))
+pm_pi_mf_nexe = env.ComponentProgram(pm_pi_mf_nexe_name,
+                                     pm_pi_mf_obj,
+                                     EXTRA_LIBS=['nacl_ppapi_util',
+                                                 'weak_ref',
+                                                 'ppapi_cpp',
+                                                 '${PPAPI_LIBS}',
+                                                 'pthread',
+                                                 'srpc',
+                                                 'platform',
+                                                 'gio',
+                                                 'imc',
+                                                 'imc_syscalls',
+                                                 ])
+env.Publish(pm_pi_mf_nexe_name, 'run',
+            ['pm_pre_init_manifest_file_test.html',
+             'pm_pre_init_manifest_file.nmf'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'pm_pi_mf_browser_test.out',
+    url='pm_pre_init_manifest_file_test.html',
+    files=env.ExtractPublishedFiles(pm_pi_mf_nexe_name),
+    args=['--debug'],
+#    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
+    )
+
+if not env.Bit('irt'):
+  env.AddNodeToTestSuite(node,
+                         ['chrome_browser_tests'],
+                         'run_pm_pi_manifest_file_chrome_browser_test',
+                         is_broken=env.PPAPIBrowserTesterIsBroken())

@@ -17,11 +17,16 @@ else:
   expected_crash_dumps = 0
 
 def make_crash_test_nexe(name, libs=[]):
-  obj = env.ComponentObject(name,
+  obj = env.ComponentObject('inbrowser_%s' % name,
                             '${MAIN_DIR}/tests/signal_handler/%s.c' % name)
-  nexe = env.ComponentProgram('inbrowser_%s_${TARGET_FULLARCH}' % name, obj,
-                              EXTRA_LIBS=libs + ['${NON_PPAPI_BROWSER_LIBS}'])
+  nexe = env.ComponentProgram(
+      'inbrowser_%s_${TARGET_FULLARCH}' % name, obj,
+      EXTRA_LIBS=libs + [
+          'srpc', 'platform', 'gio', 'imc', 'imc_syscalls', 'pthread',
+          '${NON_PPAPI_BROWSER_LIBS}'])
   return nexe
+
+env.Append(CPPDEFINES = ['IN_BROWSER'])
 
 # This crash in trusted code should produce a crash dump.
 crash_test_nexe = make_crash_test_nexe('crash_test')
@@ -34,6 +39,7 @@ node = env.PPAPIBrowserTester(
            env.File('trusted_crash_in_startup.html')],
     osenv='NACL_CRASH_TEST=1',
     args=['--expected_crash_dumps=%i' % expected_crash_dumps])
+
 env.AddNodeToTestSuite(
     node,
     ['chrome_browser_tests'],

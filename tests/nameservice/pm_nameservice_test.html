@@ -42,7 +42,10 @@ function setupTests(tester, plugin) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
       status.assertEqual(message_event.data,
-                         'nbytes = 33\nManifestNameService\nSecureRandom\n');
+                         'nbytes = 47\n'
+                         +'KernelService\n'
+                         +'ManifestNameService\n'
+                         +'SecureRandom\n');
       status.pass();
     }, false);
     plugin.postMessage('nameservice');

@@ -31,10 +31,9 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -54,10 +53,12 @@ namespace plugin {
 
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
-    Plugin* plugin)
+    Plugin* plugin,
+    pp::CompletionCallback init_done_cb)
       : anchor_(anchor),
         plugin_(plugin),
-        shutting_down_(false) {
+        shutting_down_(false),
+        init_done_cb_(init_done_cb) {
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cv_);
 }
@@ -84,6 +85,20 @@ void PluginReverseInterface::Log(nacl::string message) {
       this,
       &plugin::PluginReverseInterface::Log_MainThreadContinuation,
       continuation);
+}
+
+void PluginReverseInterface::StartupInitializationComplete() {
+  NaClLog(0, "PluginReverseInterface::StartupInitializationComplete\n");
+  if (init_done_cb_.pp_completion_callback().func != NULL) {
+    NaClLog(0,
+            "PluginReverseInterface::StartupInitializationComplete:"
+            " invoking CB\n");
+    pp::Module::Get()->core()->CallOnMainThread(0, init_done_cb_, PP_OK);
+  } else {
+    NaClLog(0,
+            "PluginReverseInterface::StartupInitializationComplete:"
+            " init_done_cb_ not valid, skipping.\n");
+  }
 }
 
 void PluginReverseInterface::Log_MainThreadContinuation(
@@ -304,7 +319,8 @@ void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
   // cls automatically deleted
 }
 
-ServiceRuntime::ServiceRuntime(Plugin* plugin)
+ServiceRuntime::ServiceRuntime(Plugin* plugin,
+                               pp::CompletionCallback init_done_cb)
     : plugin_(plugin),
       browser_interface_(plugin->browser_interface()),
       reverse_service_(NULL),
@@ -312,7 +328,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
       async_receive_desc_(NULL),
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor),
-      rev_interface_(new PluginReverseInterface(anchor_, plugin)) {
+      rev_interface_(new PluginReverseInterface(anchor_, plugin,
+                                                init_done_cb)) {
 }
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
