@@ -210,6 +210,7 @@ PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
   PP_InputEvent_Type type = GetType(resource);
   return PP_FromBool(type == PP_INPUTEVENT_TYPE_KEYDOWN ||
                      type == PP_INPUTEVENT_TYPE_KEYUP ||
+                     type == PP_INPUTEVENT_TYPE_RAWKEYDOWN ||
                      type == PP_INPUTEVENT_TYPE_CHAR);
 }
 
