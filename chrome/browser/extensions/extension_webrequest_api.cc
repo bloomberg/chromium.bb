@@ -57,7 +57,6 @@ static const char* kResourceTypeStrings[] = {
   "script",
   "image",
   "object",
-  "xmlhttprequest",
   "other",
 };
 
@@ -68,7 +67,6 @@ static ResourceType::Type kResourceTypeValues[] = {
   ResourceType::SCRIPT,
   ResourceType::IMAGE,
   ResourceType::OBJECT,
-  ResourceType::XHR,
   ResourceType::LAST_TYPE,  // represents "other"
 };
 

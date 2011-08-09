@@ -16,10 +16,6 @@ var URL_ECHO_USER_AGENT =
     'http://www.a.com:PORT/echoheader?User-Agent';
 var URL_AUTH_REQUIRED =
     'http://www.a.com:PORT/auth-basic';
-var URL_HTTP_XHR =
-    'http://www.a.com:PORT/files/extensions/api_test/webrequest/events/xhr/a.html';
-var URL_HTTP_XHR_DATA =
-    'http://www.a.com:PORT/files/extensions/api_test/webrequest/events/xhr/data.json';
 
 function runTests(tests) {
   chrome.tabs.getSelected(null, function(tab) {
@@ -32,8 +28,6 @@ function runTests(tests) {
       URL_HTTP_SIMPLE_LOAD_REDIRECT = fixPort(URL_HTTP_SIMPLE_LOAD_REDIRECT);
       URL_ECHO_USER_AGENT = fixPort(URL_ECHO_USER_AGENT);
       URL_AUTH_REQUIRED = fixPort(URL_AUTH_REQUIRED);
-      URL_HTTP_XHR = fixPort(URL_HTTP_XHR);
-      URL_HTTP_XHR_DATA = fixPort(URL_HTTP_XHR_DATA);
 
       chrome.test.runTests(tests);
     });
@@ -386,100 +380,6 @@ runTests([
       {},  // filter
       ["requestHeaders", "responseHeaders", "statusLine"]);
     navigateAndWait(URL_HTTP_SIMPLE_LOAD_REDIRECT);
-  },
-
-  // Navigates to a page to generates an XHR.
-  function xhrLoad() {
-    expect(
-      [  // events
-        { label: "onBeforeRequest-1",
-          event: "onBeforeRequest",
-          details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
-            url: URL_HTTP_XHR,
-            frameUrl: URL_HTTP_XHR
-          }
-        },
-        { label: "onBeforeSendHeaders-1",
-          event: "onBeforeSendHeaders",
-          details: {
-            url: URL_HTTP_XHR,
-          }
-        },
-        { label: "onSendHeaders-1",
-          event: "onSendHeaders",
-          details: {
-            url: URL_HTTP_XHR,
-          }
-        },
-        { label: "onResponseStarted-1",
-          event: "onResponseStarted",
-          details: {
-            url: URL_HTTP_XHR,
-            statusCode: 200,
-            ip: "127.0.0.1",
-            fromCache: false,
-          }
-        },
-        { label: "onCompleted-1",
-          event: "onCompleted",
-          details: {
-            url: URL_HTTP_XHR,
-            statusCode: 200,
-            ip: "127.0.0.1",
-            fromCache: false,
-          }
-        },
-        { label: "onBeforeRequest-2",
-          event: "onBeforeRequest",
-          details: {
-            method: "GET",
-            tabId: tabId,
-            type: "xmlhttprequest",
-            url: URL_HTTP_XHR_DATA,
-            frameUrl: URL_HTTP_XHR
-          }
-        },
-        { label: "onBeforeSendHeaders-2",
-          event: "onBeforeSendHeaders",
-          details: {
-            url: URL_HTTP_XHR_DATA,
-          }
-        },
-        { label: "onSendHeaders-2",
-          event: "onSendHeaders",
-          details: {
-            url: URL_HTTP_XHR_DATA,
-          }
-        },
-        { label: "onResponseStarted-2",
-          event: "onResponseStarted",
-          details: {
-            url: URL_HTTP_XHR_DATA,
-            statusCode: 200,
-            ip: "127.0.0.1",
-            fromCache: false,
-          }
-        },
-        { label: "onCompleted-2",
-          event: "onCompleted",
-          details: {
-            url: URL_HTTP_XHR_DATA,
-            statusCode: 200,
-            ip: "127.0.0.1",
-            fromCache: false,
-          }
-        }
-      ],
-      [  // event order
-        ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onSendHeaders-1",
-         "onResponseStarted-1", "onCompleted-1",
-         "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
-         "onResponseStarted-2", "onCompleted-2"] ],
-      {}, []);
-    navigateAndWait(URL_HTTP_XHR);
   },
 
   // Navigates to a page with subresources.
