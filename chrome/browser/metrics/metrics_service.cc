@@ -563,7 +563,7 @@ void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
     registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
     registrar->Add(observer, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   NotificationService::AllSources());
+                   NotificationService::AllBrowserContextsAndSources());
 }
 
 void MetricsService::Observe(int type,

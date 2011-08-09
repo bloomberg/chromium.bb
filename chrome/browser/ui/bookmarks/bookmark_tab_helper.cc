@@ -26,10 +26,9 @@ BookmarkTabHelper::BookmarkTabHelper(TabContentsWrapper* tab_contents)
       delegate_(NULL),
       bookmark_drag_(NULL) {
   // Register for notifications about URL starredness changing on any profile.
-  registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                 NotificationService::AllSources());
+  Source<Profile> source(tab_contents->profile());
+  registrar_.Add(this, chrome::NOTIFICATION_URLS_STARRED, source);
+  registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED, source);
 }
 
 BookmarkTabHelper::~BookmarkTabHelper() {
