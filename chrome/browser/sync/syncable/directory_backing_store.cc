@@ -17,15 +17,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
+#include "chrome/browser/sync/util/sqlite_utils.h"
 #include "chrome/common/random.h"
-#include "chrome/common/sqlite_utils.h"
 #include "third_party/sqlite/sqlite3.h"
 
 // Sometimes threads contend on the DB lock itself, especially when one thread

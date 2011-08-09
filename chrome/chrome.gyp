@@ -703,6 +703,8 @@
         'browser/sync/util/logging.h',
         'browser/sync/util/nigori.cc',
         'browser/sync/util/nigori.h',
+        'browser/sync/util/sqlite_utils.cc',
+        'browser/sync/util/sqlite_utils.h',
         'browser/sync/util/user_settings.cc',
         'browser/sync/util/user_settings.h',
         'browser/sync/util/user_settings_posix.cc',

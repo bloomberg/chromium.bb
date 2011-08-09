@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/util/data_encryption.h"
-#include "chrome/common/sqlite_utils.h"
+#include "chrome/browser/sync/util/sqlite_utils.h"
 
 using std::string;
 

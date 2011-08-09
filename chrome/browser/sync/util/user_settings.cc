@@ -23,8 +23,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"  // For migration.
 #include "chrome/browser/sync/util/data_encryption.h"
+#include "chrome/browser/sync/util/sqlite_utils.h"
 #include "chrome/common/random.h"
-#include "chrome/common/sqlite_utils.h"
 
 using std::numeric_limits;
 using std::string;

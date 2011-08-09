@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/password_manager/encryptor.h"
-#include "chrome/common/sqlite_utils.h"
+#include "chrome/browser/sync/util/sqlite_utils.h"
 
 namespace browser_sync {
 

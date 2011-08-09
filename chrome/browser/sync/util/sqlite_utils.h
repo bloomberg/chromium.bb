@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SQLITE_UTILS_H_
-#define CHROME_COMMON_SQLITE_UTILS_H_
+#ifndef CHROME_BROWSER_SYNC_UTIL_SQLITE_UTILS_H_
+#define CHROME_BROWSER_SYNC_UTIL_SQLITE_UTILS_H_
 #pragma once
 
 #include <string>
@@ -397,4 +397,4 @@ bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name);
 
 }  // namespace sqlite_utils
 
-#endif  // CHROME_COMMON_SQLITE_UTILS_H_
+#endif  // CHROME_BROWSER_SYNC_UTIL_SQLITE_UTILS_H_

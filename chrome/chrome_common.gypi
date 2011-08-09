@@ -237,8 +237,6 @@
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/spellcheck_messages.h',
-        'common/sqlite_utils.cc',
-        'common/sqlite_utils.h',
         'common/text_input_client_messages.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
