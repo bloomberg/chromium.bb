@@ -437,6 +437,11 @@ add_config('arm-tegra2-seaboard-toolchain', [arm, full, {
   'prebuilts' : False,
 }])
 
+add_config('amd64-generic-full', [full, {
+  'board' : 'amd64-generic',
+  'prebuilts' : False,
+}])
+
 #
 # Internal Builds
 #
