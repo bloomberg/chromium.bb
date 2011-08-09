@@ -116,6 +116,8 @@ def GetPreferredTrySlaves():
       'nacl-lucid64_glibc_opt',
       'nacl-lucid64-pnacl1',
       'nacl-lucid64-pnacl2',
+      'nacl-lucid64_newlib_dbg_valgrind',
+      'nacl-lucid64_glibc_dbg_valgrind',
       'nacl-mac10.5_newlib_opt',
       'nacl-mac10.5_glibc_opt',
       'nacl-mac10.6_newlib_opt',
