@@ -1436,10 +1436,13 @@ enum {
 
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
-  NSView *contentView = [[self window] contentView];
+  NSView* contentView = [[self window] contentView];
+  NSView* relativeView =
+      [self inPresentationMode] ? [toolbarController_ view] :
+                                  [infoBarContainerController_ view];
   [contentView addSubview:[findBarCocoaController_ view]
                positioned:NSWindowAbove
-               relativeTo:[infoBarContainerController_ view]];
+               relativeTo:relativeView];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // presentation mode, it hangs off the top of the screen when the bar is
