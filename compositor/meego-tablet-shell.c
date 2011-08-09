@@ -492,7 +492,6 @@ launch_ux_daemon(struct meego_tablet_shell *shell)
 
 		snprintf(s, sizeof s, "%d", sv[1]);
 		setenv("WAYLAND_SOCKET", s, 1);
-		setenv("EGL_PLATFORM", "wayland", 1);
 		setenv("QT_QPA_PLATFORM", "waylandgl", 1);
 		if (execl("/usr/libexec/meego-ux-daemon",
 			  "/usr/libexec/meego-ux-daemon", NULL) < 0)

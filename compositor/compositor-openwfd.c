@@ -133,7 +133,6 @@ init_egl(struct wfd_compositor *ec)
 		return -1;
 
 	ec->wfd_fd = fd;
-	setenv("EGL_PLATFORM", "drm", 1);
 	ec->gbm = gbm_create_device(ec->wfd_fd);
 	ec->base.display = eglGetDisplay(ec->gbm);
 	if (ec->base.display == NULL) {

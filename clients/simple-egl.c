@@ -106,7 +106,6 @@ init_egl(struct display *display)
 	EGLint major, minor, n;
 	EGLBoolean ret;
 
-	setenv("EGL_PLATFORM", "wayland", 1);
 	display->egl.dpy = eglGetDisplay(display->display);
 	assert(display->egl.dpy);
 

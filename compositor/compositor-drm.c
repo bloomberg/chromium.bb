@@ -331,7 +331,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	setenv("EGL_PLATFORM", "drm", 1);
 	ec->drm.fd = fd;
 	ec->gbm = gbm_create_device(ec->drm.fd);
 	ec->base.display = eglGetDisplay(ec->gbm);
