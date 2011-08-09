@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -2675,9 +2676,34 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
   UninstallExtension(good_crx, true);
 }
 
+class ExtensionCookieCallback {
+ public:
+  ExtensionCookieCallback()
+    : result_(false),
+      message_loop_factory_(MessageLoop::current()) {}
+
+  void SetCookieCallback(bool result) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        message_loop_factory_.NewRunnableMethod(&MessageLoop::Quit));
+    result_ = result;
+  }
+
+  void GetAllCookiesCallback(const net::CookieList& list) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        message_loop_factory_.NewRunnableMethod(&MessageLoop::Quit));
+    list_ = list;
+  }
+  net::CookieList list_;
+  bool result_;
+  ScopedRunnableMethodFactory<MessageLoop> message_loop_factory_;
+};
+
 // Verifies extension state is removed upon uninstall
 TEST_F(ExtensionServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionService();
+  ExtensionCookieCallback callback;
 
   // Load a test extension.
   FilePath path = data_dir_;
@@ -2695,9 +2721,19 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       cookie_store()->GetCookieMonster();
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
-  cookie_monster->SetCookieWithOptions(ext_url, "dummy=value", options);
-  net::CookieList list = cookie_monster->GetAllCookiesForURL(ext_url);
-  EXPECT_EQ(1U, list.size());
+  cookie_monster->SetCookieWithOptionsAsync(
+       ext_url, "dummy=value", options,
+       base::Bind(&ExtensionCookieCallback::SetCookieCallback,
+                  base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_TRUE(callback.result_);
+
+  cookie_monster->GetAllCookiesForURLAsync(
+      ext_url,
+      base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
+                 base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_EQ(1U, callback.list_.size());
 
   // Open a database.
   webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
@@ -2734,8 +2770,12 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   loop_.RunAllPending();
 
   // Check that the cookie is gone.
-  list = cookie_monster->GetAllCookiesForURL(ext_url);
-  EXPECT_EQ(0U, list.size());
+  cookie_monster->GetAllCookiesForURLAsync(
+       ext_url,
+       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
+                  base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_EQ(0U, callback.list_.size());
 
   // The database should have vanished as well.
   origins.clear();
