@@ -152,19 +152,22 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ## NACL-GCC TOOLCHAINS
 ######################################################################
 NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/x86_64-nacl-gcc
-NACL_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
-		-B $(NNACL_NEWLIB_SDK32)/lib \
-		-I $(NNACL_NEWLIB_SDK32)/include
+NACL_GCC_NEWLIB32=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
+		  -B $(NNACL_NEWLIB_SDK32)/lib \
+		  -I $(NNACL_NEWLIB_SDK32)/include
+NACL_GCC_NEWLIB64=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
+		  -B $(NNACL_NEWLIB_SDK64)/lib \
+		  -I $(NNACL_NEWLIB_SDK64)/include
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB32) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB32) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
@@ -180,13 +183,13 @@ $(IT).nacl.dyn.opt.x8632: $(SRC) $(CPPSRC)
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB) -O0 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB64) -O0 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL_GCC_NEWLIB) -O3 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB64) -O3 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
