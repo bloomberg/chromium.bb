@@ -5,9 +5,15 @@
  * This is the stylesheet used by the Out of the box experience (OOBE) flow.
  */
 
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
-              from(#fefefe), to(#efefef));
+              from(#fefefe), to(#efefef)) center center no-repeat;
   font-size: 14px;
   overflow: hidden;
   padding: 10px;
