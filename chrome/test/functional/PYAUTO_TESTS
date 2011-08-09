@@ -131,9 +131,6 @@
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
-      # crbug.com/50481, crbug.com/54942
-      '-downloads.DownloadsTest.testZip',
-      '-downloads.DownloadsTest.testRemoveDownload',
       # crbug.com/91225
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # Disabled on vista in the actual test. crbug.com/89767
@@ -161,7 +158,6 @@
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
-      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/88679
       '-sync',
       # crbug.com/86949
