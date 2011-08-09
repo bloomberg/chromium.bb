@@ -273,11 +273,6 @@ void Bubble::InitBubble(views::Widget* parent,
 #endif
   GetWidget()->SetBounds(window_bounds);
 
-  // Done creating the bubble.
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_INFO_BUBBLE_CREATED, Source<Bubble>(this),
-      NotificationService::NoDetails());
-
   // Show the window.
 #if defined(OS_WIN)
   border_->ShowWindow(SW_SHOW);

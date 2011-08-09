@@ -218,11 +218,6 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
 
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTERNAL_TAB_CREATED,
-      Source<NavigationController>(controller),
-      NotificationService::NoDetails());
-
   TabContentsObserver::Observe(tab_contents_->tab_contents());
 
   // Start loading initial URL

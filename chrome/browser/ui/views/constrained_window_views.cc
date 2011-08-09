@@ -595,12 +595,6 @@ void ConstrainedWindowViews::ShowConstrainedWindow() {
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
-  // Broadcast to all observers of NOTIFY_CWINDOW_CLOSED.
-  // One example of such an observer is AutomationCWindowTracker in the
-  // automation component.
-  NotificationService::current()->Notify(chrome::NOTIFICATION_CWINDOW_CLOSED,
-                                         Source<ConstrainedWindow>(this),
-                                         NotificationService::NoDetails());
   Close();
 }
 

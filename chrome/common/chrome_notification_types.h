@@ -46,10 +46,6 @@ enum {
   // that was closed, no details are expected.
   NOTIFICATION_WINDOW_CLOSED,
 
-  // Sent when an info bubble has been created but not yet shown. The source
-  // is the InfoBubble.
-  NOTIFICATION_INFO_BUBBLE_CREATED,
-
   // Sent when the language (English, French...) for a page has been detected.
   // The details Details<std::string> contain the ISO 639-1 language code and
   // the source is Source<TabContents>.
@@ -102,10 +98,6 @@ enum {
   // pointers to the old and new delegates, respectively.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
 
-  // This is sent when an externally hosted tab is created. The details
-  // contain the ExternalTabContainer that contains the tab
-  NOTIFICATION_EXTERNAL_TAB_CREATED,
-
   // This is sent when an externally hosted tab is closed.  No details are
   // expected.
   NOTIFICATION_EXTERNAL_TAB_CLOSED,
@@ -127,12 +119,6 @@ enum {
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
   // Stuff inside the tabs ---------------------------------------------------
-
-  // This message is sent after a constrained window has been closed.  The
-  // source is a Source<ConstrainedWindow> with a pointer to the closed child
-  // window.  (The pointer isn't usable, except for identification.) No
-  // details are expected.
-  NOTIFICATION_CWINDOW_CLOSED,
 
   // Notification from TabContents that we have received a response from the
   // renderer in response to a dom automation controller action.
@@ -157,13 +143,6 @@ enum {
   // Sent just before the installation confirm dialog is shown. The source
   // is the ExtensionInstallUI, the details are NoDetails.
   NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-
-  // Used to monitor web cache usage by notifying whenever the
-  // CacheManagerHost observes new UsageStats. The source will be the
-  // RenderProcessHost that corresponds to the new statistics. Details are a
-  // UsageStats object sent by the renderer, and should be copied - ptr not
-  // guaranteed to be valid after the notification.
-  NOTIFICATION_WEB_CACHE_STATS_OBSERVED,
 
   // BackgroundContents ------------------------------------------------------
 
@@ -190,12 +169,6 @@ enum {
   // and the details are the BackgroundContents.
   NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
 
-  // This is sent when network interception is disabled for a plugin, or the
-  // plugin is unloaded.  This should only be sent/received on the browser IO
-  // thread or the plugin thread. The source is the plugin that is disabling
-  // interception.  No details are expected.
-  NOTIFICATION_CHROME_PLUGIN_UNLOADED,
-
   // This is sent when a login prompt is shown.  The source is the
   // Source<NavigationController> for the tab in which the prompt is shown.
   // Details are a LoginNotificationDetails which provide the LoginHandler
@@ -219,13 +192,6 @@ enum {
   NOTIFICATION_AUTH_CANCELLED,
 
   // History -----------------------------------------------------------------
-
-  // Sent when a history service is created on the main thread. This is sent
-  // after history is created, but before it has finished loading. Use
-  // HISTORY_LOADED is you need to know when loading has completed.
-  // The source is the profile that the history service belongs to, and the
-  // details is the pointer to the newly created HistoryService object.
-  NOTIFICATION_HISTORY_CREATED,
 
   // Sent when a history service has finished loading. The source is the
   // profile that the history service belongs to, and the details is the

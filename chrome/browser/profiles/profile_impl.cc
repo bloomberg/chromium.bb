@@ -1082,11 +1082,6 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
     if (!history->Init(GetPath(), GetBookmarkModel()))
       return NULL;
     history_service_.swap(history);
-
-    // Send out the notification that the history service was created.
-    NotificationService::current()->
-        Notify(chrome::NOTIFICATION_HISTORY_CREATED, Source<Profile>(this),
-               Details<HistoryService>(history_service_.get()));
   }
   return history_service_.get();
 }

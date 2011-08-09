@@ -137,15 +137,6 @@ void WebCacheManager::ObserveStats(int renderer_id,
   entry->second.liveSize = stats.liveSize;
   entry->second.maxDeadCapacity = stats.maxDeadCapacity;
   entry->second.minDeadCapacity = stats.minDeadCapacity;
-
-  // trigger notification
-  WebCache::UsageStats stats_details(stats);
-  // &stats_details is only valid during the notification.
-  // See notification_types.h.
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CACHE_STATS_OBSERVED,
-      Source<RenderProcessHost>(RenderProcessHost::FromID(renderer_id)),
-      Details<WebCache::UsageStats>(&stats_details));
 }
 
 void WebCacheManager::SetGlobalSizeLimit(size_t bytes) {
