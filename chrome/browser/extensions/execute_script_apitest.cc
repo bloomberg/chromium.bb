@@ -15,13 +15,27 @@ class ExecuteScriptApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptBasic) {
+// DISABLED http://crbug.com/92105
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExecuteScriptBasic DISABLED_ExecuteScriptBasic
+#else
+#define MAYBE_ExecuteScriptBasic ExecuteScriptBasic
+#endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptBasic) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
+// DISABLED http://crbug.com/92105
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExecuteScriptInFrame DISABLED_ExecuteScriptInFrame
+#else
+#define MAYBE_ExecuteScriptInFrame ExecuteScriptInFrame
+#endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptInFrame) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
@@ -80,7 +94,15 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
                                   "javascript_url.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
+// DISABLED http://crbug.com/92105
+#if defined(OS_CHROMEOS)
+#define MAYBE_ExecuteScriptFrameAfterLoad DISABLED_ExecuteScriptFrameAfterLoad
+#else
+#define MAYBE_ExecuteScriptFrameAfterLoad ExecuteScriptFrameAfterLoad
+#endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
+                       MAYBE_ExecuteScriptFrameAfterLoad) {
   SetupDelayedHostResolver();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
