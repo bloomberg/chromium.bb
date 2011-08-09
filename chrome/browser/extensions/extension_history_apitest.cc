@@ -21,7 +21,7 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
 
 // Full text search indexing sometimes exceeds a timeout.
 // Fix this as part of crbug/76170.
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, DISABLED_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
