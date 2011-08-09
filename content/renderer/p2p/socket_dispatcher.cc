@@ -6,6 +6,8 @@
 
 #include "base/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
+#include "content/renderer/p2p/host_address_request.h"
+#include "content/renderer/p2p/socket_client.h"
 
 P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view),
@@ -42,6 +44,7 @@ bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(P2PSocketDispatcher, message)
     IPC_MESSAGE_HANDLER(P2PMsg_NetworkListChanged, OnNetworkListChanged)
+    IPC_MESSAGE_HANDLER(P2PMsg_GetHostAddressResult, OnGetHostAddressResult)
     IPC_MESSAGE_HANDLER(P2PMsg_OnSocketCreated, OnSocketCreated)
     IPC_MESSAGE_HANDLER(P2PMsg_OnIncomingTcpConnection, OnIncomingTcpConnection)
     IPC_MESSAGE_HANDLER(P2PMsg_OnError, OnError)
@@ -49,6 +52,10 @@ bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
+  return message_loop_;
 }
 
 int P2PSocketDispatcher::RegisterClient(P2PSocketClient* client) {
@@ -64,14 +71,31 @@ void P2PSocketDispatcher::SendP2PMessage(IPC::Message* msg) {
   Send(msg);
 }
 
-base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
-  return message_loop_;
+int P2PSocketDispatcher::RegisterHostAddressRequest(
+    P2PHostAddressRequest* request) {
+  return host_address_requests_.Add(request);
+}
+
+void P2PSocketDispatcher::UnregisterHostAddressRequest(int id) {
+  host_address_requests_.Remove(id);
 }
 
 void P2PSocketDispatcher::OnNetworkListChanged(
     const net::NetworkInterfaceList& networks) {
   network_list_observers_->Notify(&NetworkListObserver::OnNetworkListChanged,
                                   networks);
+}
+
+void P2PSocketDispatcher::OnGetHostAddressResult(
+    int32 request_id,
+    const net::IPAddressNumber& address) {
+  P2PHostAddressRequest* request = host_address_requests_.Lookup(request_id);
+  if (!request) {
+    VLOG(1) << "Received P2P message for socket that doesn't exist.";
+    return;
+  }
+
+  request->OnResponse(address);
 }
 
 void P2PSocketDispatcher::OnSocketCreated(

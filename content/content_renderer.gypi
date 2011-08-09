@@ -181,6 +181,8 @@
       'conditions': [
         ['p2p_apis==1', {
           'sources': [
+            'renderer/p2p/host_address_request.cc',
+            'renderer/p2p/host_address_request.h',
             'renderer/p2p/ipc_network_manager.cc',
             'renderer/p2p/ipc_network_manager.h',
             'renderer/p2p/ipc_socket_factory.cc',

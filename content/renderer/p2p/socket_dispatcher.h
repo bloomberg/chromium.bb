@@ -27,12 +27,19 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/p2p_sockets.h"
-#include "content/renderer/p2p/socket_client.h"
 #include "content/renderer/render_view_observer.h"
+#include "net/base/net_util.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
+
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
+class P2PHostAddressRequest;
+class P2PSocketClient;
 
 // P2PSocketDispatcher works on the renderer thread. It dispatches all
 // messages on that thread, and all its methods must be called on the
@@ -68,16 +75,24 @@ class P2PSocketDispatcher : public RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
+  friend class P2PHostAddressRequest;
   friend class P2PSocketClient;
+
+  base::MessageLoopProxy* message_loop();
 
   // Called by P2PSocketClient.
   int RegisterClient(P2PSocketClient* client);
   void UnregisterClient(int id);
   void SendP2PMessage(IPC::Message* msg);
-  base::MessageLoopProxy* message_loop();
+
+  // Called by DnsRequest.
+  int RegisterHostAddressRequest(P2PHostAddressRequest* request);
+  void UnregisterHostAddressRequest(int id);
 
   // Incoming message handlers.
   void OnNetworkListChanged(const net::NetworkInterfaceList& networks);
+  void OnGetHostAddressResult(int32 request_id,
+                              const net::IPAddressNumber& address);
   void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
   void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
   void OnError(int socket_id);
@@ -88,6 +103,8 @@ class P2PSocketDispatcher : public RenderViewObserver {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   IDMap<P2PSocketClient> clients_;
+
+  IDMap<P2PHostAddressRequest> host_address_requests_;
 
   bool network_notifications_started_;
   scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >

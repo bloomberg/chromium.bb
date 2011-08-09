@@ -4,16 +4,105 @@
 
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
+#include "content/browser/resource_context.h"
 #include "content/common/p2p_messages.h"
+#include "net/base/address_list.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_log.h"
+#include "net/base/single_request_host_resolver.h"
+#include "net/base/sys_addrinfo.h"
 
-P2PSocketDispatcherHost::P2PSocketDispatcherHost()
-    : monitoring_networks_(false) {
+class P2PSocketDispatcherHost::DnsRequest {
+ public:
+  typedef base::Callback<void(const net::IPAddressNumber&)> DoneCallback;
+
+  DnsRequest(int32 routing_id, int32 request_id,
+             net::HostResolver* host_resolver)
+      : routing_id_(routing_id),
+        request_id_(request_id),
+        resolver_(host_resolver),
+        ALLOW_THIS_IN_INITIALIZER_LIST(completion_callback_(
+            this, &P2PSocketDispatcherHost::DnsRequest::OnDone)) {
+  }
+
+  void Resolve(const std::string& host_name,
+               const DoneCallback& done_callback) {
+    DCHECK(!done_callback.is_null());
+
+    host_name_ = host_name;
+    done_callback_ = done_callback;
+
+    // Return an error if it's an empty string.
+    if (host_name_.empty()) {
+      done_callback_.Run(net::IPAddressNumber());
+      return;
+    }
+
+    // Add period at the end to make sure that we only resolve
+    // fully-qualified names.
+    if (host_name_.at(host_name_.size() - 1) != '.')
+      host_name_ = host_name_ + '.';
+
+    net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
+    resolver_.Resolve(info, &addresses_, &completion_callback_,
+                      net::BoundNetLog());
+  }
+
+  int32 routing_id() { return routing_id_; }
+  int32 request_id() { return request_id_; }
+
+ private:
+  void OnDone(int result) {
+    if (result != net::OK) {
+      LOG(ERROR) << "Failed to resolve address for " << host_name_
+                 << ", errorcode: " << result;
+      done_callback_.Run(net::IPAddressNumber());
+      return;
+    }
+
+    if (addresses_.head() == NULL) {
+      LOG(ERROR) << "Received 0 addresses when trying to resolve address for "
+                 << host_name_;
+      done_callback_.Run(net::IPAddressNumber());
+      return;
+    }
+
+    net::IPEndPoint end_point;
+    if (!end_point.FromSockAddr(addresses_.head()->ai_addr,
+                                addresses_.head()->ai_addrlen)) {
+      LOG(ERROR) << "Received invalid address for " << host_name_;
+      done_callback_.Run(net::IPAddressNumber());
+      return;
+    }
+
+    done_callback_.Run(end_point.address());
+  }
+
+  int32 routing_id_;
+  int32 request_id_;
+  net::AddressList addresses_;
+
+  std::string host_name_;
+  net::SingleRequestHostResolver resolver_;
+
+  DoneCallback done_callback_;
+
+  net::CompletionCallbackImpl<DnsRequest> completion_callback_;
+};
+
+P2PSocketDispatcherHost::P2PSocketDispatcherHost(
+    const content::ResourceContext* resource_context)
+    : resource_context_(resource_context),
+      monitoring_networks_(false) {
 }
 
 P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
   DCHECK(sockets_.empty());
+  DCHECK(dns_requests_.empty());
 
   if (monitoring_networks_)
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -25,6 +114,9 @@ void P2PSocketDispatcherHost::OnChannelClosing() {
   // Since the IPC channel is gone, close pending connections.
   STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
   sockets_.clear();
+
+  STLDeleteContainerPointers(dns_requests_.begin(), dns_requests_.end());
+  dns_requests_.clear();
 }
 
 void P2PSocketDispatcherHost::OnDestruct() const {
@@ -39,6 +131,7 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
                         OnStartNetworkNotifications)
     IPC_MESSAGE_HANDLER(P2PHostMsg_StopNetworkNotifications,
                         OnStopNetworkNotifications)
+    IPC_MESSAGE_HANDLER(P2PHostMsg_GetHostAddress, OnGetHostAddress)
     IPC_MESSAGE_HANDLER(P2PHostMsg_CreateSocket, OnCreateSocket)
     IPC_MESSAGE_HANDLER(P2PHostMsg_AcceptIncomingTcpConnection,
                         OnAcceptIncomingTcpConnection)
@@ -99,6 +192,27 @@ void P2PSocketDispatcherHost::SendNetworkList(
        it != notifications_routing_ids_.end(); ++it) {
     Send(new P2PMsg_NetworkListChanged(*it, list));
   }
+}
+
+void P2PSocketDispatcherHost::OnGetHostAddress(const IPC::Message& msg,
+                                               const std::string& host_name,
+                                               int32 request_id) {
+  DnsRequest* request = new DnsRequest(
+      msg.routing_id(), request_id, resource_context_->host_resolver());
+  request->Resolve(host_name, base::Bind(
+      &P2PSocketDispatcherHost::OnAddressResolved,
+      base::Unretained(this), request));
+  dns_requests_.insert(request);
+}
+
+void P2PSocketDispatcherHost::OnAddressResolved(
+    DnsRequest* request,
+    const net::IPAddressNumber& result) {
+  Send(new P2PMsg_GetHostAddressResult(
+      request->routing_id(), request->request_id(), result));
+
+  dns_requests_.erase(request);
+  delete request;
 }
 
 void P2PSocketDispatcherHost::OnCreateSocket(

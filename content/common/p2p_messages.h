@@ -24,6 +24,10 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(P2PMsg_NetworkListChanged,
                     net::NetworkInterfaceList /* networks */)
 
+IPC_MESSAGE_ROUTED2(P2PMsg_GetHostAddressResult,
+                    int32 /* request_id */,
+                    net::IPAddressNumber /* address */)
+
 IPC_MESSAGE_ROUTED2(P2PMsg_OnSocketCreated,
                     int /* socket_id */,
                     net::IPEndPoint /* socket_address */)
@@ -46,6 +50,10 @@ IPC_MESSAGE_ROUTED3(P2PMsg_OnDataReceived,
 // configuration changes.
 IPC_MESSAGE_ROUTED0(P2PHostMsg_StartNetworkNotifications)
 IPC_MESSAGE_ROUTED0(P2PHostMsg_StopNetworkNotifications)
+
+IPC_MESSAGE_ROUTED2(P2PHostMsg_GetHostAddress,
+                    std::string /* host_name */,
+                    int32 /* request_id */)
 
 IPC_MESSAGE_ROUTED4(P2PHostMsg_CreateSocket,
                     P2PSocketType /* type */,
