@@ -22,6 +22,7 @@ if __name__ == '__main__':
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import manifest_version_unittest
+from chromite.lib import cros_build_lib as cros_lib
 
 
 FAKE_VERSION_STRING = '1.2.3.4-rc3'
@@ -368,6 +369,48 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(statuses['build2'], None)
     thread.join()
     self.mox.VerifyAll()
+
+  def testGenerateBlameListSinceLKGM(self):
+    """Tests that we can generate a blamelist from one commit message."""
+    fake_git_log = """Author: Sammy Sosa <fake@fake.com>
+
+    Date:   Mon Aug 8 14:52:06 2011 -0700
+
+    Add in a test for cbuildbot
+
+    TEST=So much testing
+    BUG=chromium-os:99999
+
+    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
+    Reviewed-on: http://gerrit.chromium.org/gerrit/1234
+    Reviewed-by: Fake person <fake@fake.org>
+    Tested-by: Sammy Sosa <fake@fake.com>
+    """
+    fake_revision = '1234567890'
+    fake_project_handler = self.mox.CreateMock(cros_lib.ManifestHandler)
+    fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
+                                                     'path': 'fake/path',
+                                                     'revision': fake_revision,
+                                                   }
+                                    }
+    fake_result = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_result.output = fake_git_log
+
+    self.mox.StubOutWithMock(cros_lib.ManifestHandler, 'ParseManifest')
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(self.manager, '_PrintLink')
+
+    cros_lib.ManifestHandler.ParseManifest(
+        self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
+    cros_lib.RunCommand(['git', 'log', '%s..HEAD' % fake_revision],
+                        print_cmd=False, redirect_stdout=True,
+                        cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
+    self.manager._PrintLink(
+        'fake', 'http://gerrit.chromium.org/gerrit/1234')
+    self.mox.ReplayAll()
+    self.manager.GenerateBlameListSinceLKGM()
+    self.mox.VerifyAll()
+
 
   def tearDown(self):
     if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)

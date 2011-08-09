@@ -334,3 +334,41 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                         (index + 1, retries))
     else:
       raise PromoteCandidateException(last_error)
+
+  def _PrintLink(self, text, url):
+    """Prints out a link to buildbot."""
+    print '@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
+                                                 'url': url }
+
+  def GenerateBlameListSinceLKGM(self):
+    """Prints out links to all CL's that have been committed since LKGM.
+
+    Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
+    each CL committed since we last had a passing build.
+    """
+    handler = cros_lib.ManifestHandler.ParseManifest(
+        self.GetAbsolutePathToLKGM())
+    reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
+    author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
+    for project in handler.projects.keys():
+      rel_src_path = handler.projects[project].get('path')
+
+      # If it's not part of our source tree, it doesn't affect our build.
+      if not rel_src_path:
+        continue
+
+      src_path = self.cros_source.GetRelativePath(rel_src_path)
+      revision = handler.projects[project]['revision']
+      result = cros_lib.RunCommand(['git', 'log', '%s..HEAD' % revision],
+                                   print_cmd=False, redirect_stdout=True,
+                                   cwd=src_path)
+      current_author = None
+      for line in result.output.splitlines():
+        author_match = author_re.match(line)
+        if author_match:
+          current_author = author_match.group(1)
+
+        review_match = reviewed_on_re.match(line)
+        if review_match:
+          review = review_match.group(1)
+          self._PrintLink(current_author, review)

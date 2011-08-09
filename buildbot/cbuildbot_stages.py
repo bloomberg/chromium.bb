@@ -14,7 +14,6 @@ import tempfile
 import time
 import traceback
 
-from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
@@ -416,6 +415,11 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     else:
       return self.manifest_manager.GetLatestCandidate(
           force_version=self._options.force_version)
+
+  def _PerformStage(self):
+    """Performs normal stage and prints blamelist at end."""
+    super(LKGMCandidateSyncStage, self)._PerformStage()
+    self.manifest_manager.GenerateBlameListSinceLKGM()
 
 
 class LKGMSyncStage(ManifestVersionedSyncStage):
