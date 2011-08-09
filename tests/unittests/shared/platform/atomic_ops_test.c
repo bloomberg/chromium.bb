@@ -15,8 +15,6 @@ int32_t gIncrementsPerThread = 1000;
 int32_t gNumThreads;
 
 struct NaClMutex gMutex;
-struct NaClCondVar gFinishedCv;
-int32_t gFinishedCount = 0;
 
 
 /* For atomic counter test */
@@ -90,14 +88,6 @@ void WINAPI ThreadMain(void *state) {
   ExchangeTest(tid);
 
   CompareAndSwapTest(tid);
-
-  /* Signal that we're finished */
-  NaClXMutexLock(&gMutex);
-  gFinishedCount++;
-  NaClXCondVarSignal(&gFinishedCv);
-  NaClXMutexUnlock(&gMutex);
-
-  NaClThreadExit(0);
 }
 
 int main(int argc, const char *argv[]) {
@@ -124,30 +114,26 @@ int main(int argc, const char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  if (!NaClCondVarCtor(&gFinishedCv)) {
-    fprintf(stderr, "NaClCondVarCtor failed\n");
-    exit(EXIT_FAILURE);
-  }
   NaClXMutexLock(&gMutex);
 
   for (tid = 1; tid <= gNumThreads; ++tid) {
     fprintf(stderr, "Creating thread %d\n", (int)tid);
 
-    rv = NaClThreadCtor(&threads[tid-1],
-                        ThreadMain,
-                        (void*) (intptr_t) tid,
-                        THREAD_STACK_SIZE);
+    rv = NaClThreadCreateJoinable(&threads[tid-1],
+                                  ThreadMain,
+                                  (void*) (intptr_t) tid,
+                                  THREAD_STACK_SIZE);
     if (!rv) {
       fprintf(stderr, "NaClThreadCtor failed\n");
       exit(EXIT_FAILURE);
     }
   }
 
-  while (gFinishedCount != gNumThreads) {
-    /* This releases the mutex, so the tests begin */
-    NaClXCondVarWait(&gFinishedCv, &gMutex);
-  }
   NaClXMutexUnlock(&gMutex);
+
+  for (tid = 1; tid <= gNumThreads; ++tid) {
+    NaClThreadJoin(&threads[tid-1]);
+  }
 
   /* Check the results */
   tmp = gIncrementsPerThread * gNumThreads;
@@ -172,7 +158,6 @@ int main(int argc, const char *argv[]) {
   }
 
   fprintf(stderr, "PASSED\n");
-  NaClCondVarDtor(&gFinishedCv);
   NaClMutexDtor(&gMutex);
   free(threads);
   return 0;
