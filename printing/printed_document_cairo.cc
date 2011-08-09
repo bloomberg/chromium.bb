@@ -34,10 +34,4 @@ void PrintedDocument::RenderPrintedPage(
 #endif  // !defined(OS_CHROMEOS)
 }
 
-void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
-                                       std::wstring text,
-                                       gfx::Rect bounds) const {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace printing

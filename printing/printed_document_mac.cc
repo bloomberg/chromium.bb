@@ -35,14 +35,6 @@ void PrintedDocument::RenderPrintedPage(
   const int page_number = 1;
   metafile->RenderPage(page_number, context, content_area.ToCGRect(),
                        false, false, false, false);
-
-  // TODO(stuartmorgan): Print the header and footer.
-}
-
-void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
-                                       std::wstring text,
-                                       gfx::Rect bounds) const {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace printing

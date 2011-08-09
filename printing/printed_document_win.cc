@@ -5,15 +5,11 @@
 #include "printing/printed_document.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "printing/page_number.h"
-#include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"
 #include "printing/printed_page.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-#include "ui/gfx/font.h"
 
 namespace {
 
@@ -31,46 +27,6 @@ void SimpleModifyWorldTransform(HDC context,
 
 void DrawRect(HDC context, gfx::Rect rect) {
   Rectangle(context, rect.x(), rect.y(), rect.right(), rect.bottom());
-}
-
-// Creates a string interpretation of the time of day represented by the given
-// SYSTEMTIME that's appropriate for the user's default locale.
-// Format can be an empty string (for the default format), or a "format picture"
-// as specified in the Windows documentation for GetTimeFormat().
-string16 FormatSystemTime(const SYSTEMTIME& time, const string16& format) {
-  // If the format string is empty, just use the default format.
-  LPCTSTR format_ptr = NULL;
-  if (!format.empty())
-    format_ptr = format.c_str();
-
-  int buffer_size = GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
-                                  NULL, 0);
-
-  string16 output;
-  GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
-                WriteInto(&output, buffer_size), buffer_size);
-
-  return output;
-}
-
-// Creates a string interpretation of the date represented by the given
-// SYSTEMTIME that's appropriate for the user's default locale.
-// Format can be an empty string (for the default format), or a "format picture"
-// as specified in the Windows documentation for GetDateFormat().
-string16 FormatSystemDate(const SYSTEMTIME& date, const string16& format) {
-  // If the format string is empty, just use the default format.
-  LPCTSTR format_ptr = NULL;
-  if (!format.empty())
-    format_ptr = format.c_str();
-
-  int buffer_size = GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
-                                  NULL, 0);
-
-  string16 output;
-  GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
-                WriteInto(&output, buffer_size), buffer_size);
-
-  return output;
 }
 
 }  // namespace
@@ -122,68 +78,6 @@ void PrintedDocument::RenderPrintedPage(
     DCHECK_NE(res, 0);
   }
 
-  // Print the header and footer.  Offset by printable area offset (see comment
-  // above).
-  SimpleModifyWorldTransform(
-      context,
-      -page_setup.printable_area().x(),
-      -page_setup.printable_area().y(),
-      1);
-  int base_font_size = gfx::Font().GetHeight();
-  int new_font_size = ConvertUnit(10,
-                                  immutable_.settings_.desired_dpi,
-                                  immutable_.settings_.device_units_per_inch());
-  DCHECK_GT(new_font_size, base_font_size);
-  gfx::Font font(gfx::Font().DeriveFont(new_font_size - base_font_size));
-  HGDIOBJ old_font = SelectObject(context, font.GetNativeFont());
-  DCHECK(old_font != NULL);
-  // We don't want a white square around the text ever if overflowing.
-  SetBkMode(context, TRANSPARENT);
-  // Disabling printing the header/footer on Windows for now to make the
-  // behavior consistent with Mac/Linux.
-  // TODO(thestig) re-enable this for print preview.
-#if 0
-  PrintHeaderFooter(context, page, PageOverlays::LEFT, PageOverlays::TOP,
-                    font);
-  PrintHeaderFooter(context, page, PageOverlays::CENTER, PageOverlays::TOP,
-                    font);
-  PrintHeaderFooter(context, page, PageOverlays::RIGHT, PageOverlays::TOP,
-                    font);
-  PrintHeaderFooter(context, page, PageOverlays::LEFT, PageOverlays::BOTTOM,
-                    font);
-  PrintHeaderFooter(context, page, PageOverlays::CENTER, PageOverlays::BOTTOM,
-                    font);
-  PrintHeaderFooter(context, page, PageOverlays::RIGHT, PageOverlays::BOTTOM,
-                    font);
-#endif
-  int res = RestoreDC(context, saved_state);
-  DCHECK_NE(res, 0);
-}
-
-void PrintedDocument::Immutable::SetDocumentDate() {
-  // Use the native time formatting for printing on Windows.
-  SYSTEMTIME systemtime;
-  GetLocalTime(&systemtime);
-  date_ =
-      WideToUTF16Hack(FormatSystemDate(systemtime, std::wstring()));
-  time_ =
-      WideToUTF16Hack(FormatSystemTime(systemtime, std::wstring()));
-}
-
-void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
-                                       std::wstring text,
-                                       gfx::Rect bounds) const {
-  // Save the state for the clipping region.
-  int saved_state = SaveDC(context);
-  DCHECK_NE(saved_state, 0);
-
-  int result = IntersectClipRect(context, bounds.x(), bounds.y(),
-                                 bounds.right() + 1, bounds.bottom() + 1);
-  DCHECK(result == SIMPLEREGION || result == COMPLEXREGION);
-  TextOut(context,
-          bounds.x(), bounds.y(),
-          text.c_str(),
-          static_cast<int>(text.size()));
   int res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
 }

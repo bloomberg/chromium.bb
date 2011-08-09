@@ -5,7 +5,8 @@
 #ifndef PRINTING_PRINT_SETTINGS_H_
 #define PRINTING_PRINT_SETTINGS_H_
 
-#include "printing/page_overlays.h"
+#include <string>
+
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 #include "ui/gfx/rect.h"
@@ -77,9 +78,6 @@ class PrintSettings {
   // Desired visible dots per inch rendering for output. Printing should be
   // scaled to ScreenDpi/dpix*desired_dpi.
   int desired_dpi;
-
-  // The various overlays (headers and footers).
-  PageOverlays overlays;
 
   // Indicates if the user only wants to print the current selection.
   bool selection_only;

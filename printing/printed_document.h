@@ -98,8 +98,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
     return immutable_.name_;
   }
   const GURL& url() const { return immutable_.url_; }
-  const string16& date() const { return immutable_.date_; }
-  const string16& time() const { return immutable_.time_; }
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never set
@@ -154,9 +152,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
               int cookie);
     ~Immutable();
 
-    // Sets the document's |date_| and |time_|.
-    void SetDocumentDate();
-
     // Print settings used to generate this document. Immutable.
     PrintSettings settings_;
 
@@ -169,12 +164,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
     // URL that generated this document. Immutable.
     GURL url_;
 
-    // The date on which this job started. Immutable.
-    string16 date_;
-
-    // The time at which this job started. Immutable.
-    string16 time_;
-
     // Cookie to uniquely identify this document. It is used to make sure that a
     // PrintedPage is correctly belonging to the PrintedDocument. Since
     // PrintedPage generation is completely asynchronous, it could be easy to
@@ -183,23 +172,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
     // print settings change.
     int cookie_;
   };
-
-  // Prints the headers and footers for one page in the specified context
-  // according to the current settings.
-  void PrintHeaderFooter(gfx::NativeDrawingContext context,
-                         const PrintedPage& page,
-                         PageOverlays::HorizontalPosition x,
-                         PageOverlays::VerticalPosition y,
-                         const gfx::Font& font) const;
-
-  // Draws the computed |text| into |context| taking into account the bounding
-  // region |bounds|. |bounds| is the position in which to draw |text| and
-  // the minimum area needed to contain |text| which may not be larger than the
-  // header or footer itself.
-  // TODO(jhawkins): string16.
-  void DrawHeaderFooter(gfx::NativeDrawingContext context,
-                        std::wstring text,
-                        gfx::Rect bounds) const;
 
   void DebugDump(const PrintedPage& page);
 

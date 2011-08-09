@@ -82,7 +82,6 @@ bool PrintSettings::Equals(const PrintSettings& rhs) const {
       min_shrink == rhs.min_shrink &&
       max_shrink == rhs.max_shrink &&
       desired_dpi == rhs.desired_dpi &&
-      overlays.Equals(rhs.overlays) &&
       device_name_ == rhs.device_name_ &&
       page_setup_device_units_.Equals(rhs.page_setup_device_units_) &&
       dpi_ == rhs.dpi_ &&
