@@ -79,7 +79,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
     return base::PLATFORM_FILE_ERROR_FAILED;
   FileId file_id;
   if (!db->GetFileWithPath(virtual_path, &file_id)) {
-    // The file doesn't exist in the database.
+    // The file doesn't exist.
     if (!(file_flags & (base::PLATFORM_FILE_CREATE |
         base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_ALWAYS)))
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -88,20 +88,9 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     FileInfo file_info;
     InitFileInfo(&file_info, parent_id, virtual_path.BaseName().value());
-
-    // There may be a file without database entry out of inconsistency between
-    // actual filesystem and database.  We use PLATFORM_FILE_CREATE_ALWAYS
-    // to truncate such file.
-    file_flags &= ~(base::PLATFORM_FILE_OPEN |
-                    base::PLATFORM_FILE_CREATE |
-                    base::PLATFORM_FILE_OPEN_ALWAYS |
-                    base::PLATFORM_FILE_OPEN_TRUNCATED);
-    file_flags |= base::PLATFORM_FILE_CREATE_ALWAYS;
     PlatformFileError error = CreateFile(
         context, context->src_origin_url(), context->src_type(), FilePath(),
         &file_info, file_flags, file_handle);
-    if (error == base::PLATFORM_FILE_ERROR_EXISTS)
-      error = base::PLATFORM_FILE_OK;
     if (created && base::PLATFORM_FILE_OK == error)
       *created = true;
     return error;
@@ -806,21 +795,6 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
       DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
       error = underlying_file_util_->EnsureFileExists(
           context, path, &created);
-
-      // If the file already exists, we found a stray file out of
-      // inconsistency between database and filesystem.  We should truncate
-      // it to empty.
-      if (error == base::PLATFORM_FILE_OK && !created) {
-        PlatformFile file = base::CreatePlatformFile(
-            path, base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_CREATE_ALWAYS,
-            &created, &error);
-        if (error == base::PLATFORM_FILE_ERROR_EXISTS)
-          error = base::PLATFORM_FILE_OK;
-        if (error == base::PLATFORM_FILE_OK) {
-          if (!base::ClosePlatformFile(file))
-            error = base::PLATFORM_FILE_ERROR_FAILED;
-        }
-      }
     }
   }
   if (error != base::PLATFORM_FILE_OK)
@@ -1058,27 +1032,14 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
     return FilePath();
   FilePath directory_name;
   std::string id = GetOriginIdentifierFromURL(origin);
-
-  bool exists_in_db = origin_database_->HasOriginPath(id);
-  if (!exists_in_db && !create)
+  if (!create && !origin_database_->HasOriginPath(id))
     return FilePath();
   if (!origin_database_->GetPathForOrigin(id, &directory_name))
     return FilePath();
-
   FilePath path = file_system_directory_.Append(directory_name);
-  bool exists_in_fs = file_util::DirectoryExists(path);
-  if (!exists_in_db && exists_in_fs) {
-    if (!file_util::Delete(path, true))
-      return FilePath();
-    else
-      exists_in_fs = false;
-  }
-
-  if (!exists_in_fs) {
-    if (!create || !file_util::CreateDirectory(path))
-      return FilePath();
-  }
-
+  if (!file_util::DirectoryExists(path) &&
+      (!create || !file_util::CreateDirectory(path)))
+    return FilePath();
   return path;
 }
 
