@@ -291,9 +291,9 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
           "chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL");
       page_value->SetString("faviconDominantColor", "rgb(0, 147, 60)");
     } else if (url.url.spec() ==
-               l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)) {
+               l10n_util::GetStringUTF8(IDS_WEBSTORE_URL)) {
       page_value->SetString("thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL");
+          "chrome://theme/IDR_NEWTAB_WEBSTORE_THUMBNAIL");
       page_value->SetString("faviconDominantColor", "rgb(63, 132, 197)");
     }
 

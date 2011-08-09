@@ -593,8 +593,6 @@ class Browser : public TabHandlerDelegate,
   void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
   void ShowHelpTab();
-  // Used by the "Get themes" link in the options dialog.
-  void OpenThemeGalleryTabAndActivate();
   void OpenAutofillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();

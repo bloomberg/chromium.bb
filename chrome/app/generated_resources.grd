@@ -8316,6 +8316,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Text for the trash can that appears when the user drags apps.">
         Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
       </message>
+      <message name="IDS_NEW_TAB_WEBSTORE_PAGE_TITLE"
+         desc="Title for the hard coded thumbnail that represents the webstore page. This is used on the NTP when there aren't enough thumbnails to show.">
+        Apps, Extensions and Themes
+      </message>
       <message name="IDS_APP_DEFAULT_PAGE_NAME"
                desc="Default name for the first 'Apps' page on the New Tab Page.">
         Apps

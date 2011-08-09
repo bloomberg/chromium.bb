@@ -55,7 +55,7 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 
 // IDs of the sites we force into top sites.
 static const int kPrepopulatePageIDs[] =
-    { IDS_CHROME_WELCOME_URL, IDS_THEMES_GALLERY_URL };
+    { IDS_CHROME_WELCOME_URL, IDS_WEBSTORE_URL };
 
 // Favicons of the sites we force into top sites.
 static const char kPrepopulateFaviconURLs[][100] =
@@ -68,7 +68,7 @@ static const char kNewPrepopulateFaviconURLs[][100] =
 
 static const int kPrepopulateTitleIDs[] =
     { IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
-      IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE };
+      IDS_NEW_TAB_WEBSTORE_PAGE_TITLE };
 
 namespace {
 
@@ -84,7 +84,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
         result_count_(result_count) {
     // l10n_util isn't thread safe, so cache for use on the db thread.
     ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
-    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL));
+    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_WEBSTORE_URL));
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,

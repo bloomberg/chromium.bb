@@ -390,6 +390,8 @@ cr.define('ntp4', function() {
       // Div that holds the tiles.
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
+      this.tileGrid_.style.minWidth = (this.gridValues_.minColCount *
+          this.gridValues_.minTileWidth) + 'px';
       this.content_.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.

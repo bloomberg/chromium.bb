@@ -451,6 +451,11 @@
         https://chrome.google.com/webstore?hl=[GRITLANGCODE]&amp;category=theme
       </message>
 
+      <!-- The URL for the webstore. -->
+      <message name="IDS_WEBSTORE_URL" translateable="false">
+        https://chrome.google.com/webstore?hl=[GRITLANGCODE]
+      </message>
+
       <!-- The URL for Google Chrome welcome page. This is used for the pre -->
       <!-- populated thumbnails. -->
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
