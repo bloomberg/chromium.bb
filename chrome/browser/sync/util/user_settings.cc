@@ -35,7 +35,7 @@ using syncable::DirectoryManager;
 namespace browser_sync {
 
 void ExecOrDie(sqlite3* dbhandle, const char *query) {
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(dbhandle, query);
   if (SQLITE_DONE != statement.step()) {
     LOG(FATAL) << query << "\n" << sqlite3_errmsg(dbhandle);
@@ -114,7 +114,7 @@ void UserSettings::MigrateOldVersionsAsNeeded(sqlite3* const handle,
         // the sync data sqlite3 file.  Version 11 switched to a constant
         // filename, so here we read the string, copy the file to the new name,
         // delete the old one, and then drop the unused shares table.
-        SQLStatement share_query;
+        sqlite_utils::SQLStatement share_query;
         share_query.prepare(handle, "SELECT share_name, file_name FROM shares");
         int query_result = share_query.step();
         CHECK(SQLITE_ROW == query_result);
@@ -165,7 +165,7 @@ static void MakeClientIDTable(sqlite3* const dbhandle) {
   // there's not another such ID provided on the install.
   ExecOrDie(dbhandle, "CREATE TABLE client_id (id) ");
   {
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(dbhandle,
                       "INSERT INTO client_id values ( ? )");
     statement.bind_string(0, Generate128BitRandomBase64String());
@@ -190,9 +190,9 @@ bool UserSettings::Init(const FilePath& settings_path) {
     ExecOrDie(dbhandle.get(), "PRAGMA fullfsync = 1");
     ExecOrDie(dbhandle.get(), "PRAGMA synchronous = 2");
 
-    SQLTransaction transaction(dbhandle.get());
+    sqlite_utils::SQLTransaction transaction(dbhandle.get());
     transaction.BeginExclusive();
-    SQLStatement table_query;
+    sqlite_utils::SQLStatement table_query;
     table_query.prepare(dbhandle.get(),
                         "select count(*) from sqlite_master"
                         " where type = 'table' and name = 'db_version'");
@@ -201,7 +201,7 @@ bool UserSettings::Init(const FilePath& settings_path) {
     int table_count = table_query.column_int(0);
     table_query.reset();
     if (table_count > 0) {
-      SQLStatement version_query;
+      sqlite_utils::SQLStatement version_query;
       version_query.prepare(dbhandle.get(),
                             "SELECT version FROM db_version");
       query_result = version_query.step();
@@ -217,7 +217,7 @@ bool UserSettings::Init(const FilePath& settings_path) {
     } else {
       // Create settings table.
       {
-        SQLStatement statement;
+        sqlite_utils::SQLStatement statement;
         statement.prepare(dbhandle.get(),
                           "CREATE TABLE settings"
                           " (email, key, value, "
@@ -228,7 +228,7 @@ bool UserSettings::Init(const FilePath& settings_path) {
       }
       // Create and populate version table.
       {
-        SQLStatement statement;
+        sqlite_utils::SQLStatement statement;
         statement.prepare(dbhandle.get(),
                           "CREATE TABLE db_version ( version )");
         if (SQLITE_DONE != statement.step()) {
@@ -236,7 +236,7 @@ bool UserSettings::Init(const FilePath& settings_path) {
         }
       }
       {
-        SQLStatement statement;
+        sqlite_utils::SQLStatement statement;
         statement.prepare(dbhandle.get(),
                           "INSERT INTO db_version values ( ? )");
         statement.bind_int(0, kCurrentDBVersion);
@@ -288,10 +288,10 @@ int32 GetHashFromDigest(base::MD5Digest& digest) {
 void UserSettings::StoreEmailForSignin(const string& signin,
                                        const string& primary_email) {
   ScopedDBHandle dbhandle(this);
-  SQLTransaction transaction(dbhandle.get());
+  sqlite_utils::SQLTransaction transaction(dbhandle.get());
   int sqlite_result = transaction.BeginExclusive();
   CHECK(SQLITE_OK == sqlite_result);
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(),
                 "SELECT COUNT(*) FROM signins"
                 " WHERE signin = ? AND primary_email = ?");
@@ -304,7 +304,7 @@ void UserSettings::StoreEmailForSignin(const string& signin,
   if (0 == count) {
     // Migrate any settings the user might have from earlier versions.
     {
-      SQLStatement statement;
+      sqlite_utils::SQLStatement statement;
       statement.prepare(dbhandle.get(),
                         "UPDATE settings SET email = ? WHERE email = ?");
       statement.bind_string(0, signin);
@@ -315,7 +315,7 @@ void UserSettings::StoreEmailForSignin(const string& signin,
     }
     // Store this signin:email mapping.
     {
-      SQLStatement statement;
+      sqlite_utils::SQLStatement statement;
       statement.prepare(dbhandle.get(),
                         "INSERT INTO signins(signin, primary_email)"
                         " values ( ?, ? )");
@@ -333,7 +333,7 @@ void UserSettings::StoreEmailForSignin(const string& signin,
 bool UserSettings::GetEmailForSignin(string* signin) {
   ScopedDBHandle dbhandle(this);
   string result;
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(),
                 "SELECT primary_email FROM signins WHERE signin = ?");
   query.bind_string(0, *signin);
@@ -363,10 +363,10 @@ void UserSettings::StoreHashedPassword(const string& email,
   base::MD5Final(&md5_digest, &md5_context);
 
   ScopedDBHandle dbhandle(this);
-  SQLTransaction transaction(dbhandle.get());
+  sqlite_utils::SQLTransaction transaction(dbhandle.get());
   transaction.BeginExclusive();
   {
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(dbhandle.get(),
                       "INSERT INTO settings(email, key, value)"
                       " values ( ?, ?, ? )");
@@ -378,7 +378,7 @@ void UserSettings::StoreHashedPassword(const string& email,
     }
   }
   {
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(dbhandle.get(),
                       "INSERT INTO settings(email, key, value)"
                       " values ( ?, ?, ? )");
@@ -397,7 +397,7 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
   ScopedDBHandle dbhandle(this);
   string salt_and_digest;
 
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(),
                 "SELECT key, value FROM settings"
                 " WHERE email = ? AND (key = ? OR key = ?)");
@@ -436,7 +436,7 @@ void UserSettings::SwitchUser(const string& username) {
 
 string UserSettings::GetClientId() {
   ScopedDBHandle dbhandle(this);
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(dbhandle.get(), "SELECT id FROM client_id");
   int query_result = statement.step();
   string client_id;
@@ -452,7 +452,7 @@ void UserSettings::ClearAllServiceTokens() {
 
 bool UserSettings::GetLastUser(string* username) {
   ScopedDBHandle dbhandle(this);
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(), "SELECT email FROM cookies");
   if (SQLITE_ROW == query.step()) {
     *username = query.column_string(0);

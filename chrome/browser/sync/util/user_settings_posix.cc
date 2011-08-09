@@ -27,7 +27,7 @@ void UserSettings::SetAuthTokenForService(
     return;
   }
   ScopedDBHandle dbhandle(this);
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(dbhandle.get(),
                     "INSERT INTO cookies "
                     "(email, service_name, service_token) "
@@ -45,7 +45,7 @@ bool UserSettings::GetLastUserAndServiceToken(const std::string& service_name,
                                               std::string* username,
                                               std::string* service_token) {
   ScopedDBHandle dbhandle(this);
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(),
                 "SELECT email, service_token FROM cookies"
                 " WHERE service_name = ?");

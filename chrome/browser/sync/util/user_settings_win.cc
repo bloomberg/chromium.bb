@@ -17,7 +17,7 @@ namespace browser_sync {
 void UserSettings::SetAuthTokenForService(const string& email,
     const string& service_name, const string& long_lived_service_token) {
   ScopedDBHandle dbhandle(this);
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(dbhandle.get(),
                     "INSERT INTO cookies "
                     "(email, service_name, service_token) "
@@ -36,7 +36,7 @@ bool UserSettings::GetLastUserAndServiceToken(const string& service_name,
                                               string* username,
                                               string* service_token) {
   ScopedDBHandle dbhandle(this);
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(dbhandle.get(),
                 "SELECT email, service_token FROM cookies"
                 " WHERE service_name = ?");

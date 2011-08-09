@@ -13,17 +13,20 @@
 
 #include "base/hash_tables.h"
 
+class MockConnectionManager;
+
 namespace base {
 class StringValue;
+}
+
+namespace sqlite_utils {
+class SQLStatement;
 }
 
 namespace syncable {
 struct EntryKernel;
 class Id;
 }
-
-class MockConnectionManager;
-class SQLStatement;
 
 namespace syncable {
 
@@ -40,12 +43,6 @@ std::ostream& operator<<(std::ostream& out, const Id& id);
 // 2. r for the root item.
 // 3. s<server provided opaque id> for items that the server knows about.
 class Id {
-  friend int UnpackEntry(SQLStatement* statement,
-                         syncable::EntryKernel** kernel);
-  friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
-  friend std::ostream& operator<<(std::ostream& out, const Id& id);
-  friend class MockConnectionManager;
-  friend class SyncableIdTest;
  public:
   // This constructor will be handy even when we move away from int64s, just
   // for unit tests.
@@ -115,6 +112,14 @@ class Id {
   static Id GetLeastIdForLexicographicComparison();
 
  private:
+  friend int UnpackEntry(sqlite_utils::SQLStatement* statement,
+                         syncable::EntryKernel** kernel);
+  friend int BindFields(const EntryKernel& entry,
+                         sqlite_utils::SQLStatement* statement);
+  friend std::ostream& operator<<(std::ostream& out, const Id& id);
+  friend class MockConnectionManager;
+  friend class SyncableIdTest;
+
   std::string s_;
 };
 

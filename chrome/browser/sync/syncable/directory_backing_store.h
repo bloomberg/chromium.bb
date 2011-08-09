@@ -16,10 +16,11 @@
 
 extern "C" {
 struct sqlite3;
-struct sqlite3_stmt;
 }
 
+namespace sqlite_utils {
 class SQLStatement;
+}
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -166,7 +167,7 @@ class DirectoryBackingStore {
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
                           void(*handler_function) (
-                              SQLStatement* old_value_query,
+                              sqlite_utils::SQLStatement* old_value_query,
                               int old_value_column,
                               sync_pb::EntitySpecifics* mutable_new_value));
 

@@ -15,18 +15,18 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/sqlite/sqlite3.h"
 
-// forward declarations of classes defined here
 class FilePath;
+
+namespace sqlite_utils {
+
 class SQLTransaction;
 class SQLNestedTransaction;
 class SQLNestedTransactionSite;
 class scoped_sqlite3_stmt_ptr;
 class SQLStatement;
 
-//------------------------------------------------------------------------------
 // Interface to be implemented by objects that can handle exceptional sqlite
 // conditions. This way client code can focus on handling normal condtions.
-//------------------------------------------------------------------------------
 class SQLErrorHandler {
  public:
   virtual ~SQLErrorHandler() {}
@@ -38,21 +38,17 @@ class SQLErrorHandler {
   virtual int GetLastError() const = 0;
 };
 
-//------------------------------------------------------------------------------
 // The factory interface is used to create the different error handling
 // strategies for debug, release and for diagnostic mode.
-//------------------------------------------------------------------------------
 class SQLErrorHandlerFactory {
  public:
   virtual ~SQLErrorHandlerFactory() {}
   virtual SQLErrorHandler* Make() = 0;
 };
 
-//------------------------------------------------------------------------------
-// A wrapper for sqlite transactions that rollsback when the wrapper
-// goes out of scope if the caller has not already called Commit or Rollback.
+// A wrapper for sqlite transactions that rollsback when the wrapper goes out of
+// scope if the caller has not already called Commit or Rollback.
 // Note: the constructor does NOT Begin a transaction.
-//------------------------------------------------------------------------------
 class SQLTransaction {
  public:
   explicit SQLTransaction(sqlite3* db);
@@ -99,10 +95,7 @@ class SQLTransaction {
   DISALLOW_COPY_AND_ASSIGN(SQLTransaction);
 };
 
-
-//------------------------------------------------------------------------------
 // A class for use with SQLNestedTransaction.
-//------------------------------------------------------------------------------
 class SQLNestedTransactionSite {
  protected:
   SQLNestedTransactionSite() : db_(NULL), top_transaction_(NULL) {}
@@ -137,7 +130,6 @@ class SQLNestedTransactionSite {
   friend class SQLNestedTransaction;
 };
 
-//------------------------------------------------------------------------------
 // SQLite does not support nested transactions. This class provides a gross
 // approximation of nested transactions.
 //
@@ -156,7 +148,6 @@ class SQLNestedTransactionSite {
 //
 // TODO(michaeln): demonstrate usage here
 // TODO(michaeln): safegaurds to prevent mis-use
-//------------------------------------------------------------------------------
 class SQLNestedTransaction : public SQLTransaction {
  public:
   explicit SQLNestedTransaction(SQLNestedTransactionSite* site);
@@ -172,9 +163,7 @@ class SQLNestedTransaction : public SQLTransaction {
   DISALLOW_COPY_AND_ASSIGN(SQLNestedTransaction);
 };
 
-//------------------------------------------------------------------------------
 // A scoped sqlite statement that finalizes when it goes out of scope.
-//------------------------------------------------------------------------------
 class scoped_sqlite3_stmt_ptr {
  public:
   ~scoped_sqlite3_stmt_ptr() {
@@ -223,9 +212,7 @@ class scoped_sqlite3_stmt_ptr {
   DISALLOW_COPY_AND_ASSIGN(scoped_sqlite3_stmt_ptr);
 };
 
-//------------------------------------------------------------------------------
 // A scoped sqlite statement with convenient C++ wrappers for sqlite3 APIs.
-//------------------------------------------------------------------------------
 class SQLStatement : public scoped_sqlite3_stmt_ptr {
  public:
   SQLStatement() {}
@@ -315,9 +302,8 @@ class SQLStatement : public scoped_sqlite3_stmt_ptr {
   int bind_value(int index, const sqlite3_value* value);
 
   //
-  // Column helpers (NOTE: index is 0-based)
+  // Column helpers (NOTE: index is 0-based).
   //
-
   int column_count();
   int column_type(int index);
   const void* column_blob(int index);
@@ -342,11 +328,7 @@ class SQLStatement : public scoped_sqlite3_stmt_ptr {
   DISALLOW_COPY_AND_ASSIGN(SQLStatement);
 };
 
-namespace sqlite_utils {
-
-//------------------------------------------------------------------------------
 // A scoped sqlite database that closes when it goes out of scope.
-//------------------------------------------------------------------------------
 class DBClose {
  public:
   inline void operator()(sqlite3* x) const {

@@ -49,7 +49,7 @@ const int32 kCurrentDBVersion = 76;
 namespace {
 
 int ExecQuery(sqlite3* dbhandle, const char* query) {
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   int result = statement.prepare(dbhandle, query);
   if (SQLITE_OK != result)
     return result;
@@ -69,7 +69,8 @@ string GenerateCacheGUID() {
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
-int BindFields(const EntryKernel& entry, SQLStatement* statement) {
+int BindFields(const EntryKernel& entry,
+               sqlite_utils::SQLStatement* statement) {
   int index = 0;
   int i = 0;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
@@ -93,7 +94,7 @@ int BindFields(const EntryKernel& entry, SQLStatement* statement) {
 }
 
 // The caller owns the returned EntryKernel*.
-int UnpackEntry(SQLStatement* statement, EntryKernel** kernel) {
+int UnpackEntry(sqlite_utils::SQLStatement* statement, EntryKernel** kernel) {
   *kernel = NULL;
   int query_result = statement->step();
   if (SQLITE_ROW == query_result) {
@@ -195,7 +196,7 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
       }
     }
     {
-      SQLStatement statement;
+      sqlite_utils::SQLStatement statement;
       statement.prepare(scoped_handle.get(), "PRAGMA fullfsync = 1");
       if (SQLITE_DONE != statement.step()) {
         LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
@@ -203,7 +204,7 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
       }
     }
     {
-      SQLStatement statement;
+      sqlite_utils::SQLStatement statement;
       statement.prepare(scoped_handle.get(), "PRAGMA synchronous = 2");
       if (SQLITE_DONE != statement.step()) {
         LOG(ERROR) << sqlite3_errmsg(scoped_handle.get());
@@ -228,7 +229,7 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
 
 bool DirectoryBackingStore::CheckIntegrity(sqlite3* handle, string* error)
     const {
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(handle, "PRAGMA integrity_check(1)");
   if (SQLITE_ROW != statement.step()) {
     *error =  sqlite3_errmsg(handle);
@@ -339,7 +340,7 @@ bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
     query.append(base::Int64ToString(*it));
   }
   query.append(")");
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   int result = statement.prepare(dbhandle, query.data(), query.size());
   if (SQLITE_OK == result)
     result = statement.step();
@@ -359,7 +360,7 @@ bool DirectoryBackingStore::SaveChanges(
   if (snapshot.dirty_metas.size() < 1 && !save_info)
     return true;
 
-  SQLTransaction transaction(dbhandle);
+  sqlite_utils::SQLTransaction transaction(dbhandle);
   if (SQLITE_OK != transaction.BeginExclusive())
     return false;
 
@@ -375,7 +376,7 @@ bool DirectoryBackingStore::SaveChanges(
 
   if (save_info) {
     const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
-    SQLStatement update;
+    sqlite_utils::SQLStatement update;
     update.prepare(dbhandle, "UPDATE share_info "
                    "SET store_birthday = ?, "
                    "next_id = ?, "
@@ -393,7 +394,7 @@ bool DirectoryBackingStore::SaveChanges(
     }
 
     for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-      SQLStatement op;
+      sqlite_utils::SQLStatement op;
       op.prepare(dbhandle, "INSERT OR REPLACE INTO models (model_id, "
       "progress_marker, initial_sync_ended) VALUES ( ?, ?, ?)");
       // We persist not ModelType but rather a protobuf-derived ID.
@@ -416,7 +417,7 @@ bool DirectoryBackingStore::SaveChanges(
 }
 
 DirOpenResult DirectoryBackingStore::InitializeTables() {
-  SQLTransaction transaction(load_dbhandle_);
+  sqlite_utils::SQLTransaction transaction(load_dbhandle_);
   if (SQLITE_OK != transaction.BeginExclusive()) {
     return FAILED_DISK_FULL;
   }
@@ -499,7 +500,7 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   }
   if (SQLITE_DONE == last_result) {
     {
-      SQLStatement statement;
+      sqlite_utils::SQLStatement statement;
       statement.prepare(load_dbhandle_,
           "SELECT db_create_version, db_create_time FROM share_info");
       if (SQLITE_ROW != statement.step()) {
@@ -578,7 +579,7 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   select.append("SELECT ");
   AppendColumnList(&select);
   select.append(" FROM metas ");
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(load_dbhandle_, select.c_str());
   base::hash_set<int64> handles;
   EntryKernel* kernel = NULL;
@@ -592,7 +593,7 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
 
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
-    SQLStatement query;
+    sqlite_utils::SQLStatement query;
     query.prepare(load_dbhandle_,
                   "SELECT store_birthday, next_id, cache_guid, "
                   "notification_state "
@@ -605,7 +606,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     query.column_blob_as_string(3, &info->kernel_info.notification_state);
   }
   {
-    SQLStatement query;
+    sqlite_utils::SQLStatement query;
     query.prepare(load_dbhandle_,
         "SELECT model_id, progress_marker, initial_sync_ended "
         "FROM models");
@@ -620,7 +621,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     }
   }
   {
-    SQLStatement query;
+    sqlite_utils::SQLStatement query;
     query.prepare(load_dbhandle_,
                   "SELECT MAX(metahandle) FROM metas");
     if (SQLITE_ROW != query.step())
@@ -651,7 +652,7 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
   query.append(" ) ");
   values.append(" )");
   query.append(values);
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(save_dbhandle_, query.c_str());
   BindFields(entry, &statement);
   return (SQLITE_DONE == statement.step() &&
@@ -663,7 +664,7 @@ bool DirectoryBackingStore::DropDeletedEntries() {
   static const char delete_metas[] = "DELETE FROM metas WHERE metahandle IN "
                                      "(SELECT metahandle from death_row)";
   // Put all statements into a transaction for better performance
-  SQLTransaction transaction(load_dbhandle_);
+  sqlite_utils::SQLTransaction transaction(load_dbhandle_);
   transaction.Begin();
   if (SQLITE_DONE != ExecQuery(
                          load_dbhandle_,
@@ -690,7 +691,7 @@ bool DirectoryBackingStore::DropDeletedEntries() {
 int DirectoryBackingStore::SafeDropTable(const char* table_name) {
   string query = "DROP TABLE IF EXISTS ";
   query.append(table_name);
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   int result = statement.prepare(load_dbhandle_, query.data(),
                                  query.size());
   if (SQLITE_OK == result) {
@@ -733,14 +734,14 @@ string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
 bool DirectoryBackingStore::MigrateToSpecifics(
     const char* old_columns,
     const char* specifics_column,
-    void (*handler_function)(SQLStatement* old_value_query,
+    void (*handler_function)(sqlite_utils::SQLStatement* old_value_query,
                              int old_value_column,
                              sync_pb::EntitySpecifics* mutable_new_value)) {
   std::string query_sql = base::StringPrintf(
       "SELECT metahandle, %s, %s FROM metas", specifics_column, old_columns);
   std::string update_sql = base::StringPrintf(
       "UPDATE metas SET %s = ? WHERE metahandle = ?", specifics_column);
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(load_dbhandle_, query_sql.c_str());
   while (query.step() == SQLITE_ROW) {
     int64 metahandle = query.column_int64(0);
@@ -751,7 +752,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
     handler_function(&query, 2, &new_value);
     new_value.SerializeToString(&new_value_bytes);
 
-    SQLStatement update;
+    sqlite_utils::SQLStatement update;
     update.prepare(load_dbhandle_, update_sql.data(), update_sql.length());
     update.bind_blob(0, new_value_bytes.data(), new_value_bytes.length());
     update.bind_int64(1, metahandle);
@@ -764,7 +765,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
 }
 
 bool DirectoryBackingStore::AddColumn(const ColumnSpec* column) {
-  SQLStatement add_column;
+  sqlite_utils::SQLStatement add_column;
   std::string sql = base::StringPrintf(
       "ALTER TABLE metas ADD COLUMN %s %s", column->name, column->spec);
   add_column.prepare(load_dbhandle_, sql.c_str());
@@ -772,7 +773,7 @@ bool DirectoryBackingStore::AddColumn(const ColumnSpec* column) {
 }
 
 bool DirectoryBackingStore::SetVersion(int version) {
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(load_dbhandle_, "UPDATE share_version SET data = ?");
   statement.bind_int(0, version);
   return statement.step() == SQLITE_DONE;
@@ -781,7 +782,7 @@ bool DirectoryBackingStore::SetVersion(int version) {
 int DirectoryBackingStore::GetVersion() {
   if (!sqlite_utils::DoesSqliteTableExist(load_dbhandle_, "share_version"))
     return 0;
-  SQLStatement version_query;
+  sqlite_utils::SQLStatement version_query;
   version_query.prepare(load_dbhandle_, "SELECT data from share_version");
   if (SQLITE_ROW != version_query.step())
     return 0;
@@ -816,7 +817,7 @@ bool DirectoryBackingStore::MigrateVersion69To70() {
   }
   needs_column_refresh_ = true;
 
-  SQLStatement statement;
+  sqlite_utils::SQLStatement statement;
   statement.prepare(load_dbhandle_,
       "UPDATE metas SET unique_server_tag = singleton_tag");
   return statement.step() == SQLITE_DONE;
@@ -826,7 +827,7 @@ namespace {
 
 // Callback passed to MigrateToSpecifics for the v68->v69 migration.  See
 // MigrateVersion68To69().
-void EncodeBookmarkURLAndFavicon(SQLStatement* old_value_query,
+void EncodeBookmarkURLAndFavicon(sqlite_utils::SQLStatement* old_value_query,
                                  int old_value_column,
                                  sync_pb::EntitySpecifics* mutable_new_value) {
   // Extract data from the column trio we expect.
@@ -886,7 +887,7 @@ bool DirectoryBackingStore::MigrateVersion68To69() {
 
   // Lastly, fix up the "Google Chrome" folder, which is of the TOP_LEVEL_FOLDER
   // ModelType: it shouldn't have BookmarkSpecifics.
-  SQLStatement clear_permanent_items;
+  sqlite_utils::SQLStatement clear_permanent_items;
   clear_permanent_items.prepare(load_dbhandle_,
       "UPDATE metas SET specifics = NULL, server_specifics = NULL WHERE "
       "singleton_tag IN ('google_chrome')");
@@ -907,7 +908,7 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
 
   // Move data from the old share_info columns to the new models table.
   {
-    SQLStatement fetch;
+    sqlite_utils::SQLStatement fetch;
     fetch.prepare(load_dbhandle_,
         "SELECT last_sync_timestamp, initial_sync_ended FROM share_info");
 
@@ -917,7 +918,7 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
     bool initial_sync_ended = fetch.column_bool(1);
     if (SQLITE_DONE != fetch.step())
       return false;
-    SQLStatement update;
+    sqlite_utils::SQLStatement update;
     update.prepare(load_dbhandle_, "INSERT INTO models (model_id, "
         "last_download_timestamp, initial_sync_ended) VALUES (?, ?, ?)");
     string bookmark_model_id = ModelTypeEnumToModelId(BOOKMARKS);
@@ -1039,7 +1040,7 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
   if (!CreateModelsTable())
     return false;
 
-  SQLStatement query;
+  sqlite_utils::SQLStatement query;
   query.prepare(load_dbhandle_,
       "SELECT model_id, last_download_timestamp, initial_sync_ended "
       "FROM temp_models");
@@ -1058,7 +1059,7 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
       std::string progress_blob;
       progress_marker.SerializeToString(&progress_blob);
 
-      SQLStatement update;
+      sqlite_utils::SQLStatement update;
       update.prepare(load_dbhandle_, "INSERT INTO models (model_id, "
           "progress_marker, initial_sync_ended) VALUES (?, ?, ?)");
       update.bind_blob(0, query.column_blob(0), query.column_bytes(0));
@@ -1097,7 +1098,7 @@ int DirectoryBackingStore::CreateTables() {
   if (result != SQLITE_DONE)
     return result;
   {
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(load_dbhandle_, "INSERT INTO share_version VALUES(?, ?)");
     statement.bind_string(0, dir_name_);
     statement.bind_int(1, kCurrentDBVersion);
@@ -1111,7 +1112,7 @@ int DirectoryBackingStore::CreateTables() {
   if (result != SQLITE_DONE)
     return result;
   {
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(load_dbhandle_, "INSERT INTO share_info VALUES"
                                       "(?, "  // id
                                       "?, "   // name
@@ -1143,7 +1144,7 @@ int DirectoryBackingStore::CreateTables() {
   {
     // Insert the entry for the root into the metas table.
     const int64 now = Now();
-    SQLStatement statement;
+    sqlite_utils::SQLStatement statement;
     statement.prepare(load_dbhandle_,
                       "INSERT INTO metas "
                       "( id, metahandle, is_dir, ctime, mtime) "

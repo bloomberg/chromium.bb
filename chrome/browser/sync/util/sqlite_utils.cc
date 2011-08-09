@@ -13,6 +13,8 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 
+namespace sqlite_utils {
+
 // The vanilla error handler implements the common fucntionality for all the
 // error handlers. Specialized error handlers are expected to only override
 // the Handler() function.
@@ -84,8 +86,6 @@ SQLErrorHandlerFactory* GetErrorHandlerFactory() {
   // Destruction of DefaultSQLErrorHandlerFactory handled by at_exit manager.
   return g_default_sql_error_handler_factory.Pointer();
 }
-
-namespace sqlite_utils {
 
 int OpenSqliteDb(const FilePath& filepath, sqlite3** database) {
 #if defined(OS_WIN)
@@ -161,8 +161,6 @@ bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name) {
 
   return s.step() == SQLITE_ROW;
 }
-
-}  // namespace sqlite_utils
 
 SQLTransaction::SQLTransaction(sqlite3* db) : db_(db), began_(false) {
 }
@@ -508,3 +506,5 @@ std::wstring SQLStatement::column_wstring(int index) {
   column_wstring(index, &wstr);
   return wstr;
 }
+
+}  // namespace sqlite_utils
