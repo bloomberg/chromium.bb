@@ -146,6 +146,31 @@ ImmediateInterpreter::~ImmediateInterpreter() {
     free(prev_state_.fingers);
     prev_state_.fingers = NULL;
   }
+
+  if (tap_timeout_prop_ != NULL)
+    Log("tap_timeout_prop_ not freed?");
+  if (tap_drag_timeout_prop_ != NULL)
+    Log("tap_drag_timeout_prop_ not freed?");
+  if (tap_move_dist_prop_ != NULL)
+    Log("tap_move_dist_prop_ not freed?");
+  if (palm_pressure_prop_ != NULL)
+    Log("palm_pressure_prop_ not freed?");
+  if (change_timeout_prop_ != NULL)
+    Log("change_timeout_prop_ not freed?");
+  if (evaluation_timeout_prop_ != NULL)
+    Log("evaluation_timeout_prop_ not freed?");
+  if (two_finger_pressure_diff_thresh_prop_ != NULL)
+    Log("two_finger_pressure_diff_thresh_prop_ not freed?");
+  if (two_finger_close_distance_thresh_prop_ != NULL)
+    Log("two_finger_close_distance_thresh_prop_ not freed?");
+  if (two_finger_scroll_distance_thresh_prop_ != NULL)
+    Log("two_finger_scroll_distance_thresh_prop_ not freed?");
+  if (scroll_stationary_finger_max_distance_prop_ != NULL)
+    Log("scroll_stationary_finger_max_distance_prop_ not freed?");
+  if (bottom_zone_size_prop_ != NULL)
+    Log("bottom_zone_size_prop_ not freed?");
+  if (button_evaluation_timeout_prop_ != NULL)
+    Log("button_evaluation_timeout_prop_ not freed?");
 }
 
 Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
@@ -850,8 +875,63 @@ void ImmediateInterpreter::SetHardwareProperties(
                                             sizeof(FingerState)));
 }
 
-void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) { }
+void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
+  tap_timeout_prop_ = pp->create_real_fn(data, "Tap Timeout",
+    &tap_timeout_, tap_timeout_);
+  tap_drag_timeout_prop_ = pp->create_real_fn(data, "Tap Drag Timeout",
+    &tap_drag_timeout_, tap_drag_timeout_);
+  tap_move_dist_prop_ = pp->create_real_fn(data, "Tap Move Distance",
+      &tap_move_dist_, tap_move_dist_);
+  change_timeout_prop_ = pp->create_real_fn(data, "Change Timeout",
+    &change_timeout_, change_timeout_);
+  evaluation_timeout_prop_ = pp->create_real_fn(data, "Evaluation Timeout",
+    &evaluation_timeout_, evaluation_timeout_);
+  two_finger_pressure_diff_thresh_prop_ = pp->create_real_fn(data,
+    "Two Finger Pressure Diff Thresh", &two_finger_pressure_diff_thresh_,
+    two_finger_pressure_diff_thresh_);
+  two_finger_close_distance_thresh_prop_ = pp->create_real_fn(data,
+    "Two Finger Close Distance Thresh", &two_finger_close_distance_thresh_,
+    two_finger_close_distance_thresh_);
+  two_finger_scroll_distance_thresh_prop_ = pp->create_real_fn(data,
+    "Two Finger Scroll Distance Thresh", &two_finger_scroll_distance_thresh_,
+    two_finger_scroll_distance_thresh_);
+  scroll_stationary_finger_max_distance_prop_ = pp->create_real_fn(data,
+    "Scroll Stationary Finger Max Distance",
+    &scroll_stationary_finger_max_distance_,
+    scroll_stationary_finger_max_distance_);
+  bottom_zone_size_prop_ = pp->create_real_fn(data, "Bottom Zone Size",
+    &bottom_zone_size_, bottom_zone_size_);
+  button_evaluation_timeout_prop_ = pp->create_real_fn(data,
+    "Button Evaluation Timeout", &button_evaluation_timeout_,
+    button_evaluation_timeout_);
+}
 
-void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) { }
-
+void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
+  if (pp == NULL || pp->free_fn == NULL)
+    return;
+  pp->free_fn(data, tap_timeout_prop_);
+  tap_timeout_prop_ = NULL;
+  pp->free_fn(data, tap_drag_timeout_prop_);
+  tap_drag_timeout_prop_ = NULL;
+  pp->free_fn(data, tap_move_dist_prop_);
+  tap_move_dist_prop_ = NULL;
+  pp->free_fn(data, palm_pressure_prop_);
+  palm_pressure_prop_ = NULL;
+  pp->free_fn(data, change_timeout_prop_);
+  change_timeout_prop_ = NULL;
+  pp->free_fn(data, evaluation_timeout_prop_);
+  evaluation_timeout_prop_ = NULL;
+  pp->free_fn(data, two_finger_pressure_diff_thresh_prop_);
+  two_finger_pressure_diff_thresh_prop_ = NULL;
+  pp->free_fn(data, two_finger_close_distance_thresh_prop_);
+  two_finger_close_distance_thresh_prop_ = NULL;
+  pp->free_fn(data, two_finger_scroll_distance_thresh_prop_);
+  two_finger_scroll_distance_thresh_prop_ = NULL;
+  pp->free_fn(data, scroll_stationary_finger_max_distance_prop_);
+  scroll_stationary_finger_max_distance_prop_ = NULL;
+  pp->free_fn(data, bottom_zone_size_prop_);
+  bottom_zone_size_prop_ = NULL;
+  pp->free_fn(data, button_evaluation_timeout_prop_);
+  button_evaluation_timeout_prop_ = NULL;
+}
 }  // namespace gestures
