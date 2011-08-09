@@ -52,12 +52,6 @@ if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
                        sdl=none
                        --verbose
                        -j${UTMAN_CONCURRENCY})
-
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-host
-                               bitcode=1
-                               sdl=none
-                               --verbose
-                               -j${UTMAN_CONCURRENCY})
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-host
                        bitcode=1
@@ -65,13 +59,6 @@ else
                        sdl=none
                        sysinfo=0
                        -j${UTMAN_CONCURRENCY})
-
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-host
-                               bitcode=1
-                               naclsdk_validate=0
-                               sdl=none
-                               sysinfo=0
-                               -j${UTMAN_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run
@@ -94,14 +81,12 @@ scons-determine-tests() {
   fi
 }
 
-scons-build-sel_ldr() {
-  local  platform=$1
-  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-}
-
-scons-build-sel_universal() {
-  local  platform=$1
-  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_universal
+scons-build-sbtc-prerequisites() {
+  local platform=$1
+  # Sandboxed translators currently only require irt_core since they do not
+  # use PPAPI.
+  ./scons platform=${platform} ${SCONS_ARGS[@]} sel_ldr sel_universal \
+    irt_core
 }
 
 scons-clean-pnacl-build-dir () {
@@ -119,9 +104,7 @@ scons-clean-pnacl-sbtc-build-dir () {
 scons-pnacl-build () {
   local platform=$1
   shift
-  ./scons ${SCONS_ARGS[@]} \
-          platform=${platform} \
-          "$@"
+  ./scons ${SCONS_ARGS[@]} platform=${platform} "$@"
 }
 
 run-scons-tests() {
@@ -162,6 +145,7 @@ test-scons-sbtc-common () {
   local platform=$1
   shift
   scons-clean-pnacl-sbtc-build-dir ${platform}
+  scons-build-sbtc-prerequisites ${platform}
 
   test_setup=$(scons-determine-tests "$@")
   run-scons-tests ${platform} ${test_setup} use_sandboxed_translator=1

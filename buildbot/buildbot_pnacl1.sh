@@ -142,6 +142,13 @@ ad-hoc-shared-lib-tests() {
   popd
 }
 
+build-sbtc-prerequisites() {
+  local platform=$1
+  # Sandboxed translators currently only require irt_core since they do not
+  # use PPAPI.
+  ${SCONS_COMMON} platform=${platform} sel_ldr sel_universal irt_core
+}
+
 single-scons-test() {
   local platform=$1
   local extra=$2
@@ -167,6 +174,7 @@ scons-tests() {
     single-scons-test ${platform} "${extra}" "${test}"
     single-scons-test ${platform} "${extra} nacl_pic=1" "${test}"
     if [ "${platform}" != "arm" ] ; then
+      build-sbtc-prerequisites ${platform}
       single-scons-test ${platform} "${extra} use_sandboxed_translator=1" \
         "${test}"
     fi

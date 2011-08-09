@@ -119,11 +119,12 @@ SetupGccX8664Opt() {
 ######################################################################
 
 SetupNaclX8632Common() {
+  basic-setup-nacl x86-32
   SetupSelLdr x86-32
 }
 
 #@
-#@ SetupNaClX8632
+#@ SetupNaclX8632
 #@   use nacl-gcc compiler
 SetupNaclX8632() {
   SetupNaclX8632Common
@@ -131,7 +132,7 @@ SetupNaclX8632() {
 }
 
 #@
-#@ SetupNaClX8632Opt
+#@ SetupNaclX8632Opt
 #@   use nacl-gcc compiler with optimizations
 SetupNaclX8632Opt() {
   SetupNaclX8632Common
@@ -139,11 +140,12 @@ SetupNaclX8632Opt() {
 }
 
 SetupNaclX8664Common() {
+  basic-setup-nacl x86-64
   SetupSelLdr x86-64
 }
 
 #@
-#@ SetupNaClX8664
+#@ SetupNaclX8664
 #@   use nacl-gcc64 compiler
 SetupNaclX8664() {
   SetupNaclX8664Common
@@ -151,7 +153,7 @@ SetupNaclX8664() {
 }
 
 #@
-#@ SetupNaClX8664Opt
+#@ SetupNaclX8664Opt
 #@   use nacl-gcc64 compiler with optimizations
 SetupNaclX8664Opt() {
   SetupNaclX8664Common
@@ -159,6 +161,7 @@ SetupNaclX8664Opt() {
 }
 
 SetupNaclDynX8632Common() {
+  basic-setup-nacl x86-32
   SetupSelLdr x86-32 "" "-s" "${RUNNABLE_LD_X8632}"
 }
 
@@ -179,6 +182,7 @@ SetupNaclDynX8632Opt() {
 }
 
 SetupNaclDynX8664Common() {
+  basic-setup-nacl x86-64
   SetupSelLdr x86-64 "" "-s" "${RUNNABLE_LD_X8664}"
 }
 
@@ -201,7 +205,7 @@ SetupNaclDynX8664Opt() {
 ######################################################################
 
 SetupPnaclX8664Common() {
-  CheckSDK
+  basic-setup-pnacl x86-64
   SetupSelLdr x86-64
 }
 
@@ -225,7 +229,6 @@ SetupPnaclX8664Opt() {
 #@ SetupPnaclTranslatorX8664
 #@    use pnacl x8664 translator (no lto)
 SetupPnaclTranslatorX8664() {
-  CheckSelUniversal "x86-64"
   SetupPnaclX8664Common
   SUFFIX=pnacl_translator.x8664
 }
@@ -234,13 +237,12 @@ SetupPnaclTranslatorX8664() {
 #@ SetupPnaclTranslatorX8664Opt
 #@    use pnacl x8664 translator (with lto)
 SetupPnaclTranslatorX8664Opt() {
-  CheckSelUniversal "x86-64"
   SetupPnaclX8664Common
   SUFFIX=pnacl_translator.opt.x8664
 }
 
 SetupPnaclX8632Common() {
-  CheckSDK
+  basic-setup-pnacl x86-32
   SetupSelLdr x86-32
 }
 
@@ -265,7 +267,6 @@ SetupPnaclX8632Opt() {
 #@ SetupPnaclTranslatorX8632
 #@    use pnacl x8632 translator (no lto)
 SetupPnaclTranslatorX8632() {
-  CheckSelUniversal "x86-32"
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator.x8632
 }
@@ -274,7 +275,6 @@ SetupPnaclTranslatorX8632() {
 #@ SetupPnaclTranslatorX8632Opt
 #@    use pnacl x8632 translator (with lto)
 SetupPnaclTranslatorX8632Opt() {
-  CheckSelUniversal "x86-32"
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator.opt.x8632
 }
@@ -289,7 +289,7 @@ SetupGccArm() {
 
 
 SetupPnaclArmCommon() {
-  CheckSDK
+  basic-setup-pnacl arm
   SetupSelLdr arm "${QEMU_TOOL} run" "-Q"
   SUFFIX=pnacl.arm
 }
@@ -314,7 +314,6 @@ SetupPnaclArm() {
 #@ SetupPnaclTranslatorArm
 #@    use pnacl arm translator (no lto)
 SetupPnaclTranslatorArm() {
-  CheckSelUniversal "arm"
   SetupPnaclArmCommon
   SUFFIX=pnacl_translator.arm
 }
@@ -323,7 +322,6 @@ SetupPnaclTranslatorArm() {
 #@ SetupPnaclTranslatorArmOpt
 #@    use pnacl arm translator (with lto)
 SetupPnaclTranslatorArmOpt() {
-  CheckSelUniversal "arm"
   SetupPnaclArmCommon
   SUFFIX=pnacl_translator.opt.arm
 }
@@ -353,7 +351,6 @@ SetupPnaclArmHW() {
 #@ SetupPnaclTranslatorArmHW
 #@    use pnacl arm translator (no lto) -- run on ARM hardware
 SetupPnaclTranslatorArmHW() {
-  CheckSelUniversal "arm"
   SetupPnaclArmCommonHW
   SUFFIX=pnacl_translator.hw.arm
 }
@@ -362,7 +359,6 @@ SetupPnaclTranslatorArmHW() {
 #@ SetupPnaclTranslatorArmOptHW
 #@    use pnacl arm translator (with lto) -- run on ARM hardware
 SetupPnaclTranslatorArmOptHW() {
-  CheckSelUniversal "arm"
   SetupPnaclArmCommonHW
   SUFFIX=pnacl_translator.opt.hw.arm
 }
@@ -458,19 +454,67 @@ SetupSelLdr() {
   PREFIX="${prefix} ${SEL_LDR} -B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
 }
 
-CheckSelUniversal() {
-  local arch=$1
-  SEL_UNIV="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/\
-sel_universal"
-  CheckFileBuilt "sel_universal" "${SEL_UNIV}"
+# Flag to allow skipping building pre-requisite pieces if they were already
+# built in a previous run. Be careful that different platforms and
+# compilers have different prerequisites, so only set this to be "true"
+# If you are sure that the prerequisites are available.
+SPEC2K_PREREQS_BUILT=${SPEC2K_PREREQS_BUILT:-false}
+
+basic-setup-nacl() {
+  if ${SPEC2K_PREREQS_BUILT}; then
+    return 0
+  fi
+
+  local platforms=$1
+  build-runtime "${platforms}" "sel_ldr irt_core"
+  # libs may be unnecessary for the glibc build, but build it just in case.
+  build-libs-nacl "${platforms}"
+  # Set to true, assuming this is used via BuildAndRun() w/ the same
+  # platform and compiler setup.
+  SPEC2K_PREREQS_BUILT=true
 }
 
-CheckSDK() {
-  if ! [ -d "${PNACL_TC}"/sdk ]; then
-    echo "Spec2K for PNaCl requires the SDK to be installed." 1>&2
-    echo "To install, run: tools/llvm/utman.sh sdk" 1>&2
-    exit -1
+basic-setup-pnacl() {
+  if ${SPEC2K_PREREQS_BUILT}; then
+    return 0
   fi
+
+  local platforms=$1
+  # Sel universal is only used for the pnacl sandboxed translator,
+  # but prepare it just in case.
+  # IRT is used both to run the tests and to run the pnacl sandboxed translator.
+  build-runtime "${platforms}" "sel_ldr sel_universal irt_core"
+  build-libs-pnacl
+  # Set to true, assuming this is used via BuildAndRun() w/ the same
+  # platform and compiler setup.
+  SPEC2K_PREREQS_BUILT=true
+}
+
+SCONS_COMMON="./scons --mode=opt-host,nacl -j8 --verbose"
+
+build-runtime() {
+  local platforms=$1
+  local runtime_pieces=$2
+  for platform in ${platforms} ; do
+    echo "@@@BUILD_STEP scons ${runtime_pieces} [${platform}]@@@"
+    (cd ${NACL_ROOT};
+      ${SCONS_COMMON} platform=${platform} ${runtime_pieces})
+  done
+}
+
+build-libs-nacl() {
+  local platforms=$1
+  shift 1
+  for platform in ${platforms} ; do
+    echo "@@@BUILD_STEP scons build_lib [${platform}] $* @@@"
+    (cd ${NACL_ROOT};
+      ${SCONS_COMMON} platform=${platform} build_lib "$@")
+  done
+}
+
+build-libs-pnacl() {
+  (cd ${NACL_ROOT};
+    ./tools/llvm/utman.sh sdk)
 }
 
 #@
@@ -497,8 +541,9 @@ CleanBenchmarks() {
 #@  Results are delivered to {execname}.compile_time
 BuildBenchmarks() {
   export PREFIX=
-  timeit=$1
-  "$2"
+  local timeit=$1
+  local setup_func=$2
+  "${setup_func}"
   shift 2
 
   local list=$(GetBenchmarkList "$@")
@@ -533,7 +578,8 @@ TimedRunCmd() {
 #@  Run all benchmarks according to the setup.
 RunBenchmarks() {
   export PREFIX=
-  "$1"
+  local setup_func=$1
+  "${setup_func}"
   shift
   local list=$(GetBenchmarkList "$@")
   local script=$(GetInputSize "$@")

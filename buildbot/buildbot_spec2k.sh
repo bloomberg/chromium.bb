@@ -38,55 +38,6 @@ clobber() {
   fi
 }
 
-basic-setup-nacl() {
-  local platforms=$1
-  build-sel_ldr "${platforms}"
-  build-libs "${platforms}"
-  build-irt "${platforms}"
-}
-
-basic-setup-pnacl() {
-  local platforms=$1
-  build-sel_ldr "${platforms}"
-  build-sel_universal "${platforms}"
-  build-irt "${platforms}"
-  ${UTMAN} sdk
-}
-
-build-sel_ldr() {
-  local platforms=$1
-  for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons sel_ldr [${platform}]@@@"
-    ${SCONS_TRUSTED} platform=${platform} sel_ldr
-  done
-}
-
-build-sel_universal() {
-  local platforms=$1
-  for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons sel_universal [${platform}]@@@"
-    ${SCONS_TRUSTED} platform=${platform} sel_universal
-  done
-}
-
-build-irt() {
-  local platforms=$1
-  shift 1
-  for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons irt_core [${platform}] $* @@@"
-    ${SCONS_NACL} platform=${platform} irt_core "$@"
-  done
-}
-
-build-libs() {
-  local platforms=$1
-  shift 1
-  for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons build_lib [${platform}] $* @@@"
-    ${SCONS_NACL} platform=${platform} build_lib "$@"
-  done
-}
-
 build-and-run-some() {
   local setups="$1"
   local tests="$2"
@@ -132,7 +83,6 @@ build-and-run-all() {
 # TODO: elminate this long running bot in favor per arch sharded bots
 pnacl-trybot() {
   clobber
-  basic-setup-pnacl "arm x86-64 x86-32"
   build-and-run-some SetupPnaclArmOpt "${TRYBOT_TESTS}"
   build-and-run-some SetupPnaclX8632Opt "${TRYBOT_TESTS}"
   build-and-run-some SetupPnaclX8664Opt "${TRYBOT_TESTS}"
@@ -142,34 +92,29 @@ pnacl-trybot() {
 
 pnacl-trybot-arm() {
   clobber
-  basic-setup-pnacl "arm"
   build-and-run-some SetupPnaclArmOpt "${TRYBOT_TESTS}"
 }
 
 pnacl-trybot-x8632() {
   clobber
-  basic-setup-pnacl "x86-32"
   build-and-run-some SetupPnaclX8632Opt "${TRYBOT_TESTS}"
   build-and-run-some SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}"
 }
 
 pnacl-trybot-x8664() {
   clobber
-  basic-setup-pnacl "x86-64"
   build-and-run-some SetupPnaclX8664Opt "${TRYBOT_TESTS}"
   build-and-run-some SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}"
 }
 
 pnacl-arm() {
   clobber
-  basic-setup-pnacl "arm"
   # arm takes a long time and we do not have sandboxed tests working
   build-and-run-all "SetupPnaclArmOpt"
 }
 
 pnacl-x8664() {
   clobber
-  basic-setup-pnacl "x86-64"
   build-and-run-all "SetupPnaclX8664 \
                      SetupPnaclX8664Opt \
                      SetupPnaclTranslatorX8664 \
@@ -178,7 +123,6 @@ pnacl-x8664() {
 
 pnacl-x8632() {
   clobber
-  basic-setup-pnacl "x86-32"
   build-and-run-all "SetupPnaclX8632 \
                      SetupPnaclX8632Opt \
                      SetupPnaclTranslatorX8632 \
@@ -187,14 +131,12 @@ pnacl-x8632() {
 
 nacl-x8632() {
   clobber
-  basic-setup-nacl "x86-32"
   build-and-run-all "SetupNaclX8632 \
                      SetupNaclX8632Opt"
 }
 
 nacl-x8664() {
   clobber
-  basic-setup-nacl "x86-64"
   build-and-run-all "SetupNaclX8664 \
                      SetupNaclX8664Opt"
 
