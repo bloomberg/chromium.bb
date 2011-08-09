@@ -33,22 +33,67 @@ extern UserEvent* MakeInputEventFromSDLEvent(const SDL_Event& sdl_event);
 // This file implements a IMultimedia interface using SDL
 
 struct InfoVideo {
+  InfoVideo() : width(0), height(0), screen(NULL),
+                format(0),   // currently not used.
+                bits_per_pixel(32),
+                bytes_per_pixel(4),
+                rmask(0x00FF0000),
+                gmask(0x0000FF00),
+                bmask(0x000000FF)
+                {}
   int32_t width;
   int32_t height;
-  int32_t format;
-  int32_t bits_per_pixel;
-  int32_t bytes_per_pixel;
-  int32_t rmask;
-  int32_t gmask;
-  int32_t bmask;
   SDL_Surface* screen;
+  const int32_t format;
+  const int32_t bits_per_pixel;
+  const int32_t bytes_per_pixel;
+  const int32_t rmask;
+  const int32_t gmask;
+  const int32_t bmask;
 };
 
 
 struct InfoAudio {
+  InfoAudio() : frequency(0), channels(0), frame_size(0) {}
   int32_t frequency;
   int32_t channels;
   int32_t frame_size;
+};
+
+
+// This class stores additional pending events. So we do not flood.
+// SDL's internal event queue which is of limited capacity.
+class OverflowEvents {
+ public:
+  OverflowEvents() {
+    if (NaClMutexCtor(&mutex_)) {}
+  };
+
+  ~OverflowEvents() {
+  }
+
+  void PushEvent(const SDL_Event& sdl_event) {
+    ScopedMutexLock lock(&mutex_);
+    queue_.push(sdl_event);
+  }
+
+  int GetEvent(SDL_Event* sdl_event) {
+    ScopedMutexLock lock(&mutex_);
+    if (queue_.size() == 0) {
+      return 0;
+    }
+    *sdl_event = queue_.front();
+    queue_.pop();
+    return 1;
+  }
+
+  int Size() {
+    return queue_.size();
+  }
+
+ private:
+  std::queue<SDL_Event> queue_;
+  NaClMutex mutex_;
 };
 
 
@@ -56,6 +101,7 @@ struct SDLInfo {
   int32_t initialized_sdl;
   InfoVideo video;
   InfoAudio audio;
+  OverflowEvents overflow_events;
 };
 
 
@@ -97,7 +143,6 @@ class JobSdlInit: public Job {
     const int flags =  SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
     const uint32_t sdl_video_flags = SDL_DOUBLEBUF | SDL_HWSURFACE;
 
-    memset(info_, 0, sizeof(*info_));
     if (SDL_Init(flags)) {
       NaClLog(LOG_FATAL, "MultimediaModuleInit: SDL_Init failed\n");
     }
@@ -116,13 +161,7 @@ class JobSdlInit: public Job {
     info_->video.width = width_;
     info_->video.height = height_;
     // video format always BGRA
-    info_->video.rmask = 0x00FF0000;
-    info_->video.gmask = 0x0000FF00;
-    info_->video.bmask = 0x000000FF;
-    info_->video.bits_per_pixel = 32;
-    info_->video.bytes_per_pixel = 4;
 
-    // TODO(robertm): verify non-ownership of title_
     SDL_WM_SetCaption(title_, title_);
   }
 };
@@ -209,11 +248,9 @@ class JobSdlAudioInit: public Job {
 
     SDL_AudioSpec fmt;
     fmt.freq = info_->audio.frequency;
-    fmt.format = AUDIO_S16;
+    fmt.format = AUDIO_S16LSB;
     fmt.channels = info_->audio.channels;
-    // NOTE: SDL seems to halve that the sample count for the callback
-    //       so we compensate here by doubling
-    fmt.samples = info_->audio.frame_size * 2;
+    fmt.samples = info_->audio.frame_size;
     fmt.callback = cb_;
     fmt.userdata = cb_data_;
     NaClLog(LOG_INFO, "JobSdlAudioInit %d %d %d %d\n",
@@ -288,10 +325,13 @@ class JobSdlEventPoll: public Job {
 
     for (;;) {
       SDL_Event sdl_event;
-      const int32_t result = poll_ ?
-                             SDL_PollEvent(&sdl_event) :
-                             SDL_WaitEvent(&sdl_event);
-      if (result == 0) {
+      int32_t have_event;
+      have_event = info_->overflow_events.GetEvent(&sdl_event);
+      if (have_event == 0) {
+        have_event =
+          poll_ ? SDL_PollEvent(&sdl_event) : SDL_WaitEvent(&sdl_event);
+      }
+      if (have_event == 0) {
         if (poll_) {
           return;
         } else {
@@ -379,8 +419,21 @@ class MultimediaSDL : public IMultimedia {
     sdl_event.user.code = 0;
     sdl_event.user.data1 = event;
     sdl_event.user.data2 = 0;
-    // NOTE:  SDL_PushEvent copies the sdl_event
-    SDL_PushEvent(&sdl_event);
+
+    // We need to avoid  overflowing SDL's internal event queue which
+    // has only 128 entries so we keep an overflow queue on the side.
+    // This queue is only looked at if there is at least one event in
+    // SDL's queue, though.
+    SDL_Event tmp_event;
+    if (1 == SDL_PeepEvents(&tmp_event, 1, SDL_PEEKEVENT, SDL_ALLEVENTS)) {
+      sdl_info_.overflow_events.PushEvent(sdl_event);
+    } else {
+      // NOTE:  SDL_PushEvent copies the sdl_event
+      int result = SDL_PushEvent(&sdl_event);
+      if (result != 0) {
+        NaClLog(LOG_FATAL, "sdl could not push event\n");
+      }
+    }
   }
 
   virtual void PushDelayedUserEvent(int delay, UserEvent* event) {

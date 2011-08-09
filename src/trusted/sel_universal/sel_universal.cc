@@ -99,6 +99,7 @@ static nacl::string ProcessArguments(int argc,
     exit(0);
   }
 
+  int debug_level = 0;
   // Extract sel_universal arguments and transfer the rest to sel_ldr_argv
   nacl::string app_name;
   for (int i = 1; i < argc; i++) {
@@ -117,7 +118,7 @@ static nacl::string ProcessArguments(int argc,
       }
       ReplayPPAPIEvents(argv[i + 1]);
     } else if (flag == "--debug") {
-      NaClLogSetVerbosity(1);
+      ++debug_level;
     } else if (flag == "--abort_on_error") {
       abort_on_error = true;
     } else if (flag == "--silence_nexe") {
@@ -178,6 +179,10 @@ static nacl::string ProcessArguments(int argc,
       // much confusion with sel_universal args. But this remains a hack.
       sel_ldr_argv->push_back(argv[i]);
     }
+  }
+
+  if (debug_level > 0) {
+    NaClLogSetVerbosity(debug_level);
   }
 
   if (app_name == "") {

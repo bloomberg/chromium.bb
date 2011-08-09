@@ -390,7 +390,7 @@ bool ParseArg(NaClSrpcArg* arg,
   // Initialize the argument slot.  This enables freeing on failures.
   memset(arg, 0, sizeof(*arg));
 
-  NaClLog(2, "TOKEN %s\n", token.c_str());
+  NaClLog(3, "TOKEN %s\n", token.c_str());
   if (token[1] != '(' || token[token.size() - 1] != ')') {
     NaClLog(LOG_ERROR, "malformed token '%s'\n", token.c_str());
     return false;

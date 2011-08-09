@@ -43,6 +43,9 @@ const uint32_t PP_K_LSHIFT = 16;
 const uint32_t PP_K_LCTRL = 17;
 const uint32_t PP_K_LALT = 18;
 
+const uint32_t PP_K_RETURN = 13;
+const uint32_t PP_K_SPACE = 32;
+
 const uint32_t PP_K_PAGEUP = 33;
 const uint32_t PP_K_PAGEDOWN = 34;
 const uint32_t PP_K_END = 35;
@@ -127,6 +130,8 @@ static uint32_t SDLKeyToPPKey(uint32_t key) {
     case SDLK_PERIOD:  return PP_K_PERIOD;
     case SDLK_SLASH:  return PP_K_SLASH;
     case SDLK_BACKQUOTE:  return PP_K_BACKQUOTE;
+    case SDLK_RETURN:  return PP_K_RETURN;
+    case SDLK_SPACE:  return PP_K_SPACE;
     default:
       return 0;
   }
