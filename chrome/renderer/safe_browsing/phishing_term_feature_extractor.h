@@ -21,7 +21,9 @@
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "base/hash_tables.h"
+#include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "base/string16.h"
 #include "base/task.h"
 
@@ -92,6 +94,10 @@ class PhishingTermFeatureExtractor {
   // before giving up on the current page.
   static const int kMaxTotalTimeMs;
 
+  // The size of the cache that we use to determine if we can avoid lower
+  // casing, hashing, and UTF conversion.
+  static const int kMaxNegativeWordCacheSize;
+
   // Does the actual work of ExtractFeatures.  ExtractFeaturesWithTimeout runs
   // until a predefined maximum amount of time has elapsed, then posts a task
   // to the current MessageLoop to continue extraction.  When extraction
@@ -99,7 +105,7 @@ class PhishingTermFeatureExtractor {
   void ExtractFeaturesWithTimeout();
 
   // Handles a single word in the page text.
-  void HandleWord(const string16& word);
+  void HandleWord(const base::StringPiece16& word);
 
   // Helper to verify that there is no pending feature extraction.  Dies in
   // debug builds if the state is not as expected.  This is a no-op in release
@@ -124,6 +130,13 @@ class PhishingTermFeatureExtractor {
 
   // The maximum number of words in an n-gram.
   size_t max_words_per_term_;
+
+  // This cache is used to see if we need to check the word at all, as
+  // converting to UTF8, lowercasing, and hashing are all relatively expensive
+  // operations. Though this is called an MRU cache, it seems to behave like
+  // an LRU cache (i.e. it evicts the oldest accesses first).
+  typedef base::HashingMRUCache<base::StringPiece16, bool> WordCache;
+  WordCache negative_word_cache_;
 
   // Non-owned pointer to our clock.
   FeatureExtractorClock* clock_;

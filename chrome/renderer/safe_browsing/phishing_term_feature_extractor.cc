@@ -35,6 +35,9 @@ const int PhishingTermFeatureExtractor::kClockCheckGranularity = 10;
 // actual phishing page.
 const int PhishingTermFeatureExtractor::kMaxTotalTimeMs = 500;
 
+// The maximum size of the negative word cache.
+const int PhishingTermFeatureExtractor::kMaxNegativeWordCacheSize = 1000;
+
 // All of the state pertaining to the current feature extraction.
 struct PhishingTermFeatureExtractor::ExtractionState {
   // Stores up to max_words_per_ngram_ previous words separated by spaces.
@@ -93,6 +96,7 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
     : page_term_hashes_(page_term_hashes),
       page_word_hashes_(page_word_hashes),
       max_words_per_term_(max_words_per_term),
+      negative_word_cache_(kMaxNegativeWordCacheSize),
       clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Clear();
@@ -159,8 +163,8 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
        next != UBRK_DONE; next = ubrk_next(state_->iterator)) {
     if (ubrk_getRuleStatus(state_->iterator) != UBRK_WORD_NONE) {
       // next is now positioned at the end of a word.
-      HandleWord(string16(*page_text_, state_->position,
-                          next - state_->position));
+      HandleWord(base::StringPiece16(page_text_->data() + state_->position,
+                                     next - state_->position));
       ++num_words;
     }
     state_->position = next;
@@ -196,10 +200,21 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
       // Otherwise, continue.
     }
   }
+  // We need to clear the cache because the data that it depends on (page_text_)
+  // is going away.
+  negative_word_cache_.Clear();
   RunCallback(true);
 }
 
-void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
+void PhishingTermFeatureExtractor::HandleWord(
+    const base::StringPiece16& word) {
+  // Quickest out if we have seen this word before and know that it's not
+  // part of any term. This avoids the SHA256, lowercasing, and UTF conversion,
+  // all of which are relatively expensive.
+  if (negative_word_cache_.Get(word) != negative_word_cache_.end()) {
+    return;
+  }
+
   std::string word_lower = UTF16ToUTF8(base::i18n::ToLower(word));
   std::string word_hash = crypto::SHA256HashString(word_lower);
 
@@ -208,6 +223,8 @@ void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
     // Word doesn't exist in our terms so we can clear the n-gram state.
     state_->previous_words.clear();
     state_->previous_word_sizes.clear();
+    // Insert into negative cache so that we don't try this again.
+    negative_word_cache_.Put(word, true);
     return;
   }
 
@@ -221,16 +238,6 @@ void PhishingTermFeatureExtractor::HandleWord(const string16& word) {
   // Note that we don't yet add the new word length to previous_word_sizes,
   // since we don't want to compute the hash for the word by itself again.
   //
-  // TODO(bryner): Use UMA stats to determine whether this is too slow.
-  // If it is, there are a couple of cases that we could optimize:
-  //  - We could cache plaintext words that are not in page_word_hashes_, so
-  //    that we can avoid hashing these again.
-  //  - We could include positional information about words in the n-grams,
-  //    rather than just a list of all of the words.  For example, we could
-  //    change the term format so that each word is hashed separately, or
-  //    we could add extra data to the word list to indicate the position
-  //    at which the word appears in an n-gram, and skip checking the word if
-  //    it's not at that position.
   state_->previous_words.append(word_lower);
   std::string current_term = state_->previous_words;
   for (std::list<size_t>::iterator it = state_->previous_word_sizes.begin();

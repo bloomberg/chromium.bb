@@ -22,16 +22,26 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 
 namespace base {
 
 // MRUCacheBase ----------------------------------------------------------------
 
+// This template is used to standardize map type containers that can be used
+// by MRUCacheBase. This level of indirection is necessary because of the way
+// that template template params and default template params interact.
+template <class KeyType, class ValueType>
+struct MRUCacheStandardMap {
+  typedef std::map<KeyType, ValueType> Type;
+};
+
 // Base class for the MRU cache specializations defined below.
 // The deletor will get called on all payloads that are being removed or
 // replaced.
-template <class KeyType, class PayloadType, class DeletorType>
+template <class KeyType, class PayloadType, class DeletorType,
+          template <typename, typename> class MapType = MRUCacheStandardMap>
 class MRUCacheBase {
  public:
   // The payload of the list. This maintains a copy of the key so we can
@@ -40,7 +50,8 @@ class MRUCacheBase {
 
  private:
   typedef std::list<value_type> PayloadList;
-  typedef std::map<KeyType, typename PayloadList::iterator> KeyIndex;
+  typedef typename MapType<KeyType,
+                           typename PayloadList::iterator>::Type KeyIndex;
 
  public:
   typedef typename PayloadList::size_type size_type;
@@ -256,6 +267,38 @@ class OwningMRUCache
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OwningMRUCache);
+};
+
+// HashingMRUCache ------------------------------------------------------------
+
+template <class KeyType, class ValueType>
+struct MRUCacheHashMap {
+  typedef base::hash_map<KeyType, ValueType> Type;
+};
+
+// This class is similar to MRUCache, except that it uses base::hash_map as
+// the map type instead of std::map. Note that your KeyType must be hashable
+// to use this cache.
+template <class KeyType, class PayloadType>
+class HashingMRUCache : public MRUCacheBase<KeyType,
+                                            PayloadType,
+                                            MRUCacheNullDeletor<PayloadType>,
+                                            MRUCacheHashMap> {
+ private:
+  typedef MRUCacheBase<KeyType, PayloadType,
+                       MRUCacheNullDeletor<PayloadType>,
+                       MRUCacheHashMap> ParentType;
+
+ public:
+  // See MRUCacheBase, noting the possibility of using NO_AUTO_EVICT.
+  explicit HashingMRUCache(typename ParentType::size_type max_size)
+      : ParentType(max_size) {
+  }
+  virtual ~HashingMRUCache() {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HashingMRUCache);
 };
 
 }  // namespace base

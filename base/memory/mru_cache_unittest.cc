@@ -251,3 +251,21 @@ TEST(MRUCacheTest, AutoEvict) {
   // There should be no objects leaked.
   EXPECT_EQ(initial_count, cached_item_live_count);
 }
+
+TEST(MRUCacheTest, HashingMRUCache) {
+  // Very simple test to make sure that the hashing cache works correctly.
+  typedef base::HashingMRUCache<std::string, CachedItem> Cache;
+  Cache cache(Cache::NO_AUTO_EVICT);
+
+  CachedItem one(1);
+  cache.Put("First", one);
+
+  CachedItem two(2);
+  cache.Put("Second", two);
+
+  EXPECT_EQ(one.value, cache.Get("First")->second.value);
+  EXPECT_EQ(two.value, cache.Get("Second")->second.value);
+  cache.ShrinkToSize(1);
+  EXPECT_EQ(two.value, cache.Get("Second")->second.value);
+  EXPECT_EQ(cache.end(), cache.Get("First"));
+}
