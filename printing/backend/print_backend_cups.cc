@@ -4,12 +4,17 @@
 
 #include "printing/backend/print_backend.h"
 
+#include "build/build_config.h"
+
 #include <dlfcn.h>
 #include <errno.h>
-#if !defined(OS_MACOSX)
+#include <pthread.h>
+
+#if defined(OS_MACOSX)
+#include <AvailabilityMacros.h>
+#else
 #include <gcrypt.h>
 #endif
-#include <pthread.h>
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -21,7 +26,11 @@
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend_consts.h"
 
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+const int CUPS_PRINTER_SCANNER = 0x2000000;  // Scanner-only device
+#endif  // MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
+#else
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 namespace {
@@ -71,12 +80,13 @@ static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer(
     base::LINKER_INITIALIZED);
 
 }  // namespace
-#endif
+#endif  // defined(OS_MACOSX)
 
 namespace printing {
 
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
 static const char kCUPSPrinterStateOpt[] = "printer-state";
+static const char kCUPSPrinterTypeOpt[] = "printer-type";
 
 class PrintBackendCUPS : public PrintBackend {
  public:
@@ -125,6 +135,16 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   for (int printer_index = 0; printer_index < num_dests; printer_index++) {
     const cups_dest_t& printer = destinations[printer_index];
+
+    // CUPS can have 'printers' that are actually scanners. (not MFC)
+    // At least on Mac. Check for scanners and skip them.
+    const char* type_str = cupsGetOption(kCUPSPrinterTypeOpt,
+        printer.num_options, printer.options);
+    if (type_str != NULL) {
+      int type;
+      if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
+        continue;
+    }
 
     PrinterBasicInfo printer_info;
     printer_info.printer_name = printer.name;
