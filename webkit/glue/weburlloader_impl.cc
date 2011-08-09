@@ -118,15 +118,17 @@ bool GetInfoFromDataURL(const GURL& url,
   std::string charset;
   if (net::DataURL::Parse(url, &mime_type, &charset, data)) {
     *status = net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0);
-    info->request_time = Time::Now();
-    info->response_time = Time::Now();
+    // Assure same time for all time fields of data: URLs.
+    Time now = Time::Now();
+    info->load_timing.base_time = now;
+    info->request_time = now;
+    info->response_time = now;
     info->headers = NULL;
     info->mime_type.swap(mime_type);
     info->charset.swap(charset);
     info->security_info.clear();
     info->content_length = -1;
     info->encoded_data_length = 0;
-    info->load_timing.base_time = Time::Now();
 
     return true;
   }
