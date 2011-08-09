@@ -30,11 +30,6 @@ void _start(uint32_t *info) {
   environ = envp;
 
   /*
-   * TODO(mcgrathr): This ought to use IRT-private tables explicitly.
-   */
-  __libnacl_irt_init(auxv);
-
-  /*
    * We are the true entry point, never called by a dynamic linker.
    * So the finalizer function pointer is always NULL.
    * We don't bother registering anything with atexit anyway,

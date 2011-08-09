@@ -16,8 +16,6 @@
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-struct nacl_irt_cond __nc_irt_cond;  /* Set up in __pthread_initialize. */
-
 static int nc_thread_cond_init(pthread_cond_t *cond,
                                pthread_condattr_t *cond_attr) {
   return __nc_irt_cond.cond_create(&cond->handle);

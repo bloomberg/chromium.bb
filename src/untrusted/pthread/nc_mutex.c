@@ -16,8 +16,6 @@
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-struct nacl_irt_mutex __nc_irt_mutex; /* Set up in __pthread_initialize. */
-
 /* Mutex functions */
 
 static int nc_thread_mutex_init(pthread_mutex_t *mutex) {

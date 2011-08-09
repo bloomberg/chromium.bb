@@ -50,6 +50,9 @@ int pthread_key_create(pthread_key_t *key, void (*dtor)(void *)) {
     }
   }
 
+#if defined(NC_TSD_NO_MORE_KEYS)
+  NC_TSD_NO_MORE_KEYS;
+#endif
   return EAGAIN;
 }
 

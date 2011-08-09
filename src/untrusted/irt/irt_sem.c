@@ -37,3 +37,9 @@ const struct nacl_irt_sem nacl_irt_sem = {
   nacl_irt_sem_post,
   nacl_irt_sem_wait,
 };
+
+/*
+ * This name is used in libpthread_private by the private copy of nc_semaphore.
+ */
+extern const struct nacl_irt_sem __nc_irt_sem
+  __attribute__((alias("nacl_irt_sem")));

@@ -15,10 +15,9 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 #include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 #include "native_client/src/untrusted/pthread/semaphore.h"
-
-struct nacl_irt_sem __nc_irt_sem;  /* Set up in __pthread_initialize. */
 
 /* Initialize semaphore  */
 int sem_init(sem_t *sem, int pshared, unsigned int value) {

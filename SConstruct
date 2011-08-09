@@ -2524,6 +2524,10 @@ nacl_irt_env = nacl_env.Clone(
     NACL_BUILD_FAMILY = 'UNTRUSTED_IRT',
 )
 
+# Since we don't build a whole libpthread for the IRT and thus we can
+# omit the directory, we must tell it how to find the pthread.h header.
+nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
+
 # http://code.google.com/p/nativeclient/issues/detail?id=1225
 if nacl_irt_env.Bit('bitcode'):
   optflags = ['-O0','-O1','-O2','-O3']
@@ -2975,7 +2979,6 @@ nacl_irt_env.Append(
         'src/shared/srpc/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
-        'src/untrusted/pthread/nacl.scons',
         'src/untrusted/startup/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
     ])

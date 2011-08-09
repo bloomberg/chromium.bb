@@ -7,9 +7,11 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 
+/*
+ * The other interfaces have global __nc_irt_<name> variables.
+ * Those are defined as aliases to nacl_irt_<name> tables, each
+ * defined in ../irt/irt_<name>.c.
+ */
 void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread) {
   *irt_thread = nacl_irt_thread;
-  __nc_irt_mutex = nacl_irt_mutex;
-  __nc_irt_cond = nacl_irt_cond;
-  __nc_irt_sem = nacl_irt_sem;
 }

@@ -51,3 +51,10 @@ const struct nacl_irt_cond nacl_irt_cond = {
   nacl_irt_cond_wait,
   nacl_irt_cond_timed_wait_abs,
 };
+
+/*
+ * This name is used inside the IRT itself and in libpthread_private,
+ * by the private copy of nc_cond.
+ */
+extern const struct nacl_irt_cond __nc_irt_cond
+  __attribute__((alias("nacl_irt_cond")));
