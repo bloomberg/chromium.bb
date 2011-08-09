@@ -138,8 +138,7 @@ void P2PSocketHostTcp::OnPacket(std::vector<char>& data) {
   if (!authorized_) {
     P2PSocketHost::StunMessageType type;
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
-    if (stun && (type == STUN_BINDING_REQUEST ||
-                 type == STUN_BINDING_RESPONSE)) {
+    if (stun && IsRequestOrResponse(type)) {
       authorized_ = true;
     } else if (!stun || type == STUN_DATA_INDICATION) {
       LOG(ERROR) << "Received unexpected data packet from "

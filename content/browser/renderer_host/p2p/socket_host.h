@@ -62,6 +62,7 @@ class P2PSocketHost {
   // of success stores type of the message in |type|.
   static bool GetStunPacketType(const char* data, int data_size,
                                 StunMessageType* type);
+  static bool IsRequestOrResponse(StunMessageType type);
 
   IPC::Message::Sender* message_sender_;
   int routing_id_;

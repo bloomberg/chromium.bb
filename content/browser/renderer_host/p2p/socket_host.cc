@@ -66,6 +66,12 @@ bool P2PSocketHost::GetStunPacketType(
 }
 
 // static
+bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
+  return type == STUN_BINDING_REQUEST || type == STUN_BINDING_RESPONSE ||
+      type == STUN_ALLOCATE_REQUEST || type == STUN_ALLOCATE_RESPONSE;
+}
+
+// static
 P2PSocketHost* P2PSocketHost::Create(
     IPC::Message::Sender* message_sender, int routing_id, int id,
     P2PSocketType type) {

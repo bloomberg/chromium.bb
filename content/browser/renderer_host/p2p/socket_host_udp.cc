@@ -100,8 +100,7 @@ void P2PSocketHostUdp::DidCompleteRead(int result) {
     if (authorized_peers_.find(recv_address_) == authorized_peers_.end()) {
       P2PSocketHost::StunMessageType type;
       bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
-      if (stun && (type == STUN_BINDING_REQUEST ||
-                   type == STUN_BINDING_RESPONSE)) {
+      if (stun && IsRequestOrResponse(type)) {
         authorized_peers_.insert(recv_address_);
       } else if (!stun || type == STUN_DATA_INDICATION) {
         LOG(ERROR) << "Received unexpected data packet from "
