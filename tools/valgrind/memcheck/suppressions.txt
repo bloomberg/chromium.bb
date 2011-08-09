@@ -4962,8 +4962,8 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11ProfileImpl24GetUserStyleSheetWatcherEv
-   fun:_ZN28RenderViewHostDelegateHelper14GetWebkitPrefsEP7Profileb
-   fun:_ZN6chrome26ChromeContentBrowserClient14GetWebkitPrefsEP7Profileb
+   fun:_ZN28RenderViewHostDelegateHelper14GetWebkitPrefs*
+   fun:_ZN6chrome26ChromeContentBrowserClient14GetWebkitPrefs*
    fun:_ZN11TabContents14GetWebkitPrefsEv
 }
 {
