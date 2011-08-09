@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/connection_to_client.h"
 
+#include "base/bind.h"
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
 #include "remoting/protocol/client_control_sender.h"
@@ -96,25 +97,37 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
       client_control_sender_.reset(
           new ClientControlSender(session_->control_channel()));
       video_writer_.reset(VideoWriter::Create(session_->config()));
-      video_writer_->Init(session_.get());
-
+      video_writer_->Init(
+          session_.get(), base::Bind(&ConnectionToClient::OnVideoInitialized,
+                                     base::Unretained(this)));
       dispatcher_.reset(new HostMessageDispatcher());
       dispatcher_->Initialize(this, host_stub_, input_stub_);
-
-      handler_->OnConnectionOpened(this);
       break;
     case protocol::Session::CLOSED:
       CloseChannels();
       handler_->OnConnectionClosed(this);
       break;
     case protocol::Session::FAILED:
-      CloseChannels();
-      handler_->OnConnectionFailed(this);
+      CloseOnError();
       break;
     default:
       // We shouldn't receive other states.
       NOTREACHED();
   }
+}
+
+void ConnectionToClient::OnVideoInitialized(bool successful) {
+  if (!successful) {
+    CloseOnError();
+    return;
+  }
+
+  handler_->OnConnectionOpened(this);
+}
+
+void ConnectionToClient::CloseOnError() {
+  CloseChannels();
+  handler_->OnConnectionFailed(this);
 }
 
 void ConnectionToClient::CloseChannels() {

@@ -64,9 +64,6 @@ class Session : public base::NonThreadSafe {
   // instead.
   virtual net::Socket* control_channel() = 0;
   virtual net::Socket* event_channel() = 0;
-  virtual net::Socket* video_channel() = 0;
-  virtual net::Socket* video_rtp_channel() = 0;
-  virtual net::Socket* video_rtcp_channel() = 0;
 
   // JID of the other side.
   virtual const std::string& jid() = 0;

@@ -12,4 +12,8 @@ const char kChromotingTokenDefaultServiceName[] = "chromiumsync";
 
 const char kChromotingXmlNamespace[] = "google:remoting";
 
+const char kVideoChannelName[] = "video";
+const char kVideoRtpChannelName[] = "videortp";
+const char kVideoRtcpChannelName[] = "videortpc";
+
 }  // namespace remoting

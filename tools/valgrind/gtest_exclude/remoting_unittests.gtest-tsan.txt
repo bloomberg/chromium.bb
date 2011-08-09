@@ -2,8 +2,6 @@
 # hardcoded timeouts, so these tests fail under TSan.
 JingleSessionTest.Connect
 JingleSessionTest.ConnectBadChannelAuth
-JingleSessionTest.TestControlChannel
-JingleSessionTest.TestEventChannel
+JingleSessionTest.TestUdpChannel
+JingleSessionTest.TestTcpChannel
 JingleSessionTest.TestSpeed
-JingleSessionTest.TestVideoChannel
-JingleSessionTest.TestVideoRtpChannel

@@ -70,6 +70,67 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
+int FakeSocket::Connect(net::CompletionCallback* callback) {
+  return net::OK;
+}
+
+void FakeSocket::Disconnect() {
+  NOTIMPLEMENTED();
+}
+
+bool FakeSocket::IsConnected() const {
+  return true;
+}
+
+bool FakeSocket::IsConnectedAndIdle() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+int FakeSocket::GetPeerAddress(
+    net::AddressList* address) const {
+  NOTIMPLEMENTED();
+  return net::ERR_FAILED;
+}
+
+int FakeSocket::GetLocalAddress(
+    net::IPEndPoint* address) const {
+  NOTIMPLEMENTED();
+  return net::ERR_FAILED;
+}
+
+const net::BoundNetLog& FakeSocket::NetLog() const {
+  return net_log_;
+}
+
+void FakeSocket::SetSubresourceSpeculation() {
+  NOTIMPLEMENTED();
+}
+
+void FakeSocket::SetOmniboxSpeculation() {
+  NOTIMPLEMENTED();
+}
+
+bool FakeSocket::WasEverUsed() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+bool FakeSocket::UsingTCPFastOpen() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+int64 FakeSocket::NumBytesRead() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
+  NOTIMPLEMENTED();
+  return base::TimeDelta();
+}
+
 FakeUdpSocket::FakeUdpSocket()
     : read_pending_(false),
       input_pos_(0) {
@@ -135,21 +196,31 @@ FakeSession::FakeSession()
 
 FakeSession::~FakeSession() { }
 
-void FakeSession::SetStateChangeCallback(
-    StateChangeCallback* callback) {
+FakeSocket* FakeSession::GetStreamChannel(const std::string& name) {
+  return stream_channels_[name];
+}
+
+FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
+  return datagram_channels_[name];
+}
+
+void FakeSession::SetStateChangeCallback(StateChangeCallback* callback) {
   callback_.reset(callback);
 }
 
 void FakeSession::CreateStreamChannel(
     const std::string& name, const StreamChannelCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(name, NULL);
+  LOG(ERROR) << " creating channel " << name;
+  FakeSocket* channel = new FakeSocket();
+  stream_channels_[name] = channel;
+  callback.Run(name, channel);
 }
 
 void FakeSession::CreateDatagramChannel(
     const std::string& name, const DatagramChannelCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(name, NULL);
+  FakeUdpSocket* channel = new FakeUdpSocket();
+  datagram_channels_[name] = channel;
+  callback.Run(name, channel);
 }
 
 FakeSocket* FakeSession::control_channel() {
@@ -158,18 +229,6 @@ FakeSocket* FakeSession::control_channel() {
 
 FakeSocket* FakeSession::event_channel() {
   return &event_channel_;
-}
-
-FakeSocket* FakeSession::video_channel() {
-  return &video_channel_;
-}
-
-FakeUdpSocket* FakeSession::video_rtp_channel() {
-  return &video_rtp_channel_;
-}
-
-FakeUdpSocket* FakeSession::video_rtcp_channel() {
-  return &video_rtcp_channel_;
 }
 
 const std::string& FakeSession::jid() {
