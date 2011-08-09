@@ -171,6 +171,10 @@ class Channel : public Message::Sender {
   void ResetToAcceptingConnectionState();
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
+  // Returns true if a named server channel is initialized on the given channel
+  // ID. Even if true, the server may have already accepted a connection.
+  static bool IsNamedServerInitialized(const std::string& channel_id);
+
  protected:
   // Used in Chrome by the TestSink to provide a dummy channel implementation
   // for testing. TestSink overrides the "interesting" functions in Channel so

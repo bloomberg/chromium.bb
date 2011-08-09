@@ -337,6 +337,20 @@ TEST_F(IPCChannelPosixTest, BadMode) {
   ASSERT_FALSE(channel.Connect());
 }
 
+TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
+  IPCChannelPosixTestListener listener(false);
+  IPC::ChannelHandle chan_handle(kConnectionSocketTestName);
+  ASSERT_TRUE(file_util::Delete(FilePath(kConnectionSocketTestName), false));
+  ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
+      kConnectionSocketTestName));
+  IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);
+  ASSERT_TRUE(IPC::Channel::IsNamedServerInitialized(
+      kConnectionSocketTestName));
+  channel.Close();
+  ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
+      kConnectionSocketTestName));
+}
+
 // A long running process that connects to us
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   MessageLoopForIO message_loop;

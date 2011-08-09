@@ -993,6 +993,12 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   input_overflow_fds_.clear();
 }
 
+// static
+bool Channel::ChannelImpl::IsNamedServerInitialized(
+    const std::string& channel_id) {
+  return file_util::PathExists(FilePath(channel_id));
+}
+
 // Called by libevent when we can read from the pipe without blocking.
 void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   bool send_server_hello_msg = false;
@@ -1200,6 +1206,11 @@ bool Channel::GetClientEuid(uid_t* client_euid) const {
 
 void Channel::ResetToAcceptingConnectionState() {
   channel_impl_->ResetToAcceptingConnectionState();
+}
+
+// static
+bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
+  return ChannelImpl::IsNamedServerInitialized(channel_id);
 }
 
 }  // namespace IPC

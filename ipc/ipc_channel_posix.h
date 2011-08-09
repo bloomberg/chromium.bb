@@ -62,6 +62,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   bool HasAcceptedConnection() const;
   bool GetClientEuid(uid_t* client_euid) const;
   void ResetToAcceptingConnectionState();
+  static bool IsNamedServerInitialized(const std::string& channel_id);
 
  private:
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);

@@ -30,8 +30,9 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
   void Close();
   void set_listener(Listener* listener) { listener_ = listener; }
   bool Send(Message* message);
+  static bool IsNamedServerInitialized(const std::string& channel_id);
  private:
-  const std::wstring PipeName(const std::string& channel_id) const;
+  static const std::wstring PipeName(const std::string& channel_id);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();

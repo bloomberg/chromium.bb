@@ -93,8 +93,19 @@ bool Channel::ChannelImpl::Send(Message* message) {
   return true;
 }
 
+// static
+bool Channel::ChannelImpl::IsNamedServerInitialized(
+    const std::string& channel_id) {
+  if (WaitNamedPipe(PipeName(channel_id).c_str(), 1))
+    return true;
+  // If ERROR_SEM_TIMEOUT occurred, the pipe exists but is handling another
+  // connection.
+  return GetLastError() == ERROR_SEM_TIMEOUT;
+}
+
+// static
 const std::wstring Channel::ChannelImpl::PipeName(
-    const std::string& channel_id) const {
+    const std::string& channel_id) {
   std::string name("\\\\.\\pipe\\chrome.");
   return ASCIIToWide(name.append(channel_id));
 }
@@ -409,6 +420,11 @@ void Channel::set_listener(Listener* listener) {
 
 bool Channel::Send(Message* message) {
   return channel_impl_->Send(message);
+}
+
+// static
+bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
+  return ChannelImpl::IsNamedServerInitialized(channel_id);
 }
 
 }  // namespace IPC

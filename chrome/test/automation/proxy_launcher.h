@@ -27,8 +27,8 @@ class AutomationProxy;
 // implementation or to override browser launching behavior.
 class ProxyLauncher {
  public:
-  // Default path for named testing interface.
-  static const char kDefaultInterfacePath[];
+  // Default ID for named testing interface.
+  static const char kDefaultInterfaceId[];
 
   // Different ways to quit the browser.
   enum ShutdownType {

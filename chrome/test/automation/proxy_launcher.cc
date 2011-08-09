@@ -25,6 +25,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
+#include "ipc/ipc_channel.h"
 #include "sql/connection.h"
 
 namespace {
@@ -62,8 +63,12 @@ void UpdateHistoryDates(const FilePath& user_data_dir) {
 
 // ProxyLauncher functions
 
-const char ProxyLauncher::kDefaultInterfacePath[] =
+#if defined(OS_WIN)
+const char ProxyLauncher::kDefaultInterfaceId[] = "ChromeTestingInterface";
+#elif defined(OS_POSIX)
+const char ProxyLauncher::kDefaultInterfaceId[] =
     "/var/tmp/ChromeTestingInterface";
+#endif
 
 bool ProxyLauncher::in_process_renderer_ = false;
 bool ProxyLauncher::no_sandbox_ = false;
@@ -516,33 +521,28 @@ AutomationProxy* NamedProxyLauncher::CreateAutomationProxy(
 
 void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
                                               bool wait_for_initial_loads) {
-  FilePath testing_channel_path;
-#if defined(OS_WIN)
-  testing_channel_path = FilePath(ASCIIToWide(channel_id_));
-#else
-  testing_channel_path = FilePath(channel_id_);
-#endif
-
   if (launch_browser_) {
+#if defined(OS_POSIX)
     // Because we are waiting on the existence of the testing file below,
     // make sure there isn't one already there before browser launch.
-    EXPECT_TRUE(file_util::Delete(testing_channel_path, false));
+    EXPECT_TRUE(file_util::Delete(FilePath(channel_id_), false));
+#endif
 
     // Set up IPC testing interface as a client.
     ASSERT_TRUE(LaunchBrowser(state));
   }
 
   // Wait for browser to be ready for connections.
-  bool testing_channel_exists = false;
+  bool channel_initialized = false;
   for (int wait_time = 0;
        wait_time < TestTimeouts::action_max_timeout_ms();
        wait_time += automation::kSleepTime) {
-    testing_channel_exists = file_util::PathExists(testing_channel_path);
-    if (testing_channel_exists)
+    channel_initialized = IPC::Channel::IsNamedServerInitialized(channel_id_);
+    if (channel_initialized)
       break;
     base::PlatformThread::Sleep(automation::kSleepTime);
   }
-  EXPECT_TRUE(testing_channel_exists);
+  EXPECT_TRUE(channel_initialized);
 
   ASSERT_TRUE(ConnectToRunningBrowser(wait_for_initial_loads));
 }

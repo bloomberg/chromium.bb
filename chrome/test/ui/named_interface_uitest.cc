@@ -21,13 +21,13 @@ class NamedInterfaceTest : public UITest {
   }
 
   virtual ProxyLauncher *CreateProxyLauncher() {
-    CommandLine::StringType channel_path =
-        CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+    std::string channel_id =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kTestingChannel);
-    if (channel_path.empty())
-      channel_path = ProxyLauncher::kDefaultInterfacePath;
+    if (channel_id.empty())
+      channel_id = ProxyLauncher::kDefaultInterfaceId;
 
-    return new NamedProxyLauncher(channel_path, true, true);
+    return new NamedProxyLauncher(channel_id, true, true);
   }
 };
 

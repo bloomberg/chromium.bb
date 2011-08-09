@@ -788,10 +788,6 @@
               },
             },
           },
-          'sources!': [
-            # TODO(dtu): port to windows http://crosbug.com/8515
-            'test/ui/named_interface_uitest.cc',
-          ],
         }, { # else: OS != "win"
           'sources!': [
             # TODO(port): http://crbug.com/45770
