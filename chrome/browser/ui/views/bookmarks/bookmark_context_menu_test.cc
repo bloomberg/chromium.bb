@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -48,7 +49,7 @@ class TestingPageNavigator : public PageNavigator {
 
 }  // namespace
 
-class BookmarkContextMenuTest : public testing::Test {
+class BookmarkContextMenuTest : public TestingBrowserProcessTest {
  public:
   BookmarkContextMenuTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

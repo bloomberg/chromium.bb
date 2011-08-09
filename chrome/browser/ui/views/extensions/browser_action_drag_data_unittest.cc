@@ -5,6 +5,7 @@
 #include "base/pickle.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -19,7 +20,7 @@ ui::OSExchangeData::Provider* CloneProvider(const ui::OSExchangeData& data) {
 
 }  // namespace
 
-typedef testing::Test BrowserActionDragDataTest;
+typedef TestingBrowserProcessTest BrowserActionDragDataTest;
 
 TEST_F(BrowserActionDragDataTest, ArbitraryFormat) {
   TestingProfile profile;

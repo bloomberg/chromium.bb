@@ -12,8 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -21,8 +22,6 @@ typedef BrowsingDataHelperCallback<BrowsingDataIndexedDBHelper::IndexedDBInfo>
     TestCompletionCallback;
 
 class BrowsingDataIndexedDBHelperTest : public InProcessBrowserTest {
- protected:
-  TestingProfile testing_profile_;
 };
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
@@ -35,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
       FILE_PATH_LITERAL("http_host2_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(&testing_profile_));
+      new CannedBrowsingDataIndexedDBHelper(browser()->profile()));
   helper->AddIndexedDB(origin1, description);
   helper->AddIndexedDB(origin2, description);
 
@@ -58,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
       FILE_PATH_LITERAL("http_host1_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(&testing_profile_));
+      new CannedBrowsingDataIndexedDBHelper(browser()->profile()));
   helper->AddIndexedDB(origin, description);
   helper->AddIndexedDB(origin, description);
 

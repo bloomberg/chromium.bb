@@ -6,8 +6,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 
@@ -24,7 +25,7 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
  public:
   virtual void CreateDatabases() {
     webkit_database::DatabaseTracker* db_tracker =
-        testing_profile_.GetDatabaseTracker();
+        browser()->profile()->GetDatabaseTracker();
     string16 db_name = ASCIIToUTF16("db");
     string16 description = ASCIIToUTF16("db_description");
     int64 size;
@@ -46,9 +47,6 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
     db_tracker->GetAllOriginsInfo(&origins);
     ASSERT_EQ(2U, origins.size());
   }
-
- protected:
-  TestingProfile testing_profile_;
 };
 
 // Called back by BrowsingDataDatabaseHelper on the UI thread once the database
@@ -77,7 +75,7 @@ class StopTestOnCallback {
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, FetchData) {
   CreateDatabases();
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper(
-      new BrowsingDataDatabaseHelper(&testing_profile_));
+      new BrowsingDataDatabaseHelper(browser()->profile()));
   StopTestOnCallback stop_test_on_callback(database_helper);
   database_helper->StartFetching(
       NewCallback(&stop_test_on_callback, &StopTestOnCallback::Callback));
@@ -95,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
   const char db3[] = "db3";
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
-      new CannedBrowsingDataDatabaseHelper(&testing_profile_));
+      new CannedBrowsingDataDatabaseHelper(browser()->profile()));
   helper->AddDatabase(origin1, db1, "");
   helper->AddDatabase(origin1, db2, "");
   helper->AddDatabase(origin2, db3, "");
@@ -122,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
   const char db[] = "db1";
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
-      new CannedBrowsingDataDatabaseHelper(&testing_profile_));
+      new CannedBrowsingDataDatabaseHelper(browser()->profile()));
   helper->AddDatabase(origin, db, "");
   helper->AddDatabase(origin, db, "");
 
