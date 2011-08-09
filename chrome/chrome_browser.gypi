@@ -3666,6 +3666,8 @@
         'browser/ui/webui/textfields_ui.h',
         'browser/ui/webui/theme_source.cc',
         'browser/ui/webui/theme_source.h',
+        'browser/ui/webui/tracing_ui.cc',
+        'browser/ui/webui/tracing_ui.h',
         'browser/ui/webui/web_ui_util.cc',
         'browser/ui/webui/web_ui_util.h',
         'browser/ui/webui/workers_ui.cc',

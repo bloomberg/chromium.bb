@@ -12,7 +12,7 @@ cr.define('gpu', function() {
   /**
    * Provides information on the GPU process and underlying graphics hardware.
    * @constructor
-   * @extends {Tab}
+   * @extends {cr.ui.TabPanel}
    */
   var InfoView = cr.ui.define(cr.ui.TabPanel);
 

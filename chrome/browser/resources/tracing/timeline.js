@@ -15,7 +15,7 @@
  *    Thread2:     CCCCCC                 CCCCC
  *
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
 
   /**
    * The TimelineViewport manages the transform used for navigating

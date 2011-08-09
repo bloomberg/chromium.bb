@@ -19,7 +19,7 @@
  * nesting tasks.
  *
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
   /**
    * A TimelineSlice represents an interval of time on a given thread
    * associated with a specific trace event. For example,

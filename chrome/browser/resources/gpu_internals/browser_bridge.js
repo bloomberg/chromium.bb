@@ -11,13 +11,11 @@ cr.define('gpu', function() {
   function BrowserBridge() {
     // If we are not running inside WebUI, output chrome.send messages
     // to the console to help with quick-iteration debugging.
-    if (chrome.send === undefined && console.log) {
-      this.debugMode_ = true;
+    this.debugMode_ = (chrome.send === undefined && console.log);
+    if (this.debugMode_) {
       var browserBridgeTests = document.createElement('script');
       browserBridgeTests.src = './gpu_internals/browser_bridge_tests.js';
       document.body.appendChild(browserBridgeTests);
-    } else {
-      this.debugMode_ = false;
     }
 
     this.nextRequestId_ = 0;

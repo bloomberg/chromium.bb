@@ -8,7 +8,7 @@
  * using a child canvas element. Uses a FastRectRenderer to draw only
  * the visible slices.
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
 
   const palletteBase = [
     {r: 138, g: 113, b: 152},
@@ -284,8 +284,8 @@ cr.define('gpu', function() {
       vp.applyTransformToCanavs(ctx);
 
       // tracks
-      var tr = new gpu.FastRectRenderer(ctx, viewLWorld, 2 * pixWidth,
-                                        2 * pixWidth, viewRWorld, pallette);
+      var tr = new tracing.FastRectRenderer(ctx, viewLWorld, 2 * pixWidth,
+                                            2 * pixWidth, viewRWorld, pallette);
       tr.setYandH(0, canvasH);
       var slices = this.slices_;
       for (var i = 0; i < slices.length; ++i) {
@@ -367,7 +367,7 @@ cr.define('gpu', function() {
       var clientRect = this.getBoundingClientRect();
       if (wY < clientRect.top || wY >= clientRect.bottom)
         return false;
-      var x = gpu.findLowIndexInSortedIntervals(this.slices_,
+      var x = tracing.findLowIndexInSortedIntervals(this.slices_,
           function(x) { return x.start; },
           function(x) { return x.duration; },
           wX);
@@ -402,7 +402,7 @@ cr.define('gpu', function() {
       function onPickHit(slice) {
         onHitCallback('slice', that, slice);
       }
-      gpu.iterateOverIntersectingIntervals(this.slices_,
+      tracing.iterateOverIntersectingIntervals(this.slices_,
           function(x) { return x.start; },
           function(x) { return x.duration; },
           loWX, hiWX,

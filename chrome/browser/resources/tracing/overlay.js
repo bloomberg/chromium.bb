@@ -12,7 +12,7 @@
  * restores its original parentage.
  *
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
   /**
    * Manages a full-window div that darkens the window, disables
    * input, and hosts the currently-visible overlays. You shouldn't

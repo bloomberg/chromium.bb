@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/webui/textfields_ui.h"
+#include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -191,6 +192,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
+  if (url.host() == chrome::kChromeUITracingHost)
+    return &NewWebUI<TracingUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == chrome::kChromeUIWorkersHost)

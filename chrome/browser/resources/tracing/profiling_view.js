@@ -4,14 +4,14 @@
 
 
 /**
- * @fileoverview ProfilingView visualizes GPU_TRACE events using the
- * gpu.Timeline component.
+ * @fileoverview ProfilingView visualizes TRACE_EVENT events using the
+ * tracing.Timeline component.
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
   /**
    * ProfilingView
    * @constructor
-   * @extends {gpu.Tab}
+   * @extends {ui.TabPanel}
    */
   ProfilingView = cr.ui.define(cr.ui.TabPanel);
 
@@ -99,7 +99,7 @@ cr.define('gpu', function() {
     ///////////////////////////////////////////////////////////////////////////
 
     onSave_: function() {
-      this.overlayEl_ = new gpu.Overlay();
+      this.overlayEl_ = new tracing.Overlay();
       this.overlayEl_.className = 'profiling-overlay';
 
       var labelEl = document.createElement('div');
@@ -124,7 +124,7 @@ cr.define('gpu', function() {
     ///////////////////////////////////////////////////////////////////////////
 
     onLoad_: function() {
-      this.overlayEl_ = new gpu.Overlay();
+      this.overlayEl_ = new tracing.Overlay();
       this.overlayEl_.className = 'profiling-overlay';
 
       var labelEl = document.createElement('div');

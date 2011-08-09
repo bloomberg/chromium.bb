@@ -8,7 +8,7 @@
  * over sorted arrays and intervals.
  *
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
   /**
    * Finds the first index in the array whose value is >= loVal.
    *

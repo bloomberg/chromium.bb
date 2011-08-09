@@ -40,6 +40,45 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 }
 #endif
 
+DictionaryValue* NewDescriptionValuePair(const std::string& desc,
+    const std::string& value) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("description", desc);
+  dict->SetString("value", value);
+  return dict;
+}
+
+DictionaryValue* NewDescriptionValuePair(const std::string& desc,
+    Value* value) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("description", desc);
+  dict->Set("value", value);
+  return dict;
+}
+
+#if defined(OS_WIN)
+// Output DxDiagNode tree as nested array of {description,value} pairs
+ListValue* DxDiagNodeToList(const DxDiagNode& node) {
+  ListValue* list = new ListValue();
+  for (std::map<std::string, std::string>::const_iterator it =
+      node.values.begin();
+      it != node.values.end();
+      ++it) {
+    list->Append(NewDescriptionValuePair(it->first, it->second));
+  }
+
+  for (std::map<std::string, DxDiagNode>::const_iterator it =
+      node.children.begin();
+      it != node.children.end();
+      ++it) {
+    ListValue* sublist = DxDiagNodeToList(it->second);
+    list->Append(NewDescriptionValuePair(it->first, sublist));
+  }
+  return list;
+}
+
+#endif  // OS_WIN
+
 }  // namespace anonymous
 
 GpuDataManager::GpuDataManager()
@@ -241,6 +280,51 @@ void GpuDataManager::HandleGpuSwitch() {
             << base::StringPrintf("%04x", gpu_info.device_id);
   // TODO(zmo): update gpu_info_, re-run blacklist logic, maybe close and
   // relaunch GPU process.
+}
+
+DictionaryValue* GpuDataManager::GpuInfoAsDictionaryValue() const {
+  ListValue* basic_info = new ListValue();
+  basic_info->Append(NewDescriptionValuePair(
+      "Initialization time",
+      base::Int64ToString(gpu_info().initialization_time.InMilliseconds())));
+  basic_info->Append(NewDescriptionValuePair(
+      "Vendor Id", base::StringPrintf("0x%04x", gpu_info().vendor_id)));
+  basic_info->Append(NewDescriptionValuePair(
+      "Device Id", base::StringPrintf("0x%04x", gpu_info().device_id)));
+  basic_info->Append(NewDescriptionValuePair("Driver vendor",
+                                             gpu_info().driver_vendor));
+  basic_info->Append(NewDescriptionValuePair("Driver version",
+                                             gpu_info().driver_version));
+  basic_info->Append(NewDescriptionValuePair("Driver date",
+                                             gpu_info().driver_date));
+  basic_info->Append(NewDescriptionValuePair("Pixel shader version",
+                                             gpu_info().pixel_shader_version));
+  basic_info->Append(NewDescriptionValuePair("Vertex shader version",
+                                             gpu_info().vertex_shader_version));
+  basic_info->Append(NewDescriptionValuePair("GL version",
+                                             gpu_info().gl_version));
+  basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
+                                             gpu_info().gl_vendor));
+  basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
+                                             gpu_info().gl_renderer));
+  basic_info->Append(NewDescriptionValuePair("GL_VERSION",
+                                             gpu_info().gl_version_string));
+  basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
+                                             gpu_info().gl_extensions));
+
+  DictionaryValue* info = new DictionaryValue();
+  info->Set("basic_info", basic_info);
+
+#if defined(OS_WIN)
+  Value* dx_info;
+  if (gpu_info().dx_diagnostics.children.size())
+    dx_info = DxDiagNodeToList(gpu_info().dx_diagnostics);
+  else
+    dx_info = Value::CreateNullValue();
+  info->Set("diagnostics", dx_info);
+#endif
+
+  return info;
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {

@@ -13300,6 +13300,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
     </message>
 
+    <!-- Tracing about page strings -->
+    <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
+      Tracing
+    </message>
+
     </messages>
     <includes>
       <if expr="pp_ifdef('_google_chrome')">

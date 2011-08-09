@@ -149,6 +149,7 @@ extern const char kChromeUITCMallocHost[];
 extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITouchIconHost[];
+extern const char kChromeUITracingHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 

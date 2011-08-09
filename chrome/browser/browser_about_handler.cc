@@ -139,6 +139,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
+  chrome::kChromeUITracingHost,
   chrome::kChromeUIVersionHost,
   chrome::kChromeUIWorkersHost,
 #ifdef TRACK_ALL_TASK_OBJECTS

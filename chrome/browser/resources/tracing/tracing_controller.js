@@ -6,13 +6,13 @@
 /**
  * @fileoverview State and UI for trace data collection.
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
 
   function TracingController() {
     this.overlay_ = document.createElement('div');
-    this.overlay_.className = 'gpu-tracing-overlay';
+    this.overlay_.className = 'tracing-overlay';
 
-    cr.ui.decorate(this.overlay_, gpu.Overlay);
+    cr.ui.decorate(this.overlay_, tracing.Overlay);
 
     this.statusDiv_ = document.createElement('div');
     this.overlay_.appendChild(this.statusDiv_);
@@ -30,7 +30,7 @@ cr.define('gpu', function() {
     if (browserBridge.debugMode) {
       var tracingControllerTests = document.createElement('script');
       tracingControllerTests.src =
-          './gpu_internals/tracing_controller_tests.js';
+          './tracing/tracing_controller_tests.js';
       document.body.appendChild(tracingControllerTests);
     }
 
@@ -81,7 +81,7 @@ cr.define('gpu', function() {
         chrome.send('beginTracing');
         this.beginRequestBufferPercentFull_();
       } else {
-        gpu.tracingControllerTestHarness.beginTracing();
+        tracing.tracingControllerTestHarness.beginTracing();
       }
 
       this.tracingEnabled_ = true;
@@ -125,7 +125,7 @@ cr.define('gpu', function() {
     },
 
     /**
-     * Callbed by gpu c++ code when new GPU trace data arrives.
+     * Called by tracing c++ code when new trace data arrives.
      */
     onTraceDataCollected: function(events) {
       this.statusDiv_.textContent = 'Processing trace...';
@@ -150,7 +150,7 @@ cr.define('gpu', function() {
         if (!browserBridge.debugMode) {
           chrome.send('endTracingAsync');
         } else {
-          gpu.tracingControllerTestHarness.endTracing();
+          tracing.tracingControllerTestHarness.endTracing();
         }
       }, 100);
     },

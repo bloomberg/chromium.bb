@@ -4,10 +4,10 @@
 
 
 /**
- * @fileoverview TimelineView visualizes GPU_TRACE events using the
- * gpu.Timeline component.
+ * @fileoverview TimelineView visualizes TRACE_EVENT events using the
+ * tracing.Timeline component.
  */
-cr.define('gpu', function() {
+cr.define('tracing', function() {
   function tsRound(ts) {
     return Math.round(ts * 1000.0) / 1000.0;
   }
@@ -65,14 +65,14 @@ cr.define('gpu', function() {
 
     set traceEvents(traceEvents) {
       console.log('TimelineView.refresh');
-      this.timelineModel_ = new gpu.TimelineModel(traceEvents);
+      this.timelineModel_ = new tracing.TimelineModel(traceEvents);
 
       // remove old timeline
       this.timelineContainer_.textContent = '';
 
       // create new timeline if needed
       if (traceEvents.length) {
-        this.timeline_ = new gpu.Timeline();
+        this.timeline_ = new tracing.Timeline();
         this.timeline_.model = this.timelineModel_;
         this.timelineContainer_.appendChild(this.timeline_);
         this.timeline_.onResize();
