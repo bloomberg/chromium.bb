@@ -581,6 +581,11 @@ message ClientCommand {
   optional int32 set_sync_long_poll_interval = 2;  // in seconds
 
   optional int32 max_commit_batch_size = 3;
+
+  // Number of seconds to delay between a sessions
+  // action and sending a commit message to the
+  // server
+  optional int32 sessions_commit_delay_seconds = 4;
 };
 
 message ClientToServerResponse {
