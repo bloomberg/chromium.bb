@@ -174,7 +174,7 @@ const Experiment kExperiments[] = {
 #endif
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
-    switches::kEnableNaCl,  // FLAGS:RECORD_UMA
+    "enable-nacl",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_NAME,
     IDS_FLAGS_ENABLE_NACL_DESCRIPTION,
     kOsAll,

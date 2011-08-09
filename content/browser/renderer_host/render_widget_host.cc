@@ -913,8 +913,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
     if (dib) {
       if (dib->size() < size) {
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
-        UserMetrics::RecordAction(UserMetricsAction(
-            "BadMessageTerminate_RWH1"));
+        UserMetrics::RecordAction(
+            UserMetricsAction("BadMessageTerminate_RWH1"));
         process()->ReceivedBadMessage();
       } else {
         // Scroll the backing store.

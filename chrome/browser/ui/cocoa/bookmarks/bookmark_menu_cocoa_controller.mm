@@ -131,15 +131,14 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   bookmark_utils::OpenAll(NULL, browser->profile(), browser, node,
                           disposition);
 
-  const char* metrics_action = NULL;
   if (disposition == NEW_FOREGROUND_TAB) {
-    metrics_action = "OpenAllBookmarks";
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarks"));
   } else if (disposition == NEW_WINDOW) {
-    metrics_action = "OpenAllBookmarksNewWindow";
+    UserMetrics::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
   } else {
-    metrics_action = "OpenAllBookmarksIncognitoWindow";
+    UserMetrics::RecordAction(
+        UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
   }
-  UserMetrics::RecordAction(UserMetricsAction(metrics_action));
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {

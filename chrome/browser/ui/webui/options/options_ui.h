@@ -48,8 +48,6 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE {}
 
-  void UserMetricsRecordAction(const UserMetricsAction& action);
-
  protected:
   struct OptionsStringResource {
     // The name of the resource in templateData.

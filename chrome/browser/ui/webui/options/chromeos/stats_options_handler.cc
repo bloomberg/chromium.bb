@@ -36,7 +36,7 @@ void StatsOptionsHandler::HandleMetricsReportingCheckbox(
 #if defined(GOOGLE_CHROME_BUILD)
   const std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   const bool enabled = (checked_str == "true");
-  UserMetricsRecordAction(
+  UserMetrics::RecordAction(
       enabled ?
       UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
       UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));

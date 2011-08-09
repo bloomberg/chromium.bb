@@ -356,8 +356,9 @@ bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
 }
 
 void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
-  UserMetrics::RecordAction(UserMetricsAction(reader_installed_ ?
-      "PDF_UseReaderInfoBarCancel" : "PDF_InstallReaderInfoBarCancel"));
+  UserMetrics::RecordAction(reader_installed_ ?
+      UserMetricsAction("PDF_UseReaderInfoBarCancel") :
+      UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
 }
 
 }  // namespace

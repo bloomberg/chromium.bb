@@ -160,11 +160,6 @@ bool OptionsPageUIHandler::IsEnabled() {
   return true;
 }
 
-void OptionsPageUIHandler::UserMetricsRecordAction(
-    const UserMetricsAction& action) {
-  UserMetrics::RecordAction(action);
-}
-
 // static
 void OptionsPageUIHandler::RegisterStrings(
     DictionaryValue* localized_strings,

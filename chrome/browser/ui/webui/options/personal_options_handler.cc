@@ -372,13 +372,13 @@ void PersonalOptionsHandler::Initialize() {
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"));
+  UserMetrics::RecordAction(UserMetricsAction("Options_ThemesReset"));
   ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->UseDefaultTheme();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"));
+  UserMetrics::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
   ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->SetNativeTheme();
 }
 #endif

@@ -195,7 +195,7 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
   pref_service->ScheduleSavePersistentPrefs();
 
   if (!metric.empty())
-    UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+    UserMetrics::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::ProcessUserMetric(const Value* value,
@@ -210,7 +210,7 @@ void CoreOptionsHandler::ProcessUserMetric(const Value* value,
     metric_string += bool_value ? "_Enable" : "_Disable";
   }
 
-  UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()));
+  UserMetrics::RecordComputedAction(metric_string);
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& path) {
@@ -360,7 +360,7 @@ void CoreOptionsHandler::HandleClearPref(const ListValue* args) {
 void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
   std::string metric = UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
-    UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+    UserMetrics::RecordComputedAction(metric);
 }
 
 void CoreOptionsHandler::UpdateClearPluginLSOData() {
