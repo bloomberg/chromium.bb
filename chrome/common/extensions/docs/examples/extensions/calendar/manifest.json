@@ -3,7 +3,7 @@
   "description": "__MSG_description__",
   "default_locale":"en",
   "options_page": "views/options.html",
-  "version": "1.1.0",
+  "version": "1.2.2",
   "background_page": "views/background.html",
   "permissions": [
     "tabs", "http://*.google.com/", "https://*.google.com/"

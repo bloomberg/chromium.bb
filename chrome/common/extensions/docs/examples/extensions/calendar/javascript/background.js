@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
- * source code is governed by a BSD-style license that can be found in the
- * LICENSE file.
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /**
@@ -272,9 +272,11 @@ CalendarManager = {};
 /**
  * Extracts event from the each entry of the calendar.
  * @param {Object} elem The XML node to extract the event from.
+ * @param {Object} mailId email of the owner of calendar in multiple calendar
+ *     support.
  * @return {Object} out An object containing the event properties.
  */
-CalendarManager.extractEvent = function(elem) {
+CalendarManager.extractEvent = function(elem, mailId) {
   var out = {};
 
   for (var node = elem.firstChild; node != null; node = node.nextSibling) {
@@ -287,7 +289,10 @@ CalendarManager.extractEvent = function(elem) {
       out.location = node.getAttribute('valueString');
     } else if (node.nodeName == 'gd:who') {
       if (node.firstChild) {
-        out.attendeeStatus = node.firstChild.getAttribute('value');
+        if ((!isMultiCalendar) || (isMultiCalendar && mailId &&
+            node.getAttribute('email') == mailId)) {
+          out.attendeeStatus = node.firstChild.getAttribute('value');
+        }
       }
     } else if (node.nodeName == 'gd:eventStatus') {
       out.status = node.getAttribute('value');
@@ -453,17 +458,25 @@ CalendarManager.onCalendarResponse = function(xmlhttp, calendarId) {
  */
 CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
   var entry_ = responseXML.getElementsByTagName('entry');
-  var author = responseXML.querySelector('author name').textContent;
+  var mailId = null;
+  var author = null;
+
+  if (responseXML.querySelector('author name')) {
+    author = responseXML.querySelector('author name').textContent;
+  }
+  if (responseXML.querySelector('author email')) {
+    mailId = responseXML.querySelector('author email').textContent;
+  }
 
   if (entry_ && entry_.length > 0) {
     for (var i = 0, entry; entry = entry_[i]; ++i) {
-      var event_ = CalendarManager.extractEvent(entry);
+     var event_ = CalendarManager.extractEvent(entry, mailId);
 
       // Get the time from then to now
       if (event_.startTime) {
         var t = event_.startTime.getTime() - getCurrentTime();
         if (t >= 0 && (event_.attendeeStatus != DECLINED_URL)) {
-            if (isMultiCalendar) {
+            if (isMultiCalendar && author) {
               event_.author = author;
             }
             eventList.push(event_);
@@ -495,9 +508,8 @@ CalendarManager.populateLatestEvent = function(eventList) {
   //populating next events array.
   if (eventList.length > 0) {
     nextEvent_ = eventList[0];
-    nextEvent_.startTime.setSeconds(0, 0);
     nextEvents.push(nextEvent_);
-    var startTime = nextEvent_.startTime;
+    var startTime = nextEvent_.startTime.setSeconds(0, 0);
     for (var i = 1, event; event = eventList[i]; i++) {
       var time = event.startTime.setSeconds(0, 0);
       if (time == startTime) {
@@ -506,7 +518,7 @@ CalendarManager.populateLatestEvent = function(eventList) {
         break;
       }
     }
-    if (nextEvents.length > 1) {
+    if (nextEvents.length > 1 && isMultiCalendar) {
       nextEvents.sort(sortByAuthor);
     }
     canvasAnimation_.animate();
@@ -581,7 +593,7 @@ function sortByDate(event_1, event_2) {
  */
 function sortByAuthor(event_1, event_2) {
   var nameDiff;
-  if (event_2.author == defaultAuthor) {
+  if (event_1.author && event_2.author && event_2.author == defaultAuthor) {
     nameDiff = 1;
   } else {
     return 0;
@@ -603,8 +615,8 @@ function redraw() {
   }
   canvasAnimation_.animate();
 
-  // if ((we are logged in) && (30 minutes have passed)) re-poll
-  if (nextEvent_ && (getCurrentTime() - lastPollTime_ >= POLL_INTERVAL)) {
+  // if 30 minutes have passed re-poll
+  if (getCurrentTime() - lastPollTime_ >= POLL_INTERVAL) {
     CalendarManager.pollServer();
   }
 };
