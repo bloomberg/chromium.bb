@@ -644,7 +644,9 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
 // which implements NSServicesRequests protocol.
 //
 void RenderWidgetHostViewMac::SelectionChanged(const std::string& text,
-                                               const ui::Range& range) {
+                                               const ui::Range& range,
+                                               const gfx::Point& start,
+                                               const gfx::Point& end) {
   selected_text_ = text;
   [cocoa_view_ setSelectedRange:range.ToNSRange()];
   // Updaes markedRange when there is no marked text so that retrieving

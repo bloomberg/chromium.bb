@@ -18,6 +18,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/events/event.h"
 #include "views/ime/text_input_client.h"
+#include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
@@ -35,7 +36,7 @@ struct NativeWebKeyboardEvent;
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
-                                  public views::View,
+                                  public views::TouchSelectionClientView,
                                   public views::TextInputClient {
  public:
   // Internal class name.
@@ -79,7 +80,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range) OVERRIDE;
+                                const ui::Range& range,
+                                const gfx::Point& start,
+                                const gfx::Point& end) OVERRIDE;
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
@@ -97,6 +100,18 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+
+  // Overridden from views::TouchSelectionClientView.
+  virtual void SelectRect(const gfx::Point& start,
+                          const gfx::Point& end) OVERRIDE;
+
+  // Overridden from ui::SimpleMenuModel::Delegate.
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Overridden from views::View.
   virtual std::string GetClassName() const OVERRIDE;
@@ -239,6 +254,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   bool has_composition_text_;
 
   string16 tooltip_text_;
+
+  scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
 
 #if defined(TOUCH_UI)
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
