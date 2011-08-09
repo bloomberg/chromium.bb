@@ -1223,6 +1223,9 @@ class SyncManager::SyncInternal
       public syncable::DirectoryChangeDelegate {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
+  // TODO(akalin): Remove this once we have the delay controllable
+  // from the server.
+  static const int kSessionsNudgeDelayMilliseconds;
  public:
   explicit SyncInternal(const std::string& name)
       : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -1635,6 +1638,7 @@ class SyncManager::SyncInternal
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
+const int SyncManager::SyncInternal::kSessionsNudgeDelayMilliseconds = 10000;
 
 SyncManager::Observer::~Observer() {}
 
@@ -2461,8 +2465,15 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
   // Nudge if necessary.
   if (mutated_model_type != syncable::UNSPECIFIED) {
-    int nudge_delay = (mutated_model_type == syncable::PREFERENCES) ?
-        kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
+    int nudge_delay;
+    switch (mutated_model_type) {
+      case syncable::PREFERENCES:
+        nudge_delay = kPreferencesNudgeDelayMilliseconds;
+      case syncable::SESSIONS:
+        nudge_delay = kSessionsNudgeDelayMilliseconds;
+      default:
+        nudge_delay = kDefaultNudgeDelayMilliseconds;
+    }
     syncable::ModelTypeBitSet model_types;
     model_types.set(mutated_model_type);
     if (weak_handle_this_.IsInitialized()) {
