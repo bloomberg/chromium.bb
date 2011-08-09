@@ -178,32 +178,26 @@ $(IT).nacl.dyn.opt.x8632: $(SRC) $(CPPSRC)
 	$(NACL_GCC) -O3 -m32 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
-######################################################################
-NACL64_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/nacl64-gcc
-NACL64_GCC_NEWLIB=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/nacl64-gcc \
-		-B $(NNACL_NEWLIB_SDK64)/lib \
-		-I $(NNACL_NEWLIB_SDK64)/include
-
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC_NEWLIB) -O0 $(CFLAGS) $^  -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB) -O0 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC_NEWLIB) -O3 $(CFLAGS) $^  -static -lstdc++ -lm \
+	$(NACL_GCC_NEWLIB) -O3 -m64 $(CFLAGS) $^  -static -lstdc++ -lm \
 		-lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl x86-64 gcc, dynamic
 $(IT).nacl.dyn.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O0 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O0 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc, dynamic
 $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O3 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
+	$(NACL_GCC) -O3 -m64 $(CFLAGS) -fPIC -g $^ -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
