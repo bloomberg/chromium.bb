@@ -274,10 +274,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// Currently fails on linux due to a NOTIMPLEMENTED() statement.
+// Currently fails (and times out) on linux due to a NOTIMPLEMENTED() statement.
 // (http://crbug.com/89964)
 #if defined(OS_LINUX)
-#define MAYBE_WebGLTeapot FAILS_WebGLTeapot
+#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
 #else
 #define MAYBE_WebGLTeapot WebGLTeapot
 #endif
