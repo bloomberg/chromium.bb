@@ -549,6 +549,9 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // is forced.
   if (IncognitoIsForced(command_line, profile->GetPrefs())) {
     profile = profile->GetOffTheRecordProfile();
+  } else if (command_line.HasSwitch(switches::kIncognito)) {
+    LOG(WARNING) << "Incognito mode disabled by policy, launching a normal "
+                 << "browser session.";
   }
 
   BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this);
