@@ -66,7 +66,7 @@
           'variables': {
             'chrome_dll_target': 1,
             'conditions' : [
-              ['OS=="win"', {
+              ['OS=="win" and optimize_with_syzygy==1', {
                 # On Windows we use build chrome_dll as an intermediate target
                 # then have a subsequent step which either optimizes it to its
                 # final location, or copies it to its final location, depending
@@ -146,12 +146,17 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
-                  # On Windows we use build chrome_dll as an intermediate target
-                  # then have a subsequent step which either optimizes it to its
-                  # final location, or copies it to its final location, based
-                  # on whether or not optimize_with_syzygy==1.
-                  'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
-                  'OutputFile': '$(OutDir)\\initial\\chrome.dll',
+                  'conditions': [
+                    ['optimize_with_syzygy==1', {
+                      # When syzygy is enabled we use build chrome_dll as an
+                      # intermediate target then have a subsequent step which
+                      # optimizes it to its final location
+                      'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
+                      'OutputFile': '$(OutDir)\\initial\\chrome.dll',
+                    }, {
+                      'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                    }],
+                  ],
                 },
               },
             }],  # OS=="win"
