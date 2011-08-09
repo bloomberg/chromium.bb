@@ -24,10 +24,10 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-// There's one WebKitContext per profile.  Various DispatcherHost classes
-// have a pointer to the Context to store shared state.  Unfortunately, this
-// class has become a bit of a dumping ground for calls made on the UI thread
-// that need to be proxied over to the WebKit thread.
+// There's one WebKitContext per browser context.  Various DispatcherHost
+// classes have a pointer to the Context to store shared state.  Unfortunately,
+// this class has become a bit of a dumping ground for calls made on the UI
+// thread that need to be proxied over to the WebKit thread.
 //
 // This class is created on the UI thread and accessed on the UI, IO, and WebKit
 // threads.
@@ -77,7 +77,7 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   friend class base::RefCountedThreadSafe<WebKitContext>;
   virtual ~WebKitContext();
 
-  // Copies of profile data that can be accessed on any thread.
+  // Copies of browser context data that can be accessed on any thread.
   const FilePath data_path_;
   const bool is_incognito_;
 

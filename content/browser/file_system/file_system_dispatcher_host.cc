@@ -11,7 +11,6 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/resource_context.h"
 #include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"

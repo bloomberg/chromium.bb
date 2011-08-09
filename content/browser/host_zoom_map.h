@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
-// any thread.  One instance per profile.
+// any thread.  One instance per browser context.
 
 #ifndef CONTENT_BROWSER_HOST_ZOOM_MAP_H_
 #define CONTENT_BROWSER_HOST_ZOOM_MAP_H_

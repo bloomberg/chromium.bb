@@ -21,10 +21,10 @@ class ResourceContext;
 }
 
 // An AppCacheService subclass used by the chrome. There is an instance
-// associated with each Profile. This derivation adds refcounting semantics
-// since a profile has multiple URLRequestContexts which refer to the same
-// object, and those URLRequestContexts are refcounted independently of the
-// owning profile.
+// associated with each BrowserContext. This derivation adds refcounting
+// semantics since a browser context has multiple URLRequestContexts which refer
+// to the same object, and those URLRequestContexts are refcounted independently
+// of the owning browser context.
 //
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).

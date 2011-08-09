@@ -222,8 +222,8 @@ void WorkerService::DocumentDetached(unsigned long long document_id,
 bool WorkerService::CreateWorkerFromInstance(
     WorkerProcessHost::WorkerInstance instance) {
   // TODO(michaeln): We need to ensure that a process is working
-  // on behalf of a single profile. The process sharing logic below
-  // does not ensure that. Consider making WorkerService a per profile
+  // on behalf of a single browser context. The process sharing logic below
+  // does not ensure that. Consider making WorkerService a per browser context
   // object to help with this.
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(

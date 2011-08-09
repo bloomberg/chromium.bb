@@ -11,9 +11,9 @@ CancelableRequestProvider::CancelableRequestProvider()
 CancelableRequestProvider::~CancelableRequestProvider() {
   // There may be requests whose result callback has not been run yet. We need
   // to cancel them otherwise they may try and call us back after we've been
-  // deleted, or do other bad things. This can occur on shutdown (or profile
-  // destruction) when a request is scheduled, completed (but not dispatched),
-  // then the Profile is deleted.
+  // deleted, or do other bad things. This can occur on shutdown (or browser
+  // context destruction) when a request is scheduled, completed (but not
+  // dispatched), then the BrowserContext is deleted.
   base::AutoLock lock(pending_request_lock_);
   while (!pending_requests_.empty())
     CancelRequestLocked(pending_requests_.begin());

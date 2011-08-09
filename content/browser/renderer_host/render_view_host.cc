@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -1283,7 +1283,7 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
   HostZoomMap* host_zoom_map = process()->browser_context()->GetHostZoomMap();
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
-    // Notify renderers from this profile.
+    // Notify renderers from this browser context.
     for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       RenderProcessHost* render_process_host = i.GetCurrentValue();

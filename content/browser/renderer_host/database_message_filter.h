@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class DatabaseMessageFilter
                           IPC::Message* reply_msg,
                           int reschedule_count);
 
-  // The database tracker for the current profile.
+  // The database tracker for the current browser context.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   // True if and only if this instance was added as an observer

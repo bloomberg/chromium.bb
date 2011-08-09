@@ -4,7 +4,7 @@
 
 #include "content/browser/ssl/ssl_policy_backend.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 

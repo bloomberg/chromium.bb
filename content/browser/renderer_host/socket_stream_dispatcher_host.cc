@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
 #include "content/common/socket_stream.h"

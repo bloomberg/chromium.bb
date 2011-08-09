@@ -151,7 +151,8 @@ class SaveFileManager
   // A cleanup helper that runs on the file thread.
   void OnShutdown();
 
-  // Called only on UI thread to get the SavePackage for a tab's profile.
+  // Called only on UI thread to get the SavePackage for a tab's browser
+  // context.
   static SavePackage* GetSavePackageFromRenderIds(int render_process_id,
                                                   int review_view_id);
 
@@ -176,8 +177,8 @@ class SaveFileManager
 
   // Notifications sent from the file thread and run on the UI thread.
 
-  // Lookup the SaveManager for this TabContents' saving profile and inform it
-  // the saving job has been started.
+  // Lookup the SaveManager for this TabContents' saving browser context and
+  // inform it the saving job has been started.
   void OnStartSave(const SaveFileCreateInfo* info);
   // Update the SavePackage with the current state of a started saving job.
   // If the SavePackage for this saving job is gone, cancel the request.

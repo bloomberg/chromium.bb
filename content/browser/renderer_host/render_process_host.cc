@@ -6,7 +6,6 @@
 
 #include "base/rand_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/common/child_process_info.h"

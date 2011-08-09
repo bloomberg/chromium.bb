@@ -17,8 +17,9 @@ class BlobStorageController;
 }
 
 // A context class that keeps track of BlobStorageController used by the chrome.
-// There is an instance associated with each Profile. There could be multiple
-// URLRequestContexts in the same profile that refers to the same instance.
+// There is an instance associated with each BrowserContext. There could be
+// multiple URLRequestContexts in the same browser context that refers to the
+// same instance.
 //
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).

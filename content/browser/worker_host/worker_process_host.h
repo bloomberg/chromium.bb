@@ -26,7 +26,8 @@ class URLRequestContextGetter;
 // the browser <-> worker communication channel. There will be one
 // WorkerProcessHost per worker process.  Currently each worker runs in its own
 // process, but that may change.  However, we do assume (by storing a
-// net::URLRequestContext) that a WorkerProcessHost serves a single Profile.
+// net::URLRequestContext) that a WorkerProcessHost serves a single
+// BrowserContext.
 class WorkerProcessHost : public BrowserChildProcessHost {
  public:
 

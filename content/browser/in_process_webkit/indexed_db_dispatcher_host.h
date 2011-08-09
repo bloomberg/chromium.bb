@@ -14,7 +14,6 @@
 
 class IndexedDBKey;
 class NullableString16;
-class Profile;
 class SerializedScriptValue;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
@@ -263,7 +262,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     WebIDBTransactionIDToSizeMap transaction_size_map_;
   };
 
-  // Data shared between renderer processes with the same profile.
+  // Data shared between renderer processes with the same browser context.
   scoped_refptr<WebKitContext> webkit_context_;
 
   // Only access on WebKit thread.

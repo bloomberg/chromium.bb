@@ -27,8 +27,8 @@
 // This object is expected to live on the IO thread.
 class ResolveProxyMsgHelper : public BrowserMessageFilter {
  public:
-  // If |proxy_service| is NULL, then the main profile's proxy service will
-  // be used.
+  // If |proxy_service| is NULL, then the main browser context's proxy service
+  // will be used.
   explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
 
   // Destruction cancels the current outstanding request, and clears the

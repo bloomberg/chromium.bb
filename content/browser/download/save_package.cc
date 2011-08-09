@@ -24,7 +24,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/save_file.h"

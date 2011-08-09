@@ -13,7 +13,6 @@
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;
-class Profile;
 class Receiver;
 class RenderMessageFilter;
 

@@ -80,7 +80,7 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
   static DOMStorageMessageFilter* storage_event_message_filter;
   static const GURL* storage_event_url_;
 
-  // Data shared between renderer processes with the same profile.
+  // Data shared between renderer processes with the same browser context.
   scoped_refptr<WebKitContext> webkit_context_;
 
   // Used to dispatch messages to the correct view host.

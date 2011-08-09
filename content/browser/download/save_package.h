@@ -24,7 +24,6 @@
 class GURL;
 class MessageLoop;
 class PrefService;
-class Profile;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
