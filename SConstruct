@@ -525,8 +525,6 @@ nacl_glibc_skiplist = set([
     'run_srpc_ro_file_test',
     'run_ppapi_geturl_valid_test',
     'run_ppapi_geturl_invalid_test',
-    # Static linking is broken.
-    'run_glibc_static_hello_test',
     # This test need more investigation.
     'run_syscall_test',
     # GetPid is no longer supplied by IRT so does not work in GLibC.
