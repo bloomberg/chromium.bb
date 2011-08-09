@@ -106,10 +106,10 @@ void Bubble::AnimationEnded(const ui::Animation* animation) {
 }
 
 void Bubble::AnimationProgressed(const ui::Animation* animation) {
-#if defined(OS_WIN)
   // Set the opacity for the main contents window.
   unsigned char opacity = static_cast<unsigned char>(
       animation_->GetCurrentValue() * 255);
+#if defined(OS_WIN)
   SetLayeredWindowAttributes(GetNativeView(), 0,
       static_cast<byte>(opacity), LWA_ALPHA);
   contents_->SchedulePaint();
@@ -118,7 +118,8 @@ void Bubble::AnimationProgressed(const ui::Animation* animation) {
   border_->SetOpacity(opacity);
   border_->border_contents()->SchedulePaint();
 #else
-  NOTIMPLEMENTED();
+  SetOpacity(opacity);
+  border_contents_->SchedulePaint();
 #endif
 }
 
@@ -175,6 +176,7 @@ void Bubble::InitBubble(views::Widget* parent,
   position_relative_to_ = position_relative_to;
   arrow_location_ = arrow_location;
   contents_ = contents;
+  const bool fade_in = delegate_ && delegate_->FadeInOnShow();
 
   // Create the main window.
 #if defined(OS_WIN)
@@ -185,7 +187,6 @@ void Bubble::InitBubble(views::Widget* parent,
   int extended_style = WS_EX_TOOLWINDOW;
   // During FadeIn we need to turn on the layered window style to deal with
   // transparency. This flag needs to be reset after fading in is complete.
-  bool fade_in = delegate_ && delegate_->FadeInOnShow();
   if (fade_in)
     extended_style |= WS_EX_LAYERED;
   set_window_ex_style(extended_style);
@@ -214,6 +215,8 @@ void Bubble::InitBubble(views::Widget* parent,
   params.parent_widget = parent;
   params.native_widget = this;
   GetWidget()->Init(params);
+  if (fade_in)
+    SetOpacity(0);
 #if defined(OS_CHROMEOS)
   {
     vector<int> params;
@@ -277,11 +280,12 @@ void Bubble::InitBubble(views::Widget* parent,
 #if defined(OS_WIN)
   border_->ShowWindow(SW_SHOW);
   ShowWindow(SW_SHOW);
-  if (fade_in)
-    FadeIn();
 #elif defined(TOOLKIT_USES_GTK)
   GetWidget()->Show();
 #endif
+
+  if (fade_in)
+    FadeIn();
 }
 
 void Bubble::RegisterEscapeAccelerator() {

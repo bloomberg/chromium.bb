@@ -130,6 +130,7 @@ void SettingLevelBubble::ShowBubble(int percent, bool enabled) {
                                     view_,  // contents
                                     this,   // delegate
                                     true);  // show while screen is locked
+    bubble_->set_fade_away_on_close(true);
   } else {
     DCHECK(view_);
     timeout_timer_.Stop();

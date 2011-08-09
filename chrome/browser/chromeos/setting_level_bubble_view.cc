@@ -18,7 +18,7 @@ using views::Widget;
 namespace {
 
 // Bubble metrics.
-const int kWidth = 350, kHeight = 100;
+const int kWidth = 350, kHeight = 90;
 const int kPadding = 20;
 const int kProgressBarWidth = 211;
 const int kProgressBarHeight = 17;
