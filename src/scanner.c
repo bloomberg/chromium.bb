@@ -548,7 +548,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		   "%s(void (**)(void)) listener, data);\n"
 		   "}\n\n",
 		   interface->name, interface->name, interface->name,
-		   indent(17 + strlen(interface->name)),
+		   indent(14 + strlen(interface->name)),
 		   interface->name,
 		   interface->name,
 		   indent(37));
