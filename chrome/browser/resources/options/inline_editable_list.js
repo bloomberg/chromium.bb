@@ -142,7 +142,7 @@ cr.define('options', function() {
         if (focusElement) {
           window.setTimeout(function() {
             // Make sure we are still in edit mode by the time we execute.
-            if (self.editing) {
+            if (self.editing && self.focusPlaceholder) {
               focusElement.focus();
               focusElement.select();
             }
@@ -253,7 +253,8 @@ cr.define('options', function() {
           var list = self.parentNode;
           if (list && list.focusPlaceholder) {
             list.focusPlaceholder = false;
-            inputEl.focus();
+            if (list.shouldFocusPlaceholder())
+              inputEl.focus();
           }
         }, 50);
       }
@@ -406,6 +407,14 @@ cr.define('options', function() {
         else
           leadItem.editing = false;
       }
+    },
+
+    /**
+     * May be overridden by subclasses to disable focusing the placeholder.
+     * @return true if the placeholder element should be focused on edit commit.
+     */
+    shouldFocusPlaceholder: function() {
+      return true;
     },
   };
 

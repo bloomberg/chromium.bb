@@ -169,7 +169,7 @@ cr.define('options.autofillOptions', function() {
      */
     onEditCommitted_: function(e) {
       var i = this.list.items.indexOf(this);
-      if (i < 0 || i >= this.list.dataModel.length)
+      if (i < 0 || i >= this.list.dataModel.length || !this.input.value.length)
         return;
 
       if (this.input.value &&
@@ -180,7 +180,6 @@ cr.define('options.autofillOptions', function() {
         this.list.validateAndSave(i, 0, this.input.value);
       } else {
         this.input.value = '';
-        this.list.dataModel.updateIndex(i);
       }
     },
   };
@@ -305,6 +304,11 @@ cr.define('options.autofillOptions', function() {
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
       this.dataModel.splice(index, 1);
+    },
+
+    /** @inheritDoc */
+    shouldFocusPlaceholder: function() {
+      return false;
     },
 
     /**
