@@ -107,18 +107,18 @@ IN_PROC_BROWSER_TEST_F(SessionsSyncPerfTest, P0) {
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumTabs, GetTabCount(0));
   ASSERT_EQ(kNumTabs, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "add", dt);
+  SyncTimingHelper::PrintResult("tabs", "add_tabs", dt);
 
   UpdateTabs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumTabs, GetTabCount(0));
   ASSERT_EQ(kNumTabs, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "update", dt);
+  SyncTimingHelper::PrintResult("tabs", "update_tabs", dt);
 
   RemoveTabs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   // New tab page remains open on profile 0 after closing all tabs.
   ASSERT_EQ(1, GetTabCount(0));
   ASSERT_EQ(0, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "delete", dt);
+  SyncTimingHelper::PrintResult("tabs", "delete_tabs", dt);
 }

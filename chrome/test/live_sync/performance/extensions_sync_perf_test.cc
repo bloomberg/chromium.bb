@@ -92,19 +92,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   InstallExtensionsPendingForSync(GetProfile(1));
   ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
-  SyncTimingHelper::PrintResult("extensions", "add", dt);
+  SyncTimingHelper::PrintResult("extensions", "add_extensions", dt);
 
   // TCM ID - 7655397.
   UpdateExtensions(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(expected_extension_count, GetExtensionCount(1));
-  SyncTimingHelper::PrintResult("extensions", "update", dt);
+  SyncTimingHelper::PrintResult("extensions", "update_extensions", dt);
 
   // TCM ID - 7567721.
   RemoveExtensions(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(num_default_extensions, GetExtensionCount(1));
-  SyncTimingHelper::PrintResult("extensions", "delete", dt);
+  SyncTimingHelper::PrintResult("extensions", "delete_extensions", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, DISABLED_Benchmark) {

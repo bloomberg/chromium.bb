@@ -89,19 +89,19 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, P0) {
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "add", dt);
+  SyncTimingHelper::PrintResult("passwords", "add_passwords", dt);
 
   // TCM ID - 7365093.
   UpdateLogins(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "update", dt);
+  SyncTimingHelper::PrintResult("passwords", "update_passwords", dt);
 
   // TCM ID - 7557852
   RemoveLogins(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "delete", dt);
+  SyncTimingHelper::PrintResult("passwords", "delete_passwords", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, DISABLED_Benchmark) {

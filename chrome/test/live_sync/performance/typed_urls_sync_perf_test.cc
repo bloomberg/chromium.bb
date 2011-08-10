@@ -105,19 +105,19 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "add", dt);
+  SyncTimingHelper::PrintResult("typed_urls", "add_typed_urls", dt);
 
   // TCM ID - 7981755.
   UpdateURLs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "update", dt);
+  SyncTimingHelper::PrintResult("typed_urls", "update_typed_urls", dt);
 
   // TCM ID - 7651271.
   RemoveURLs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "delete", dt);
+  SyncTimingHelper::PrintResult("typed_urls", "delete_typed_urls", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, DISABLED_Benchmark) {

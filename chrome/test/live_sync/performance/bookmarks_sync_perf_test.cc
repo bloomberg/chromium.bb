@@ -110,19 +110,19 @@ IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
   base::TimeDelta dt =
       SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "add", dt);
+  SyncTimingHelper::PrintResult("bookmarks", "add_bookmarks", dt);
 
   // TCM ID - 7564762.
   UpdateURLs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "update", dt);
+  SyncTimingHelper::PrintResult("bookmarks", "update_bookmarks", dt);
 
   // TCM ID - 7566626.
   RemoveURLs(0);
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "delete", dt);
+  SyncTimingHelper::PrintResult("bookmarks", "delete_bookmarks", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, DISABLED_Benchmark) {
