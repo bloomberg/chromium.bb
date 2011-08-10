@@ -34,7 +34,7 @@ class P2PSocketHostUdp : public P2PSocketHost {
  private:
   friend class P2PSocketHostUdpTest;
 
-  typedef std::set<net::IPEndPoint> AuthorizedPeerSet;
+  typedef std::set<net::IPEndPoint> ConnectedPeerSet;
 
   void OnError();
   void DoRead();
@@ -50,8 +50,8 @@ class P2PSocketHostUdp : public P2PSocketHost {
   bool send_pending_;
 
   // Set of peer for which we have received STUN binding request or
-  // response.
-  AuthorizedPeerSet authorized_peers_;
+  // response or relay allocation request or response.
+  ConnectedPeerSet connected_peers_;
 
   net::CompletionCallbackImpl<P2PSocketHostUdp> recv_callback_;
   net::CompletionCallbackImpl<P2PSocketHostUdp> send_callback_;

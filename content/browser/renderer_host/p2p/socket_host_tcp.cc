@@ -21,7 +21,7 @@ const int kPacketHeaderSize = sizeof(uint16);
 P2PSocketHostTcp::P2PSocketHostTcp(IPC::Message::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
-      authorized_(false),
+      connected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &P2PSocketHostTcp::OnConnected)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -135,11 +135,11 @@ void P2PSocketHostTcp::OnRead(int result) {
 }
 
 void P2PSocketHostTcp::OnPacket(std::vector<char>& data) {
-  if (!authorized_) {
+  if (!connected_) {
     P2PSocketHost::StunMessageType type;
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (stun && IsRequestOrResponse(type)) {
-      authorized_ = true;
+      connected_ = true;
     } else if (!stun || type == STUN_DATA_INDICATION) {
       LOG(ERROR) << "Received unexpected data packet from "
                  << remote_address_.ToString()
@@ -207,7 +207,7 @@ void P2PSocketHostTcp::Send(const net::IPEndPoint& to,
     return;
   }
 
-  if (!authorized_) {
+  if (!connected_) {
     P2PSocketHost::StunMessageType type;
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (!stun || type == STUN_DATA_INDICATION) {

@@ -62,7 +62,7 @@ class P2PSocketHostTcp : public P2PSocketHost {
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
-  bool authorized_;
+  bool connected_;
 
   net::CompletionCallbackImpl<P2PSocketHostTcp> connect_callback_;
   net::CompletionCallbackImpl<P2PSocketHostTcp> read_callback_;
