@@ -58,7 +58,7 @@ def main():
   print msg
 
   # Silence the editor.
-  os.environ['EDITOR'] = '/bin/true'
+  os.environ['EDITOR'] = 'true'
 
   old_branch = scm.GIT.GetBranch(root_dir)
   if old_branch == 'webkit_roll':
