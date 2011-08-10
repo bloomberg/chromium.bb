@@ -6236,75 +6236,65 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- bookmark bar messages -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_ALWAYS_SHOW" desc="Menu item for having bookmark bar always visible">
-          Always show bookmarks bar
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_ALWAYS_SHOW" desc="In Title Case: Menu item for having bookmark bar always visible">
-          Always Show Bookmarks Bar
-        </message>
-      </if>
       <message name="IDS_BOOMARK_BAR_OTHER_BOOKMARKED" desc="Title of button showing other bookmarks">
         Other bookmarks
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
-          Open in incognito window
-        </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
-          Open in new tab
+          &amp;Open in new tab
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW" desc="Menu description for loading bookmark in a new window">
-          Open in new window
+          Open in &amp;new window
+        </message>
+        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
+          Open in &amp;incognito window
         </message>
         <message name="IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK" desc="Menu title for adding a new bookmark entry">
-          Add page...
+          Add pa&amp;ge...
         </message>
         <message name="IDS_BOOMARK_BAR_NEW_FOLDER" desc="Menu title for adding a new folder">
-          Add folder...
+          Add &amp;folder...
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
-          Open all bookmarks
+          &amp;Open all bookmarks
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
-          Open all bookmarks in new window
+          Open all bookmarks in &amp;new window
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
-          Open all bookmarks in incognito window
+          Open all bookmarks in &amp;incognito window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="Menu title for removing/unstarring a bookmark">
-          Delete
+          &amp;Delete
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
-          Open in Incognito Window
-        </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="In Title Case: Menu description for loading bookmark in a new tab">
-          Open in New Tab
+          &amp;Open in New Tab
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW" desc="In Title Case: Menu description for loading bookmark in a new window">
-          Open in New Window
+          Open in &amp;New Window
+        </message>
+        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
+          Open in &amp;Incognito Window
         </message>
         <message name="IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK" desc="In Title Case: Menu title for adding a new bookmark entry">
-          Add Page...
+          Add Pa&amp;ge...
         </message>
         <message name="IDS_BOOMARK_BAR_NEW_FOLDER" desc="In Title Case: Menu title for adding a new folder">
-          Add Folder...
+          Add &amp;Folder...
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
-          Open All Bookmarks
+          &amp;Open All Bookmarks
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="In Title Case: Menu title for opening all urls in a bookmark folder in a new window">
-          Open All Bookmarks in New Window
+          Open All Bookmarks in &amp;New Window
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for opening all urls in a bookmark folder in an incognito window">
-          Open All Bookmarks in Incognito Window
+          Open All Bookmarks in &amp;Incognito Window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="In Title Case: Menu title for removing/unstarring a bookmark">
-          Delete
+          &amp;Delete
         </message>
       </if>
       <message name="IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
@@ -6313,21 +6303,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_EDIT"
                  desc="Title of the bookmark context menu item that brings up the bookmark editor">
-          Edit...
+          &amp;Edit...
         </message>
         <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER"
                  desc="Title of the bookmark context menu item that brings up a dialog to rename a folder">
-          Rename...
+          &amp;Rename...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_EDIT"
                  desc="In Title Case: Title of the bookmark context menu item that brings up the bookmark editor">
-          Edit...
+          &amp;Edit...
         </message>
         <message name="IDS_BOOKMARK_BAR_RENAME_FOLDER"
                  desc="In Title Case: Title of the bookmark context menu item that brings up a dialog to rename a folder">
-          Rename...
+          &amp;Rename...
         </message>
       </if>
       <message name="IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL"
@@ -10031,7 +10021,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Check Grammar With Spelling
         </message>
         <!-- View menu -->
-        <message name="IDS_BOOMARK_BAR_ALWAYS_SHOW_MAC" desc="The Mac menu item for having bookmark bar always visible in the view menu.">
+        <message name="IDS_BOOKMARK_BAR_ALWAYS_SHOW_MAC" desc="The Mac menu item for having bookmark bar always visible in the view menu.">
           Always Show Bookmarks Bar
         </message>
         <message name="IDS_STOP_MENU_MAC" desc="The Mac menu item stop in the view menu.">

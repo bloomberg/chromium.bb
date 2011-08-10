@@ -300,7 +300,7 @@
 					</object>
 					<object class="NSMenuItem" id="23014313">
 						<reference key="NSMenu" ref="183701277"/>
-						<string key="NSTitle">^IDS_BOOMARK_BAR_ALWAYS_SHOW</string>
+						<string key="NSTitle">^IDS_SHOW_BOOKMARK_BAR</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="214171346"/>
@@ -454,7 +454,7 @@
 					</object>
 					<object class="NSMenuItem" id="515274494">
 						<reference key="NSMenu" ref="672481054"/>
-						<string key="NSTitle">^IDS_BOOMARK_BAR_ALWAYS_SHOW</string>
+						<string key="NSTitle">^IDS_SHOW_BOOKMARK_BAR</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="214171346"/>
