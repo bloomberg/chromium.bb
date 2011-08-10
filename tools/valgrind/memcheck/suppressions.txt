@@ -5282,6 +5282,25 @@
    fun:_ZN7testing8TestInfo3RunEv
    fun:_ZN7testing8TestCase3RunEv
 }
+{
+   bug_92279
+   Memcheck:Addr4
+   fun:_NPN_ReleaseObject
+   fun:_ZN6WebKit11WebBindings13releaseObjectEP8NPObject
+   fun:_ZN5ppapi11NPObjectVarD0Ev
+   fun:_ZNK4base10RefCountedIN5ppapi3VarEE7ReleaseEv
+   fun:_ZN13scoped_refptrIN5ppapi3Var*
+   ...
+   fun:_ZN5ppapi10VarTracker7VarInfoD1Ev
+   fun:_ZNSt4pairIKiN5ppapi10VarTracker7VarInfo*
+   ...
+   fun:_ZN9__gnu_cxx8hash_mapIiN5ppapi10VarTracker7VarInfoENS_4hashIiEESt8equal_toIiESaIS3_EED1Ev
+   fun:_ZN5ppapi10VarTracker*
+   ...
+   fun:_ZN6webkit5ppapi15ResourceTracker*
+   ...
+   fun:_ZN6webkit5ppapi19ResourceTrackerTest*
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
