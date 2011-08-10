@@ -68,7 +68,7 @@ class set {
     if (it != end())
       return std::make_pair(it, false);
     if (size_ == kMaxSize) {
-      Log("set::insert: out of space!");
+      Err("set::insert: out of space!");
       return std::make_pair(end(), false);
     }
     iterator new_elt = &buffer_[size_];
@@ -101,7 +101,7 @@ class set {
   set<Elt, kMaxSize>& operator=(const set<Elt, kThatSize>& that) {
     if (that.size() > kMaxSize) {
       // Uh oh, that won't fit into this
-      Log("set::operator=: out of space!");
+      Err("set::operator=: out of space!");
       return *this;
     }
     std::copy(that.begin(), that.end(), begin());

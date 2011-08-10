@@ -36,14 +36,14 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
 
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
   if (version < kMinSupportedVersion) {
-    Log("Client too old. It's using version %d"
+    Err("Client too old. It's using version %d"
         ", but library has min supported version %d",
         version,
         kMinSupportedVersion);
     return NULL;
   }
   if (version > kMaxSupportedVersion) {
-    Log("Client too new. It's using version %d"
+    Err("Client too new. It's using version %d"
         ", but library has max supported version %d",
         version,
         kMaxSupportedVersion);
@@ -128,7 +128,7 @@ void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
       Log("Setting timer for %f s out.", timeout);
     }
   } else {
-    Log("No timer!");
+    Err("No timer!");
   }
   if (gs && callback_) {
     (*callback_)(callback_data_, gs);

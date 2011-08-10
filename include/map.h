@@ -109,7 +109,7 @@ class map {
     iterator it = find(key);
     if (it == end()) {
       if (set_.size() == kMaxSize) {
-        Log("map::operator[]: out of space!");
+        Err("map::operator[]: out of space!");
         return (*end()).second;
       }
       SetElt vt = std::make_pair(key, Data());

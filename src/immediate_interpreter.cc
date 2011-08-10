@@ -37,7 +37,7 @@ float MinMag(float a, float b) {
 
 void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
   if (&fs == NULL) {
-    Log("Error! Bad FingerState!");
+    Err("Error! Bad FingerState!");
     return;
   }
   touched_[the_id] = fs;
@@ -45,7 +45,7 @@ void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
 
 void TapRecord::NoteRelease(short the_id) {
   if (touched_.find(the_id) == touched_.end())
-    Log("Release of non-touched finger!");
+    Err("Release of non-touched finger!");
   else
     released_.insert(the_id);
 }
@@ -162,37 +162,37 @@ ImmediateInterpreter::~ImmediateInterpreter() {
   }
 
   if (tap_enable_prop_ != NULL)
-    Log("tap_enable_prop_ not freed?");
+    Err("tap_enable_prop_ not freed?");
   if (tap_timeout_prop_ != NULL)
-    Log("tap_timeout_prop_ not freed?");
+    Err("tap_timeout_prop_ not freed?");
   if (tap_drag_timeout_prop_ != NULL)
-    Log("tap_drag_timeout_prop_ not freed?");
+    Err("tap_drag_timeout_prop_ not freed?");
   if (tap_move_dist_prop_ != NULL)
-    Log("tap_move_dist_prop_ not freed?");
+    Err("tap_move_dist_prop_ not freed?");
   if (palm_pressure_prop_ != NULL)
-    Log("palm_pressure_prop_ not freed?");
+    Err("palm_pressure_prop_ not freed?");
   if (change_timeout_prop_ != NULL)
-    Log("change_timeout_prop_ not freed?");
+    Err("change_timeout_prop_ not freed?");
   if (evaluation_timeout_prop_ != NULL)
-    Log("evaluation_timeout_prop_ not freed?");
+    Err("evaluation_timeout_prop_ not freed?");
   if (two_finger_pressure_diff_thresh_prop_ != NULL)
-    Log("two_finger_pressure_diff_thresh_prop_ not freed?");
+    Err("two_finger_pressure_diff_thresh_prop_ not freed?");
   if (two_finger_close_distance_thresh_prop_ != NULL)
-    Log("two_finger_close_distance_thresh_prop_ not freed?");
+    Err("two_finger_close_distance_thresh_prop_ not freed?");
   if (two_finger_scroll_distance_thresh_prop_ != NULL)
-    Log("two_finger_scroll_distance_thresh_prop_ not freed?");
+    Err("two_finger_scroll_distance_thresh_prop_ not freed?");
   if (scroll_stationary_finger_max_distance_prop_ != NULL)
-    Log("scroll_stationary_finger_max_distance_prop_ not freed?");
+    Err("scroll_stationary_finger_max_distance_prop_ not freed?");
   if (bottom_zone_size_prop_ != NULL)
-    Log("bottom_zone_size_prop_ not freed?");
+    Err("bottom_zone_size_prop_ not freed?");
   if (button_evaluation_timeout_prop_ != NULL)
-    Log("button_evaluation_timeout_prop_ not freed?");
+    Err("button_evaluation_timeout_prop_ not freed?");
 }
 
 Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
                                              stime_t* timeout) {
   if (!prev_state_.fingers) {
-    Log("Must call SetHardwareProperties() before Push().");
+    Err("Must call SetHardwareProperties() before Push().");
     return 0;
   }
 
@@ -334,7 +334,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
         hwstate.GetFingerState(*(gs_fingers.begin() + 1))
       };
       if (!fingers[0] || !fingers[1]) {
-        Log("Unable to find gesturing fingers!");
+        Err("Unable to find gesturing fingers!");
         return;
       }
       // See if two pointers are close together
@@ -780,7 +780,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
         phys_up_edge) {
       // Send button down
       if (result_.type != kGestureTypeButtonsChange) {
-        Log("Gesture type already button?!");
+        Err("Gesture type already button?!");
       }
       result_ = Gesture(kGestureButtonsChange,
                         prev_state_.timestamp,
@@ -813,7 +813,7 @@ void ImmediateInterpreter::FillResultGesture(
   switch (current_gesture_type_) {
     case kGestureTypeMove: {
       if (fingers.empty()) {
-        Log("No gesturing fingers!");
+        Err("No gesturing fingers!");
         return;
       }
       // Use highest finger (the one closes to the keyboard), excluding
@@ -829,7 +829,7 @@ void ImmediateInterpreter::FillResultGesture(
       const FingerState* prev =
           prev_state_.GetFingerState(current->tracking_id);
       if (!prev) {
-        Log("No previous state!");
+        Err("No previous state!");
         return;
       }
       result_ = Gesture(kGestureMove,
