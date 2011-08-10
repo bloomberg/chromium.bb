@@ -5261,6 +5261,24 @@
    ...
    fun:_ZN6webkit5ppapi19ResourceTrackerTest*
 }
+{
+   bug_92389
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net11AddressList27CreateByCopyingFirstAddressEPK8addrinfo
+   fun:_ZNK3net23TCPClientSocketLibevent14GetPeerAddressEPNS_11AddressListE
+   fun:_ZN3net16HttpStreamParser11SendRequestERKSsRKNS_18HttpRequestHeadersEPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net15HttpBasicStream11SendRequestERKNS_18HttpRequestHeadersEPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net22HttpNetworkTransaction13DoSendRequestEv
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
+   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
+   fun:_ZN3net21HttpStreamFactoryImpl7Request13OnStreamReadyEPNS0_3JobERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
+   fun:_ZN3net21HttpStreamFactoryImpl3Job21OnStreamReadyCallbackEv
+   fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
