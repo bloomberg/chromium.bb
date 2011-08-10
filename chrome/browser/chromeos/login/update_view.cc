@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -240,6 +241,24 @@ void UpdateView::UpdateVisibility() {
   } else {
     throbber_->Stop();
   }
+
+  // Speak the shown label when accessibility is enabled.
+  const Label* label_spoken(NULL);
+  if (checking_label_->IsVisible()) {
+    label_spoken = checking_label_;
+  } else if (manual_reboot_label_->IsVisible()) {
+    label_spoken = manual_reboot_label_;
+  } else if (preparing_updates_label_->IsVisible()) {
+    label_spoken = preparing_updates_label_;
+  } else if (installing_updates_label_->IsVisible()) {
+    label_spoken = installing_updates_label_;
+  } else {
+    NOTREACHED();
+  }
+  const std::string text =
+      label_spoken ? WideToUTF8(label_spoken->GetText()) : std::string();
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(text.c_str(), false,
+                                                       true);
 }
 
 }  // namespace chromeos
