@@ -43,7 +43,6 @@ class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class NetworkDelegate;
 class ProxyConfigService;
-class ProxyScriptFetcher;
 class ProxyService;
 class SSLConfigService;
 class URLRequestContext;
