@@ -6,6 +6,15 @@
 .app {
   position: absolute;
   text-align: center;
+  -webkit-transition: -webkit-transform 0.1s;
+}
+
+.app:active,
+.dragging .app,
+.drag-representation .app {
+  /* Don't animate the initial scaling.  */
+  -webkit-transition-duration: 0;
+  -webkit-transform: scale(1.1);
 }
 
 .app-contents > span {
@@ -17,7 +26,6 @@
   white-space: nowrap;
 }
 
-/* TODO(estade): hover effect? press effect? */
 .app-contents > img {
   cursor: pointer;
   display: block;
