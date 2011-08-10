@@ -209,6 +209,7 @@ ExtensionInputImeEventRouter::~ExtensionInputImeEventRouter() {
 void ExtensionInputImeEventRouter::Init() {
 }
 
+#if defined(OS_CHROMEOS)
 bool ExtensionInputImeEventRouter::RegisterIme(
     Profile* profile,
     const std::string& extension_id,
@@ -259,6 +260,7 @@ bool ExtensionInputImeEventRouter::RegisterIme(
 
   return true;
 }
+#endif
 
 chromeos::InputMethodEngine* ExtensionInputImeEventRouter::GetEngine(
     const std::string& extension_id, const std::string& engine_id) {
@@ -503,6 +505,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
   return true;
 }
 
+#if defined(OS_CHROMEOS)
 bool SetCandidatesFunction::ReadCandidates(
     ListValue* candidates,
     std::vector<chromeos::InputMethodEngine::Candidate>* output) {
@@ -628,3 +631,4 @@ bool UpdateMenuItemsFunction::RunImpl() {
   // TODO
   return true;
 }
+#endif
