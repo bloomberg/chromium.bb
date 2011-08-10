@@ -245,7 +245,8 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #endif
          command_id == IDC_SYNC_BOOKMARKS ||
          command_id == IDC_VIEW_BACKGROUND_PAGES ||
-         command_id == IDC_UPGRADE_DIALOG;
+         command_id == IDC_UPGRADE_DIALOG ||
+         command_id == IDC_SHOW_SYNC_SETUP;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -278,6 +279,19 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 #endif
 
       return l10n_util::GetStringFUTF16(IDS_UPDATE_NOW, product_name);
+    }
+    case IDC_SHOW_SYNC_SETUP: {
+      std::string username = browser_->GetProfile()->GetPrefs()->GetString(
+          prefs::kGoogleServicesUsername);
+      string16 short_product_name =
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+      if (username.empty()) {
+        return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP,
+                                          short_product_name);
+      }
+      return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP_USERNAME,
+                                        short_product_name,
+                                        UTF8ToUTF16(username));
     }
     default:
       NOTREACHED();

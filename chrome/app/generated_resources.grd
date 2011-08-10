@@ -8466,15 +8466,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
-          Set Up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Sync
+          Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
-          Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> sync
+          Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
         </message>
       </if>
-      <!-- SafeBrowsing -->
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
+          Signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
+          Signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
+        </message>
+      </if>
+     <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!
       </message>
