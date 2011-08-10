@@ -15,8 +15,6 @@ extern struct nacl_irt_sem __nc_irt_sem;
 
 void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread);
 
-void *__nc_adopt_thread(void);
-
 void __nc_tsd_exit(void);
 
 #endif
