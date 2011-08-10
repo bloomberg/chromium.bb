@@ -14,6 +14,7 @@
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -152,24 +153,64 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
     const FilePath::StringType& default_extension) {
-  std::string json = GetArgumentsJson(type, title, default_virtual_path,
-                                      file_types, file_type_index,
-                                      default_extension);
-  return GURL(FileManagerUtil::GetFileBrowserUrl().spec() + "?" +
-              EscapeUrlEncodedData(json, false));
+  DictionaryValue arg_value;
+  arg_value.SetString("type", GetDialogTypeAsString(type));
+  arg_value.SetString("title", title);
+  arg_value.SetString("defaultPath", default_virtual_path.value());
+  arg_value.SetString("defaultExtension", default_extension);
+
+  if (file_types) {
+    ListValue* types_list = new ListValue();
+    for (size_t i = 0; i < file_types->extensions.size(); ++i) {
+      ListValue* extensions_list = new ListValue();
+      for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
+        extensions_list->Set(
+            i, Value::CreateStringValue(file_types->extensions[i][j]));
+      }
+
+      DictionaryValue* dict = new DictionaryValue();
+      dict->Set("extensions", extensions_list);
+
+      if (i < file_types->extension_description_overrides.size()) {
+        string16 desc = file_types->extension_description_overrides[i];
+        dict->SetString("description", desc);
+      }
+
+      dict->SetBoolean("selected",
+                       (static_cast<size_t>(file_type_index) == i));
+
+      types_list->Set(i, dict);
+    }
+    arg_value.Set("typeList", types_list);
+  }
+
+  std::string json_args;
+  base::JSONWriter::Write(&arg_value, false, &json_args);
+
+  // kChromeUIFileManagerURL could not be used since query parameters are not
+  // supported for it.
+  std::string url = FileManagerUtil::GetFileBrowserUrl().spec() +
+                    '?' + EscapeUrlEncodedData(json_args, false);
+  return GURL(url);
 
 }
 
 // static
 void FileManagerUtil::ShowFullTabUrl(Profile*,
-                                     const FilePath& default_path) {
-  std::string json = GetArgumentsJson(SelectFileDialog::SELECT_NONE, string16(),
-      default_path, NULL, 0, FilePath::StringType());
-  GURL url(std::string(kBaseFileBrowserUrl) + "?" +
-           EscapeUrlEncodedData(json, false));
+                                     const FilePath& dir) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
+
+  FilePath virtual_path;
+  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(browser->profile(),
+                                                            dir,
+                                                            &virtual_path)) {
+    return;
+  }
+
+  std::string url = chrome::kChromeUIFileManagerURL;
+  url += '#' + EscapeUrlEncodedData(virtual_path.value(), false);
 
   UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   browser->ShowSingletonTab(GURL(url));
@@ -224,53 +265,6 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
           l10n_util::GetStringFUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE,
                                      UTF8ToUTF16(full_path.BaseName().value()))
           ));
-}
-
-// static
-std::string FileManagerUtil::GetArgumentsJson(
-    SelectFileDialog::Type type,
-    const string16& title,
-    const FilePath& default_virtual_path,
-    const SelectFileDialog::FileTypeInfo* file_types,
-    int file_type_index,
-    const FilePath::StringType& default_extension) {
-  DictionaryValue arg_value;
-  arg_value.SetString("type", GetDialogTypeAsString(type));
-  arg_value.SetString("title", title);
-  // TODO(zelidrag): Convert local system path into virtual path for File API.
-  arg_value.SetString("defaultPath", default_virtual_path.value());
-  arg_value.SetString("defaultExtension", default_extension);
-
-
-  if (file_types) {
-    ListValue* types_list = new ListValue();
-    for (size_t i = 0; i < file_types->extensions.size(); ++i) {
-      ListValue* extensions_list = new ListValue();
-      for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
-        extensions_list->Set(
-            i, Value::CreateStringValue(file_types->extensions[i][j]));
-      }
-
-      DictionaryValue* dict = new DictionaryValue();
-      dict->Set("extensions", extensions_list);
-
-      if (i < file_types->extension_description_overrides.size()) {
-        string16 desc = file_types->extension_description_overrides[i];
-        dict->SetString("description", desc);
-      }
-
-      dict->SetBoolean("selected",
-                       (static_cast<size_t>(file_type_index) == i));
-
-      types_list->Set(i, dict);
-    }
-    arg_value.Set("typeList", types_list);
-  }
-
-  std::string rv;
-  base::JSONWriter::Write(&arg_value, false, &rv);
-
-  return rv;
 }
 
 // static

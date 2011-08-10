@@ -3802,15 +3802,9 @@
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
             ['exclude', '^browser/ui/webui/chromeos'],
             ['exclude', '^browser/ui/webui/options/chromeos'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
-            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.cc'],
-            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.h'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
-            ['exclude', 'browser/extensions/file_manager_util.h'],
-            ['exclude', 'browser/extensions/file_manager_util.cc'],
             ['exclude', 'browser/oom_priority_manager.cc'],
             ['exclude', 'browser/oom_priority_manager.h'],
             ['exclude', 'browser/policy/device_policy_cache.cc'],
@@ -3852,6 +3846,16 @@
             'browser/renderer_host/gtk_key_bindings_handler.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
+          ],
+        }],
+        ['file_manager_extension==0', {
+          'sources/': [
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
+            ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
+            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.cc'],
+            ['exclude', 'browser/extensions/extension_mediaplayer_private_api.h'],
+            ['exclude', 'browser/extensions/file_manager_util.h'],
+            ['exclude', 'browser/extensions/file_manager_util.cc'],
           ],
         }],
         ['use_ibus==1', {
@@ -4614,11 +4618,23 @@
               ],
             }],
             # Exclude extension_input_ui_api again
-            # (Required because of the '^browser/extensions/' include abrove)
+            # (Required because of the '^browser/extensions/' include above)
             ['toolkit_uses_gtk == 1 and ( touchui == 0 or chromeos == 0 )', {
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_ui_api.h'],
+              ],
+            }],
+            # Exclude file manager files again
+            # (Required because of the '^browser/extensions/' include above)
+            ['file_manager_extension==0', {
+              'sources/': [
+                ['exclude', 'browser/extensions/extension_file_browser_private_api.cc'],
+                ['exclude', 'browser/extensions/extension_file_browser_private_api.h'],
+                ['exclude', 'browser/extensions/extension_mediaplayer_private_api.cc'],
+                ['exclude', 'browser/extensions/extension_mediaplayer_private_api.h'],
+                ['exclude', 'browser/extensions/file_manager_util.h'],
+                ['exclude', 'browser/extensions/file_manager_util.cc'],
               ],
             }],
             # GTK build only

@@ -155,10 +155,13 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/extensions/file_manager_util.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #else
 #include "chrome/browser/download/download_shelf.h"
+#endif
+
+#if defined(FILE_MANAGER_EXTENSION)
+#include "chrome/browser/extensions/file_manager_util.h"
 #endif
 
 using base::TimeDelta;
