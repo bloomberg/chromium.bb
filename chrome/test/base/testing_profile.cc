@@ -19,6 +19,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_settings.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
@@ -334,10 +335,13 @@ ExtensionService* TestingProfile::CreateExtensionService(
       new ExtensionPrefs(GetPrefs(),
                          install_directory,
                          extension_pref_value_map_.get()));
+  extension_settings_ =
+      new ExtensionSettings(GetPath().AppendASCII("Extension Settings"));
   extension_service_.reset(new ExtensionService(this,
                                                 command_line,
                                                 install_directory,
                                                 extension_prefs_.get(),
+                                                extension_settings_.get(),
                                                 autoupdate_enabled,
                                                 true));
   return extension_service_.get();

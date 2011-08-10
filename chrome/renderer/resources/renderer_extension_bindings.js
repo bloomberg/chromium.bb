@@ -311,6 +311,7 @@ var chrome = chrome || {};
       "experimental.inputUI",
       "experimental.metrics",
       "experimental.permissions",
+      "experimental.settings",
       "experimental.popup",
       "experimental.processes",
       "experimental.rlz",

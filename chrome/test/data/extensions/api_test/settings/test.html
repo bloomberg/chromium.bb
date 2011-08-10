@@ -1,0 +1,206 @@
+<script>
+chrome.test.runTests([
+  function getWhenEmpty() {
+    function stage1(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.experimental.settings.get(['foo', 'bar'], stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.experimental.settings.get(undefined, stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.get('foo', stage1);
+  },
+
+  function getWhenNonempty() {
+    function stage1(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'bar',
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.get(['foo', 'baz'], stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq({
+        'foo': 'bar',
+        'baz': 'qux'
+      }, settings);
+      chrome.experimental.settings.get(
+          ['nothing', 'baz', 'hello', 'ignore'], stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.get(null, stage4);
+    }
+    function stage4(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'bar',
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.set({
+      'foo'  : 'bar',
+      'baz'  : 'qux',
+      'hello': 'world'
+    }, stage1);
+  },
+
+  function removeWhenEmpty() {
+    function stage1(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.remove(['foo', 'bar'], stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.remove('foo', stage1);
+  },
+
+  function removeWhenNonempty() {
+    function stage1(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'bar',
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.remove('foo', stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.remove(['baz', 'nothing'], stage4);
+    }
+    function stage4(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage5);
+    }
+    function stage5(settings) {
+      chrome.test.assertEq({
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.remove('hello', stage6);
+    }
+    function stage6(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage7);
+    }
+    function stage7(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.set({
+      'foo'  : 'bar',
+      'baz'  : 'qux',
+      'hello': 'world'
+    }, stage1);
+  },
+
+  function setWhenOverwriting() {
+    function stage1(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'bar',
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.set({
+        'foo'  : 'otherBar',
+        'baz'  : 'otherQux'
+      }, stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'otherBar',
+        'baz'  : 'otherQux',
+      }, settings);
+      chrome.experimental.settings.get(null, stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'otherBar',
+        'baz'  : 'otherQux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.set({
+        'baz'  : 'anotherQux',
+        'hello': 'otherWorld',
+        'some' : 'value'
+      }, stage4);
+    }
+    function stage4(settings) {
+      chrome.test.assertEq({
+        'baz'  : 'anotherQux',
+        'hello': 'otherWorld',
+        'some' : 'value'
+      }, settings);
+      chrome.experimental.settings.get(null, stage5);
+    }
+    function stage5(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'otherBar',
+        'baz'  : 'anotherQux',
+        'hello': 'otherWorld',
+        'some' : 'value'
+      }, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.set({
+      'foo'  : 'bar',
+      'baz'  : 'qux',
+      'hello': 'world'
+    }, stage1);
+  },
+
+  function clearWhenEmpty() {
+    function stage1(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.clear(stage1);
+  },
+
+  function clearWhenNonempty() {
+    function stage1(settings) {
+      chrome.test.assertEq({
+        'foo'  : 'bar',
+        'baz'  : 'qux',
+        'hello': 'world'
+      }, settings);
+      chrome.experimental.settings.clear(stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.set({
+      'foo'  : 'bar',
+      'baz'  : 'qux',
+      'hello': 'world'
+    }, stage1);
+  }
+]);
+</script>

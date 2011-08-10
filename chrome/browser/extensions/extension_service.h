@@ -51,6 +51,7 @@ class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionServiceBackend;
+class ExtensionSettings;
 struct ExtensionSyncData;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
@@ -162,6 +163,10 @@ class ExtensionService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
+  // The name of the directory inside the profile where per-extension settings
+  // are stored.
+  static const char* kSettingsDirectoryName;
+
   // Determine if a given extension download should be treated as if it came
   // from the gallery. Note that this is requires *both* that the download_url
   // match and that the download was referred from a gallery page.
@@ -196,6 +201,7 @@ class ExtensionService
                    const CommandLine* command_line,
                    const FilePath& install_directory,
                    ExtensionPrefs* extension_prefs,
+                   ExtensionSettings* extension_settings,
                    bool autoupdate_enabled,
                    bool extensions_enabled);
 
@@ -458,6 +464,8 @@ class ExtensionService
   // ExtensionPrefs* mutable_extension_prefs().
   ExtensionPrefs* extension_prefs();
 
+  ExtensionSettings* extension_settings();
+
   ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
   // Whether the extension service is ready.
@@ -644,6 +652,9 @@ class ExtensionService
 
   // Preferences for the owning profile (weak reference).
   ExtensionPrefs* extension_prefs_;
+
+  // Settings for the owning profile (weak reference).
+  ExtensionSettings* extension_settings_;
 
   // The current list of installed extensions.
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.

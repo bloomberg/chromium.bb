@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_settings.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -475,6 +476,7 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
+      extension_settings_.get(),
       autoupdate_enabled,
       extensions_enabled));
 
@@ -883,6 +885,9 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prefs_.get(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       GetExtensionPrefValueMap()));
+
+  extension_settings_ = new ExtensionSettings(
+      GetPath().AppendASCII(ExtensionService::kSettingsDirectoryName));
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 

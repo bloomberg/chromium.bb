@@ -32,6 +32,7 @@ class SpecialStoragePolicy;
 class AutocompleteClassifier;
 class BookmarkModel;
 class CommandLine;
+class ExtensionSettings;
 class ExtensionPrefs;
 class ExtensionPrefStore;
 class ExtensionPrefValueMap;
@@ -366,13 +367,16 @@ class TestingProfile : public Profile {
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
 
+  // The Extension settings. Only created if CreateExtensionService is
+  // invoked.
+  scoped_refptr<ExtensionSettings> extension_settings_;
+
   scoped_ptr<ExtensionService> extension_service_;
 
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
-
 
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

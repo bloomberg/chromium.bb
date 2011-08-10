@@ -425,6 +425,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/leveldb/leveldb.gyp:leveldb',
       ],
       'include_dirs': [
         '..',

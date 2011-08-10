@@ -43,6 +43,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/leveldb/leveldb.gyp:leveldb',
       ],
       'export_dependent_settings': [
         'renderer',
@@ -2378,6 +2379,7 @@
         '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/leveldb/leveldb.gyp:leveldb',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
@@ -2528,6 +2530,12 @@
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',
         'browser/extensions/extension_rlz_apitest.cc',
+        'browser/extensions/extension_settings_apitest.cc',
+        'browser/extensions/extension_settings_cached_leveldb_storage_unittest.cc',
+        'browser/extensions/extension_settings_cached_noop_storage_unittest.cc',
+        'browser/extensions/extension_settings_leveldb_storage_unittest.cc',
+        'browser/extensions/extension_settings_storage_unittest.h',
+        'browser/extensions/extension_settings_storage_unittest.cc',
         'browser/extensions/extension_sidebar_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
