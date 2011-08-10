@@ -26,6 +26,7 @@ class Scrollbar_Dev : public Widget_Dev {
 
   // PPB_Scrollbar methods:
   uint32_t GetThickness();
+  bool IsOverlay();
   uint32_t GetValue();
   void SetValue(uint32_t value);
   void SetDocumentSize(uint32_t size);

@@ -60,3 +60,7 @@ void TestScrollbar::ScrollbarValueChanged(pp::Scrollbar_Dev scrollbar,
   if (scrollbar == scrollbar_)
     scrollbar_value_changed_ = true;
 }
+
+void TestScrollbar::ScrollbarOverlayChanged(pp::Scrollbar_Dev scrollbar,
+                                            bool type) {
+}

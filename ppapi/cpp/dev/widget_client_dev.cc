@@ -51,8 +51,20 @@ void Scrollbar_ValueChanged(PP_Instance instance,
       Scrollbar_Dev(scrollbar_id), value);
 }
 
+void Scrollbar_OverlayChanged(PP_Instance instance,
+                              PP_Resource scrollbar_id,
+                              PP_Bool overlay) {
+  void* object =
+      pp::Instance::GetPerInstanceObject(instance, kPPPScrollbarInterface);
+  if (!object)
+    return;
+  return static_cast<WidgetClient_Dev*>(object)->ScrollbarOverlayChanged(
+      Scrollbar_Dev(scrollbar_id), PP_ToBool(overlay));
+}
+
 static PPP_Scrollbar_Dev scrollbar_interface = {
   &Scrollbar_ValueChanged,
+  &Scrollbar_OverlayChanged,
 };
 
 }  // namespace

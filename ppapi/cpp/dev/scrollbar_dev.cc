@@ -41,6 +41,13 @@ uint32_t Scrollbar_Dev::GetThickness() {
   return get_interface<PPB_Scrollbar_Dev>()->GetThickness(pp_resource());
 }
 
+bool Scrollbar_Dev::IsOverlay() {
+  if (!has_interface<PPB_Scrollbar_Dev>())
+    return false;
+  return
+      PP_ToBool(get_interface<PPB_Scrollbar_Dev>()->IsOverlay(pp_resource()));
+}
+
 uint32_t Scrollbar_Dev::GetValue() {
   if (!has_interface<PPB_Scrollbar_Dev>())
     return 0;

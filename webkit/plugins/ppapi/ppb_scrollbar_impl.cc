@@ -48,8 +48,12 @@ PP_Bool IsScrollbar(PP_Resource resource) {
   return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->IsScrollbar(resource);
 }
 
-uint32_t GetThickness() {
+uint32_t GetThickness3() {
   return WebScrollbar::defaultThickness();
+}
+
+uint32_t GetThickness4(PP_Resource resource) {
+  return ::ppapi::thunk::GetPPB_Scrollbar_Thunk()->GetThickness(resource);
 }
 
 uint32_t GetValue(PP_Resource resource) {
@@ -82,7 +86,18 @@ void ScrollBy(PP_Resource resource, PP_ScrollBy_Dev unit, int32_t multiplier) {
 const PPB_Scrollbar_0_3_Dev ppb_scrollbar_0_3 = {
   &Create,
   &IsScrollbar,
-  &GetThickness,
+  &GetThickness3,
+  &GetValue,
+  &SetValue,
+  &SetDocumentSize,
+  &SetTickMarks,
+  &ScrollBy
+};
+
+const PPB_Scrollbar_0_4_Dev ppb_scrollbar_0_4 = {
+  &Create,
+  &IsScrollbar,
+  &GetThickness4,
   &GetValue,
   &SetValue,
   &SetDocumentSize,
@@ -92,14 +107,33 @@ const PPB_Scrollbar_0_3_Dev ppb_scrollbar_0_3 = {
 
 }  // namespace
 
-PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PluginInstance* instance, bool vertical)
+// static
+PP_Resource PPB_Scrollbar_Impl::Create(PluginInstance* instance,
+                                       bool vertical) {
+  scoped_refptr<PPB_Scrollbar_Impl> scrollbar(
+      new PPB_Scrollbar_Impl(instance));
+  scrollbar->Init(vertical);
+  return scrollbar->GetReference();
+}
+
+PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PluginInstance* instance)
     : PPB_Widget_Impl(instance) {
-  scrollbar_.reset(WebScrollbar::create(
-      static_cast<WebKit::WebScrollbarClient*>(this),
-      vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal));
 }
 
 PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
+}
+
+void PPB_Scrollbar_Impl::Init(bool vertical) {
+#if defined(WEBSCROLLBAR_SUPPORTS_OVERLAY)
+  scrollbar_.reset(WebScrollbar::createForPlugin(
+      vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal,
+      instance()->container(),
+      static_cast<WebKit::WebScrollbarClient*>(this)));
+#else
+  scrollbar_.reset(WebScrollbar::create(
+      static_cast<WebKit::WebScrollbarClient*>(this),
+      vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal));
+#endif
 }
 
 PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
@@ -111,8 +145,22 @@ const PPB_Scrollbar_0_3_Dev* PPB_Scrollbar_Impl::Get0_3Interface() {
   return &ppb_scrollbar_0_3;
 }
 
+// static
+const PPB_Scrollbar_0_4_Dev* PPB_Scrollbar_Impl::Get0_4Interface() {
+  return &ppb_scrollbar_0_4;
+}
+
 uint32_t PPB_Scrollbar_Impl::GetThickness() {
   return WebScrollbar::defaultThickness();
+}
+
+bool PPB_Scrollbar_Impl::IsOverlay() {
+// TODO(jam): take this out once WebKit is rolled.
+#if defined(WEBSCROLLBAR_SUPPORTS_OVERLAY)
+  return scrollbar_->isOverlay();
+#else
+  return false;
+#endif
 }
 
 uint32_t PPB_Scrollbar_Impl::GetValue() {
@@ -197,11 +245,30 @@ void PPB_Scrollbar_Impl::valueChanged(WebKit::WebScrollbar* scrollbar) {
   const PPP_Scrollbar_Dev* ppp_scrollbar =
       static_cast<const PPP_Scrollbar_Dev*>(instance()->module()->
           GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
-  if (!ppp_scrollbar)
-    return;
+  if (!ppp_scrollbar) {
+    // Try the old version. This is ok because the old interface is a subset of
+    // the new one, and ValueChanged didn't change.
+    ppp_scrollbar =
+      static_cast<const PPP_Scrollbar_Dev*>(instance()->module()->
+          GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE_0_2));
+    if (!ppp_scrollbar)
+      return;
+  }
   ScopedResourceId resource(this);
   ppp_scrollbar->ValueChanged(
       instance()->pp_instance(), resource.id, scrollbar_->value());
+}
+
+void PPB_Scrollbar_Impl::overlayChanged(WebScrollbar* scrollbar) {
+  const PPP_Scrollbar_Dev* ppp_scrollbar =
+      static_cast<const PPP_Scrollbar_Dev*>(instance()->module()->
+          GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
+  if (!ppp_scrollbar)
+    return;
+  ScopedResourceId resource(this);
+  ppp_scrollbar->OverlayChanged(
+      instance()->pp_instance(), resource.id,
+      PP_FromBool(IsOverlay()));
 }
 
 void PPB_Scrollbar_Impl::invalidateScrollbarRect(

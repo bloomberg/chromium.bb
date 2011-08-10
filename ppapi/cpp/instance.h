@@ -31,7 +31,6 @@ class Resource;
 class Surface3D_Dev;
 class URLLoader;
 class Var;
-class Widget_Dev;
 
 class Instance {
  public:

@@ -26,6 +26,8 @@ class TestScrollbar : public TestCase,
                                 const pp::Rect& dirty_rect);
   virtual void ScrollbarValueChanged(pp::Scrollbar_Dev scrollbar,
                                      uint32_t value);
+  virtual void ScrollbarOverlayChanged(pp::Scrollbar_Dev scrollbar,
+                                       bool type);
 
   pp::Scrollbar_Dev scrollbar_;
   bool scrollbar_value_changed_;

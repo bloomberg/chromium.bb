@@ -261,7 +261,7 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
 
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
                                                   PP_Bool vertical) {
-  return ReturnResource(new PPB_Scrollbar_Impl(instance_, PP_ToBool(vertical)));
+  return PPB_Scrollbar_Impl::Create(instance_, PP_ToBool(vertical));
 }
 
 PP_Resource ResourceCreationImpl::CreateSurface3D(

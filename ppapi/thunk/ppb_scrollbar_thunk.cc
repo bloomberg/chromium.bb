@@ -33,6 +33,13 @@ uint32_t GetThickness(PP_Resource scrollbar) {
   return enter.object()->GetThickness();
 }
 
+PP_Bool IsOverlay(PP_Resource scrollbar) {
+  EnterScrollbar enter(scrollbar, true);
+  if (enter.failed())
+    return PP_FALSE;
+  return PP_FromBool(enter.object()->IsOverlay());
+}
+
 uint32_t GetValue(PP_Resource scrollbar) {
   EnterScrollbar enter(scrollbar, true);
   if (enter.failed())
@@ -66,10 +73,11 @@ void ScrollBy(PP_Resource scrollbar, PP_ScrollBy_Dev unit, int32_t multiplier) {
     enter.object()->ScrollBy(unit, multiplier);
 }
 
-const PPB_Scrollbar_0_4_Dev g_ppb_scrollbar_thunk = {
+const PPB_Scrollbar_0_5_Dev g_ppb_scrollbar_thunk = {
   &Create,
   &IsScrollbar,
   &GetThickness,
+  &IsOverlay,
   &GetValue,
   &SetValue,
   &SetDocumentSize,
@@ -79,7 +87,7 @@ const PPB_Scrollbar_0_4_Dev g_ppb_scrollbar_thunk = {
 
 }  // namespace
 
-const PPB_Scrollbar_0_4_Dev* GetPPB_Scrollbar_Thunk() {
+const PPB_Scrollbar_0_5_Dev* GetPPB_Scrollbar_Thunk() {
   return &g_ppb_scrollbar_thunk;
 }
 

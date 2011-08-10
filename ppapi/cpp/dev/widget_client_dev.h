@@ -35,6 +35,13 @@ class WidgetClient_Dev {
   virtual void ScrollbarValueChanged(Scrollbar_Dev scrollbar,
                                      uint32_t value) = 0;
 
+  /**
+   * Notification that the given scrollbar's overlay type has changed. This is
+   * the implementation for PPP_Scrollbar_Dev.
+   */
+  virtual void ScrollbarOverlayChanged(Scrollbar_Dev scrollbar,
+                                       bool type) = 0;
+
  private:
   Instance* associated_instance_;
 };

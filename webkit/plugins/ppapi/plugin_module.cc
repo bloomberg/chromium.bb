@@ -303,9 +303,11 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)
     return ::ppapi::thunk::GetPPB_QueryPolicy_Thunk();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_4) == 0)
-    return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
+    return PPB_Scrollbar_Impl::Get0_4Interface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_3) == 0)
     return PPB_Scrollbar_Impl::Get0_3Interface();
+  if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE_0_5) == 0)
+    return ::ppapi::thunk::GetPPB_Scrollbar_Thunk();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADER_INTERFACE_1_0) == 0)
