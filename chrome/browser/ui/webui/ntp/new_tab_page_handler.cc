@@ -4,12 +4,11 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 
-#include "base/command_line.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 
 void NewTabPageHandler::RegisterMessages() {
@@ -50,15 +49,13 @@ void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
 // static
 void NewTabPageHandler::GetLocalizedValues(Profile* profile,
                                            DictionaryValue* values) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+  if (!NewTabUI::Ntp4Enabled())
     return;
 
   values->SetInteger("most_visited_page_id", MOST_VISITED_PAGE_ID);
   values->SetInteger("apps_page_id", APPS_PAGE_ID);
   values->SetInteger("bookmarks_page_id", BOOKMARKS_PAGE_ID);
 
-  // TODO(estade) Should respect shown sections pref (i.e. migrate if it
-  // exists).
   PrefService* prefs = profile->GetPrefs();
   int shown_page = prefs->GetInteger(prefs::kNTPShownPage);
   values->SetInteger("shown_page_type", shown_page & ~INDEX_MASK);

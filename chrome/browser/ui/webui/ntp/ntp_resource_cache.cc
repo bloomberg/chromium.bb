@@ -24,6 +24,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
@@ -421,7 +422,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // consistent across builds, supporting the union of all NTP front-ends
   // for simplicity.
   std::string full_html;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+  if (NewTabUI::Ntp4Enabled()) {
     base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
         GetRawDataResource(IDR_NEW_TAB_4_HTML));
     full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
@@ -570,9 +571,8 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBComponents(color_section_border));  // $22
 
   // Get our template.
-  int ntp_css_resource_id =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
-          IDR_NEW_TAB_4_THEME_CSS : IDR_NEW_TAB_THEME_CSS;
+  int ntp_css_resource_id = NewTabUI::Ntp4Enabled() ?
+      IDR_NEW_TAB_4_THEME_CSS : IDR_NEW_TAB_THEME_CSS;
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           ntp_css_resource_id));

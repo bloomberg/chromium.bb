@@ -189,7 +189,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   // Override some options on the Web UI.
   hide_favicon_ = true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) &&
+  if (Ntp4Enabled() &&
       GetProfile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar) &&
       browser_defaults::bookmarks_enabled) {
     set_force_bookmark_bar_visible(true);
@@ -223,7 +223,7 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageHandler())->Attach(this));
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+    if (Ntp4Enabled()) {
       AddMessageHandler((new BookmarksHandler())->Attach(this));
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
     }
@@ -416,6 +416,15 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   }
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);
+}
+
+// static
+bool NewTabUI::Ntp4Enabled() {
+#if defined(TOUCH_UI)
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
+#else
+  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

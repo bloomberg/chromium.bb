@@ -119,13 +119,6 @@ GURL AppsPromo::GetPromoLink() {
 
 // static
 GURL AppsPromo::GetPromoLogo() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
-    PrefService* local_state = g_browser_process->local_state();
-    GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
-    return logo_url;
-  }
-
-  // TODO(estade): rip this out after ntp4 is default.
   PrefService* local_state = g_browser_process->local_state();
   GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
   if (logo_url.is_valid() && logo_url.SchemeIs("data"))

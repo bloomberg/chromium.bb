@@ -201,7 +201,7 @@ extern const char kNaClDebugPorts[];
 extern const char kNaClLoaderCmdPrefix[];
 extern const char kNaClStartupDialog[];
 extern const char kNetLogLevel[];
-extern const char kNewTabPage4[];
+extern const char kNewTabPage[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoEvents[];
 extern const char kNoExperiments[];

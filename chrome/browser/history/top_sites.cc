@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/string_util.h"
@@ -22,8 +21,8 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/browser_thread.h"
@@ -652,8 +651,7 @@ MostVisitedURLList TopSites::GetPrepopulatePages() {
     MostVisitedURL& url = urls[i];
     url.url = GURL(l10n_util::GetStringUTF8(kPrepopulatePageIDs[i]));
     url.redirects.push_back(url.url);
-    url.favicon_url =
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4) ?
+    url.favicon_url = NewTabUI::Ntp4Enabled() ?
         GURL(kNewPrepopulateFaviconURLs[i]) :
         GURL(kPrepopulateFaviconURLs[i]);
     url.title = l10n_util::GetStringUTF16(kPrepopulateTitleIDs[i]);

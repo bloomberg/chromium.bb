@@ -4357,12 +4357,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COMPACT_NAVIGATION_BAR" desc="The menu item on the app menu to toggle compact navigation bar">
         Compact Navigation Bar
       </message>
-      <message name="IDS_FLAGS_NEW_TAB_PAGE_4_NAME" desc="Name of the new tab page 4 lab.">
-        Experimental new tab page
-      </message>
-      <message name="IDS_FLAGS_NEW_TAB_PAGE_4_DESCRIPTION" desc="Description of the new tab page 4 lab.">
-        Enables an in-development redesign of the new tab page.
-      </message>
       <message name="IDS_FLAGS_STATIC_IP_CONFIG_NAME" desc="Name of the static ip config lab.">
         Experimental static ip configuration
       </message>
