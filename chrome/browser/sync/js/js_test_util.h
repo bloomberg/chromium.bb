@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_JS_TEST_UTIL_H_
-#define CHROME_BROWSER_SYNC_JS_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_JS_JS_TEST_UTIL_H_
+#define CHROME_BROWSER_SYNC_JS_JS_TEST_UTIL_H_
 #pragma once
 
 #include <ostream>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_controller.h"
-#include "chrome/browser/sync/js_event_handler.h"
-#include "chrome/browser/sync/js_reply_handler.h"
+#include "chrome/browser/sync/js/js_backend.h"
+#include "chrome/browser/sync/js/js_controller.h"
+#include "chrome/browser/sync/js/js_event_handler.h"
+#include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/weak_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -106,4 +106,4 @@ class MockJsReplyHandler
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_JS_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_JS_JS_TEST_UTIL_H_

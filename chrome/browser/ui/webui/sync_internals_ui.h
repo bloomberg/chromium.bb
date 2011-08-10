@@ -8,11 +8,11 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/js_event_handler.h"
-#include "chrome/browser/sync/js_reply_handler.h"
+#include "chrome/browser/sync/js/js_event_handler.h"
+#include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
 class ProfileSyncService;

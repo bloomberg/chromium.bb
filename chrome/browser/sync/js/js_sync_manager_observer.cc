@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/js_sync_manager_observer.h"
+#include "chrome/browser/sync/js/js_sync_manager_observer.h"
 
 #include <cstddef>
 
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "base/values.h"
-#include "chrome/browser/sync/js_arg_list.h"
-#include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
+#include "chrome/browser/sync/js/js_event_details.h"
+#include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 

@@ -16,8 +16,6 @@ An event has a name and a details object, which is represented by a
 JsEventDetails (js_event_details.h) object, which is basically a
 wrapper around an immutable DictionaryValue.
 
-TODO(akalin): Move all the js_* files into a js/ subdirectory.
-
 Message/event flow
 ------------------
 

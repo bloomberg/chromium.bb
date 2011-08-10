@@ -26,9 +26,9 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/js_arg_list.h"
-#include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
+#include "chrome/browser/sync/js/js_event_details.h"
+#include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.

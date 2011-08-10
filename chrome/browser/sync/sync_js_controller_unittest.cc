@@ -6,9 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/sync/js_arg_list.h"
-#include "chrome/browser/sync/js_event_details.h"
-#include "chrome/browser/sync/js_test_util.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
+#include "chrome/browser/sync/js/js_event_details.h"
+#include "chrome/browser/sync/js/js_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

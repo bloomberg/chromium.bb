@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/sync_js_controller.h"
 
-#include "chrome/browser/sync/js_backend.h"
-#include "chrome/browser/sync/js_event_details.h"
+#include "chrome/browser/sync/js/js_backend.h"
+#include "chrome/browser/sync/js/js_event_details.h"
 
 namespace browser_sync {
 

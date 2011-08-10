@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_JS_ARG_LIST_H_
-#define CHROME_BROWSER_SYNC_JS_ARG_LIST_H_
+#ifndef CHROME_BROWSER_SYNC_JS_JS_ARG_LIST_H_
+#define CHROME_BROWSER_SYNC_JS_JS_ARG_LIST_H_
 #pragma once
 
 // See README.js for design comments.
@@ -40,4 +40,4 @@ class JsArgList {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_JS_ARG_LIST_H_
+#endif  // CHROME_BROWSER_SYNC_JS_JS_ARG_LIST_H_

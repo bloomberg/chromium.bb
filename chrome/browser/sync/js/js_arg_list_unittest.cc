@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"

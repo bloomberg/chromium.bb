@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/js_test_util.h"
+#include "chrome/browser/sync/js/js_test_util.h"
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sync/js_arg_list.h"
-#include "chrome/browser/sync/js_event_details.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
+#include "chrome/browser/sync/js/js_event_details.h"
 
 namespace browser_sync {
 

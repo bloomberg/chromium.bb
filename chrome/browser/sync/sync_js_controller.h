@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/sync/js_arg_list.h"
-#include "chrome/browser/sync/js_controller.h"
-#include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/sync/js/js_arg_list.h"
+#include "chrome/browser/sync/js/js_controller.h"
+#include "chrome/browser/sync/js/js_event_handler.h"
 #include "chrome/browser/sync/weak_handle.h"
 
 namespace browser_sync {
