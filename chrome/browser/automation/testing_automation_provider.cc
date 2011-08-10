@@ -2332,7 +2332,7 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["GetDownloadsInfo"] =
       &TestingAutomationProvider::GetDownloadsInfo;
   browser_handler_map["WaitForAllDownloadsToComplete"] =
-      &TestingAutomationProvider::WaitForDownloadsToComplete;
+      &TestingAutomationProvider::WaitForAllDownloadsToComplete;
   browser_handler_map["PerformActionOnDownload"] =
       &TestingAutomationProvider::PerformActionOnDownload;
 
@@ -2938,34 +2938,27 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
   reply.SendSuccess(return_value.get());
 }
 
-void TestingAutomationProvider::WaitForDownloadsToComplete(
+void TestingAutomationProvider::WaitForAllDownloadsToComplete(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  ListValue* pre_download_ids = NULL;
 
-  // Look for a quick return.
+  if (!args->GetList("pre_download_ids", &pre_download_ids)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("List of IDs of previous downloads required."));
+    return;
+  }
   if (!browser->profile()->HasCreatedDownloadManager()) {
-    // No download manager.
+    // No download manager, so no downloads to wait for.
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
-  std::vector<DownloadItem*> downloads;
-  browser->profile()->GetDownloadManager()->
-      GetCurrentDownloads(FilePath(), &downloads);
-  if (downloads.empty()) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-    return;
-  }
-  // The observer owns itself.  When the last observed item pings, it
-  // deletes itself.
-  AutomationProviderDownloadItemObserver* item_observer =
-      new AutomationProviderDownloadItemObserver(
-          this, reply_message, downloads.size());
-  for (std::vector<DownloadItem*>::iterator i = downloads.begin();
-       i != downloads.end();
-       i++) {
-    (*i)->AddObserver(item_observer);
-  }
+
+  // This observer will delete itself.
+  new AllDownloadsCompleteObserver(
+      this, reply_message, browser->profile()->GetDownloadManager(),
+      pre_download_ids);
 }
 
 namespace {

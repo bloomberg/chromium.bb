@@ -432,9 +432,11 @@ class TranslateTest(pyauto.PyUITest):
         file_url = self.GetFileURLForPath(file_path)
         downloaded_file = os.path.join(download_dir, filename)
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
+        pre_download_ids = [x['id']
+                            for x in self.GetDownloadsInfo().Downloads()]
         self.DownloadAndWaitForStart(file_url)
         # Wait for files and remove them as we go.
-        self.WaitForAllDownloadsToComplete()
+        self.WaitForAllDownloadsToComplete(pre_download_ids)
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
     finally:
       shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.

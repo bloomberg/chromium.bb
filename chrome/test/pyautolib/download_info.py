@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,8 +10,8 @@ Obtain one of these from PyUITestSuite::GetDownloadsInfo() call.
 
 class MyDownloadsTest(pyauto.PyUITest):
   def testDownload(self):
-    self.NavigateToURL('http://my.url/package.zip')
-    self.WaitForDownloadsToComplete()
+    self.DownloadAndWaitForStart('http://my.url/package.zip')
+    self.WaitForAllDownloadsToComplete()
     info = self.GetDownloadsInfo()
     print info.Downloads()
     self.assertEqual(info.Downloads()[0]['file_name'], 'packge.zip')

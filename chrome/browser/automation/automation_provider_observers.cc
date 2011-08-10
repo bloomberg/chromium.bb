@@ -1408,59 +1408,6 @@ void AutomationProviderBookmarkModelObserver::ReplyAndDelete(bool success) {
   delete this;
 }
 
-AutomationProviderDownloadItemObserver::AutomationProviderDownloadItemObserver(
-    AutomationProvider* provider,
-    IPC::Message* reply_message,
-    int downloads)
-    : provider_(provider->AsWeakPtr()),
-      reply_message_(reply_message),
-      downloads_(downloads),
-      interrupted_(false) {
-}
-
-AutomationProviderDownloadItemObserver::
-    ~AutomationProviderDownloadItemObserver() {}
-
-void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
-    DownloadItem* download) {
-  interrupted_ |= download->IsInterrupted();
-  // If any download was interrupted, on the next update each outstanding
-  // download is cancelled.
-  if (interrupted_) {
-    // |Cancel()| does nothing if |download| is already interrupted.
-    download->Cancel(true);
-    RemoveAndCleanupOnLastEntry(download);
-  }
-
-  if (download->IsComplete())
-    RemoveAndCleanupOnLastEntry(download);
-}
-
-// We don't want to send multiple messages, as the behavior is undefined.
-// Set |interrupted_| on error, and on the last download completed/
-// interrupted, send either an error or a success message.
-void AutomationProviderDownloadItemObserver::RemoveAndCleanupOnLastEntry(
-    DownloadItem* download) {
-  // Forget about the download.
-  download->RemoveObserver(this);
-  if (--downloads_ == 0) {
-    if (provider_) {
-      if (interrupted_) {
-        AutomationJSONReply(provider_, reply_message_.release()).SendError(
-            "Download Interrupted");
-      } else {
-        AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
-            NULL);
-      }
-    }
-    delete this;
-  }
-}
-
-void AutomationProviderDownloadItemObserver::OnDownloadOpened(
-    DownloadItem* download) {
-}
-
 AutomationProviderDownloadUpdatedObserver::
 AutomationProviderDownloadUpdatedObserver(
     AutomationProvider* provider,
@@ -1521,6 +1468,67 @@ AutomationProviderDownloadModelChangedObserver::
 void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
   download_manager_->RemoveObserver(this);
 
+  if (provider_)
+    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+  delete this;
+}
+
+AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
+    AutomationProvider* provider,
+    IPC::Message* reply_message,
+    DownloadManager* download_manager,
+    ListValue* pre_download_ids)
+    : provider_(provider->AsWeakPtr()),
+      reply_message_(reply_message),
+      download_manager_(download_manager) {
+  for (ListValue::iterator it = pre_download_ids->begin();
+       it != pre_download_ids->end(); ++it) {
+    int val = 0;
+    if ((*it)->GetAsInteger(&val)) {
+      pre_download_ids_.insert(val);
+    } else {
+      AutomationJSONReply(provider_, reply_message_.release())
+          .SendError("Cannot convert ID of prior download to integer.");
+      delete this;
+      return;
+    }
+  }
+  download_manager_->AddObserver(this);  // Will call initial ModelChanged().
+}
+
+AllDownloadsCompleteObserver::~AllDownloadsCompleteObserver() {}
+
+void AllDownloadsCompleteObserver::ModelChanged() {
+  // The set of downloads in the download manager has changed.  If there are
+  // any new downloads that are still in progress, add them to the pending list.
+  std::vector<DownloadItem*> downloads;
+  download_manager_->GetAllDownloads(FilePath(), &downloads);
+  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+       it != downloads.end(); ++it) {
+    if ((*it)->state() == DownloadItem::IN_PROGRESS &&
+        pre_download_ids_.find((*it)->id()) == pre_download_ids_.end()) {
+      (*it)->AddObserver(this);
+      pending_downloads_.insert(*it);
+    }
+  }
+  ReplyIfNecessary();
+}
+
+void AllDownloadsCompleteObserver::OnDownloadUpdated(DownloadItem* download) {
+  // If the current download's status has changed to a final state (not state
+  // "in progress"), remove it from the pending list.
+  if (download->state() != DownloadItem::IN_PROGRESS) {
+    download->RemoveObserver(this);
+    pending_downloads_.erase(download);
+    ReplyIfNecessary();
+  }
+}
+
+void AllDownloadsCompleteObserver::ReplyIfNecessary() {
+  if (!pending_downloads_.empty())
+    return;
+
+  download_manager_->RemoveObserver(this);
   if (provider_)
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
   delete this;

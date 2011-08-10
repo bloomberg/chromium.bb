@@ -406,9 +406,9 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Wait for all downloads to complete.
   // Uses the JSON interface for input/output.
-  void WaitForDownloadsToComplete(Browser* browser,
-                                  base::DictionaryValue* args,
-                                  IPC::Message* reply_message);
+  void WaitForAllDownloadsToComplete(Browser* browser,
+                                     base::DictionaryValue* args,
+                                     IPC::Message* reply_message);
 
   // Performs the given action on the specified download.
   // Uses the JSON interface for input/output.

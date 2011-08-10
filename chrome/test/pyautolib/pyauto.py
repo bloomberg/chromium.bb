@@ -1046,30 +1046,29 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Sending request for a char.
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
-  def WaitForAllDownloadsToComplete(self, windex=0, timeout=-1):
-    """Wait for all downloads to complete.
+  def WaitForAllDownloadsToComplete(self, pre_download_ids=[], windex=0,
+                                    timeout=-1):
+    """Wait for all pending downloads to complete.
 
-    Note: This method does not work for dangerous downloads. Use
-    WaitForGivenDownloadsToComplete (below) instead.
-    """
-    cmd_dict = {'command': 'WaitForAllDownloadsToComplete'}
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex, timeout=timeout)
-
-  def WaitForDownloadToComplete(self, download_path, timeout=-1):
-    """Wait for the given downloads to complete.
-
-    This method works for dangerous downloads as well as regular downloads.
+    This function assumes that any downloads to wait for have already been
+    triggered and have started (it is ok if those downloads complete before this
+    function is called).
 
     Args:
-      download_path: The path to the final download. This is only necessary for
-                     the workaround described in the comments below and should
-                     be removed when downloads are re-implemented.
-      timeout: The timeout to use - default is WaitUntil's default timeout.
+      pre_download_ids: A list of numbers representing the IDs of downloads that
+                        exist *before* downloads to wait for have been
+                        triggered. Defaults to []; use GetDownloadsInfo() to get
+                        these IDs (only necessary if a test previously
+                        downloaded files).
+      windex: The window index, defaults to 0 (the first window).
+      timeout: The maximum amount of time (in milliseconds) to wait for
+               downloads to complete.
     """
-    # TODO(alyssad): Remove this wait when downloads are re-implemented in a
-    # testable way.
-    self.WaitUntil(lambda path: os.path.exists(path), timeout=timeout,
-                   args=[download_path])
+    cmd_dict = {
+      'command': 'WaitForAllDownloadsToComplete',
+      'pre_download_ids': pre_download_ids,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex, timeout=timeout)
 
   def PerformActionOnDownload(self, id, action, window_index=0):
     """Perform the given action on the download with the given id.

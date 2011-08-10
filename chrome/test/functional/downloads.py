@@ -136,11 +136,8 @@ class DownloadsTest(pyauto.PyUITest):
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
 
     # Trigger download and wait in new incognito window.
-    self.DownloadAndWaitForStart(file_url, 1)
-    self.WaitForAllDownloadsToComplete(1)
-    # Remove next line when WaitForAllDownloadsToComplete can reliably wait
-    # for downloads in incognito window. crbug.com/69738
-    self.WaitForDownloadToComplete(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url, windex=1)
+    self.WaitForAllDownloadsToComplete(windex=1)
     incognito_downloads = self.GetDownloadsInfo(1).Downloads()
 
     # Verify that download info exists in the correct profile.
@@ -160,7 +157,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._TriggerUnsafeDownload(os.path.basename(file_path))
     self.PerformActionOnDownload(self._GetDownloadId(),
                                  'save_dangerous_download')
-    self.WaitForDownloadToComplete(downloaded_pkg)
+    self.WaitForAllDownloadsToComplete()
 
     # Verify that the file was downloaded.
     self.assertTrue(os.path.exists(downloaded_pkg))
@@ -188,6 +185,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
     self.PerformActionOnDownload(self._GetDownloadId(), 'remove')
 
     # The download is removed from downloads, but not from the disk.
@@ -394,7 +392,7 @@ class DownloadsTest(pyauto.PyUITest):
                                   'a_zip_file.zip')
     self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
-    self.WaitForDownloadToComplete(downloaded_pkg)
+    self.WaitForAllDownloadsToComplete()
     downloads = self.GetDownloadsInfo().Downloads()
     self.assertEqual(1, len(downloads))
     self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])
@@ -487,11 +485,11 @@ class DownloadsTest(pyauto.PyUITest):
     self._ClearLocalDownloadState(downloaded_pkg_incog)
 
     self.DownloadAndWaitForStart(file_url, 0)
-    self.WaitForAllDownloadsToComplete(0)
+    self.WaitForAllDownloadsToComplete(windex=0)
 
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.DownloadAndWaitForStart(file_url, 1)
-    self.WaitForAllDownloadsToComplete(1)
+    self.WaitForAllDownloadsToComplete(windex=1)
 
     # Verify download in regular window.
     self.assertTrue(os.path.exists(downloaded_pkg_regul))

@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
@@ -1035,31 +1036,6 @@ class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
 };
 
-// Allows the automation provider to wait for all downloads to finish.
-// If any download is interrupted, it will cancel all the other downloads at
-// the next |OnDownloadUpdated|, and send an error when all are done.
-class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
- public:
-  AutomationProviderDownloadItemObserver(
-      AutomationProvider* provider,
-      IPC::Message* reply_message,
-      int downloads);
-  virtual ~AutomationProviderDownloadItemObserver();
-
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download);
-
- private:
-  void RemoveAndCleanupOnLastEntry(DownloadItem* download);
-
-  base::WeakPtr<AutomationProvider> provider_;
-  scoped_ptr<IPC::Message> reply_message_;
-  int downloads_;
-  bool interrupted_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
-};
-
 // Allows the automation provider to wait until the download has been updated
 // or opened.
 class AutomationProviderDownloadUpdatedObserver
@@ -1101,6 +1077,37 @@ class AutomationProviderDownloadModelChangedObserver
   DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
+};
+
+// Observes when all pending downloads have completed.
+class AllDownloadsCompleteObserver
+    : public DownloadManager::Observer,
+      public DownloadItem::Observer {
+ public:
+  AllDownloadsCompleteObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message,
+      DownloadManager* download_manager,
+      ListValue* pre_download_ids);
+  virtual ~AllDownloadsCompleteObserver();
+
+  // DownloadManager::Observer.
+  virtual void ModelChanged();
+
+  // DownloadItem::Observer.
+  virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadOpened(DownloadItem* download) {}
+
+ private:
+  void ReplyIfNecessary();
+
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
+  DownloadManager* download_manager_;
+  std::set<int> pre_download_ids_;
+  std::set<DownloadItem*> pending_downloads_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllDownloadsCompleteObserver);
 };
 
 // Allows automation provider to wait until TemplateURLService has loaded

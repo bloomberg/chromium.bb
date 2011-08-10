@@ -21,11 +21,11 @@ import pyauto_utils
 """Commonly used functions for PyAuto tests."""
 
 def DownloadFileFromDownloadsDataDir(test, file_name):
-  """Download a file from downloads data directory, in first tab first window.
+  """Download a file from downloads data directory, in first tab, first window.
 
   Args:
-    test: derived from pyauto.PyUITest - base class for UI test cases
-    file_name: name of file to download
+    test: derived from pyauto.PyUITest - base class for UI test cases.
+    file_name: name of file to download.
   """
   file_url = test.GetFileURLForDataPath(os.path.join('downloads', file_name))
   downloaded_pkg = os.path.join(test.GetDownloadDirectory().value(),
@@ -33,8 +33,9 @@ def DownloadFileFromDownloadsDataDir(test, file_name):
   # Check if file already exists. If so then delete it.
   if os.path.exists(downloaded_pkg):
     RemoveDownloadedTestFile(test, file_name)
+  pre_download_ids = [x['id'] for x in test.GetDownloadsInfo().Downloads()]
   test.DownloadAndWaitForStart(file_url)
-  test.WaitForAllDownloadsToComplete()
+  test.WaitForAllDownloadsToComplete(pre_download_ids)
 
 
 def RemoveDownloadedTestFile(test, file_name):
