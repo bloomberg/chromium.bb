@@ -38,6 +38,56 @@ def _CheckNoInterfacesInBase(input_api, output_api):
   return []
 
 
+def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
+  """Attempts to prevent use of functions intended only for testing in
+  non-testing code. For now this is just a best-effort implementation
+  that ignores header files and may have some false positives. A
+  better implementation would probably need a proper C++ parser.
+  """
+  # We only scan .cc files and the like, as the declaration of
+  # for-testing functions in header files are hard to distinguish from
+  # calls to such functions without a proper C++ parser.
+  source_extensions = r'\.(cc|cpp|cxx|mm)$'
+  file_inclusion_pattern = r'.+%s' % source_extensions
+  file_exclusion_pattern = (r'.+(_test_support|_(unit|browser|ui|perf)test)%s' %
+                            source_extensions)
+
+  base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
+  inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
+  exclusion_pattern = input_api.re.compile(
+    r'::[A-Za-z0-9_]+(%s)|(%s)[^;]+\{' % (
+      base_function_pattern, base_function_pattern))
+
+  def FilterFile(affected_file):
+    black_list = ((file_exclusion_pattern, ) + _EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST)
+    return input_api.FilterSourceFile(
+      affected_file,
+      white_list=(file_inclusion_pattern, ),
+      black_list=black_list)
+
+  problems = []
+  for f in input_api.AffectedSourceFiles(FilterFile):
+    local_path = f.LocalPath()
+    lines = input_api.ReadFile(f).splitlines()
+    line_number = 0
+    for line in lines:
+      if (inclusion_pattern.search(line) and
+          not exclusion_pattern.search(line)):
+        problems.append(
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+      line_number += 1
+
+  if problems:
+    return [output_api.PresubmitPromptWarning(
+        'You might be calling functions intended only for testing from\n'
+        'production code. Please verify that the following usages are OK,\n'
+        'and email joi@chromium.org if you are seeing false positives:',
+        problems)]
+  else:
+    return []
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -45,6 +95,8 @@ def _CommonChecks(input_api, output_api):
       input_api, output_api, excluded_paths=_EXCLUDED_PATHS))
   results.extend(_CheckNoInterfacesInBase(input_api, output_api))
   results.extend(_CheckAuthorizedAuthor(input_api, output_api))
+  results.extend(
+    _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   return results
 
 
