@@ -124,13 +124,8 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   // Callback for |session_|.
   void OnSessionStateChange(Session::State state);
 
-  // Callback for VideoReader::Init().
-  void OnVideoChannelInitialized(bool successful);
-
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
-
-  void CloseOnError();
 
   // Stops writing in the channels.
   void CloseChannels();

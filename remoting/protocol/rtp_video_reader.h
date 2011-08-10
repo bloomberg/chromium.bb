@@ -5,9 +5,7 @@
 #ifndef REMOTING_PROTOCOL_RTP_VIDEO_READER_H_
 #define REMOTING_PROTOCOL_RTP_VIDEO_READER_H_
 
-#include "base/compiler_specific.h"
 #include "base/time.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/rtcp_writer.h"
 #include "remoting/protocol/rtp_reader.h"
 #include "remoting/protocol/video_reader.h"
@@ -15,8 +13,6 @@
 namespace remoting {
 namespace protocol {
 
-class RtcpWriter;
-class RtpReader;
 class Session;
 
 class RtpVideoReader : public VideoReader {
@@ -25,9 +21,7 @@ class RtpVideoReader : public VideoReader {
   virtual ~RtpVideoReader();
 
   // VideoReader interface.
-  virtual void Init(protocol::Session* session,
-                    VideoStub* video_stub,
-                    const InitializedCallback& callback) OVERRIDE;
+  virtual void Init(protocol::Session* session, VideoStub* video_stub);
 
  private:
   friend class RtpVideoReaderTest;
@@ -50,8 +44,6 @@ class RtpVideoReader : public VideoReader {
 
   typedef std::deque<PacketsQueueEntry> PacketsQueue;
 
-  void OnChannelReady(const std::string& name, net::Socket* socket);
-
   void OnRtpPacket(const RtpPacket* rtp_packet);
   void CheckFullPacket(const PacketsQueue::iterator& pos);
   void RebuildVideoPacket(const PacketsQueue::iterator& from,
@@ -64,12 +56,7 @@ class RtpVideoReader : public VideoReader {
   // |kReceiverReportsIntervalMs|.
   void SendReceiverReportIf();
 
-  bool initialized_;
-  InitializedCallback initialized_callback_;
-
-  scoped_ptr<net::Socket> rtp_channel_;
   RtpReader rtp_reader_;
-  scoped_ptr<net::Socket> rtcp_channel_;
   RtcpWriter rtcp_writer_;
 
   PacketsQueue packets_queue_;

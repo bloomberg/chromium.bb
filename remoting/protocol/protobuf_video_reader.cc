@@ -4,10 +4,7 @@
 
 #include "remoting/protocol/protobuf_video_reader.h"
 
-#include "base/bind.h"
 #include "base/task.h"
-#include "net/socket/stream_socket.h"
-#include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session.h"
 
@@ -22,28 +19,11 @@ ProtobufVideoReader::ProtobufVideoReader(VideoPacketFormat::Encoding encoding)
 ProtobufVideoReader::~ProtobufVideoReader() { }
 
 void ProtobufVideoReader::Init(protocol::Session* session,
-                               VideoStub* video_stub,
-                               const InitializedCallback& callback) {
-  initialized_callback_ = callback;
+                               VideoStub* video_stub) {
+  reader_.Init(
+      session->video_channel(),
+      NewCallback(this, &ProtobufVideoReader::OnNewData));
   video_stub_ = video_stub;
-
-  session->CreateStreamChannel(
-      kVideoChannelName,
-      base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
-}
-
-void ProtobufVideoReader::OnChannelReady(const std::string& name,
-                                         net::StreamSocket* socket) {
-  DCHECK_EQ(name, std::string(kVideoChannelName));
-  if (!socket) {
-    initialized_callback_.Run(false);
-    return;
-  }
-
-  DCHECK(!channel_.get());
-  channel_.reset(socket);
-  reader_.Init(socket, NewCallback(this, &ProtobufVideoReader::OnNewData));
-  initialized_callback_.Run(true);
 }
 
 void ProtobufVideoReader::OnNewData(VideoPacket* packet, Task* done_task) {

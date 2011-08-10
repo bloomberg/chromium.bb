@@ -4,11 +4,9 @@
 
 #include "remoting/protocol/rtp_video_writer.h"
 
-#include "base/bind.h"
 #include "base/task.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
-#include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/rtp_writer.h"
 #include "remoting/protocol/session.h"
@@ -20,56 +18,18 @@ namespace {
 const int kMtu = 1200;
 }  // namespace
 
-RtpVideoWriter::RtpVideoWriter()
-    : initialized_(false) {
-}
+RtpVideoWriter::RtpVideoWriter() { }
 
 RtpVideoWriter::~RtpVideoWriter() {
   Close();
 }
 
-void RtpVideoWriter::Init(protocol::Session* session,
-                          const InitializedCallback& callback) {
-  initialized_callback_ = callback;
-  session->CreateDatagramChannel(
-      kVideoRtpChannelName,
-      base::Bind(&RtpVideoWriter::OnChannelReady, base::Unretained(this)));
-  session->CreateDatagramChannel(
-      kVideoRtcpChannelName,
-      base::Bind(&RtpVideoWriter::OnChannelReady, base::Unretained(this)));
-}
-
-void RtpVideoWriter::OnChannelReady(const std::string& name,
-                                    net::Socket* socket) {
-  if (!socket) {
-    if (!initialized_) {
-      initialized_ = true;
-      initialized_callback_.Run(false);
-    }
-    return;
-  }
-
-  if (name == kVideoRtpChannelName) {
-    DCHECK(!rtp_channel_.get());
-    rtp_channel_.reset(socket);
-    rtp_writer_.Init(socket);
-  } else if (name == kVideoRtcpChannelName) {
-    DCHECK(!rtcp_channel_.get());
-    rtcp_channel_.reset(socket);
-    // TODO(sergeyu): Use RTCP channel somehow.
-  }
-
-  if (rtp_channel_.get() && rtcp_channel_.get()) {
-    DCHECK(!initialized_);
-    initialized_ = true;
-    initialized_callback_.Run(true);
-  }
+void RtpVideoWriter::Init(protocol::Session* session) {
+  rtp_writer_.Init(session->video_rtp_channel());
 }
 
 void RtpVideoWriter::Close() {
   rtp_writer_.Close();
-  rtp_channel_.reset();
-  rtcp_channel_.reset();
 }
 
 void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {

@@ -5,13 +5,11 @@
 #ifndef REMOTING_PROTOCOL_FAKE_SESSION_H_
 #define REMOTING_PROTOCOL_FAKE_SESSION_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "net/socket/socket.h"
-#include "net/socket/stream_socket.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
@@ -24,7 +22,7 @@ extern const char kTestJid[];
 // Read() reads data from another buffer that can be set with AppendInputData().
 // Pending reads are supported, so if there is a pending read AppendInputData()
 // calls the read callback.
-class FakeSocket : public net::StreamSocket {
+class FakeSocket : public net::Socket {
  public:
   FakeSocket();
   virtual ~FakeSocket();
@@ -44,21 +42,6 @@ class FakeSocket : public net::StreamSocket {
   virtual bool SetReceiveBufferSize(int32 size);
   virtual bool SetSendBufferSize(int32 size);
 
-  // net::StreamSocket interface.
-  virtual int Connect(net::CompletionCallback* callback) OVERRIDE;
-  virtual void Disconnect() OVERRIDE;
-  virtual bool IsConnected() const OVERRIDE;
-  virtual bool IsConnectedAndIdle() const OVERRIDE;
-  virtual int GetPeerAddress(net::AddressList* address) const OVERRIDE;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE;
-  virtual const net::BoundNetLog& NetLog() const OVERRIDE;
-  virtual void SetSubresourceSpeculation() OVERRIDE;
-  virtual void SetOmniboxSpeculation() OVERRIDE;
-  virtual bool WasEverUsed() const OVERRIDE;
-  virtual bool UsingTCPFastOpen() const OVERRIDE;
-  virtual int64 NumBytesRead() const OVERRIDE;
-  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
-
  private:
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
@@ -68,10 +51,6 @@ class FakeSocket : public net::StreamSocket {
   std::string written_data_;
   std::string input_data_;
   int input_pos_;
-
-  net::BoundNetLog net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSocket);
 };
 
 // FakeUdpSocket is similar to FakeSocket but behaves as UDP socket. All written
@@ -107,8 +86,6 @@ class FakeUdpSocket : public net::Socket {
   std::vector<std::string> written_packets_;
   std::vector<std::string> input_packets_;
   int input_pos_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeUdpSocket);
 };
 
 // FakeSession is a dummy protocol::Session that uses FakeSocket for all
@@ -126,10 +103,6 @@ class FakeSession : public Session {
 
   bool is_closed() const { return closed_; }
 
-  FakeSocket* GetStreamChannel(const std::string& name);
-  FakeUdpSocket* GetDatagramChannel(const std::string& name);
-
-  // Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
   virtual void CreateStreamChannel(
@@ -139,6 +112,10 @@ class FakeSession : public Session {
 
   virtual FakeSocket* control_channel();
   virtual FakeSocket* event_channel();
+  virtual FakeSocket* video_channel();
+
+  virtual FakeUdpSocket* video_rtp_channel();
+  virtual FakeUdpSocket* video_rtcp_channel();
 
   virtual const std::string& jid();
 
@@ -163,9 +140,9 @@ class FakeSession : public Session {
   MessageLoop* message_loop_;
   FakeSocket control_channel_;
   FakeSocket event_channel_;
-
-  std::map<std::string, FakeSocket*> stream_channels_;
-  std::map<std::string, FakeUdpSocket*> datagram_channels_;
+  FakeSocket video_channel_;
+  FakeUdpSocket video_rtp_channel_;
+  FakeUdpSocket video_rtcp_channel_;
 
   std::string initiator_token_;
   std::string receiver_token_;
@@ -174,8 +151,6 @@ class FakeSession : public Session {
 
   std::string jid_;
   bool closed_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSession);
 };
 
 }  // namespace protocol

@@ -4,7 +4,6 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/base_mock_objects.h"
-#include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -61,9 +60,7 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
 
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
-  ASSERT_TRUE(session_->GetStreamChannel(kVideoChannelName));
-  EXPECT_GT(session_->GetStreamChannel(kVideoChannelName)->
-            written_data().size(), 0u);
+  EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
 
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();

@@ -176,7 +176,8 @@ void ConnectionToHost::OnSessionStateChange(
   switch (state) {
     case Session::FAILED:
       state_ = STATE_FAILED;
-      CloseOnError();
+      CloseChannels();
+      event_callback_->OnConnectionFailed(this);
       break;
 
     case Session::CLOSED:
@@ -189,10 +190,7 @@ void ConnectionToHost::OnSessionStateChange(
       state_ = STATE_CONNECTED;
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
-      video_reader_->Init(
-          session_.get(), video_stub_,
-          base::Bind(&ConnectionToHost::OnVideoChannelInitialized,
-                     base::Unretained(this)));
+      video_reader_->Init(session_.get(), video_stub_);
       host_control_sender_.reset(
           new HostControlSender(session_->control_channel()));
       dispatcher_->Initialize(session_.get(), client_stub_);
@@ -205,27 +203,12 @@ void ConnectionToHost::OnSessionStateChange(
   }
 }
 
-void ConnectionToHost::OnVideoChannelInitialized(bool successful) {
-  if (!successful) {
-    CloseOnError();
-    return;
-  }
-}
-
-void ConnectionToHost::CloseOnError() {
-  state_ = STATE_FAILED;
-  CloseChannels();
-  event_callback_->OnConnectionFailed(this);
-}
-
 void ConnectionToHost::CloseChannels() {
   if (input_sender_.get())
     input_sender_->Close();
 
   if (host_control_sender_.get())
     host_control_sender_->Close();
-
-  video_reader_.reset();
 }
 
 void ConnectionToHost::OnClientAuthenticated() {

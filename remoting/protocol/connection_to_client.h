@@ -90,11 +90,6 @@ class ConnectionToClient :
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
 
-  // Callback for VideoReader::Init().
-  void OnVideoInitialized(bool successful);
-
-  void CloseOnError();
-
   // Stops writing in the channels.
   void CloseChannels();
 
