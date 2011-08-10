@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
@@ -65,10 +64,6 @@ void UserImageScreen::Show() {
   if (selected_image_index == -1)
     selected_image_index = 0;
   actor_->SelectImage(selected_image_index);
-
-  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
-      false, true);
 }
 
 void UserImageScreen::Hide() {
@@ -155,3 +150,4 @@ void UserImageScreen::Observe(int type,
 }
 
 }  // namespace chromeos
+
