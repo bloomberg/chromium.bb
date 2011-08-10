@@ -67,16 +67,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestSimple) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
-    switches::kEnableExperimentalExtensionApis);
+      switches::kEnableExperimentalExtensionApis);
 
   // Needed for the auth tests.
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_complex.html")) <<
-    message_;
+      message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+// Times out: http://crbug.com/91715
+// TODO(mpcomplete): currently investigating, please don't disable yet.
+#define MAYBE_WebRequestBlocking FLAKY_WebRequestBlocking
+#else
+#define MAYBE_WebRequestBlocking WebRequestBlocking
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestBlocking) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

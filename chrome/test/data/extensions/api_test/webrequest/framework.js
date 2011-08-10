@@ -37,7 +37,11 @@ function navigateAndWait(url, callback) {
       done();
     }
   });
-  chrome.tabs.update(tabId, {url: url});
+  chrome.tabs.update(tabId, {url: url}, function() {
+    console.log("tab updated: " + url);
+    if (chrome.extension.lastError)
+      console.log("last error: " + chrome.extension.lastError.message);
+  });
 }
 
 // data: array of extected events, each one is a dictionary:
