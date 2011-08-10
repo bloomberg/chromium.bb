@@ -4643,7 +4643,7 @@
    bug_87094a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base4BindIMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
+   fun:_ZN4base4Bind*TaskClosureAdapter*InvokerStorage*
    fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
    fun:_ZN3net10FileStream12AsyncContext23OnBackgroundIOCompletedEi
    fun:_Z16DispatchToMethodIN3net10FileStream12AsyncContextEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
@@ -4652,7 +4652,6 @@
    fun:_ZN3net12_GLOBAL__N_112ReadFileTaskEiPciP14CallbackRunnerI6Tuple1IiEE
    fun:_Z18DispatchToFunctionIPFviPciP14CallbackRunnerI6Tuple1IiEEEiS0_iPN3net22CompletionCallbackImplINS8_10FileStream12AsyncContextEEEEvT_RK6Tuple4IT0_T1_T2_T3_E
    fun:_ZN16RunnableFunctionIPFviPciP14CallbackRunnerI6Tuple1IiEEE6Tuple4IiS0_iPN3net22CompletionCallbackImplINS9_10FileStream12AsyncContextEEEEE3RunEv
-   fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
 }
 {
    bug_87094b
