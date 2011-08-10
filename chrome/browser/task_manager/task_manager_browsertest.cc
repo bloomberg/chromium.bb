@@ -56,8 +56,16 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 };
 
+// Flaky on ChromeOS (triggers pure virtual function call), see
+// http://crbug.com/92297 for details
+#if defined(OS_CHROMEOS)
+#define MAYBE_ShutdownWhileOpen FLAKY_ShutdownWhileOpen
+#else
+#define MAYBE_ShutdownWhileOpen ShutdownWhileOpen
+#endif
+
 // Regression test for http://crbug.com/13361
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ShutdownWhileOpen) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ShutdownWhileOpen) {
   browser()->window()->ShowTaskManager();
 }
 
