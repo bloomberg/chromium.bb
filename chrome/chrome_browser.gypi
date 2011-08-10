@@ -4179,11 +4179,13 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../views/views.gyp:*',
+            '../views/views.gyp:views',
+            '../views/views.gyp:views_desktop_lib',
             '../rlz/rlz.gyp:rlz_lib',
           ],
           'export_dependent_settings': [
-            '../views/views.gyp:*',
+            '../views/views.gyp:views',
+            '../views/views.gyp:views_desktop_lib',
           ],
           'direct_dependent_settings': {
             'link_settings': {
