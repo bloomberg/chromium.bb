@@ -269,11 +269,6 @@ void TestingBrowserProcess::SetDevToolsManager(DevToolsManager* manager) {
 }
 
 ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
-#if defined(OS_WIN)
-  // This is not really Windows-specific, the transition is just being done
-  // in stages, and Windows is first. See below for more info.
-  DCHECK(!g_browser_process);
-#else
   // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
   // ChromeTestSuite sets up a global TestingBrowserProcess
   // for all tests. We need to get rid of it, because it contains
@@ -281,7 +276,7 @@ ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
   // per thread.
   DCHECK(g_browser_process);
   delete g_browser_process;
-#endif
+
   browser_process_.reset(new TestingBrowserProcess);
   g_browser_process = browser_process_.get();
 }
@@ -289,15 +284,9 @@ ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
 ScopedTestingBrowserProcess::~ScopedTestingBrowserProcess() {
   DCHECK_EQ(browser_process_.get(), g_browser_process);
 
-#if defined(OS_WIN)
-  // This is not really Windows-specific, the transition is just being done
-  // in stages, and Windows is first. See below for more info.
-  g_browser_process = NULL;
-#else
   // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
   // After the transition is over, we should just
   // reset |g_browser_process| to NULL.
   browser_process_.reset();
   g_browser_process = new TestingBrowserProcess();
-#endif
 }

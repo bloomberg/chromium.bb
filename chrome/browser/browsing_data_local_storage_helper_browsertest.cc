@@ -12,9 +12,8 @@
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
@@ -53,11 +52,12 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
   }
 
   FilePath GetLocalStoragePathForTestingProfile() {
-    FilePath storage_path(browser()->profile()->GetPath());
+    FilePath storage_path(testing_profile_.GetPath());
     storage_path = storage_path.Append(
         DOMStorageContext::kLocalStorageDirectory);
     return storage_path;
   }
+  TestingProfile testing_profile_;
 };
 
 // This class is notified by BrowsingDataLocalStorageHelper on the UI thread
@@ -101,7 +101,7 @@ class StopTestOnCallback {
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(browser()->profile()));
+      new BrowsingDataLocalStorageHelper(&testing_profile_));
   CreateLocalStorageFilesForTest();
   StopTestOnCallback stop_test_on_callback(local_storage_helper);
   local_storage_helper->StartFetching(
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(browser()->profile()));
+      new BrowsingDataLocalStorageHelper(&testing_profile_));
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteLocalStorageFile(
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
       FILE_PATH_LITERAL("http_host2_1.localstorage");
 
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
-      new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
+      new CannedBrowsingDataLocalStorageHelper(&testing_profile_));
   helper->AddLocalStorage(origin1);
   helper->AddLocalStorage(origin2);
 
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
       FILE_PATH_LITERAL("http_host1_1.localstorage");
 
   scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
-      new CannedBrowsingDataLocalStorageHelper(browser()->profile()));
+      new CannedBrowsingDataLocalStorageHelper(&testing_profile_));
   helper->AddLocalStorage(origin);
   helper->AddLocalStorage(origin);
 
