@@ -523,15 +523,6 @@ void Browser::InitBrowserWindow() {
 ///////////////////////////////////////////////////////////////////////////////
 // Getters & Setters
 
-const std::vector<std::wstring>& Browser::user_data_dir_profiles() const {
-  return g_browser_process->user_data_dir_profiles();
-}
-
-void Browser::set_user_data_dir_profiles(
-    const std::vector<std::wstring>& profiles) {
-  g_browser_process->user_data_dir_profiles() = profiles;
-}
-
 FindBarController* Browser::GetFindBarController() {
   if (!find_bar_controller_.get()) {
     FindBar* find_bar = window_->CreateFindBar();

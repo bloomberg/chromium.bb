@@ -185,11 +185,6 @@ class BrowserProcess {
 
   virtual DownloadStatusUpdater* download_status_updater() = 0;
 
-  // Returns a reference to the user-data-dir based profiles vector.
-  std::vector<std::wstring>& user_data_dir_profiles() {
-    return user_data_dir_profiles_;
-  }
-
   // Returns the object that watches for changes in the closeable state of tab.
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;
 
@@ -250,9 +245,6 @@ class BrowserProcess {
   virtual ComponentUpdateService* component_updater() = 0;
 
  private:
-  // User-data-dir based profiles.
-  std::vector<std::wstring> user_data_dir_profiles_;
-
   // Used for testing plugin data removal at shutdown.
   std::string plugin_data_remover_mime_type_;
 

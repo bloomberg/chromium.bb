@@ -189,7 +189,6 @@ class Browser : public TabHandlerDelegate,
   Type type() const { return type_; }
   const std::string& app_name() const { return app_name_; }
   Profile* profile() const { return profile_; }
-  const std::vector<std::wstring>& user_data_dir_profiles() const;
   gfx::Rect override_bounds() const { return override_bounds_; }
 
   // Returns the InstantController or NULL if there is no InstantController for
@@ -229,10 +228,6 @@ class Browser : public TabHandlerDelegate,
 
   // Returns the state of the bookmark bar.
   BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
-
-  // Setters /////////////////////////////////////////////////////////////////
-
-  void set_user_data_dir_profiles(const std::vector<std::wstring>& profiles);
 
   // Browser Creation Helpers /////////////////////////////////////////////////
 
