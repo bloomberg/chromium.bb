@@ -435,11 +435,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   EXPECT_TRUE(entry2 == entry4);
 }
 
+// Flaky on CrOS http://crbug.com/92292
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestHTTPSErrorWithNoNavEntry \
+    DISABLED_TestHTTPSErrorWithNoNavEntry
+#else
+#define MAYBE_TestHTTPSErrorWithNoNavEntry TestHTTPSErrorWithNoNavEntry
+#endif  // defined(OS_CHROMEOS)
+
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see
 // http://crbug.com/19941).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   GURL url = https_server_expired_.GetURL("files/ssl/google.htm");
