@@ -8342,10 +8342,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Your device is offline
         </message>
         <message name="IDS_SITE_OFFLINE_LOAD_DESCRIPTION" desc="offline site">
-          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt;
+          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. <ph name="LINE_BREAK">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
         </message>
         <message name="IDS_APP_OFFLINE_LOAD_DESCRIPTION" desc="offline app">
-          The app at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt;
+          The app at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. <ph name="LINE_BREAK">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
         </message>
         <message name="IDS_OFFLINE_TRY_LOADING">
           Try loading the page anyway
