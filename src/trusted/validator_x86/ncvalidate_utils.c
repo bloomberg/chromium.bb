@@ -97,7 +97,7 @@ Bool NaClOperandOneZeroExtends(NaClInstState* state) {
   Bool result = FALSE;
   const NaClInst* inst = NaClInstStateInst(state);
   DEBUG(NaClLog(LOG_INFO, "->NaClOperandOneZeroExtends\n"));
-  DEBUG(NaClInstPrint(NaClLogGetGio(), state->decoder_tables, inst));
+  DEBUG_OR_ERASE(NaClInstPrint(NaClLogGetGio(), state->decoder_tables, inst));
   result = (1 <= NaClGetInstNumberOperands(inst) &&
             (NaClGetInstOperand(state->decoder_tables, inst, 0)->flags &
              NACL_OPFLAG(OperandZeroExtends_v)) &&

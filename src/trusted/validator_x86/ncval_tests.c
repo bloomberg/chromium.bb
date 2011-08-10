@@ -17,16 +17,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
-#include "native_client/src/trusted/validator_x86/ncdis_util.h"
-
-#if !defined(ARRAYSIZE)
-#define ARRAYSIZE(a) sizeof(a)/sizeof(a[0])
-#endif
 
 void Info(const char *fmt, ...)
 {
@@ -1194,7 +1191,7 @@ void test_fail_on_bad_alignment() {
 void ncvalidate_unittests() {
   size_t i;
 
-  for (i = 0; i < ARRAYSIZE(NCValTests); i++) {
+  for (i = 0; i < NACL_ARRAY_SIZE(NCValTests); i++) {
     TestValidator(&NCValTests[i]);
   }
 

@@ -29,10 +29,10 @@ static void NaClValidatorTrace(NaClValidatorState* state,
     gprintf(g, "-> visit: ");
   }
   if (NaClValidatorStateGetTraceInstructions(state)) {
-    NaClInstStateInstPrint(g, inst_state);
+    (*state->error_reporter->print_inst)(state->error_reporter,
+                                         (void*) NaClInstStateInst(inst_state));
   }
   if (NaClValidatorStateGetTraceInstInternals(state)) {
-    NaClInstPrint(g, state->decoder_tables, NaClInstStateInst(inst_state));
     NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
   }
 }

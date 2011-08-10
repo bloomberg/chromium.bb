@@ -16,6 +16,10 @@ static const char* NaClErrorReporterSupportedNames[] = {
   "NCDecoderInstErrorReporter"
 };
 
+/* Note: We can't move NaClErrorReporterSupportedName to
+ * error_reporter_verbose.c because ncval_seg_sfi/ncdecode.c needs
+ * to use it, and it is part of the base libraries needed by sel_ldr.
+ */
 const char* NaClErrorReporterSupportedName(NaClErrorReporterSupported kind) {
   if ((0 <= kind) &&
       (kind < NACL_ARRAY_SIZE(NaClErrorReporterSupportedNames))) {
@@ -30,17 +34,3 @@ void NaClNullErrorPrintf(NaClErrorReporter* self,
 void NaClNullErrorPrintfV(NaClErrorReporter* self,
                           const char* format,
                           va_list ap) {}
-
-void NaClVerboseErrorPrintf(NaClErrorReporter* self,
-                            const char* format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  gvprintf(NaClLogGetGio(), format, ap);
-  va_end(ap);
-}
-
-void NaClVerboseErrorPrintfV(NaClErrorReporter* self,
-                             const char* format,
-                             va_list ap) {
-  gvprintf(NaClLogGetGio(), format, ap);
-}

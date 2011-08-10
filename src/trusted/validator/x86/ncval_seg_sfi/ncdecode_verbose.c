@@ -5,16 +5,11 @@
  */
 
 /*
- * ncdis.c - disassemble using NaCl decoder.
- * Mostly for testing.
+ * ncdecode_verbose.c - Print routines for validator that are
+ * not to be loaded into sel_ldr.
  */
 
-
-#ifndef NACL_TRUSTED_BUT_NOT_TCB
-#error("This file is not meant for use in the TCB")
-#endif
-
-#include "native_client/src/trusted/validator_x86/ncdis_util.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +17,8 @@
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_64.h"

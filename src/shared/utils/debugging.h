@@ -15,17 +15,32 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_UTILS_DEBUGGING_H__
 #define NATIVE_CLIENT_SRC_SHARED_UTILS_DEBUGGING_H__
 
-#if DEBUGGING
-/* Defines to execute statement(s) s if in debug mode. */
-#define DEBUG(s) s
-#else
-/* Defines to not include statement(s) s if not in debugging mode. */
-#define DEBUG(s) do { if (0) { s; } } while (0)
-#endif
-
 /* Turn off debugging if not otherwise specified in the specific code file. */
 #ifndef DEBUGGING
 #define DEBUGGING 0
+#endif
+
+#if DEBUGGING
+/* Defines to execute statement(s) s if in DEBUGGING mode, and compile
+ * in either mode. This allows type checking to be applied at all times.
+ */
+#define DEBUG(s) s
+#else
+/* Defines to compile but not include statement(s) s if not
+ * in DEBUGGING mode.
+ */
+#define DEBUG(s) do { if (0) { s; } } while (0)
+#endif
+
+#if DEBUGGING
+/* Defines to compile execute statement(s) if in DEBUGGING mode.
+ * Erases otherwise. This should only be used when linking
+ * would otherwise require the symbol when DEBUGGING is false.
+*/
+#define DEBUG_OR_ERASE(s) s
+#else
+/* Defines to erase s if not in DEBUGGING mode. */
+#define DEBUG_OR_ERASE(s)
 #endif
 
 #endif  /* NATIVE_CLIENT_SRC_SHARED_UTILS_DEBUGGING_H__ */

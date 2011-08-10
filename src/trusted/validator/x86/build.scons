@@ -35,6 +35,11 @@ lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base'), [
     'x86_insts.c',
     ])
 
+lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base_verbose'), [
+    'error_reporter_verbose.c',
+    'x86_insts_verbose.c',
+    ])
+
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
@@ -76,9 +81,6 @@ for source in gtest_sources:
     [source+'_tests.cc'],
     EXTRA_LIBS=['gtest',
                 gtest_env.NaClTargetArchSuffix('ncvalidate'),
-                gtest_env.NaClTargetArchSuffix('ncval_base'),
-                'platform',
-                'gio',
                 ])
   test_node = gtest_env.CommandTest(
       source+'Tests.out',

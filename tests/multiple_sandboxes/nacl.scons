@@ -14,7 +14,7 @@ trusted_env = env['TRUSTED_ENV']
 # between libraries.
 VALIDATOR_LIBS = []
 if trusted_env.Bit('target_x86'):
-  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate')]
+  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate_verbose')]
 elif trusted_env.Bit('target_arm'):
   VALIDATOR_LIBS += ['ncvalidate_arm_v2']
 

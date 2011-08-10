@@ -5,16 +5,11 @@
  */
 
 /*
- * ncdis.c - disassemble using NaCl decoder.
- * Mostly for testing.
+ * ncdecode_verbose.h - Print routines for validator that are
+ * not to be loaded into sel_ldr.
  */
-
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDIS_UTIL_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDIS_UTIL_H_
-
-#ifndef NACL_TRUSTED_BUT_NOT_TCB
-#error("This file is not meant for use in the TCB")
-#endif
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_VERBOSE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_VERBOSE_H_
 
 #include <stdio.h>
 #include "native_client/src/trusted/validator/x86/error_reporter.h"
@@ -38,4 +33,4 @@ extern void NCDecodeSegment(uint8_t* mbase, NaClPcAddress vbase,
  */
 extern NaClErrorReporter kNCVerboseErrorReporter;
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDIS_UTIL_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCDECODE_VERBOSE_H_ */

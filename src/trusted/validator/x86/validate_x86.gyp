@@ -15,13 +15,31 @@
       'target_base': 'none',
     },
     'target_conditions': [
-      ['target_base=="nc_x86"', {
+      ['target_base=="ncval_base"', {
         'sources': [
             'error_reporter.c',
             'halt_trim.c',
             'nacl_cpuid.c',
             'ncinstbuffer.c',
             'x86_insts.c',
+        ],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ],
+        },
+      }],
+      ['target_base=="ncval_base_verbose"', {
+        'sources': [
+            'error_reporter_verbose.c',
+            'x86_insts_verbose.c',
         ],
         'cflags!': [
           '-Wextra',
@@ -44,28 +62,68 @@
         { 'target_name': 'ncval_base_x86_32',
           'type': 'static_library',
           'variables': {
-            'target_base': 'nc_x86',
+            'target_base': 'ncval_base',
           },
-        }],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+          ],
+        },
+        { 'target_name': 'ncval_base_verbose_x86_32',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncval_base_verbose',
+          },
+          'dependencies': [
+            'ncval_base_x86_32',
+          ],
+        },
+      ],
     }],
     ['OS=="win"', {
       'targets': [
         { 'target_name': 'ncval_base_x86_64',
           'type': 'static_library',
           'variables': {
-            'target_base': 'nc_x86',
+            'target_base': 'ncval_base',
             'win_target': 'x64',
           },
-        }],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+          ],
+        },
+        { 'target_name': 'ncval_base_verbose_x86_64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncval_base_verbose',
+            'win_target': 'x64',
+          'dependencies': [
+            'ncval_base_x86_64',
+          ],
+          },
+        },
+      ],
     }],
     ['OS!="win" and target_arch=="x64"', {
       'targets': [
         { 'target_name': 'ncval_base_x86_64',
           'type': 'static_library',
           'variables': {
-            'target_base': 'nc_x86',
+            'target_base': 'ncval_base',
           },
-        }],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+          ],
+        },
+        { 'target_name': 'ncval_base_verbose_x86_64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncval_base_verbose',
+          },
+          'dependencies': [
+            'ncval_base_x86_64',
+          ],
+        },
+      ],
     }],
     [ 'target_arch=="arm"', {
       'targets': []

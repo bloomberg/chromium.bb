@@ -49,33 +49,35 @@
 
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {
-  switch(type) {
-    case IMM_UNKNOWN: return "IMM_UNKNOWN";
-    case IMM_NONE: return "IMM_NONE";
-    case IMM_FIXED1: return "IMM_FIXED1";
-    case IMM_FIXED2: return "IMM_FIXED2";
-    case IMM_FIXED3: return "IMM_FIXED3";
-    case IMM_FIXED4: return "IMM_FIXED4";
-    case IMM_DATAV: return "IMM_DATAV";
-    case IMM_ADDRV: return "IMM_ADDRV";
-    case IMM_GROUP3_F6: return "IMM_GROUP3_F6";
-    case IMM_GROUP3_F7: return "IMM_GROUP3_F7";
-    case IMM_FARPTR: return "IMM_FARPTR";
-    case IMM_MOV_DATAV: return "IMM_MOV_DATAV";
-    default: assert(0);
-  }
-
+  DEBUG(
+      switch(type) {
+        case IMM_UNKNOWN: return "IMM_UNKNOWN";
+        case IMM_NONE: return "IMM_NONE";
+        case IMM_FIXED1: return "IMM_FIXED1";
+        case IMM_FIXED2: return "IMM_FIXED2";
+        case IMM_FIXED3: return "IMM_FIXED3";
+        case IMM_FIXED4: return "IMM_FIXED4";
+        case IMM_DATAV: return "IMM_DATAV";
+        case IMM_ADDRV: return "IMM_ADDRV";
+        case IMM_GROUP3_F6: return "IMM_GROUP3_F6";
+        case IMM_GROUP3_F7: return "IMM_GROUP3_F7";
+        case IMM_FARPTR: return "IMM_FARPTR";
+        case IMM_MOV_DATAV: return "IMM_MOV_DATAV";
+        default: assert(0);
+      });
   /* NOTREACHED */
   return NULL;
 }
 
-/* Prints out the contents of the given OpInfo. */
+/* Prints out the contents of the given OpInfo. Should only be called
+ * inside a DEBUG macro (i.e. for debugging only).
+ */
 static void PrintOpInfo(const struct OpInfo* info) {
-  printf("opinfo(%s, hasmrm=%u, immtype=%s, opinmrm=%d)\n",
-         NaClInstTypeString(info->insttype),
-         info->hasmrmbyte,
-         NCDecodeImmediateTypeName(info->immtype),
-         info->opinmrm);
+  DEBUG_OR_ERASE(printf("opinfo(%s, hasmrm=%u, immtype=%s, opinmrm=%d)\n",
+                        NaClInstTypeString(info->insttype),
+                        info->hasmrmbyte,
+                        NCDecodeImmediateTypeName(info->immtype),
+                        info->opinmrm));
 }
 
 /* later this will make decoding x87 instructions a bit more concise. */

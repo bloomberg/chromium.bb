@@ -10,6 +10,9 @@
 # Note: These are default rules that are used if platform specific rules are
 # not specified below in PLATFORM_LIBRARY_DEPENDENCIES.
 LIBRARY_DEPENDENCIES_DEFAULT = {
+    'platform': [
+        'gio',
+        ],
     }
 
 def _AddDefaultLibraryDependencies(dependencies):
@@ -29,46 +32,94 @@ def _AddDefaultLibraryDependencies(dependencies):
 # of libraries.
 PLATFORM_LIBRARY_DEPENDENCIES = {
     'x86-32': _AddDefaultLibraryDependencies({
+        'ncdis_util_x86_32': [
+            'ncval_reg_sfi_verbose_x86_32',
+            'ncval_base_verbose_x86_32',
+            ],
         'ncvalidate_verbose_x86_32': [
             'ncvalidate_x86_32',
-            'ncdis_util_x86_32',
-            'platform',
-            'gio',
-            'utils'],
+            'ncval_seg_sfi_verbose_x86_32',
+            ],
         'ncvalidate_x86_32': [
-            'ncval_seg_sfi_x86_32'
+            'ncval_seg_sfi_x86_32',
+            ],
+        'ncval_base_verbose_x86_32': [
+            'ncval_base_x86_32',
+            ],
+        'ncval_base_x86_32': [
+            'platform',
+            ],
+        'nc_opcode_modeling_verbose_x86_32': [
+            'nc_opcode_modeling_x86_32',
+            'ncval_base_verbose_x86_32',
+            ],
+        'nc_opcode_modeling_x86_32': [
+            'ncval_base_x86_32',
+            ],
+        'ncval_reg_sfi_verbose_x86_32': [
+            'ncval_reg_sfi_x86_32',
+            'nc_opcode_modeling_verbose_x86_32',
             ],
         'ncval_reg_sfi_x86_32': [
             'nccopy_x86_32',
-            'ncval_base_x86_32'
+            'ncval_base_x86_32',
+            'nc_opcode_modeling_x86_32',
+            ],
+        'ncval_seg_sfi_verbose_x86_32': [
+            'ncval_seg_sfi_x86_32',
+            'ncval_base_verbose_x86_32',
             ],
         'ncval_seg_sfi_x86_32': [
             'nccopy_x86_32',
-            'ncval_base_x86_32'
+            'ncval_base_x86_32',
             ],
         }),
     'x86-64': _AddDefaultLibraryDependencies({
+        'ncdis_util_x86_64': [
+            'ncval_reg_sfi_verbose_x86_64',
+            'ncval_base_verbose_x86_64',
+            ],
         'ncvalidate_verbose_x86_64': [
             'ncvalidate_x86_64',
-            'ncdis_util_x86_64',
-            'platform',
-            'gio',
-            'utils'],
+            'ncval_reg_sfi_verbose_x86_64',
+            ],
         'ncvalidate_x86_64': [
-            'ncval_reg_sfi_x86_64'
+            'ncval_reg_sfi_x86_64',
+            ],
+        'ncval_base_verbose_x86_64': [
+            'ncval_base_x86_64',
+            ],
+        'ncval_base_x86_64': [
+            'platform',
+            ],
+        'nc_opcode_modeling_verbose_x86_64': [
+            'nc_opcode_modeling_x86_64',
+            'ncval_base_verbose_x86_64',
+            ],
+        'nc_opcode_modeling_x86_64': [
+            'ncval_base_x86_64',
+            ],
+        'ncval_reg_sfi_verbose_x86_64': [
+            'ncval_reg_sfi_x86_64',
+            'nc_opcode_modeling_verbose_x86_64',
             ],
         'ncval_reg_sfi_x86_64': [
             'nccopy_x86_64',
-            'ncval_base_x86_64'
+            'ncval_base_x86_64',
+            'nc_opcode_modeling_x86_64',
+            ],
+        'ncval_seg_sfi_verbose_x86_64': [
+            'ncval_seg_sfi_x86_64',
+            'ncval_base_verbose_x86_64',
             ],
         'ncval_seg_sfi_x86_64': [
             'nccopy_x86_64',
-            'ncval_base_x86_64'
+            'ncval_base_x86_64',
             ],
         }),
     'arm': _AddDefaultLibraryDependencies({
         'ncvalidate_arm_v2': [
-            'arm_validator_core'
+            'arm_validator_core',
             ],
         }),
     }

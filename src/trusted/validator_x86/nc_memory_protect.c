@@ -108,7 +108,7 @@ static Bool NaClIsValidMemOffset(
         NaClInstIterHasLookbackState(iter, lookback_index + 1)) {
       NaClInstState* prev_inst =
           NaClInstIterGetLookbackState(iter, lookback_index + 1);
-      DEBUG({
+      DEBUG_OR_ERASE({
           struct Gio* g = NaClLogGetGio();
           NaClLog(LOG_INFO, "prev inst:\n");
           NaClInstPrint(g, state->decoder_tables, NaClInstStateInst(prev_inst));
@@ -152,7 +152,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
 
-  DEBUG({
+  DEBUG_OR_ERASE({
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "-> Validating store\n");
       NaClInstStateInstPrint(g, inst_state);

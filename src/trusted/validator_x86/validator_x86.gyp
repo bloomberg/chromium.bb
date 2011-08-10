@@ -30,8 +30,23 @@
           ],
         },
       }],
-      ['target_base=="ncopcode_utils"', {
+      ['target_base=="nc_opcode_modeling"', {
         'sources': ['ncopcode_desc.c'],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ]
+        },
+      }],
+      ['target_base=="nc_opcode_modeling_verbose"', {
+        'sources': ['ncopcode_desc_verbose.c'],
         'cflags!': [
           '-Wextra',
           '-Wswitch-enum',
@@ -76,6 +91,21 @@
           ]
         },
       }],
+      ['target_base=="ncval_reg_sfi_verbose"', {
+        'sources': ['ncvalidate_iter_verbose.c'],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ]
+        },
+      }],
     ],
   },
   # ----------------------------------------------------------------------
@@ -83,13 +113,6 @@
     ['target_arch=="ia32"', {
       'targets': [
         {
-          'target_name': 'ncopcode_utils_x86_32',
-          'type': 'static_library',
-          'hard_dependency': 1,
-          'variables': {
-            'target_base': 'ncopcode_utils',
-          },
-        }, {
           'target_name': 'nccopy_x86_32',
           'type': 'static_library',
           'hard_dependency': 1,
@@ -97,29 +120,51 @@
             'target_base': 'nccopy',
           },
         }, {
+          'target_name': 'nc_opcode_modeling_x86_32',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32',
+           ],
+        }, {
+          'target_name': 'nc_opcode_modeling_verbose_x86_32',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling_verbose',
+          },
+          'dependencies': [
+            'nc_opcode_modeling_x86_32',
+           ],
+        }, {
           'target_name': 'ncval_reg_sfi_x86_32',
           'type': 'static_library',
           'dependencies': [
-             'ncopcode_utils_x86_32',
-             'nccopy_x86_32',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32'
+            'nccopy_x86_32',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32',
+            'nc_opcode_modeling_x86_32',
            ],
           'variables': {
             'target_base': 'ncval_reg_sfi',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_verbose_x86_32',
+          'type': 'static_library',
+          'dependencies': [
+            'ncval_reg_sfi_x86_32',
+            'nc_opcode_modeling_verbose_x86_32',
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi_verbose',
           },
         }],
     }],
     ['OS=="win"', {
       'targets': [
         {
-          'target_name': 'ncopcode_utils_x86_64',
-          'type': 'static_library',
-          'hard_dependency': 1,
-          'variables': {
-            'target_base': 'ncopcode_utils',
-            'win_target': 'x64',
-          },
-        }, {
           'target_name': 'nccopy_x86_64',
           'type': 'static_library',
           'hard_dependency': 1,
@@ -128,15 +173,48 @@
             'win_target': 'x64',
           },
         }, {
+          'target_name': 'nc_opcode_modeling_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling',
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
+           ],
+        }, {
+          'target_name': 'nc_opcode_modeling_verbose_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling_verbose',
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            'nc_opcode_modeling_x86_64',
+           ],
+        }, {
           'target_name': 'ncval_reg_sfi_x86_64',
           'type': 'static_library',
           'dependencies': [
-            'ncopcode_utils_x86_64',
             'nccopy_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
+            'nc_opcode_modeling_x86_64',
            ],
           'variables': {
             'target_base': 'ncval_reg_sfi',
+            'win_target': 'x64',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_verbose_x86_64',
+          'type': 'static_library',
+          'dependencies': [
+            'ncval_reg_sfi_x86_64',
+            'nc_opcode_modeling_verbose_x86_64',
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi_verbose',
             'win_target': 'x64',
           },
         }],
@@ -144,13 +222,6 @@
     ['OS!="win" and target_arch=="x64"', {
       'targets': [
         {
-          'target_name': 'ncopcode_utils_x86_64',
-          'type': 'static_library',
-          'hard_dependency': 1,
-          'variables': {
-            'target_base': 'ncopcode_utils',
-          },
-        }, {
           'target_name': 'nccopy_x86_64',
           'type': 'static_library',
           'hard_dependency': 1,
@@ -158,15 +229,45 @@
             'target_base': 'nccopy',
           },
         }, {
+          'target_name': 'nc_opcode_modeling_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
+           ],
+        }, {
+          'target_name': 'nc_opcode_modeling_verbose_x86_64',
+          'type': 'static_library',
+          'hard_dependency': 1,
+          'variables': {
+            'target_base': 'nc_opcode_modeling_verbose',
+          },
+          'dependencies': [
+            'nc_opcode_modeling_x86_64',
+           ],
+        }, {
           'target_name': 'ncval_reg_sfi_x86_64',
           'type': 'static_library',
           'dependencies': [
-             'ncopcode_utils_x86_64',
-             'nccopy_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64'
+            'nccopy_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
+            'nc_opcode_modeling_x86_64',
            ],
           'variables': {
             'target_base': 'ncval_reg_sfi',
+          },
+        }, {
+          'target_name': 'ncval_reg_sfi_verbose_x86_64',
+          'type': 'static_library',
+          'dependencies': [
+            'ncval_reg_sfi_x86_64',
+            'nc_opcode_modeling_verbose_x86_64',
+           ],
+          'variables': {
+            'target_base': 'ncval_reg_sfi_verbose',
           },
         }],
     }],

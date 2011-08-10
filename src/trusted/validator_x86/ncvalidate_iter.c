@@ -76,24 +76,6 @@ void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState *state,
   state->quit = NaClValidatorQuit(state);
 }
 
-void NaClValidatorStateSetErrorReporter(NaClValidatorState *state,
-                                        NaClErrorReporter *reporter) {
-  switch (reporter->supported_reporter) {
-    case NaClNullErrorReporter:
-    case NaClInstStateErrorReporter:
-      state->error_reporter = reporter;
-      return;
-    default:
-      break;
-  }
-  reporter->printf(
-      reporter,
-      "*** FATAL: using unsupported error reporter! ***\n",
-      "*** NaClInstStateErrorReporter expected but found %s ***\n",
-      NaClErrorReporterSupportedName(reporter->supported_reporter));
-  exit(1);
-}
-
 Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState *state) {
   return state->print_opcode_histogram;
 }
@@ -427,18 +409,6 @@ NaClErrorReporter kNaClNullErrorReporter = {
   NaClNullErrorPrintf,
   NaClNullErrorPrintfV,
   (NaClPrintInst) NaClNullErrorPrintInst
-};
-
-static void NaClVerboseErrorPrintInst(NaClErrorReporter* self,
-                                      struct NaClInstState* inst) {
-  NaClInstStateInstPrint(NaClLogGetGio(), inst);
-}
-
-NaClErrorReporter kNaClVerboseErrorReporter = {
-  NaClInstStateErrorReporter,
-  NaClVerboseErrorPrintf,
-  NaClVerboseErrorPrintfV,
-  (NaClPrintInst) NaClVerboseErrorPrintInst
 };
 
 NaClValidatorState *NaClValidatorStateCreate(const NaClPcAddress vbase,

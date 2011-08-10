@@ -389,7 +389,8 @@ void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   /* Print out the address and the inst bytes. */
   int length = NaClInstStateLength(state);
 
-  DEBUG(NaClInstPrint(file, state->decoder_tables, NaClInstStateInst(state)));
+  DEBUG_OR_ERASE(
+      NaClInstPrint(file, state->decoder_tables, NaClInstStateInst(state)));
   DEBUG(NaClExpVectorPrint(file, NaClInstStateExpVector(state)));
   gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
   for (i = 0; i < length; ++i) {

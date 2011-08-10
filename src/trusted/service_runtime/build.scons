@@ -281,7 +281,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                   'container',
                   'platform',
                   'platform_qual_lib',
-                  'gio',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
 
@@ -294,7 +293,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                      'nacl_perf_counter',
                                      'gio_wrapped_desc',
                                      'platform',
-                                     'gio',
                                      ])
   env.Requires(SEL_LDR_NODE, crt)
 
@@ -350,7 +348,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_base',
                   'imc',
                   'platform',
-                  'gio',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
   gtest_env.Requires(unit_tests_exe, crt)
@@ -405,7 +402,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_base',
                   'imc',
                   'platform',
-                  'gio',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
   env.Requires(mmap_test_exe, crt)
@@ -442,7 +438,6 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_base',
                 'imc',
                 'platform',
-                'gio',
                 VALIDATOR_LIB,
                 ] + DEBUG_LIBS)
 env.Requires(nacl_sync_cond_test_exe, crt)
@@ -477,7 +472,6 @@ if (not env.Bit('coverage_enabled') and
                                                      'nacl_perf_counter',
                                                      'gio_wrapped_desc',
                                                      'platform',
-                                                     'gio',
                                                      ])
   node = env.CommandTest('nacl_signal_unittest.out',
                          command=[nacl_signal_exe],
@@ -495,7 +489,6 @@ if env.Bit('posix'):
                                                'nacl_perf_counter',
                                                'gio_wrapped_desc',
                                                'platform',
-                                               'gio',
                                                ])
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
@@ -506,7 +499,7 @@ if env.Bit('posix'):
 if env.Bit('windows') and env.Bit('target_x86_64'):
   test_prog = env.ComponentProgram('patch_exception_dispatcher_test',
                                    'win/patch_exception_dispatcher_test.c',
-                                   EXTRA_LIBS=['sel', 'platform', 'gio'])
+                                   EXTRA_LIBS=['sel', 'platform'])
   node = env.CommandTest(
       'patch_exception_dispatcher_test.out',
       command=[test_prog],
@@ -523,7 +516,6 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'nacl_perf_counter',
                                                   'gio_wrapped_desc',
                                                   'platform',
-                                                  'gio',
                                                   ])
 node = env.CommandTest(
     'check_test.out',
@@ -586,8 +578,7 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 if not env.Bit('mac') and not env.IsRunningUnderValgrind():
   nacl_tls_unittest = env.ComponentProgram('nacl_tls_unittest',
                                            ['nacl_tls_unittest.c'],
-                                           EXTRA_LIBS=['platform',
-                                                       'gio'])
+                                           EXTRA_LIBS=['platform'])
   node = env.CommandTest('nacl_tls_unittest.out',
                          command=[nacl_tls_unittest])
 
@@ -642,7 +633,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_base',
                   'imc',
                   'platform',
-                  'gio',
                   'nacl_xdr',
                   'container',
                   VALIDATOR_LIB,
@@ -794,7 +784,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_base',
                   'imc',
                   'platform',
-                  'gio',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
 

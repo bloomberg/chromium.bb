@@ -432,7 +432,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
                                   void* ignore) {
   Bool is_legal = TRUE;
   NaClDisallowsFlags disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
-  DEBUG({
+  DEBUG_OR_ERASE({
       struct Gio* g = NaClLogGetGio();
       NaClLog(LOG_INFO, "->NaClValidateInstructionLegal\n");
       NaClInstPrint(g, state->decoder_tables,

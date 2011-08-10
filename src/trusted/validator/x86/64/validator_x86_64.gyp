@@ -15,6 +15,23 @@
       ['target_base=="ncvalidate_x86_64"', {
         'sources': [
           'ncvalidate.c',
+        ],
+        'cflags!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ],
+        'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+            '-Wswitch-enum',
+            '-Wsign-compare'
+          ],
+        },
+      }],
+      ['target_base=="ncvalidate_verbose_x86_64"', {
+        'sources': [
           'ncvalidate_verbose.c',
         ],
         'cflags!': [
@@ -48,6 +65,18 @@
           ],
           'hard_dependency': 1,
         },
+        {
+          'target_name': 'ncvalidate_verbose_x86_64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'ncvalidate_verbose_x86_64',
+          },
+          'dependencies': [
+            'ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_verbose_x86_64'
+          ],
+          'hard_dependency': 1,
+        },
       ],
     }],
     ['OS=="win"', {
@@ -60,6 +89,19 @@
           ],
           'variables': {
             'target_base': 'ncvalidate_x86_64',
+            'win_target': 'x64',
+          },
+          'hard_dependency': 1,
+        },
+        {
+          'target_name': 'ncvalidate_verbose_x86_64',
+          'type': 'static_library',
+          'dependencies': [
+            'ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_verbose_x86_64',
+          ],
+          'variables': {
+            'target_base': 'ncvalidate_verbose_x86_64',
             'win_target': 'x64',
           },
           'hard_dependency': 1,

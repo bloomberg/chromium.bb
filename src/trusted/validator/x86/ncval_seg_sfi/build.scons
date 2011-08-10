@@ -40,3 +40,7 @@ env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi'),
                       'ncvalidate.c',
                       'ncvalidate_detailed.c'
                       ])
+
+# Verbose version of segment register validator library.
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+                     ['ncdecode_verbose.c'])
