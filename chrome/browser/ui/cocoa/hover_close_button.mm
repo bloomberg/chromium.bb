@@ -135,19 +135,26 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
+  // Close boxes align left horizontally, and align center vertically.
+  // http:crbug.com/14739 requires this.
   NSRect imageRect = NSZeroRect;
   imageRect.size = [gHoverMouseOverImage size];
 
+  NSRect destRect = [self bounds];
+  destRect.origin.y = floor((NSHeight(destRect) / 2)
+                            - (NSHeight(imageRect) / 2));
+  destRect.size = imageRect.size;
+
   switch(self.hoverState) {
     case kHoverStateMouseOver:
-      [gHoverMouseOverImage drawInRect:imageRect
+      [gHoverMouseOverImage drawInRect:destRect
                               fromRect:imageRect
                              operation:NSCompositeSourceOver
                               fraction:1.0];
       break;
 
     case kHoverStateMouseDown:
-      [gHoverMouseDownImage drawInRect:imageRect
+      [gHoverMouseDownImage drawInRect:destRect
                               fromRect:imageRect
                              operation:NSCompositeSourceOver
                               fraction:1.0];
@@ -164,12 +171,12 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
         } else {
           previousImage =  gHoverMouseDownImage;
         }
-        [previousImage drawInRect:imageRect
+        [previousImage drawInRect:destRect
                          fromRect:imageRect
                         operation:NSCompositeSourceOver
                          fraction:1.0 - value];
       }
-      [gHoverNoneImage drawInRect:imageRect
+      [gHoverNoneImage drawInRect:destRect
                          fromRect:imageRect
                         operation:NSCompositeSourceOver
                          fraction:value];
