@@ -33,27 +33,42 @@ cr.define('cr.ui', function() {
 
     /**
      * Shows the bubble for given anchor element.
+     * @param {number} x X position of bubble's reference point.
+     * @param {number} y Y position of bubble's reference point.
+     * @param {HTMLElement} content Content to show in bubble.
+     * @public
+     */
+    showContentAt: function(x, y, content) {
+      const ARROW_OFFSET = 14;
+
+      var anchorX = x - ARROW_OFFSET;
+      var anchorY = y;
+
+      this.style.left = anchorX + 'px';
+      this.style.top = anchorY + 'px';
+
+      this.innerHTML = '';
+      this.appendChild(content);
+      this.hidden = false;
+      this.classList.remove('faded');
+    },
+
+    /**
+     * Shows the bubble for given anchor element.
      * @param {!HTMLElement} el Anchor element of the bubble.
      * @param {HTMLElement} content Content to show in bubble.
      * @public
      */
     showContentForElement: function(el, content) {
-      const ARROW_OFFSET = 14;
       const HORIZONTAL_PADDING = 10;
       const VERTICAL_PADDING = 5;
 
       var elementOrigin = Oobe.getOffset(el);
-      var anchorX = elementOrigin.left + HORIZONTAL_PADDING - ARROW_OFFSET;
+      var anchorX = elementOrigin.left + HORIZONTAL_PADDING;
       var anchorY = elementOrigin.top + el.offsetHeight + VERTICAL_PADDING;
 
-      this.style.left = anchorX + 'px';
-      this.style.top = anchorY + 'px';
-
       this.anchor_ = el;
-      this.innerHTML = '';
-      this.appendChild(content);
-      this.hidden = false;
-      this.classList.remove('faded');
+      this.showContentAt(anchorX, anchorY, content);
     },
 
     /**

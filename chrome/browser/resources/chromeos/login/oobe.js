@@ -455,8 +455,12 @@ cr.define('cr.ui', function() {
    */
   Oobe.resetSigninUI = function() {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
+
     if (localStrings.getString('authType') == 'webui')
-      $('signin').reset(currentScreenId == SCREEN_SIGNIN);
+      $(SCREEN_SIGNIN).reset(currentScreenId == SCREEN_SIGNIN);
+    else
+      $(SCREEN_GAIA_SIGNIN).reset(currentScreenId == SCREEN_GAIA_SIGNIN);
+
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
 
@@ -470,11 +474,19 @@ cr.define('cr.ui', function() {
   Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     var anchor = undefined;
+    var anchorPos = undefined;
     if (currentScreenId == SCREEN_SIGNIN) {
       anchor = $('email');
 
       // Show email field so that bubble shows up at the right location.
-      $('signin').reset(true);
+      $(SCREEN_SIGNIN).reset(true);
+    } else if (currentScreenId == SCREEN_GAIA_SIGNIN) {
+      // Use anchorPos since we won't be able to get the input fields of Gaia.
+      anchorPos = Oobe.getOffset(Oobe.getInstance().currentScreen);
+
+      // TODO(xiyuan): Find a reliable way to align with Gaia UI.
+      anchorPos.left += 60;
+      anchorPos.top += 105;
     } else if (currentScreenId == SCREEN_ACCOUNT_PICKER &&
                $('pod-row').activated) {
       const MAX_LOGIN_ATTEMMPTS_IN_POD = 3;
@@ -485,8 +497,8 @@ cr.define('cr.ui', function() {
 
       anchor = $('pod-row').activated.mainInput;
     }
-    if (!anchor) {
-      console.log('Warning: Failed to find anchor element for error :' +
+    if (!anchor && !anchorPos) {
+      console.log('Warning: Failed to find anchor for error :' +
                   message);
       return;
     }
@@ -510,7 +522,17 @@ cr.define('cr.ui', function() {
       error.appendChild(helpLink);
     }
 
-    $('bubble').showContentForElement(anchor, error);
+    if (anchor)
+      $('bubble').showContentForElement(anchor, error);
+    else if (anchorPos)
+      $('bubble').showContentAt(anchorPos.left, anchorPos.top, error);
+  };
+
+  /**
+   * Clears error bubble.
+   */
+  Oobe.clearErrors = function() {
+    $('bubble').hide();
   };
 
   /**

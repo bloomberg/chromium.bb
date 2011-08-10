@@ -257,6 +257,12 @@ bool WebUILoginView::TakeFocus(bool reverse) {
 void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
+
+  // Make sure error bubble is cleared on keyboard event. This is needed
+  // when the focus is inside an iframe.
+  WebUI* web_ui = GetWebUI();
+  if (web_ui)
+    web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
 }
 
 }  // namespace chromeos

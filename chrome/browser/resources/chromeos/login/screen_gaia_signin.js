@@ -79,6 +79,15 @@ cr.define('login', function() {
       if (msg.method == 'completeLogin' && this.isAuthExtMessage_(e)) {
         chrome.send('completeLogin', [msg.email, msg.password] );
       }
+    },
+
+    /**
+     * Clears input fields and switches to input mode.
+     * @param {boolean} takeFocus True to take focus.
+     */
+    reset: function(takeFocus) {
+      // Reload and show the sign-in UI.
+      Oobe.showSigninUI();
     }
   };
 
