@@ -316,7 +316,7 @@ deps_os = {
     # Binary level profile guided optimizations.  This points to the
     # latest release binaries for the toolchain.
     "src/third_party/syzygy/binaries":
-      "https://sawbuck.googlecode.com/svn/trunk/syzygy/binaries@394",
+      "https://sawbuck.googlecode.com/svn/trunk/syzygy/binaries@396",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
