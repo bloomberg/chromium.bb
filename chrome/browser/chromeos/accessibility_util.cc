@@ -88,6 +88,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
   g_browser_process->local_state()->SetBoolean(
       prefs::kAccessibilityEnabled, enabled);
+  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
