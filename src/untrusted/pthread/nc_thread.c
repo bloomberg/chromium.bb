@@ -574,7 +574,7 @@ void pthread_exit (void* retval) {
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
   irt_thread.thread_exit(is_used);
-  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {

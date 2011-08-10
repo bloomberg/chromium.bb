@@ -54,7 +54,7 @@ static int errno_value_call(int rv) {
 
 void _exit(int status) {
   NACL_SYSCALL(exit)(status);
-  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
 int gettimeofday(struct timeval *tv, void *tz) {

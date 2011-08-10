@@ -14,7 +14,7 @@ static int nacl_irt_thread_create(void *start_user_address, void *stack,
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {
   NACL_SYSCALL(thread_exit)(stack_flag);
-  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
 static int nacl_irt_thread_nice(const int nice) {

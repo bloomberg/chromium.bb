@@ -10,7 +10,7 @@
 
 static void nacl_irt_exit(int status) {
   NACL_SYSCALL(exit)(status);
-  while (1) (*(void (*)(void)) 0)();  /* Crash.  */
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
 static int nacl_irt_gettod(struct timeval *tv) {
