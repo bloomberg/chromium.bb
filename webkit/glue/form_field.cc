@@ -33,6 +33,7 @@ bool FormField::operator==(const FormField& field) const {
   return (label == field.label &&
           name == field.name &&
           form_control_type == field.form_control_type &&
+          autocomplete_type == field.autocomplete_type &&
           max_length == field.max_length);
 }
 
@@ -49,6 +50,8 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << UTF16ToUTF8(field.value)
       << " "
       << UTF16ToUTF8(field.form_control_type)
+      << " "
+      << UTF16ToUTF8(field.autocomplete_type)
       << " "
       << field.max_length
       << " "

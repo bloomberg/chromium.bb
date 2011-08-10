@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autofill/form_structure.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/sha1.h"
@@ -85,6 +87,177 @@ std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
   return data_presence;
 }
 
+bool ConvertToAutofillFieldType(const AutofillField& field,
+                                const string16& autocomplete_type,
+                                AutofillFieldType* autofill_type) {
+  if (autocomplete_type == ASCIIToUTF16("given-name")) {
+    *autofill_type = NAME_FIRST;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("middle-name")) {
+    *autofill_type = NAME_MIDDLE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("middle-initial")) {
+    *autofill_type = NAME_MIDDLE_INITIAL;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("surname")) {
+    *autofill_type = NAME_LAST;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("full-name")) {
+    *autofill_type = NAME_FULL;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("street-address") ||
+      autocomplete_type == ASCIIToUTF16("address-line1")) {
+    *autofill_type = ADDRESS_HOME_LINE1;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("address-line2")) {
+    *autofill_type = ADDRESS_HOME_LINE2;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("locality")) {
+    *autofill_type = ADDRESS_HOME_CITY;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("administrative-area")) {
+    *autofill_type = ADDRESS_HOME_STATE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("postal-code")) {
+    *autofill_type = ADDRESS_HOME_ZIP;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("country")) {
+    *autofill_type = ADDRESS_HOME_COUNTRY;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("organization")) {
+    *autofill_type = COMPANY_NAME;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("email")) {
+    *autofill_type = EMAIL_ADDRESS;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-full")) {
+    *autofill_type = PHONE_HOME_WHOLE_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-country-code")) {
+    *autofill_type = PHONE_HOME_COUNTRY_CODE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-city-code")) {
+    *autofill_type = PHONE_HOME_CITY_CODE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-number")) {
+    *autofill_type = PHONE_HOME_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-full")) {
+    *autofill_type = PHONE_FAX_WHOLE_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-country-code")) {
+    *autofill_type = PHONE_FAX_COUNTRY_CODE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-city-code")) {
+    *autofill_type = PHONE_FAX_CITY_CODE;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-number")) {
+    *autofill_type = PHONE_FAX_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("cc-full-name")) {
+    *autofill_type = CREDIT_CARD_NAME;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("cc-number")) {
+    *autofill_type = CREDIT_CARD_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("cc-exp-month")) {
+    *autofill_type = CREDIT_CARD_EXP_MONTH;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("cc-exp-year")) {
+    if (field.max_length == 2)
+      *autofill_type = CREDIT_CARD_EXP_2_DIGIT_YEAR;
+    else
+      *autofill_type = CREDIT_CARD_EXP_4_DIGIT_YEAR;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("cc-exp")) {
+    // TODO(isherman): Choose variant based on HTML5 validation regex.
+    *autofill_type = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    return true;
+  }
+
+  return false;
+}
+
+// Classifies each field in |fields| based upon its |autocompletetype|
+// attribute, if the attribute is available.  The association is stored into
+// |map|.  Returns |true| if the attribute is available (and non-empty) for at
+// least one field.
+bool ParseAutocompletetypeAttributes(const std::vector<AutofillField*>& fields,
+                                     FieldTypeMap* map) {
+  bool found_attribute = false;
+  for (std::vector<AutofillField*>::const_iterator field = fields.begin();
+       field != fields.end(); ++field) {
+    if ((*field)->autocomplete_type.empty())
+      continue;
+
+    found_attribute = true;
+    std::vector<string16> types;
+    Tokenize((*field)->autocomplete_type, ASCIIToUTF16(" "), &types);
+
+    // TODO(isherman): Handle sections: http://crbug.com/92121
+    for (std::vector<string16>::const_iterator type = types.begin();
+         type != types.end(); ++type) {
+      AutofillFieldType autofill_type = UNKNOWN_TYPE;
+      if (ConvertToAutofillFieldType(**field, *type, &autofill_type)) {
+        map->insert(make_pair((*field)->unique_name(), autofill_type));
+        break;
+      }
+    }
+  }
+
+  return found_attribute;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -93,7 +266,8 @@ FormStructure::FormStructure(const FormData& form)
       target_url_(form.action),
       autofill_count_(0),
       upload_required_(USE_UPLOAD_RATES),
-      server_experiment_id_("no server response") {
+      server_experiment_id_("no server response"),
+      has_author_specified_types_(false) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
@@ -125,7 +299,14 @@ void FormStructure::DetermineHeuristicTypes() {
   autofill_count_ = 0;
 
   FieldTypeMap field_type_map;
-  FormField::ParseFormFields(fields_.get(), &field_type_map);
+
+  // First, try to detect field types based on the fields' |autocompletetype|
+  // attributes.  If there is at least one form field with this attribute, don't
+  // try to apply other heuristics to match fields in this form.
+  has_author_specified_types_ =
+      ParseAutocompletetypeAttributes(fields_.get(), &field_type_map);
+  if (!has_author_specified_types_)
+    FormField::ParseFormFields(fields_.get(), &field_type_map);
 
   for (size_t index = 0; index < field_count(); index++) {
     AutofillField* field = fields_[index];
@@ -140,8 +321,6 @@ void FormStructure::DetermineHeuristicTypes() {
     }
 
     field->set_heuristic_type(heuristic_autofill_type);
-
-    AutofillType autofill_type(field->type());
   }
 }
 
@@ -149,8 +328,8 @@ bool FormStructure::EncodeUploadRequest(
     const FieldTypeSet& available_field_types,
     bool form_was_autofilled,
     std::string* encoded_xml) const {
-  if (!ShouldBeParsed(true)) {
-    NOTREACHED();  // Caller should've checked for search pages.
+  if (!ShouldBeCrowdsourced()) {
+    NOTREACHED();
     return false;
   }
 
@@ -401,6 +580,10 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
     return false;
 
   return !require_method_post || (method_ == POST);
+}
+
+bool FormStructure::ShouldBeCrowdsourced() const {
+  return !has_author_specified_types_ && ShouldBeParsed(true);
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {

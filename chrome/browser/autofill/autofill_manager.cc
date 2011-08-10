@@ -423,8 +423,10 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   if (!personal_data_->profiles().empty() ||
       !personal_data_->credit_cards().empty()) {
     DeterminePossibleFieldTypesForUpload(&submitted_form);
-    UploadFormData(submitted_form);
     submitted_form.LogQualityMetrics(*metric_logger_);
+
+    if (submitted_form.ShouldBeCrowdsourced())
+      UploadFormData(submitted_form);
   }
 
   if (!submitted_form.IsAutofillable(true))
@@ -1097,9 +1099,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
     form_structure->DetermineHeuristicTypes();
 
-    // Set aside forms with method GET so that they are not included in the
-    // query to the server.
-    if (form_structure->ShouldBeParsed(true))
+    // Set aside forms with method GET or author-specified types, so that they
+    // are not included in the query to the server.
+    if (form_structure->ShouldBeCrowdsourced())
       form_structures_.push_back(form_structure.release());
     else
       non_queryable_forms.push_back(form_structure.release());

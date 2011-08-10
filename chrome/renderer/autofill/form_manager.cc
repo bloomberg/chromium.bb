@@ -598,6 +598,14 @@ void FormManager::WebFormControlElementToFormField(
   // WebFormElementToFormData.
   field->name = element.nameForAutofill();
   field->form_control_type = element.formControlType();
+  field->autocomplete_type = element.getAttribute("x-autocompletetype");
+  TrimWhitespace(field->autocomplete_type, TRIM_ALL, &field->autocomplete_type);
+  if (field->autocomplete_type.size() > kMaxDataLength) {
+    // Discard overly long attribute values to avoid DOS-ing the browser
+    // process.  However, send over a default string to indicate that the
+    // attribute was present.
+    field->autocomplete_type = ASCIIToUTF16("x-max-data-length-exceeded");
+  }
 
   if (!IsAutofillableElement(element))
     return;

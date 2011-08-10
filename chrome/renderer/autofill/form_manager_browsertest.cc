@@ -331,6 +331,136 @@ TEST_F(FormManagerTest, WebFormControlElementToFormFieldInvalidType) {
   EXPECT_FORM_FIELD_EQUALS(expected, result);
 }
 
+// We should be able to extract the autocompletetype attribute.
+TEST_F(FormManagerTest, WebFormControlElementToFormFieldAutocompletetype) {
+  std::string html =
+      "<INPUT type=\"text\" id=\"absent\"/>"
+      "<INPUT type=\"text\" id=\"empty\" x-autocompletetype=\"\"/>"
+      "<INPUT type=\"text\" id=\"whitespace\" x-autocompletetype=\"  \"/>"
+      "<INPUT type=\"text\" id=\"regular\" x-autocompletetype=\"email\"/>"
+      "<INPUT type=\"text\" id=\"multi-valued\" "
+      "       x-autocompletetype=\"x-confirm-email email\"/>"
+      "<INPUT type=\"text\" id=\"unprefixed\" autocompletetype=\"email\"/>"
+      "<SELECT id=\"select\" x-autocompletetype=\"state\"/>"
+      "  <OPTION value=\"CA\">California</OPTION>"
+      "  <OPTION value=\"TX\">Texas</OPTION>"
+      "</SELECT>";
+  html +=
+      "<INPUT type=\"text\" id=\"malicious\" x-autocompletetype=\"" +
+      std::string(10000, 'x') + "\"/>";
+  LoadHTML(html.c_str());
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  // An absent attribute is equivalent to an empty one.
+  WebElement web_element = frame->document().getElementById("absent");
+  WebFormControlElement element = web_element.to<WebFormControlElement>();
+  FormField result1;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result1);
+
+  FormField expected;
+  expected.name = ASCIIToUTF16("absent");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = string16();
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result1);
+
+  web_element = frame->document().getElementById("empty");
+  element = web_element.to<WebFormControlElement>();
+  FormField result2;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result2);
+  expected.name = ASCIIToUTF16("empty");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = string16();
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result2);
+
+  // The renderer should trim whitespace.
+  web_element = frame->document().getElementById("whitespace");
+  element = web_element.to<WebFormControlElement>();
+  FormField result3;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result3);
+  expected.name = ASCIIToUTF16("whitespace");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = string16();
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result3);
+
+  // Common case: exactly one type specified.
+  web_element = frame->document().getElementById("regular");
+  element = web_element.to<WebFormControlElement>();
+  FormField result4;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result4);
+  expected.name = ASCIIToUTF16("regular");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = ASCIIToUTF16("email");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result4);
+
+  // Verify that we correctly extract fallback types as well.
+  web_element = frame->document().getElementById("multi-valued");
+  element = web_element.to<WebFormControlElement>();
+  FormField result5;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result5);
+  expected.name = ASCIIToUTF16("multi-valued");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = ASCIIToUTF16("x-confirm-email email");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result5);
+
+  // The attribute is not yet part of the HTML standard, so we only recognize
+  // the prefixed version -- 'x-autocompletetype' -- and not the unprefixed one.
+  web_element = frame->document().getElementById("unprefixed");
+  element = web_element.to<WebFormControlElement>();
+  FormField result6;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result6);
+  expected.name = ASCIIToUTF16("unprefixed");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = string16();
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result6);
+
+  // <select> elements should behave no differently from text fields here.
+  web_element = frame->document().getElementById("select");
+  element = web_element.to<WebFormControlElement>();
+  FormField result7;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result7);
+  expected.name = ASCIIToUTF16("select");
+  expected.form_control_type = ASCIIToUTF16("select-one");
+  expected.autocomplete_type = ASCIIToUTF16("state");
+  expected.max_length = 0;
+  EXPECT_FORM_FIELD_EQUALS(expected, result7);
+
+  // Very long attribute values should be replaced by a default string, to
+  // prevent malicious websites from DOSing the browser process.
+  web_element = frame->document().getElementById("malicious");
+  element = web_element.to<WebFormControlElement>();
+  FormField result8;
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_NONE,
+                                                &result8);
+  expected.name = ASCIIToUTF16("malicious");
+  expected.form_control_type = ASCIIToUTF16("text");
+  expected.autocomplete_type = ASCIIToUTF16("x-max-data-length-exceeded");
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_EQUALS(expected, result8);
+}
+
 TEST_F(FormManagerTest, WebFormElementToFormData) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"

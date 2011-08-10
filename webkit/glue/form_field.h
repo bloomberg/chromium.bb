@@ -28,6 +28,7 @@ struct FormField {
   string16 name;
   string16 value;
   string16 form_control_type;
+  string16 autocomplete_type;
   int max_length;
   bool is_autofilled;
 
@@ -50,6 +51,7 @@ std::ostream& operator<<(std::ostream& os, const FormField& field);
     EXPECT_EQ(expected.name, actual.name); \
     EXPECT_EQ(expected.value, actual.value); \
     EXPECT_EQ(expected.form_control_type, actual.form_control_type); \
+    EXPECT_EQ(expected.autocomplete_type, actual.autocomplete_type); \
     EXPECT_EQ(expected.max_length, actual.max_length); \
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled); \
   } while (0)

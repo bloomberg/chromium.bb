@@ -339,6 +339,137 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
 }
 
+// Verify that we can correctly process the 'autocompletetype' attribute.
+TEST(FormStructureTest, HeuristicsAutocompletetype) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field1");
+  field.autocomplete_type = ASCIIToUTF16("given-name");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field2");
+  field.autocomplete_type = ASCIIToUTF16("surname");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field3");
+  field.autocomplete_type = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+}
+
+// If at least one field includes the 'autocompletetype' attribute, we should
+// not try to apply any other heuristics.
+TEST(FormStructureTest, AutocompletetypeOverridesOtherHeuristics) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  // Start with a regular contact form.
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+
+  // Now update the first form field to include an 'autocompletetype' attribute.
+  form.fields.front().autocomplete_type = ASCIIToUTF16("x-other");
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
+
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(0U, form_structure->autofill_count());
+
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+}
+
+// Verify that we can correctly process fallback types listed in the
+// 'autocompletetype' attribute.
+TEST(FormStructureTest, HeuristicsAutocompletetypeWithFallbacks) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  // Skip over any sections and "x"-prefixed types.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field1");
+  field.autocomplete_type =
+      ASCIIToUTF16("section-full-name x-given-name-initial given-name");
+  form.fields.push_back(field);
+
+  // Stop processing once we see a known type.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field2");
+  field.autocomplete_type = ASCIIToUTF16("section-full-name surname full-name");
+  form.fields.push_back(field);
+
+  // Skip over unknown types even if they are not prefixed with "x-".
+  field.label = string16();
+  field.name = ASCIIToUTF16("field3");
+  field.autocomplete_type =
+      ASCIIToUTF16("section-shipping mobile-phone-full phone-full");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
+            form_structure->field(2)->heuristic_type());
+}
+
 TEST(FormStructureTest, HeuristicsSample8) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;

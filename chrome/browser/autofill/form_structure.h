@@ -96,6 +96,11 @@ class FormStructure {
   // |require_method_post| is true.
   bool ShouldBeParsed(bool require_method_post) const;
 
+  // Returns true if we should query the crowdsourcing server to determine this
+  // form's field types.  If the form includes author-specified types, this will
+  // return false.
+  bool ShouldBeCrowdsourced() const;
+
   // Sets the field types and experiment id to be those set for |cached_form|.
   void UpdateFromCache(const FormStructure& cached_form);
 
@@ -180,6 +185,10 @@ class FormStructure {
 
   // GET or POST.
   RequestMethod method_;
+
+  // Whether the form includes any field types explicitly specified by the site
+  // author, via the |autocompletetype| attribute.
+  bool has_author_specified_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
