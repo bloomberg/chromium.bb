@@ -177,6 +177,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
         DLOG(ERROR) << "Feature extraction took too long, giving up";
         // We expect this to happen infrequently, so record when it does.
         UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureTimeout", 1);
+        negative_word_cache_.Clear();
         RunCallback(false);
         return;
       }
