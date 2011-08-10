@@ -14,7 +14,6 @@ class DictionaryValue;
 
 namespace sync_pb {
 class AppSpecifics;
-class AutofillCreditCardSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
@@ -79,10 +78,6 @@ base::DictionaryValue* AppSpecificsToValue(
 
 base::DictionaryValue* AutofillSpecificsToValue(
     const sync_pb::AutofillSpecifics& autofill_specifics);
-
-base::DictionaryValue* AutofillCreditCardSpecificsToValue(
-    const sync_pb::AutofillCreditCardSpecifics&
-        autofill_credit_card_specifics);
 
 base::DictionaryValue* AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& autofill_profile_specifics);

@@ -91,10 +91,6 @@ TEST_F(ProtoValueConversionsTest, AutofillSpecificsToValue) {
   TestSpecificsToValue(AutofillSpecificsToValue);
 }
 
-TEST_F(ProtoValueConversionsTest, AutofillCreditCardSpecificsToValue) {
-  TestSpecificsToValue(AutofillCreditCardSpecificsToValue);
-}
-
 TEST_F(ProtoValueConversionsTest, AutofillProfileSpecificsToValue) {
   TestSpecificsToValue(AutofillProfileSpecificsToValue);
 }

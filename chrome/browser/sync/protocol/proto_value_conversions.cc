@@ -175,23 +175,6 @@ DictionaryValue* AutofillSpecificsToValue(
   SET_STR(value);
   SET_INT64_REP(usage_timestamp);
   SET(profile, AutofillProfileSpecificsToValue);
-  SET_BYTES(encrypted_credit_card);
-  SET(credit_card, AutofillCreditCardSpecificsToValue);
-  return value;
-}
-
-DictionaryValue* AutofillCreditCardSpecificsToValue(
-    const sync_pb::AutofillCreditCardSpecifics& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_STR(label);
-  SET_STR(name_on_card);
-  SET_STR(type);
-  SET_STR(card_number);
-  SET_STR(expiration_month);
-  SET_STR(expiration_year);
-  SET_STR(verification_code);
-  SET_STR(billing_address);
-  SET_STR(shipping_address);
   return value;
 }
 
