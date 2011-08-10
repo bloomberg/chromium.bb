@@ -12,8 +12,6 @@ cr.define('options', function() {
   // Some input methods like Chinese Pinyin have config pages.
   // This is the map of the input method names to their config page names.
   const INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME = {
-    // TODO(nona): Remove ibus-hangul support.
-    'hangul': 'languageHangul',
     'mozc': 'languageMozc',
     'mozc-chewing': 'languageChewing',
     'mozc-dv': 'languageMozc',

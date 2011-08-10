@@ -143,18 +143,16 @@ const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType = {
 // ---------------------------------------------------------------------------
 const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
-const char kHangulHanjaKeysConfigName[] = "HanjaKeys";
-// We add Control+9 since F9 key is reserved by the window manager.
-// TODO: HanjaKeys are not configurable yet (and we're not sure if it should.)
-const char kHangulHanjaKeys[] = "F9,Hangul_Hanja,Control+9";
 
-// Mozc-hangul treats Hangul_Hanja key as hanja key event even if it is not set.
 const char kHangulHanjaBindingKeysConfigName[] = "HanjaKeyBindings";
+// Mozc-hangul treats Hangul_Hanja key as hanja key event even if it is not set.
+// We add Control+9 since F9 key is reserved by the window manager.
+// TODO(nona): Hanja keys are not configurable yet (and we're not sure if it
+// should.)
 const char kHangulHanjaBindingKeys[] = "F9,Ctrl 9";
 
 const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[] = {
-  // We have to sync the |keyboard_id|s with those in
-  // ibus-hangul/files/setup/main.py.
+  // We have to sync the |keyboard_id|s with those in libhangul.
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET, "2" },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_FINAL,
     "3f" },

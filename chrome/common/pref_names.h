@@ -125,7 +125,6 @@ extern const char kLanguageChewingSelKeys[];
 extern const char kLanguageChewingHsuSelKeyType[];
 extern const char kLanguageHangulKeyboard[];
 extern const char kLanguageHangulHanjaBindingKeys[];
-extern const char kLanguageHangulHanjaKeys[];
 extern const char kLanguagePinyinCorrectPinyin[];
 extern const char kLanguagePinyinFuzzyPinyin[];
 extern const char kLanguagePinyinLookupTablePageSize[];

@@ -12774,9 +12774,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
         Wide Latin
       </message>
-      <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_MODE" desc="In the language menu button, this shows the input mode.">
-        Enable/Disable Hanja mode
-      </message>
       <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
         Hanja mode
       </message>

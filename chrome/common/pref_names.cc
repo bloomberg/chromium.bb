@@ -378,7 +378,6 @@ const char kLanguageChewingHsuSelKeyType[] =
 
 // A string pref which determines the keyboard layout for Hangul input method.
 const char kLanguageHangulKeyboard[] = "settings.language.hangul_keyboard";
-const char kLanguageHangulHanjaKeys[] = "settings.language.hangul_hanja_keys";
 const char kLanguageHangulHanjaBindingKeys[] =
     "settings.language.hangul_hanja_binding_keys";
 
