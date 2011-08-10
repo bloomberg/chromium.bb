@@ -704,6 +704,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
                         OnUpdateRemoteAccessClientFirewallTraversal)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndClear,
+                        OnSetHistoryLengthAndClear)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
@@ -1016,6 +1018,32 @@ void RenderView::OnScrollFocusedEditableNodeIntoView() {
       // view and use that API here instead.
       webview()->scrollFocusedNodeIntoView();
   }
+}
+
+void RenderView::OnSetHistoryLengthAndClear(int history_length) {
+  DCHECK(history_length >= 0);
+
+  // history_list_length_ may be 0 if this is called between
+  // a navigate and a commit of the provisional load. Otherwise,
+  // only add one entry, regardless of how long the current history is.
+  // TODO(cbentzel): Investigate what happens if a prerendered page
+  //   navigates to several entries before it is swapped in. Cropping
+  //   those may be a bad idea.
+  int new_history_list_length = history_length;
+  if (history_list_length_ > 0)
+    ++new_history_list_length;
+
+  DCHECK(page_id_ == -1 ||
+         (history_list_offset_ >= 0 &&
+          page_id_ == history_page_ids_[history_list_offset_]));
+
+  // Generate the new list.
+  std::vector<int32> new_history_page_ids(new_history_list_length, -1);
+  if (page_id_ != -1)
+    new_history_page_ids[new_history_list_length - 1] = page_id_;
+  new_history_page_ids.swap(history_page_ids_);
+  history_list_offset_ = new_history_list_length - 1;
+  history_list_length_ = new_history_list_length;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

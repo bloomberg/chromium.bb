@@ -744,6 +744,18 @@ IPC_STRUCT_END()
 IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
                      int32 /* next_page_id */)
 
+// Sets the history length of page_ids for a RenderView to
+// |length| entries, and moves the current page_id to the last
+// entry if it is valid.
+// The main use for this is prerendered pages, but Instant pages also use this.
+// For example, assume that there are 3 entries in the history when a
+// prerendered page is created. The new prerendered page will have a single
+// entry history like [7]. When it is swapped in, we need to extend the history
+// so it has a total length of 4 (3 for the previous history, 1 for the
+// prerendered page), so it looks like [-1 -1 -1 7].
+IPC_MESSAGE_ROUTED1(ViewMsg_SetHistoryLengthAndClear,
+                    int /* length */)
+
 // Sends System Colors corresponding to a set of CSS color keywords
 // down the pipe.
 // This message must be sent to the renderer immediately on launch

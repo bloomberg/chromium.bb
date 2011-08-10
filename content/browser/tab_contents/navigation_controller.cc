@@ -931,6 +931,9 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source,
     if (last_committed_entry_index_ != -1)
       last_committed_entry_index_--;
   }
+
+  // Update the history in the RenderView.
+  tab_contents_->SetHistoryLengthAndClear(max_source_index);
 }
 
 void NavigationController::PruneAllButActive() {

@@ -596,6 +596,14 @@ bool TabContents::NavigateToEntry(
   return true;
 }
 
+void TabContents::SetHistoryLengthAndClear(int history_length) {
+  RenderViewHost* rvh = render_view_host();
+  if (!rvh)
+    return;
+  rvh->Send(new ViewMsg_SetHistoryLengthAndClear(rvh->routing_id(),
+                                                 history_length));
+}
+
 void TabContents::Stop() {
   render_manager_.Stop();
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, StopNavigation());

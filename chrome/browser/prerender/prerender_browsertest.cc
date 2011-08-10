@@ -473,6 +473,26 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  void OpenDestUrlViaClick() const {
+    // Make sure in navigating we have a URL to use in the PrerenderManager.
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
+    ASSERT_TRUE(prerender_contents != NULL);
+    prerender_contents->set_quit_message_loop_on_destruction(false);
+
+    bool click_prerendered_link_result = false;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(ClickOpenLink())",
+        &click_prerendered_link_result));
+    EXPECT_TRUE(click_prerendered_link_result);
+
+    // If the prerender contents has not been destroyed, run message loop.
+    if (GetPrerenderContents() != NULL) {
+      prerender_contents->set_quit_message_loop_on_destruction(true);
+      ui_test_utils::RunMessageLoop();
+    }
+  }
+
   // Should be const but test_server()->GetURL(...) is not const.
   void NavigateToURL(const std::string& dest_html_file) {
     GURL dest_url = test_server()->GetURL(dest_html_file);
@@ -1610,6 +1630,43 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
                                                        prerender_manager()));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, BackToPrerenderedPage) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+
+  OpenDestUrlViaClick();
+
+  // Click on the link in the page and wait for it to commit
+  {
+    ui_test_utils::WindowedNotificationObserver new_page_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+    bool click_link_result = false;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(ClickOpenLink())",
+        &click_link_result));
+    EXPECT_TRUE(click_link_result);
+    new_page_observer.Wait();
+  }
+
+  // Now, go back to the prerendered page.
+  {
+    ui_test_utils::WindowedNotificationObserver back_nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+    browser()->GoBack(CURRENT_TAB);
+    back_nav_observer.Wait();
+    bool original_prerender_page = false;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(IsOriginalPrerenderPage())",
+        &original_prerender_page));
+    EXPECT_TRUE(original_prerender_page);
+  }
 }
 
 }  // namespace prerender

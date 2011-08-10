@@ -623,6 +623,13 @@ class TabContents : public PageNavigator,
   bool NavigateToEntry(const NavigationEntry& entry,
                        NavigationController::ReloadType reload_type);
 
+  // Sets the history for this tab_contents to |history_length| entries, and
+  // moves the current page_id to the last entry in the list if it's valid.
+  // This is mainly used when a prerendered page is swapped into the current
+  // tab.
+  void SetHistoryLengthAndClear(int history_length);
+
+
   // Misc non-view stuff -------------------------------------------------------
 
   // Helper functions for sending notifications.

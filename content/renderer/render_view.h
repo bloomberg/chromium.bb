@@ -847,6 +847,7 @@ class RenderView : public RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnUpdateRemoteAccessClientFirewallTraversal(const std::string& policy);
+  void OnSetHistoryLengthAndClear(int history_length);
 
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
