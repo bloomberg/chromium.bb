@@ -15,10 +15,14 @@
 // it brings in #defines that cause conflicts.
 #include "ui/gfx/gl/gl_bindings.h"
 
-#if defined(USE_X11)
+#if defined(USE_X11) && !defined(USE_WAYLAND)
 extern "C" {
 #include <X11/Xlib.h>
 }
+#endif
+
+#if defined(USE_WAYLAND)
+#include "ui/wayland/wayland_display.h"
 #endif
 
 namespace gfx {
@@ -43,7 +47,9 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (initialized)
     return true;
 
-#if defined(USE_X11)
+#if defined(USE_WAYLAND)
+  g_native_display = ui::WaylandDisplay::Connect(NULL)->display();
+#elif defined(USE_X11)
   g_native_display = XOpenDisplay(NULL);
 #else
   g_native_display = EGL_DEFAULT_DISPLAY;
@@ -67,7 +73,12 @@ bool GLSurfaceEGL::InitializeOneOff() {
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT
+#if defined(USE_WAYLAND)
+    | EGL_PIXMAP_BIT,
+#else
+    | EGL_PBUFFER_BIT,
+#endif
     EGL_NONE
   };
 

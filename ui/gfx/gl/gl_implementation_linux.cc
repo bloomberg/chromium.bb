@@ -53,6 +53,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
     return true;
 
   switch (implementation) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       FilePath module_path;
       if (!PathService::Get(base::DIR_MODULE, &module_path)) {
@@ -106,6 +107,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       InitializeGLBindingsGLX();
       break;
     }
+#endif  // !defined(USE_WAYLAND)
     case kGLImplementationEGLGLES2: {
       base::NativeLibrary gles_library = LoadLibrary("libGLESv2.so");
       if (!gles_library)
@@ -158,8 +160,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
 void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsEGL();
   InitializeDebugGLBindingsGL();
+#if !defined(USE_WAYLAND)
   InitializeDebugGLBindingsGLX();
   InitializeDebugGLBindingsOSMESA();
+#endif
 }
 
 }  // namespace gfx

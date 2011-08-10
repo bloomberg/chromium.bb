@@ -58,6 +58,7 @@
         'gl_surface_mac.cc',
         'gl_surface_stub.cc',
         'gl_surface_stub.h',
+        'gl_surface_wayland.cc',
         'gl_surface_win.cc',
         'gl_surface_osmesa.cc',
         'gl_surface_osmesa.h',
@@ -116,7 +117,12 @@
             '<(DEPTH)/third_party/angle/include',
           ],
         }],
-        ['use_x11 == 1', {
+        ['use_wayland == 1', {
+          'sources!': [
+            'gl_surface_linux.cc',
+          ],
+        }],
+        ['use_x11 == 1 and use_wayland != 1', {
           'sources': [
             'gl_context_glx.cc',
             'gl_context_glx.h',

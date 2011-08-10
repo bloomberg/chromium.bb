@@ -19,6 +19,8 @@ typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;
 typedef struct _GdkCursor GdkCursor;
 
+typedef struct _PangoContext PangoContext;
+
 class CommandLine;
 class SkBitmap;
 
@@ -39,6 +41,9 @@ UI_EXPORT GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap);
 // Modify the given region by subtracting the given rectangles.
 UI_EXPORT void SubtractRectanglesFromRegion(GdkRegion* region,
                                             const std::vector<Rect>& cutouts);
+
+// Creates and returns a PangoContext. The caller owns the context.
+PangoContext* GetPangoContext();
 
 // Returns the resolution (DPI) used by pango. A negative values means the
 // resolution hasn't been set.

@@ -6,10 +6,9 @@
 
 #include <algorithm>
 #include <fontconfig/fontconfig.h>
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
 #include <map>
 #include <pango/pango.h>
+#include <string>
 
 #include "base/logging.h"
 #include "base/string_piece.h"
@@ -19,6 +18,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
+
+#if !defined(USE_WAYLAND)
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+#endif
 
 namespace {
 
@@ -56,7 +60,7 @@ PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
   static PangoContext* context = NULL;
 
   if (!context) {
-    context = gdk_pango_context_get_for_screen(gdk_screen_get_default());
+    context = gfx::GetPangoContext();
     pango_context_set_language(context, pango_language_get_default());
   }
 
@@ -109,6 +113,25 @@ string16 FindBestMatchFontFamilyName(const char* family_name) {
   return font_family;
 }
 
+std::string GetDefaultFont() {
+#if defined(USE_WAYLAND)
+  return "sans 10";
+#else
+  GtkSettings* settings = gtk_settings_get_default();
+
+  gchar* font_name = NULL;
+  g_object_get(settings, "gtk-font-name", &font_name, NULL);
+
+  // Temporary CHECK for helping track down
+  // http://code.google.com/p/chromium/issues/detail?id=12530
+  CHECK(font_name) << " Unable to get gtk-font-name for default font.";
+
+  std::string default_font = std::string(font_name);
+  g_free(font_name);
+  return default_font;
+#endif
+}
+
 }  // namespace
 
 namespace gfx {
@@ -120,20 +143,12 @@ Font* PlatformFontGtk::default_font_ = NULL;
 
 PlatformFontGtk::PlatformFontGtk() {
   if (default_font_ == NULL) {
-    GtkSettings* settings = gtk_settings_get_default();
-
-    gchar* font_name = NULL;
-    g_object_get(settings, "gtk-font-name", &font_name, NULL);
-
-    // Temporary CHECK for helping track down
-    // http://code.google.com/p/chromium/issues/detail?id=12530
-    CHECK(font_name) << " Unable to get gtk-font-name for default font.";
+    std::string font_name = GetDefaultFont();
 
     PangoFontDescription* desc =
-        pango_font_description_from_string(font_name);
+        pango_font_description_from_string(font_name.c_str());
     default_font_ = new Font(desc);
     pango_font_description_free(desc);
-    g_free(font_name);
 
     DCHECK(default_font_);
   }

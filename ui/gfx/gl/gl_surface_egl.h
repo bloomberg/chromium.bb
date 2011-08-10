@@ -20,6 +20,8 @@ typedef void* EGLSurface;
 
 #if defined(OS_WIN)
 typedef HDC EGLNativeDisplayType;
+#elif defined(USE_WAYLAND)
+typedef struct wl_display* EGLNativeDisplayType;
 #else
 typedef struct _XDisplay* EGLNativeDisplayType;
 #endif

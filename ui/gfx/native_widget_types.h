@@ -55,6 +55,18 @@ class NSView;
 class NSWindow;
 class NSTextField;
 #endif  // __OBJC__
+#elif defined(USE_WAYLAND)
+typedef struct _PangoFontDescription PangoFontDescription;
+typedef struct _cairo cairo_t;
+typedef struct _GdkPixbuf GdkPixbuf;
+struct wl_egl_window;
+
+namespace ui {
+class WaylandWindow;
+class WaylandCursor;
+}
+
+typedef struct _GdkRegion GdkRegion;
 #elif defined(TOOLKIT_USES_GTK)
 typedef struct _PangoFontDescription PangoFontDescription;
 typedef struct _GdkCursor GdkCursor;
@@ -86,6 +98,18 @@ typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
+typedef void* NativeViewAccessible;
+#elif defined(USE_WAYLAND)
+typedef PangoFontDescription* NativeFont;
+typedef ui::WaylandWindow* NativeView;
+typedef ui::WaylandWindow* NativeWindow;
+typedef void* NativeEditView;
+typedef cairo_t* NativeDrawingContext;
+typedef void* NativeCursor;
+typedef void* NativeMenu;
+// TODO(dnicoara) This should be replaced with a cairo region or maybe
+// a Wayland specific region
+typedef GdkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(USE_X11)
 typedef PangoFontDescription* NativeFont;
@@ -141,7 +165,7 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 
 // Convert a NativeView to a NativeViewId.  See the comments at the top of
 // this file.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_WAYLAND)
 static inline NativeViewId IdFromNativeView(NativeView view) {
   return reinterpret_cast<NativeViewId>(view);
 }
@@ -156,6 +180,9 @@ UI_EXPORT NativeViewId IdFromNativeView(NativeView view);
 // window id.
 #if defined(OS_WIN)
   typedef HWND PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = NULL;
+#elif defined(USE_WAYLAND)
+  typedef struct wl_egl_window* PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = NULL;
 #elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
@@ -178,6 +205,9 @@ UI_EXPORT NativeViewId IdFromNativeView(NativeView view);
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = NULL;
+#elif defined(USE_WAYLAND)
+typedef struct wl_egl_window* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = NULL;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;

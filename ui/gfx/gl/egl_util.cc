@@ -5,6 +5,8 @@
 #include "ui/gfx/gl/egl_util.h"
 
 #include "third_party/angle/include/EGL/egl.h"
+
+// This needs to be after the EGL includes
 #include "ui/gfx/gl/gl_bindings.h"
 
 namespace gfx {

@@ -26,6 +26,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
     GLSurface* compatible_surface) {
   switch (GetGLImplementation()) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
       if (!context->Initialize(compatible_surface))
@@ -33,15 +34,16 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 
       return context;
     }
-    case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLContext> context(new GLContextEGL(share_group));
+    case kGLImplementationDesktopGL: {
+      scoped_refptr<GLContext> context(new GLContextGLX(share_group));
       if (!context->Initialize(compatible_surface))
         return NULL;
 
       return context;
     }
-    case kGLImplementationDesktopGL: {
-      scoped_refptr<GLContext> context(new GLContextGLX(share_group));
+#endif
+    case kGLImplementationEGLGLES2: {
+      scoped_refptr<GLContext> context(new GLContextEGL(share_group));
       if (!context->Initialize(compatible_surface))
         return NULL;
 

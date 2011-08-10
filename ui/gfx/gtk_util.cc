@@ -164,12 +164,22 @@ void SubtractRectanglesFromRegion(GdkRegion* region,
   }
 }
 
+PangoContext* GetPangoContext() {
+#if defined(USE_WAYLAND)
+  PangoFontMap* font_map = pango_cairo_font_map_get_default();
+  PangoContext* default_context = pango_font_map_create_context(font_map);
+#else
+  PangoContext* default_context = gdk_pango_context_get();
+#endif
+  return default_context;
+}
+
 double GetPangoResolution() {
   static double resolution;
   static bool determined_resolution = false;
   if (!determined_resolution) {
     determined_resolution = true;
-    PangoContext* default_context = gdk_pango_context_get();
+    PangoContext* default_context = GetPangoContext();
     resolution = pango_cairo_context_get_resolution(default_context);
     g_object_unref(default_context);
   }
