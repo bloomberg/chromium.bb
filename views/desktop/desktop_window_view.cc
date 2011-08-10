@@ -176,8 +176,14 @@ void DesktopWindowView::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
   if (!is_add &&
       active_native_widget_ &&
-      active_native_widget_->GetView() == child)
+      active_native_widget_->GetView() == child) {
     active_native_widget_ = NULL;
+  } else if (child->GetClassName() ==
+      internal::NativeWidgetView::kViewClassName) {
+    internal::NativeWidgetView* native_widget_view =
+        static_cast<internal::NativeWidgetView*>(child);
+    native_widget_view->GetAssociatedWidget()->AddObserver(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
