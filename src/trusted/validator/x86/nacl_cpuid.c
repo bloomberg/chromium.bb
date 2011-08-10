@@ -216,7 +216,15 @@ static int asm_HasCPUID() {
                    "popfl                 \n\t"
                    "pushfl                \n\t" /* save EFLAGS to %1 */
                    "pop %1                \n\t"
-                   : "=g" (before), "=g" (after));
+                   /*
+                    * We use "r" constraints here, forcing registers,
+                    * because a memory reference using the stack
+                    * pointer wouldn't be safe since we're moving the
+                    * stack pointer around in between the
+                    * instructions.  We need to inform the compiler
+                    * that we're clobbering %eax as a scratch register.
+                    */
+                   : "=r" (before), "=r" (after) : : "eax");
 #elif NACL_WINDOWS
   __asm {
     pushfd
