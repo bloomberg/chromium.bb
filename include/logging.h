@@ -12,7 +12,10 @@
 #include <stdio.h>
 
 #define Log(format, ...) \
-  fprintf(stderr, "%s:%d:" format "\n", __FILE__, __LINE__, ## __VA_ARGS__)
+  fprintf(stderr, "INFO:%s:%d:" format "\n", __FILE__, __LINE__, ## __VA_ARGS__)
+#define Err(format, ...) \
+  fprintf(stderr, "ERROR:%s:%d:" format "\n", \
+          __FILE__, __LINE__, ## __VA_ARGS__)
 #else
 
 extern "C" {
@@ -28,7 +31,10 @@ extern "C" {
 }
 
 #define Log(format, ...) \
-  xf86MsgVerb(X_NONE, 0, "%s:%d:" format "\n", \
+  xf86MsgVerb(X_INFO, 7, "%s:%d:" format "\n", \
+              __FILE__, __LINE__, ## __VA_ARGS__)
+#define Err(format, ...) \
+  xf86MsgVerb(X_ERROR, 0, "%s:%d:" format "\n", \
               __FILE__, __LINE__, ## __VA_ARGS__)
 #endif
 
