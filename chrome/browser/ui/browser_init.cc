@@ -78,6 +78,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar.h"
 #endif
 
@@ -912,10 +913,23 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
       // infobar.
       return false;
     }
-    Browser* browser = SessionRestore::RestoreSession(
-        profile_, NULL,
-        (SessionRestore::SYNCHRONOUS |
-         SessionRestore::ALWAYS_CREATE_TABBED_BROWSER), urls_to_open);
+
+  uint32 restore_behavior = SessionRestore::SYNCHRONOUS |
+                            SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
+#if defined(OS_MACOSX)
+    // On Mac, when restoring a session with no windows, suppress the creation
+    // of a new window in the case where the system is launching Chrome via a
+    // login item or Lion's resume feature.
+    if (base::mac::WasLaunchedAsLoginOrResumeItem()) {
+      restore_behavior = restore_behavior &
+                         ~SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
+    }
+#endif
+
+    Browser* browser = SessionRestore::RestoreSession(profile_,
+                                                      NULL,
+                                                      restore_behavior,
+                                                      urls_to_open);
     AddInfoBarsIfNecessary(browser);
     return true;
   }
