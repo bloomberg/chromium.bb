@@ -115,14 +115,14 @@ int ToolbarModel::GetIcon() const {
   return icon_ids[GetSecurityLevel()];
 }
 
-std::wstring ToolbarModel::GetEVCertName() const {
+string16 ToolbarModel::GetEVCertName() const {
   DCHECK_EQ(GetSecurityLevel(), EV_SECURE);
   scoped_refptr<net::X509Certificate> cert;
   // Note: Navigation controller and active entry are guaranteed non-NULL or
   // the security level would be NONE.
   CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetActiveEntry()->ssl().cert_id(), &cert);
-  return UTF16ToWideHack(GetEVCertName(*cert));
+  return GetEVCertName(*cert);
 }
 
 // static

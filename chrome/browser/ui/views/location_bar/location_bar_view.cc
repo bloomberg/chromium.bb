@@ -491,7 +491,7 @@ void LocationBarView::Layout() {
     entry_width -= (kEdgeThickness + kEdgeEditPadding);
   } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     ev_bubble_view_->SetVisible(true);
-    ev_bubble_view_->SetLabel(model_->GetEVCertName());
+    ev_bubble_view_->SetLabel(UTF16ToWideHack(model_->GetEVCertName()));
     ev_bubble_width = ev_bubble_view_->GetPreferredSize().width();
     // We'll adjust this width and take it out of |entry_width| below.
   } else {

@@ -862,9 +862,9 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
                                    gtk_util::BORDER_ALL);
     }
 
-    std::wstring info_text = toolbar_model_->GetEVCertName();
+    string16 info_text = toolbar_model_->GetEVCertName();
     gtk_label_set_text(GTK_LABEL(security_info_label_),
-                       WideToUTF8(info_text).c_str());
+                       UTF16ToUTF8(info_text).c_str());
 
     UpdateEVCertificateLabelSize();
 
