@@ -454,90 +454,11 @@ SHARED_HEADER_SUFFIX_RULES_COMMENT1 = ("""\
 # Suffix rules, putting all outputs into $(obj).
 """)
 
-SHARED_HEADER_SUFFIX_RULES_SRCDIR = {
-    '.c': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-"""),
-    '.s': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-"""),
-    '.S': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-"""),
-    '.cpp': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.cc': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.cxx': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.m': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.m FORCE_DO_CMD
-	@$(call do_cmd,objc,1)
-"""),
-    '.mm': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.mm FORCE_DO_CMD
-	@$(call do_cmd,objcxx,1)
-"""),
-}
 
 SHARED_HEADER_SUFFIX_RULES_COMMENT2 = ("""\
 # Try building from generated source, too.
 """)
 
-SHARED_HEADER_SUFFIX_RULES_OBJDIR1 = {
-    '.c': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-"""),
-    '.cc': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.cpp': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.m': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.m FORCE_DO_CMD
-	@$(call do_cmd,objc,1)
-"""),
-    '.mm': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.mm FORCE_DO_CMD
-	@$(call do_cmd,objcxx,1)
-"""),
-}
-
-SHARED_HEADER_SUFFIX_RULES_OBJDIR2 = {
-    '.c': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-"""),
-    '.cc': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.cpp': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-"""),
-    '.m': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.m FORCE_DO_CMD
-	@$(call do_cmd,objc,1)
-"""),
-    '.mm': ("""\
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.mm FORCE_DO_CMD
-	@$(call do_cmd,objcxx,1)
-"""),
-}
 
 SHARED_FOOTER = """\
 # "all" is a concatenation of the "all" targets from all the included
@@ -1057,6 +978,28 @@ class MakefileWriter:
     # Keep track of the total number of outputs for this makefile.
     self._num_outputs = 0
 
+    self.suffix_rules_srcdir = {}
+    self.suffix_rules_objdir1 = {}
+    self.suffix_rules_objdir2 = {}
+
+    # Generate suffix rules for all compilable extensions.
+    for ext in COMPILABLE_EXTENSIONS.keys():
+      # Suffix rules for source folder.
+      self.suffix_rules_srcdir.update({ext: ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD
+	@$(call do_cmd,%s,1)
+""" % (ext, COMPILABLE_EXTENSIONS[ext]))})
+
+      # Suffix rules for generated source files.
+      self.suffix_rules_objdir1.update({ext: ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj).$(TOOLSET)/%%%s FORCE_DO_CMD
+	@$(call do_cmd,%s,1)
+""" % (ext, COMPILABLE_EXTENSIONS[ext]))})
+      self.suffix_rules_objdir2.update({ext: ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
+	@$(call do_cmd,%s,1)
+""" % (ext, COMPILABLE_EXTENSIONS[ext]))})
+
 
   def NumOutputs(self):
     return self._num_outputs
@@ -1165,15 +1108,15 @@ class MakefileWriter:
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
         extensions = set([os.path.splitext(s)[1] for s in sources])
         for ext in extensions:
-          if ext in SHARED_HEADER_SUFFIX_RULES_SRCDIR:
-            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_SRCDIR[ext])
+          if ext in self.suffix_rules_srcdir:
+            self.WriteLn(self.suffix_rules_srcdir[ext])
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT2)
         for ext in extensions:
-          if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR1:
-            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR1[ext])
+          if ext in self.suffix_rules_objdir1:
+            self.WriteLn(self.suffix_rules_objdir1[ext])
         for ext in extensions:
-          if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR2:
-            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
+          if ext in self.suffix_rules_objdir2:
+            self.WriteLn(self.suffix_rules_objdir2[ext])
         self.WriteLn('# End of this set of suffix rules')
 
         # Add dependency from bundle to bundle binary.

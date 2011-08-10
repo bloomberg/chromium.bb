@@ -47,4 +47,15 @@ test.must_match('relocate/src/subdir2/file2.out', "Hello from file2.in\n")
 test.must_match('relocate/src/subdir2/file1.out2', "Hello from file1.in\n")
 test.must_match('relocate/src/subdir2/file2.out2', "Hello from file2.in\n")
 
+expect = """\
+Hello from program.c
+Got 41.
+"""
+
+if test.format == 'xcode':
+  chdir = 'relocate/src/subdir4'
+else:
+  chdir = 'relocate/src'
+test.run_built_executable('program4', chdir=chdir, stdout=expect)
+
 test.pass_test()

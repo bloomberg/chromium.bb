@@ -13,6 +13,7 @@
         'subdir2/no_inputs.gyp:*',
         'subdir2/none.gyp:*',
         'subdir3/executable2.gyp:*',
+        'subdir4/build-asm.gyp:*',
       ],
     },
   ],
