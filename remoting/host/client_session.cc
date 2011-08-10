@@ -4,6 +4,8 @@
 
 #include "remoting/host/client_session.h"
 
+#include <algorithm>
+
 #include "base/task.h"
 #include "remoting/host/user_authenticator.h"
 #include "remoting/proto/auth.pb.h"
@@ -94,9 +96,10 @@ void ClientSession::InjectMouseEvent(const protocol::MouseEvent* event,
     }
     if (event->has_x() && event->has_y()) {
       gfx::Point pos(event->x(), event->y());
-      recent_remote_mouse_positions_.push_back(pos);
-      if (recent_remote_mouse_positions_.size() > kNumRemoteMousePositions) {
-        recent_remote_mouse_positions_.pop_front();
+      injected_mouse_positions_.push_back(pos);
+      if (injected_mouse_positions_.size() > kNumRemoteMousePositions) {
+        VLOG(1) << "Injected mouse positions queue full.";
+        injected_mouse_positions_.pop_front();
       }
     }
     input_stub_->InjectMouseEvent(event, done_runner.Release());
@@ -113,9 +116,20 @@ void ClientSession::LocalMouseMoved(const gfx::Point& mouse_pos) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
   // short time.
-  if (!recent_remote_mouse_positions_.empty() &&
-      mouse_pos == *recent_remote_mouse_positions_.begin()) {
-    recent_remote_mouse_positions_.pop_front();
+  std::list<gfx::Point>::iterator found_position =
+      std::find(injected_mouse_positions_.begin(),
+                injected_mouse_positions_.end(), mouse_pos);
+  if (found_position != injected_mouse_positions_.end()) {
+    // Remove it from the list, and any positions that were added before it,
+    // if any.  This is because the local input monitor is assumed to receive
+    // injected mouse position events in the order in which they were injected
+    // (if at all).  If the position is found somewhere other than the front of
+    // the queue, this would be because the earlier positions weren't
+    // successfully injected (or the local input monitor might have skipped over
+    // some positions), and not because the events were out-of-sequence.  These
+    // spurious positions should therefore be discarded.
+    injected_mouse_positions_.erase(injected_mouse_positions_.begin(),
+                                    ++found_position);
   } else {
     latest_local_input_time_ = base::Time::Now();
   }

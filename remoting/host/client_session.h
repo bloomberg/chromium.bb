@@ -113,7 +113,12 @@ class ClientSession : public protocol::HostStub,
 
   // State to control remote input blocking while the local pointer is in use.
   uint32 remote_mouse_button_state_;
-  std::list<gfx::Point> recent_remote_mouse_positions_;
+
+  // Queue of recently-injected mouse positions.  This is used to detect whether
+  // mouse events from the local input monitor are echoes of injected positions,
+  // or genuine mouse movements of a local input device.
+  std::list<gfx::Point> injected_mouse_positions_;
+
   base::Time latest_local_input_time_;
   std::set<int> pressed_keys_;
 
