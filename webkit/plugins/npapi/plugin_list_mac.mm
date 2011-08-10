@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,6 +74,14 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 
   // Load from the machine-wide area
   GetPluginCommonDirectory(plugin_dirs, false);
+
+  // 10.5 includes the Java2 plugin, but as of Java for Mac OS X 10.5 Update 10
+  // no longer has a symlink to it in the Internet Plug-Ins directory.
+  // Manually include it since there's no other way to support Java.
+  if (base::mac::IsOSLeopard()) {
+    plugin_dirs->push_back(FilePath(
+        "/System/Library/Java/Support/Deploy.bundle/Contents/Resources"));
+  }
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,
