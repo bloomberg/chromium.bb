@@ -1,0 +1,185 @@
+<script src="framework.js">
+</script>
+<script>
+// Constants as functions, not to be called until after runTests.
+function getURLEchoUserAgent() {
+  return getServerURL('echoheader?User-Agent');
+}
+
+runTests([
+  // Navigates to a page with subresources, with a blocking handler that
+  // cancels the page request. The page will not load, and we should not
+  // see the subresources.
+  function complexLoadCancelled() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
+          },
+          retval: {cancel: true}
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            fromCache: false,
+            error: "net::ERR_EMPTY_RESPONSE"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest"]
+      ],
+      {},  // filter
+      ["blocking"]);
+    console.log("load canc: navigating to a");
+    navigateAndWait(getURL("complexLoad/a.html"));
+  },
+
+  // Navigates to a page with a blocking handler that redirects to a different
+  // page.
+  // TODO(mpcomplete): We should see an onBeforeRedirect as well, but our
+  // process switching logic cancels the original redirect request and
+  // starts a new one instead. See http://crbug.com/79520.
+  function complexLoadRedirected() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest-1",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
+          },
+          retval: {redirectUrl: getURL("simpleLoad/a.html")}
+        },
+        { label: "onErrorOccurred-1",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("complexLoad/a.html"),
+            fromCache: false,
+            error: "net::ERR_ABORTED"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "onBeforeRequest-2",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html"),
+          },
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            fromCache: false,
+            statusCode: 200
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            fromCache: false,
+            statusCode: 200
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest-1", "onErrorOccurred-1", "onBeforeRequest-2",
+         "onResponseStarted", "onCompleted"],
+      ],
+      {}, // filter
+      ["blocking"]);
+    console.log("load redir: navigating");
+    navigateAndWait(getURL("complexLoad/a.html"));
+  },
+
+  // Loads a testserver page that echoes the User-Agent header that was
+  // sent to fetch it. We modify the outgoing User-Agent in
+  // onBeforeSendHeaders, so we should see that modified version.
+  function modifyRequestHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURLEchoUserAgent(),
+            frameUrl: getURLEchoUserAgent()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLEchoUserAgent(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {requestHeaders: [{name: "User-Agent", value: "FoobarUA"}]}
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLEchoUserAgent()
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLEchoUserAgent(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1"
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLEchoUserAgent(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1"
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onResponseStarted", "onCompleted"]
+      ],
+      {}, ["blocking"]);
+    // Check the page content for our modified User-Agent string.
+    console.log("mod headers: 1");
+    navigateAndWait(getURLEchoUserAgent(), function() {
+      console.log("mod headers: 2");
+      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+        console.log("mod headers: 2.1");
+        chrome.test.assertTrue(request.pass, "Request header was not set.");
+      });
+      console.log("mod headers: 3");
+      chrome.tabs.executeScript(tabId,
+        {
+          code: "chrome.extension.sendRequest(" +
+              "{pass: document.body.innerText.indexOf('FoobarUA') >= 0});"
+        });
+    });
+  },
+]);
+</script>
