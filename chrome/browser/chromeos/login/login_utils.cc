@@ -562,7 +562,14 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
 
   user_profile->OnLogin();
 
-  delegate_->OnProfilePrepared(user_profile);
+  // TODO(altimofeev): This pointer should probably never be NULL, but it looks
+  // like LoginUtilsImpl::OnProfileCreated() may be getting called before
+  // LoginUtilsImpl::PrepareProfile() has set |delegate_| when Chrome is killed
+  // during shutdown in tests -- see http://crosbug.com/18269.  Replace this
+  // 'if' statement with a CHECK(delegate_) once the underlying issue is
+  // resolved.
+  if (delegate_)
+    delegate_->OnProfilePrepared(user_profile);
 
   // TODO(altimofeev): Need to sanitize memory used to store password.
   credentials_ = GaiaAuthConsumer::ClientLoginResult();
