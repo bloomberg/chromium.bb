@@ -629,6 +629,37 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll2);
 }
 
+// Test that the sessions commit delay is updated when needed.
+TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
+  SyncShareRecords records;
+  TimeDelta delay1(TimeDelta::FromMilliseconds(120));
+  TimeDelta delay2(TimeDelta::FromMilliseconds(30));
+  scheduler()->OnReceivedSessionsCommitDelay(delay1);
+
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(
+          DoAll(
+              WithArg<0>(
+                  sessions::test_util::SimulateSessionsCommitDelayUpdate(
+                      delay2)),
+              Invoke(sessions::test_util::SimulateSuccess),
+              QuitLoopNowAction()));
+
+  EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+  RunLoop();
+
+  EXPECT_EQ(delay1, scheduler()->sessions_commit_delay());
+  syncable::ModelTypeBitSet model_types;
+  model_types[syncable::BOOKMARKS] = true;
+  scheduler()->ScheduleNudge(
+      zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
+  RunLoop();
+
+  EXPECT_EQ(delay2, scheduler()->sessions_commit_delay());
+  scheduler()->Stop();
+}
+
 // Test that a sync session is run through to completion.
 TEST_F(SyncSchedulerTest, HasMoreToSync) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))

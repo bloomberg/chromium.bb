@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
@@ -32,35 +33,37 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   };
 
   // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
+  virtual void OnSilencedUntil(
+      const base::TimeTicks& silenced_until) OVERRIDE {
     FAIL() << "Should not get silenced.";
   }
-  virtual bool IsSyncingCurrentlySilenced() {
+  virtual bool IsSyncingCurrentlySilenced() OVERRIDE {
     ADD_FAILURE() << "No requests for silenced state should be made.";
     return false;
   }
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     FAIL() << "Should not get poll interval update.";
   }
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     FAIL() << "Should not get poll interval update.";
   }
-  virtual void OnShouldStopSyncingPermanently() {
-    FAIL() << "Shouldn't be forced to stop syncing.";
+  virtual void OnReceivedSessionsCommitDelay(
+      const base::TimeDelta& new_delay) OVERRIDE {
+    FAIL() << "Should not get sessions commit delay.";
   }
-  virtual void SignalUpdatedToken(const std::string& token) {
-    FAIL() << "Should never update token.";
+  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
+    FAIL() << "Shouldn't be forced to stop syncing.";
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
     std::vector<scoped_refptr<ModelSafeWorker> >::iterator it;
     for (it = workers_.begin(); it != workers_.end(); ++it)
       out->push_back(*it);
   }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     ModelSafeRoutingInfo copy(routing_info_);
     out->swap(copy);
   }

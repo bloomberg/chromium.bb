@@ -312,6 +312,11 @@ void Syncer::ProcessClientCommand(sessions::SyncSession* session) {
     session->delegate()->OnReceivedShortPollIntervalUpdate(
         TimeDelta::FromSeconds(command.set_sync_poll_interval()));
   }
+
+  if (command.has_sessions_commit_delay_seconds()) {
+    session->delegate()->OnReceivedSessionsCommitDelay(
+        TimeDelta::FromSeconds(command.sessions_commit_delay_seconds()));
+  }
 }
 
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {

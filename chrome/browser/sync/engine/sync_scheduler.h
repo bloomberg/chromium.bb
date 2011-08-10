@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -98,23 +99,29 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // Change status of notifications in the SyncSessionContext.
   void set_notifications_enabled(bool notifications_enabled);
 
+  base::TimeDelta sessions_commit_delay() const;
+
   // DDOS avoidance function.  Calculates how long we should wait before trying
   // again after a failed sync attempt, where the last delay was |base_delay|.
   // TODO(tim): Look at URLRequestThrottlerEntryInterface.
   static base::TimeDelta GetRecommendedDelay(const base::TimeDelta& base_delay);
 
   // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until);
-  virtual bool IsSyncingCurrentlySilenced();
+  virtual void OnSilencedUntil(
+      const base::TimeTicks& silenced_until) OVERRIDE;
+  virtual bool IsSyncingCurrentlySilenced() OVERRIDE;
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval);
+      const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval);
-  virtual void OnShouldStopSyncingPermanently();
+      const base::TimeDelta& new_interval) OVERRIDE;
+  virtual void OnReceivedSessionsCommitDelay(
+      const base::TimeDelta& new_delay) OVERRIDE;
+  virtual void OnShouldStopSyncingPermanently() OVERRIDE;
 
   // ServerConnectionEventListener implementation.
   // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
+  virtual void OnServerConnectionEvent(
+      const ServerConnectionEvent& event) OVERRIDE;
 
  private:
   enum JobProcessDecision {
@@ -358,6 +365,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // updated by the server.
   base::TimeDelta syncer_short_poll_interval_seconds_;
   base::TimeDelta syncer_long_poll_interval_seconds_;
+
+  // Server-tweakable sessions commit delay.
+  base::TimeDelta sessions_commit_delay_;
 
   // Periodic timer for polling.  See AdjustPolling.
   base::RepeatingTimer<SyncScheduler> poll_timer_;

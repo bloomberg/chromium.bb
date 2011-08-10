@@ -28,6 +28,8 @@ void SimulateThrottledImpl(sessions::SyncSession* session,
     const base::TimeDelta& delta);
 void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
     const base::TimeDelta& new_poll);
+void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
+    const base::TimeDelta& new_delay);
 
 ACTION_P(SimulateThrottled, throttle) {
   SimulateThrottledImpl(arg0, throttle);
@@ -35,6 +37,10 @@ ACTION_P(SimulateThrottled, throttle) {
 
 ACTION_P(SimulatePollIntervalUpdate, poll) {
   SimulatePollIntervalUpdateImpl(arg0, poll);
+}
+
+ACTION_P(SimulateSessionsCommitDelayUpdate, poll) {
+  SimulateSessionsCommitDelayUpdateImpl(arg0, poll);
 }
 
 }  // namespace test_util

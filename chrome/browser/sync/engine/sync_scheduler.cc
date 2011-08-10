@@ -135,6 +135,12 @@ SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
 #define SVLOG_LOC(from_here, verbose_level)             \
   VLOG_LOC(from_here, verbose_level) << name_ << ": "
 
+namespace {
+
+const int kDefaultSessionsCommitDelaySeconds = 10;
+
+}  // namespace
+
 SyncScheduler::SyncScheduler(const std::string& name,
                              sessions::SyncSessionContext* context,
                              Syncer* syncer)
@@ -146,6 +152,8 @@ SyncScheduler::SyncScheduler(const std::string& name,
           TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
       syncer_long_poll_interval_seconds_(
           TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds)),
+      sessions_commit_delay_(
+          TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds)),
       mode_(NORMAL_MODE),
       server_connection_ok_(false),
       delay_provider_(new DelayProvider()),
@@ -1063,6 +1071,12 @@ void SyncScheduler::OnReceivedLongPollIntervalUpdate(
   syncer_long_poll_interval_seconds_ = new_interval;
 }
 
+void SyncScheduler::OnReceivedSessionsCommitDelay(
+    const base::TimeDelta& new_delay) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  sessions_commit_delay_ = new_delay;
+}
+
 void SyncScheduler::OnShouldStopSyncingPermanently() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SVLOG(2) << "OnShouldStopSyncingPermanently";
@@ -1084,15 +1098,16 @@ void SyncScheduler::set_notifications_enabled(bool notifications_enabled) {
   session_context_->set_notifications_enabled(notifications_enabled);
 }
 
+base::TimeDelta SyncScheduler::sessions_commit_delay() const {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  return sessions_commit_delay_;
+}
+
 #undef SVLOG_LOC
 
 #undef SVLOG
 
 #undef SLOG
-
-#undef VLOG_LOC
-
-#undef VLOG_LOC_STREAM
 
 #undef ENUM_CASE
 

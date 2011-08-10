@@ -109,6 +109,7 @@ using syncable::DirectoryManager;
 using syncable::Entry;
 using syncable::EntryKernelMutationSet;
 using syncable::kEncryptedString;
+using syncable::ModelType;
 using syncable::ModelTypeBitSet;
 using syncable::WriterTag;
 using syncable::SPECIFICS;
@@ -1223,9 +1224,6 @@ class SyncManager::SyncInternal
       public syncable::DirectoryChangeDelegate {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
-  // TODO(akalin): Remove this once we have the delay controllable
-  // from the server.
-  static const int kSessionsNudgeDelayMilliseconds;
  public:
   explicit SyncInternal(const std::string& name)
       : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -1376,9 +1374,9 @@ class SyncManager::SyncInternal
 
   void RequestNudge(const tracked_objects::Location& nudge_location);
 
-  void RequestNudgeWithDataTypes(const TimeDelta& delay,
-      browser_sync::NudgeSource source, const ModelTypeBitSet& types,
-      const tracked_objects::Location& nudge_location);
+  void RequestNudgeForDataType(
+      const tracked_objects::Location& nudge_location,
+      const ModelType& type);
 
   void RequestEarlyExit();
 
@@ -1638,7 +1636,6 @@ class SyncManager::SyncInternal
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
-const int SyncManager::SyncInternal::kSessionsNudgeDelayMilliseconds = 10000;
 
 SyncManager::Observer::~Observer() {}
 
@@ -2465,24 +2462,11 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
   // Nudge if necessary.
   if (mutated_model_type != syncable::UNSPECIFIED) {
-    int nudge_delay;
-    switch (mutated_model_type) {
-      case syncable::PREFERENCES:
-        nudge_delay = kPreferencesNudgeDelayMilliseconds;
-      case syncable::SESSIONS:
-        nudge_delay = kSessionsNudgeDelayMilliseconds;
-      default:
-        nudge_delay = kDefaultNudgeDelayMilliseconds;
-    }
-    syncable::ModelTypeBitSet model_types;
-    model_types.set(mutated_model_type);
     if (weak_handle_this_.IsInitialized()) {
       weak_handle_this_.Call(FROM_HERE,
-                             &SyncInternal::RequestNudgeWithDataTypes,
-                             TimeDelta::FromMilliseconds(nudge_delay),
-                             browser_sync::NUDGE_SOURCE_LOCAL,
-                             model_types,
-                             FROM_HERE);
+                             &SyncInternal::RequestNudgeForDataType,
+                             FROM_HERE,
+                             mutated_model_type);
     } else {
       NOTREACHED();
     }
@@ -2567,15 +2551,34 @@ void SyncManager::SyncInternal::RequestNudge(
         ModelTypeBitSet(), location);
 }
 
-void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
-    const TimeDelta& delay,
-    browser_sync::NudgeSource source, const ModelTypeBitSet& types,
-    const tracked_objects::Location& nudge_location) {
+
+void SyncManager::SyncInternal::RequestNudgeForDataType(
+    const tracked_objects::Location& nudge_location,
+    const ModelType& type) {
   if (!scheduler()) {
     NOTREACHED();
     return;
   }
-  scheduler()->ScheduleNudge(delay, source, types, nudge_location);
+  base::TimeDelta nudge_delay;
+  switch (type) {
+    case syncable::PREFERENCES:
+      nudge_delay =
+          TimeDelta::FromMilliseconds(kPreferencesNudgeDelayMilliseconds);
+      break;
+    case syncable::SESSIONS:
+      nudge_delay = scheduler()->sessions_commit_delay();
+      break;
+    default:
+      nudge_delay =
+          TimeDelta::FromMilliseconds(kPreferencesNudgeDelayMilliseconds);
+      break;
+  }
+  syncable::ModelTypeBitSet types;
+  types.set(type);
+  scheduler()->ScheduleNudge(nudge_delay,
+                             browser_sync::NUDGE_SOURCE_LOCAL,
+                             types,
+                             nudge_location);
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(

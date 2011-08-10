@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
@@ -106,29 +107,33 @@ class SyncerTest : public testing::Test,
   SyncerTest() : syncer_(NULL), saw_syncer_event_(false) {}
 
   // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
+  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) OVERRIDE {
     FAIL() << "Should not get silenced.";
   }
-  virtual bool IsSyncingCurrentlySilenced() {
+  virtual bool IsSyncingCurrentlySilenced() OVERRIDE {
     return false;
   }
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     last_long_poll_interval_received_ = new_interval;
   }
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     last_short_poll_interval_received_ = new_interval;
   }
-  virtual void OnShouldStopSyncingPermanently() {
+  virtual void OnReceivedSessionsCommitDelay(
+      const base::TimeDelta& new_delay) OVERRIDE {
+    last_sessions_commit_delay_seconds_ = new_delay;
+  }
+  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
     out->push_back(worker_.get());
   }
 
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
     for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -138,7 +143,7 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) {
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE {
     VLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
@@ -476,6 +481,7 @@ class SyncerTest : public testing::Test,
   bool saw_syncer_event_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
+  base::TimeDelta last_sessions_commit_delay_seconds_;
   scoped_refptr<ModelSafeWorker> worker_;
 
   syncable::ModelTypeBitSet enabled_datatypes_;
@@ -3855,6 +3861,7 @@ TEST_F(SyncerTest, TestClientCommand) {
   ClientCommand* command = mock_server_->GetNextClientCommand();
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
+  command->set_sessions_commit_delay_seconds(3141);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1);
   SyncShareAsDelegate();
 
@@ -3862,10 +3869,13 @@ TEST_F(SyncerTest, TestClientCommand) {
               last_short_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(800) ==
               last_long_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
+              last_sessions_commit_delay_seconds_);
 
   command = mock_server_->GetNextClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
+  command->set_sessions_commit_delay_seconds(2718);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1);
   SyncShareAsDelegate();
 
@@ -3873,6 +3883,8 @@ TEST_F(SyncerTest, TestClientCommand) {
               last_short_poll_interval_received_);
   EXPECT_TRUE(TimeDelta::FromSeconds(190) ==
               last_long_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
+              last_sessions_commit_delay_seconds_);
 }
 
 TEST_F(SyncerTest, EnsureWeSendUpOldParent) {

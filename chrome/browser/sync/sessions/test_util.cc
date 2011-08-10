@@ -52,6 +52,11 @@ void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
   session->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
 }
 
+void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
+    const base::TimeDelta& new_delay) {
+  session->delegate()->OnReceivedSessionsCommitDelay(new_delay);
+}
+
 }  // namespace test_util
 }  // namespace sessions
 }  // namespace browser_sync

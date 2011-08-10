@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_session.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/tracked.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
@@ -48,28 +49,32 @@ class SyncSessionTest : public testing::Test,
     context_.reset();
   }
 
-  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
+  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) OVERRIDE {
     FailControllerInvocationIfDisabled("OnSilencedUntil");
   }
-  virtual bool IsSyncingCurrentlySilenced() {
+  virtual bool IsSyncingCurrentlySilenced() OVERRIDE {
     FailControllerInvocationIfDisabled("IsSyncingCurrentlySilenced");
     return false;
   }
   virtual void OnReceivedLongPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     FailControllerInvocationIfDisabled("OnReceivedLongPollIntervalUpdate");
   }
   virtual void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) {
+      const base::TimeDelta& new_interval) OVERRIDE {
     FailControllerInvocationIfDisabled("OnReceivedShortPollIntervalUpdate");
   }
-  virtual void OnShouldStopSyncingPermanently() {
+  virtual void OnReceivedSessionsCommitDelay(
+      const base::TimeDelta& new_delay) OVERRIDE {
+    FailControllerInvocationIfDisabled("OnReceivedSessionsCommitDelay");
+  }
+  virtual void OnShouldStopSyncingPermanently() OVERRIDE {
     FailControllerInvocationIfDisabled("OnShouldStopSyncingPermanently");
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {}
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
     out->swap(routes_);
   }
 

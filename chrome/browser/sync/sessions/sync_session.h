@@ -70,6 +70,11 @@ class SyncSession {
     virtual void OnReceivedLongPollIntervalUpdate(
         const base::TimeDelta& new_interval) = 0;
 
+    // The client has been instructed to change its sessions commit
+    // delay.
+    virtual void OnReceivedSessionsCommitDelay(
+        const base::TimeDelta& new_delay) = 0;
+
     // The client needs to cease and desist syncing at once.  This occurs when
     // the Syncer detects that the backend store has fundamentally changed or
     // is a different instance altogether (e.g. swapping from a test instance
