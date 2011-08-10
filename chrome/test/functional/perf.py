@@ -125,9 +125,7 @@ class PerfTest(pyauto.PyUITest):
       Returns:
         The integer score computed from running the v8 benchmark suite.
       """
-      # TODO(dennisjeffrey@chromium.org): Check in V8 benchmark version 6 to
-      # the repo, and then change this to use it.
-      url = 'http://v8.googlecode.com/svn/data/benchmarks/v6/run.html'
+      url = self.GetFileURLForDataPath('v8_benchmark_v6', 'run.html')
       self.AppendTab(pyauto.GURL(url))
       js = """
           var val = document.getElementById("status").innerHTML;
