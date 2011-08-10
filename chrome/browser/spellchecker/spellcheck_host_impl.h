@@ -92,6 +92,9 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // or null when metrics recording is disabled.
   virtual SpellCheckHostMetrics* GetMetrics() const;
 
+  // Returns true if the dictionary is ready to use.
+  virtual bool IsReady() const;
+
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to |data_|.
   virtual void OnURLFetchComplete(const URLFetcher* source,

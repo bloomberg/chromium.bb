@@ -392,6 +392,11 @@ SpellCheckHostMetrics* SpellCheckHostImpl::GetMetrics() const {
   return metrics_;
 }
 
+bool SpellCheckHostImpl::IsReady() const {
+  return GetDictionaryFile() != base::kInvalidPlatformFileValue ||
+      IsUsingPlatformChecker();
+}
+
 const base::PlatformFile& SpellCheckHostImpl::GetDictionaryFile() const {
   return file_;
 }

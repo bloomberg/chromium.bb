@@ -15,7 +15,6 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
-#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -23,7 +22,7 @@ class ChromeDownloadManagerDelegate;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
-class SpellCheckHostMetrics;
+class SpellCheckProfile;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -37,7 +36,6 @@ class NetPrefObserver;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
-                    public SpellCheckHostObserver,
                     public NotificationObserver {
  public:
   virtual ~ProfileImpl();
@@ -142,9 +140,6 @@ class ProfileImpl : public Profile,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // SpellCheckHostObserver implementation.
-  virtual void SpellCheckHostInitialized();
-
  private:
   friend class Profile;
 
@@ -179,6 +174,8 @@ class ProfileImpl : public Profile,
   ExtensionPrefValueMap* GetExtensionPrefValueMap();
 
   void CreateQuotaManagerAndClients();
+
+  SpellCheckProfile* GetSpellCheckProfile();
 
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -261,12 +258,7 @@ class ProfileImpl : public Profile,
   // See GetStartTime for details.
   base::Time start_time_;
 
-  scoped_refptr<SpellCheckHost> spellcheck_host_;
-  scoped_ptr<SpellCheckHostMetrics> spellcheck_host_metrics_;
-
-  // Indicates whether |spellcheck_host_| has told us initialization is
-  // finished.
-  bool spellcheck_host_ready_;
+  scoped_ptr<SpellCheckProfile> spellcheck_profile_;
 
 #if defined(OS_WIN)
   bool checked_instant_promo_;

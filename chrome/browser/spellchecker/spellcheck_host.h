@@ -39,7 +39,7 @@ class URLRequestContextGetter;
 //   spellcheck_host_ = SpellCheckHost::Create(
 //       observer, languages[0], req_getter);
 //
-// The class is intended to be owned by ProfileImpl so users should
+// The class is intended to be owned by SpellCheckProfile so users should
 // retrieve the instance via Profile::GetSpellCheckHost().
 // Users should not hold the reference over the function scope because
 // the instance can be invalidated during the browser's lifecycle.
@@ -81,6 +81,9 @@ class SpellCheckHost
   // Returns a metrics counter associated with this object,
   // or null when metrics recording is disabled.
   virtual SpellCheckHostMetrics* GetMetrics() const = 0;
+
+  // Returns true if the dictionary is ready to use.
+  virtual bool IsReady() const = 0;
 
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It

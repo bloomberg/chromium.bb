@@ -61,8 +61,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_host.h"
-#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spellcheck_profile.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
@@ -304,8 +303,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       created_password_store_(false),
       created_download_manager_(false),
       start_time_(Time::Now()),
-      spellcheck_host_(NULL),
-      spellcheck_host_ready_(false),
 #if defined(OS_WIN)
       checked_instant_promo_(false),
 #endif
@@ -407,11 +404,9 @@ void ProfileImpl::DoFinalInit() {
 
   // Instantiates Metrics object for spellchecking for use.
   if (g_browser_process->metrics_service() &&
-      g_browser_process->metrics_service()->recording_active()) {
-    spellcheck_host_metrics_.reset(new SpellCheckHostMetrics());
-    spellcheck_host_metrics_->RecordEnabledStats(
+      g_browser_process->metrics_service()->recording_active())
+    GetSpellCheckProfile()->StartRecordingMetrics(
         GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
-  }
 
   speech_input::SpeechInputManager::Get()->set_censor_results(
       prefs->GetBoolean(prefs::kSpeechInputCensorResults));
@@ -708,9 +703,6 @@ ProfileImpl::~ProfileImpl() {
 
   if (history_service_.get())
     history_service_->Cleanup();
-
-  if (spellcheck_host_.get())
-    spellcheck_host_->UnsetObserver();
 
   if (io_data_.HasMainRequestContext() &&
       default_request_context_ == GetRequestContext()) {
@@ -1334,35 +1326,20 @@ history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
 }
 
 SpellCheckHost* ProfileImpl::GetSpellCheckHost() {
-  return spellcheck_host_ready_ ? spellcheck_host_.get() : NULL;
+  return GetSpellCheckProfile()->GetHost();
 }
 
+
 void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
-  // If we are already loading the spellchecker, and this is just a hint to
-  // load the spellchecker, do nothing.
-  if (!force && spellcheck_host_.get())
-    return;
-
-  spellcheck_host_ready_ = false;
-
-  bool notify = false;
-  if (spellcheck_host_.get()) {
-    spellcheck_host_->UnsetObserver();
-    spellcheck_host_ = NULL;
-    notify = true;
-  }
-
-  PrefService* prefs = GetPrefs();
-  if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
-    // Retrieve the (perhaps updated recently) dictionary name from preferences.
-    spellcheck_host_ = SpellCheckHost::Create(
-        this,
-        prefs->GetString(prefs::kSpellCheckDictionary),
-        GetRequestContext(),
-        spellcheck_host_metrics_.get());
-  } else if (notify) {
+  PrefService* pref = GetPrefs();
+  SpellCheckProfile::ReinitializeResult result =
+      GetSpellCheckProfile()->ReinitializeHost(
+          force,
+          pref->GetBoolean(prefs::kEnableSpellCheck),
+          pref->GetString(prefs::kSpellCheckDictionary),
+          GetRequestContext());
+  if (result == SpellCheckProfile::REINITIALIZE_REMOVED_HOST) {
     // The spellchecker has been disabled.
-    SpellCheckHostInitialized();
     for (RenderProcessHost::iterator
          i(RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
@@ -1373,13 +1350,6 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
                                            false));
     }
   }
-}
-
-void ProfileImpl::SpellCheckHostInitialized() {
-  spellcheck_host_ready_ = spellcheck_host_ &&
-      (spellcheck_host_->GetDictionaryFile() !=
-       base::kInvalidPlatformFileValue ||
-       spellcheck_host_->IsUsingPlatformChecker());
 }
 
 ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
@@ -1745,4 +1715,10 @@ prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
 #endif
   }
   return prerender_manager_.get();
+}
+
+SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
+  if (!spellcheck_profile_.get())
+    spellcheck_profile_.reset(new SpellCheckProfile());
+  return spellcheck_profile_.get();
 }
