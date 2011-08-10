@@ -5279,6 +5279,16 @@
    fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
    fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
 }
+{
+   bug_92396
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN27BrowserAccessibilityManager6CreateEP6NSViewRKN11webkit_glue16WebAccessibilityEP28BrowserAccessibilityDelegateP27BrowserAccessibilityFactory
+   fun:_ZN27BrowserAccessibilityManager19CreateEmptyDocumentEP6NSViewN11webkit_glue16WebAccessibility5StateEP28BrowserAccessibilityDelegateP27BrowserAccessibilityFactory
+   fun:_ZN60BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test8TestBodyEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
