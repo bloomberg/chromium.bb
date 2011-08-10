@@ -12,6 +12,7 @@ namespace prerender {
 enum Origin {
   ORIGIN_LINK_REL_PRERENDER = 0,
   ORIGIN_OMNIBOX = 1,
+  ORIGIN_GWS_PRERENDER = 2,
   ORIGIN_MAX
 };
 

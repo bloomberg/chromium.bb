@@ -14,11 +14,11 @@ namespace {
 const char* kOriginNames[] = {
   "Link Rel Prerender",
   "Omnibox",
+  "GWS Prerender",
   "Max"
 };
 COMPILE_ASSERT(arraysize(kOriginNames) == ORIGIN_MAX + 1,
                PrerenderOrigin_name_count_mismatch);
-
 }
 
 const char* NameFromOrigin(Origin origin) {
