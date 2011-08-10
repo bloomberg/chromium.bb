@@ -1216,10 +1216,6 @@ void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 bool View::SetExternalTexture(ui::Texture* texture) {
-  // A little heavy-handed -- it should be that each child has it's own layer.
-  // The desired use case is where there are no children.
-  DCHECK_EQ(child_count(), 0);
-
   if (!texture && !layer_helper_.get())
     return true;
 
@@ -1233,6 +1229,13 @@ bool View::SetExternalTexture(ui::Texture* texture) {
 
   if (use_external && !layer())
     return false;
+
+  // Child views must not paint into the external texture. So make sure each
+  // child view has its own layer to paint into.
+  if (use_external) {
+    for (Views::iterator i = children_.begin(); i != children_.end(); ++i)
+      (*i)->SetPaintToLayer(true);
+  }
 
   layer_helper_->set_layer_updated_externally(use_external);
   layer_helper_->set_bitmap_needs_updating(!use_external);
@@ -1720,7 +1723,9 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 
 bool View::ShouldPaintToLayer() const {
   return use_acceleration_when_possible &&
-      layer_helper_.get() && layer_helper_->ShouldPaintToLayer();
+      ((layer_helper_.get() && layer_helper_->ShouldPaintToLayer()) ||
+       (parent_ && parent_->layer_helper_.get() &&
+        parent_->layer_helper_->layer_updated_externally()));
 }
 
 void View::CreateLayer() {
