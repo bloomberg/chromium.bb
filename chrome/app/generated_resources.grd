@@ -5969,6 +5969,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Load State -->
+      <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">
+        Waiting for <ph name="LOAD_STATE_PARAMETER">$1<ex>extension Adblock</ex></ph>...
+      </message>
+      <message name="IDS_LOAD_STATE_PARAMETER_EXTENSION" desc="Parameter to IDS_LOAD_STATE_WAITING_FOR_DELEGATE when we are waiting for an extension. The variable is the extension name.">
+        extension <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph>
+      </message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">
         Waiting for cache...
       </message>

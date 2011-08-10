@@ -179,8 +179,8 @@ class TabContents : public PageNavigator,
   // "waiting" or "loading."
   bool waiting_for_response() const { return waiting_for_response_; }
 
-  net::LoadState load_state() const { return load_state_; }
-  string16 load_state_host() const { return load_state_host_; }
+  const net::LoadStateWithParam& load_state() const { return load_state_; }
+  const string16& load_state_host() const { return load_state_host_; }
   uint64 upload_size() const { return upload_size_; }
   uint64 upload_position() const { return upload_position_; }
 
@@ -694,7 +694,7 @@ class TabContents : public PageNavigator,
                                     bool is_during_unload) OVERRIDE;
   virtual void RendererResponsive(RenderViewHost* render_view_host) OVERRIDE;
   virtual void LoadStateChanged(const GURL& url,
-                                net::LoadState load_state,
+                                const net::LoadStateWithParam& load_state,
                                 uint64 upload_position,
                                 uint64 upload_size) OVERRIDE;
   virtual void WorkerCrashed() OVERRIDE;
@@ -786,7 +786,7 @@ class TabContents : public PageNavigator,
   base::TimeTicks current_load_start_;
 
   // The current load state and the URL associated with it.
-  net::LoadState load_state_;
+  net::LoadStateWithParam load_state_;
   string16 load_state_host_;
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.

@@ -111,12 +111,12 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   const std::string kEventName(keys::kOnBeforeRequest);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      &profile_, extension1_id, extension1_id, kEventName, kEventName + "/1",
+      filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      &profile_, extension2_id, extension2_id, kEventName, kEventName + "/2",
+      filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
 
   GURL redirect_url("about:redirected");
@@ -242,13 +242,13 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   const std::string kEventName(keys::kOnBeforeRequest);
   base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
-      ipc_sender_factory.GetWeakPtr());
+    &profile_, extension1_id, extension1_id, kEventName, kEventName + "/1",
+    filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+    ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
-      ipc_sender_factory.GetWeakPtr());
+    &profile_, extension2_id, extension2_id, kEventName, kEventName + "/2",
+    filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+    ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("about:blank");
   net::URLRequest request(request_url, &delegate_);
@@ -363,17 +363,17 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   // Install two extensions that can modify headers. Extension 2 has
   // higher precedence than extension 1.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      &profile_, extension1_id, extension1_id, kEventName, kEventName + "/1",
+      filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      &profile_, extension2_id, extension2_id, kEventName, kEventName + "/2",
+      filter, ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
 
   // Install one extension that observes the final headers.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      &profile_, extension3_id, keys::kOnSendHeaders,
+      &profile_, extension3_id, extension3_id, keys::kOnSendHeaders,
       std::string(keys::kOnSendHeaders) + "/3", filter,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_HEADERS,
       ipc_sender_factory.GetWeakPtr());

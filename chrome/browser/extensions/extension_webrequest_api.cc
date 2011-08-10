@@ -33,6 +33,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_webrequest_api_constants;
 
@@ -253,6 +255,7 @@ bool InDecreasingExtensionInstallationTimeOrder(
 // added.
 struct ExtensionWebRequestEventRouter::EventListener {
   std::string extension_id;
+  std::string extension_name;
   std::string sub_event_name;
   RequestFilter filter;
   int extra_info_spec;
@@ -275,6 +278,9 @@ struct ExtensionWebRequestEventRouter::EventListener {
 // Contains info about requests that are blocked waiting for a response from
 // an extension.
 struct ExtensionWebRequestEventRouter::BlockedRequest {
+  // The request that is being blocked.
+  net::URLRequest* request;
+
   // The event that we're currently blocked on.
   EventTypes event;
 
@@ -303,7 +309,8 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   EventResponseDeltas response_deltas;
 
   BlockedRequest()
-      : event(kInvalidEvent),
+      : request(NULL),
+        event(kInvalidEvent),
         num_handlers_blocking(0),
         net_log(NULL),
         callback(NULL),
@@ -847,12 +854,17 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if ((*it)->extra_info_spec & ExtraInfoSpec::BLOCKING) {
       (*it)->blocked_requests.insert(request->identifier());
       ++num_handlers_blocking;
+
+      request->SetLoadStateParam(
+          l10n_util::GetStringFUTF16(IDS_LOAD_STATE_PARAMETER_EXTENSION,
+                                     UTF8ToUTF16((*it)->extension_name)));
     }
   }
 
   if (num_handlers_blocking > 0) {
     CHECK(blocked_requests_.find(request->identifier()) ==
           blocked_requests_.end());
+    blocked_requests_[request->identifier()].request = request;
     blocked_requests_[request->identifier()].num_handlers_blocking =
         num_handlers_blocking;
     blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
@@ -881,12 +893,13 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
   if (found != listeners_[profile][event_name].end())
     found->blocked_requests.erase(request_id);
 
-  DecrementBlockCount(request_id, response);
+  DecrementBlockCount(profile, event_name, request_id, response);
 }
 
 void ExtensionWebRequestEventRouter::AddEventListener(
     void* profile,
     const std::string& extension_id,
+    const std::string& extension_name,
     const std::string& event_name,
     const std::string& sub_event_name,
     const RequestFilter& filter,
@@ -897,6 +910,7 @@ void ExtensionWebRequestEventRouter::AddEventListener(
 
   EventListener listener;
   listener.extension_id = extension_id;
+  listener.extension_name = extension_name;
   listener.sub_event_name = sub_event_name;
   listener.filter = filter;
   listener.extra_info_spec = extra_info_spec;
@@ -935,7 +949,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   // Unblock any request that this event listener may have been blocking.
   for (std::set<uint64>::iterator it = found->blocked_requests.begin();
        it != found->blocked_requests.end(); ++it) {
-    DecrementBlockCount(*it, NULL);
+    DecrementBlockCount(profile, event_name, *it, NULL);
   }
 
   listeners_[profile][event_name].erase(listener);
@@ -1222,6 +1236,8 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
 }
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
+    void* profile,
+    const std::string& event_name,
     uint64 request_id,
     EventResponse* response) {
   scoped_ptr<EventResponse> response_scoped(response);
@@ -1297,6 +1313,20 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     } else {
       blocked_requests_.erase(request_id);
     }
+  } else {
+    // Update the URLRequest to indicate it is now blocked on a different
+    // extension.
+    std::set<EventListener>& listeners = listeners_[profile][event_name];
+
+    for (std::set<EventListener>::iterator it = listeners.begin();
+         it != listeners.end(); ++it) {
+      if (it->blocked_requests.count(request_id)) {
+        blocked_request.request->SetLoadStateParam(
+            l10n_util::GetStringFUTF16(IDS_LOAD_STATE_PARAMETER_EXTENSION,
+                                       UTF8ToUTF16(it->extension_name)));
+        break;
+      }
+    }
   }
 }
 
@@ -1350,8 +1380,13 @@ bool WebRequestAddEventListener::RunImpl() {
   std::string sub_event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &sub_event_name));
 
+  const Extension* extension =
+      extension_info_map()->extensions().GetByID(extension_id());
+  std::string extension_name = extension ? extension->name() : extension_id();
+
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile(), extension_id(), event_name, sub_event_name, filter,
+      profile(), extension_id(), extension_name,
+      event_name, sub_event_name, filter,
       extra_info_spec, ipc_sender_weak());
 
   return true;

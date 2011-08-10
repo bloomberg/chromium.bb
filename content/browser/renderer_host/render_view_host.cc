@@ -628,7 +628,7 @@ void RenderViewHost::DirectoryEnumerationFinished(
 }
 
 void RenderViewHost::LoadStateChanged(const GURL& url,
-                                      net::LoadState load_state,
+                                      const net::LoadStateWithParam& load_state,
                                       uint64 upload_position,
                                       uint64 upload_size) {
   delegate_->LoadStateChanged(url, load_state, upload_position, upload_size);

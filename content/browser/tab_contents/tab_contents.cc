@@ -178,7 +178,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       crashed_error_code_(0),
       waiting_for_response_(false),
       max_page_id_(-1),
-      load_state_(net::LOAD_STATE_IDLE),
+      load_state_(net::LOAD_STATE_IDLE, string16()),
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
@@ -1086,7 +1086,7 @@ void TabContents::SetIsLoading(bool is_loading,
     return;
 
   if (!is_loading) {
-    load_state_ = net::LOAD_STATE_IDLE;
+    load_state_ = net::LoadStateWithParam(net::LOAD_STATE_IDLE, string16());
     load_state_host_.clear();
     upload_size_ = 0;
     upload_position_ = 0;
@@ -1803,7 +1803,7 @@ void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
 }
 
 void TabContents::LoadStateChanged(const GURL& url,
-                                   net::LoadState load_state,
+                                   const net::LoadStateWithParam& load_state,
                                    uint64 upload_position,
                                    uint64 upload_size) {
   load_state_ = load_state;
@@ -1811,7 +1811,7 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_size_ = upload_size;
   load_state_host_ = net::IDNToUnicode(url.host(),
       content::GetContentClient()->browser()->GetAcceptLangs(this));
-  if (load_state_ == net::LOAD_STATE_READING_RESPONSE)
+  if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading())
     NotifyNavigationStateChanged(INVALIDATE_LOAD | INVALIDATE_TAB);

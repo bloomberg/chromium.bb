@@ -319,8 +319,10 @@ class RenderViewHost : public RenderWidgetHost {
                                     const std::vector<FilePath>& files);
 
   // Notifies the RenderViewHost that its load state changed.
-  void LoadStateChanged(const GURL& url, net::LoadState load_state,
-                        uint64 upload_position, uint64 upload_size);
+  void LoadStateChanged(const GURL& url,
+                        const net::LoadStateWithParam& load_state,
+                        uint64 upload_position,
+                        uint64 upload_size);
 
   bool SuddenTerminationAllowed() const;
   void set_sudden_termination_allowed(bool enabled) {

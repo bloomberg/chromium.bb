@@ -218,6 +218,7 @@ class ExtensionWebRequestEventRouter {
   void AddEventListener(
       void* profile,
       const std::string& extension_id,
+      const std::string& extension_name,
       const std::string& event_name,
       const std::string& sub_event_name,
       const RequestFilter& filter,
@@ -298,7 +299,11 @@ class ExtensionWebRequestEventRouter {
   // method requested by the extension with the highest precedence. Precedence
   // is decided by extension install time. If |response| is non-NULL, this
   // method assumes ownership.
-  void DecrementBlockCount(uint64 request_id, EventResponse* response);
+  void DecrementBlockCount(
+      void* profile,
+      const std::string& event_name,
+      uint64 request_id,
+      EventResponse* response);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.

@@ -126,12 +126,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // Identifies the type of resource, such as subframe, media, etc.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  // Returns the last updated state of the load. This is updated periodically
-  // by the ResourceDispatcherHost and tracked here so we don't send out
-  // unnecessary state change notifications.
-  net::LoadState last_load_state() const { return last_load_state_; }
-  void set_last_load_state(net::LoadState s) { last_load_state_ = s; }
-
   // When there is upload data, this is the byte count of that data. When there
   // is no upload, this will be 0.
   uint64 upload_size() const { return upload_size_; }
@@ -222,7 +216,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool has_user_gesture_;
   int pause_count_;
   ResourceType::Type resource_type_;
-  net::LoadState last_load_state_;
   uint64 upload_size_;
   uint64 last_upload_position_;
   base::TimeTicks last_upload_ticks_;

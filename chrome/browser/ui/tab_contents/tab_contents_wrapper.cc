@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
@@ -307,11 +308,14 @@ string16 TabContentsWrapper::GetDefaultTitle() {
 
 string16 TabContentsWrapper::GetStatusText() const {
   if (!tab_contents()->IsLoading() ||
-      tab_contents()->load_state() == net::LOAD_STATE_IDLE) {
+      tab_contents()->load_state().state == net::LOAD_STATE_IDLE) {
     return string16();
   }
 
-  switch (tab_contents()->load_state()) {
+  switch (tab_contents()->load_state().state) {
+    case net::LOAD_STATE_WAITING_FOR_DELEGATE:
+      return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_DELEGATE,
+                                        tab_contents()->load_state().param);
     case net::LOAD_STATE_WAITING_FOR_CACHE:
       return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
     case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:

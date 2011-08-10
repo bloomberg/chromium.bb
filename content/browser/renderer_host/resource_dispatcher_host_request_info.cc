@@ -39,7 +39,6 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       has_user_gesture_(has_user_gesture),
       pause_count_(0),
       resource_type_(resource_type),
-      last_load_state_(net::LOAD_STATE_IDLE),
       upload_size_(upload_size),
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),

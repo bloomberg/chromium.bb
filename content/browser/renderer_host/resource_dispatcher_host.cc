@@ -1830,14 +1830,15 @@ namespace {
 // doing something that corresponds to changes that the user might observe,
 // whereas waiting for a host name to resolve implies being stuck.
 //
-net::LoadState MoreInterestingLoadState(net::LoadState a, net::LoadState b) {
-  return (a < b) ? b : a;
+const net::LoadStateWithParam& MoreInterestingLoadState(
+    const net::LoadStateWithParam& a, const net::LoadStateWithParam& b) {
+  return (a.state < b.state) ? b : a;
 }
 
 // Carries information about a load state change.
 struct LoadInfo {
   GURL url;
-  net::LoadState load_state;
+  net::LoadStateWithParam load_state;
   uint64 upload_position;
   uint64 upload_size;
 };
@@ -1879,7 +1880,7 @@ void ResourceDispatcherHost::UpdateLoadStates() {
     net::URLRequest* request = i->second;
     ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
     uint64 upload_size = info->upload_size();
-    if (request->GetLoadState() != net::LOAD_STATE_SENDING_REQUEST)
+    if (request->GetLoadState().state != net::LOAD_STATE_SENDING_REQUEST)
       upload_size = 0;
     std::pair<int, int> key(info->child_id(), info->route_id());
     if (upload_size && largest_upload_size[key] < upload_size)
@@ -1888,40 +1889,33 @@ void ResourceDispatcherHost::UpdateLoadStates() {
 
   for (i = pending_requests_.begin(); i != pending_requests_.end(); ++i) {
     net::URLRequest* request = i->second;
-    net::LoadState load_state = request->GetLoadState();
+    net::LoadStateWithParam load_state = request->GetLoadState();
     ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+    std::pair<int, int> key(info->child_id(), info->route_id());
 
     // We also poll for upload progress on this timer and send upload
     // progress ipc messages to the plugin process.
-    bool update_upload_progress = MaybeUpdateUploadProgress(info, request);
+    MaybeUpdateUploadProgress(info, request);
 
-    if (info->last_load_state() != load_state || update_upload_progress) {
-      std::pair<int, int> key(info->child_id(), info->route_id());
+    // If a request is uploading data, ignore all other requests so that the
+    // upload progress takes priority for being shown in the status bar.
+    if (largest_upload_size.find(key) != largest_upload_size.end() &&
+        info->upload_size() < largest_upload_size[key])
+      continue;
 
-      // If a request is uploading data, ignore all other requests so that the
-      // upload progress takes priority for being shown in the status bar.
-      if (largest_upload_size.find(key) != largest_upload_size.end() &&
-          info->upload_size() < largest_upload_size[key])
+    net::LoadStateWithParam to_insert = load_state;
+    LoadInfoMap::iterator existing = info_map.find(key);
+    if (existing != info_map.end()) {
+      to_insert =
+          MoreInterestingLoadState(existing->second.load_state, load_state);
+      if (to_insert.state == existing->second.load_state.state)
         continue;
-
-      info->set_last_load_state(load_state);
-
-      net::LoadState to_insert;
-      LoadInfoMap::iterator existing = info_map.find(key);
-      if (existing == info_map.end()) {
-        to_insert = load_state;
-      } else {
-        to_insert =
-            MoreInterestingLoadState(existing->second.load_state, load_state);
-        if (to_insert == existing->second.load_state)
-          continue;
-      }
-      LoadInfo& load_info = info_map[key];
-      load_info.url = request->url();
-      load_info.load_state = to_insert;
-      load_info.upload_size = info->upload_size();
-      load_info.upload_position = request->GetUploadProgress();
     }
+    LoadInfo& load_info = info_map[key];
+    load_info.url = request->url();
+    load_info.load_state = to_insert;
+    load_info.upload_size = info->upload_size();
+    load_info.upload_position = request->GetUploadProgress();
   }
 
   if (info_map.empty())
@@ -1933,18 +1927,17 @@ void ResourceDispatcherHost::UpdateLoadStates() {
 }
 
 // Calls the ResourceHandler to send upload progress messages to the renderer.
-// Returns true iff an upload progress message should be sent to the UI thread.
-bool ResourceDispatcherHost::MaybeUpdateUploadProgress(
+void ResourceDispatcherHost::MaybeUpdateUploadProgress(
     ResourceDispatcherHostRequestInfo *info,
     net::URLRequest *request) {
 
   if (!info->upload_size() || info->waiting_for_upload_progress_ack())
-    return false;
+    return;
 
   uint64 size = info->upload_size();
   uint64 position = request->GetUploadProgress();
   if (position == info->last_upload_position())
-    return false;  // no progress made since last time
+    return;  // no progress made since last time
 
   const uint64 kHalfPercentIncrements = 200;
   const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
@@ -1964,9 +1957,7 @@ bool ResourceDispatcherHost::MaybeUpdateUploadProgress(
     }
     info->set_last_upload_ticks(TimeTicks::Now());
     info->set_last_upload_position(position);
-    return true;
   }
-  return false;
 }
 
 void ResourceDispatcherHost::BlockRequestsForRoute(int child_id, int route_id) {

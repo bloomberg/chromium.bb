@@ -378,7 +378,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void UpdateLoadStates();
 
   // Checks the upload state and sends an update if one is necessary.
-  bool MaybeUpdateUploadProgress(ResourceDispatcherHostRequestInfo *info,
+  void MaybeUpdateUploadProgress(ResourceDispatcherHostRequestInfo *info,
                                  net::URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.

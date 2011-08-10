@@ -329,8 +329,10 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void RendererResponsive(RenderViewHost* render_view_host) {}
 
   // Notification that the RenderViewHost's load state changed.
-  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
-                                uint64 upload_position, uint64 upload_size) {}
+  virtual void LoadStateChanged(const GURL& url,
+                                const net::LoadStateWithParam& load_state,
+                                uint64 upload_position,
+                                uint64 upload_size) {}
 
   // Notification that a worker process has crashed.
   virtual void WorkerCrashed() {}
