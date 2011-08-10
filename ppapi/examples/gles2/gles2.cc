@@ -85,7 +85,7 @@ class GLES2DemoInstance : public pp::Instance,
   void DecodeNextNALUs();
   void DecodeNextNALU();
   void GetNextNALUBoundary(size_t start_pos, size_t* end_pos);
-  void Render(const PP_PictureBuffer_Dev& buffer);
+  void PaintStart(const PP_Picture_Dev& picture);
   void DeleteOutstandingBitstreamBuffers();
 
   // GL-related functions.
@@ -324,6 +324,10 @@ void GLES2DemoInstance::DismissPictureBuffer(PP_Resource decoder,
 void GLES2DemoInstance::PictureReady(PP_Resource decoder,
                                      const PP_Picture_Dev& picture) {
   assert(decoder == video_decoder_->pp_resource());
+  PaintStart(picture);
+}
+
+void GLES2DemoInstance::PaintStart(const PP_Picture_Dev& picture) {
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
   if (is_painting_) {
@@ -333,7 +337,18 @@ void GLES2DemoInstance::PictureReady(PP_Resource decoder,
   PictureBufferMap::iterator it =
       buffers_by_id_.find(picture.picture_buffer_id);
   assert(it != buffers_by_id_.end());
-  Render(it->second);
+  const PP_PictureBuffer_Dev& buffer = it->second;
+  assert(!is_painting_);
+  is_painting_ = true;
+  gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
+  gles2_if_->BindTexture(
+      context_->pp_resource(), GL_TEXTURE_2D, buffer.texture_id);
+  gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(
+          &GLES2DemoInstance::PaintFinished, buffer.id);
+  last_swap_request_ticks_ = core_if_->GetTimeTicks();
+  assert(surface_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
 }
 
 void GLES2DemoInstance::EndOfStream(PP_Resource decoder) {
@@ -388,20 +403,6 @@ void GLES2DemoInstance::InitGL() {
   CreateGLObjects();
 }
 
-void GLES2DemoInstance::Render(const PP_PictureBuffer_Dev& buffer) {
-  assert(!is_painting_);
-  is_painting_ = true;
-  gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
-  gles2_if_->BindTexture(
-      context_->pp_resource(), GL_TEXTURE_2D, buffer.texture_id);
-  gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(
-          &GLES2DemoInstance::PaintFinished, buffer.id);
-  last_swap_request_ticks_ = core_if_->GetTimeTicks();
-  assert(surface_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
-}
-
 void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   swap_ticks_ += core_if_->GetTimeTicks() - last_swap_request_ticks_;
   is_painting_ = false;
@@ -416,10 +417,10 @@ void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   }
   if (video_decoder_)
     video_decoder_->ReusePictureBuffer(picture_buffer_id);
-  while (!pictures_pending_paint_.empty() && !is_painting_) {
+  if (!pictures_pending_paint_.empty()) {
     PP_Picture_Dev picture = pictures_pending_paint_.front();
     pictures_pending_paint_.pop_front();
-    PictureReady(video_decoder_->pp_resource(), picture);
+    PaintStart(picture);
   }
 }
 
