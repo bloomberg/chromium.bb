@@ -164,7 +164,13 @@ static bool LoadScriptContent(UserScript::File* script_file) {
   std::string content;
   const FilePath& path = ExtensionResource::GetFilePath(
       script_file->extension_root(), script_file->relative_path());
-  if (path.empty() || !file_util::ReadFileToString(path, &content)) {
+  if (path.empty()) {
+    LOG(WARNING) << "Failed to get file path to "
+                 << script_file->relative_path().value() << " from "
+                 << script_file->extension_root().value();
+    return false;
+  }
+  if (!file_util::ReadFileToString(path, &content)) {
     LOG(WARNING) << "Failed to load user script file: " << path.value();
     return false;
   }

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,13 +111,7 @@ void WizardAccessibilityHelper::ToggleAccessibility() {
 
 void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
   bool doSpeak = (IsAccessibilityEnabled() != enabled);
-  if (g_browser_process) {
-    PrefService* prefService = g_browser_process->local_state();
-    prefService->SetBoolean(prefs::kAccessibilityEnabled, enabled);
-    prefService->ScheduleSavePersistentPrefs();
-  }
-  ExtensionAccessibilityEventRouter::GetInstance()->
-      SetAccessibilityEnabled(enabled);
+  accessibility::EnableAccessibility(enabled, NULL);
   if (doSpeak) {
     accessibility_handler_->Speak(enabled ?
         l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
