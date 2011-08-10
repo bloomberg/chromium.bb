@@ -322,6 +322,15 @@ def FindRepoDir(path=None):
   return None
 
 
+def FindRepoCheckoutRoot(path=None):
+  """Get the root of your repo managed checkout."""
+  repo_dir = FindRepoDir(path)
+  if repo_dir:
+    return os.path.dirname(repo_dir)
+  else:
+    return None
+
+
 def GetProjectDir(cwd, project):
   """Returns the absolute path to a project.
 

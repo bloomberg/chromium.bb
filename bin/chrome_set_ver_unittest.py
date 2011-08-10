@@ -40,7 +40,7 @@ class DEPSFileTest(mox.MoxTestBase):
     repo_root = cros_lib.FindRepoDir()
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
 
-  def testParseAndRunDEPSFile(self):
+  def testParseAndRunDEPSFileAndGenerateSymlink(self):
     """Test resetting of repos, usage of Var's and running of hooks."""
     chrome_set_ver.main(['-d',
                          os.path.join(self.test_base, 'test_1/DEPS.git')])
@@ -60,6 +60,10 @@ class DEPSFileTest(mox.MoxTestBase):
     hook2_output = os.path.join(self.repo_root, 'chromium', 'out2')
     self.assertTrue(os.path.exists(hook1_output))
     self.assertTrue(os.path.exists(hook2_output))
+
+    # Verify symlink was generated
+    test_file = 'chromium/src/third_party/cros/TEST'
+    self.assertTrue(os.path.exists(os.path.join(self.repo_root, test_file)))
 
   def testErrorOnOverlap(self):
     """Test that an overlapping entry in unix deps causes error."""

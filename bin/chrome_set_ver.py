@@ -13,6 +13,9 @@ import chromite.lib.cros_build_lib as cros_lib
 
 
 _CHROMIUM_SRC_ROOT = 'chromium/src'
+_CHROMIUM_CROS_DIR = 'chromium/src/third_party/cros'
+_PLATFORM_CROS_DIR = 'src/platform/cros'
+_PLATFORM_CROS_NAME = 'chromiumos/platform/cros'
 
 
 def _LoadDEPS(deps_content):
@@ -52,10 +55,25 @@ def _LoadDEPS(deps_content):
 
 
 def _ResetProject(project_path, commit_hash):
-  """Reset a git repo to the specified commit hash"""
+  """Reset a git repo to the specified commit hash."""
   cros_lib.RunCommand(['git', 'checkout', commit_hash],  print_cmd=False,
                       redirect_stdout=True, redirect_stderr=True,
                       cwd=project_path)
+
+
+def _CreateCrosSymlink(repo_root):
+  """Create the src/third_party/cros symlink that chromium needs to build."""
+  platform_cros_dir = os.path.join(repo_root, _PLATFORM_CROS_DIR)
+  if not os.path.isdir(platform_cros_dir):
+    cros_lib.Die('Repository %s not found!  Please add project %s to your'
+                 'manifest' % (platform_cros_dir, _PLATFORM_CROS_NAME))
+
+  chromium_cros_dir = os.path.join(os.path.join(repo_root, _CHROMIUM_CROS_DIR))
+  rel_link_source = os.path.relpath(platform_cros_dir,
+                                    os.path.dirname(chromium_cros_dir))
+  if not os.path.exists(chromium_cros_dir):
+    print rel_link_source
+    os.symlink(rel_link_source, chromium_cros_dir)
 
 
 def _ResetGitCheckout(chromium_root, deps):
@@ -97,8 +115,8 @@ def main(argv=None):
                     default=True, help='Allow chrome-internal URLs')
   (options, inputs) = parser.parse_args(argv)
 
-  chromium_src_root = os.path.join(os.path.dirname(cros_lib.FindRepoDir()),
-                                   _CHROMIUM_SRC_ROOT)
+  repo_root = cros_lib.FindRepoCheckoutRoot()
+  chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(chromium_src_root):
     sys.exit('chromium src/ dir not found')
 
@@ -114,6 +132,7 @@ def main(argv=None):
   merged_deps.update(unix_deps)
 
   chromium_root = os.path.dirname(chromium_src_root)
+  _CreateCrosSymlink(repo_root)
   _ResetGitCheckout(chromium_root, merged_deps)
   _RunHooks(chromium_root, deps['hooks'])
 
