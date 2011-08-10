@@ -83,6 +83,7 @@ class ChromeTests(object):
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
+      "content": self.TestContent,      "content_unittests": self.TestContent,
       "courgette": self.TestCourgette,
       "courgette_unittests": self.TestCourgette,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
@@ -261,6 +262,9 @@ class ChromeTests(object):
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
+
+  def TestContent(self):
+    return self.SimpleTest("content", "content_unittests")
 
   def TestCourgette(self):
     return self.SimpleTest("courgette", "courgette_unittests")

@@ -213,6 +213,9 @@ class ChromeTests:
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
 
+  def TestContent(self):
+    return self.SimpleTest("content", "content_unittests")
+
   def TestCourgette(self):
     return self.SimpleTest("courgette", "courgette_unittests")
 
@@ -422,6 +425,7 @@ class ChromeTests:
     "browser": TestBrowser,      "browser_tests": TestBrowser,
     "crypto": TestCrypto,        "crypto_unittests": TestCrypto,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
+    "content": TestContent,      "content_unittests": TestContent,
     "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
