@@ -5247,42 +5247,32 @@
    bug_92267_a
    Memcheck:Addr2
    fun:_ZNK9__gnu_cxx4hashIN4base13StringPiece16EEclERKS2_
-   fun:_ZNK9__gnu_cxx9hashtableISt4pairIKN4base13StringPiece16ESt14_List_iteratorIS1_IS3_bEEES3_NS_4hashIS3_EESt10_Select1stIS8_ESt8equal_toIS3_ESaIS7_EE14_M_bkt_num_keyERS4_j
+   fun:*
    fun:_ZNK9__gnu_cxx9hashtableISt4pairIKN4base13StringPiece16ESt14_List_iteratorIS1_IS3_bEEES3_NS_4hashIS3_EESt10_Select1stIS8_ESt8equal_toIS3_ESaIS7_EE14_M_bkt_num_keyERS4_
    fun:_ZN9__gnu_cxx9hashtableISt4pairIKN4base13StringPiece16ESt14_List_iteratorIS1_IS3_bEEES3_NS_4hashIS3_EESt10_Select1stIS8_ESt8equal_toIS3_ESaIS7_EE5eraseERS4_
    fun:_ZN9__gnu_cxx8hash_mapIN4base13StringPiece16ESt14_List_iteratorISt4pairIS2_bEENS_4hashIS2_EESt8equal_toIS2_ESaIS6_EE5eraseERKS2_
    fun:_ZN4base12MRUCacheBaseINS_13StringPiece16EbNS_19MRUCacheNullDeletorIbEENS_15MRUCacheHashMapEE5EraseESt14_List_iteratorISt4pairIS1_bEE
    fun:_ZN4base12MRUCacheBaseINS_13StringPiece16EbNS_19MRUCacheNullDeletorIbEENS_15MRUCacheHashMapEED2Ev
-   fun:_ZN4base15HashingMRUCacheINS_13StringPiece16EbED1Ev
+   ...
    fun:_ZN13safe_browsing28PhishingTermFeatureExtractorD1Ev
-   fun:_ZN10scoped_ptrIN13safe_browsing28PhishingTermFeatureExtractorEED1Ev
+   ...
    fun:_ZN13safe_browsing32PhishingTermFeatureExtractorTestD2Ev
    fun:_ZN13safe_browsing50PhishingTermFeatureExtractorTest_Continuation_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
 }
 {
    bug_92267_b
    Memcheck:Addr2
-   fun:_ZN4base9c16memcmpEPKtS1_j
-   fun:_ZN4base20string16_char_traits7compareEPKtS2_j
-   fun:_ZN4base13StringPiece1610wordmemcmpEPKtS2_j
+   fun:_ZN4base9c16memcmp*
+   fun:_ZN4base20string16_char_traits7compare*
+   fun:_ZN4base13StringPiece1610wordmemcmp*
    fun:_ZN4baseeqERKNS_13StringPiece16ES2_
    fun:_ZNKSt8equal_toIN4base13StringPiece16EEclERKS1_S4_
    fun:_ZN9__gnu_cxx9hashtableISt4pairIKN4base13StringPiece16ESt14_List_iteratorIS1_IS3_bEEES3_NS_4hashIS3_EESt10_Select1stIS8_ESt8equal_toIS3_ESaIS7_EE5eraseERS4_
    fun:_ZN9__gnu_cxx8hash_mapIN4base13StringPiece16ESt14_List_iteratorISt4pairIS2_bEENS_4hashIS2_EESt8equal_toIS2_ESaIS6_EE5eraseERKS2_
    fun:_ZN4base12MRUCacheBaseINS_13StringPiece16EbNS_19MRUCacheNullDeletorIbEENS_15MRUCacheHashMapEE5EraseESt14_List_iteratorISt4pairIS1_bEE
    fun:_ZN4base12MRUCacheBaseINS_13StringPiece16EbNS_19MRUCacheNullDeletorIbEENS_15MRUCacheHashMapEED2Ev
-   fun:_ZN4base15HashingMRUCacheINS_13StringPiece16EbED1Ev
-   fun:_ZN13safe_browsing28PhishingTermFeatureExtractorD1Ev
+   fun:_ZN4base15HashingMRUCacheINS_13StringPiece16*
+   ...
    fun:_ZN10scoped_ptrIN13safe_browsing28PhishingTermFeatureExtractorEED1Ev
    fun:_ZN13safe_browsing32PhishingTermFeatureExtractorTestD2Ev
    fun:_ZN13safe_browsing50PhishingTermFeatureExtractorTest_Continuation_TestD0Ev
@@ -5291,9 +5281,6 @@
    fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
    fun:_ZN7testing8TestInfo3RunEv
    fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
 }
 
 #-----------------------------------------------------------------------
