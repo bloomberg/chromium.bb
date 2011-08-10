@@ -37,16 +37,16 @@ message NigoriSpecifics {
   
   // Obsolete encryption fields. These were deprecated due to legacy versions
   // that understand their usage but did not perform encryption properly.
-  // optional bool encrypt_bookmarks = 3;
-  // optional bool encrypt_preferences = 4;
-  // optional bool encrypt_autofill_profile = 5;
-  // optional bool encrypt_autofill = 6;
-  // optional bool encrypt_themes = 7;
-  // optional bool encrypt_typed_urls = 8;
-  // optional bool encrypt_extensions = 9;
-  // optional bool encrypt_sessions = 10;
-  // optional bool encrypt_apps = 11;
-  // optional bool encrypt_search_engines = 12;
+  // optional bool deprecated_encrypt_bookmarks = 3;
+  // optional bool deprecated_encrypt_preferences = 4;
+  // optional bool deprecated_encrypt_autofill_profile = 5;
+  // optional bool deprecated_encrypt_autofill = 6;
+  // optional bool deprecated_encrypt_themes = 7;
+  // optional bool deprecated_encrypt_typed_urls = 8;
+  // optional bool deprecated_encrypt_extensions = 9;
+  // optional bool deprecated_encrypt_sessions = 10;
+  // optional bool deprecated_encrypt_apps = 11;
+  // optional bool deprecated_encrypt_search_engines = 12;
   
   // Booleans corresponding to whether a datatype should be encrypted.
   // Passwords are always encrypted, so we don't need a field here.

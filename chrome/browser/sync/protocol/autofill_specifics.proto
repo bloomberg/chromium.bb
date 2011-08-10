@@ -22,7 +22,7 @@ import "sync.proto";
 message AutofillProfileSpecifics {
   // User-defined label.
   optional string label = 1;
-  
+
   optional string guid = 15;
 
   // Contact info.
@@ -46,7 +46,7 @@ message AutofillProfileSpecifics {
 }
 
 message AutofillCreditCardSpecifics {
-  // User-defined label (e.g. Amazon Visa). 
+  // User-defined label (e.g. Amazon Visa).
   optional string label = 1;
 
   // The cardholder's name.
