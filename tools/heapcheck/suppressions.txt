@@ -1407,10 +1407,10 @@
    fun:std::vector::push_back
    fun:ObserverListBase::AddObserver
    fun:net::SSLConfigService::AddObserver
-   fun:net::SSLClientSocketPool::SSLClientSocketPool
-   fun:net::ClientSocketPoolManager::ClientSocketPoolManager
-   fun:net::HttpNetworkSession::HttpNetworkSession
-   fun:notifier::ProxyResolvingClientSocket::ProxyResolvingClientSocket
+   fun:SSLClientSocketPool
+   fun:ClientSocketPoolManager
+   fun:HttpNetworkSession
+   fun:ProxyResolvingClientSocket
    fun:notifier::XmppClientSocketFactory::CreateTransportClientSocket
    fun:notifier::ChromeAsyncSocket::Connect
    fun:buzz::XmppClient::ProcessStartXmppLogin
