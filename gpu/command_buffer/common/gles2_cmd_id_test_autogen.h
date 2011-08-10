@@ -393,10 +393,6 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_RegisterSharedIdsCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(CommandBufferEnableCHROMIUM::kCmdId == 442,
                  GLES2_CommandBufferEnableCHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(CopyTextureToParentTextureCHROMIUM::kCmdId == 447,
-                 GLES2_CopyTextureToParentTextureCHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(ResizeCHROMIUM::kCmdId == 448,
-                 GLES2_ResizeCHROMIUM_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_

@@ -67,8 +67,6 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   SetupInitExpectations("");
   info_.Initialize(NULL);
   // Check default extensions are there
-  EXPECT_THAT(info_.extensions(),
-              HasSubstr("GL_CHROMIUM_copy_texture_to_parent_texture"));
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_resource_safe"));
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
 

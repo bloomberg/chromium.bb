@@ -201,10 +201,12 @@
   OP(CompressedTexSubImage2DBucket)                            /* 444 */ \
   OP(RenderbufferStorageMultisampleEXT)                        /* 445 */ \
   OP(BlitFramebufferEXT)                                       /* 446 */ \
-  OP(CopyTextureToParentTextureCHROMIUM)                       /* 447 */ \
+  OP(Placeholder447CHROMIUM)                                   /* 447 */ \
   OP(ResizeCHROMIUM)                                           /* 448 */ \
   OP(GetRequestableExtensionsCHROMIUM)                         /* 449 */ \
   OP(RequestExtensionCHROMIUM)                                 /* 450 */ \
+  OP(Placeholder451CHROMIUM)                                   /* 451 */ \
+  OP(Placeholder452CHROMIUM)                                   /* 452 */ \
   OP(SetSurfaceCHROMIUM)                                       /* 453 */ \
   OP(GetMultipleIntegervCHROMIUM)                              /* 454 */ \
   OP(GetProgramInfoCHROMIUM)                                   /* 455 */ \

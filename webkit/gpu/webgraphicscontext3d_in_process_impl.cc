@@ -681,29 +681,7 @@ void WebGraphicsContext3DInProcessImpl::unmapTexSubImage2DCHROMIUM(
 
 void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId id, WebGLId id2) {
-  if (!glGetTexLevelParameteriv)
-    return;
-
-  makeContextCurrent();
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, copy_texture_to_parent_texture_fbo_);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
-                            GL_COLOR_ATTACHMENT0,
-                            GL_TEXTURE_2D,
-                            id,
-                            0);  // level
-  glBindTexture(GL_TEXTURE_2D, id2);
-  GLsizei width, height;
-  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
-  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
-  glCopyTexImage2D(GL_TEXTURE_2D,
-                   0,  // level
-                   GL_RGBA,
-                   0, 0,  // x, y
-                   width,
-                   height,
-                   0);  // border
-  glBindTexture(GL_TEXTURE_2D, bound_texture_);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
+  NOTIMPLEMENTED();
 }
 
 WebString WebGraphicsContext3DInProcessImpl::

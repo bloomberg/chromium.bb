@@ -100,6 +100,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   static RendererGLContext* CreateViewContext(
       GpuChannelHost* channel,
       int render_view_id,
+      bool share_resources,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
@@ -123,6 +124,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   static RendererGLContext* CreateOffscreenContext(
       GpuChannelHost* channel,
       const gfx::Size& size,
+      bool share_resources,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
@@ -191,6 +193,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   bool Initialize(bool onscreen,
                   int render_view_id,
                   const gfx::Size& size,
+                  bool share_resources,
                   RendererGLContext* share_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,

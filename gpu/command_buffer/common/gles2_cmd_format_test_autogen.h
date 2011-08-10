@@ -3454,21 +3454,6 @@ TEST(GLES2FormatTest, CommandBufferEnableCHROMIUM) {
   EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_offset);
 }
 
-TEST(GLES2FormatTest, CopyTextureToParentTextureCHROMIUM) {
-  CopyTextureToParentTextureCHROMIUM cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<GLuint>(12));
-  EXPECT_EQ(static_cast<uint32>(CopyTextureToParentTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.client_child_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.client_parent_id);
-}
-
 TEST(GLES2FormatTest, ResizeCHROMIUM) {
   ResizeCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -3559,6 +3544,39 @@ TEST(GLES2FormatTest, GetProgramInfoCHROMIUM) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
   EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
+}
+
+TEST(GLES2FormatTest, Placeholder447CHROMIUM) {
+  Placeholder447CHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(Placeholder447CHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+}
+
+TEST(GLES2FormatTest, Placeholder451CHROMIUM) {
+  Placeholder451CHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(Placeholder451CHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+}
+
+TEST(GLES2FormatTest, Placeholder452CHROMIUM) {
+  Placeholder452CHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(Placeholder452CHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

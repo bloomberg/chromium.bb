@@ -213,7 +213,6 @@ GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, G
 GL_APICALL void         GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
-GL_APICALL void         GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLidBindTexture client_child_id, GLidBindTexture client_parent_id);
 GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
@@ -221,6 +220,9 @@ GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
+GL_APICALL void         GL_APIENTRY glPlaceholder447CHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glPlaceholder451CHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glPlaceholder452CHROMIUM (void);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -420,10 +422,12 @@ _CMD_ID_TABLE = {
   'CompressedTexSubImage2DBucket':                             444,
   'RenderbufferStorageMultisampleEXT':                         445,
   'BlitFramebufferEXT':                                        446,
-  'CopyTextureToParentTextureCHROMIUM':                        447,
+  'Placeholder447CHROMIUM':                                    447,
   'ResizeCHROMIUM':                                            448,
   'GetRequestableExtensionsCHROMIUM':                          449,
   'RequestExtensionCHROMIUM':                                  450,
+  'Placeholder451CHROMIUM':                                    451,
+  'Placeholder452CHROMIUM':                                    452,
   'SetSurfaceCHROMIUM':                                        453,
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
@@ -1722,13 +1726,6 @@ _FUNCTION_INFO = {
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
   },
-  'CopyTextureToParentTextureCHROMIUM': {
-      'impl_func': False,
-      'decoder_func': 'DoCopyTextureToParentTextureCHROMIUM',
-      'unit_test': False,
-      'extension': True,
-      'chromium': True,
-  },
   'ResizeCHROMIUM': {
       'decoder_func': 'DoResizeCHROMIUM',
       'unit_test': False,
@@ -1755,6 +1752,15 @@ _FUNCTION_INFO = {
     'gen_cmd': False,
     'extension': True,
     'chromium': True,
+  },
+  'Placeholder447CHROMIUM': {
+    'type': 'UnknownCommand',
+  },
+  'Placeholder451CHROMIUM': {
+    'type': 'UnknownCommand',
+  },
+  'Placeholder452CHROMIUM': {
+    'type': 'UnknownCommand',
   },
 }
 
@@ -2280,6 +2286,18 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("\n")
+
+  def WriteGLES2CLibImplementation(self, func, file):
+    file.Write("%s GLES2%s(%s) {\n" %
+               (func.return_type, func.name,
+                func.MakeTypedOriginalArgString("")))
+    result_string = "return "
+    if func.return_type == "void":
+      result_string = ""
+    file.Write("  %sgles2::GetGLContext()->%s(%s);\n" %
+               (result_string, func.original_name,
+                func.MakeOriginalArgString("")))
+    file.Write("}\n")
 
   def WriteClientGLCallLog(self, func, file):
     """Writes a logging macro for the client side code."""
@@ -4308,6 +4326,40 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     """Overrriden from TypeHandler."""
     pass
 
+class UnknownCommandHandler(TypeHandler):
+  """Handler for commands that always fail with kUnknownCommand."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def AddImmediateFunction(self, generator, func):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write(
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+    file.Write("  return error::kUnknownCommand;\n")
+    file.Write("}\n")
+
+  def WriteGLES2ImplementationHeader(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteCmdHelper(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteGLES2CLibImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass;
+
+  def WriteServiceUnitTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass;
 
 class FunctionInfo(object):
   """Holds info about a function."""
@@ -5075,6 +5127,10 @@ class Function(object):
     """Writes the service implementation for a command."""
     self.type_handler.WriteServiceUnitTest(self, file)
 
+  def WriteGLES2CLibImplementation(self, file):
+    """Writes the GLES2 C Lib Implemention."""
+    self.type_handler.WriteGLES2CLibImplementation(self, file)
+
   def WriteGLES2ImplementationHeader(self, file):
     """Writes the GLES2 Implemention declaration."""
     self.type_handler.WriteGLES2ImplementationHeader(self, file)
@@ -5303,6 +5359,7 @@ class GLGenerator(object):
       'PUTXn': PUTXnHandler(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
+      'UnknownCommand': UnknownCommandHandler(),
     }
 
     for func_name in _FUNCTION_INFO:
@@ -5569,17 +5626,7 @@ class GLGenerator(object):
         "// These functions emluate GLES2 over command buffers.\n")
 
     for func in self.original_functions:
-      file.Write("%s GLES2%s(%s) {\n" %
-                 (func.return_type, func.name,
-                  func.MakeTypedOriginalArgString("")))
-      result_string = "return "
-      if func.return_type == "void":
-        result_string = ""
-      file.Write("  %sgles2::GetGLContext()->%s(%s);\n" %
-                 (result_string, func.original_name,
-                  func.MakeOriginalArgString("")))
-      file.Write("}\n")
-
+      func.WriteGLES2CLibImplementation(file)
     file.Write("\n")
 
     file.Close()

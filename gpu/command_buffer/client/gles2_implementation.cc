@@ -847,15 +847,6 @@ void GLES2Implementation::SwapBuffers() {
   }
 }
 
-void GLES2Implementation::CopyTextureToParentTextureCHROMIUM(
-    GLuint client_child_id, GLuint client_parent_id) {
-  GPU_CLIENT_LOG("[" << this << "] glCopyTextureToParentTextureCHROMIUM("
-      << client_child_id << ", "
-      << client_parent_id << ")");
-  helper_->CopyTextureToParentTextureCHROMIUM(client_child_id,
-      client_parent_id);
-}
-
 void GLES2Implementation::GenSharedIdsCHROMIUM(
   GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
   GPU_CLIENT_LOG("[" << this << "] glGenSharedIdsCHROMIUMTextures("

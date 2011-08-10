@@ -8767,46 +8767,6 @@ COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_id) == 8,
 COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_offset) == 12,
                OffsetOf_CommandBufferEnableCHROMIUM_result_shm_offset_not_12);
 
-struct CopyTextureToParentTextureCHROMIUM {
-  typedef CopyTextureToParentTextureCHROMIUM ValueType;
-  static const CommandId kCmdId = kCopyTextureToParentTextureCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLuint _client_child_id, GLuint _client_parent_id) {
-    SetHeader();
-    client_child_id = _client_child_id;
-    client_parent_id = _client_parent_id;
-  }
-
-  void* Set(void* cmd, GLuint _client_child_id, GLuint _client_parent_id) {
-    static_cast<ValueType*>(cmd)->Init(_client_child_id, _client_parent_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 client_child_id;
-  uint32 client_parent_id;
-};
-
-COMPILE_ASSERT(sizeof(CopyTextureToParentTextureCHROMIUM) == 12,
-               Sizeof_CopyTextureToParentTextureCHROMIUM_is_not_12);
-COMPILE_ASSERT(offsetof(CopyTextureToParentTextureCHROMIUM, header) == 0,
-               OffsetOf_CopyTextureToParentTextureCHROMIUM_header_not_0);
-COMPILE_ASSERT(
-    offsetof(CopyTextureToParentTextureCHROMIUM, client_child_id) == 4,
-               OffsetOf_CopyTextureToParentTextureCHROMIUM_client_child_id_not_4);  // NOLINT
-COMPILE_ASSERT(
-    offsetof(CopyTextureToParentTextureCHROMIUM, client_parent_id) == 8,
-               OffsetOf_CopyTextureToParentTextureCHROMIUM_client_parent_id_not_8);  // NOLINT
-
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;
   static const CommandId kCmdId = kResizeCHROMIUM;
@@ -9058,6 +9018,96 @@ COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_attribs) == 4,
                OffsetOf_GetProgramInfoCHROMIUM_Result_num_attribs_not_4);
 COMPILE_ASSERT(offsetof(GetProgramInfoCHROMIUM::Result, num_uniforms) == 8,
                OffsetOf_GetProgramInfoCHROMIUM_Result_num_uniforms_not_8);
+
+struct Placeholder447CHROMIUM {
+  typedef Placeholder447CHROMIUM ValueType;
+  static const CommandId kCmdId = kPlaceholder447CHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Placeholder447CHROMIUM) == 4,
+               Sizeof_Placeholder447CHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(Placeholder447CHROMIUM, header) == 0,
+               OffsetOf_Placeholder447CHROMIUM_header_not_0);
+
+struct Placeholder451CHROMIUM {
+  typedef Placeholder451CHROMIUM ValueType;
+  static const CommandId kCmdId = kPlaceholder451CHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Placeholder451CHROMIUM) == 4,
+               Sizeof_Placeholder451CHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(Placeholder451CHROMIUM, header) == 0,
+               OffsetOf_Placeholder451CHROMIUM_header_not_0);
+
+struct Placeholder452CHROMIUM {
+  typedef Placeholder452CHROMIUM ValueType;
+  static const CommandId kCmdId = kPlaceholder452CHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Placeholder452CHROMIUM) == 4,
+               Sizeof_Placeholder452CHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(Placeholder452CHROMIUM, header) == 0,
+               OffsetOf_Placeholder452CHROMIUM_header_not_0);
 
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

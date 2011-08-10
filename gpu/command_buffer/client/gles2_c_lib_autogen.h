@@ -554,11 +554,6 @@ void* GLES2MapTexSubImage2DCHROMIUM(
 void GLES2UnmapTexSubImage2DCHROMIUM(const void* mem) {
   gles2::GetGLContext()->UnmapTexSubImage2DCHROMIUM(mem);
 }
-void GLES2CopyTextureToParentTextureCHROMIUM(
-    GLuint client_child_id, GLuint client_parent_id) {
-  gles2::GetGLContext()->CopyTextureToParentTextureCHROMIUM(
-      client_child_id, client_parent_id);
-}
 void GLES2ResizeCHROMIUM(GLuint width, GLuint height) {
   gles2::GetGLContext()->ResizeCHROMIUM(width, height);
 }

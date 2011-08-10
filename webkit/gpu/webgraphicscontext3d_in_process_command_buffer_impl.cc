@@ -917,9 +917,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
     copyTextureToParentTextureCHROMIUM(WebGLId texture, WebGLId parentTexture) {
-  // TODO(gmam): See if we can comment this in.
-  // ClearContext();
-  copyTextureToCompositor(texture, parentTexture);
+  NOTIMPLEMENTED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
@@ -1610,10 +1608,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::deleteTexture(
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::copyTextureToCompositor(
     WebGLId texture, WebGLId parentTexture) {
-  // TODO(gmam): See if we can comment this in.
-  // ClearContext();
-  gl_->CopyTextureToParentTextureCHROMIUM(texture, parentTexture);
-  gl_->Flush();
+  NOTIMPLEMENTED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnSwapBuffersComplete() {

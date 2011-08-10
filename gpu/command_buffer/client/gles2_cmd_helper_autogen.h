@@ -1195,13 +1195,6 @@
     c.Init(bucket_id, result_shm_id, result_shm_offset);
   }
 
-  void CopyTextureToParentTextureCHROMIUM(
-      GLuint client_child_id, GLuint client_parent_id) {
-    gles2::CopyTextureToParentTextureCHROMIUM& c =
-        GetCmdSpace<gles2::CopyTextureToParentTextureCHROMIUM>();
-    c.Init(client_child_id, client_parent_id);
-  }
-
   void ResizeCHROMIUM(GLuint width, GLuint height) {
     gles2::ResizeCHROMIUM& c = GetCmdSpace<gles2::ResizeCHROMIUM>();
     c.Init(width, height);
