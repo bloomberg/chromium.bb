@@ -2530,7 +2530,7 @@
           "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the item."},
           "visitId": {"type": "string", "description": "The unique identifier for this visit."},
           "visitTime": {"type": "number", "optional": true, "description": "When this visit occurred, represented in milliseconds since the epoch."},
-          "referringVisitId": {"type": "string", "description": "The visit_id of the referrer."},
+          "referringVisitId": {"type": "string", "description": "The visit ID of the referrer."},
           "transition": {
             "type": "string",
             "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"],
