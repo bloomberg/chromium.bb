@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -28,6 +30,8 @@ class LoginDisplayWebUIHandler {
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
+ protected:
+  virtual ~LoginDisplayWebUIHandler() {}
 };
 
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
@@ -46,6 +50,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 
+  // Create a new Google account.
+  virtual void CreateAccount() = 0;
+
   // Attempts to remove given user.
   virtual void RemoveUser(const std::string& username) = 0;
 
@@ -54,6 +61,9 @@ class SigninScreenHandlerDelegate {
 
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
+
+ protected:
+  virtual ~SigninScreenHandlerDelegate() {}
 };
 
 // A class that handles the WebUI hooks in sign-in screen in OobeDisplay
@@ -113,6 +123,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Handles 'launchHelpApp' request.
   void HandleLaunchHelpApp(const base::ListValue* args);
+
+  // Handle 'createAccount' request.
+  void HandleCreateAccount(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

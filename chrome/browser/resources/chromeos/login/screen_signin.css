@@ -14,6 +14,19 @@
   height: 470px;
 }
 
+#signin-right {
+  float: right;
+  font-size: 12px;
+  margin-right: 80px;
+  width: 200px;
+}
+
+.signin-link {
+  color: #254f9b;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
 #gaia-signin > iframe {
   bottom: 0;
   display: -webkit-box;
@@ -22,7 +35,7 @@
   position: absolute;
   right: 0;
   top: 0;
-  width: 100%;
+  width: 340px;
 }
 
 #email,

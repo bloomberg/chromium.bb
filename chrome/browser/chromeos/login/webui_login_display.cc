@@ -161,6 +161,11 @@ void WebUILoginDisplay::LoginAsGuest() {
   delegate_->LoginAsGuest();
 }
 
+void WebUILoginDisplay::CreateAccount() {
+  DCHECK(delegate_);
+  delegate_->CreateAccount();
+}
+
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
   UserManager::Get()->RemoveUser(username, this);
 }

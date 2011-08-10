@@ -34,6 +34,12 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
+      $('createAccount').onclick = function() {
+        chrome.send('createAccount');
+      };
+      $('guestSignin').onclick = function() {
+        chrome.send('launchIncognito');
+      };
     },
 
     /**
@@ -59,6 +65,9 @@ cr.define('login', function() {
       frame.contentWindow.location.href = data.startUrl;
       this.extension_url_ = data.startUrl;
       // TODO(xiyuan): Pre-populate Gaia with data.email (if any).
+
+      $('createAccount').hidden = !data.createAccount;
+      $('guestSignin').hidden = !data.guestSignin;
     },
 
     /**

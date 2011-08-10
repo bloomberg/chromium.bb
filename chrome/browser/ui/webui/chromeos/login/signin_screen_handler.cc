@@ -93,6 +93,10 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
   localized_strings->SetString("offlineMessageBody",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
+  localized_strings->SetString("createAccount",
+      l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON));
+  localized_strings->SetString("guestSignin",
+      l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
 
   if (extension_driven_)
     localized_strings->SetString("authType", "ext");
@@ -151,6 +155,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleToggleEnrollmentScreen));
   web_ui_->RegisterMessageCallback("launchHelpApp",
       NewCallback(this, &SigninScreenHandler::HandleLaunchHelpApp));
+  web_ui_->RegisterMessageCallback("createAccount",
+      NewCallback(this, &SigninScreenHandler::HandleCreateAccount));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -239,6 +245,11 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     // |args| can be null if it's OOBE.
     if (args && args->GetString(0, &email))
       params.SetString("email", email);
+
+    params.SetBoolean("createAccount",
+        UserCrosSettingsProvider::cached_allow_new_user());
+    params.SetBoolean("guestSignin",
+        UserCrosSettingsProvider::cached_allow_guest());
 
     ShowScreen(kGaiaSigninScreen, &params);
   } else {
@@ -333,6 +344,10 @@ void SigninScreenHandler::SendUserList(bool animated) {
   base::FundamentalValue animated_value(animated);
   web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
                                   users_list, animated_value);
+}
+
+void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
+  delegate_->CreateAccount();
 }
 
 }  // namespace chromeos
