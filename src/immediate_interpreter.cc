@@ -126,6 +126,8 @@ ImmediateInterpreter::ImmediateInterpreter()
       sent_button_down_(false),
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
+      tap_enable_(true),
+      tap_enable_prop_(NULL),
       tap_timeout_(0.2),
       tap_timeout_prop_(NULL),
       tap_drag_timeout_(0.7),
@@ -159,6 +161,8 @@ ImmediateInterpreter::~ImmediateInterpreter() {
     prev_state_.fingers = NULL;
   }
 
+  if (tap_enable_prop_ != NULL)
+    Log("tap_enable_prop_ not freed?");
   if (tap_timeout_prop_ != NULL)
     Log("tap_timeout_prop_ not freed?");
   if (tap_drag_timeout_prop_ != NULL)
@@ -474,6 +478,8 @@ void ImmediateInterpreter::UpdateTapState(
     unsigned* buttons_down,
     unsigned* buttons_up,
     stime_t* timeout) {
+  if (tap_to_click_state_ == kTtcIdle && !tap_enable_)
+    return;
   Log("Entering UpdateTapState");
   if (hwstate)
     for (int i = 0; i < hwstate->finger_cnt; ++i)
@@ -888,6 +894,8 @@ void ImmediateInterpreter::SetHardwareProperties(
 }
 
 void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
+  tap_enable_prop_ = pp->create_bool_fn(data, "Tap Enable",
+    &tap_enable_, tap_enable_);
   tap_timeout_prop_ = pp->create_real_fn(data, "Tap Timeout",
     &tap_timeout_, tap_timeout_);
   tap_drag_timeout_prop_ = pp->create_real_fn(data, "Tap Drag Timeout",
@@ -921,6 +929,8 @@ void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
 void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
   if (pp == NULL || pp->free_fn == NULL)
     return;
+  pp->free_fn(data, tap_enable_prop_);
+  tap_enable_prop_ = NULL;
   pp->free_fn(data, tap_timeout_prop_);
   tap_timeout_prop_ = NULL;
   pp->free_fn(data, tap_drag_timeout_prop_);

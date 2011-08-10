@@ -203,6 +203,9 @@ class ImmediateInterpreter : public Interpreter {
 
   // Properties
 
+  // Is Tap-To-Click enabled
+  GesturesPropBool tap_enable_;
+  GesturesProp* tap_enable_prop_;
   // General time limit [s] for tap gestures
   stime_t tap_timeout_;
   GesturesProp* tap_timeout_prop_;
