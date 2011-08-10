@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that a byte can be properly written and read. We only have this
@@ -344,8 +345,8 @@ TEST(MessageTest, MethodCall) {
   dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
   EXPECT_TRUE(method_call.raw_message() != NULL);
   EXPECT_EQ(dbus::Message::MESSAGE_METHOD_CALL, method_call.GetMessageType());
-  method_call.SetServiceName("com.example.Service");
-  method_call.SetObjectPath("/com/example/Object");
+  method_call.SetDestination("com.example.Service");
+  method_call.SetPath("/com/example/Object");
 
   dbus::MessageWriter writer(&method_call);
   writer.AppendString("payload");
@@ -360,6 +361,17 @@ TEST(MessageTest, MethodCall) {
             method_call.ToString());
 }
 
+TEST(MessageTest, MethodCall_FromRawMessage) {
+  DBusMessage* raw_message = dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL);
+  dbus_message_set_interface(raw_message, "com.example.Interface");
+  dbus_message_set_member(raw_message, "SomeMethod");
+
+  scoped_ptr<dbus::MethodCall> method_call(
+      dbus::MethodCall::FromRawMessage(raw_message));
+  EXPECT_EQ("com.example.Interface", method_call->GetInterface());
+  EXPECT_EQ("SomeMethod", method_call->GetMember());
+}
+
 TEST(MessageTest, Response) {
   dbus::Response response;
   EXPECT_TRUE(response.raw_message() == NULL);
@@ -368,7 +380,81 @@ TEST(MessageTest, Response) {
   EXPECT_EQ(dbus::Message::MESSAGE_METHOD_RETURN, response.GetMessageType());
 }
 
+TEST(MergeTest, Response_FromMethodCall) {
+  const uint32 kSerial = 123;
+  dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
+  method_call.SetSerial(kSerial);
+
+  scoped_ptr<dbus::Response> response(
+      dbus::Response::FromMethodCall(&method_call));
+  EXPECT_EQ(dbus::Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
+  // The serial should be copied to the reply serial.
+  EXPECT_EQ(kSerial, response->GetReplySerial());
+}
+
+TEST(MergeTest, ErrorResponse) {
+  dbus::ErrorResponse error_response;
+  EXPECT_TRUE(error_response.raw_message() == NULL);
+  error_response.reset_raw_message(
+      dbus_message_new(DBUS_MESSAGE_TYPE_ERROR));
+  EXPECT_EQ(dbus::Message::MESSAGE_ERROR, error_response.GetMessageType());
+}
+
+TEST(MergeTest, ErrorResponse_FromMethodCall) {
+  const uint32 kSerial = 123;
+const char kErrorMessage[] = "error message";
+
+  dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
+  method_call.SetSerial(kSerial);
+
+  scoped_ptr<dbus::ErrorResponse> error_response(
+      dbus::ErrorResponse::FromMethodCall(&method_call,
+                                          DBUS_ERROR_FAILED,
+                                          kErrorMessage));
+  EXPECT_EQ(dbus::Message::MESSAGE_ERROR, error_response->GetMessageType());
+  // The serial should be copied to the reply serial.
+  EXPECT_EQ(kSerial, error_response->GetReplySerial());
+
+  // Error message should be added to the payload.
+  dbus::MessageReader reader(error_response.get());
+  std::string error_message;
+  ASSERT_TRUE(reader.PopString(&error_message));
+  EXPECT_EQ(kErrorMessage, error_message);
+}
+
 TEST(MessageTest, ToString_EmptyMessage) {
   dbus::Message message;
   EXPECT_EQ("", message.ToString());
+}
+
+TEST(MessageTest, GetAndSetHeaders) {
+  dbus::Message message;
+  message.reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
+
+  EXPECT_EQ("", message.GetDestination());
+  EXPECT_EQ("", message.GetPath());
+  EXPECT_EQ("", message.GetInterface());
+  EXPECT_EQ("", message.GetMember());
+  EXPECT_EQ("", message.GetErrorName());
+  EXPECT_EQ("", message.GetSender());
+  EXPECT_EQ(0U, message.GetSerial());
+  EXPECT_EQ(0U, message.GetReplySerial());
+
+  message.SetDestination("org.chromium.destination");
+  message.SetPath("/org/chromium/path");
+  message.SetInterface("org.chromium.interface");
+  message.SetMember("member");
+  message.SetErrorName("org.chromium.error");
+  message.SetSender(":1.2");
+  message.SetSerial(123);
+  message.SetReplySerial(456);
+
+  EXPECT_EQ("org.chromium.destination", message.GetDestination());
+  EXPECT_EQ("/org/chromium/path", message.GetPath());
+  EXPECT_EQ("org.chromium.interface", message.GetInterface());
+  EXPECT_EQ("member", message.GetMember());
+  EXPECT_EQ("org.chromium.error", message.GetErrorName());
+  EXPECT_EQ(":1.2", message.GetSender());
+  EXPECT_EQ(123U, message.GetSerial());
+  EXPECT_EQ(456U, message.GetReplySerial());
 }

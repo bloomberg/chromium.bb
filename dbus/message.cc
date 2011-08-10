@@ -9,6 +9,31 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 
+namespace {
+
+// Appends the header name and the value to |output|, if the value is
+// not empty.
+static void AppendStringHeader(const std::string& header_name,
+                               const std::string& header_value,
+                               std::string* output) {
+  if (!header_value.empty()) {
+    *output += header_name + ": " + header_value + "\n";
+  }
+}
+
+// Appends the header name and the value to |output|, if the value is
+// nonzero.
+static void AppendUint32Header(const std::string& header_name,
+                               uint32 header_value,
+                               std::string* output) {
+  if (header_value != 0) {
+    *output += (header_name + ": " + base::StringPrintf("%u", header_value) +
+                "\n");
+  }
+}
+
+}  // namespace
+
 namespace dbus {
 
 Message::Message()
@@ -178,31 +203,106 @@ std::string Message::ToString() {
 
   // Generate headers first.
   std::string headers;
-  const char* destination = dbus_message_get_destination(raw_message_);
-  if (destination)
-    headers += base::StringPrintf("destination: %s\n", destination);
-  const char* path = dbus_message_get_path(raw_message_);
-  if (path)
-    headers += base::StringPrintf("path: %s\n", path);
-  const char* interface = dbus_message_get_interface(raw_message_);
-  if (interface)
-    headers += base::StringPrintf("interface: %s\n", interface);
-  const char* member = dbus_message_get_member(raw_message_);
-  if (member)
-    headers += base::StringPrintf("member: %s\n", member);
-  const char* error_name = dbus_message_get_error_name(raw_message_);
-  if (error_name)
-    headers += base::StringPrintf("error_name: %s\n", error_name);
-  const char* sender = dbus_message_get_sender(raw_message_);
-  if (sender)
-    headers += base::StringPrintf("sender: %s\n", sender);
-  const char* signature = dbus_message_get_signature(raw_message_);
-  if (signature)
-    headers += base::StringPrintf("signature: %s\n", signature);
+  AppendStringHeader("destination", GetDestination(), &headers);
+  AppendStringHeader("path", GetPath(), &headers);
+  AppendStringHeader("interface", GetInterface(), &headers);
+  AppendStringHeader("member", GetMember(), &headers);
+  AppendStringHeader("error_name", GetErrorName(), &headers);
+  AppendStringHeader("sender", GetSender(), &headers);
+  AppendStringHeader("signature", GetSignature(), &headers);
+  AppendUint32Header("serial", GetSerial(), &headers);
+  AppendUint32Header("reply_serial", GetReplySerial(), &headers);
 
   // Generate the payload.
   MessageReader reader(this);
   return headers + "\n" + ToStringInternal("", &reader);
+}
+
+void Message::SetDestination(const std::string& destination) {
+  const bool success = dbus_message_set_destination(raw_message_,
+                                                    destination.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetPath(const std::string& path) {
+  const bool success = dbus_message_set_path(raw_message_,
+                                             path.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetInterface(const std::string& interface) {
+  const bool success = dbus_message_set_interface(raw_message_,
+                                                  interface.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetMember(const std::string& member) {
+  const bool success = dbus_message_set_member(raw_message_,
+                                               member.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetErrorName(const std::string& error_name) {
+  const bool success = dbus_message_set_error_name(raw_message_,
+                                                   error_name.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetSender(const std::string& sender) {
+  const bool success = dbus_message_set_sender(raw_message_,
+                                               sender.c_str());
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Message::SetSerial(uint32 serial) {
+  dbus_message_set_serial(raw_message_, serial);
+}
+
+void Message::SetReplySerial(uint32 reply_serial) {
+  dbus_message_set_reply_serial(raw_message_, reply_serial);
+}
+
+std::string Message::GetDestination() {
+  const char* destination = dbus_message_get_destination(raw_message_);
+  return destination ? destination : "";
+}
+
+std::string Message::GetPath() {
+  const char* path = dbus_message_get_path(raw_message_);
+  return path ? path : "";
+}
+
+std::string Message::GetInterface() {
+  const char* interface = dbus_message_get_interface(raw_message_);
+  return interface ? interface : "";
+}
+
+std::string Message::GetMember() {
+  const char* member = dbus_message_get_member(raw_message_);
+  return member ? member : "";
+}
+
+std::string Message::GetErrorName() {
+  const char* error_name = dbus_message_get_error_name(raw_message_);
+  return error_name ? error_name : "";
+}
+
+std::string Message::GetSender() {
+  const char* sender = dbus_message_get_sender(raw_message_);
+  return sender ? sender : "";
+}
+
+std::string Message::GetSignature() {
+  const char* signature = dbus_message_get_signature(raw_message_);
+  return signature ? signature : "";
+}
+
+uint32 Message::GetSerial() {
+  return dbus_message_get_serial(raw_message_);
+}
+
+uint32 Message::GetReplySerial() {
+  return dbus_message_get_reply_serial(raw_message_);
 }
 
 //
@@ -211,29 +311,24 @@ std::string Message::ToString() {
 
 MethodCall::MethodCall(const std::string& interface_name,
                        const std::string& method_name)
-    : Message(),
-      interface_name_(interface_name),
-      method_name_(method_name) {
+    : Message() {
   reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
 
-  bool success = dbus_message_set_interface(raw_message(),
-                                            interface_name.c_str());
-  CHECK(success) << "Unable to allocate memory";
-
-  success = dbus_message_set_member(raw_message(), method_name.c_str());
-  CHECK(success) << "Unable to allocate memory";
+  SetInterface(interface_name);
+  SetMember(method_name);
 }
 
-void MethodCall::SetServiceName(const std::string& service_name) {
-  const bool success = dbus_message_set_destination(raw_message(),
-                                                    service_name.c_str());
-  CHECK(success) << "Unable to allocate memory";
-}
+MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
+  DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_CALL, dbus_message_get_type(raw_message));
 
-void MethodCall::SetObjectPath(const std::string& object_path) {
-  const bool success = dbus_message_set_path(raw_message(),
-                                             object_path.c_str());
-  CHECK(success) << "Unable to allocate memory";
+  const char* interface = dbus_message_get_interface(raw_message);
+  const char* member = dbus_message_get_member(raw_message);
+  std::string interface_string = interface ? interface : "";
+  std::string member_string = member ? member : "";
+
+  MethodCall* method_call = new MethodCall(interface_string, member_string);
+  method_call->reset_raw_message(raw_message);
+  return method_call;
 }
 
 //
@@ -241,6 +336,32 @@ void MethodCall::SetObjectPath(const std::string& object_path) {
 //
 
 Response::Response() : Message() {
+}
+
+Response* Response::FromMethodCall(MethodCall* method_call) {
+  Response* response = new Response;
+  response->reset_raw_message(
+      dbus_message_new_method_return(method_call->raw_message()));
+  return response;
+}
+
+//
+// ErrorResponse implementation.
+//
+
+ErrorResponse::ErrorResponse() : Message() {
+}
+
+ErrorResponse* ErrorResponse::FromMethodCall(
+    MethodCall* method_call,
+    const std::string& error_name,
+    const std::string& error_message) {
+  ErrorResponse* response = new ErrorResponse;
+  response->reset_raw_message(
+      dbus_message_new_error(method_call->raw_message(),
+                             error_name.c_str(),
+                             error_message.c_str()));
+  return response;
 }
 
 //

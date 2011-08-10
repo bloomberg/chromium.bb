@@ -74,6 +74,30 @@ class Message {
   // of raw_message. raw_message_ will be unref'ed in the destructor.
   void reset_raw_message(DBusMessage* raw_message);
 
+  // Sets the destination, the path, the interface, the member, etc.
+  void SetDestination(const std::string& destination);
+  void SetPath(const std::string& path);
+  void SetInterface(const std::string& interface);
+  void SetMember(const std::string& member);
+  void SetErrorName(const std::string& error_name);
+  void SetSender(const std::string& sender);
+  void SetSerial(uint32 serial);
+  void SetReplySerial(uint32 reply_serial);
+  // SetSignature() does not exist as we cannot do it.
+
+  // Gets the destination, the path, the interface, the member, etc.
+  // If not set, an empty string is returned.
+  std::string GetDestination();
+  std::string GetPath();
+  std::string GetInterface();
+  std::string GetMember();
+  std::string GetErrorName();
+  std::string GetSender();
+  std::string GetSignature();
+  // Gets the serial and reply serial numbers. Returns 0 if not set.
+  uint32 GetSerial();
+  uint32 GetReplySerial();
+
   // Returns the string representation of this message. Useful for
   // debugging.
   std::string ToString();
@@ -104,16 +128,10 @@ class MethodCall : public Message {
   MethodCall(const std::string& interface_name,
              const std::string& method_name);
 
-  const std::string& interface_name() { return interface_name_; }
-  const std::string& method_name() { return method_name_; }
-
-  // Sets the service name. This will be handled by the object proxy.
-  void SetServiceName(const std::string& service_name);
-  // Sets the object path. This will be handled by the object proxy.
-  void SetObjectPath(const std::string& object_path);
-
-  std::string interface_name_;
-  std::string method_name_;
+  // Returns a newly created MethodCall from the given raw message of the
+  // type DBUS_MESSAGE_TYPE_METHOD_CALL. The caller must delete the
+  // returned object. Takes the ownership of |raw_message|.
+  static MethodCall* FromRawMessage(DBusMessage* raw_message);
 
   DISALLOW_COPY_AND_ASSIGN(MethodCall);
 };
@@ -127,8 +145,34 @@ class Response : public Message {
   // response is received from the server. See object_proxy.h.
   Response();
 
+  // Returns a newly created Response from the given method call. The
+  // caller must delete the returned object. Used for implementing
+  // exported methods.
+  static Response* FromMethodCall(MethodCall* method_call);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Response);
+};
+
+// ErrorResponse is a type of message used to return an error to the
+// caller of a method.
+class ErrorResponse: public Message {
+ public:
+  // Creates a ErrorResponse message. The internal raw message is NULL.
+  // Classes that implment method calls need to set the raw message once a
+  // response is received from the server. See object_proxy.h.
+  ErrorResponse();
+
+  // Returns a newly created ErrorResponse from the given method call, the
+  // error name, and the error message.  The error name looks like
+  // "org.freedesktop.DBus.Error.Failed". Used for returning an error to a
+  // failed method call.
+  static ErrorResponse* FromMethodCall(MethodCall* method_call,
+                                       const std::string& error_name,
+                                       const std::string& error_message);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ErrorResponse);
 };
 
 // MessageWriter is used to write outgoing messages for calling methods
