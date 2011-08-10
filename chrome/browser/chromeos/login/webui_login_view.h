@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
+#include "chrome/browser/chromeos/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "views/view.h"
@@ -24,6 +25,7 @@ class Widget;
 namespace chromeos {
 
 class StatusAreaView;
+class TabFirstRenderWatcher;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a StatusAreaView and
@@ -31,7 +33,8 @@ class StatusAreaView;
 class WebUILoginView : public views::View,
                        public StatusAreaHost,
                        public TabContentsDelegate,
-                       public chromeos::LoginHtmlDialog::Delegate {
+                       public chromeos::LoginHtmlDialog::Delegate,
+                       public TabFirstRenderWatcher::Delegate {
  public:
   static const int kStatusAreaCornerPadding;
 
@@ -87,6 +90,10 @@ class WebUILoginView : public views::View,
   virtual void OnDialogClosed() OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
+  // TabFirstRenderWatcher::Delegate implementation.
+  virtual void OnTabMainFrameLoaded() OVERRIDE;
+  virtual void OnTabMainFrameFirstRender() OVERRIDE;
+
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
 
@@ -119,6 +126,12 @@ class WebUILoginView : public views::View,
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
+
+  // Watches webui_login_'s TabContents rendering.
+  scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
+
+  // Whether the host window is frozen.
+  bool host_window_frozen_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };

@@ -751,6 +751,8 @@
         'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/tab_closeable_state_watcher.cc',
         'browser/chromeos/tab_closeable_state_watcher.h',
+        'browser/chromeos/tab_first_render_watcher.cc',
+        'browser/chromeos/tab_first_render_watcher.h',
         'browser/chromeos/update_observer.cc',
         'browser/chromeos/update_observer.h',
         'browser/chromeos/upgrade_detector_chromeos.cc',

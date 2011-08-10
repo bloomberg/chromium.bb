@@ -51,6 +51,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
 
   // Container of the screen we are displaying.
   views::Widget* login_window_;
+
   // Container of the view we are displaying.
   WebUILoginView* login_view_;
 

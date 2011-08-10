@@ -17,6 +17,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -40,7 +41,8 @@ WebUILoginView::WebUILoginView()
     : status_area_(NULL),
       profile_(NULL),
       webui_login_(NULL),
-      status_window_(NULL) {
+      status_window_(NULL),
+      host_window_frozen_(false) {
   accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
       kAccelNameAccessibility;
   accel_map_[views::Accelerator(ui::VKEY_E, false, true, true)] =
@@ -64,6 +66,9 @@ void WebUILoginView::Init() {
   webui_login_->Init(profile_, NULL);
   webui_login_->SetVisible(true);
   webui_login_->tab_contents()->set_delegate(this);
+
+  tab_watcher_.reset(new TabFirstRenderWatcher(webui_login_->tab_contents(),
+                                               this));
 }
 
 std::string WebUILoginView::GetClassName() const {
@@ -94,7 +99,9 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::OnWindowCreated() {
-  InitStatusArea();
+  // Freezes host window update until the tab is rendered.
+  host_window_frozen_ = static_cast<views::NativeWidgetGtk*>(
+      GetWidget()->native_widget())->SuppressFreezeUpdates();
 }
 
 void WebUILoginView::UpdateWindowType() {
@@ -184,6 +191,21 @@ void WebUILoginView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.
   proxy_settings_dialog_.reset();
   SchedulePaint();
+}
+
+void WebUILoginView::OnTabMainFrameLoaded() {
+}
+
+void WebUILoginView::OnTabMainFrameFirstRender() {
+  InitStatusArea();
+
+  if (host_window_frozen_) {
+    host_window_frozen_ = false;
+
+    // Unfreezes the host window since tab is rendereed now.
+    views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
+        GetNativeWindow(), false);
+  }
 }
 
 void WebUILoginView::InitStatusArea() {
