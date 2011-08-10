@@ -38,7 +38,7 @@ found in the LICENSE file.
       <em>Loading&hellip;</em>
     </section> <!-- loading-mode -->
 
-    <div class="top-left"
+    <div class="top-primary"
          data-ui-mode="client.unconnected host.unshared"
          hidden>
       <span id="email-status">
@@ -48,7 +48,7 @@ found in the LICENSE file.
       </span>
     </div>
 
-    <div class="top-right" data-ui-mode="auth client host">
+    <div class="top-secondary" data-ui-mode="auth client host">
       <a href="#" onclick="remoting.toggleDebugLog();"
          i18n-content="debugButton"></a>
     </div>
@@ -62,7 +62,7 @@ found in the LICENSE file.
         <strong id="connected-to"></strong>
         <button type="button" onclick="remoting.disconnect();"
                 i18n-content="disconnectButton"></button>
-        <span class="right-align">
+        <span class="end-align">
           <button type="button" onclick="remoting.toggleDebugLog();"
                   i18n-content="debugButton"></button>
           <button type="button" onclick="remoting.toggleScaleToFit();"
@@ -116,7 +116,7 @@ found in the LICENSE file.
 
         <div data-ui-mode="host.waiting-for-connection">
           <div class="description" i18n-content="instructionsShareAbove"></div>
-          <div id="access-code-display"></div>
+          <div id="access-code-display" dir="ltr"></div>
           <div id="access-code-countdown-container">
             <div id="access-code-countdown" class="expiring" hidden>
               <span i18n-content="accessCodeTimer"></span>
@@ -231,7 +231,7 @@ found in the LICENSE file.
     <div id="session-mode" data-ui-mode="in-session client" hidden>
     </div> <!-- session-mode -->
 
-    <section id="debug-log" hidden>
+    <section id="debug-log" dir="ltr" hidden>
       <div id="statistics">
       </div>
       <div id="debug-messages">

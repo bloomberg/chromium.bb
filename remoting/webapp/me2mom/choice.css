@@ -16,6 +16,7 @@ body {
   font-family: 'Droid sans', Arial, sans-serif;
   margin:0;
   padding:0;
+  direction: __MSG_@@bidi_dir__;
 }
 
 button, input {
@@ -54,7 +55,7 @@ button[disabled], .button[disabled]:hover {
 h1 {
   font-size: 24px;
   font-weight: normal;
-  margin-left: 10px;
+  margin-__MSG_@@bidi_start_edge__: 10px;
 }
 
 label {
@@ -92,7 +93,7 @@ label {
 .choice-header {
   font-size: 24px;
   font-weight: normal;
-  margin-left: 10px;
+  margin-__MSG_@@bidi_start_edge__: 10px;
 }
 
 .choice-footer {
@@ -111,8 +112,8 @@ label {
 .error-state {
   background-image: url('icon_warning.png');
   background-repeat: no-repeat;
-  background-position: top left;
-  padding-left: 30px;
+  background-position: top __MSG_@@bidi_start_edge__;
+  padding-__MSG_@@bidi_start_edge__: 30px;
   padding-top: 3px;
   margin-bottom: 10px;
   color: #900;
@@ -138,18 +139,18 @@ label {
   margin-bottom: 10px;
 }
 
-.top-left {
+.top-primary {
   font-size: 14px;
   position: absolute;
   top: 0.5em;
-  left: 0.5em;
+  __MSG_@@bidi_start_edge__: 0.5em;
 }
 
-.top-right {
+.top-secondary {
   font-size: 14px;
   position: absolute;
   top: 0.5em;
-  right: 0.5em;
+  __MSG_@@bidi_end_edge__: 0.5em;
 }
 
 .waiting {
@@ -175,7 +176,7 @@ label {
   font-size: 18px;
   height: 25px;
   margin: 0 10px;
-  padding-left: 5px;
+  padding-__MSG_@@bidi_start_edge__: 5px;
   width: 12em;
 }
 
@@ -184,7 +185,7 @@ label {
 }
 
 #cancel-button {
-  float: right;
+  float: __MSG_@@bidi_end_edge__;
 }
 
 #client-footer-text, #host-footer-text {
@@ -204,7 +205,7 @@ label {
 }
 
 #email-status {
-  margin-right: 0.5ex;
+  margin-__MSG_@@bidi_end_edge__: 0.5ex;
 }
 
 #icon {

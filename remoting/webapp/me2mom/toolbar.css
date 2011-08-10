@@ -46,10 +46,10 @@
   display: inline-block;
   max-width: 280px;
   overflow: hidden;
-  margin-right: 8px;
+  margin-__MSG_@@bidi_end_edge__: 8px;
   white-space: nowrap;
 }
 
-.right-align {
-  float: right;
+.end-align {
+  float: __MSG_@@bidi_end_edge__;
 }
