@@ -209,7 +209,7 @@ gfx::Rect UserController::GetMainInputScreenBounds() const {
 void UserController::OnUserImageChanged(UserManager::User* user) {
   if (user_.email() != user->email())
     return;
-  user_.set_image(user->image());
+  user_.SetImage(user->image(), user->default_image_index());
   // Controller might exist without windows,
   // i.e. if user pod doesn't fit on the screen.
   if (user_view_)

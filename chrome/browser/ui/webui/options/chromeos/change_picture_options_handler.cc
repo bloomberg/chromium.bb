@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 
 #include "base/callback.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
@@ -151,12 +152,18 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   user_manager->SaveUserImagePath(
       user_manager->logged_in_user().email(),
       GetDefaultImagePath(user_image_index));
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                            user_image_index,
+                            kDefaultImagesCount + 2);
 }
 
 void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                int index,
                                                void* params) {
   UserManager::Get()->LoadLoggedInUserImage(path);
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                            kDefaultImagesCount + 1,
+                            kDefaultImagesCount + 2);
 }
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
@@ -168,6 +175,9 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
 
   user_manager->SetLoggedInUserImage(photo);
   user_manager->SaveUserImage(user.email(), photo);
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
+                            kDefaultImagesCount,
+                            kDefaultImagesCount + 2);
 }
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {

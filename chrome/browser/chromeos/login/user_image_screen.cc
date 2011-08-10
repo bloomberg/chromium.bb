@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -111,6 +112,10 @@ void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   user_manager->SetLoggedInUserImage(image);
   user_manager->SaveUserImage(user.email(), image);
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+
+  UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
+                            kDefaultImagesCount,
+                            kDefaultImagesCount + 1);
 }
 
 void UserImageScreen::OnDefaultImageSelected(int index) {
@@ -129,6 +134,10 @@ void UserImageScreen::OnDefaultImageSelected(int index) {
       user.email(),
       GetDefaultImagePath(static_cast<size_t>(index)));
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+
+  UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
+                            index,
+                            kDefaultImagesCount + 1);
 }
 
 void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {

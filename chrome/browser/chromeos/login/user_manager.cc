@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -223,6 +224,12 @@ UserManager::User::User() : oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
 
 UserManager::User::~User() {}
 
+void UserManager::User::SetImage(const SkBitmap& image,
+                                 int default_image_index) {
+  image_ = image;
+  default_image_index_ = default_image_index;
+}
+
 std::string UserManager::User::GetDisplayName() const {
   size_t i = email_.find('@');
   if (i == 0 || i == std::string::npos) {
@@ -303,29 +310,30 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
           }
         }
 
-        UserImages::const_iterator image_it = user_images_.find(email);
         std::string image_path;
-        if (image_it == user_images_.end()) {
-          // Get account image path.
-          if (prefs_images &&
-              prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
-            int default_image_id = kDefaultImagesCount;
-            if (IsDefaultImagePath(image_path, &default_image_id)) {
-              DCHECK(default_image_id < kDefaultImagesCount);
-              int resource_id = kDefaultImageResources[default_image_id];
-              user.set_image(
-                  *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                      resource_id));
-              user_images_[email] = user.image();
-            } else {
+        // Get account image path.
+        if (prefs_images &&
+            prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
+          int default_image_id = kDefaultImagesCount;
+          if (IsDefaultImagePath(image_path, &default_image_id)) {
+            DCHECK(default_image_id >= 0);
+            DCHECK(default_image_id < kDefaultImagesCount);
+            int resource_id = kDefaultImageResources[default_image_id];
+            user.SetImage(
+                *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                    resource_id),
+                default_image_id);
+          } else {
+            UserImages::const_iterator image_it = user_images_.find(email);
+            if (image_it == user_images_.end()) {
               // Insert the default image so we don't send another request if
               // GetUsers is called twice.
               user_images_[email] = user.image();
               image_loader_->Start(email, image_path, false);
+            } else {
+              user.SetImage(image_it->second, -1);
             }
           }
-        } else {
-          user.set_image(image_it->second);
         }
 
         // Makes table to determine whether displayname is unique.
@@ -389,8 +397,16 @@ void UserManager::UserLoggedIn(const std::string& email) {
   }
   prefs->SavePersistentPrefs();
   NotifyOnLogin();
-  if (current_user_is_new_)
+  if (current_user_is_new_) {
     SetDefaultUserImage(email);
+  } else {
+    int metric = kDefaultImagesCount;
+    if (logged_in_user_.default_image_index() != -1)
+      metric = logged_in_user_.default_image_index();
+    UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
+                              metric,
+                              kDefaultImagesCount + 1);
+  }
 }
 
 void UserManager::RemoveUser(const std::string& email,
@@ -580,9 +596,9 @@ void UserManager::OnImageLoaded(const std::string& username,
   user_images_[username] = image;
   User user;
   user.set_email(username);
-  user.set_image(image);
+  user.SetImage(image, -1);
   if (logged_in_user_.email() == username)
-    logged_in_user_.set_image(image);
+    logged_in_user_.SetImage(image, -1);
   if (should_save_image)
     SaveUserImage(username, image);
   NotificationService::current()->Notify(

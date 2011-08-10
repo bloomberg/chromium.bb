@@ -62,8 +62,10 @@ class UserManager : public UserImageLoader::Delegate,
     bool NeedsNameTooltip() const;
 
     // The image for this user.
-    void set_image(const SkBitmap& image) { image_ = image; }
+    void SetImage(const SkBitmap& image,
+                  int default_image_index);
     const SkBitmap& image() const { return image_; }
+    int default_image_index() const { return default_image_index_; }
 
     // OAuth token status for this user.
     OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
@@ -80,6 +82,10 @@ class UserManager : public UserImageLoader::Delegate,
 
     // Cached flag of whether any users has same display name.
     bool is_displayname_unique_;
+
+    // Index of the default image the user has set. -1 if it's some other
+    // image.
+    int default_image_index_;
   };
 
   // Gets a shared instance of a UserManager. Not thread-safe...should
