@@ -121,8 +121,12 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
   if (!sandbox_cmd.empty()) {
     struct stat st;
-    if (stat(sandbox_binary_.c_str(), &st) == 0 &&
-        access(sandbox_binary_.c_str(), X_OK) == 0 &&
+    if (stat(sandbox_binary_.c_str(), &st) != 0) {
+      LOG(FATAL) << "The SUID sandbox helper binary is missing: "
+                 << sandbox_binary_ << " Aborting now.";
+    }
+
+    if (access(sandbox_binary_.c_str(), X_OK) == 0 &&
         (st.st_uid == 0) &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
