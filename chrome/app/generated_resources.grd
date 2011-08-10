@@ -13159,6 +13159,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR" desc="Error message to show when there is an unrecoverable error while performing enrollment.">
         Oops!  Something went really wrong while enrolling this device.  Please try again or contact your support representative.
       </message>
+
+      <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
+      <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
+        Enterprise enrollment
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_RETRY" desc="Label for the retry button on the error step in the enterprise enrollment dialog.">
+        Try again
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL" desc="Label for the cancel button on the enterprise enrollment dialog.">
+        Cancel
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
+        Done
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
+        Your device has successfully been enrolled for enterprise management.
+      </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING" desc="Status message to show while enterprise enrollment is underway.">
+        Enrolling the device. Please wait...
+      </message>
     </if>
 
     <!-- Register Protocol Handler Strings -->

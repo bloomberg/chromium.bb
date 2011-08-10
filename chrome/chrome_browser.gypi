@@ -3458,6 +3458,8 @@
         'browser/ui/webui/chromeos/login/core_oobe_handler.h',
         'browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.cc',
         'browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.h',
+        'browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.cc',
+        'browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h',
         'browser/ui/webui/chromeos/login/eula_screen_handler.cc',
         'browser/ui/webui/chromeos/login/eula_screen_handler.h',
         'browser/ui/webui/chromeos/login/login_ui.cc',

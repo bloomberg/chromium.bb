@@ -228,19 +228,26 @@ hr.bottom {
 #oobe.eula #back-button,
 #oobe.eula #accept-button,
 #oobe.signin #signin-button,
-#oobe.user-image #ok-button {
+#oobe.user-image #ok-button,
+#oobe.oauth-enrollment #oauth-enroll-cancel-button,
+#oobe.oauth-enrollment #oauth-enroll-done-button {
   display: inline-block;
 }
 
 #oobe.connect #connect-dot,
 #oobe.eula #eula-dot,
 #oobe.signin #signin-dot,
+#oobe.gaia-signin #gaia-signin-dot,
 #oobe.enrollment #signin-dot,
+#oobe.enrollment #gaia-signin-dot,
+#oobe.oauth-enrollment #signin-dot,
+#oobe.oauth-enrollment #gaia-signin-dot,
 #oobe.user-image #user-image-dot {
   opacity: 0.4;
 }
 
-#enrollment-dot {
+#enrollment-dot,
+#oauth-enrollment-dot {
   display: none;
 }
 
@@ -440,6 +447,95 @@ button {
   bottom: 0;
   text-align: end;
   width: 100%;
+}
+
+/* Styling for OAuth enrollment screen. */
+
+#oauth-enroll-container {
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#oauth-enroll-signin-frame {
+  bottom: 0;
+  display: -webkit-box;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+.oauth-enroll-step-center {
+  display: table;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.oauth-enroll-step-content {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.oauth-enroll-step-icon {
+  display: inline-block;
+  position: relative;
+  top: 0.5em;
+  vertical-align: top;
+}
+
+.oauth-enroll-step-icon > * {
+  display: inline-block;
+  height: 22px;
+  margin-right: .4em;
+  position: relative;
+  top: -11px;
+  width: 22px;
+}
+
+.oauth-enroll-step-message {
+  display: inline-block;
+  max-width: 400px;
+  text-align: left;
+  vertical-align: top;
+}
+
+#oauth-enroll-error-retry {
+  color: -webkit-link;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@-webkit-keyframes oauth-enroll-spinner {
+  /* There are 13 animation steps, the numbers below space them evenly. Note
+   * that a steps(13) declaration produces off-by-one offsets for some frames,
+   * so for best results we specify positions explicity and use step-end. */
+  0%           { background-position: 286px 0px; }
+  7.6923076%   { background-position: 264px 0px; }
+  15.3846153%  { background-position: 242px 0px; }
+  23.0769230%  { background-position: 220px 0px; }
+  30.7692307%  { background-position: 198px 0px; }
+  38.4615384%  { background-position: 176px 0px; }
+  46.1538461%  { background-position: 154px 0px; }
+  53.8461538%  { background-position: 132px 0px; }
+  61.5384615%  { background-position: 110px 0px; }
+  69.2307692%  { background-position: 88px  0px; }
+  76.9230769%  { background-position: 66px  0px; }
+  84.6153846%  { background-position: 44px  0px; }
+  92.3076923%  { background-position: 22px  0px; }
+  100.0000000% { background-position: 0px   0px; }
+}
+
+.oauth-enroll-spinner {
+  -webkit-animation: oauth-enroll-spinner 1s step-end infinite;
+  background-image: url('chrome://theme/IDR_SPINNER');
+  height: 22px;
+  width: 22px;
 }
 
 #close-button.visible {

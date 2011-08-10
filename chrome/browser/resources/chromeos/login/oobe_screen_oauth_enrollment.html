@@ -1,0 +1,39 @@
+<div id="oauth-enrollment" class="step right hidden">
+  <div id="oauth-enroll-container">
+    <div id="oauth-enroll-step-signin">
+      <iframe id="oauth-enroll-signin-frame" src="about:blank" marginwidth="0"
+          marginheight="0" frameborder="0" scrolling="no"></iframe>
+    </div>
+    <div id="oauth-enroll-step-working" class="oauth-enroll-step-center" hidden>
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <span class="oauth-enroll-spinner"></span>
+        </span>
+        <span class="oauth-enroll-step-message"
+            i18n-content="oauthEnrollWorking">
+        </span>
+      </div>
+    </div>
+    <div id="oauth-enroll-step-error" class="oauth-enroll-step-center" hidden>
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <img src="chrome://theme/IDR_ENROLL_FAILURE">
+        </span>
+        <span class="oauth-enroll-step-message">
+          <div id="oauth-enroll-error-message"></div>
+          <a id='oauth-enroll-error-retry' i18n-content="oauthEnrollRetry"></a>
+        </span>
+      </div>
+    </div>
+    <div id="oauth-enroll-step-success" class="oauth-enroll-step-center" hidden>
+      <div class="oauth-enroll-step-content">
+        <span class="oauth-enroll-step-icon">
+          <img src="chrome://theme/IDR_ENROLL_SUCCESS">
+        </span>
+        <span class="oauth-enroll-step-message"
+            i18n-content="oauthEnrollSuccess">
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

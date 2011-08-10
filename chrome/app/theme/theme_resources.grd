@@ -451,6 +451,8 @@
         <include name="IDR_DROPDOWN_TOP_P" file="textbutton_dropdown_t_p.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
+        <include name="IDR_ENROLL_SUCCESS" file="enroll_success.png" type="BINDATA"/>
+        <include name="IDR_ENROLL_FAILURE" file="enroll_failure.png" type="BINDATA"/>
         <include name="IDR_HELP_MENU" file="help_16.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
         <include name="IDR_ICON_ADD_USER20" file="icon_add_user20.png" type="BINDATA" />

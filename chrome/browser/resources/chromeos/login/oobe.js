@@ -272,6 +272,7 @@ cr.define('cr.ui', function() {
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
     oobe.EnrollmentScreen.register();
+    oobe.OAuthEnrollmentScreen.register();
     login.AccountPickerScreen.register();
     if (localStrings.getString('authType') == 'webui')
       login.SigninScreen.register();

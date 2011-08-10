@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
@@ -44,6 +45,8 @@ class EnterpriseEnrollmentScreen
                                const std::string& password,
                                const std::string& captcha,
                                const std::string& access_code) OVERRIDE;
+  virtual void OnOAuthTokenAvailable(const std::string& user,
+                                     const std::string& token) OVERRIDE;
   virtual void OnAuthCancelled() OVERRIDE;
   virtual void OnConfirmationClosed() OVERRIDE;
   virtual bool GetInitialUser(std::string* user) OVERRIDE;
@@ -74,6 +77,11 @@ class EnterpriseEnrollmentScreen
 
   // Starts the Lockbox storage process.
   void WriteInstallAttributesData();
+
+  // Kicks off the policy infrastructure to register with the service.
+  void RegisterForDevicePolicy(
+      const std::string& token,
+      policy::BrowserPolicyConnector::TokenType token_type);
 
   EnterpriseEnrollmentScreenActor* actor_;
   bool is_showing_;

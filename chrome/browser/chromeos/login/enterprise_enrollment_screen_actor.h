@@ -27,6 +27,8 @@ class EnterpriseEnrollmentScreenActor {
                                  const std::string& password,
                                  const std::string& captcha,
                                  const std::string& access_code) = 0;
+    virtual void OnOAuthTokenAvailable(const std::string& user,
+                                       const std::string& oauth_token) = 0;
     virtual void OnAuthCancelled() = 0;
     virtual void OnConfirmationClosed() = 0;
     virtual bool GetInitialUser(std::string* user) = 0;

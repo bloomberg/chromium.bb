@@ -34,6 +34,12 @@ class UserPolicyTokenCache;
 // respective classes.
 class BrowserPolicyConnector : public NotificationObserver {
  public:
+  // Indicates the type of token passed to SetDeviceCredentials.
+  enum TokenType {
+    TOKEN_TYPE_GAIA,  // A gaia service token.
+    TOKEN_TYPE_OAUTH, // An OAuth v2 access token.
+  };
+
   static BrowserPolicyConnector* Create();
   virtual ~BrowserPolicyConnector();
 
@@ -64,7 +70,8 @@ class BrowserPolicyConnector : public NotificationObserver {
   // Used to set the credentials stored in the data store associated
   // with this policy connector.
   void SetDeviceCredentials(const std::string& owner_email,
-                            const std::string& gaia_token);
+                            const std::string& token,
+                            TokenType token_type);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).

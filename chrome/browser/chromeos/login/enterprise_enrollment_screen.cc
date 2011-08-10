@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -85,6 +84,14 @@ void EnterpriseEnrollmentScreen::OnAuthSubmitted(
   }
 }
 
+void EnterpriseEnrollmentScreen::OnOAuthTokenAvailable(
+    const std::string& user,
+    const std::string& token) {
+  user_ = user;
+  RegisterForDevicePolicy(token,
+                          policy::BrowserPolicyConnector::TOKEN_TYPE_OAUTH);
+}
+
 void EnterpriseEnrollmentScreen::OnAuthCancelled() {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                             policy::kMetricEnrollmentCancelled,
@@ -150,25 +157,8 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
 
   scoped_ptr<GaiaAuthFetcher> auth_fetcher(auth_fetcher_.release());
 
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  if (!connector->device_cloud_policy_subsystem()) {
-    NOTREACHED() << "Cloud policy subsystem not initialized.";
-    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                              policy::kMetricEnrollmentOtherFailed,
-                              policy::kMetricEnrollmentSize);
-    if (is_showing_)
-      actor_->ShowFatalEnrollmentError();
-    return;
-  }
-
-  connector->ScheduleServiceInitialization(0);
-  registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
-      connector->device_cloud_policy_subsystem(), this));
-
-  // Push the credentials to the policy infrastructure. It'll start enrollment
-  // and notify us of progress through CloudPolicySubsystem::Observer.
-  connector->SetDeviceCredentials(user_, auth_token);
+  RegisterForDevicePolicy(auth_token,
+                          policy::BrowserPolicyConnector::TOKEN_TYPE_GAIA);
 }
 
 void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
@@ -321,6 +311,30 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   }
 
   NOTREACHED();
+}
+
+void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
+    const std::string& token,
+    policy::BrowserPolicyConnector::TokenType token_type) {
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector->device_cloud_policy_subsystem()) {
+    NOTREACHED() << "Cloud policy subsystem not initialized.";
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              policy::kMetricEnrollmentOtherFailed,
+                              policy::kMetricEnrollmentSize);
+    if (is_showing_)
+      actor_->ShowFatalEnrollmentError();
+    return;
+  }
+
+  connector->ScheduleServiceInitialization(0);
+  registrar_.reset(new policy::CloudPolicySubsystem::ObserverRegistrar(
+      connector->device_cloud_policy_subsystem(), this));
+
+  // Push the credentials to the policy infrastructure. It'll start enrollment
+  // and notify us of progress through CloudPolicySubsystem::Observer.
+  connector->SetDeviceCredentials(user_, token, token_type);
 }
 
 }  // namespace chromeos

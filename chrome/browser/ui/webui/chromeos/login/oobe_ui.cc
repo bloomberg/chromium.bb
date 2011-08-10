@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -110,10 +113,19 @@ OobeUI::OobeUI(TabContents* contents)
   update_screen_actor_ = update_screen_handler;
   AddScreenHandler(update_screen_handler);
 
-  EnterpriseEnrollmentScreenHandler* enterprise_enrollment_screen_handler =
-      new EnterpriseEnrollmentScreenHandler;
-  enterprise_enrollment_screen_actor_ = enterprise_enrollment_screen_handler;
-  AddScreenHandler(enterprise_enrollment_screen_handler);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
+    EnterpriseOAuthEnrollmentScreenHandler*
+        enterprise_oauth_enrollment_screen_handler =
+            new EnterpriseOAuthEnrollmentScreenHandler;
+    enterprise_enrollment_screen_actor_ =
+        enterprise_oauth_enrollment_screen_handler;
+    AddScreenHandler(enterprise_oauth_enrollment_screen_handler);
+  } else {
+    EnterpriseEnrollmentScreenHandler* enterprise_enrollment_screen_handler =
+        new EnterpriseEnrollmentScreenHandler;
+    enterprise_enrollment_screen_actor_ = enterprise_enrollment_screen_handler;
+    AddScreenHandler(enterprise_enrollment_screen_handler);
+  }
 
   UserImageScreenHandler* user_image_screen_handler =
       new UserImageScreenHandler();

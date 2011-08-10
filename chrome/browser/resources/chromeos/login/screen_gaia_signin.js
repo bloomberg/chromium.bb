@@ -67,7 +67,9 @@ cr.define('login', function() {
      * @type {bool}
      */
     isAuthExtMessage_: function(e) {
-      return this.extension_url_.indexOf(e.origin) == 0;
+      return this.extension_url_ != null &&
+          this.extension_url_.indexOf(e.origin) == 0 &&
+          e.source == $('signin-frame').contentWindow;
     },
 
     /**
