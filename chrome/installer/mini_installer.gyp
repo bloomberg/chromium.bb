@@ -110,6 +110,7 @@
               },
               'VCLinkerTool': {
                 'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
+                'Profile': 'false',   # Conflicts with /FIXED
                 'AdditionalOptions': [
                   '/SAFESEH:NO',
                   '/NXCOMPAT',
