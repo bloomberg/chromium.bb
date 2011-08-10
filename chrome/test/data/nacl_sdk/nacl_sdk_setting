@@ -1,0 +1,30 @@
+# Settings for NaCl SDK testing.
+# Used by: chrome/test/functional/nacl_sdk.py
+
+{
+  'release_win_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/staging/naclsdk_win.exe',
+  'release_mac_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/staging/naclsdk_mac.tgz',
+  'release_lin_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/staging/naclsdk_linux.tgz',
+  'release_lin_expected_shasum': '381c4fcbbb7f91b845d606e2c5f73a85866f779d',
+  'release_mac_expected_shasum': 'a67c3b734f75d28cd6086c0548b00226400ce2ab',
+  'release_win_expected_shasum': '93b7e1feaa0d2ed5e2dbf73dfd087e62b42d47f6',
+  'post_sdk_download_url': 'http://code.google.com/chrome/nativeclient/docs/download.html',
+  'post_win_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/naclsdk_win.exe',
+  'post_mac_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/naclsdk_mac.tgz',
+  'post_lin_sdk_url': 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/naclsdk_linux.tgz',
+  'min_required_chrome_build': 14,
+  'gallery_examples': {
+     'life': 'http://nacl-gallery.appspot.com/life/life.html',
+     'hello_world': 'http://nacl-gallery.appspot.com/hello_world/hello_world.html',
+     'pi_generator': 'http://nacl-gallery.appspot.com/pi_generator/pi_generator.html',
+     'sine_synth': 'http://nacl-gallery.appspot.com/sine_synth/sine_synth.html'
+  },
+  'prerelease_gallery': {
+     'hello_world': 'http://4.nacl-gallery.appspot.com/hello_world/hello_world.html',
+     'hello_world_c': 'http://4.nacl-gallery.appspot.com/hello_world_c/hello_world.html',
+     'life': 'http://4.nacl-gallery.appspot.com/life/life.html',
+     'pi_generator': 'http://4.nacl-gallery.appspot.com/pi_generator/pi_generator.html',
+     'sine_synth': 'http://4.nacl-gallery.appspot.com/sine_synth/sine_synth.html',
+     'geturl': 'http://4.nacl-gallery.appspot.com/geturl/geturl.html'
+  }
+}

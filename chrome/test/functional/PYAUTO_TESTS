@@ -53,6 +53,7 @@
       'imports',
       'infobars',
       'instant',
+      'nacl_sdk',
       'navigation',
       'notifications',
       'ntp',
@@ -121,6 +122,9 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/91553
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
+      '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
     ],
 
     'win': [
@@ -271,6 +275,8 @@
       '-codesign',
       # Import tests are invalid on ChromeOS since Chrome is the only browser.
       '-imports',
+      # No NaCl support on ChromeOS.
+      '-nacl_sdk',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
