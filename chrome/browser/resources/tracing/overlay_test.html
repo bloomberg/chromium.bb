@@ -27,7 +27,7 @@ var sandbox = document.getElementById('sandbox');
 var overlay;
 
 function testShowHideUnparented() {
-  overlay = new gpu.Overlay();
+  overlay = new tracing.Overlay();
   overlay.innerHTML =
       '<h3>Hello</h3>B1:<button>foo</button></p>B2:<button>blah</button>';
   overlay.visible = true;
@@ -38,7 +38,7 @@ function testShowHideUnparented() {
 }
 
 function testShowHideParented() {
-  overlay = new gpu.Overlay();
+  overlay = new tracing.Overlay();
   overlay.innerHTML =
       '<h3>Hello</h3>B1:<button>foo</button></p>B2:<button>blah</button>';
   document.body.appendChild(overlay);

@@ -20,10 +20,16 @@ html, body, #main-tabs {
 }
 
 body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
   cursor: default;
   font-family: sans-serif;
   padding: 0;
   margin: 0;
+}
+
+#tracing-title {
+  margin: 1px;
 }
 
 #debug-div {
@@ -32,10 +38,6 @@ body {
   top: 0px;
   left: 50%;
   border: 1px solid red;
-}
-
-tabbox tabpanels {
-  padding: 1px;
 }
 
 </style>
@@ -57,7 +59,7 @@ tabbox tabpanels {
 <body>
   <div id="debug-div">
   </div>
-  <h1 i18n-content="tracingTitle">TITLE</h1>
+  <h3 id="tracing-title" i18n-content="tracingTitle">TITLE</h3>
   <div id="profiling-view">
   </div>
   <script src="chrome://resources/js/i18n_template.js"></script>

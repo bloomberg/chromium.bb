@@ -64,17 +64,12 @@ class TracingMessageHandler
   virtual void OnTraceBufferPercentFullReply(float percent_full);
 
   // Messages.
-  void OnBrowserBridgeInitialized(const ListValue* list);
-  void OnCallAsync(const ListValue* list);
+  void OnTracingControllerInitialized(const ListValue* list);
   void OnBeginTracing(const ListValue* list);
   void OnEndTracingAsync(const ListValue* list);
   void OnBeginRequestBufferPercentFull(const ListValue* list);
   void OnLoadTraceFile(const ListValue* list);
   void OnSaveTraceFile(const ListValue* list);
-
-  // Submessages dispatched from OnCallAsync.
-  Value* OnRequestClientInfo(const ListValue* list);
-  Value* OnRequestLogMessages(const ListValue* list);
 
   // Callbacks.
   void OnGpuInfoUpdate();
@@ -174,11 +169,9 @@ void TracingMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   web_ui_->RegisterMessageCallback(
-      "browserBridgeInitialized",
-      NewCallback(this, &TracingMessageHandler::OnBrowserBridgeInitialized));
-  web_ui_->RegisterMessageCallback(
-      "callAsync",
-      NewCallback(this, &TracingMessageHandler::OnCallAsync));
+      "tracingControllerInitialized",
+      NewCallback(this,
+                  &TracingMessageHandler::OnTracingControllerInitialized));
   web_ui_->RegisterMessageCallback(
       "beginTracing",
       NewCallback(this, &TracingMessageHandler::OnBeginTracing));
@@ -197,54 +190,8 @@ void TracingMessageHandler::RegisterMessages() {
       NewCallback(this, &TracingMessageHandler::OnSaveTraceFile));
 }
 
-void TracingMessageHandler::OnCallAsync(const ListValue* args) {
-  DCHECK_GE(args->GetSize(), static_cast<size_t>(2));
-  // unpack args into requestId, submessage and submessageArgs
-  bool ok;
-  Value* requestId;
-  ok = args->Get(0, &requestId);
-  DCHECK(ok);
-
-  std::string submessage;
-  ok = args->GetString(1, &submessage);
-  DCHECK(ok);
-
-  ListValue* submessageArgs = new ListValue();
-  for (size_t i = 2; i < args->GetSize(); ++i) {
-    Value* arg;
-    ok = args->Get(i, &arg);
-    DCHECK(ok);
-
-    Value* argCopy = arg->DeepCopy();
-    submessageArgs->Append(argCopy);
-  }
-
-  // call the submessage handler
-  Value* ret = NULL;
-  if (submessage == "requestClientInfo") {
-    ret = OnRequestClientInfo(submessageArgs);
-  } else if (submessage == "requestLogMessages") {
-    ret = OnRequestLogMessages(submessageArgs);
-  } else {  // unrecognized submessage
-    NOTREACHED();
-    delete submessageArgs;
-    return;
-  }
-  delete submessageArgs;
-
-  // call BrowserBridge.onCallAsyncReply with result
-  if (ret) {
-    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
-        *requestId,
-        *ret);
-    delete ret;
-  } else {
-    web_ui_->CallJavascriptFunction("browserBridge.onCallAsyncReply",
-        *requestId);
-  }
-}
-
-void TracingMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
+void TracingMessageHandler::OnTracingControllerInitialized(
+    const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(!gpu_info_update_callback_);
@@ -261,43 +208,35 @@ void TracingMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   // Run callback immediately in case the info is ready and no update in the
   // future.
   OnGpuInfoUpdate();
-}
 
-Value* TracingMessageHandler::OnRequestClientInfo(const ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Send the client info to the tracingController
+  {
+    scoped_ptr<DictionaryValue> dict(new DictionaryValue());
+    chrome::VersionInfo version_info;
 
-  DictionaryValue* dict = new DictionaryValue();
+    if (!version_info.is_valid()) {
+      DLOG(ERROR) << "Unable to create chrome::VersionInfo";
+    } else {
+      // We have everything we need to send the right values.
+      dict->SetString("version", version_info.Version());
+      dict->SetString("cl", version_info.LastChange());
+      dict->SetString("version_mod",
+          chrome::VersionInfo::GetVersionStringModifier());
+      dict->SetString("official",
+          l10n_util::GetStringUTF16(
+              version_info.IsOfficialBuild() ?
+              IDS_ABOUT_VERSION_OFFICIAL :
+              IDS_ABOUT_VERSION_UNOFFICIAL));
 
-  chrome::VersionInfo version_info;
+      dict->SetString("command_line",
+          CommandLine::ForCurrentProcess()->GetCommandLineString());
+    }
 
-  if (!version_info.is_valid()) {
-    DLOG(ERROR) << "Unable to create chrome::VersionInfo";
-  } else {
-    // We have everything we need to send the right values.
-    dict->SetString("version", version_info.Version());
-    dict->SetString("cl", version_info.LastChange());
-    dict->SetString("version_mod",
-        chrome::VersionInfo::GetVersionStringModifier());
-    dict->SetString("official",
-        l10n_util::GetStringUTF16(
-            version_info.IsOfficialBuild() ?
-            IDS_ABOUT_VERSION_OFFICIAL :
-            IDS_ABOUT_VERSION_UNOFFICIAL));
-
-    dict->SetString("command_line",
-        CommandLine::ForCurrentProcess()->GetCommandLineString());
+    dict->SetString("blacklist_version",
+        GpuDataManager::GetInstance()->GetBlacklistVersion());
+    web_ui_->CallJavascriptFunction("tracingController.onClientInfoUpdate",
+                                    *dict);
   }
-
-  dict->SetString("blacklist_version",
-      GpuDataManager::GetInstance()->GetBlacklistVersion());
-
-  return dict;
-}
-
-Value* TracingMessageHandler::OnRequestLogMessages(const ListValue*) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  return gpu_data_manager_->log_messages().DeepCopy();
 }
 
 void TracingMessageHandler::OnBeginRequestBufferPercentFull(
@@ -316,7 +255,7 @@ void TracingMessageHandler::OnGpuInfoUpdate() {
     gpu_info_val->Set("featureStatus", feature_status);
 
   // Send GPU Info to javascript.
-  web_ui_->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
+  web_ui_->CallJavascriptFunction("tracingController.onGpuInfoUpdate",
       *(gpu_info_val.get()));
 }
 

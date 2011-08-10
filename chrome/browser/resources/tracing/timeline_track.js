@@ -415,7 +415,7 @@ cr.define('tracing', function() {
      * @private
      */
     indexOfSlice_: function(slice) {
-      var index = gpu.findLowIndexInSortedArray(this.slices_,
+      var index = tracing.findLowIndexInSortedArray(this.slices_,
           function(x) { return x.start; },
           slice.start);
       while (index < this.slices_.length &&

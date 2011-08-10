@@ -36,11 +36,15 @@ cr.define('tracing', function() {
 
     this.onKeydownBoundToThis_ = this.onKeydown_.bind(this);
     this.onKeypressBoundToThis_ = this.onKeypress_.bind(this);
+
+    chrome.send('tracingControllerInitialized');
   }
 
   TracingController.prototype = {
     __proto__: cr.EventTarget.prototype,
 
+    gpuInfo_: undefined,
+    clientInfo_: undefined,
     tracingEnabled_: false,
     tracingEnding_: false,
 
@@ -109,6 +113,21 @@ cr.define('tracing', function() {
         this.endTracing();
       }
     },
+
+    /**
+     * Called from gpu c++ code when ClientInfo is updated.
+     */
+    onClientInfoUpdate: function(clientInfo) {
+      this.clientInfo_ = clientInfo;
+    },
+
+    /**
+     * Called from gpu c++ code when GPU Info is updated.
+     */
+    onGpuInfoUpdate: function(gpuInfo) {
+      this.gpuInfo_ = gpuInfo;
+    },
+
     /**
      * Checks whether tracing is enabled
      */
@@ -208,8 +227,8 @@ cr.define('tracing', function() {
     beginSaveTraceFile: function(traceEvents) {
       var data = {
         traceEvents: traceEvents,
-        clientInfo: browserBridge.clientInfo,
-        gpuInfo: browserBridge.gpuInfo
+        clientInfo: this.clientInfo_,
+        gpuInfo: this.gpuInfo_
       };
       chrome.send('saveTraceFile', [JSON.stringify(data)]);
     },
