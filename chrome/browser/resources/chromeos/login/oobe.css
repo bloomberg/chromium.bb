@@ -164,12 +164,7 @@ hr.bottom {
 .control-with-label {
   margin: 10px 0 10px 0;
   display: -webkit-box;
-}
-
-.label {
-  margin: 5px 5px 5px 0;
-  padding: 5px 5px 5px 0;
-  width: 170px;
+  -webkit-box-align: start;
 }
 
 .menu-area {
@@ -178,6 +173,12 @@ hr.bottom {
 
 .menu-control {
   width: 250px;
+}
+
+.label {
+  margin: 5px 5px 5px 0;
+  padding: 5px 5px 5px 0;
+  width: 170px;
 }
 
 #connect {
@@ -564,6 +565,7 @@ body.login-display #progress {
   text-indent: 4px;
   white-space: nowrap;
   width: 250px;
+  z-index: 10;
 }
 
 .dropdown-title:hover {
@@ -590,7 +592,7 @@ body.login-display #progress {
   position: relative;
   top: 100%;
   width: 248px;
-  z-index: 1;
+  z-index: 10;
 }
 
 .dropdown-item-container {
@@ -599,7 +601,7 @@ body.login-display #progress {
   padding-left: 5px;
 }
 
-.dropdown-item-container:hover {
+.dropdown-item-container.hover {
   background: #dce4fa;
 }
 
@@ -658,4 +660,13 @@ html[dir=rtl] .error-message {
   opacity: 1.0;
   position: absolute;
   text-shadow: 0 1px 1px #fff;
+}
+
+.dropdown-overlay {
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 5;
 }

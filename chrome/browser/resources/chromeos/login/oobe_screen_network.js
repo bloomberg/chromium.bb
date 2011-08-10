@@ -8,6 +8,37 @@
 
 cr.define('oobe', function() {
   /**
+   * Creates a new container for the drop down menu items.
+   * @constructor
+   * @extends{HTMLDivElement}
+   */
+  var DropDownContainer  = cr.ui.define('div');
+
+  DropDownContainer.prototype = {
+    __proto__: HTMLDivElement.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      this.classList.add('dropdown-container');
+      // Selected item in the menu list.
+      this.selectedItem = null;
+      // First item which could be selected.
+      this.firstItem = null;
+    },
+
+    /**
+     * Selects new item.
+     * @param {!Object} selectedItem Item to be selected.
+     */
+    selectItem: function(selectedItem) {
+      if (this.selectedItem)
+        this.selectedItem.classList.remove('hover');
+      selectedItem.classList.add('hover');
+      this.selectedItem = selectedItem;
+    }
+  };
+
+  /**
    * Creates a new DropDown div.
    * @constructor
    * @extends {HTMLDivElement}
@@ -21,13 +52,12 @@ cr.define('oobe', function() {
 
     /** @inheritDoc */
     decorate: function() {
+      this.appendChild(this.createOverlay_());
       this.appendChild(this.createTitle_());
+      this.appendChild(new DropDownContainer());
 
-      // Create menu items container.
-      var container = this.ownerDocument.createElement('div')
-      container.classList.add('dropdown-container');
-      this.appendChild(container);
       this.isShown = false;
+      this.addEventListener('keydown', this.keyDownHandler_);
     },
 
     /**
@@ -35,7 +65,7 @@ cr.define('oobe', function() {
      * @type {bool} Whether menu element is shown.
      */
     get isShown() {
-      return !this.lastElementChild.hidden;
+      return !this.container.hidden;
     },
 
     /**
@@ -43,7 +73,24 @@ cr.define('oobe', function() {
      * @param {bool} show New visibility state for dropdown menu.
      */
     set isShown(show) {
-      this.lastElementChild.hidden = !show;
+      this.firstElementChild.hidden = !show;
+      this.container.hidden = !show;
+      if (show)
+        this.container.selectItem(this.container.firstItem);
+    },
+
+    /**
+     * Returns title button.
+     */
+    get titleButton() {
+      return this.childNodes[1];
+    },
+
+    /**
+     * Returns container of the menu items.
+     */
+    get container() {
+      return this.lastElementChild;
     },
 
     /**
@@ -53,7 +100,7 @@ cr.define('oobe', function() {
      */
     setTitle: function(title, icon) {
       // TODO(nkostylev): Icon support for dropdown title.
-      this.firstElementChild.textContent = title;
+      this.titleButton.textContent = title;
     },
 
     /**
@@ -61,19 +108,21 @@ cr.define('oobe', function() {
      * @param {Array} items Dropdown items array.
      */
     setItems: function(items) {
-      var container = this.lastElementChild;
-      container.innerHTML = '';
+      this.container.innerHTML = '';
+      this.container.firstItem = null;
+      this.container.selectedItem = null;
       for (var i = 0; i < items.length; ++i) {
         var item = items[i];
         if ('sub' in item) {
           // Workaround for submenus, add items on top level.
           // TODO(altimofeev): support submenus.
           for (var j = 0; j < item.sub.length; ++j)
-            this.createItem_(container, item.sub[j]);
+            this.createItem_(this.container, item.sub[j]);
           continue;
         }
-        this.createItem_(container, item);
+        this.createItem_(this.container, item);
       }
+      this.container.selectItem(this.container.firstItem);
     },
 
     /**
@@ -120,13 +169,34 @@ cr.define('oobe', function() {
           var item = this.lastElementChild;
           if (item.iid < -1 || item.classList.contains('disabled-item'))
             return;
-          item.controller.isShown = !item.controller.isShown;
+          item.controller.isShown = false;
           if (item.iid >= 0)
             chrome.send('networkItemChosen', [item.iid]);
+        });
+        wrapperDiv.addEventListener('mouseover', function f(e) {
+          this.parentNode.selectItem(this);
         });
         itemElement = wrapperDiv;
       }
       container.appendChild(itemElement);
+      if (!container.firstItem && item.id >= 0) {
+        container.firstItem = itemElement;
+      }
+    },
+
+    /**
+     * Creates dropdown overlay element, which catches outside clicks.
+     * @type {HTMLElement}
+     * @private
+     */
+    createOverlay_: function() {
+      var overlay = this.ownerDocument.createElement('div');
+      overlay.classList.add('dropdown-overlay');
+      overlay.addEventListener('click', function() {
+        this.parentNode.titleButton.focus();
+        this.parentNode.isShown = false;
+      });
+      return overlay;
     },
 
     /**
@@ -139,10 +209,65 @@ cr.define('oobe', function() {
       el.classList.add('dropdown-title');
       el.iid = -1;
       el.controller = this;
+      el.enterPressed = false;
+
       el.addEventListener('click', function f(e) {
+        this.focus();
         this.controller.isShown = !this.controller.isShown;
+
+        if (this.enterPressed) {
+          this.enterPressed = false;
+          if (!this.controller.isShown) {
+            var item = this.controller.container.selectedItem.lastElementChild;
+            if (item.iid >= 0 && !item.classList.contains('disabled-item'))
+              chrome.send('networkItemChosen', [item.iid]);
+          }
+        }
       });
       return el;
+    },
+
+    /**
+     * Handles keydown event from the keyboard.
+     * @private
+     * @param {!Event} e Keydown event.
+     */
+    keyDownHandler_: function(e) {
+      if (!this.isShown)
+        return;
+      var selected = this.container.selectedItem;
+      switch(e.keyCode) {
+        case 38: {  // Key up.
+          do {
+            selected = selected.previousSibling;
+            if (!selected)
+              selected = this.container.lastElementChild;
+          } while (selected.iid < 0);
+          this.container.selectItem(selected);
+          break;
+        }
+        case 40: {  // Key down.
+          do {
+            selected = selected.nextSibling;
+            if (!selected)
+              selected = this.container.firstItem;
+          } while (selected.iid < 0);
+          this.container.selectItem(selected);
+          break;
+        }
+        case 27: {  // Esc.
+          this.isShown = false;
+          break;
+        }
+        case 9: {  // Tab.
+          this.isShown = false;
+          break;
+        }
+        case 13: {  // Enter.
+          this.titleButton.enterPressed = true;
+          break;
+        }
+      };
     }
   };
 
