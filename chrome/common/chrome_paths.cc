@@ -31,20 +31,6 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
     FILE_PATH_LITERAL("libgcflashplayer.so");
 #endif
 
-// File name of the pepper Flash plugin on different platforms.
-const FilePath::CharType kPepperFlashPluginFileName[] =
-#if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("PepperFlashPlayer.plugin");
-#elif defined(OS_WIN)
-    FILE_PATH_LITERAL("pepflashplayer.dll");
-#else  // OS_LINUX, etc.
-    FILE_PATH_LITERAL("libpepflashplayer.so");
-#endif
-
-// The pepper flash plugins are in a directory with this name.
-const FilePath::CharType kPepperFlashBaseDirectory[] =
-    FILE_PATH_LITERAL("PepperFlash");
-
 // File name of the internal PDF plugin on different platforms.
 const FilePath::CharType kInternalPDFPluginFileName[] =
 #if defined(OS_WIN)
@@ -86,30 +72,6 @@ bool GetInternalPluginsDirectory(FilePath* result) {
 
   // The rest of the world expects plugins in the module directory.
   return PathService::Get(base::DIR_MODULE, result);
-}
-
-// Pepper flash plugins have the version encoded in the path itself
-// so we need to enumerate the directories to find the full path
-bool GetPepperFlashDirectory(FilePath* result) {
-  if (!GetInternalPluginsDirectory(result))
-    return false;
-  *result = result->Append(kPepperFlashBaseDirectory);
-  Version latest("0.0");
-  bool found = false;
-  file_util::FileEnumerator
-      file_enumerator(*result, false, file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath path = file_enumerator.Next(); !path.value().empty();
-       path = file_enumerator.Next()) {
-    Version version(path.BaseName().MaybeAsASCII());
-    if (!version.IsValid())
-      continue;
-    if (version.CompareTo(latest) > 0) {
-      latest = version;
-      *result = path;
-      found = true;
-    }
-  }
-  return found;
 }
 
 bool PathProvider(int key, FilePath* result) {
@@ -260,10 +222,6 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       break;
     case chrome::FILE_PEPPER_FLASH_PLUGIN:
-      if (!GetPepperFlashDirectory(&cur))
-        return false;
-      cur = cur.Append(kPepperFlashPluginFileName);
-      if (!file_util::PathExists(cur))
         return false;
       break;
     case chrome::FILE_PDF_PLUGIN:

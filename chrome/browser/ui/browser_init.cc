@@ -22,8 +22,10 @@
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/defaults.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -508,6 +510,17 @@ void RecordAppLaunches(
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
     }
   }
+}
+
+void RegisterComponentsForUpdate() {
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  if (!cus)
+    return;
+  // Registration can be before of after cus->Start() so it is ok to post
+  // a task to the UI thread to do registration once you done the necessary
+  // file IO to know your current version.
+  RegisterPepperFlashComponent(cus);
+  cus->Start();
 }
 
 }  // namespace
@@ -1333,6 +1346,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       NavigationController::DisablePromptOnRepost();
+
+    RegisterComponentsForUpdate();
 
     // Look for the testing channel ID ONLY during process startup
     if (command_line.HasSwitch(switches::kTestingChannelID)) {

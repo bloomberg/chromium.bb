@@ -93,7 +93,7 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() {
 }
 
 bool ChromeConfigurator::InProcess() {
-  return out_of_process_;
+  return !out_of_process_;
 }
 
 ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
