@@ -127,17 +127,29 @@ ImmediateInterpreter::ImmediateInterpreter()
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_timeout_(0.2),
+      tap_timeout_prop_(NULL),
       tap_drag_timeout_(0.7),
+      tap_drag_timeout_prop_(NULL),
       tap_move_dist_(1.0),
+      tap_move_dist_prop_(NULL),
       palm_pressure_(100.0),
+      palm_pressure_prop_(NULL),
       change_timeout_(0.04),
+      change_timeout_prop_(NULL),
       evaluation_timeout_(0.2),
+      evaluation_timeout_prop_(NULL),
       two_finger_pressure_diff_thresh_(17.0),
+      two_finger_pressure_diff_thresh_prop_(NULL),
       two_finger_close_distance_thresh_(40.0),
+      two_finger_close_distance_thresh_prop_(NULL),
       two_finger_scroll_distance_thresh_(2.0),
+      two_finger_scroll_distance_thresh_prop_(NULL),
       scroll_stationary_finger_max_distance_(1.0),
+      scroll_stationary_finger_max_distance_prop_(NULL),
       bottom_zone_size_(10),
-      button_evaluation_timeout_(0.03) {
+      bottom_zone_size_prop_(NULL),
+      button_evaluation_timeout_(0.03),
+      button_evaluation_timeout_prop_(NULL) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
