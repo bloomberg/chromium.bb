@@ -77,8 +77,13 @@ class QuotaFileIO {
   GURL file_url_;
   quota::StorageType storage_type_;
 
-  // Operations waiting for a quota check to finish.
+  // Pending operations that are waiting quota checks and pending
+  // callbacks that are to be fired after the operation;
+  // we use two separate queues for them so that we can safely dequeue the
+  // pending callbacks while enqueueing new operations. (This could
+  // happen when callbacks are dispatched synchronously due to error etc.)
   std::deque<PendingOperationBase*> pending_operations_;
+  std::deque<PendingOperationBase*> pending_callbacks_;
 
   // Valid only while there're pending quota checks.
   int64_t cached_file_size_;

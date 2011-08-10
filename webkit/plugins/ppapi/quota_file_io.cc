@@ -83,10 +83,7 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
     }
     if (is_will_operation_) {
       // Assuming the write will succeed.
-      base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
-          FROM_HERE, runnable_factory_.NewRunnableMethod(
-              &WriteOperation::DidFinish,
-              base::PLATFORM_FILE_OK, bytes_to_write_));
+      DidFinish(base::PLATFORM_FILE_OK, bytes_to_write_);
       return;
     }
     DCHECK(buffer_.get());
@@ -100,18 +97,15 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   }
 
   virtual void DidFail(PlatformFileError error) OVERRIDE {
-    base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
-        FROM_HERE, runnable_factory_.NewRunnableMethod(
-            &WriteOperation::DidFinish, error, 0));
+    DidFinish(error, 0);
   }
 
   bool finished() const { return finished_; }
 
-  void RunCallback() {
-    DCHECK(callback_.get());
-    callback_->Run(status_, bytes_written_);
-    callback_.reset();
-    delete this;
+  virtual void WillRunCallback() {
+    base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
+        FROM_HERE, runnable_factory_.NewRunnableMethod(
+            &WriteOperation::RunCallback));
   }
 
  private:
@@ -125,6 +119,13 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
     quota_io_->DidWrite(this, max_offset);
   }
 
+  virtual void RunCallback() {
+    DCHECK(callback_.get());
+    callback_->Run(status_, bytes_written_);
+    callback_.reset();
+    delete this;
+  }
+
   const int64_t offset_;
   scoped_array<char> buffer_;
   const int32_t bytes_to_write_;
@@ -132,8 +133,8 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   bool finished_;
   PlatformFileError status_;
   int64_t bytes_written_;
-  base::ScopedCallbackFactory<QuotaFileIO::WriteOperation> callback_factory_;
-  ScopedRunnableMethodFactory<QuotaFileIO::WriteOperation> runnable_factory_;
+  base::ScopedCallbackFactory<WriteOperation> callback_factory_;
+  ScopedRunnableMethodFactory<WriteOperation> runnable_factory_;
 };
 
 class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
@@ -145,8 +146,8 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
       : PendingOperationBase(quota_io, is_will_operation),
         length_(length),
         callback_(callback),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+
   virtual ~SetLengthOperation() {}
 
   virtual void Run() OVERRIDE {
@@ -156,10 +157,7 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
       return;
     }
     if (is_will_operation_) {
-      base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
-          FROM_HERE, runnable_factory_.NewRunnableMethod(
-              &SetLengthOperation::DidFinish,
-              base::PLATFORM_FILE_OK));
+      DidFinish(base::PLATFORM_FILE_OK);
       return;
     }
     if (!base::FileUtilProxy::Truncate(
@@ -172,9 +170,7 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
   }
 
   virtual void DidFail(PlatformFileError error) OVERRIDE {
-    base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
-        FROM_HERE, runnable_factory_.NewRunnableMethod(
-            &SetLengthOperation::DidFinish, error));
+    DidFinish(error);
   }
 
  private:
@@ -188,10 +184,7 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
 
   int64_t length_;
   scoped_ptr<StatusCallback> callback_;
-  base::ScopedCallbackFactory<QuotaFileIO::SetLengthOperation>
-      callback_factory_;
-  ScopedRunnableMethodFactory<QuotaFileIO::SetLengthOperation>
-      runnable_factory_;
+  base::ScopedCallbackFactory<SetLengthOperation> callback_factory_;
 };
 
 // QuotaFileIO --------------------------------------------------------------
@@ -221,6 +214,8 @@ QuotaFileIO::~QuotaFileIO() {
   // Note that this doesn't dispatch pending callbacks.
   STLDeleteContainerPointers(pending_operations_.begin(),
                              pending_operations_.end());
+  STLDeleteContainerPointers(pending_callbacks_.begin(),
+                             pending_callbacks_.end());
 }
 
 bool QuotaFileIO::Write(
@@ -302,11 +297,10 @@ void QuotaFileIO::DidQueryAvailableSpace(int64_t avail_space) {
 void QuotaFileIO::DidQueryForQuotaCheck() {
   DCHECK(!pending_operations_.empty());
   DCHECK_GT(inflight_operations_, 0);
-  for (std::deque<PendingOperationBase*>::iterator iter =
-           pending_operations_.begin();
-       iter != pending_operations_.end();
-       ++iter) {
-    PendingOperationBase* op = *iter;
+  while (!pending_operations_.empty()) {
+    PendingOperationBase* op = pending_operations_.front();
+    pending_operations_.pop_front();
+    pending_callbacks_.push_back(op);
     if (outstanding_errors_ > 0) {
       op->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
       continue;
@@ -332,15 +326,15 @@ void QuotaFileIO::DidWrite(WriteOperation* op,
                            int64_t written_offset_end) {
   max_written_offset_ = std::max(max_written_offset_, written_offset_end);
   DCHECK_GT(inflight_operations_, 0);
-  DCHECK(!pending_operations_.empty());
+  DCHECK(!pending_callbacks_.empty());
   // Fire callbacks for finished operations.
-  while (!pending_operations_.empty()) {
+  while (!pending_callbacks_.empty()) {
     WriteOperation* op = static_cast<WriteOperation*>(
-        pending_operations_.front());
+        pending_callbacks_.front());
     if (!op->finished())
       break;
-    op->RunCallback();
-    pending_operations_.pop_front();
+    pending_callbacks_.pop_front();
+    op->WillRunCallback();
   }
   // If we have no more pending writes, notify the browser that we did
   // update the file.
@@ -355,8 +349,8 @@ void QuotaFileIO::DidWrite(WriteOperation* op,
 
 void QuotaFileIO::DidSetLength(PlatformFileError error, int64_t new_file_size) {
   DCHECK_EQ(1, inflight_operations_);
-  pending_operations_.pop_front();
-  DCHECK(pending_operations_.empty());
+  pending_callbacks_.pop_front();
+  DCHECK(pending_callbacks_.empty());
   int64_t delta = (error != base::PLATFORM_FILE_OK) ? 0 :
       new_file_size - cached_file_size_;
   instance_->delegate()->DidUpdateFile(file_url_, delta);
