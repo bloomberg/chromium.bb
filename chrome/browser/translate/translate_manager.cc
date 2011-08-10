@@ -507,7 +507,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // Prompts the user if he/she wants the page translated.
   wrapper->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, language_code,
-          target_lang));
+      target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -534,17 +534,9 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
     return;
   }
 
-  TranslateInfoBarDelegate* infobar = TranslateInfoBarDelegate::CreateDelegate(
+  ShowInfoBar(tab_contents, TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::TRANSLATING, tab_contents,
-      source_lang, target_lang);
-  if (!infobar) {
-    // This means the source or target languages are not supported, which should
-    // not happen as we won't show a translate infobar or have the translate
-    // context menu activated in such cases.
-    NOTREACHED();
-    return;
-  }
-  ShowInfoBar(tab_contents, infobar);
+      source_lang, target_lang));
 
   if (!translate_script_.empty()) {
     DoTranslatePage(tab_contents, translate_script_, source_lang, target_lang);
@@ -749,6 +741,7 @@ void TranslateManager::RequestTranslateScript() {
 
 void TranslateManager::ShowInfoBar(TabContents* tab,
                                    TranslateInfoBarDelegate* infobar) {
+  DCHECK(infobar != NULL);
   TranslateInfoBarDelegate* old_infobar = GetTranslateInfoBarDelegate(tab);
   infobar->UpdateBackgroundAnimation(old_infobar);
   TabContentsWrapper* wrapper =
@@ -781,8 +774,9 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   std::vector<std::string>::iterator iter;
   for (iter = accept_langs_list.begin();
        iter != accept_langs_list.end(); ++iter) {
-    if (IsSupportedLanguage(GetLanguageCode(*iter)))
-      return *iter;
+    std::string lang_code = GetLanguageCode(*iter);
+    if (IsSupportedLanguage(lang_code))
+      return lang_code;
   }
   return std::string();
 }

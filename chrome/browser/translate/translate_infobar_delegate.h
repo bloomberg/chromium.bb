@@ -36,11 +36,12 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   static const size_t kNoIndex;
 
-  // Factory method to create a non-error translate infobar.
-  // The original and target language specified are the ASCII language codes
-  // (ex: en, fr...).
-  // Returns NULL if it failed, typically if |original_language| or
-  // |target_language| is not a supported language.
+  // Factory method to create a non-error translate infobar. |original_language|
+  // and |target_language| must be ASCII language codes (e.g. "en", "fr", etc.)
+  // for languages the TranslateManager supports translating. The lone exception
+  // is when the user initiates translation from the context menu, in which case
+  // it's legal to call this with |type| == TRANSLATING and
+  // |originalLanguage| == kUnknownLanguageCode.
   static TranslateInfoBarDelegate* CreateDelegate(
       Type infobar_type,
       TabContents* tab_contents,

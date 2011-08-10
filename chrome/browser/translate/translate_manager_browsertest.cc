@@ -903,6 +903,17 @@ TEST_F(TranslateManagerTest, TranslateAcceptLanguage) {
 
   // Expect the infobar to pop up
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+
+  // Set Qbz and English-US as the only accepted languages to test the country
+  // code removal code which was causing a crash as filed in Issue 90106,
+  // a crash caused by a language with a country code that wasn't recognized.
+  prefs->SetString(prefs::kAcceptLanguages, "qbz,en-us");
+
+  // Go to a German page
+  SimulateNavigation(GURL("http://google.de"), "de", true);
+
+  // Expect the infobar to pop up
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
 // Tests that the translate enabled preference is honored.

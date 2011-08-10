@@ -30,15 +30,14 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
     const std::string& original_language,
     const std::string& target_language) {
   DCHECK_NE(TRANSLATION_ERROR, type);
+  // These must be validated by our callers.
+  DCHECK(TranslateManager::IsSupportedLanguage(target_language));
   // The original language can only be "unknown" for the "translating"
   // infobar, which is the case when the user started a translation from the
   // context menu.
-  DCHECK(type == TRANSLATING ||
-      original_language != chrome::kUnknownLanguageCode);
-  if ((original_language != chrome::kUnknownLanguageCode &&
-          !TranslateManager::IsSupportedLanguage(original_language)) ||
-      !TranslateManager::IsSupportedLanguage(target_language))
-    return NULL;
+  DCHECK(TranslateManager::IsSupportedLanguage(original_language) ||
+         ((type == TRANSLATING) &&
+          (original_language == chrome::kUnknownLanguageCode)));
   TranslateInfoBarDelegate* delegate =
       new TranslateInfoBarDelegate(type, TranslateErrors::NONE, tab_contents,
                                    original_language, target_language);
