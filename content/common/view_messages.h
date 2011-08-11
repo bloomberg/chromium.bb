@@ -627,6 +627,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // progress.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
+  // The size of the web content area.
+  IPC_STRUCT_MEMBER(gfx::Size, contents_size)
+
   // The area of the RenderView reserved for resize corner when this message
   // was generated.  Reported for the same reason as view_size is.
   IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
@@ -646,7 +649,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
   //     Indicates that this is a response to a ViewMsg_Repaint message.
   //
-  // If flags is zero, then this message corresponds to an unsoliticed paint
+  // If flags is zero, then this message corresponds to an unsolicited paint
   // request by the render view.  Any of the above bits may be set in flags,
   // which would indicate that this paint message is an ACK for multiple
   // request messages.

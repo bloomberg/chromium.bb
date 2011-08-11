@@ -8,6 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
@@ -44,6 +45,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -52,6 +54,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
+using WebKit::WebGestureEvent;
 
 static inline int ToWebKitModifiers(NSUInteger flags) {
   int modifiers = 0;
@@ -75,13 +78,23 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 @end
 
 // This API was published since 10.6. Provide the declaration so it can be
-// // called below when building with the 10.5 SDK.
+// called below when building with the 10.5 SDK.
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
 @class NSTextInputContext;
 @interface NSResponder (AppKitDetails)
 - (NSTextInputContext *)inputContext;
+- (void)beginGestureWithEvent:(NSEvent*)event;
+- (void)endGestureWithEvent:(NSEvent*)event;
 @end
 #endif
+
+// Undocumented Lion method to get the pattern for the over-scroll area.
+@interface NSColor (LionSekretAPI)
++ (NSImage*)_linenPatternImage;
+@end
+
+// NSEvent subtype for scroll gestures events.
+static const short kIOHIDEventTypeScroll = 6;
 
 namespace {
 
@@ -1211,6 +1224,32 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 }
 
+- (void)beginGestureWithEvent:(NSEvent*)event {
+  if (base::mac::IsOSLionOrLater() &&
+      [event subtype] == kIOHIDEventTypeScroll &&
+      renderWidgetHostView_->render_widget_host_) {
+    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
+  }
+
+  // Forward the gesture event to the next responder so that the browser window
+  // controller has a chance to act on back/forward gestures.
+  [[self nextResponder] beginGestureWithEvent:event];
+}
+
+- (void)endGestureWithEvent:(NSEvent*)event {
+  if (base::mac::IsOSLionOrLater() &&
+      [event subtype] == kIOHIDEventTypeScroll &&
+      renderWidgetHostView_->render_widget_host_) {
+    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
+  }
+
+  // Forward the gesture event to the next responder so that the browser window
+  // controller has a chance to act on back/forward gestures.
+  [[self nextResponder] endGestureWithEvent:event];
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
   // |performKeyEquivalent:| is sent to all views of a window, not only down the
   // responder chain (cf. "Handling Key Equivalents" in
@@ -1247,7 +1286,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // to us instead of doing key view loop control, ctrl-left/right get handled
   // correctly, etc.
   // (However, there are still some keys that Cocoa swallows, e.g. the key
-  // equivalent that Cocoa uses for toggling the input langauge. In this case,
+  // equivalent that Cocoa uses for toggling the input language. In this case,
   // that's actually a good thing, though -- see http://crbug.com/26115 .)
   return YES;
 }
@@ -1566,6 +1605,93 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
+- (void)fillRect:(NSRect)rect withPattern:(NSImage*)patternImage {
+  if (NSIsEmptyRect(rect))
+    return;
+
+  NSColor* patternColor = [NSColor colorWithPatternImage:patternImage];
+  [patternColor set];
+  NSRectFill(rect);
+}
+
+- (void)drawShadow:(NSShadow*)shadow
+          withRect:(NSRect)rect
+              clip:(NSRect)clipRect {
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  NSBezierPath* drawingPath = [NSBezierPath bezierPathWithRect:rect];
+  [shadow set];
+  [[NSColor blackColor] set];
+  [[NSBezierPath bezierPathWithRect:clipRect] addClip];
+  [drawingPath fill];
+}
+
+- (NSRect)computeVisibleContentRect {
+  const RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
+  gfx::Point offset = rwh->last_scroll_offset();
+  gfx::Size size = rwh->contents_size();
+  NSRect contentRect =
+      NSMakeRect(-offset.x(), -offset.y(), size.width(), size.height());
+  NSRect frameRect = [self frame];
+  frameRect.origin = NSMakePoint(0, 0);
+  return NSIntersectionRect(frameRect, contentRect);
+}
+
+- (void)fillOverScrollAreas:(NSRect)dirtyRect {
+  if (![NSColor respondsToSelector:@selector(_linenPatternImage)])
+    return;
+
+  NSRect visibleContentRect = [self computeVisibleContentRect];
+  NSSize frameSize = [self frame].size;
+  bool hasHorizontalOverflow = (NSWidth(visibleContentRect) < frameSize.width);
+  bool hasVerticalOverflow = (NSHeight(visibleContentRect) < frameSize.height);
+
+  if (!hasHorizontalOverflow && !hasVerticalOverflow)
+    return;
+
+  NSRect xRect = NSMakeRect(0,
+                            0,
+                            frameSize.width - NSWidth(visibleContentRect),
+                            frameSize.height);
+  NSRect yRect = NSMakeRect(0,
+                            0,
+                            frameSize.width,
+                            frameSize.height - NSHeight(visibleContentRect));
+  NSImage* background = [NSColor _linenPatternImage];
+  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow.get() setShadowColor:[NSColor blackColor]];
+  [shadow setShadowBlurRadius:5];
+
+  if (hasHorizontalOverflow) {
+    NSRect shadowRect;
+    if (visibleContentRect.origin.x > 0) {
+      shadowRect = xRect;
+      shadowRect.origin.x += NSWidth(shadowRect);
+    } else {
+      xRect.origin.x = NSWidth(visibleContentRect);
+      shadowRect = xRect;
+      shadowRect.origin.x -= 1;
+    }
+    shadowRect.size.width = 1;
+    NSRect intersectRect = NSIntersectionRect(dirtyRect, xRect);
+    [self fillRect:intersectRect withPattern:background];
+    [self drawShadow:shadow.get() withRect:shadowRect clip:intersectRect];
+  }
+
+  if (hasVerticalOverflow) {
+    NSRect shadowRect = visibleContentRect;
+    if (visibleContentRect.origin.y > 0) {
+      yRect.origin.y = NSHeight(visibleContentRect);
+      shadowRect.origin.y = yRect.origin.y - 1;
+    } else {
+      shadowRect.origin.y = yRect.origin.y + NSHeight(yRect);
+    }
+    shadowRect.size.height = 1;
+    NSRect intersectRect = NSIntersectionRect(dirtyRect, yRect);
+    [self fillRect:intersectRect withPattern:background];
+    [self drawShadow:shadow.get() withRect:shadowRect clip:intersectRect];
+  }
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
@@ -1640,6 +1766,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     // Fill the remaining portion of the damagedRect with white
     [self fillBottomRightRemainderOfRect:bitmapRect dirtyRect:damagedRect];
+
+    // Fill the over-scroll areas, if any, with the appropriate pattern.
+    [self fillOverScrollAreas:dirtyRect];
 
     if (!renderWidgetHostView_->whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
@@ -1888,7 +2017,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // Performs a right click copying WebKit's
   // accessibilityPerformShowMenuAction.
   NSPoint location = [self accessibilityPointInScreen:accessibility];
-NSSize size = [[accessibility size] sizeValue];
+  NSSize size = [[accessibility size] sizeValue];
   location = [[self window] convertScreenToBase:location];
   location.x += size.width/2;
   location.y += size.height/2;

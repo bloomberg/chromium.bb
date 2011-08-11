@@ -34,6 +34,7 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
+using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
@@ -560,6 +561,15 @@ void RenderWidgetHost::ForwardWheelEvent(
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
 }
 
+void RenderWidgetHost::ForwardGestureEvent(
+    const WebKit::WebGestureEvent& gesture_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardWheelEvent");
+  if (ignore_input_events_ || process_->ignore_input_events())
+    return;
+
+  ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
+}
+
 void RenderWidgetHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardKeyboardEvent");
@@ -870,6 +880,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
+  // Update our knowledge of the RenderWidget's contents size.
+  contents_size_ = params.contents_size;
   // Update our knowledge of the RenderWidget's scroll offset.
   last_scroll_offset_ = params.scroll_offset;
 

@@ -3944,6 +3944,11 @@ gfx::Point RenderView::GetScrollOffset() {
   return gfx::Point(scroll_offset.width, scroll_offset.height);
 }
 
+gfx::Size RenderView::GetContentsSize() {
+  WebSize bounds = webview()->mainFrame()->contentsSize();
+  return gfx::Size(bounds.width, bounds.height);
+}
+
 void RenderView::OnClearFocusedNode() {
   if (webview())
     webview()->clearFocusedNode();
