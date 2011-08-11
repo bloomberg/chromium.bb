@@ -57,7 +57,7 @@ class MockObserver : public AvatarMenuModelObserver {
   MockObserver() : count_(0) {}
   virtual ~MockObserver() {}
 
-  virtual void OnAvatarMenuModelChanged() {
+  virtual void OnAvatarMenuModelChanged(AvatarMenuModel* avatar_menu_model) {
     ++count_;
   }
 

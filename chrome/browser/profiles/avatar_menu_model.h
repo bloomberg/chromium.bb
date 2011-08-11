@@ -59,7 +59,7 @@ class AvatarMenuModel : public NotificationObserver {
   // model:
   // Opens a Browser with the specified profile in response to the user
   // selecting an item.
-  void SwichToProfile(size_t index);
+  void SwitchToProfile(size_t index);
   // Opens the profile settings in response to clicking the edit button next to
   // an item.
   void EditProfile(size_t index);
