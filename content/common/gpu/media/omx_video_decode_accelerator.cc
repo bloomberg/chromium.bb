@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
 
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "content/common/gpu/gpu_channel.h"
@@ -277,6 +278,8 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
 
 void OmxVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
+  TRACE_EVENT1("Video Decoder", "OVDA::Decode",
+               "Buffer id", bitstream_buffer.id());
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(!free_input_buffers_.empty());
 
@@ -353,6 +356,8 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
+  TRACE_EVENT1("Video Decoder", "OVDA::ReusePictureBuffer",
+               "Picture id", picture_buffer_id);
   DCHECK_EQ(message_loop_, MessageLoop::current());
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
@@ -738,6 +743,12 @@ void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
 
 void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     OMX_BUFFERHEADERTYPE* buffer) {
+  media::Picture* picture =
+      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
+  int picture_buffer_id = picture ? picture->picture_buffer_id() : -1;
+  TRACE_EVENT2("Video Decoder", "OVDA::FillBufferDoneTask",
+               "Buffer id", buffer->nTimeStamp,
+               "Picture id", picture_buffer_id);
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_GT(output_buffers_at_component_, 0);
   --output_buffers_at_component_;
@@ -757,11 +768,6 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     saw_eos_during_flush_ = true;
   }
 
-  DCHECK(buffer->pAppPrivate);
-  media::Picture* picture =
-      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
-  int picture_buffer_id = picture->picture_buffer_id();
-
   // During the transition from Executing to Idle, and during port-flushing, all
   // pictures are sent back through here.  Avoid giving them to the client.
   // Also avoid sending the (fake) EOS buffer to the client.
@@ -773,6 +779,7 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     return;
   }
 
+  DCHECK(picture);
   // See Decode() for an explanation of this abuse of nTimeStamp.
   picture->set_bitstream_buffer_id(buffer->nTimeStamp);
   if (client_)
@@ -781,6 +788,8 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
 
 void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
     OMX_BUFFERHEADERTYPE* buffer) {
+  TRACE_EVENT1("Video Decoder", "OVDA::EmptyBufferDoneTask",
+               "Buffer id", buffer->nTimeStamp);
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_GT(input_buffers_at_component_, 0);
   free_input_buffers_.push(buffer);
@@ -971,6 +980,8 @@ OMX_ERRORTYPE OmxVideoDecodeAccelerator::EmptyBufferCallback(
     OMX_HANDLETYPE component,
     OMX_PTR priv_data,
     OMX_BUFFERHEADERTYPE* buffer) {
+  TRACE_EVENT1("Video Decoder", "OVDA::EmptyBufferCallback",
+               "Buffer id", buffer->nTimeStamp);
   // Called on the OMX thread.
   OmxVideoDecodeAccelerator* decoder =
       static_cast<OmxVideoDecodeAccelerator*>(priv_data);
@@ -988,6 +999,12 @@ OMX_ERRORTYPE OmxVideoDecodeAccelerator::FillBufferCallback(
     OMX_HANDLETYPE component,
     OMX_PTR priv_data,
     OMX_BUFFERHEADERTYPE* buffer) {
+  media::Picture* picture =
+      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
+  int picture_buffer_id = picture ? picture->picture_buffer_id() : -1;
+  TRACE_EVENT2("Video Decoder", "OVDA::FillBufferCallback",
+               "Buffer id", buffer->nTimeStamp,
+               "Picture id", picture_buffer_id);
   // Called on the OMX thread.
   OmxVideoDecodeAccelerator* decoder =
       static_cast<OmxVideoDecodeAccelerator*>(priv_data);
