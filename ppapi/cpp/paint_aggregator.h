@@ -11,70 +11,108 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 
+/// @file
+/// This file defines the API to aggregate multiple invalidation and scroll
+/// commands to produce a scroll and repaint sequence.
 namespace pp {
 
-// This class is responsible for aggregating multiple invalidation and scroll
-// commands to produce a scroll and repaint sequence. You can use this manually
-// to track your updates, but most applications will use the PaintManager to
-// additionally handle the necessary callbacks on top of the PaintAggregator
-// functionality.
-//
-// See http://code.google.com/p/ppapi/wiki/2DPaintingModel
+/// This class is responsible for aggregating multiple invalidation and scroll
+/// commands to produce a scroll and repaint sequence. You can use this manually
+/// to track your updates, but most applications will use the PaintManager to
+/// additionally handle the necessary callbacks on top of the PaintAggregator
+/// functionality.
+///
+/// See http://code.google.com/p/ppapi/wiki/2DPaintingModel
 class PaintAggregator {
  public:
   struct PaintUpdate {
+    /// Default constructor for creating an is_null() <code>PaintUpdate</code>
+    /// object.
     PaintUpdate();
+
+    /// Destructor.
     ~PaintUpdate();
 
-    // True if there is a scroll applied. This indicates that the scroll delta
-    // and scroll_rect are nonzero (just as a convenience).
+    /// True if there is a scroll applied. This indicates that the scroll delta
+    /// and scroll_rect are nonzero (just as a convenience).
     bool has_scroll;
 
-    // The amount to scroll by. Either the X or Y may be nonzero to indicate a
-    // scroll in that direction, but there will never be a scroll in both
-    // directions at the same time (this will be converted to a paint of the
-    // region instead).
-    //
-    // If there is no scroll, this will be (0, 0).
+    /// The amount to scroll by. Either the X or Y may be nonzero to indicate a
+    /// scroll in that direction, but there will never be a scroll in both
+    /// directions at the same time (this will be converted to a paint of the
+    /// region instead).
+    ///
+    /// If there is no scroll, this will be (0, 0).
     Point scroll_delta;
 
-    // The rectangle that should be scrolled by the scroll_delta. If there is no
-    // scroll, this will be (0, 0, 0, 0). We only track one scroll command at
-    // once. If there are multiple ones, they will be converted to invalidates.
+    /// The rectangle that should be scrolled by the scroll_delta. If there is
+    /// no scroll, this will be (0, 0, 0, 0). We only track one scroll command
+    /// at once. If there are multiple ones, they will be converted to
+    /// invalidates.
     Rect scroll_rect;
 
-    // A list of all the individual dirty rectangles. This is an aggregated list
-    // of all invalidate calls. Different rectangles may be unified to produce a
-    // minimal list with no overlap that is more efficient to paint. This list
-    // also contains the region exposed by any scroll command.
+    /// A list of all the individual dirty rectangles. This is an aggregated
+    /// list of all invalidate calls. Different rectangles may be unified to
+    /// produce a minimal list with no overlap that is more efficient to paint.
+    /// This list also contains the region exposed by any scroll command.
     std::vector<Rect> paint_rects;
 
-    // The union of all paint_rects.
+    /// The union of all paint_rects.
     Rect paint_bounds;
   };
 
+  /// Default constructor.
   PaintAggregator();
 
-  // Setters for the configuration settings. See the corresponding variables
-  // below for what these mean.
+  /// Setter function setting the max ratio of paint rect area to scroll rect
+  /// area that we will tolerate before downgrading the scroll into a repaint.
+  ///
+  /// If the combined area of paint rects contained within the scroll
+  /// rect grows too large, then we might as well just treat
+  /// the scroll rect as a paint rect.
+  ///
+  /// @param[in] area The max ratio of paint rect area to scroll rect area that
+  /// we will tolerate before downgrading the scroll into a repaint.
   void set_max_redundant_paint_to_scroll_area(float area) {
     max_redundant_paint_to_scroll_area_ = area;
   }
+
+  /// Setter function for setting the maximum number of paint rects. If we
+  /// exceed this limit, then we'll start combining paint rects (see
+  /// CombinePaintRects). This limiting can be important since there is
+  /// typically some overhead in deciding what to paint. If your module is fast
+  /// at doing these computations, raise this threshold, if your module is
+  /// slow, lower it (probably requires some tuning to find the right value).
+  ///
+  /// @param[in] max_rects The maximum number of paint rects.
   void set_max_paint_rects(size_t max_rects) {
     max_paint_rects_ = max_rects;
   }
 
-  // There is a PendingUpdate if InvalidateRect or ScrollRect were called and
-  // ClearPendingUpdate was not called.
+  /// This function determines if there is a pending update. There is a
+  /// PendingUpdate if InvalidateRect or ScrollRect were called and
+  /// ClearPendingUpdate was not called.
+  ///
+  /// @return True if there is a pending update, otherwise false.
   bool HasPendingUpdate() const;
+
+  /// This function clears a pending update.
   void ClearPendingUpdate();
 
+  /// This function gets a pending update.
+  ///
+  /// @return A PaintUpdate containing the pending update.
   PaintUpdate GetPendingUpdate() const;
 
-  // The given rect should be repainted.
+  /// This function invalidates the rect so it will be repainted.
+  ///
+  /// @param[in] rect A rect to be repainted.
   void InvalidateRect(const Rect& rect);
 
-  // The given rect should be scrolled by the given amounts.
+  /// This function adds a pending scroll update.
+  ///
+  /// @param[in] clip_rect The rect to scroll.
+  /// @param[in] amount A Point amount to scroll <code>rect</code>.
   void ScrollRect(const Rect& clip_rect, const Point& amount);
 
  private:

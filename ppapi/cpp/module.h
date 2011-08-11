@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,17 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/cpp/core.h"
 
+
+/// @file
+/// This file defines a Module class.
 namespace pp {
 
 class Instance;
 
+/// The Module class.  The browser calls CreateInstance() to create
+/// an instance of your module on the web page.  The browser creates a new
+/// instance for each <code>\<embed></code> tag with
+/// <code>type="application/x-nacl"</code>
 class Module {
  public:
   typedef std::map<PP_Instance, Instance*> InstanceMap;
