@@ -302,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineWordCallbacks) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TtsChromeOs) {
+// Fails since v8 roll at r96374: http://crbug.com/92482
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FAILS_TtsChromeOs) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
