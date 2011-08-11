@@ -165,13 +165,16 @@ void BlockedPlugin::OnMenuItemSelected(
     const webkit_glue::CustomContextMenuContext& /* ignored */,
     unsigned id) {
   if (id == kMenuActionLoad) {
+    Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_Menu"));
     LoadPlugin();
   } else if (id == kMenuActionRemove) {
+    Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Hide_Menu"));
     HidePlugin();
   }
 }
 
 void BlockedPlugin::OnLoadBlockedPlugins() {
+  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_UI"));
   LoadPlugin();
 }
 
@@ -209,10 +212,12 @@ void BlockedPlugin::LoadPlugin() {
 }
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
+  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_Click"));
   LoadPlugin();
 }
 
 void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
+  Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Hide_Click"));
   HidePlugin();
 }
 

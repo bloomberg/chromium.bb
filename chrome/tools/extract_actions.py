@@ -305,6 +305,23 @@ def WalkDirectory(root_path, actions, extensions, callback):
       if ext in extensions:
         callback(os.path.join(path, file), actions)
 
+def GrepForMsgActions(path, actions):
+  """Grep a source file for ViewHostMsg_UserMetricsRecordAction.
+
+  Arguments:
+    path: path to the file
+    actions: set of actions to add to
+  """
+  # We look for the ViewHostMsg_UserMetricsRecordAction constructor.
+  # This should be on one line.
+  action_re = re.compile(
+      r'[^a-zA-Z]ViewHostMsg_UserMetricsRecordAction\("([^"]*)')
+  line_number = 0
+  for line in open(path):
+    match = action_re.search(line)
+    if match:  # Plain call to RecordAction
+      actions.add(match.group(1))
+
 def AddLiteralActions(actions):
   """Add literal actions specified via calls to UserMetrics functions.
 
@@ -334,6 +351,20 @@ def AddWebUIActions(actions):
                                 'resources')
   WalkDirectory(resources_root, actions, ('.html'), GrepForWebUIActions)
 
+def AddMsgActions(actions):
+  """Add user actions sent via ViewHostMsg_UserMetricsRecordAction.
+
+  Arguments:
+    actions: set of actions to add to.
+  """
+  EXTENSIONS = ('.cc', '.mm', '.c', '.m')
+
+  chrome_renderer_root = os.path.join(path_utils.ScriptDir(), '..', 'renderer')
+  content_renderer_root = os.path.join(path_utils.ScriptDir(), '..', '..',
+      'content', 'renderer')
+  WalkDirectory(chrome_renderer_root, actions, EXTENSIONS, GrepForMsgActions)
+  WalkDirectory(content_renderer_root, actions, EXTENSIONS, GrepForMsgActions)
+
 def main(argv):
   if '--hash' in argv:
     hash_output = True
@@ -361,6 +392,7 @@ def main(argv):
   # AddWebKitEditorActions(actions)
   AddAboutFlagsActions(actions)
   AddWebUIActions(actions)
+  AddMsgActions(actions)
 
   AddLiteralActions(actions)
 

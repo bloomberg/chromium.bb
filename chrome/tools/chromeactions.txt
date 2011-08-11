@@ -1041,6 +1041,13 @@
 0x6cc1116fbd900ebf	PasswordManager_Enabled
 0x36bb6559696dc912	Paste
 0x5d0e6942f354a06c	PasteAndMatchStyle
+0x6f2cd84fa374c281	Plugin_Blocked
+0xcecb82fcd8e64529	Plugin_ClickToPlay
+0xc52b281d793adc6b	Plugin_Hide_Click
+0x838019f901a8e405	Plugin_Hide_Menu
+0x007757ef58e358af	Plugin_Load_Click
+0xd84554ce585d6c63	Plugin_Load_Menu
+0x116bd7e07524f140	Plugin_Load_UI
 0x352f2d6315d52044	PrintNow
 0xcb83fba9c48fd911	PrintPreview
 0x89ad6a22de4ca850	PrintView_PrintDialog

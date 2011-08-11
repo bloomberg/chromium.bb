@@ -461,10 +461,14 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
   observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
+    render_view->Send(
+        new ViewHostMsg_UserMetricsRecordAction("Plugin_ClickToPlay"));
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
         IDS_PLUGIN_LOAD, false, true);
   } else {
+    render_view->Send(
+        new ViewHostMsg_UserMetricsRecordAction("Plugin_Blocked"));
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
         IDS_PLUGIN_BLOCKED, false, true);
