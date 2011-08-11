@@ -372,14 +372,14 @@ NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_OverlayChanged(
     NaClSrpcChannel* channel,
     PP_Instance instance,
     PP_Resource scrollbar,
-    int32_t value)  {
+    int32_t overlay)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPP_Scrollbar_OverlayChanged:iii:",
       instance,
       scrollbar,
-      value
+      overlay
   );
   if (retval == NACL_SRPC_RESULT_INTERNAL)
     ppapi_proxy::CleanUpAfterDeadNexe(instance);
