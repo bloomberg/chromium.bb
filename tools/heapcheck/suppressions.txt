@@ -1530,6 +1530,7 @@
    fun:net::HostResolverImpl::Job::DoLookup
    fun:void DispatchToMethod
    fun:RunnableMethod::Run
+   ...
    fun:base::::WorkerThread::ThreadMain
 }
 {
