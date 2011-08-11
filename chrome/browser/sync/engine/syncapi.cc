@@ -2567,7 +2567,7 @@ void SyncManager::SyncInternal::RequestNudgeForDataType(
       break;
     default:
       nudge_delay =
-          TimeDelta::FromMilliseconds(kPreferencesNudgeDelayMilliseconds);
+          TimeDelta::FromMilliseconds(kDefaultNudgeDelayMilliseconds);
       break;
   }
   syncable::ModelTypeBitSet types;
