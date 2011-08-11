@@ -55,6 +55,9 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual int horizontal_padding() OVERRIDE;
 
  private:
+  // Execute command id for each renderer. Used for heap profiling.
+  void SendCommandToRenderers(int id);
+
   // Create and initialize menu if not already present.
   void EnsureMenu();
 

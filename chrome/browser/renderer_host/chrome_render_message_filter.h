@@ -88,7 +88,9 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
 #if defined(USE_TCMALLOC)
-  void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
+  void OnRendererTcmalloc(const std::string& output);
+  void OnWriteTcmallocHeapProfile(const FilePath::StringType& filename,
+                                  const std::string& output);
 #endif
   void OnGetPluginPolicies(ContentSetting* outdated_policy,
                            ContentSetting* authorize_policy);

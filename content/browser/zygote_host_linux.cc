@@ -30,6 +30,10 @@
 #include "content/common/unix_domain_socket_posix.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
+#endif
+
 static void SaveSUIDUnsafeEnvironmentVariables() {
   // The ELF loader will clear many environment variables so we save them to
   // different names here so that the SUID sandbox can resolve them for the
@@ -308,6 +312,13 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
   }
 
   if (using_suid_sandbox_ && !selinux) {
+#if defined(USE_TCMALLOC)
+    // If heap profiling is running, these processes are not exiting, at least
+    // on ChromeOS. The easiest thing to do is not launch them when profiling.
+    // TODO(stevenjb): Investigate further and fix.
+    if (IsHeapProfilerRunning())
+      return;
+#endif
     std::vector<std::string> adj_oom_score_cmdline;
     adj_oom_score_cmdline.push_back(sandbox_binary_);
     adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);

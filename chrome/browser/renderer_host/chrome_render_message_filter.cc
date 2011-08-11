@@ -4,7 +4,7 @@
 
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 
-#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
@@ -121,6 +121,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionRequestForIOThread)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WriteTcmallocHeapProfile_ACK,
+                        OnWriteTcmallocHeapProfile)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies, OnGetPluginPolicies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -384,9 +386,16 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
 }
 
 #if defined(USE_TCMALLOC)
-void ChromeRenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
-                                                   const std::string& output) {
+void ChromeRenderMessageFilter::OnRendererTcmalloc(const std::string& output) {
+  base::ProcessId pid = base::GetProcId(peer_handle());
   AboutTcmallocRendererCallback(pid, output);
+}
+
+void ChromeRenderMessageFilter::OnWriteTcmallocHeapProfile(
+    const FilePath::StringType& filepath,
+    const std::string& output) {
+  VLOG(0) << "Writing renderer heap profile dump to: " << filepath;
+  file_util::WriteFile(FilePath(filepath), output.c_str(), output.size());
 }
 #endif
 
