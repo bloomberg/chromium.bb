@@ -45,7 +45,6 @@
           'nacl_memory_object.c',
           'nacl_signal_common.c',
           'nacl_stack_safety.c',
-          'nacl_sync_queue.c',
           'nacl_syscall_common.c',
           'nacl_syscall_hook.c',
           'nacl_text.c',

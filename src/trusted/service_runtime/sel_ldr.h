@@ -42,7 +42,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
-#include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
+
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"

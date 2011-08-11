@@ -28,7 +28,6 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -135,19 +134,6 @@ struct NaClFileSystem {
    * What inodes are mount points?
    */
   struct Container          *mountpt_inos;
-  /*
-   * File system operations are done by a bottom-half thread; requests
-   * are enqueued in op_queue, and callbacks permit timeouts for
-   * top-half functions.  (This doesn't solve address space move
-   * related issues, since unless the bottom half code only uses non
-   * NaCl app memory -- and we'd prefer to do that to avoid data
-   * copies -- the bottom half code would still have to be
-   * interruptible.  But by doing an extra copy into private memory;
-   * the bottom-half code need not be interrupted, assuming it is not
-   * holding locks and the callback object contains no
-   * direct/converted user memory pointers.)
-   */
-  struct NaClSyncQueue      op_queue;
 };
 
 void NaClFileSystemIncRef(struct NaClFileSystem *fsp);
