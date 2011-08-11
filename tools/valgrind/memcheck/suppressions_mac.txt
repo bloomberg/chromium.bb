@@ -1825,3 +1825,29 @@
    fun:_ZN11MessageLoop13RunAllPendingEv
    fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
 }
+{
+   bug_92579a
+   Memcheck:Addr4
+   fun:_ZN15CVCGDisplayLink17setCurrentDisplayEj
+   fun:CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext
+}
+{
+   bug_92579b
+   Memcheck:Addr4
+   fun:_ZN15CVCGDisplayLink17setCurrentDisplayEj
+   fun:_ZN15CVCGDisplayLink18initWithCGDisplaysEPjlPi
+   fun:CVDisplayLinkCreateWithCGDisplays
+   fun:CVDisplayLinkCreateWithActiveCGDisplays
+}
+{
+   bug_92579c
+   Memcheck:Addr1
+   fun:IOCFUnserializeparse
+   fun:IOCFUnserialize
+   fun:IORegistryEntryCreateCFProperties
+   fun:_ZN15CVCGDisplayLink17setCurrentDisplayEj
+   fun:_ZN15CVCGDisplayLink18initWithCGDisplaysEPjlPi
+   fun:CVDisplayLinkCreateWithCGDisplays
+   fun:CVDisplayLinkCreateWithActiveCGDisplays
+   fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
+}
