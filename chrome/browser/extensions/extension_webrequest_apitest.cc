@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Times out: http://crbug.com/91715
 #define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
 #else
