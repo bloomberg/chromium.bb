@@ -59,7 +59,7 @@
   // The search data should be injected as executable JavaScript, so assign
   // a template value which will store the data as a page global.
   pageData.search_data = "var search_data = " +
-                         JSON.stringify(search_data); + ";";
+                         JSON.stringify(search_data, null, 2) + ";\n";
 </script>
 
 <div id="controls">
