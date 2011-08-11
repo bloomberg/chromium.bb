@@ -8,6 +8,7 @@
 #include <stddef.h>  // For NULL.
 
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_instance.h"
 
 #define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
   F(PPB_AudioConfig_API) \
@@ -55,7 +56,10 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 
 class ResourceObjectBase : public base::RefCounted<ResourceObjectBase> {
  public:
+  ResourceObjectBase(PP_Instance instance);
   virtual ~ResourceObjectBase();
+
+  PP_Instance pp_instance() const { return pp_instance_; }
 
   // Dynamic casting for this object. Returns the pointer to the given type if
   // Inheritance-based dynamic casting for this object. Returns the pointer to
@@ -68,6 +72,11 @@ class ResourceObjectBase : public base::RefCounted<ResourceObjectBase> {
 
   // Template-based dynamic casting. See specializations below.
   template <typename T> T* GetAs() { return NULL; }
+
+ private:
+  PP_Instance pp_instance_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ResourceObjectBase);
 };
 
 // Template-based dynamic casting. These specializations forward to the

@@ -8,7 +8,8 @@ namespace pp {
 namespace proxy {
 
 PluginResource::PluginResource(const HostResource& resource)
-    : host_resource_(resource) {
+    : ResourceObjectBase(resource.instance()),
+      host_resource_(resource) {
 }
 
 PluginResource::~PluginResource() {

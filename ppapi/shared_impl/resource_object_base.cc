@@ -4,7 +4,15 @@
 
 #include "ppapi/shared_impl/resource_object_base.h"
 
+#include "base/logging.h"
+
 namespace ppapi {
+
+ResourceObjectBase::ResourceObjectBase(PP_Instance instance)
+    : pp_instance_(instance) {
+  // Instance should be valid (nonzero).
+  DCHECK(instance);
+}
 
 ResourceObjectBase::~ResourceObjectBase() {
 }

@@ -14,7 +14,9 @@ namespace webkit {
 namespace ppapi {
 
 Resource::Resource(PluginInstance* instance)
-    : resource_id_(0), instance_(instance) {
+    : ResourceObjectBase(instance->pp_instance()),
+      resource_id_(0),
+      instance_(instance) {
   ResourceTracker::Get()->ResourceCreated(this, instance_);
 }
 

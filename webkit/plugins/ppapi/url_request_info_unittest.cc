@@ -45,7 +45,14 @@ namespace ppapi {
 
 class URLRequestInfoTest : public PpapiUnittest {
  public:
-  URLRequestInfoTest() : info_(new PPB_URLRequestInfo_Impl(instance())) {
+  URLRequestInfoTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    PpapiUnittest::SetUp();
+
+    // Must do this after the normal SetUp so the instance is valid.
+    info_ = new PPB_URLRequestInfo_Impl(instance());
   }
 
   static void SetUpTestCase() {
