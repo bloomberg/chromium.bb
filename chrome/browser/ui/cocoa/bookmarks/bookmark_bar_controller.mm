@@ -337,8 +337,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [[self view] setFrame:NSMakeRect(0, 0, initialWidth_, 0)];
 
   // Complete init of the "off the side" button, as much as we can.
-  [offTheSideButton_ setDraggable:NO];
-  [offTheSideButton_ setActsOnMouseDown:YES];
+  [offTheSideButton_.draggableButton setDraggable:NO];
+  [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
 
   // We are enabled by default.
   barIsEnabled_ = YES;
@@ -1116,7 +1116,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (node->is_folder()) {
     [button setTarget:self];
     [button setAction:@selector(openBookmarkFolderFromButton:)];
-    [button setActsOnMouseDown:YES];
+    [[button draggableButton] setActsOnMouseDown:YES];
     // If it has a title, and it will be truncated, show full title in
     // tooltip.
     NSString* title = base::SysUTF16ToNSString(node->GetTitle());
@@ -1194,8 +1194,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   frame.origin.x = [[self buttonView] bounds].size.width - frame.size.width;
   frame.origin.x -= bookmarks::kBookmarkHorizontalPadding;
   BookmarkButton* button = [[BookmarkButton alloc] initWithFrame:frame];
-  [button setDraggable:NO];
-  [button setActsOnMouseDown:YES];
+  [[button draggableButton] setDraggable:NO];
+  [[button draggableButton] setActsOnMouseDown:YES];
   otherBookmarksButton_.reset(button);
   view_id_util::SetID(button, VIEW_ID_OTHER_BOOKMARKS);
 

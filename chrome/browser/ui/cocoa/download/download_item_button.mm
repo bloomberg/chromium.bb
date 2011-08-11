@@ -30,7 +30,7 @@
   NSCell* cell = [self cell];
   DCHECK([cell respondsToSelector:@selector(isMouseOverButtonPart)]);
   if ([reinterpret_cast<DownloadItemCell*>(cell) isMouseOverButtonPart]) {
-    [super mouseDown:event];
+    [self.draggableButton mouseDown:event];
   } else {
     // Hold a reference to our controller in case the download completes and we
     // represent a file that's auto-removed (e.g. a theme).
