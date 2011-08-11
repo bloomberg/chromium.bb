@@ -424,8 +424,10 @@ void OmxVideoDecodeAccelerator::Reset() {
 
 void OmxVideoDecodeAccelerator::Destroy() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  if (current_state_change_ == ERRORING)
+  if (current_state_change_ == ERRORING ||
+      current_state_change_ == DESTROYING) {
     return;
+  }
 
   DCHECK(current_state_change_ == NO_TRANSITION ||
          current_state_change_ == FLUSHING ||

@@ -33,6 +33,8 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
+  if (video_decode_accelerator_)
+    video_decode_accelerator_->Destroy();
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
