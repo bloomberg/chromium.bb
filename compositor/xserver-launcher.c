@@ -550,12 +550,27 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 }
 
 static void
+wlsc_xserver_shutdown(struct wlsc_xserver *wxs)
+{
+	char path[256];
+
+	snprintf(path, sizeof path, "/tmp/.X%d-lock", wxs->display);
+	unlink(path);
+	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
+	unlink(path);
+	close(wxs->abstract_fd);
+	wl_event_source_remove(wxs->abstract_source);
+	close(wxs->unix_fd);
+	wl_event_source_remove(wxs->unix_source);
+	wxs->loop = NULL;
+}
+
+static void
 wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 {
 	struct wlsc_xserver *mxs =
 		container_of(process, struct wlsc_xserver, process);
 
-	fprintf(stderr, "xserver exited, code %d\n", status);
 	mxs->process.pid = 0;
 
 	mxs->abstract_source =
@@ -568,8 +583,17 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 				     WL_EVENT_READABLE,
 				     wlsc_xserver_handle_event, mxs);
 
-	wlsc_wm_destroy(mxs->wm);
-	mxs->wm = NULL;
+	if (mxs->wm) {
+		fprintf(stderr, "xserver exited, code %d\n", status);
+		wlsc_wm_destroy(mxs->wm);
+		mxs->wm = NULL;
+	} else {
+		/* If the X server crashes before it binds to the
+		 * xserver interface, shut down and don't try
+		 * again. */
+		fprintf(stderr, "xserver crashing too fast: %d\n", status);
+		wlsc_xserver_shutdown(mxs);
+	}
 }
 
 static void
@@ -790,15 +814,9 @@ void
 wlsc_xserver_destroy(struct wlsc_compositor *compositor)
 {
 	struct wlsc_xserver *wxs = compositor->wxs;
-	char path[256];
 
-	snprintf(path, sizeof path, "/tmp/.X%d-lock", wxs->display);
-	unlink(path);
-	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
-	unlink(path);
-	close(wxs->abstract_fd);
-	wl_event_source_remove(wxs->abstract_source);
-	close(wxs->unix_fd);
-	wl_event_source_remove(wxs->unix_source);
+	if (wxs->loop)
+		wlsc_xserver_shutdown(wxs);
+
 	free(wxs);
 }
