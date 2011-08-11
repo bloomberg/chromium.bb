@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/test/test_timeouts.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -1632,7 +1632,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
   EXPECT_TRUE(GetPrerenderContents() == NULL);
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, BackToPrerenderedPage) {
+// Flaky on windows: http://crbug.com/92478
+#if defined(OS_WIN)
+#define MAYBE_BackToPrerenderedPage DISABLED_BackToPrerenderedPage
+#else
+#define MAYBE_BackToPrerenderedPage BackToPrerenderedPage
+#endif
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_BackToPrerenderedPage) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
