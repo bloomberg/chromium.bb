@@ -224,7 +224,7 @@ void JingleStreamConnector::OnAuthenticationDone(
 
 void JingleStreamConnector::NotifyDone(net::StreamSocket* socket) {
   session_->OnChannelConnectorFinished(name_, this);
-  callback_.Run(name_, socket);
+  callback_.Run(socket);
   delete this;
 }
 

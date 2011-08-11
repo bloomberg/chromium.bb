@@ -390,10 +390,8 @@ class TCPChannelTester : public ChannelTesterBase {
                    base::Unretained(this), 1));
   }
 
-  void OnChannelReady(int id, const std::string name,
-                      net::StreamSocket* socket) {
+  void OnChannelReady(int id, net::StreamSocket* socket) {
     ASSERT_TRUE(socket);
-    ASSERT_EQ(name, kChannelName);
     if (!socket) {
       Done();
       return;
@@ -556,9 +554,8 @@ class UDPChannelTester : public ChannelTesterBase {
                    base::Unretained(this), 1));
   }
 
-  void OnChannelReady(int id, const std::string name, net::Socket* socket) {
+  void OnChannelReady(int id, net::Socket* socket) {
     ASSERT_TRUE(socket);
-    ASSERT_EQ(name, kChannelName);
     if (!socket) {
       Done();
       return;

@@ -36,7 +36,7 @@ void JingleDatagramConnector::Connect(
   // TODO(sergeyu): Implement encryption for datagram channels.
 
   session_->OnChannelConnectorFinished(name_, this);
-  callback_.Run(name_, socket);
+  callback_.Run(socket);
   delete this;
 }
 

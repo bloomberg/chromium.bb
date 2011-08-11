@@ -32,9 +32,7 @@ void ProtobufVideoReader::Init(protocol::Session* session,
       base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
 }
 
-void ProtobufVideoReader::OnChannelReady(const std::string& name,
-                                         net::StreamSocket* socket) {
-  DCHECK_EQ(name, std::string(kVideoChannelName));
+void ProtobufVideoReader::OnChannelReady(net::StreamSocket* socket) {
   if (!socket) {
     initialized_callback_.Run(false);
     return;

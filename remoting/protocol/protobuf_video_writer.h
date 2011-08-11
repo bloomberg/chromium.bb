@@ -38,7 +38,7 @@ class ProtobufVideoWriter : public VideoWriter {
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
-  void OnChannelReady(const std::string& name, net::StreamSocket* socket);
+  void OnChannelReady(net::StreamSocket* socket);
 
   InitializedCallback initialized_callback_;
 

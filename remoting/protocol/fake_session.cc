@@ -210,17 +210,16 @@ void FakeSession::SetStateChangeCallback(StateChangeCallback* callback) {
 
 void FakeSession::CreateStreamChannel(
     const std::string& name, const StreamChannelCallback& callback) {
-  LOG(ERROR) << " creating channel " << name;
   FakeSocket* channel = new FakeSocket();
   stream_channels_[name] = channel;
-  callback.Run(name, channel);
+  callback.Run(channel);
 }
 
 void FakeSession::CreateDatagramChannel(
     const std::string& name, const DatagramChannelCallback& callback) {
   FakeUdpSocket* channel = new FakeUdpSocket();
   datagram_channels_[name] = channel;
-  callback.Run(name, channel);
+  callback.Run(channel);
 }
 
 FakeSocket* FakeSession::control_channel() {

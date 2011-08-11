@@ -30,7 +30,7 @@ class ProtobufVideoReader : public VideoReader {
                     const InitializedCallback& callback) OVERRIDE;
 
  private:
-  void OnChannelReady(const std::string& name, net::StreamSocket* socket);
+  void OnChannelReady(net::StreamSocket* socket);
   void OnNewData(VideoPacket* packet, Task* done_task);
 
   InitializedCallback initialized_callback_;

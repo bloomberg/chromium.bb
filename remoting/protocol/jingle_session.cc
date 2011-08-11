@@ -489,34 +489,27 @@ void JingleSession::OnChannelConnectorFinished(
 }
 
 void JingleSession::CreateChannels() {
-  StreamChannelCallback stream_callback(
-      base::Bind(&JingleSession::OnStreamChannelConnected,
-                 base::Unretained(this)));
-  CreateStreamChannel(kControlChannelName, stream_callback);
-  CreateStreamChannel(kEventChannelName, stream_callback);
+  CreateStreamChannel(
+      kControlChannelName,
+      base::Bind(&JingleSession::OnChannelConnected,
+                 base::Unretained(this), &control_channel_socket_));
+  CreateStreamChannel(
+      kEventChannelName,
+      base::Bind(&JingleSession::OnChannelConnected,
+                 base::Unretained(this), &event_channel_socket_));
 }
 
-void JingleSession::OnStreamChannelConnected(const std::string& name,
-                                             net::StreamSocket* socket) {
-  OnChannelConnected(name, socket);
-}
-
-void JingleSession::OnChannelConnected(const std::string& name,
-                                       net::Socket* socket) {
+void JingleSession::OnChannelConnected(
+    scoped_ptr<net::Socket>* socket_container,
+    net::StreamSocket* socket) {
   if (!socket) {
-    LOG(ERROR) << "Failed to connect channel " << name
-               << ". Terminating connection";
+    LOG(ERROR) << "Failed to connect control or events channel. "
+               << "Terminating connection";
     CloseInternal(net::ERR_CONNECTION_CLOSED, true);
     return;
   }
 
-  if (name == kControlChannelName) {
-    control_channel_socket_.reset(socket);
-  } else if (name == kEventChannelName) {
-    event_channel_socket_.reset(socket);
-  } else {
-    NOTREACHED();
-  }
+  socket_container->reset(socket);
 
   if (control_channel_socket_.get() && event_channel_socket_.get())
     SetState(CONNECTED_CHANNELS);

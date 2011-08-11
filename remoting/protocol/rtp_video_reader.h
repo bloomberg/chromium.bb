@@ -50,7 +50,7 @@ class RtpVideoReader : public VideoReader {
 
   typedef std::deque<PacketsQueueEntry> PacketsQueue;
 
-  void OnChannelReady(const std::string& name, net::Socket* socket);
+  void OnChannelReady(bool rtp, net::Socket* socket);
 
   void OnRtpPacket(const RtpPacket* rtp_packet);
   void CheckFullPacket(const PacketsQueue::iterator& pos);

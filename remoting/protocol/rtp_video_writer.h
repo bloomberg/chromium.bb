@@ -30,7 +30,7 @@ class RtpVideoWriter : public VideoWriter {
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
-  void OnChannelReady(const std::string& name, net::Socket* socket);
+  void OnChannelReady(bool rtp, net::Socket* socket);
 
   bool initialized_;
   InitializedCallback initialized_callback_;

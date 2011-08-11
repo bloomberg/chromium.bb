@@ -29,9 +29,7 @@ void ProtobufVideoWriter::Init(protocol::Session* session,
       base::Bind(&ProtobufVideoWriter::OnChannelReady, base::Unretained(this)));
 }
 
-void ProtobufVideoWriter::OnChannelReady(const std::string& name,
-                                         net::StreamSocket* socket) {
-  DCHECK_EQ(name, std::string(kVideoChannelName));
+void ProtobufVideoWriter::OnChannelReady(net::StreamSocket* socket) {
   if (!socket) {
     initialized_callback_.Run(false);
     return;

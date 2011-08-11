@@ -124,9 +124,8 @@ class JingleSession : public protocol::Session,
   // Callbacks for the channels created in JingleSession.
   // TODO(sergeyu): Remove this method once *_channel() methods are
   // removed from Session interface.
-  void OnStreamChannelConnected(
-      const std::string& name, net::StreamSocket* socket);
-  void OnChannelConnected(const std::string& name, net::Socket* socket);
+  void OnChannelConnected(scoped_ptr<net::Socket>* socket_container,
+                          net::StreamSocket* socket);
 
   const cricket::ContentInfo* GetContentInfo() const;
 

@@ -33,14 +33,15 @@ void RtpVideoWriter::Init(protocol::Session* session,
   initialized_callback_ = callback;
   session->CreateDatagramChannel(
       kVideoRtpChannelName,
-      base::Bind(&RtpVideoWriter::OnChannelReady, base::Unretained(this)));
+      base::Bind(&RtpVideoWriter::OnChannelReady,
+                 base::Unretained(this), true));
   session->CreateDatagramChannel(
       kVideoRtcpChannelName,
-      base::Bind(&RtpVideoWriter::OnChannelReady, base::Unretained(this)));
+      base::Bind(&RtpVideoWriter::OnChannelReady,
+                 base::Unretained(this), false));
 }
 
-void RtpVideoWriter::OnChannelReady(const std::string& name,
-                                    net::Socket* socket) {
+void RtpVideoWriter::OnChannelReady(bool rtp, net::Socket* socket) {
   if (!socket) {
     if (!initialized_) {
       initialized_ = true;
@@ -49,11 +50,11 @@ void RtpVideoWriter::OnChannelReady(const std::string& name,
     return;
   }
 
-  if (name == kVideoRtpChannelName) {
+  if (rtp) {
     DCHECK(!rtp_channel_.get());
     rtp_channel_.reset(socket);
     rtp_writer_.Init(socket);
-  } else if (name == kVideoRtcpChannelName) {
+  } else {
     DCHECK(!rtcp_channel_.get());
     rtcp_channel_.reset(socket);
     // TODO(sergeyu): Use RTCP channel somehow.

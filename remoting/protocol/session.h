@@ -50,10 +50,8 @@ class Session : public base::NonThreadSafe {
   };
 
   typedef Callback1<State>::Type StateChangeCallback;
-  typedef base::Callback<void(const std::string&, net::StreamSocket*)>
-      StreamChannelCallback;
-  typedef base::Callback<void(const std::string&, net::Socket*)>
-      DatagramChannelCallback;
+  typedef base::Callback<void(net::StreamSocket*)> StreamChannelCallback;
+  typedef base::Callback<void(net::Socket*)> DatagramChannelCallback;
 
   Session() { }
   virtual ~Session() { }

@@ -41,14 +41,15 @@ void RtpVideoReader::Init(protocol::Session* session,
 
   session->CreateDatagramChannel(
       kVideoRtpChannelName,
-      base::Bind(&RtpVideoReader::OnChannelReady, base::Unretained(this)));
+      base::Bind(&RtpVideoReader::OnChannelReady,
+                 base::Unretained(this), true));
   session->CreateDatagramChannel(
       kVideoRtcpChannelName,
-      base::Bind(&RtpVideoReader::OnChannelReady, base::Unretained(this)));
+      base::Bind(&RtpVideoReader::OnChannelReady,
+                 base::Unretained(this), false));
 }
 
-void RtpVideoReader::OnChannelReady(const std::string& name,
-                                    net::Socket* socket) {
+void RtpVideoReader::OnChannelReady(bool rtp, net::Socket* socket) {
   if (!socket) {
     if (!initialized_) {
       initialized_ = true;
@@ -57,16 +58,14 @@ void RtpVideoReader::OnChannelReady(const std::string& name,
     return;
   }
 
-  if (name == kVideoRtpChannelName) {
+  if (rtp) {
     DCHECK(!rtp_channel_.get());
     rtp_channel_.reset(socket);
     rtp_reader_.Init(socket, NewCallback(this, &RtpVideoReader::OnRtpPacket));
-  } else if (name == kVideoRtcpChannelName) {
+  } else {
     DCHECK(!rtcp_channel_.get());
     rtcp_channel_.reset(socket);
     rtcp_writer_.Init(socket);
-  } else {
-    NOTREACHED();
   }
 
   if (rtp_channel_.get() && rtcp_channel_.get()) {
