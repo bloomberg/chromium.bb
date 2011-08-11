@@ -873,12 +873,7 @@ freebl3.dll!FREEBL_GetVector
 ...
 softokn3.dll!NSC_ModuleDBFunc
 
-# http://crbug.com/92150
-LEAK
-...
-*!`anonymous namespace'::ConflictingDllsTest::ExecuteImpl
-
-# http://crbug.com/92150
+# http://crbug.com/92159
 LEAK
 ...
 *!BookmarkEditorView::Init

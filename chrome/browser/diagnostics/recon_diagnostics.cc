@@ -82,7 +82,7 @@ class ConflictingDllsTest : public DiagnosticTest {
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
     model->set_limited_mode(true);
     model->ScanNow();
-    ListValue* list = model->GetModuleList();
+    scoped_ptr<ListValue> list(model->GetModuleList());
     if (!model->confirmed_bad_modules_detected() &&
         !model->suspected_bad_modules_detected()) {
       RecordSuccess(ASCIIToUTF16("No conflicting modules found"));
