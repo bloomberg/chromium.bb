@@ -21,3 +21,6 @@ WorkerFileSystemTest.ResolveURLHttpTests
 WorkerFileSystemTest.FileEntryToURISync
 # Leaking memory due to flakiness. http://crbug.com/31739
 SessionHistoryTest.BasicBackForward
+
+# Times out on CrOS pretty often. http://crbug.com/92535
+AutomatedUITestBase.FindInPage
