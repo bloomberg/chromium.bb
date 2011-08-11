@@ -274,7 +274,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   Checkpoint("Test done", start_time);
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, PasteWithoutTextChange) {
+// Flaky on Win. http://crbug.com/92467
+#if defined(OS_WIN)
+#define MAYBE_PasteWithoutTextChange FLAKY_PasteWithoutTextChange
+#else
+#define MAYBE_PasteWithoutTextChange PasteWithoutTextChange
+#endif
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   ASSERT_TRUE(test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
