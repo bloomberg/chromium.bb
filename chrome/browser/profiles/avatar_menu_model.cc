@@ -70,7 +70,7 @@ AvatarMenuModel::Item::Item(size_t model_index, const gfx::Image& icon)
 AvatarMenuModel::Item::~Item() {
 }
 
-void AvatarMenuModel::SwitchToProfile(size_t index) {
+void AvatarMenuModel::SwichToProfile(size_t index) {
   const Item& item = GetItemAt(index);
   FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
 
@@ -119,7 +119,7 @@ void AvatarMenuModel::RebuildMenu() {
     items_.push_back(item);
   }
 
-  observer_->OnAvatarMenuModelChanged(this);
+  observer_->OnAvatarMenuModelChanged();
 }
 
 void AvatarMenuModel::ClearMenu() {

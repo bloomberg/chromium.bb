@@ -5,15 +5,13 @@
 #ifndef CHROME_BROWSER_PROFILES_AVATAR_MENU_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_PROFILES_AVATAR_MENU_MODEL_OBSERVER_H_
 
-class AvatarMenuModel;
-
 // Delegate interface for objects that want to be notified when the
 // AvatarMenuModel changes.
 class AvatarMenuModelObserver {
  public:
   virtual ~AvatarMenuModelObserver() {}
 
-  virtual void OnAvatarMenuModelChanged(AvatarMenuModel* avatar_menu_model) = 0;
+  virtual void OnAvatarMenuModelChanged() = 0;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_AVATAR_MENU_MODEL_OBSERVER_H_
