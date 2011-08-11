@@ -178,9 +178,8 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<Audio> object(new Audio(result, config_id,
-                                     audio_callback, user_data));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new Audio(result, config_id, audio_callback, user_data));
 }
 
 bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {

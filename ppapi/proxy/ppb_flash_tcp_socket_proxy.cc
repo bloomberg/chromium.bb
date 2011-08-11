@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -375,9 +374,8 @@ PP_Resource PPB_Flash_TCPSocket_Proxy::CreateProxyResource(
   if (socket_id == 0)
     return 0;
 
-  linked_ptr<FlashTCPSocket> object(new FlashTCPSocket(
-      HostResource::MakeInstanceOnly(instance), socket_id));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FlashTCPSocket(HostResource::MakeInstanceOnly(instance), socket_id));
 }
 
 bool PPB_Flash_TCPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {

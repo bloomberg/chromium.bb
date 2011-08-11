@@ -56,8 +56,7 @@ TEST_F(PluginResourceTrackerTest, PluginResourceForHostResource) {
   EXPECT_EQ(0, TrackedMockResource::tracked_alive_count);
   TrackedMockResource* object = new TrackedMockResource(serialized);
   EXPECT_EQ(1, TrackedMockResource::tracked_alive_count);
-  PP_Resource plugin_resource =
-      tracker().AddResource(linked_ptr<PluginResource>(object));
+  PP_Resource plugin_resource = tracker().AddResource(object);
 
   // Now that the object has been added, the return value should be the plugin
   // resource ID we already got.

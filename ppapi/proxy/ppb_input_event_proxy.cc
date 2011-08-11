@@ -121,9 +121,8 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetWheelInputEventInfo() {
 PP_Resource PPB_InputEvent_Proxy::CreateProxyResource(
     PP_Instance instance,
     const InputEventData& data) {
-  linked_ptr<InputEvent> object(new InputEvent(
-      HostResource::MakeInstanceOnly(instance), data));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new InputEvent(HostResource::MakeInstanceOnly(instance), data));
 }
 
 bool PPB_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {

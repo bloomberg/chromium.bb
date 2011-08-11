@@ -357,8 +357,8 @@ PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
 // static
 PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
     const HostResource& url_loader_resource) {
-  linked_ptr<URLLoader> object(new URLLoader(url_loader_resource));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new URLLoader(url_loader_resource));
 }
 
 // static

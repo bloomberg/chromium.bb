@@ -448,7 +448,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<Graphics3D> graphics_3d(new Graphics3D(result));
+  scoped_refptr<Graphics3D> graphics_3d(new Graphics3D(result));
   if (!graphics_3d->Init())
     return 0;
 

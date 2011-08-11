@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
@@ -50,7 +49,9 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
   // plugin-local PP_Resource ID that identifies the resource. Note that this
   // PP_Resource is not valid to send to the host, use
   // PluginResource.host_resource() to get that.
-  PP_Resource AddResource(linked_ptr<PluginResource> object);
+  //
+  // The resource tracker will take a reference to the given object.
+  PP_Resource AddResource(PluginResource* object);
 
   void AddRefResource(PP_Resource resource);
   void ReleaseResource(PP_Resource resource);
@@ -88,14 +89,14 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
 
   struct ResourceInfo {
     ResourceInfo();
-    ResourceInfo(int ref_count, linked_ptr<PluginResource> r);
+    ResourceInfo(int ref_count, PluginResource* r);
     ResourceInfo(const ResourceInfo& other);
     ~ResourceInfo();
 
     ResourceInfo& operator=(const ResourceInfo& other);
 
     int ref_count;
-    linked_ptr<PluginResource> resource;  // May be NULL.
+    scoped_refptr<PluginResource> resource;  // May be NULL.
   };
 
   void ReleasePluginResourceRef(const PP_Resource& var,

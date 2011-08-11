@@ -103,8 +103,8 @@ const InterfaceProxy::Info* PPB_URLResponseInfo_Proxy::GetInfo() {
 // static
 PP_Resource PPB_URLResponseInfo_Proxy::CreateResponseForResource(
     const HostResource& resource) {
-  linked_ptr<URLResponseInfo> object(new URLResponseInfo(resource));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new URLResponseInfo(resource));
 }
 
 bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

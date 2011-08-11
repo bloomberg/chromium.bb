@@ -75,8 +75,8 @@ PP_Resource GetFontFileWithFallback(
   if (result.is_null())
     return 0;
 
-  linked_ptr<PrivateFontFile> object(new PrivateFontFile(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new PrivateFontFile(result));
 }
 
 bool GetFontTableForPrivateFontFile(PP_Resource font_file,

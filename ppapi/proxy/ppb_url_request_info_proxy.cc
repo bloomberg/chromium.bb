@@ -139,8 +139,8 @@ PP_Resource PPB_URLRequestInfo_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<URLRequestInfo> object(new URLRequestInfo(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new URLRequestInfo(result));
 }
 
 bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

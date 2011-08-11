@@ -228,8 +228,8 @@ PP_Resource PPB_FileRef_Proxy::DeserializeFileRef(
   if (serialized.resource.is_null())
     return 0;  // Resource invalid.
 
-  linked_ptr<FileRef> object(new FileRef(serialized));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FileRef(serialized));
 }
 
 void PPB_FileRef_Proxy::OnMsgCreate(const HostResource& file_system,

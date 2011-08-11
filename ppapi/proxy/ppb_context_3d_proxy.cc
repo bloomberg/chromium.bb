@@ -578,7 +578,7 @@ PP_Resource PPB_Context3D_Proxy::Create(PP_Instance instance,
 
   if (result.is_null())
     return 0;
-  linked_ptr<Context3D> context_3d(new Context3D(result));
+  scoped_refptr<Context3D> context_3d(new Context3D(result));
   if (!context_3d->CreateImplementation())
     return 0;
   return PluginResourceTracker::GetInstance()->AddResource(context_3d);

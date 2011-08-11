@@ -182,9 +182,8 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
       &result));
   if (result.is_null())
     return 0;
-  linked_ptr<Graphics2D> graphics_2d(new Graphics2D(result, size,
-                                                    is_always_opaque));
-  return PluginResourceTracker::GetInstance()->AddResource(graphics_2d);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new Graphics2D(result, size, is_always_opaque));
 }
 
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {

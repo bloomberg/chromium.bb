@@ -144,8 +144,8 @@ PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<FileSystem> object(new FileSystem(result, type));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FileSystem(result, type));
 }
 
 bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {

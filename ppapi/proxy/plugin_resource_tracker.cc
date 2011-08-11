@@ -30,8 +30,7 @@ PluginResourceTracker* g_resource_tracker_override = NULL;
 PluginResourceTracker::ResourceInfo::ResourceInfo() : ref_count(0) {
 }
 
-PluginResourceTracker::ResourceInfo::ResourceInfo(int rc,
-                                                  linked_ptr<PluginResource> r)
+PluginResourceTracker::ResourceInfo::ResourceInfo(int rc, PluginResource* r)
     : ref_count(rc),
       resource(r) {
 }
@@ -90,8 +89,7 @@ PluginResource* PluginResourceTracker::GetResourceObject(
   return found->second.resource.get();
 }
 
-PP_Resource PluginResourceTracker::AddResource(
-    linked_ptr<PluginResource> object) {
+PP_Resource PluginResourceTracker::AddResource(PluginResource* object) {
   PP_Resource plugin_resource = ++last_resource_id_;
   DCHECK(resource_map_.find(plugin_resource) == resource_map_.end());
   resource_map_[plugin_resource] = ResourceInfo(1, object);
@@ -164,14 +162,14 @@ void PluginResourceTracker::ReleasePluginResourceRef(
     // Keep a reference while removing in case the destructor ends up
     // re-entering. That way, when the destructor is called, it's out of the
     // maps.
-    linked_ptr<PluginResource> plugin_resource = found->second.resource;
+    scoped_refptr<PluginResource> plugin_resource = found->second.resource;
     PluginDispatcher* dispatcher =
         PluginDispatcher::GetForInstance(plugin_resource->instance());
     HostResource host_resource = plugin_resource->host_resource();
     if (!host_resource.is_null())
       host_resource_map_.erase(host_resource);
     resource_map_.erase(found);
-    plugin_resource.reset();
+    plugin_resource = NULL;
 
     // dispatcher can be NULL if the plugin held on to a resource after the
     // instance was destroyed. In that case the browser-side resource has

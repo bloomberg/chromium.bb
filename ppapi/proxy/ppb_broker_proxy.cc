@@ -181,8 +181,7 @@ PP_Resource PPB_Broker_Proxy::CreateProxyResource(PP_Instance instance) {
   if (result.is_null())
     return 0;
 
-  linked_ptr<Broker> object(new Broker(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(new Broker(result));
 }
 
 bool PPB_Broker_Proxy::OnMessageReceived(const IPC::Message& msg) {

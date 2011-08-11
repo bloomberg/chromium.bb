@@ -122,8 +122,8 @@ PP_Resource PPB_Flash_Menu_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<FlashMenu> menu(new FlashMenu(result));
-  return PluginResourceTracker::GetInstance()->AddResource(menu);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FlashMenu(result));
 }
 
 bool PPB_Flash_Menu_Proxy::OnMessageReceived(const IPC::Message& msg) {

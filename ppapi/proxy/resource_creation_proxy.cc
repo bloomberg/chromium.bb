@@ -158,9 +158,8 @@ PP_Resource ResourceCreationProxy::CreateFontObject(
   if (!ppapi::FontImpl::IsPPFontDescriptionValid(*description))
     return 0;
 
-  linked_ptr<Font> object(new Font(HostResource::MakeInstanceOnly(instance),
-                                   *description));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new Font(HostResource::MakeInstanceOnly(instance), *description));
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
@@ -192,8 +191,8 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   PP_ImageDataDesc desc;
   memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
 
-  linked_ptr<ImageData> object(new ImageData(result, desc, image_handle));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new ImageData(result, desc, image_handle));
 }
 
 PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(

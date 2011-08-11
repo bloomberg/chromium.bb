@@ -116,8 +116,8 @@ PP_Resource PPB_Buffer_Proxy::AddProxyResource(
     const HostResource& resource,
     base::SharedMemoryHandle shm_handle,
     uint32_t size) {
-  linked_ptr<Buffer> object(new Buffer(resource, shm_handle, size));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new Buffer(resource, shm_handle, size));
 }
 
 bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {

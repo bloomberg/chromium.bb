@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PLUGIN_RESOURCE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -45,7 +46,8 @@ namespace proxy {
 FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
-class PluginResource : public ::ppapi::ResourceObjectBase {
+class PluginResource : public ::ppapi::ResourceObjectBase,
+                       public base::RefCounted<PluginResource> {
  public:
   PluginResource(const HostResource& resource);
   virtual ~PluginResource();

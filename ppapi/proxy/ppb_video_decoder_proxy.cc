@@ -75,7 +75,7 @@ VideoDecoder* VideoDecoder::Create(const HostResource& resource,
   if (enter_context.failed())
     return NULL;
 
-  scoped_ptr<VideoDecoder> decoder(new VideoDecoder(resource));
+  scoped_refptr<VideoDecoder> decoder(new VideoDecoder(resource));
   if (decoder->Init(context3d_id, enter_context.object(), config))
     return decoder.release();
   return NULL;
@@ -253,10 +253,8 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<VideoDecoder> video_decoder(
+  return PluginResourceTracker::GetInstance()->AddResource(
       VideoDecoder::Create(result, context3d_id, config));
-
-  return PluginResourceTracker::GetInstance()->AddResource(video_decoder);
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgCreate(

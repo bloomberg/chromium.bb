@@ -301,8 +301,8 @@ PP_Resource PPB_VideoCapture_Proxy::CreateProxyResource(PP_Instance instance) {
   if (result.is_null())
     return 0;
 
-  linked_ptr<VideoCapture> object(new VideoCapture(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new VideoCapture(result));
 }
 
 bool PPB_VideoCapture_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -136,7 +136,7 @@ PP_Resource PPB_Surface3D_Proxy::CreateProxyResource(
 
   if (result.is_null())
     return 0;
-  linked_ptr<Surface3D> surface_3d(new Surface3D(result));
+  scoped_refptr<Surface3D> surface_3d(new Surface3D(result));
   PP_Resource resource =
       PluginResourceTracker::GetInstance()->AddResource(surface_3d);
   surface_3d->set_resource(resource);

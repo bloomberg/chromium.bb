@@ -163,8 +163,8 @@ PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
 
   if (result.is_null())
     return 0;
-  linked_ptr<FileChooser> object(new FileChooser(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FileChooser(result));
 }
 
 bool PPB_FileChooser_Proxy::OnMessageReceived(const IPC::Message& msg) {

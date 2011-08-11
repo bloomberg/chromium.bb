@@ -230,8 +230,8 @@ PP_Resource PPB_Flash_NetConnector_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  linked_ptr<FlashNetConnector> object(new FlashNetConnector(result));
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return PluginResourceTracker::GetInstance()->AddResource(
+      new FlashNetConnector(result));
 }
 
 bool PPB_Flash_NetConnector_Proxy::OnMessageReceived(const IPC::Message& msg) {

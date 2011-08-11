@@ -74,7 +74,7 @@ PP_Resource PPB_AudioConfig_Proxy::CreateProxyResource(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
-  linked_ptr<AudioConfig> object(new AudioConfig(
+  scoped_refptr<AudioConfig> object(new AudioConfig(
       HostResource::MakeInstanceOnly(instance)));
   if (!object->Init(sample_rate, sample_frame_count))
     return 0;
