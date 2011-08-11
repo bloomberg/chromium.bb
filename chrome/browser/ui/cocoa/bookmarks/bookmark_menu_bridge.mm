@@ -275,7 +275,7 @@ void BookmarkMenuBridge::AddItemToMenu(int command_id,
                                        const BookmarkNode* node,
                                        NSMenu* menu,
                                        bool enabled) {
-  NSString* title = l10n_util::GetNSString(message_id);
+  NSString* title = l10n_util::GetNSStringWithFixup(message_id);
   SEL action;
   if (!enabled) {
     // A nil action makes a menu item appear disabled. NSMenuItem setEnabled
