@@ -404,7 +404,7 @@ bool AutofillTable::AddFormFieldValues(const std::vector<FormField>& elements,
 
 bool AutofillTable::AddFormFieldValue(const FormField& element,
                                       std::vector<AutofillChange>* changes) {
-  return AddFormFieldValueTime(element, changes, base::Time::Now());
+  return AddFormFieldValueTime(element, changes, Time::Now());
 }
 
 bool AutofillTable::GetFormValuesForElementName(const string16& name,
@@ -457,8 +457,8 @@ bool AutofillTable::GetFormValuesForElementName(const string16& name,
 }
 
 bool AutofillTable::RemoveFormElementsAddedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
+    const Time& delete_begin,
+    const Time& delete_end,
     std::vector<AutofillChange>* changes) {
   DCHECK(changes);
   // Query for the pair_id, name, and value of all form elements that
@@ -509,8 +509,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 }
 
 bool AutofillTable::RemoveFormElementForTimeRange(int64 pair_id,
-                                                  const Time delete_begin,
-                                                  const Time delete_end,
+                                                  const Time& delete_begin,
+                                                  const Time& delete_end,
                                                   int* how_many) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM autofill_dates WHERE pair_id = ? AND "
@@ -636,7 +636,7 @@ bool AutofillTable::InsertFormElement(const FormField& element,
 }
 
 bool AutofillTable::InsertPairIDAndDate(int64 pair_id,
-                                        base::Time date_created) {
+                                        const Time& date_created) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill_dates "
       "(pair_id, date_created) VALUES (?, ?)"));
@@ -659,7 +659,7 @@ bool AutofillTable::InsertPairIDAndDate(int64 pair_id,
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormField>& elements,
     std::vector<AutofillChange>* changes,
-    base::Time time) {
+    Time time) {
   // Only add one new entry for each unique element name.  Use |seen_names| to
   // track this.  Add up to |kMaximumUniqueNames| unique entries per form.
   const size_t kMaximumUniqueNames = 256;
@@ -714,9 +714,9 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
 
   bool first_entry = true;
   AutofillKey* current_key_ptr = NULL;
-  std::vector<base::Time>* timestamps_ptr = NULL;
+  std::vector<Time>* timestamps_ptr = NULL;
   string16 name, value;
-  base::Time time;
+  Time time;
   while (s.Step()) {
     name = s.ColumnString16(0);
     value = s.ColumnString16(1);
@@ -725,7 +725,7 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
     if (first_entry) {
       current_key_ptr = new AutofillKey(name, value);
 
-      timestamps_ptr = new std::vector<base::Time>;
+      timestamps_ptr = new std::vector<Time>;
       timestamps_ptr->push_back(time);
 
       first_entry = false;
@@ -740,7 +740,7 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
         delete timestamps_ptr;
 
         current_key_ptr = new AutofillKey(name, value);
-        timestamps_ptr = new std::vector<base::Time>;
+        timestamps_ptr = new std::vector<Time>;
       }
       timestamps_ptr->push_back(time);
     }
@@ -759,7 +759,7 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
 
 bool AutofillTable::GetAutofillTimestamps(const string16& name,
                                           const string16& value,
-                                          std::vector<base::Time>* timestamps) {
+                                          std::vector<Time>* timestamps) {
   DCHECK(timestamps);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT date_created FROM autofill a JOIN "
@@ -842,7 +842,7 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
 
 bool AutofillTable::AddFormFieldValueTime(const FormField& element,
                                           std::vector<AutofillChange>* changes,
-                                          base::Time time) {
+                                          Time time) {
   int count = 0;
   int64 pair_id;
 
@@ -1243,8 +1243,8 @@ bool AutofillTable::RemoveCreditCard(const std::string& guid) {
 }
 
 bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
+    const Time& delete_begin,
+    const Time& delete_end,
     std::vector<std::string>* profile_guids,
     std::vector<std::string>* credit_card_guids) {
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
@@ -1367,10 +1367,9 @@ bool AutofillTable::RemoveFormElementForID(int64 pair_id) {
     return false;
   }
   s.BindInt64(0, pair_id);
-  if (s.Run()) {
-    return RemoveFormElementForTimeRange(pair_id, base::Time(), base::Time(),
-                                         NULL);
-  }
+  if (s.Run())
+    return RemoveFormElementForTimeRange(pair_id, Time(), Time(), NULL);
+
   return false;
 }
 

@@ -341,7 +341,6 @@ class TestingProfile : public Profile {
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;
 
-
   // FileSystemContext.  Created lazily by GetFileSystemContext().
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 

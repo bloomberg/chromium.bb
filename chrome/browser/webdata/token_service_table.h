@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "chrome/browser/webdata/web_database_table.h"
 
 class TokenServiceTable : public WebDatabaseTable {
@@ -33,6 +36,5 @@ class TokenServiceTable : public WebDatabaseTable {
  private:
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTable);
 };
-
 
 #endif  // CHROME_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_

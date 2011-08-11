@@ -9,11 +9,14 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/intents/web_intent_data.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 // Handles storing and retrieving of web intents in the web database.
 // The registry provides filtering logic to retrieve specific types of intents.
-class WebIntentsRegistry : public WebDataServiceConsumer {
+class WebIntentsRegistry
+    : public WebDataServiceConsumer,
+      public ProfileKeyedService {
  public:
   // Unique identifier for intent queries.
   typedef int QueryID;
@@ -31,14 +34,11 @@ class WebIntentsRegistry : public WebDataServiceConsumer {
     virtual ~Consumer() {}
   };
 
-  WebIntentsRegistry();
-  virtual ~WebIntentsRegistry();
-
   // Initializes, binds to a valid WebDataService.
   void Initialize(scoped_refptr<WebDataService> wds);
 
   // Registers a web intent provider.
-  void RegisterIntentProvider(const WebIntentData& intent);
+  virtual void RegisterIntentProvider(const WebIntentData& intent);
 
   // Removes a web intent provider from the registry.
   void UnregisterIntentProvider(const WebIntentData& intent);
@@ -47,11 +47,20 @@ class WebIntentsRegistry : public WebDataServiceConsumer {
   // |consumer| must not be NULL.
   QueryID GetIntentProviders(const string16& action, Consumer* consumer);
 
+ protected:
+  // Make sure that only WebIntentsRegistryFactory can create an instance of
+  // WebIntentsRegistry.
+  friend class WebIntentsRegistryFactory;
+  friend class WebIntentsRegistryTest;
+
+  WebIntentsRegistry();
+  virtual ~WebIntentsRegistry();
+
  private:
    struct IntentsQuery;
 
   // Maps web data requests to intents queries.
-  // Allows OnWebDataServiceRequestDone to forward to appropiate consumer.
+  // Allows OnWebDataServiceRequestDone to forward to appropriate consumer.
   typedef base::hash_map<WebDataService::Handle, IntentsQuery*> QueryMap;
 
   // WebDataServiceConsumer implementation.

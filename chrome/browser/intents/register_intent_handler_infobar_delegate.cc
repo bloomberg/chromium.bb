@@ -5,14 +5,20 @@
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/web_intents_registry.h"
+#include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
-    TabContents* tab_contents)
+    TabContents* tab_contents, const WebIntentData& intent)
     : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents) {
+      tab_contents_(tab_contents),
+      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
+      intent_(intent) {
 }
 
 InfoBarDelegate::Type
@@ -21,19 +27,28 @@ InfoBarDelegate::Type
 }
 
 string16 RegisterIntentHandlerInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
-                                    string16(), string16());
+  return l10n_util::GetStringFUTF16(
+      IDS_REGISTER_INTENT_HANDLER_CONFIRM,
+      intent_.title,
+      UTF8ToUTF16(intent_.service_url.host()));
 }
 
 string16 RegisterIntentHandlerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK) {
     return l10n_util::GetStringFUTF16(IDS_REGISTER_INTENT_HANDLER_ACCEPT,
-                                      string16());
+                                      UTF8ToUTF16(intent_.service_url.host()));
   }
 
   DCHECK(button == BUTTON_CANCEL);
   return l10n_util::GetStringUTF16(IDS_REGISTER_INTENT_HANDLER_DENY);
+}
+
+bool RegisterIntentHandlerInfoBarDelegate::Accept() {
+  WebIntentsRegistry* registry =
+      WebIntentsRegistryFactory::GetForProfile(profile_);
+  registry->RegisterIntentProvider(intent_);
+  return true;
 }
 
 string16 RegisterIntentHandlerInfoBarDelegate::GetLinkText() const {

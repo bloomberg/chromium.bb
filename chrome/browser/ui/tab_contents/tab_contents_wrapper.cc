@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
+#include "base/utf_string_conversions.h"
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
+#include "chrome/browser/intents/web_intent_data.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
@@ -604,7 +607,18 @@ void TabContentsWrapper::OnRegisterIntentHandler(const string16& action,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
 
-  AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab_contents()));
+  GURL service_url(href);
+  if (!service_url.is_valid()) {
+    const GURL& url = tab_contents()->GetURL();
+    service_url = url.Resolve(href);
+  }
+
+  WebIntentData intent;
+  intent.service_url = service_url;
+  intent.action = action;
+  intent.type = type;
+  intent.title = title;
+  AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab_contents(), intent));
 }
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {

@@ -22,6 +22,7 @@ class WebIntentsRegistryTest : public TestingBrowserProcessTest {
     wds_ = new WebDataService();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     wds_->Init(temp_dir_.path());
+
     registry_.Initialize(wds_);
   }
 
@@ -71,6 +72,7 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   intent.service_url = GURL("http://google.com");
   intent.action = ASCIIToUTF16("share");
   intent.type = ASCIIToUTF16("image/*");
+  intent.title = ASCIIToUTF16("Google's Sharing Service");
 
   registry_.RegisterIntentProvider(intent);
 

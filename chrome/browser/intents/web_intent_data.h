@@ -11,9 +11,15 @@
 
 // Describes the relevant elements of a WebIntent.
 struct WebIntentData {
+  WebIntentData();
+  ~WebIntentData();
+
+  bool operator==(const WebIntentData& other) const;
+
   GURL service_url;  // URL for service invocation.
   string16 action;  // Name of action provided by service.
   string16 type;  // MIME type of data accepted by service.
+  string16 title;  // The title of the service.
 };
 
 #endif  // CHROME_BROWSER_INTENTS_WEB_INTENT_DATA_H_

@@ -833,9 +833,7 @@ void WebDataService::RemoveWebIntentImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     const WebIntentData& intent = request->arg();
-    db_->GetWebIntentsTable()->RemoveWebIntent(intent.action,
-                                               intent.type,
-                                               intent.service_url);
+    db_->GetWebIntentsTable()->RemoveWebIntent(intent);
     ScheduleCommit();
   }
   request->RequestComplete();
@@ -845,9 +843,7 @@ void WebDataService::AddWebIntentImpl(GenericRequest<WebIntentData>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     const WebIntentData& intent = request->arg();
-    db_->GetWebIntentsTable()->SetWebIntent(intent.action,
-                                            intent.type,
-                                            intent.service_url);
+    db_->GetWebIntentsTable()->SetWebIntent(intent);
     ScheduleCommit();
   }
   request->RequestComplete();

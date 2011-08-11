@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-#include <vector>
+#include <map>
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"

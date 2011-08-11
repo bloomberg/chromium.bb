@@ -15,6 +15,11 @@
 
 class GURL;
 
+namespace sql {
+class Connection;
+class MetaTable;
+}
+
 // This class manages the WebIntents table within the SQLite database passed
 // to the constructor. It expects the following schema:
 //
@@ -35,18 +40,14 @@ class WebIntentsTable : public WebDatabaseTable {
 
   // Adds a web intent to the WebIntents table. If intent already exists,
   // replaces it.
-  bool SetWebIntent(const string16& action,
-                    const string16& type,
-                    const GURL& service_url);
+  bool SetWebIntent(const WebIntentData& intent);
 
   // Retrieve all intents from WebIntents table that match |action|.
   bool GetWebIntents(const string16& action,
                      std::vector<WebIntentData>* intents);
 
   // Removes intent from WebIntents table - must match all parameters exactly.
-  bool RemoveWebIntent(const string16& action,
-                       const string16& type,
-                       const GURL& service_url);
+  bool RemoveWebIntent(const WebIntentData& intent);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIntentsTable);

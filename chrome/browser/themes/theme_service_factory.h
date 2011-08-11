@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_THEMES_THEME_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_THEMES_THEME_SERVICE_FACTORY_H_
 
-#include <map>
-
+#include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
 class ThemeService;
 class Extension;
@@ -42,6 +39,8 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
   virtual bool ServiceRedirectedInIncognito();
+
+  DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_THEMES_THEME_SERVICE_FACTORY_H_

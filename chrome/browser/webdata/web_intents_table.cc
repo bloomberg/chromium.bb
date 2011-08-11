@@ -24,6 +24,7 @@ bool WebIntentsTable::Init() {
                     "service_url LONGVARCHAR,"
                     "action VARCHAR,"
                     "type VARCHAR,"
+                    "title VARCHAR,"
                     "UNIQUE (service_url, action, type))")) {
     NOTREACHED();
     return false;
@@ -68,26 +69,26 @@ bool WebIntentsTable::GetWebIntents(const string16& action,
   return true;
 }
 
-bool WebIntentsTable::SetWebIntent(const string16& action,
-                                   const string16& type,
-                                   const GURL& service_url) {
+bool WebIntentsTable::SetWebIntent(const WebIntentData& intent) {
   sql::Statement s(db_->GetUniqueStatement(
-      "INSERT OR REPLACE INTO web_intents (service_url, type, action) "
-      "VALUES (?, ?, ?)"));
+      "INSERT OR REPLACE INTO web_intents (service_url, type, action, title) "
+      "VALUES (?, ?, ?, ?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
-  s.BindString(0, service_url.spec());
-  s.BindString16(1, type);
-  s.BindString16(2, action);
+  s.BindString(0, intent.service_url.spec());
+  s.BindString16(1, intent.type);
+  s.BindString16(2, intent.action);
+  s.BindString16(3, intent.title);
   return s.Run();
 }
 
-bool WebIntentsTable::RemoveWebIntent(const string16& action,
-                                      const string16& type,
-                                      const GURL& service_url) {
+// TODO(jhawkins): Investigate the need to remove rows matching only
+// |intent.service_url|. It's unlikely the user will be given the ability to
+// remove at the granularity of actions or types.
+bool WebIntentsTable::RemoveWebIntent(const WebIntentData& intent) {
   sql::Statement delete_s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));
@@ -96,9 +97,9 @@ bool WebIntentsTable::RemoveWebIntent(const string16& action,
     return false;
   }
 
-  delete_s.BindString(0, service_url.spec());
-  delete_s.BindString16(1, action);
-  delete_s.BindString16(2, type);
+  delete_s.BindString(0, intent.service_url.spec());
+  delete_s.BindString16(1, intent.action);
+  delete_s.BindString16(2, intent.type);
   return delete_s.Run();
 }
 

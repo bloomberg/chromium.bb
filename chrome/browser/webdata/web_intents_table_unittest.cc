@@ -14,8 +14,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
-
 namespace {
 
 GURL test_url("http://google.com/");
@@ -48,19 +46,19 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
   EXPECT_EQ(0U, intents.size());
 
   // Now adding one.
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(test_action, mime_image, test_url));
+  WebIntentData intent;
+  intent.service_url = test_url;
+  intent.action = test_action;
+  intent.type = mime_image;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   // Make sure that intent can now be fetched
   EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
   ASSERT_EQ(1U, intents.size());
-
-  EXPECT_EQ(test_url.spec(), intents[0].service_url.spec());
-  EXPECT_EQ(test_action, intents[0].action);
-  EXPECT_EQ(mime_image, intents[0].type);
+  EXPECT_EQ(intent, intents[0]);
 
   // Remove the intent.
-  EXPECT_TRUE(IntentsTable()->RemoveWebIntent(test_action, mime_image,
-      test_url));
+  EXPECT_TRUE(IntentsTable()->RemoveWebIntent(intent));
 
   // Intent should now be gone.
   intents.clear();
@@ -72,8 +70,14 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
 TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   std::vector<WebIntentData> intents;
 
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(test_action, mime_image, test_url));
-  EXPECT_TRUE(IntentsTable()->SetWebIntent(test_action, mime_video, test_url));
+  WebIntentData intent;
+  intent.service_url = test_url;
+  intent.action = test_action;
+  intent.type = mime_image;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+
+  intent.type = mime_video;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   // Recover stored intents from DB.
   EXPECT_TRUE(IntentsTable()->GetWebIntents(test_action, &intents));
@@ -83,12 +87,9 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   if (intents[0].type == mime_video)
     std::swap(intents[0], intents[1]);
 
-  EXPECT_EQ(test_url, intents[0].service_url);
-  EXPECT_EQ(test_action, intents[0].action);
-  EXPECT_EQ(mime_image, intents[0].type);
+  EXPECT_EQ(intent, intents[1]);
 
-  EXPECT_EQ(test_url, intents[1].service_url);
-  EXPECT_EQ(test_action, intents[1].action);
-  EXPECT_EQ(mime_video, intents[1].type);
+  intent.type = mime_image;
+  EXPECT_EQ(intent, intents[0]);
 }
 } // namespace

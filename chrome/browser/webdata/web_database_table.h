@@ -6,16 +6,18 @@
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
 #pragma once
 
-#include "sql/connection.h"
-#include "sql/init_status.h"
-#include "sql/meta_table.h"
+#include "base/logging.h"
+
+namespace sql {
+class Connection;
+class MetaTable;
+}
 
 // An abstract base class representing a table within a WebDatabase.
 // Each table should subclass this, adding type-specific methods as needed.
 class WebDatabaseTable {
  protected:
-  WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table)
-      : db_(db), meta_table_(meta_table) {}
+  WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table);
   virtual ~WebDatabaseTable();
 
   // Attempts to initialize the table and returns true if successful.

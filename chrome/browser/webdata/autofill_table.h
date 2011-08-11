@@ -18,6 +18,10 @@ class AutofillProfile;
 class AutofillTableTest;
 class CreditCard;
 
+namespace base {
+class Time;
+}
+
 namespace webkit_glue {
 struct FormField;
 }
@@ -142,15 +146,15 @@ class AutofillTable : public WebDatabaseTable {
   // removes those rows if the count goes to 0.  A list of all changed
   // keys and whether each was updater or removed is returned in the
   // changes out parameter.
-  bool RemoveFormElementsAddedBetween(base::Time delete_begin,
-                                      base::Time delete_end,
+  bool RemoveFormElementsAddedBetween(const base::Time& delete_begin,
+                                      const base::Time& delete_end,
                                       std::vector<AutofillChange>* changes);
 
   // Removes from autofill_dates rows with given pair_id where date_created lies
   // between delte_begin and delte_end.
   bool RemoveFormElementForTimeRange(int64 pair_id,
-                                     base::Time delete_begin,
-                                     base::Time delete_end,
+                                     const base::Time& delete_begin,
+                                     const base::Time& delete_end,
                                      int* how_many);
 
   // Increments the count in the row corresponding to |pair_id| by
@@ -176,7 +180,7 @@ class AutofillTable : public WebDatabaseTable {
   bool InsertFormElement(const webkit_glue::FormField& element, int64* pair_id);
 
   // Adds a new row to the autofill_dates table.
-  bool InsertPairIDAndDate(int64 pair_id, base::Time date_created);
+  bool InsertPairIDAndDate(int64 pair_id, const base::Time& date_created);
 
   // Removes row from the autofill tables given |pair_id|.
   bool RemoveFormElementForID(int64 pair_id);
@@ -189,8 +193,8 @@ class AutofillTable : public WebDatabaseTable {
 
   // Retrieves a single entry from the autofill table.
   virtual bool GetAutofillTimestamps(const string16& name,
-                             const string16& value,
-                             std::vector<base::Time>* timestamps);
+                                     const string16& value,
+                                     std::vector<base::Time>* timestamps);
 
   // Replaces existing autofill entries with the entries supplied in
   // the argument.  If the entry does not already exist, it will be
@@ -239,8 +243,8 @@ class AutofillTable : public WebDatabaseTable {
   // on or after |delete_begin| and strictly before |delete_end|.  Returns lists
   // of deleted guids in |profile_guids| and |credit_card_guids|.
   bool RemoveAutofillProfilesAndCreditCardsModifiedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
       std::vector<std::string>* profile_guids,
       std::vector<std::string>* credit_card_guids);
 
