@@ -65,11 +65,11 @@ class ExtensionDataTypeControllerTest : public TestingBrowserProcessTest {
   }
 
   void SetActivateExpectations() {
-    EXPECT_CALL(service_, ActivateDataType(_, _));
+    EXPECT_CALL(service_, ActivateDataType(_, _, _));
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 

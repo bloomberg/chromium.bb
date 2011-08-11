@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"

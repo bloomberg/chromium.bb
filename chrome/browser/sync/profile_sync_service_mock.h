@@ -37,12 +37,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
                const std::string& message));
-  MOCK_METHOD2(ActivateDataType,
-               void(browser_sync::DataTypeController* data_type_controller,
-                    browser_sync::ChangeProcessor* change_processor));
-  MOCK_METHOD2(DeactivateDataType,
-               void(browser_sync::DataTypeController* data_type_controller,
-                    browser_sync::ChangeProcessor* change_processor));
+  MOCK_METHOD3(ActivateDataType,
+               void(syncable::ModelType, browser_sync::ModelSafeGroup,
+                    browser_sync::ChangeProcessor*));
+  MOCK_METHOD1(DeactivateDataType, void(syncable::ModelType));
 
   MOCK_METHOD0(InitializeBackend, void());
   MOCK_METHOD1(AddObserver, void(Observer*));

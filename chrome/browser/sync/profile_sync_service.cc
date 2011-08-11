@@ -367,12 +367,12 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
     return;
   }
 
-  syncable::ModelTypeSet types;
+  syncable::ModelTypeSet initial_types;
   // If sync setup hasn't finished, we don't want to initialize routing info
   // for any data types so that we don't download updates for types that the
   // user chooses not to sync on the first DownloadUpdatesCommand.
   if (HasSyncSetupCompleted()) {
-    GetPreferredDataTypes(&types);
+    GetPreferredDataTypes(&initial_types);
   }
 
   SyncCredentials credentials = GetCredentials();
@@ -384,7 +384,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
       this,
       WeakHandle<JsEventHandler>(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
-      types,
+      initial_types,
       credentials,
       delete_sync_data_folder);
 }
@@ -1198,22 +1198,20 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
 }
 
 void ProfileSyncService::ActivateDataType(
-    DataTypeController* data_type_controller,
+    syncable::ModelType type, browser_sync::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   if (!backend_.get()) {
     NOTREACHED();
     return;
   }
   DCHECK(backend_initialized_);
-  backend_->ActivateDataType(data_type_controller, change_processor);
+  backend_->ActivateDataType(type, group, change_processor);
 }
 
-void ProfileSyncService::DeactivateDataType(
-    DataTypeController* data_type_controller,
-    ChangeProcessor* change_processor) {
+void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
   if (!backend_.get())
     return;
-  backend_->DeactivateDataType(data_type_controller, change_processor);
+  backend_->DeactivateDataType(type);
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,

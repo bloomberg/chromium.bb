@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 

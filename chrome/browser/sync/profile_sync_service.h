@@ -389,13 +389,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // remove this function.
   void GetModelSafeRoutingInfo(browser_sync::ModelSafeRoutingInfo* out);
 
+  // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void ActivateDataType(
-      browser_sync::DataTypeController* data_type_controller,
+      syncable::ModelType type, browser_sync::ModelSafeGroup group,
       browser_sync::ChangeProcessor* change_processor);
-  virtual void DeactivateDataType(
-      browser_sync::DataTypeController* data_type_controller,
-      browser_sync::ChangeProcessor* change_processor);
+  virtual void DeactivateDataType(syncable::ModelType type);
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

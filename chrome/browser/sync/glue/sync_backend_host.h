@@ -21,8 +21,6 @@
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
@@ -46,7 +44,6 @@ struct SyncSessionSnapshot;
 }
 
 class ChangeProcessor;
-class DataTypeController;
 class JsEventHandler;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
@@ -133,7 +130,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Initialize(SyncFrontend* frontend,
                   const WeakHandle<JsEventHandler>& event_handler,
                   const GURL& service_url,
-                  const syncable::ModelTypeSet& types,
+                  const syncable::ModelTypeSet& initial_types,
                   const sync_api::SyncCredentials& credentials,
                   bool delete_sync_data_folder);
 
@@ -160,11 +157,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Changes the set of data types that are currently being synced.
   // The ready_task will be run when all of the requested data types
-  // are up-to-date and ready for activation.  The task will cancelled
-  // upon shutdown.  The method takes ownership of the task pointer.
+  // are up-to-date and ready for activation.  The task will be
+  // cancelled upon shutdown.
   virtual void ConfigureDataTypes(
-      const DataTypeController::TypeMap& data_type_controllers,
-      const syncable::ModelTypeSet& types,
+      const syncable::ModelTypeSet& types_to_add,
+      const syncable::ModelTypeSet& types_to_remove,
       sync_api::ConfigureReason reason,
       base::Callback<void(bool)> ready_task,
       bool enable_nigori);
@@ -186,12 +183,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
   // processor activation.
-  void ActivateDataType(DataTypeController* data_type_controller,
-                        ChangeProcessor* change_processor);
+  void ActivateDataType(
+      syncable::ModelType type, ModelSafeGroup group,
+      ChangeProcessor* change_processor);
 
   // Deactivates change processing for the given data type.
-  void DeactivateDataType(DataTypeController* data_type_controller,
-                          ChangeProcessor* change_processor);
+  void DeactivateDataType(syncable::ModelType type);
 
   // Asks the server to clear all data associated with ChromeSync.
   virtual bool RequestClearServerData();
@@ -357,7 +354,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoShutdown(bool stopping_sync);
 
     // Posts a config request on the sync thread.
-    virtual void DoRequestConfig(const syncable::ModelTypeBitSet& added_types,
+    virtual void DoRequestConfig(
+        const syncable::ModelTypeBitSet& types_to_config,
         sync_api::ConfigureReason reason);
 
     // Start the configuration mode.
@@ -408,9 +406,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     virtual ~Core();
 
-    // Return change processor for a particular model (return NULL on failure).
-    ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
-
     // Invoked when initialization of syncapi is complete and we can start
     // our timer.
     // This must be called from the thread on which SaveChanges is intended to
@@ -457,9 +452,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleClearServerDataFailedOnFrontendLoop();
 
     void FinishConfigureDataTypesOnFrontendLoop();
-
-    // Return true if a model lives on the current thread.
-    bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
 
     Profile* profile_;
 
@@ -528,26 +520,34 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
-    syncable::ModelTypeSet initial_types;
+    syncable::ModelTypeSet types_to_add;
 
     // Additional details about which types were added.
-    syncable::ModelTypeBitSet added_types;
+    syncable::ModelTypeSet added_types;
     sync_api::ConfigureReason reason;
   };
 
   UIModelWorker* ui_worker();
 
-  // Helper function for ConfigureDataTypes() that fills in |state|
-  // and |deleted_type|.  Does not take ownership of routing_info|.
+  // Return change processor for a particular model (return NULL on failure).
+  ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
+
+  // Like GetProcessor(), but |registrar_lock_| must already be
+  // held.
+  ChangeProcessor* GetProcessorUnsafe(syncable::ModelType modeltype);
+
+  // Return true if a model lives on the current thread.
+  bool IsCurrentThreadSafeForModel(syncable::ModelType model_type) const;
+
+  // Helper function for ConfigureDataTypes() that fills in |state|.
+  // Does not take ownership of |routing_info|.
   static void GetPendingConfigModeState(
-      const DataTypeController::TypeMap& data_type_controllers,
-      const syncable::ModelTypeSet& types,
+      const syncable::ModelTypeSet& types_to_add,
+      const syncable::ModelTypeSet& types_to_remove,
       base::Callback<void(bool)> ready_task,
       ModelSafeRoutingInfo* routing_info,
       sync_api::ConfigureReason reason,
-      bool nigori_enabled,
-      PendingConfigureDataTypesState* state,
-      bool* deleted_type);
+      PendingConfigureDataTypesState* state);
 
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }

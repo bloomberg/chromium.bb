@@ -315,8 +315,8 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenSwitch) {
 }
 
 void DoConfigureDataTypes(
-    const DataTypeController::TypeMap& data_type_controllers,
-    const syncable::ModelTypeSet& types,
+    const syncable::ModelTypeSet& types_to_add,
+    const syncable::ModelTypeSet& types_to_remove,
     sync_api::ConfigureReason reason,
     base::Callback<void(bool)> ready_task,
     bool enable_nigori) {

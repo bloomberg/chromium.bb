@@ -209,9 +209,26 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
   // Tell the backend about the new set of data types we wish to sync.
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
+  // Hopefully http://crbug.com/79970 will make this less verbose.
+  syncable::ModelTypeSet all_types;
+  const syncable::ModelTypeSet& types_to_add = last_requested_types_;
+  syncable::ModelTypeSet types_to_remove;
+  for (DataTypeController::TypeMap::const_iterator it =
+           controllers_.begin(); it != controllers_.end(); ++it) {
+    all_types.insert(it->first);
+  }
+  // Check that types_to_add \subseteq all_types.
+  DCHECK(std::includes(all_types.begin(), all_types.end(),
+                       types_to_add.begin(), types_to_add.end()));
+  // Set types_to_remove to all_types \setminus types_to_add.
+  ignore_result(
+      std::set_difference(
+          all_types.begin(), all_types.end(),
+          types_to_add.begin(), types_to_add.end(),
+          std::inserter(types_to_remove, types_to_remove.end())));
   backend_->ConfigureDataTypes(
-      controllers_,
-      last_requested_types_,
+      types_to_add,
+      types_to_remove,
       reason,
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr()),

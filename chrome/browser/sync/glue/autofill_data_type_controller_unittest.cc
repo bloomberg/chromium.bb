@@ -127,12 +127,12 @@ class AutofillDataTypeControllerTest : public TestingBrowserProcessTest {
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillRepeatedly(Return(true));
-    EXPECT_CALL(service_, ActivateDataType(_, _));
+    EXPECT_CALL(service_, ActivateDataType(_, _, _));
     EXPECT_CALL(*change_processor_, IsRunning()).WillRepeatedly(Return(true));
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
@@ -182,7 +182,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhilePDMStarting) {
   autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
 
-  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(service_, DeactivateDataType(_)).Times(0);
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
@@ -200,7 +200,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileWDSStarting) {
   autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
 
-  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(service_, DeactivateDataType(_)).Times(0);
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
@@ -240,7 +240,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingNotActivated) {
   wait_for_db_thread_pause.Wait();
   EXPECT_EQ(DataTypeController::ASSOCIATING, autofill_dtc_->state());
 
-  EXPECT_CALL(service_, DeactivateDataType(_, _)).Times(0);
+  EXPECT_CALL(service_, DeactivateDataType(_));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _));
   autofill_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
@@ -269,7 +269,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingActivated) {
   // ActivateDataType() before  allowing it to continue.
   WaitableEvent pause_db_thread(false, false);
   WaitableEvent wait_for_db_thread_pause(false, false);
-  EXPECT_CALL(service_, ActivateDataType(_, _)).
+  EXPECT_CALL(service_, ActivateDataType(_, _, _)).
       WillOnce(DoAll(
           SignalEvent(&wait_for_db_thread_pause),
           WaitOnEvent(&pause_db_thread)));

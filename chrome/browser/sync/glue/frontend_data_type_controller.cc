@@ -101,7 +101,8 @@ bool FrontendDataTypeController::Associate() {
     return false;
   }
 
-  sync_service_->ActivateDataType(this, change_processor_.get());
+  sync_service_->ActivateDataType(type(), model_safe_group(),
+                                  change_processor_.get());
   state_ = RUNNING;
   FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK, FROM_HERE);
   return true;
@@ -151,8 +152,7 @@ void FrontendDataTypeController::Stop() {
 
   CleanUpState();
 
-  if (change_processor_.get())
-    sync_service_->DeactivateDataType(this, change_processor_.get());
+  sync_service_->DeactivateDataType(type());
 
   if (model_associator()) {
     SyncError error;

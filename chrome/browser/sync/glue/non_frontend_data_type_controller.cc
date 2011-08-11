@@ -113,7 +113,8 @@ void NonFrontendDataTypeController::StartAssociation() {
     return;
   }
 
-  profile_sync_service_->ActivateDataType(this, change_processor_.get());
+  profile_sync_service_->ActivateDataType(type(), model_safe_group(),
+                                          change_processor_.get());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, FROM_HERE);
 }
 
@@ -199,8 +200,7 @@ void NonFrontendDataTypeController::Stop() {
 
   // Deactivate the change processor on the UI thread. We dont want to listen
   // for any more changes or process them from server.
-  if (change_processor_.get())
-    profile_sync_service_->DeactivateDataType(this, change_processor_.get());
+  profile_sync_service_->DeactivateDataType(type());
 
   if (StopAssociationAsync()) {
     datatype_stopped_.Wait();

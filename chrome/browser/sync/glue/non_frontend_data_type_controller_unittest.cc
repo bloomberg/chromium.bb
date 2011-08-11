@@ -159,14 +159,14 @@ class NonFrontendDataTypeControllerTest : public TestingBrowserProcessTest {
   }
 
   void SetActivateExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(service_, ActivateDataType(_, _));
+    EXPECT_CALL(service_, ActivateDataType(_, _, _));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
 
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_, StopAssociationAsync());
     EXPECT_CALL(*dtc_mock_, StopModels());
-    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
@@ -312,7 +312,7 @@ TEST_F(NonFrontendDataTypeControllerTest, AbortDuringAssociationInactive) {
       SignalEvent(&pause_db_thread));
   EXPECT_CALL(*model_associator_, AssociateModels(_)).WillOnce(Return(true));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
-  EXPECT_CALL(service_, ActivateDataType(_, _));
+  EXPECT_CALL(service_, ActivateDataType(_, _, _));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_));
   EXPECT_CALL(*dtc_mock_, RecordStartFailure(DataTypeController::ABORTED));
   SetStopExpectations();
@@ -342,7 +342,7 @@ TEST_F(NonFrontendDataTypeControllerTest, AbortDuringAssociationActivated) {
   EXPECT_CALL(*model_associator_, AssociateModels(_)).
       WillOnce(Return(true));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
-  EXPECT_CALL(service_, ActivateDataType(_, _)).WillOnce(DoAll(
+  EXPECT_CALL(service_, ActivateDataType(_, _, _)).WillOnce(DoAll(
       SignalEvent(&wait_for_db_thread_pause),
       WaitOnEvent(&pause_db_thread)));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_));

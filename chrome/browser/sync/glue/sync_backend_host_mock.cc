@@ -6,14 +6,15 @@
 
 namespace browser_sync {
 
+using ::testing::_;
+
 ACTION(InvokeTask) {
   arg3.Run(true);
 }
 
 SyncBackendHostMock::SyncBackendHostMock() {
   // By default, invoke the ready callback.
-  ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_, testing::_,
-    testing::_, testing::_)).
+  ON_CALL(*this, ConfigureDataTypes(_, _, _, _, _)).
       WillByDefault(InvokeTask());
 }
 

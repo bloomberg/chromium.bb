@@ -77,11 +77,11 @@ class BookmarkDataTypeControllerTest : public TestingBrowserProcessTest {
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillRepeatedly(Return(true));
-    EXPECT_CALL(service_, ActivateDataType(_, _));
+    EXPECT_CALL(service_, ActivateDataType(_, _, _));
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 

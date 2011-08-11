@@ -31,6 +31,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   virtual void Configure(const TypeSet& desired_types,
                          sync_api::ConfigureReason reason);
 
+  // Needed only for backend migration.
   virtual void ConfigureWithoutNigori(const TypeSet& desired_types,
                                       sync_api::ConfigureReason reason);
 

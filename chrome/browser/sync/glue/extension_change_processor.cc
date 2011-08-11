@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"

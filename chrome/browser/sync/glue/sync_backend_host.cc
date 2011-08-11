@@ -49,7 +49,6 @@ static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
-using browser_sync::DataTypeController;
 typedef TokenService::TokenAvailableDetails TokenAvailableDetails;
 
 typedef GoogleServiceAuthError AuthError;
@@ -96,7 +95,7 @@ void SyncBackendHost::Initialize(
     SyncFrontend* frontend,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& sync_service_url,
-    const syncable::ModelTypeSet& types,
+    const syncable::ModelTypeSet& initial_types,
     const SyncCredentials& credentials,
     bool delete_sync_data_folder) {
   if (!sync_thread_.Start())
@@ -114,8 +113,8 @@ void SyncBackendHost::Initialize(
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
   // updates will be applied to sync, but not dispatched to the native models.
-  for (syncable::ModelTypeSet::const_iterator it = types.begin();
-      it != types.end(); ++it) {
+  for (syncable::ModelTypeSet::const_iterator it = initial_types.begin();
+      it != initial_types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
 
@@ -128,8 +127,8 @@ void SyncBackendHost::Initialize(
     registrar_.workers[GROUP_PASSWORD] =
         new PasswordModelWorker(password_store);
   } else {
-    LOG_IF(WARNING, types.count(syncable::PASSWORDS) > 0) << "Password store "
-        << "not initialized, cannot sync passwords";
+    LOG_IF(WARNING, initial_types.count(syncable::PASSWORDS) > 0)
+        << "Password store not initialized, cannot sync passwords";
     registrar_.routing_info.erase(syncable::PASSWORDS);
   }
 
@@ -281,82 +280,74 @@ SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
 
 void SyncBackendHost::GetPendingConfigModeState(
-    const DataTypeController::TypeMap& data_type_controllers,
-    const syncable::ModelTypeSet& types,
+    const syncable::ModelTypeSet& types_to_add,
+    const syncable::ModelTypeSet& types_to_remove,
     base::Callback<void(bool)> ready_task,
     ModelSafeRoutingInfo* routing_info,
     sync_api::ConfigureReason reason,
-    bool nigori_enabled,
-    SyncBackendHost::PendingConfigureDataTypesState* state,
-    bool* deleted_type) {
+    SyncBackendHost::PendingConfigureDataTypesState* state) {
+  if (DCHECK_IS_ON()) {
+    syncable::ModelTypeSet intersection;
+    std::set_intersection(
+        types_to_add.begin(), types_to_add.end(),
+        types_to_remove.begin(), types_to_remove.end(),
+        std::inserter(intersection, intersection.end()));
+    DCHECK(intersection.empty());
+  }
   *state = SyncBackendHost::PendingConfigureDataTypesState();
-  *deleted_type = false;
-  for (DataTypeController::TypeMap::const_iterator it =
-           data_type_controllers.begin();
-       it != data_type_controllers.end(); ++it) {
-    syncable::ModelType type = it->first;
-    // If a type is not specified, remove it from the routing_info.
-    if (types.count(type) == 0) {
-      *deleted_type = true;
-      routing_info->erase(type);
-    } else {
-      // Add a newly specified data type as GROUP_PASSIVE into the
-      // routing_info, if it does not already exist.
-      if (routing_info->count(type) == 0) {
-        (*routing_info)[type] = GROUP_PASSIVE;
-        state->added_types.set(type);
-      }
+
+  for (syncable::ModelTypeSet::const_iterator it = types_to_add.begin();
+       it != types_to_add.end(); ++it) {
+    syncable::ModelType type = *it;
+    // Add a newly specified data type as GROUP_PASSIVE into the
+    // routing_info, if it does not already exist.
+    if (routing_info->count(type) == 0) {
+      (*routing_info)[type] = GROUP_PASSIVE;
+      state->added_types.insert(type);
     }
   }
 
-  // We must handle NIGORI separately as it has no DataTypeController.
-  if (types.count(syncable::NIGORI) == 0) {
-    if (nigori_enabled) { // Nigori is currently enabled.
-      *deleted_type = true;
-      routing_info->erase(syncable::NIGORI);
-      // IsNigoriEnabled is now false.
-    }
-  } else { // Nigori needs to be enabled.
-    if (!nigori_enabled) {
-      // Currently it is disabled. So enable it.
-      (*routing_info)[syncable::NIGORI] = GROUP_PASSIVE;
-      state->added_types.set(syncable::NIGORI);
-    }
+  for (syncable::ModelTypeSet::const_iterator it = types_to_remove.begin();
+       it != types_to_remove.end(); ++it) {
+    routing_info->erase(*it);
   }
 
   state->ready_task = ready_task;
-  state->initial_types = types;
+  state->types_to_add = types_to_add;
   state->reason = reason;
 }
 
 void SyncBackendHost::ConfigureDataTypes(
-    const DataTypeController::TypeMap& data_type_controllers,
-    const syncable::ModelTypeSet& types,
+    const syncable::ModelTypeSet& types_to_add,
+    const syncable::ModelTypeSet& types_to_remove,
     sync_api::ConfigureReason reason,
     base::Callback<void(bool)> ready_task,
     bool enable_nigori) {
+  syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
+  syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
+  if (enable_nigori) {
+    types_to_add_with_nigori.insert(syncable::NIGORI);
+    types_to_remove_with_nigori.erase(syncable::NIGORI);
+  } else {
+    types_to_add_with_nigori.erase(syncable::NIGORI);
+    types_to_remove_with_nigori.insert(syncable::NIGORI);
+  }
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
   DCHECK(!pending_download_state_.get());
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
 
-  syncable::ModelTypeSet types_copy = types;
-  if (enable_nigori) {
-    types_copy.insert(syncable::NIGORI);
-  }
-  bool nigori_currently_enabled = IsNigoriEnabled();
   pending_config_mode_state_.reset(new PendingConfigureDataTypesState());
-  bool deleted_type = false;
   {
     base::AutoLock lock(registrar_lock_);
-    GetPendingConfigModeState(data_type_controllers, types_copy,
-                              ready_task, &registrar_.routing_info, reason,
-                              nigori_currently_enabled,
-                              pending_config_mode_state_.get(),
-                              &deleted_type);
+    GetPendingConfigModeState(types_to_add_with_nigori,
+                              types_to_remove_with_nigori,
+                              ready_task,
+                              &registrar_.routing_info, reason,
+                              pending_config_mode_state_.get());
   }
 
-  if (deleted_type) {
+  if (!types_to_remove.empty()) {
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(
@@ -392,7 +383,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   VLOG(1) << "Syncer in config mode. SBH executing"
           << "FinishConfigureDataTypesOnFrontendLoop";
 
-  if (pending_config_mode_state_->added_types.none() &&
+  if (pending_config_mode_state_->added_types.empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
     LOG(WARNING) << "No new types, but initial sync not finished."
                  << "Possible sync db corruption / removal.";
@@ -401,13 +392,12 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     // types that are needed... but this is a rare corruption edge case or
     // implies the user mucked around with their syncdb, so for now do all.
     pending_config_mode_state_->added_types =
-        syncable::ModelTypeBitSetFromSet(
-            pending_config_mode_state_->initial_types);
+        pending_config_mode_state_->types_to_add;
   }
 
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
-  if (pending_config_mode_state_->added_types.none()) {
+  if (pending_config_mode_state_->added_types.empty()) {
     VLOG(1) << "SyncBackendHost(" << this << "): No new types added. "
             << "Calling ready_task directly";
     // No new types - just notify the caller that the types are available.
@@ -415,15 +405,18 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());
 
-    syncable::ModelTypeBitSet types_copy(pending_download_state_->added_types);
-    if (IsNigoriEnabled())
-      types_copy.set(syncable::NIGORI);
+    // Always configure nigori if it's enabled.
+    syncable::ModelTypeSet types_to_config =
+        pending_download_state_->added_types;
+    if (IsNigoriEnabled()) {
+      types_to_config.insert(syncable::NIGORI);
+    }
     VLOG(1) <<  "SyncBackendHost(" << this << "):New Types added. "
             << "Calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          NewRunnableMethod(core_.get(),
                            &SyncBackendHost::Core::DoRequestConfig,
-                           types_copy,
+                           syncable::ModelTypeBitSetFromSet(types_to_config),
                            pending_download_state_->reason));
   }
 
@@ -449,18 +442,17 @@ syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
 }
 
 void SyncBackendHost::ActivateDataType(
-    DataTypeController* data_type_controller,
+    syncable::ModelType type, ModelSafeGroup group,
     ChangeProcessor* change_processor) {
   base::AutoLock lock(registrar_lock_);
 
   // Ensure that the given data type is in the PASSIVE group.
   browser_sync::ModelSafeRoutingInfo::iterator i =
-      registrar_.routing_info.find(data_type_controller->type());
+      registrar_.routing_info.find(type);
   DCHECK(i != registrar_.routing_info.end());
   DCHECK((*i).second == GROUP_PASSIVE);
-  syncable::ModelType type = data_type_controller->type();
   // Change the data type's routing info to its group.
-  registrar_.routing_info[type] = data_type_controller->model_safe_group();
+  registrar_.routing_info[type] = group;
 
   // Add the data type's change processor to the list of change
   // processors so it can receive updates.
@@ -469,19 +461,21 @@ void SyncBackendHost::ActivateDataType(
 
   // Start the change processor.
   change_processor->Start(profile_, GetUserShare());
+  DCHECK(GetProcessorUnsafe(type));
 }
 
-void SyncBackendHost::DeactivateDataType(
-    DataTypeController* data_type_controller,
-    ChangeProcessor* change_processor) {
+void SyncBackendHost::DeactivateDataType(syncable::ModelType type) {
   base::AutoLock lock(registrar_lock_);
-  registrar_.routing_info.erase(data_type_controller->type());
+  registrar_.routing_info.erase(type);
 
+  std::map<syncable::ModelType, ChangeProcessor*>::iterator it =
+      processors_.find(type);
   // Stop the change processor and remove it from the list of processors.
-  change_processor->Stop();
-  std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
-      processors_.erase(data_type_controller->type());
-  DCHECK_EQ(erased, 1U);
+  if (it != processors_.end()) {
+    it->second->Stop();
+    processors_.erase(it);
+  }
+  DCHECK(!GetProcessorUnsafe(type));
 }
 
 bool SyncBackendHost::RequestClearServerData() {
@@ -738,9 +732,9 @@ void SyncBackendHost::Core::DoEncryptDataTypes(
 }
 
 void SyncBackendHost::Core::DoRequestConfig(
-    const syncable::ModelTypeBitSet& added_types,
+    const syncable::ModelTypeBitSet& types_to_config,
     sync_api::ConfigureReason reason) {
-  sync_manager_->RequestConfig(added_types, reason);
+  sync_manager_->RequestConfig(types_to_config, reason);
 }
 
 void SyncBackendHost::Core::DoStartConfiguration(Callback0::Type* callback) {
@@ -771,10 +765,17 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   host_ = NULL;
 }
 
-ChangeProcessor* SyncBackendHost::Core::GetProcessor(
+ChangeProcessor* SyncBackendHost::GetProcessor(
     syncable::ModelType model_type) {
+  base::AutoLock lock(registrar_lock_);
+  return GetProcessorUnsafe(model_type);
+}
+
+ChangeProcessor* SyncBackendHost::GetProcessorUnsafe(
+    syncable::ModelType model_type) {
+  registrar_lock_.AssertAcquired();
   std::map<syncable::ModelType, ChangeProcessor*>::const_iterator it =
-      host_->processors_.find(model_type);
+      processors_.find(model_type);
 
   // Until model association happens for a datatype, it will not appear in
   // the processors list.  During this time, it is OK to drop changes on
@@ -783,7 +784,7 @@ ChangeProcessor* SyncBackendHost::Core::GetProcessor(
   // processor is added to the processors_ list.  This all happens on
   // the UI thread so we will never drop any changes after model
   // association.
-  if (it == host_->processors_.end())
+  if (it == processors_.end())
     return NULL;
 
   if (!IsCurrentThreadSafeForModel(model_type)) {
@@ -812,7 +813,7 @@ void SyncBackendHost::Core::OnChangesApplied(
     DCHECK(false) << "OnChangesApplied called after Shutdown?";
     return;
   }
-  ChangeProcessor* processor = GetProcessor(model_type);
+  ChangeProcessor* processor = host_->GetProcessor(model_type);
   if (!processor)
     return;
 
@@ -826,7 +827,7 @@ void SyncBackendHost::Core::OnChangesComplete(
     return;
   }
 
-  ChangeProcessor* processor = GetProcessor(model_type);
+  ChangeProcessor* processor = host_->GetProcessor(model_type);
   if (!processor)
     return;
 
@@ -861,13 +862,13 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   if (host_->pending_download_state_.get()) {
     scoped_ptr<PendingConfigureDataTypesState> state(
         host_->pending_download_state_.release());
-    bool found_all_added = true;
-    syncable::ModelTypeSet::const_iterator it;
-    for (it = state->initial_types.begin(); it != state->initial_types.end();
-         ++it) {
-      if (state->added_types.test(*it))
-        found_all_added &= snapshot->initial_sync_ended.test(*it);
-    }
+    DCHECK(
+        std::includes(state->types_to_add.begin(), state->types_to_add.end(),
+                      state->added_types.begin(), state->added_types.end()));
+    syncable::ModelTypeBitSet added_types =
+        syncable::ModelTypeBitSetFromSet(state->added_types);
+    bool found_all_added =
+        (added_types & snapshot->initial_sync_ended) == added_types;
     state->ready_task.Run(found_all_added);
     if (!found_all_added)
       return;
@@ -928,7 +929,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
 
   initialization_state_ = DOWNLOADING_NIGORI;
   ConfigureDataTypes(
-      DataTypeController::TypeMap(),
+      syncable::ModelTypeSet(),
       syncable::ModelTypeSet(),
       sync_api::CONFIGURE_REASON_NEW_CLIENT,
       base::Bind(
@@ -937,17 +938,17 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       true);
 }
 
-bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
-    syncable::ModelType model_type) {
-  base::AutoLock lock(host_->registrar_lock_);
+bool SyncBackendHost::IsCurrentThreadSafeForModel(
+    syncable::ModelType model_type) const {
+  registrar_lock_.AssertAcquired();
 
   browser_sync::ModelSafeRoutingInfo::const_iterator routing_it =
-      host_->registrar_.routing_info.find(model_type);
-  if (routing_it == host_->registrar_.routing_info.end())
+      registrar_.routing_info.find(model_type);
+  if (routing_it == registrar_.routing_info.end())
     return false;
   browser_sync::ModelSafeGroup group = routing_it->second;
-  WorkerMap::const_iterator worker_it = host_->registrar_.workers.find(group);
-  if (worker_it == host_->registrar_.workers.end())
+  WorkerMap::const_iterator worker_it = registrar_.workers.find(group);
+  if (worker_it == registrar_.workers.end())
     return false;
   ModelSafeWorker* worker = worker_it->second;
   return worker->CurrentThreadIsWorkThread();

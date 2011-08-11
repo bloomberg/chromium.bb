@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_profile.h"
@@ -112,160 +111,93 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
 
 TEST_F(SyncBackendHostTest, GetPendingConfigModeState) {
   SyncBackendHost::PendingConfigureDataTypesState state;
-  bool deleted_type = false;
 
   // Empty.
   {
-    DataTypeController::TypeMap data_type_controllers;
-    syncable::ModelTypeSet types;
+    syncable::ModelTypeSet types_to_add;
+    syncable::ModelTypeSet types_to_remove;
     ModelSafeRoutingInfo routing_info;
 
     SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
+        types_to_add, types_to_remove, base::Callback<void(bool)>(),
         &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        false, &state, &deleted_type);
+        &state);
 
     EXPECT_TRUE(routing_info.empty());
     EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_FALSE(deleted_type);
-    EXPECT_TRUE(state.added_types.none());
-  }
-
-  // No enabled types.
-  {
-    DataTypeController::TypeMap data_type_controllers;
-    data_type_controllers[syncable::BOOKMARKS] = NULL;
-    syncable::ModelTypeSet types;
-    ModelSafeRoutingInfo routing_info;
-
-    types.insert(syncable::NIGORI);
-    SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
-        &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        true, &state, &deleted_type);
-
-    EXPECT_TRUE(routing_info.empty());
-    EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_TRUE(deleted_type);
-    EXPECT_TRUE(state.added_types.none());
+    EXPECT_TRUE(state.types_to_add.empty());
+    EXPECT_TRUE(state.added_types.empty());
   }
 
   // Add type.
   {
-    DataTypeController::TypeMap data_type_controllers;
-    data_type_controllers[syncable::BOOKMARKS] = NULL;
-    syncable::ModelTypeSet types;
-    types.insert(syncable::BOOKMARKS);
-    types.insert(syncable::NIGORI);
+    syncable::ModelTypeSet types_to_add;
+    types_to_add.insert(syncable::BOOKMARKS);
+    syncable::ModelTypeSet types_to_remove;
     ModelSafeRoutingInfo routing_info;
 
     SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
+        types_to_add, types_to_remove, base::Callback<void(bool)>(),
         &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        true, &state, &deleted_type);
+        &state);
 
     ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
     EXPECT_EQ(expected_routing_info, routing_info);
     EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_FALSE(deleted_type);
-
-    syncable::ModelTypeBitSet expected_added_types;
-    expected_added_types.set(syncable::BOOKMARKS);
-    EXPECT_EQ(expected_added_types, state.added_types);
+    EXPECT_EQ(types_to_add, state.types_to_add);
+    EXPECT_EQ(types_to_add, state.added_types);
   }
 
   // Add existing type.
   {
-    DataTypeController::TypeMap data_type_controllers;
-    data_type_controllers[syncable::BOOKMARKS] = NULL;
-    syncable::ModelTypeSet types;
-    types.insert(syncable::BOOKMARKS);
-    types.insert(syncable::NIGORI);
+    syncable::ModelTypeSet types_to_add;
+    types_to_add.insert(syncable::BOOKMARKS);
+    syncable::ModelTypeSet types_to_remove;
     ModelSafeRoutingInfo routing_info;
     routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
     ModelSafeRoutingInfo expected_routing_info = routing_info;
 
     SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
+        types_to_add, types_to_remove, base::Callback<void(bool)>(),
         &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        true, &state, &deleted_type);
+        &state);
 
     EXPECT_EQ(expected_routing_info, routing_info);
     EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_FALSE(deleted_type);
-    EXPECT_TRUE(state.added_types.none());
+    EXPECT_EQ(types_to_add, state.types_to_add);
+    EXPECT_TRUE(state.added_types.empty());
   }
 
   // Delete type.
   {
-    DataTypeController::TypeMap data_type_controllers;
-    data_type_controllers[syncable::BOOKMARKS] = NULL;
-    syncable::ModelTypeSet types;
-    types.insert(syncable::NIGORI);
+    syncable::ModelTypeSet types_to_add;
+    syncable::ModelTypeSet types_to_remove;
+    types_to_remove.insert(syncable::BOOKMARKS);
     ModelSafeRoutingInfo routing_info;
     routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
 
     SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
+        types_to_add, types_to_remove, base::Callback<void(bool)>(),
         &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        true, &state, &deleted_type);
+        &state);
 
-    ModelSafeRoutingInfo expected_routing_info;
-    EXPECT_EQ(expected_routing_info, routing_info);
-    EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_TRUE(deleted_type);
-    EXPECT_TRUE(state.added_types.none());
+    EXPECT_TRUE(routing_info.empty());
   }
 
-  // Add Nigori.
+  // Delete nonexistent type.
   {
-    DataTypeController::TypeMap data_type_controllers;
-    syncable::ModelTypeSet types;
-    types.insert(syncable::NIGORI);
+    syncable::ModelTypeSet types_to_add;
+    syncable::ModelTypeSet types_to_remove;
+    types_to_remove.insert(syncable::BOOKMARKS);
     ModelSafeRoutingInfo routing_info;
 
     SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
+        types_to_add, types_to_remove, base::Callback<void(bool)>(),
         &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        false, &state, &deleted_type);
+        &state);
 
-    ModelSafeRoutingInfo expected_routing_info;
-    expected_routing_info[syncable::NIGORI] = GROUP_PASSIVE;
-    EXPECT_EQ(expected_routing_info, routing_info);
-    EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_FALSE(deleted_type);
-
-    syncable::ModelTypeBitSet expected_added_types;
-    expected_added_types.set(syncable::NIGORI);
-    EXPECT_EQ(expected_added_types, state.added_types);
-  }
-
-  // Delete Nigori.
-  {
-    DataTypeController::TypeMap data_type_controllers;
-    syncable::ModelTypeSet types;
-    ModelSafeRoutingInfo routing_info;
-    routing_info[syncable::NIGORI] = GROUP_PASSIVE;
-
-    SyncBackendHost::GetPendingConfigModeState(
-        data_type_controllers, types, base::Callback<void(bool)>(),
-        &routing_info, sync_api::CONFIGURE_REASON_RECONFIGURATION,
-        true, &state, &deleted_type);
-
-    ModelSafeRoutingInfo expected_routing_info;
-    EXPECT_EQ(expected_routing_info, routing_info);
-    EXPECT_TRUE(state.ready_task.is_null());
-    EXPECT_EQ(types, state.initial_types);
-    EXPECT_TRUE(deleted_type);
-
-    EXPECT_TRUE(state.added_types.none());
+    EXPECT_TRUE(routing_info.empty());
   }
 }
 

@@ -118,13 +118,13 @@ class FrontendDataTypeControllerTest : public TestingBrowserProcessTest {
   }
 
   void SetActivateExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(service_, ActivateDataType(_, _));
+    EXPECT_CALL(service_, ActivateDataType(_, _, _));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
 
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_, CleanUpState());
-    EXPECT_CALL(service_, DeactivateDataType(_, _));
+    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
