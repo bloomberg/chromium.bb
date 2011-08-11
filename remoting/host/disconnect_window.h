@@ -19,6 +19,10 @@ class DisconnectWindow {
   static const char kSharingWith[];
   static const char kDisconnectButton[];
 
+  static const char kDisconnectKeysLinux[];
+  static const char kDisconnectKeysMac[];
+  static const char kDisconnectKeysWin[];
+
   // Show the disconnect window allowing the user to shut down |host|.
   virtual void Show(ChromotingHost* host, const std::string& username) = 0;
 

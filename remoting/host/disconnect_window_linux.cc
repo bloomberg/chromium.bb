@@ -45,11 +45,13 @@ DisconnectWindowLinux::~DisconnectWindowLinux() {
 void DisconnectWindowLinux::CreateWindow() {
   if (disconnect_window_) return;
 
+  std::string disconnect_button(kDisconnectButton);
+  disconnect_button += kDisconnectKeysLinux;
   disconnect_window_ = gtk_dialog_new_with_buttons(
       kTitle,
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
-      kDisconnectButton, GTK_RESPONSE_OK,
+      disconnect_button.c_str(), GTK_RESPONSE_OK,
       NULL);
 
   GtkWindow* window = GTK_WINDOW(disconnect_window_);

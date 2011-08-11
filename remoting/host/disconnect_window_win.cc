@@ -89,6 +89,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
         HWND hwndButton = GetDlgItem(hwnd, IDC_DISCONNECT);
         CHECK(hwndButton);
         std::wstring w_button = UTF8ToWide(kDisconnectButton);
+        w_button += UTF8ToWide(kDisconnectKeysWin);
         SetWindowText(hwndButton, w_button.c_str());
 
         HWND hwndSharingWith = GetDlgItem(hwnd, IDC_DISCONNECT_SHARINGWITH);
