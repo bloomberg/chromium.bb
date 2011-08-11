@@ -8,10 +8,15 @@
 
 #include "content/browser/webui/web_ui.h"
 
+class Profile;
+
 class ChromeWebUI : public WebUI {
  public:
   explicit ChromeWebUI(TabContents* contents);
   virtual ~ChromeWebUI();
+
+  // Returns the profile for this WebUI.
+  Profile* GetProfile() const;
 
   // Returns true if the bookmark bar should be forced to being visible,
   // overriding the user's preference.

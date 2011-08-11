@@ -140,7 +140,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
   if (WorkerDevToolsManagerIO::HasDevToolsClient(worker_process_host_id,
                                                  worker_route_id))
     return;
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   if (!profile)
     return;
   DevToolsWindow* window = DevToolsWindow::CreateDevToolsWindowForWorker(

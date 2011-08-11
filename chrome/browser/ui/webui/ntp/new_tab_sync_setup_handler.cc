@@ -33,7 +33,7 @@ bool NewTabSyncSetupHandler::ShouldShowSyncPromo() {
 }
 
 WebUIMessageHandler* NewTabSyncSetupHandler::Attach(WebUI* web_ui) {
-  PrefService* pref_service = web_ui->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui)->GetPrefs();
   username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
 
   return SyncSetupHandler::Attach(web_ui);
@@ -64,7 +64,8 @@ void NewTabSyncSetupHandler::Observe(int type,
 }
 
 void NewTabSyncSetupHandler::ShowSetupUI() {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
@@ -77,14 +78,14 @@ void NewTabSyncSetupHandler::HandleInitializeSyncPromo(const ListValue* args) {
 
   UpdateLogin();
 
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
   DCHECK(service);
 
   // If the user has not signed into sync then expand the sync promo.
   // TODO(sail): Need to throttle this behind a server side flag.
   if (!service->HasSyncSetupCompleted() &&
-      web_ui_->GetProfile()->GetPrefs()->GetBoolean(
-          prefs::kSyncPromoExpanded)) {
+      profile->GetPrefs()->GetBoolean(prefs::kSyncPromoExpanded)) {
     OpenSyncSetup();
     SaveExpandedPreference(true);
   }
@@ -102,7 +103,7 @@ void NewTabSyncSetupHandler::HandleExpandSyncPromo(const ListValue* args) {
 }
 
 void NewTabSyncSetupHandler::UpdateLogin() {
-  std::string username = web_ui_->GetProfile()->GetPrefs()->GetString(
+  std::string username = Profile::FromWebUI(web_ui_)->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   StringValue string_value(username);
   web_ui_->CallJavascriptFunction("new_tab.NewTabSyncPromo.updateLogin",
@@ -110,7 +111,7 @@ void NewTabSyncSetupHandler::UpdateLogin() {
 }
 
 void NewTabSyncSetupHandler::SaveExpandedPreference(bool is_expanded) {
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kSyncPromoExpanded,
-                                                is_expanded);
-  web_ui_->GetProfile()->GetPrefs()->ScheduleSavePersistentPrefs();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  profile->GetPrefs()->SetBoolean(prefs::kSyncPromoExpanded, is_expanded);
+  profile->GetPrefs()->ScheduleSavePersistentPrefs();
 }

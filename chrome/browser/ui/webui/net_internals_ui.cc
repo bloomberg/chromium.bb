@@ -465,14 +465,15 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
 WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefService* pref_service = web_ui->GetProfile()->GetPrefs();
+  Profile* profile = Profile::FromWebUI(web_ui);
+  PrefService* pref_service = profile->GetPrefs();
   http_throttling_enabled_.Init(
       prefs::kHttpThrottlingEnabled, pref_service, this);
   http_throttling_may_experiment_.Init(
       prefs::kHttpThrottlingMayExperiment, pref_service, NULL);
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
-                            web_ui->GetProfile()->GetRequestContext());
+                            profile->GetRequestContext());
 #ifdef OS_CHROMEOS
   syslogs_getter_.reset(new SystemLogsGetter(this,
       chromeos::system::SyslogsProvider::GetInstance()));
@@ -481,7 +482,7 @@ WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
 
   prerender::PrerenderManager* prerender_manager =
-      web_ui->GetProfile()->GetPrerenderManager();
+      profile->GetPrerenderManager();
   if (prerender_manager) {
     prerender_manager_ = prerender_manager->AsWeakPtr();
   } else {

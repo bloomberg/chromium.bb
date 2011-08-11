@@ -22,7 +22,8 @@ void NewTabPageHandler::RegisterMessages() {
 }
 
 void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
+  Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed,
+                                                      true);
   NotificationService* service = NotificationService::current();
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageHandler>(this),
@@ -30,7 +31,8 @@ void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
 }
 
 void NewTabPageHandler::HandleCloseSyncNotification(const ListValue* args) {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   if (service)
     service->AcknowledgeSyncedTypes();
 }
@@ -44,7 +46,7 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   CHECK(args->GetDouble(1, &index_double));
   int index = static_cast<int>(index_double);
 
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   prefs->SetInteger(prefs::kNTPShownPage, page_id | index);
 }
 

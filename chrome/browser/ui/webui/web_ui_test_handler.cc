@@ -9,6 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_registrar.h"
 
@@ -21,17 +22,17 @@ void WebUITestHandler::PreloadJavaScript(const string16& js_text,
 }
 
 void WebUITestHandler::RunJavaScript(const string16& js_text) {
-  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+  web_ui_->tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
       string16(), js_text);
 }
 
 bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
+  RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
   NotificationRegistrar notification_registrar;
   notification_registrar.Add(
       this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      Source<RenderViewHost>(web_ui_->GetRenderViewHost()));
-  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrameNotifyResult(
-      string16(), js_text);
+      Source<RenderViewHost>(rvh));
+  rvh->ExecuteJavascriptInWebFrameNotifyResult(string16(), js_text);
   return WaitForResult();
 }
 

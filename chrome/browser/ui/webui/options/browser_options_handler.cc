@@ -139,7 +139,7 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::Initialize() {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -222,7 +222,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
 
   // If the user attempted to make Chrome the default browser, then he/she
   // arguably wants to be notified when that changes.
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
 }
 
@@ -316,8 +316,8 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {
-  template_url_service_ = TemplateURLServiceFactory::GetForProfile(
-      web_ui_->GetProfile());
+  template_url_service_ =
+      TemplateURLServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
   if (template_url_service_) {
     template_url_service_->Load();
     template_url_service_->AddObserver(this);
@@ -326,7 +326,7 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
 }
 
 void BrowserOptionsHandler::UpdateRestoreOnStartup() {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   const SessionStartupPref startup_pref =
       SessionStartupPref::GetStartupPref(profile->GetPrefs());
   FundamentalValue restore_on_startup(startup_pref.type);
@@ -335,7 +335,7 @@ void BrowserOptionsHandler::UpdateRestoreOnStartup() {
 }
 
 void BrowserOptionsHandler::UpdateStartupPages() {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   const SessionStartupPref startup_pref =
       SessionStartupPref::GetStartupPref(profile->GetPrefs());
   startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
@@ -401,7 +401,7 @@ void BrowserOptionsHandler::SetRestoreOnStartup(const ListValue* args) {
   CHECK_EQ(args->GetSize(), 1UL);
   CHECK(args->GetString(0, &pref_string));
 
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
   if (pref_string == "0") {
@@ -491,7 +491,7 @@ void BrowserOptionsHandler::DragDropStartupPage(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
   pref.urls = startup_custom_pages_table_model_->GetURLs();
@@ -510,7 +510,7 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
 }
 
 void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
-  Source<Profile> source(web_ui_->GetProfile());
+  Source<Profile> source(Profile::FromWebUI(web_ui_));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
       source,
@@ -518,16 +518,16 @@ void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
-  InstantController::Enable(web_ui_->GetProfile());
+  InstantController::Enable(Profile::FromWebUI(web_ui_));
 }
 
 void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
-  InstantController::Disable(web_ui_->GetProfile());
+  InstantController::Disable(Profile::FromWebUI(web_ui_));
 }
 
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
   FundamentalValue enabled(
-      InstantFieldTrial::IsExperimentGroup(web_ui_->GetProfile()));
+      InstantFieldTrial::IsExperimentGroup(Profile::FromWebUI(web_ui_)));
   web_ui_->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
                                   enabled);
 }

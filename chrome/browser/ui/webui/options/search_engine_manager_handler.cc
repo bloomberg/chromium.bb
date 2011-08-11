@@ -39,7 +39,8 @@ SearchEngineManagerHandler::~SearchEngineManagerHandler() {
 }
 
 void SearchEngineManagerHandler::Initialize() {
-  list_controller_.reset(new KeywordEditorController(web_ui_->GetProfile()));
+  list_controller_.reset(
+      new KeywordEditorController(Profile::FromWebUI(web_ui_)));
   if (list_controller_.get()) {
     list_controller_->table_model()->SetObserver(this);
     OnModelChanged();
@@ -135,7 +136,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
   // Build the extension keywords list.
   ListValue keyword_list;
   ExtensionService* extension_service =
-      web_ui_->GetProfile()->GetExtensionService();
+      Profile::FromWebUI(web_ui_)->GetExtensionService();
   if (extension_service) {
     const ExtensionList* extensions = extension_service->extensions();
     for (ExtensionList::const_iterator it = extensions->begin();
@@ -241,8 +242,8 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
   const TemplateURL* edit_url = NULL;
   if (index != -1)
     edit_url = list_controller_->GetTemplateURL(index);
-  edit_controller_.reset(
-      new EditSearchEngineController(edit_url, this, web_ui_->GetProfile()));
+  edit_controller_.reset(new EditSearchEngineController(
+      edit_url, this, Profile::FromWebUI(web_ui_)));
 }
 
 void SearchEngineManagerHandler::OnEditedKeyword(

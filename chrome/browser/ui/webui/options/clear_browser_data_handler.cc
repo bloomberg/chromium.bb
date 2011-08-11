@@ -90,7 +90,7 @@ void ClearBrowserDataHandler::RegisterMessages() {
 }
 
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* prefs = profile->GetPrefs();
 
   int remove_mask = 0;

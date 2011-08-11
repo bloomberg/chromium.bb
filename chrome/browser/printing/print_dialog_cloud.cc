@@ -261,18 +261,18 @@ void CloudPrintFlowHandler::RegisterMessages() {
       "SetPageParameters",
       NewCallback(this, &CloudPrintFlowHandler::HandleSetPageParameters));
 
-  if (web_ui_->tab_contents()) {
-    // Register for appropriate notifications, and re-direct the URL
-    // to the real server URL, now that we've gotten an HTML dialog
-    // going.
-    NavigationController* controller = &web_ui_->tab_contents()->controller();
-    NavigationEntry* pending_entry = controller->pending_entry();
-    if (pending_entry)
-      pending_entry->set_url(CloudPrintURL(
-          web_ui_->GetProfile()).GetCloudPrintServiceDialogURL());
-    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   Source<NavigationController>(controller));
+  // Register for appropriate notifications, and re-direct the URL
+  // to the real server URL, now that we've gotten an HTML dialog
+  // going.
+  NavigationController* controller = &web_ui_->tab_contents()->controller();
+  NavigationEntry* pending_entry = controller->pending_entry();
+  if (pending_entry) {
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    pending_entry->set_url(
+        CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
   }
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 Source<NavigationController>(controller));
 }
 
 void CloudPrintFlowHandler::Observe(int type,
@@ -283,7 +283,7 @@ void CloudPrintFlowHandler::Observe(int type,
     // script permissions required for the web UI.
     GURL url = web_ui_->tab_contents()->GetURL();
     GURL dialog_url = CloudPrintURL(
-        web_ui_->GetProfile()).GetCloudPrintServiceDialogURL();
+        Profile::FromWebUI(web_ui_)).GetCloudPrintServiceDialogURL();
     if (url.host() == dialog_url.host() &&
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
@@ -392,10 +392,11 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
 void CloudPrintFlowHandler::StoreDialogClientSize() const {
   if (web_ui_ && web_ui_->tab_contents() && web_ui_->tab_contents()->view()) {
     gfx::Size size = web_ui_->tab_contents()->view()->GetContainerSize();
-    web_ui_->GetProfile()->GetPrefs()->SetInteger(
-        prefs::kCloudPrintDialogWidth, size.width());
-    web_ui_->GetProfile()->GetPrefs()->SetInteger(
-        prefs::kCloudPrintDialogHeight, size.height());
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    profile->GetPrefs()->SetInteger(prefs::kCloudPrintDialogWidth,
+                                    size.width());
+    profile->GetPrefs()->SetInteger(prefs::kCloudPrintDialogHeight,
+                                    size.height());
   }
 }
 

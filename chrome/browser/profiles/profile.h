@@ -74,6 +74,7 @@ class PrefService;
 class ProfileSyncFactory;
 class ProfileSyncService;
 class PromoCounter;
+class PromoResourceService;
 class ProtocolHandlerRegistry;
 class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
@@ -86,7 +87,7 @@ class UserStyleSheetWatcher;
 class VisitedLinkEventListener;
 class VisitedLinkMaster;
 class WebDataService;
-class PromoResourceService;
+class WebUI;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // Local profile ids are used to associate resources stored outside the profile
@@ -182,6 +183,9 @@ class Profile : public content::BrowserContext {
 
   // Returns the profile corresponding to the given browser context.
   static Profile* FromBrowserContext(content::BrowserContext* browser_context);
+
+  // Returns the profile corresponding to the given WebUI.
+  static Profile* FromWebUI(WebUI* web_ui);
 
   // content::BrowserContext implementation ------------------------------------
 

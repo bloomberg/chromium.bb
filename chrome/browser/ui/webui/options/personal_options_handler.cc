@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -61,7 +62,7 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
 
 PersonalOptionsHandler::~PersonalOptionsHandler() {
   ProfileSyncService* sync_service =
-      web_ui_->GetProfile()->GetProfileSyncService();
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   if (sync_service)
     sync_service->RemoveObserver(this);
 }
@@ -233,7 +234,8 @@ void PersonalOptionsHandler::Observe(int type,
 void PersonalOptionsHandler::OnStateChanged() {
   string16 status_label;
   string16 link_label;
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   DCHECK(service);
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
@@ -334,7 +336,7 @@ void PersonalOptionsHandler::OnLoginFailure(
 }
 
 void PersonalOptionsHandler::ObserveThemeChanged() {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
 #if defined(TOOLKIT_GTK)
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   bool is_gtk_theme = theme_service->UsingNativeTheme();
@@ -353,16 +355,17 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 }
 
 void PersonalOptionsHandler::Initialize() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(ThemeServiceFactory::GetForProfile(
-                     web_ui_->GetProfile())));
+                     profile)));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();
 
-  ProfileSyncService* sync_service =
-      web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* sync_service = profile->GetProfileSyncService();
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();
@@ -373,13 +376,15 @@ void PersonalOptionsHandler::Initialize() {
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("Options_ThemesReset"));
-  ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->UseDefaultTheme();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
-  ThemeServiceFactory::GetForProfile(web_ui_->GetProfile())->SetNativeTheme();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
 }
 #endif
 
@@ -411,7 +416,8 @@ void PersonalOptionsHandler::SendProfilesInfo() {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   ListValue profile_info_list;
-  FilePath current_profile_path = web_ui_->GetProfile()->GetPath();
+  FilePath current_profile_path =
+      web_ui_->tab_contents()->browser_context()->GetPath();
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue *profile_value = new DictionaryValue();
     size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);

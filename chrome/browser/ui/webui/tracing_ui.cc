@@ -365,8 +365,9 @@ void TracingMessageHandler::LoadTraceFileComplete(std::string* file_contents) {
   javascript += UTF8ToWide(*file_contents);
   javascript += L");";
 
-  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
-      WideToUTF16Hack(javascript));
+  web_ui_->tab_contents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(),
+                                  WideToUTF16Hack(javascript));
 }
 
 void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
@@ -435,8 +436,9 @@ void TracingMessageHandler::OnTraceDataCollected(
   javascript += UTF8ToWide(json_events);
   javascript += L");";
 
-  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
-      WideToUTF16Hack(javascript));
+  web_ui_->tab_contents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(),
+                                  WideToUTF16Hack(javascript));
 }
 
 void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {

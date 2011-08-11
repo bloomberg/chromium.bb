@@ -54,7 +54,7 @@ MostVisitedHandler::~MostVisitedHandler() {
 }
 
 WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
-  Profile* profile = web_ui->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui);
   // Set up our sources for thumbnail and favicon data.
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
@@ -114,7 +114,7 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
 
 void MostVisitedHandler::SendPagesValue() {
   if (pages_value_.get()) {
-    Profile* profile = web_ui_->GetProfile();
+    Profile* profile = Profile::FromWebUI(web_ui_);
     const DictionaryValue* url_blacklist =
         profile->GetPrefs()->GetDictionary(prefs::kNTPMostVisitedURLsBlacklist);
     bool has_blacklisted_urls = !url_blacklist->empty();
@@ -130,7 +130,7 @@ void MostVisitedHandler::SendPagesValue() {
 }
 
 void MostVisitedHandler::StartQueryForMostVisited() {
-  history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+  history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
   if (ts) {
     ts->GetMostVisitedURLs(
         &topsites_consumer_,
@@ -155,7 +155,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
       return;
     }
     UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"));
-    history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+    history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
     if (ts)
       ts->RemoveBlacklistedURL(GURL(url));
   }
@@ -164,7 +164,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
 void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"));
 
-  history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+  history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
   if (ts)
     ts->ClearBlacklistedURLs();
 }
@@ -204,7 +204,7 @@ void MostVisitedHandler::HandleAddPinnedURL(const ListValue* args) {
 }
 
 void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
-  history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+  history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
   if (ts)
     ts->AddPinnedURL(page.url, index);
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlPinned"));
@@ -216,7 +216,7 @@ void MostVisitedHandler::HandleRemovePinnedURL(const ListValue* args) {
 }
 
 void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
-  history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+  history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
   if (ts)
     ts->RemovePinnedURL(url);
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlUnpinned"));
@@ -228,7 +228,7 @@ bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
   // having a map from the index to the item but the number of items is limited
   // to the number of items the most visited section is showing on the NTP so
   // this will be fast enough for now.
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   const DictionaryValue* pinned_urls =
       prefs->GetDictionary(prefs::kNTPMostVisitedPinnedURLs);
   for (DictionaryValue::key_iterator it = pinned_urls->begin_keys();
@@ -297,7 +297,7 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
       page_value->SetString("faviconDominantColor", "rgb(63, 132, 197)");
     }
 
-    history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+    history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
     if (ts && ts->IsURLPinned(url.url))
       page_value->SetBoolean("pinned", true);
     pages_value_->Append(page_value);
@@ -322,7 +322,7 @@ void MostVisitedHandler::Observe(int type,
 }
 
 void MostVisitedHandler::BlacklistURL(const GURL& url) {
-  history::TopSites* ts = web_ui_->GetProfile()->GetTopSites();
+  history::TopSites* ts = Profile::FromWebUI(web_ui_)->GetTopSites();
   if (ts)
     ts->AddBlacklistedURL(url);
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlBlacklisted"));

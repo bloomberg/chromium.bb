@@ -15,8 +15,9 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -107,7 +108,8 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
         extension_service->LoadComponentExtension(info);
 
     if (login_web_ui) {
-      RenderViewHost* render_view_host = login_web_ui->GetRenderViewHost();
+      RenderViewHost* render_view_host =
+          login_web_ui->tab_contents()->render_view_host();
       ContentScriptLoader* loader = new ContentScriptLoader(
           extension->id(), render_view_host);
 

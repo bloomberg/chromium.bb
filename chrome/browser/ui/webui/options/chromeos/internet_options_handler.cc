@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -418,7 +419,7 @@ void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
   if (!web_ui_)
     return;
   Browser* browser = BrowserList::FindBrowserWithFeature(
-      web_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
+      Profile::FromWebUI(web_ui_), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->OpenMobilePlanTabAndActivate();
 }
@@ -886,7 +887,8 @@ void InternetOptionsHandler::CreateModalPopup(views::WidgetDelegate* view) {
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
+  Browser* browser =
+      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui_));
   return browser->window()->GetNativeHandle();
 }
 

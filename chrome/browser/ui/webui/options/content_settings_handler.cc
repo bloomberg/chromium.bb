@@ -26,6 +26,7 @@
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -283,11 +284,12 @@ void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       NotificationService::AllSources());
+  Profile* profile = Profile::FromWebUI(web_ui_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-      Source<Profile>(web_ui_->GetProfile()));
+      Source<Profile>(profile));
 
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
@@ -358,13 +360,15 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
   ContentSetting default_setting;
   if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    default_setting = DesktopNotificationServiceFactory::GetForProfile(
-        web_ui_->GetProfile())->GetDefaultContentSetting();
+    default_setting =
+        DesktopNotificationServiceFactory::GetForProfile(profile)->
+            GetDefaultContentSetting();
   } else {
-    default_setting = web_ui_->GetProfile()->
-        GetHostContentSettingsMap()->GetDefaultContentSetting(type);
+    default_setting =
+        profile->GetHostContentSettingsMap()->GetDefaultContentSetting(type);
   }
 
   return ContentSettingToString(default_setting);
@@ -373,8 +377,9 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
 bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
     ContentSettingsType type) {
   if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    return DesktopNotificationServiceFactory::GetForProfile(
-        web_ui_->GetProfile())->IsDefaultContentSettingManaged();
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    return DesktopNotificationServiceFactory::GetForProfile(profile)->
+        IsDefaultContentSettingManaged();
   } else {
     return GetContentSettingsMap()->IsDefaultContentSettingManaged(type);
   }
@@ -432,8 +437,8 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
 }
 
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
-  GeolocationContentSettingsMap* map =
-      web_ui_->GetProfile()->GetGeolocationContentSettingsMap();
+  GeolocationContentSettingsMap* map = web_ui_->tab_contents()->
+      browser_context()->GetGeolocationContentSettingsMap();
   GeolocationContentSettingsMap::AllOriginsSettings all_settings =
       map->GetAllOriginsSettings();
   GeolocationContentSettingsMap::AllOriginsSettings::const_iterator i;
@@ -476,8 +481,9 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 }
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile());
+      DesktopNotificationServiceFactory::GetForProfile(profile);
 
   std::vector<GURL> allowed(service->GetAllowedOrigins());
   std::vector<GURL> blocked(service->GetBlockedOrigins());
@@ -572,7 +578,8 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   ContentSetting default_setting = ContentSettingFromString(setting);
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
+    Profile* profile = Profile::FromWebUI(web_ui_);
+    DesktopNotificationServiceFactory::GetForProfile(profile)->
         SetDefaultContentSetting(default_setting);
   } else {
     GetContentSettingsMap()->
@@ -585,6 +592,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
 
+  Profile* profile = Profile::FromWebUI(web_ui_);
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     std::string origin;
@@ -594,7 +602,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     rv = args->GetString(arg_i++, &embedding_origin);
     DCHECK(rv);
 
-    web_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
+    profile->GetGeolocationContentSettingsMap()->
         SetContentSetting(GURL(origin),
                           GURL(embedding_origin),
                           CONTENT_SETTING_DEFAULT);
@@ -607,11 +615,11 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     DCHECK(rv);
     ContentSetting content_setting = ContentSettingFromString(setting);
     if (content_setting == CONTENT_SETTING_ALLOW) {
-      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
+      DesktopNotificationServiceFactory::GetForProfile(profile)->
           ResetAllowedOrigin(GURL(origin));
     } else {
       DCHECK_EQ(content_setting, CONTENT_SETTING_BLOCK);
-      DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
+      DesktopNotificationServiceFactory::GetForProfile(profile)->
           ResetBlockedOrigin(GURL(origin));
     }
   } else {
@@ -710,16 +718,16 @@ std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
-  return web_ui_->GetProfile()->GetHostContentSettingsMap();
+  return Profile::FromWebUI(web_ui_)->GetHostContentSettingsMap();
 }
 
 ProtocolHandlerRegistry* ContentSettingsHandler::GetProtocolHandlerRegistry() {
-  return web_ui_->GetProfile()->GetProtocolHandlerRegistry();
+  return Profile::FromWebUI(web_ui_)->GetProtocolHandlerRegistry();
 }
 
 HostContentSettingsMap*
     ContentSettingsHandler::GetOTRContentSettingsMap() {
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   if (profile->HasOffTheRecordProfile())
     return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
   return NULL;

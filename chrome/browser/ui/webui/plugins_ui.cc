@@ -155,7 +155,7 @@ PluginsDOMHandler::PluginsDOMHandler()
 }
 
 WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
-  PrefService* prefs = web_ui->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
 
   show_details_.Init(prefs::kPluginsShowDetails, prefs, NULL);
 
@@ -178,10 +178,12 @@ void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+
   // If a non-first-profile user tries to trigger these methods sneakily,
   // forbid it.
 #if !defined(OS_CHROMEOS)
-  if (!web_ui_->GetProfile()->GetOriginalProfile()->first_launched())
+  if (!profile->GetOriginalProfile()->first_launched())
     return;
 #endif
 
@@ -196,7 +198,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     return;
   bool enable = enable_str == "true";
 
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(web_ui_->GetProfile());
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
   if (is_group_str == "true") {
     string16 group_name;
     if (!args->GetString(0, &group_name))

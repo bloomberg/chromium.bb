@@ -53,6 +53,8 @@
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/notification_service.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
@@ -105,6 +107,11 @@ Profile::Profile()
 Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
   // This is safe; this is the only implementation of the browser context.
   return static_cast<Profile*>(browser_context);
+}
+
+// static
+Profile* Profile::FromWebUI(WebUI* web_ui) {
+  return FromBrowserContext(web_ui->tab_contents()->browser_context());
 }
 
 // static

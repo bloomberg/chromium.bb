@@ -210,7 +210,7 @@ ActiveDownloadsHandler::~ActiveDownloadsHandler() {
 }
 
 WebUIMessageHandler* ActiveDownloadsHandler::Attach(WebUI* web_ui) {
-  profile_ = web_ui->GetProfile();
+  profile_ = Profile::FromWebUI(web_ui);
   profile_->GetChromeURLDataManager()->AddDataSource(new FileIconSourceCros());
   tab_contents_ = web_ui->tab_contents();
   return WebUIMessageHandler::Attach(web_ui);

@@ -368,7 +368,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
           extension_service_->GetAppIds()));
 
   if (NewTabUI::Ntp4Enabled()) {
-    PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+    PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
     const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
     if (app_page_names && app_page_names->GetSize()) {
       dictionary->Set("appPageNames",
@@ -408,7 +408,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
   AppsPromo* apps_promo = extension_service_->apps_promo();
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   bool apps_promo_just_expired = false;
   if (apps_promo->ShouldShowPromo(extension_service_->GetAppIds(),
                                   &apps_promo_just_expired)) {
@@ -679,7 +679,7 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
   CHECK(args->GetDouble(1, &page_index));
 
   AutoReset<bool> auto_reset(&ignore_changes_, true);
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
   ListValue* list = update.Get();
   list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
@@ -699,7 +699,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   web_app->title = title;
   web_app->app_url = launch_url;
 
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service) {
@@ -727,7 +727,7 @@ void AppLauncherHandler::HandleRecordAppLaunchByURL(
       static_cast<extension_misc::AppLaunchBucket>(static_cast<int>(source));
   CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
-  RecordAppLaunchByURL(web_ui_->GetProfile(), url, bucket);
+  RecordAppLaunchByURL(Profile::FromWebUI(web_ui_), url, bucket);
 }
 
 void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
@@ -894,7 +894,7 @@ void AppLauncherHandler::InstallUIAbort(bool user_initiated) {
 ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
-        new ExtensionUninstallDialog(web_ui_->GetProfile()));
+        new ExtensionUninstallDialog(Profile::FromWebUI(web_ui_)));
   }
   return extension_uninstall_dialog_.get();
 }
@@ -902,7 +902,7 @@ ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
 ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
   if (!extension_install_ui_.get()) {
     extension_install_ui_.reset(
-        new ExtensionInstallUI(web_ui_->GetProfile()));
+        new ExtensionInstallUI(Profile::FromWebUI(web_ui_)));
   }
   return extension_install_ui_.get();
 }

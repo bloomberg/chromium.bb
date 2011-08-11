@@ -242,8 +242,8 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   }
   results.Set("extensions", extensions_list);
 
-  bool developer_mode = web_ui_->GetProfile()->GetPrefs()
-      ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  bool developer_mode = Profile::FromWebUI(web_ui_)->GetPrefs()->
+      GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("developerMode", developer_mode);
 
   web_ui_->CallJavascriptFunction("returnExtensionsData", results);
@@ -282,16 +282,17 @@ void ExtensionsDOMHandler::RegisterForNotifications() {
 ExtensionUninstallDialog* ExtensionsDOMHandler::GetExtensionUninstallDialog() {
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
-        new ExtensionUninstallDialog(web_ui_->GetProfile()));
+        new ExtensionUninstallDialog(Profile::FromWebUI(web_ui_)));
   }
   return extension_uninstall_dialog_.get();
 }
 
 void ExtensionsDOMHandler::HandleToggleDeveloperMode(const ListValue* args) {
-  bool developer_mode = web_ui_->GetProfile()->GetPrefs()
-      ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(
-      prefs::kExtensionsUIDeveloperMode, !developer_mode);
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  bool developer_mode =
+      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  profile->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode,
+                                  !developer_mode);
 }
 
 void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
@@ -338,7 +339,7 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
     ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       ShowExtensionDisabledDialog(extension_service_,
-                                  web_ui_->GetProfile(), extension);
+                                  Profile::FromWebUI(web_ui_), extension);
     } else {
       extension_service_->EnableExtension(extension_id);
     }
@@ -450,7 +451,7 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
   const Extension* extension = GetExtension(args);
   if (!extension || extension->options_url().is_empty())
     return;
-  web_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
+  Profile::FromWebUI(web_ui_)->GetExtensionProcessManager()->OpenOptionsPage(
       extension, NULL);
 }
 

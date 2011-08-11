@@ -87,7 +87,7 @@ void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
   int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
   if (old_mode != mode) {
-    NotifySectionDisabled(mode, old_mode, web_ui_->GetProfile());
+    NotifySectionDisabled(mode, old_mode, Profile::FromWebUI(web_ui_));
     pref_service_->SetInteger(prefs::kNTPShownSections, mode);
   }
 }

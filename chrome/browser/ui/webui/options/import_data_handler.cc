@@ -110,7 +110,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     importer_host_ = new ImporterHost;
 #endif
     importer_host_->SetObserver(this);
-    Profile* profile = web_ui_->GetProfile();
+    Profile* profile = Profile::FromWebUI(web_ui_);
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,
                                         new ProfileWriter(profile), false);

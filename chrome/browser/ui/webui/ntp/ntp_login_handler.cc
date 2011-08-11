@@ -23,7 +23,7 @@ NTPLoginHandler::~NTPLoginHandler() {
 }
 
 WebUIMessageHandler* NTPLoginHandler::Attach(WebUI* web_ui) {
-  PrefService* pref_service = web_ui->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui)->GetPrefs();
   username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
 
   return WebUIMessageHandler::Attach(web_ui);
@@ -48,7 +48,7 @@ void NTPLoginHandler::HandleInitializeLogin(const ListValue* args) {
 }
 
 void NTPLoginHandler::UpdateLogin() {
-  std::string username = web_ui_->GetProfile()->GetPrefs()->GetString(
+  std::string username = Profile::FromWebUI(web_ui_)->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   StringValue string_value(username);
   web_ui_->CallJavascriptFunction("updateLogin", string_value);

@@ -142,7 +142,7 @@ void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
 
 void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   if (!cookies_tree_model_.get()) {
-    Profile* profile = web_ui_->GetProfile();
+    Profile* profile = Profile::FromWebUI(web_ui_);
     cookies_tree_model_.reset(new CookiesTreeModel(
         profile->GetRequestContext()->DONTUSEME_GetCookieStore()->
             GetCookieMonster(),

@@ -542,7 +542,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 #endif
 
   // Update the data in bug_report_data_ so it can be sent
-  bug_report_data_->UpdateData(web_ui_->GetProfile()
+  bug_report_data_->UpdateData(Profile::FromWebUI(web_ui_)
                                , target_tab_url_
                                , problem_type
                                , page_url

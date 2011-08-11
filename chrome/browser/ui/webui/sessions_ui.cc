@@ -119,7 +119,7 @@ void SessionsDOMHandler::HandleRequestSessions(const ListValue* args) {
 browser_sync::SessionModelAssociator* SessionsDOMHandler::GetModelAssociator() {
   // We only want to get the model associator if there is one, and it is done
   // syncing sessions.
-  Profile* profile = web_ui_->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui_);
   if (!profile->HasProfileSyncService())
     return NULL;
   ProfileSyncService* service = profile->GetProfileSyncService();

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
@@ -181,7 +182,8 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
 }
 
 gfx::NativeWindow ChangePictureOptionsHandler::GetBrowserWindow() const {
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
+  Browser* browser =
+      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui_));
   if (!browser)
     return NULL;
   return browser->window()->GetNativeHandle();

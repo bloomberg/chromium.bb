@@ -84,7 +84,7 @@ void PasswordManagerHandler::Initialize() {
     return;
 
   show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
-                       web_ui_->GetProfile()->GetPrefs(), this);
+                       Profile::FromWebUI(web_ui_)->GetPrefs(), this);
   // We should not cache web_ui_->GetProfile(). See crosbug.com/6304.
   PasswordStore* store = GetPasswordStore();
   if (store)
@@ -111,7 +111,8 @@ void PasswordManagerHandler::OnLoginsChanged() {
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return web_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  return Profile::FromWebUI(web_ui_)->
+      GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
 void PasswordManagerHandler::Observe(int type,
@@ -132,8 +133,8 @@ void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   password_list_.reset();
   password_exception_list_.reset();
 
-  languages_ =
-      web_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  languages_ = Profile::FromWebUI(web_ui_)->GetPrefs()->
+      GetString(prefs::kAcceptLanguages);
   populater_.Populate();
   exception_populater_.Populate();
 }

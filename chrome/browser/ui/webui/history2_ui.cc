@@ -96,13 +96,13 @@ BrowsingHistoryHandler2::~BrowsingHistoryHandler2() {
 
 WebUIMessageHandler* BrowsingHistoryHandler2::Attach(WebUI* web_ui) {
   // Create our favicon data source.
-  Profile* profile = web_ui->GetProfile();
+  Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      Source<Profile>(web_ui->GetProfile()->GetOriginalProfile()));
+      Source<Profile>(profile->GetOriginalProfile()));
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -136,7 +136,7 @@ void BrowsingHistoryHandler2::HandleGetHistory(const ListValue* args) {
   search_text_ = string16();
 
   HistoryService* hs =
-      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -161,7 +161,7 @@ void BrowsingHistoryHandler2::HandleSearchHistory(const ListValue* args) {
   // Need to remember the query string for our results.
   search_text_ = query;
   HistoryService* hs =
-      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -198,7 +198,7 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
   }
 
   HistoryService* hs =
-      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       urls, begin_time, end_time, &cancelable_delete_consumer_,
       NewCallback(this, &BrowsingHistoryHandler2::RemoveComplete));
@@ -207,7 +207,8 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
 void BrowsingHistoryHandler2::HandleClearBrowsingData(const ListValue* args) {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  Browser* browser = BrowserList::FindBrowserWithProfile(profile);
   if (browser)
     browser->OpenClearBrowsingDataDialog();
 }
@@ -254,8 +255,9 @@ void BrowsingHistoryHandler2::QueryComplete(
           base::TimeFormatShortDate(page.visit_time()));
       page_value->SetString("snippet", page.snippet().text());
     }
+    Profile* profile = Profile::FromWebUI(web_ui_);
     page_value->SetBoolean("starred",
-        web_ui_->GetProfile()->GetBookmarkModel()->IsBookmarked(page.url()));
+        profile->GetBookmarkModel()->IsBookmarked(page.url()));
     results_value.Append(page_value);
   }
 

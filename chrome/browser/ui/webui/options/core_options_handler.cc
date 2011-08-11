@@ -112,7 +112,7 @@ void CoreOptionsHandler::Uninitialize() {
 WebUIMessageHandler* CoreOptionsHandler::Attach(WebUI* web_ui) {
   WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
   DCHECK(web_ui_);
-  registrar_.Init(web_ui_->GetProfile()->GetPrefs());
+  registrar_.Init(Profile::FromWebUI(web_ui_)->GetPrefs());
   return result;
 }
 
@@ -152,7 +152,7 @@ void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
 }
 
 Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name.c_str());
@@ -169,7 +169,7 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
                                  const Value* value,
                                  const std::string& metric) {
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
 
   switch (value->GetType()) {
     case Value::TYPE_BOOLEAN:
@@ -190,7 +190,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
 
 void CoreOptionsHandler::ClearPref(const std::string& pref_name,
                                    const std::string& metric) {
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   pref_service->ClearPref(pref_name.c_str());
   pref_service->ScheduleSavePersistentPrefs();
 
@@ -377,7 +377,7 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
     return;
   }
 
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name->c_str());
   if (!pref)

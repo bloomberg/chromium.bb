@@ -225,7 +225,7 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   // Register for preferences that we need to observe manually.  These have
   // special behaviors that aren't handled by the standard prefs UI.
   DCHECK(web_ui_);
-  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
 #if !defined(OS_CHROMEOS)
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
@@ -332,7 +332,7 @@ void AdvancedOptionsHandler::Observe(int type,
 
 void AdvancedOptionsHandler::HandleSelectDownloadLocation(
     const ListValue* args) {
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   select_folder_dialog_ = SelectFileDialog::Create(this);
   select_folder_dialog_->SelectFile(
       SelectFileDialog::SELECT_FOLDER,
@@ -364,7 +364,8 @@ void AdvancedOptionsHandler::OnCloudPrintSetupClosed() {
 
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
-  DownloadManager* manager = web_ui_->GetProfile()->GetDownloadManager();
+  DownloadManager* manager =
+      web_ui_->tab_contents()->browser_context()->GetDownloadManager();
   if (manager)
     manager->download_prefs()->ResetAutoOpen();
 }
@@ -429,8 +430,9 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
 void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
   // Open a new tab in the current window for the management page.
+  Profile* profile = Profile::FromWebUI(web_ui_);
   web_ui_->tab_contents()->OpenURL(
-      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceManageURL(),
+      CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
       GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
@@ -438,10 +440,10 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
+  Profile* profile = Profile::FromWebUI(web_ui_);
   web_ui_->tab_contents()->OpenURL(
-      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceEnableURL(
-          CloudPrintProxyServiceFactory::GetForProfile(
-              web_ui_->GetProfile())->proxy_id()),
+      CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
+          CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
       GURL(), CURRENT_TAB, PageTransition::LINK);
 }
 
@@ -449,19 +451,20 @@ void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
     const ListValue* args) {
   UserMetrics::RecordAction(
       UserMetricsAction("Options_DisableCloudPrintProxy"));
-  CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())->
+  CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_))->
       DisableForUser();
 }
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
   DCHECK(web_ui_);
   if (cloud_print_proxy_ui_enabled_)
-    CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())->
+    CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_))->
         RefreshStatusFromService();
 }
 
 void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
-  if (!CloudPrintProxyServiceFactory::GetForProfile(web_ui_->GetProfile())) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  if (!CloudPrintProxyServiceFactory::GetForProfile(profile)) {
     cloud_print_proxy_ui_enabled_ = false;
     RemoveCloudPrintProxySection();
     return;
@@ -473,10 +476,9 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   FundamentalValue allowed(cloud_print_proxy_allowed);
 
   std::string email;
-  if (web_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+  if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
       cloud_print_proxy_allowed) {
-    email = web_ui_->GetProfile()->GetPrefs()->GetString(
-        prefs::kCloudPrintEmail);
+    email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
   }
   FundamentalValue disabled(email.empty());
 
@@ -556,7 +558,8 @@ void AdvancedOptionsHandler::SetupPromptForDownload() {
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
   // We enable the button if the user has any auto-open file types registered.
-  DownloadManager* manager = web_ui_->GetProfile()->GetDownloadManager();
+  DownloadManager* manager =
+      web_ui_->tab_contents()->browser_context()->GetDownloadManager();
   bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
   FundamentalValue value(disabled);
   web_ui_->CallJavascriptFunction(
@@ -566,7 +569,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
 void AdvancedOptionsHandler::SetupProxySettingsSection() {
   // Disable the button if proxy settings are managed by a sysadmin or
   // overridden by an extension.
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   const PrefService::Preference* proxy_config =
       pref_service->FindPreference(prefs::kProxy);
   bool is_extension_controlled = (proxy_config &&

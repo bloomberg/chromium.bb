@@ -82,7 +82,7 @@ void QuotaInternalsHandler::SendMessage(const std::string& message,
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
   if (!proxy_)
     proxy_ = new QuotaInternalsProxy(this);
-  proxy_->RequestInfo(web_ui_->GetProfile()->GetQuotaManager());
+  proxy_->RequestInfo(Profile::FromWebUI(web_ui_)->GetQuotaManager());
 }
 
 }  // namespace quota_internals

@@ -230,7 +230,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
     AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");
   } else {
     PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(web_ui_->GetProfile());
+        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
     for (size_t i = 0; i < info_array.size(); ++i) {
       if (plugin_prefs->IsPluginEnabled(info_array[i])) {
         flash_version = info_array[i].version + ASCIIToUTF16(" ") +

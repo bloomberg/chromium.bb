@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -112,7 +113,7 @@ void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
     const ListValue* args) {
   if (!tab_restore_service_) {
     tab_restore_service_ =
-        TabRestoreServiceFactory::GetForProfile(web_ui_->GetProfile());
+        TabRestoreServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
 
     // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
     // Off the Record mode)

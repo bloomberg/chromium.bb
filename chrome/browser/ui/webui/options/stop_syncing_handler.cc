@@ -38,7 +38,8 @@ void StopSyncingHandler::RegisterMessages() {
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     service->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);

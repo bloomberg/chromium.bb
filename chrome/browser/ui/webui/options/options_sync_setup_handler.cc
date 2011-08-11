@@ -9,7 +9,7 @@
 
 void OptionsSyncSetupHandler::ShowSetupUI() {
   ProfileSyncService* service =
-      web_ui_->GetProfile()->GetProfileSyncService();
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   DCHECK(service);
 
   // If the wizard is already visible, focus it.

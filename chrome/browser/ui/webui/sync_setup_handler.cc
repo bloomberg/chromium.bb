@@ -301,7 +301,8 @@ void SyncSetupHandler::RegisterMessages() {
 // The current implementation is functional, but fails asthetically.
 // TODO(rickcam): Bug 90711: Update UI for OAuth sign-in flow
 void SyncSetupHandler::ShowOAuthLogin() {
-  web_ui_->GetProfile()->GetProfileSyncService()->signin()->StartOAuthSignIn();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  profile->GetProfileSyncService()->signin()->StartOAuthSignIn();
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {
@@ -432,8 +433,8 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   DCHECK(!flow_);
 
-  ProfileSyncService* service =
-    web_ui_->GetProfile()->GetProfileSyncService();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
   DCHECK(service);
 
   service->get_wizard().Step(SyncSetupWizard::NONFATAL_ERROR);
@@ -463,7 +464,8 @@ void SyncSetupHandler::OpenSyncSetup() {
   DCHECK(web_ui_);
   DCHECK(!flow_);
 
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
   if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
     // URL, but sync features are disabled.  We need to close the overlay for

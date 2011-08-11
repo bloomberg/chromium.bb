@@ -224,7 +224,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
 }
 
 void AutofillOptionsHandler::Initialize() {
-  personal_data_ = web_ui_->GetProfile()->GetPersonalDataManager();
+  personal_data_ = Profile::FromWebUI(web_ui_)->GetPersonalDataManager();
   personal_data_->SetObserver(this);
 
   LoadAutofillData();

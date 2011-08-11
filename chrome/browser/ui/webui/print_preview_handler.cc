@@ -560,7 +560,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
-    RenderViewHost* rvh = web_ui_->GetRenderViewHost();
+    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
 }

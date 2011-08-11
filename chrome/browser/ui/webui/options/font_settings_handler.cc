@@ -78,7 +78,7 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
 
   // Perform validation for saved fonts.
   DCHECK(web_ui_);
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
@@ -110,7 +110,7 @@ void FontSettingsHandler::FontsListHasLoaded(
     scoped_refptr<content::FontListResult> list) {
   ListValue encoding_list;
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
-  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
   encodings = CharacterEncoding::GetCurrentDisplayEncodings(
       g_browser_process->GetApplicationLocale(),
       pref_service->GetString(prefs::kStaticEncodings),

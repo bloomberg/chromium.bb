@@ -18,12 +18,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 
-class GaiaAuthFetcher;
+class Browser;
 class CloudPrintServiceProcessHelper;
 class CloudPrintSetupMessageHandler;
-class ServiceProcessControl;
+class GaiaAuthFetcher;
 class GoogleServiceAuthError;
-class Browser;
+class Profile;
+class ServiceProcessControl;
 
 namespace base {
 class DictionaryValue;

@@ -98,7 +98,7 @@ NewTabPageSyncHandler::MessageType
 }
 
 WebUIMessageHandler* NewTabPageSyncHandler::Attach(WebUI* web_ui) {
-  sync_service_ = web_ui->GetProfile()->GetProfileSyncService();
+  sync_service_ = Profile::FromWebUI(web_ui)->GetProfileSyncService();
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
   DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);

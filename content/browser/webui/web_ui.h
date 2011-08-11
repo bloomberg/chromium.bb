@@ -18,7 +18,6 @@
 
 class WebUIMessageHandler;
 class GURL;
-class Profile;
 class RenderViewHost;
 class TabContents;
 
@@ -138,14 +137,6 @@ class WebUI : public IPC::Channel::Listener {
                               const base::Value& arg4);
   void CallJavascriptFunction(const std::string& function_name,
                               const std::vector<const base::Value*>& args);
-
-  // May be overridden by WebUI's which do not have a tab contents.
-  // TODO(estade): removing this Profile dependency is predicated on reworking
-  // TabContents's Profile ownership.
-  virtual Profile* GetProfile() const;
-
-  // May be overridden by WebUI's which do not have a tab contents.
-  virtual RenderViewHost* GetRenderViewHost() const;
 
   TabContents* tab_contents() const { return tab_contents_; }
 

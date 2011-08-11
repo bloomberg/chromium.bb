@@ -36,7 +36,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   CHECK(args->GetDouble(1, &id));
 
   FaviconService* favicon_service =
-      web_ui_->GetProfile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty())
     return;
 
@@ -52,7 +52,7 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     history::FaviconData favicon) {
   FaviconService* favicon_service =
-      web_ui_->GetProfile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
   FundamentalValue id_value(id);
   scoped_ptr<StringValue> color_value;

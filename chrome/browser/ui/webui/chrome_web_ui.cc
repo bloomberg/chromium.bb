@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
+#include "chrome/browser/profiles/profile.h"
+#include "content/browser/tab_contents/tab_contents.h"
+
 ChromeWebUI::ChromeWebUI(TabContents* contents)
     : WebUI(contents),
       force_bookmark_bar_visible_(false) {
@@ -12,3 +15,6 @@ ChromeWebUI::ChromeWebUI(TabContents* contents)
 ChromeWebUI::~ChromeWebUI() {
 }
 
+Profile* ChromeWebUI::GetProfile() const {
+  return Profile::FromBrowserContext(tab_contents()->browser_context());
+}

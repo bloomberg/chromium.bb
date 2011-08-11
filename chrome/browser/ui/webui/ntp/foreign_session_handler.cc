@@ -71,19 +71,20 @@ void ForeignSessionHandler::Observe(int type,
 }
 
 SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service =
+      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
   if (service == NULL)
     return NULL;
+
   // We only want to set the model associator if there is one, and it is done
   // syncing sessions.
-  SessionModelAssociator* model_associator = service->
-      GetSessionModelAssociator();
+  SessionModelAssociator* model_associator =
+      service->GetSessionModelAssociator();
   if (model_associator == NULL ||
       !service->ShouldPushChanges()) {
     return NULL;
   }
-  return web_ui_->GetProfile()->GetProfileSyncService()->
-      GetSessionModelAssociator();
+  return model_associator;
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
@@ -164,6 +165,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
 
   SessionModelAssociator* associator = GetModelAssociator();
 
+  Profile* profile = Profile::FromWebUI(web_ui_);
   if (tab_id != kInvalidId) {
     // We don't actually care about |window_num|, this is just a sanity check.
     DCHECK_LT(kInvalidId, window_num);
@@ -172,7 +174,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
       LOG(ERROR) << "Failed to load foreign tab.";
       return;
     }
-    SessionRestore::RestoreForeignSessionTab(web_ui_->GetProfile(), *tab);
+    SessionRestore::RestoreForeignSessionTab(profile, *tab);
   } else {
     std::vector<SessionWindow*> windows;
     // Note: we don't own the ForeignSessions themselves.
@@ -186,10 +188,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(
     std::vector<SessionWindow*>::const_iterator iter_end =
         ((window_num == kInvalidId) ?
         std::vector<SessionWindow*>::const_iterator(windows.end()) :
-        iter_begin+1);
-    SessionRestore::RestoreForeignSessionWindows(web_ui_->GetProfile(),
-                                                 iter_begin,
-                                                 iter_end);
+        iter_begin + 1);
+    SessionRestore::RestoreForeignSessionWindows(profile, iter_begin, iter_end);
   }
 }
 
