@@ -16,7 +16,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/print_job_constants.h"
-#include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockRenderThread::MockRenderThread()
@@ -214,8 +213,7 @@ void MockRenderThread::OnDidPrintPage(
 
 void MockRenderThread::OnDidGetPreviewPageCount(int document_cookie,
                                                 int number_pages,
-                                                bool is_modifiable,
-                                                bool clear_preview_data) {
+                                                bool is_modifiable) {
   print_preview_pages_remaining_ = number_pages;
 }
 
@@ -244,29 +242,8 @@ void MockRenderThread::OnUpdatePrintSettings(
   }
 
   // Just return the default settings.
-  if (printer_.get()) {
-    ListValue* page_range_array = new ListValue();
-    printing::PageRanges new_ranges;
-    if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
-      for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-        DictionaryValue* dict;
-        if (!page_range_array->GetDictionary(index, &dict))
-          continue;
-        printing::PageRange range;
-        if (!dict->GetInteger(printing::kSettingPageRangeFrom, &range.from) ||
-            !dict->GetInteger(printing::kSettingPageRangeTo, &range.to)) {
-          continue;
-        }
-        // Page numbers are 1-based in the dictionary.
-        // Page numbers are 0-based for the printing context.
-        range.from--;
-        range.to--;
-        new_ranges.push_back(range);
-      }
-    }
-    std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
-    printer_->UpdateSettings(document_cookie, params, pages);
-  }
+  if (printer_.get())
+    printer_->UpdateSettings(document_cookie, params);
 }
 
 void MockRenderThread::set_print_dialog_user_response(bool response) {
