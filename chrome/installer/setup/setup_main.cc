@@ -891,8 +891,10 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     std::wstring inner_frame =
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
-    if (installer::EULA_REJECTED != *exit_code)
-      GoogleUpdateSettings::SetEULAConsent(original_state, true);
+    if (installer::EULA_REJECTED != *exit_code) {
+      GoogleUpdateSettings::SetEULAConsent(
+          original_state, BrowserDistribution::GetDistribution(), true);
+    }
   } else if (cmd_line.HasSwitch(
       installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;

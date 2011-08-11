@@ -271,11 +271,10 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& metrics_id) {
 // EULA consent is only relevant for system-level installs.
 bool GoogleUpdateSettings::SetEULAConsent(
     const InstallationState& machine_state,
+    BrowserDistribution* dist,
     bool consented) {
+  DCHECK(dist);
   const DWORD eula_accepted = consented ? 1 : 0;
-  // This magical method will return the right instance based on such details as
-  // whether or not --chrome-frame is present on the command-line.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateMediumKey();
   bool succeeded = true;
   RegKey key;

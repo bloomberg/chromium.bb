@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "chrome/installer/util/util_constants.h"
 
+class BrowserDistribution;
+
 namespace installer {
 class ChannelInfo;
 class InstallationState;
@@ -18,7 +20,7 @@ class InstallationState;
 
 // This class provides accessors to the Google Update 'ClientState' information
 // that recorded when the user downloads the chrome installer. It is
-// google_update.exe responsability to write the initial values.
+// google_update.exe responsibility to write the initial values.
 class GoogleUpdateSettings {
  public:
   // Update policy constants defined by Google Update; do not change these.
@@ -47,6 +49,7 @@ class GoogleUpdateSettings {
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.
   static bool SetEULAConsent(const installer::InstallationState& machine_state,
+                             BrowserDistribution* dist,
                              bool consented);
 
   // Returns the last time chrome was run in days. It uses a recorded value

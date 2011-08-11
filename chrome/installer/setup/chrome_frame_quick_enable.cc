@@ -12,6 +12,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
@@ -136,6 +137,32 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
         DCHECK_EQ(FIRST_INSTALL_SUCCESS, status);
         VLOG(1) << "Chrome Frame successfully activated.";
       }
+    }
+  }
+
+  // If quick-enable succeeded, check to see if the EULA has not yet been
+  // accepted for the binaries.  If this is the case, we must also flip the
+  // eulaaccepted bit for them.  Otherwise, Google Update would not update
+  // Chrome Frame, and that would be bad.  Don't flip the EULA bit for Chrome
+  // itself, as it will show the EULA on first-run and mark its acceptance
+  // accordingly.
+  if (!InstallUtil::GetInstallReturnCode(status)) {
+    const bool system_level = installer_state->system_install();
+    const ProductState* binaries =
+        machine_state.GetProductState(system_level,
+                                      BrowserDistribution::CHROME_BINARIES);
+    DCHECK(binaries);
+    DWORD eula_accepted;
+
+    if (binaries != NULL &&
+        binaries->GetEulaAccepted(&eula_accepted) &&
+        eula_accepted == 0 &&
+        !GoogleUpdateSettings::SetEULAConsent(
+            machine_state,
+            BrowserDistribution::GetSpecificDistribution(
+                BrowserDistribution::CHROME_BINARIES),
+            true)) {
+      LOG(ERROR) << "Failed to set EULA consent for multi-install binaries.";
     }
   }
 

@@ -441,7 +441,8 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
           BrowserDistribution::CHROME_BROWSER);
 
   // eulaconsent is set on both the product and the binaries.
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, true));
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, chrome,
+                                                   true));
   EXPECT_EQ(ERROR_SUCCESS,
       key.Open(HKEY_LOCAL_MACHINE, binaries->GetStateMediumKey().c_str(),
                KEY_QUERY_VALUE));
