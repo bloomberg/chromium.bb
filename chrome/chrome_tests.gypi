@@ -287,6 +287,7 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome.gyp:crash_service',  # run time dependency
+            'chrome.gyp:crash_service_win64',  # run time dependency
           ],
         }],
         ['toolkit_uses_gtk == 1', {
