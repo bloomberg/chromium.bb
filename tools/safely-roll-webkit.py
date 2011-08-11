@@ -68,7 +68,7 @@ def main():
       ['git', 'checkout', '-b', 'webkit_roll', 'origin/trunk'])
   try:
     process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
-    commit_msg = msg + '\nTBR=\n'
+    commit_msg = msg + '\n\nTBR=\n'
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
     subprocess2.check_call(['git', 'diff', 'origin/trunk'])
     subprocess2.check_call(['git', 'cl', 'upload', '--use-commit-queue'])
