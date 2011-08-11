@@ -82,9 +82,11 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
-void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
-                                                          int page_count,
-                                                          bool is_modifiable) {
+void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
+    int document_cookie,
+    int page_count,
+    bool is_modifiable,
+    bool clear_preview_data) {
   if (page_count <= 0)
     return;
 
@@ -94,6 +96,10 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+
+  if (!is_modifiable || clear_preview_data)
+    print_preview_ui->ClearAllPreviewData();
+
   print_preview_ui->OnDidGetPreviewPageCount(
       document_cookie, page_count, is_modifiable);
 }
@@ -119,12 +125,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     return;
   }
 
-  int requested_preview_page_index = INVALID_PAGE_INDEX;
   int page_number = params.page_number;
-
-  if (page_number == FIRST_PAGE_INDEX)
-    print_preview_ui->ClearAllPreviewData();
-
   if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
     RefCountedBytes* data_bytes =
         GetDataFromHandle(params.metafile_data_handle, params.data_size);
@@ -132,15 +133,12 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
     print_preview_ui->OnDidPreviewPage(page_number);
-    // TODO(kmadhusu): Query |PrintPreviewUI| and update
-    // |requested_preview_page_index| accordingly.
   }
 
-  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id(),
-                                         requested_preview_page_index));
+  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id()));
 }
 
-void PrintPreviewMessageHandler::OnPagesReadyForPreview(
+void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
   StopWorker(params.document_cookie);
 
@@ -218,8 +216,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnDidGetPreviewPageCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
                         OnDidPreviewPage)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PagesReadyForPreview,
-                        OnPagesReadyForPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting,
+                        OnMetafileReadyForPrinting)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)

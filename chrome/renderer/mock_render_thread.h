@@ -126,7 +126,7 @@ class MockRenderThread : public RenderThreadBase {
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
   void OnDidGetPreviewPageCount(int document_cookie, int number_pages,
-                                bool is_modifiable);
+                                bool is_modifiable, bool clear_preview_data);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
 
   // For print preview, PrintWebViewHelper will update settings.
