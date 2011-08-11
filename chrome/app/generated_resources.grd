@@ -3553,6 +3553,9 @@ are declared in build/common.gypi.
       <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
         &amp;End process
       </message>
+      <message name="IDS_TASK_MANAGER_KILL_CHROMEOS" desc="The caption of the Task Manager kill button in WebUI">
+        End process
+      </message>
       <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
         Purge memory
       </message>
