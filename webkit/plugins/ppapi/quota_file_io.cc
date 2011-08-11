@@ -27,6 +27,7 @@ StorageType PPFileSystemTypeToQuotaStorageType(PP_FileSystemType type) {
       return quota::kStorageTypeUnknown;
   }
   NOTREACHED();
+  return quota::kStorageTypeUnknown;
 }
 }  // namespace
 
