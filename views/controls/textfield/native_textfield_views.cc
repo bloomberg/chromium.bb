@@ -607,7 +607,7 @@ void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
                          insets.top(),
                          width() - insets.width(),
                          height() - insets.height());
-  GetRenderText()->set_display_rect(display_rect);
+  GetRenderText()->SetDisplayRect(display_rect);
   OnCaretBoundsChanged();
 }
 
@@ -693,7 +693,7 @@ ui::TextInputType NativeTextfieldViews::GetTextInputType() {
 }
 
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {
-  return GetRenderText()->CursorBounds();
+  return GetRenderText()->GetUpdatedCursorBounds();
 }
 
 bool NativeTextfieldViews::HasCompositionText() {
@@ -990,14 +990,8 @@ void NativeTextfieldViews::OnCaretBoundsChanged() {
       sel.selection_start(), gfx::SelectionModel::LEADING);
   gfx::Rect start_cursor = render_text->GetCursorBounds(start_sel, false);
   gfx::Rect end_cursor = render_text->GetCursorBounds(sel, false);
-  gfx::Rect display_rect = render_text->display_rect();
-  int total_offset_x = display_rect.x() + render_text->display_offset().x();
-  int total_offset_y = display_rect.y() + render_text->display_offset().y() +
-                       (display_rect.height() - start_cursor.height()) / 2;
-  gfx::Point start(start_cursor.x() + total_offset_x,
-                   start_cursor.bottom() + total_offset_y);
-  gfx::Point end(end_cursor.x() + total_offset_x,
-                 end_cursor.bottom() + total_offset_y);
+  gfx::Point start(start_cursor.x(), start_cursor.bottom());
+  gfx::Point end(end_cursor.x(), end_cursor.bottom());
   touch_selection_controller_->SelectionChanged(start, end);
 }
 

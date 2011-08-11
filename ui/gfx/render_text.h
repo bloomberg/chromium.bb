@@ -171,9 +171,7 @@ class UI_EXPORT RenderText {
   void set_default_style(StyleRange style) { default_style_ = style; }
 
   const Rect& display_rect() const { return display_rect_; }
-  virtual void set_display_rect(const Rect& r);
-
-  const Point& display_offset() const { return display_offset_; }
+  virtual void SetDisplayRect(const Rect& r);
 
   // This cursor position corresponds to SelectionModel::selection_end. In
   // addition to representing the selection end, it's also where logical text
@@ -241,25 +239,33 @@ class UI_EXPORT RenderText {
   virtual SelectionModel FindCursorPosition(const Point& point);
 
   // Get the visual bounds containing the logical substring within |from| to
-  // |to|. These bounds could be visually discontinuous if the logical
-  // selection range is split by an odd number of LTR/RTL level change.
-  virtual std::vector<Rect> GetSubstringBounds(
-      size_t from, size_t to) const;
+  // |to|. These bounds could be visually discontinuous if the substring is
+  // split by a LTR/RTL level change. These bounds are in local coordinates, but
+  // may be outside the visible region if the text is longer than the textfield.
+  // Subsequent text, cursor, or bounds changes may invalidate returned values.
+  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to);
 
-  // Get the visual bounds describing the cursor at |selection|. These bounds
-  // typically represent a vertical line, but if |insert_mode| is true they
-  // contain the bounds of the associated glyph.
+  // Get the visual bounds of a cursor at |selection|. These bounds typically
+  // represent a vertical line, but if |insert_mode| is true they contain the
+  // bounds of the associated glyph. These bounds are in local coordinates, but
+  // may be outside the visible region if the text is longer than the textfield.
+  // Subsequent text, cursor, or bounds changes may invalidate returned values.
   virtual Rect GetCursorBounds(const SelectionModel& selection,
                                bool insert_mode);
 
-  // Compute cursor_bounds_ and update display_offset_ when necessary. Cache
-  // the values for later use and return cursor_bounds_.
-  const Rect& CursorBounds();
+  // Compute the current cursor bounds, panning the text to show the cursor in
+  // the display rect if necessary. These bounds are in local coordinates.
+  // Subsequent text, cursor, or bounds changes may invalidate returned values.
+  const Rect& GetUpdatedCursorBounds();
 
  protected:
   RenderText();
 
-  void set_cursor_bounds_valid(bool valid) { cursor_bounds_valid_ = valid; }
+  const Point& GetUpdatedDisplayOffset();
+
+  void set_cached_bounds_and_offset_valid(bool valid) {
+      cached_bounds_and_offset_valid_ = valid;
+  }
 
   const StyleRanges& style_ranges() const { return style_ranges_; }
 
@@ -290,7 +296,9 @@ class UI_EXPORT RenderText {
 
   bool IsPositionAtWordSelectionBoundary(size_t pos);
 
-  void UpdateCursorBoundsAndDisplayOffset();
+  // Update the cached bounds and display offset to ensure that the current
+  // cursor is within the visible display area.
+  void UpdateCachedBoundsAndOffset();
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;
@@ -298,12 +306,8 @@ class UI_EXPORT RenderText {
   // Logical selection range and visual cursor position.
   SelectionModel selection_model_;
 
-  // The cached cursor bounds.
+  // The cached cursor bounds; get these bounds with GetUpdatedCursorBounds.
   Rect cursor_bounds_;
-  // cursor_bounds_ is computed when needed and cached afterwards. And it is
-  // invalidated in operations such as SetCursorPosition, SetSelection, Font
-  // related style change, and other operations that trigger re-layout.
-  bool cursor_bounds_valid_;
 
   // The cursor visibility and insert mode.
   bool cursor_visible_;
@@ -323,7 +327,13 @@ class UI_EXPORT RenderText {
   // The local display area for rendering the text.
   Rect display_rect_;
   // The offset for the text to be drawn, relative to the display area.
+  // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
   Point display_offset_;
+
+  // The cached bounds and offset are invalidated by operations such as
+  // SetCursorPosition, SetSelectionModel, Font related style change, and other
+  // operations that adjust the visible text bounds.
+  bool cached_bounds_and_offset_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

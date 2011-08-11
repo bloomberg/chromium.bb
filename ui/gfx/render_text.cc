@@ -130,10 +130,6 @@ void SelectionModel::Init(size_t start,
 RenderText::~RenderText() {
 }
 
-void RenderText::set_display_rect(const Rect& r) {
-  display_rect_ = r;
-}
-
 void RenderText::SetText(const string16& text) {
   size_t old_text_length = text_.length();
   text_ = text;
@@ -161,6 +157,7 @@ void RenderText::SetText(const string16& text) {
 #ifndef NDEBUG
   CheckStyleRanges(style_ranges_, text_.length());
 #endif
+  cached_bounds_and_offset_valid_ = false;
 }
 
 void RenderText::SetSelectionModel(const SelectionModel& sel) {
@@ -171,7 +168,12 @@ void RenderText::SetSelectionModel(const SelectionModel& sel) {
   selection_model_.set_caret_pos(std::min(sel.caret_pos(), text().length()));
   selection_model_.set_caret_placement(sel.caret_placement());
 
-  cursor_bounds_valid_ = false;
+  cached_bounds_and_offset_valid_ = false;
+}
+
+void RenderText::SetDisplayRect(const Rect& r) {
+  display_rect_ = r;
+  cached_bounds_and_offset_valid_ = false;
 }
 
 size_t RenderText::GetCursorPosition() const {
@@ -328,8 +330,8 @@ void RenderText::ApplyStyleRange(StyleRange style_range) {
 #ifndef NDEBUG
   CheckStyleRanges(style_ranges_, text_.length());
 #endif
-  // TODO(xji): only invalidate cursor_bounds if font or underline change.
-  cursor_bounds_valid_ = false;
+  // TODO(xji): only invalidate if font or underline changes.
+  cached_bounds_and_offset_valid_ = false;
 }
 
 void RenderText::ApplyDefaultStyle() {
@@ -337,7 +339,7 @@ void RenderText::ApplyDefaultStyle() {
   StyleRange style = StyleRange(default_style_);
   style.range.set_end(text_.length());
   style_ranges_.push_back(style);
-  cursor_bounds_valid_ = false;
+  cached_bounds_and_offset_valid_ = false;
 }
 
 base::i18n::TextDirection RenderText::GetTextDirection() const {
@@ -347,7 +349,7 @@ base::i18n::TextDirection RenderText::GetTextDirection() const {
 }
 
 int RenderText::GetStringWidth() {
-  return GetSubstringBounds(0, text_.length())[0].width();
+  return default_style_.font.GetStringWidth(text());
 }
 
 void RenderText::Draw(Canvas* canvas) {
@@ -363,10 +365,6 @@ void RenderText::Draw(Canvas* canvas) {
   for (std::vector<Rect>::const_iterator i = selection.begin();
        i < selection.end(); ++i) {
     Rect r(*i);
-    r.Offset(display_rect_.origin());
-    r.Offset(display_offset_);
-    // Center the rect vertically in |display_rect_|.
-    r.Offset(Point(0, (display_rect_.height() - r.height()) / 2));
     canvas->FillRectInt(selection_color, r.x(), r.y(), r.width(), r.height());
   }
 
@@ -376,7 +374,7 @@ void RenderText::Draw(Canvas* canvas) {
 
   // Draw the text.
   Rect bounds(display_rect_);
-  bounds.Offset(display_offset_);
+  bounds.Offset(GetUpdatedDisplayOffset());
   for (StyleRanges::const_iterator i = style_ranges.begin();
        i < style_ranges.end(); ++i) {
     const Font& font = !i->underline ? i->font :
@@ -403,16 +401,10 @@ void RenderText::Draw(Canvas* canvas) {
   }
 
   // Paint cursor. Replace cursor is drawn as rectangle for now.
-  if (cursor_visible() && focused()) {
-    bounds = CursorBounds();
-    bounds.Offset(display_offset_);
-    if (!bounds.IsEmpty())
-      canvas->DrawRectInt(kCursorColor,
-                          bounds.x(),
-                          bounds.y(),
-                          bounds.width(),
-                          bounds.height());
-  }
+  Rect cursor(GetUpdatedCursorBounds());
+  if (cursor_visible() && focused() && !cursor.IsEmpty())
+    canvas->DrawRectInt(kCursorColor, cursor.x(), cursor.y(),
+                        cursor.width(), cursor.height());
 }
 
 SelectionModel RenderText::FindCursorPosition(const Point& point) {
@@ -422,7 +414,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
   int right = font.GetStringWidth(text());
   int right_pos = text().length();
 
-  int x = point.x();
+  int x = point.x() - (display_rect_.x() + GetUpdatedDisplayOffset().x());
   if (x <= left) return SelectionModel(left_pos);
   if (x >= right) return SelectionModel(right_pos);
   // binary searching the cursor position.
@@ -444,36 +436,29 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
   return SelectionModel(left_pos);
 }
 
-std::vector<Rect> RenderText::GetSubstringBounds(
-    size_t from, size_t to) const {
+std::vector<Rect> RenderText::GetSubstringBounds(size_t from, size_t to) {
   size_t start = std::min(from, to);
   size_t end = std::max(from, to);
   const Font& font = default_style_.font;
   int start_x = font.GetStringWidth(text().substr(0, start));
   int end_x = font.GetStringWidth(text().substr(0, end));
-  std::vector<Rect> bounds;
-  bounds.push_back(Rect(start_x, 0, end_x - start_x, font.GetHeight()));
-  return bounds;
+  Rect rect(start_x, 0, end_x - start_x, font.GetHeight());
+  rect.Offset(display_rect_.origin());
+  rect.Offset(GetUpdatedDisplayOffset());
+  // Center the rect vertically in |display_rect_|.
+  rect.Offset(Point(0, (display_rect_.height() - rect.height()) / 2));
+  return std::vector<Rect>(1, rect);
 }
 
 Rect RenderText::GetCursorBounds(const SelectionModel& selection,
                                  bool insert_mode) {
-  size_t cursor_pos = selection.selection_end();
-  const Font& font = default_style_.font;
-  int x = font.GetStringWidth(text_.substr(0U, cursor_pos));
-  DCHECK_GE(x, 0);
-  int h = std::min(display_rect_.height(), font.GetHeight());
-  Rect bounds(x, (display_rect_.height() - h) / 2, 1, h);
-  if (!insert_mode && text_.length() != cursor_pos)
-    bounds.set_width(font.GetStringWidth(text_.substr(0, cursor_pos + 1)) - x);
-  return bounds;
+  size_t from = selection.selection_end();
+  size_t to = insert_mode ? from : std::min(text_.length(), from + 1);
+  return GetSubstringBounds(from, to)[0];
 }
 
-const Rect& RenderText::CursorBounds() {
-  if (cursor_bounds_valid_ == false) {
-    UpdateCursorBoundsAndDisplayOffset();
-    cursor_bounds_valid_ = true;
-  }
+const Rect& RenderText::GetUpdatedCursorBounds() {
+  UpdateCachedBoundsAndOffset();
   return cursor_bounds_;
 }
 
@@ -481,14 +466,19 @@ RenderText::RenderText()
     : text_(),
       selection_model_(),
       cursor_bounds_(),
-      cursor_bounds_valid_(false),
       cursor_visible_(false),
       insert_mode_(true),
       composition_range_(),
       style_ranges_(),
       default_style_(),
       display_rect_(),
-      display_offset_() {
+      display_offset_(),
+      cached_bounds_and_offset_valid_(false) {
+}
+
+const Point& RenderText::GetUpdatedDisplayOffset() {
+  UpdateCachedBoundsAndOffset();
+  return display_offset_;
 }
 
 SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
@@ -584,21 +574,31 @@ bool RenderText::IsPositionAtWordSelectionBoundary(size_t pos) {
       (!u_isalnum(text()[pos - 1]) && u_isalnum(text()[pos]));
 }
 
-void RenderText::UpdateCursorBoundsAndDisplayOffset() {
-  cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode());
+void RenderText::UpdateCachedBoundsAndOffset() {
+  if (cached_bounds_and_offset_valid_)
+    return;
+  // First, set the valid flag true to calculate the current cursor bounds using
+  // the stale |display_offset_|. Applying |delta_offset| at the end of this
+  // function will set |cursor_bounds_| and |display_offset_| to correct values.
+  cached_bounds_and_offset_valid_ = true;
+  cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
+  cursor_bounds_.set_width(std::max(cursor_bounds_.width(), 1));
   // Update |display_offset_| to ensure the current cursor is visible.
   int display_width = display_rect_.width();
   int string_width = GetStringWidth();
+  int delta_offset = 0;
   if (string_width < display_width) {
     // Show all text whenever the text fits to the size.
-    display_offset_.set_x(0);
-  } else if ((display_offset_.x() + cursor_bounds_.right()) > display_width) {
+    delta_offset = -display_offset_.x();
+  } else if (cursor_bounds_.right() > display_rect_.right()) {
     // Pan to show the cursor when it overflows to the right,
-     display_offset_.set_x(display_width - cursor_bounds_.right());
-  } else if ((display_offset_.x() + cursor_bounds_.x()) < 0) {
+    delta_offset = display_rect_.right() - cursor_bounds_.right();
+  } else if (cursor_bounds_.x() < display_rect_.x()) {
     // Pan to show the cursor when it overflows to the left.
-    display_offset_.set_x(-cursor_bounds_.x());
+    delta_offset = display_rect_.x() - cursor_bounds_.x();
   }
+  display_offset_.Offset(delta_offset, 0);
+  cursor_bounds_.Offset(delta_offset, 0);
 }
 
 }  // namespace gfx

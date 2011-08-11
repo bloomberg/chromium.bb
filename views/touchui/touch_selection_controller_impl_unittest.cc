@@ -38,7 +38,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_ = new Textfield();
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
-    params.bounds = gfx::Rect(0, 0, 100, 100);
+    params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(params);
     View* container = new View();
     widget_->SetContentsView(container);
@@ -58,12 +58,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
     gfx::Rect cursor_bounds = render_text->GetCursorBounds(
         gfx::SelectionModel(cursor_pos), false);
-    gfx::Rect display_rect = render_text->display_rect();
-    int total_offset_x = display_rect.x() + render_text->display_offset().x();
-    int total_offset_y = display_rect.y() + render_text->display_offset().y() +
-                         (display_rect.height() - cursor_bounds.height()) / 2;
-    return gfx::Point(cursor_bounds.x() + total_offset_x,
-                      cursor_bounds.bottom() + total_offset_y);
+    return gfx::Point(cursor_bounds.x(), cursor_bounds.bottom());
   }
 
   TouchSelectionControllerImpl* GetSelectionController() {
