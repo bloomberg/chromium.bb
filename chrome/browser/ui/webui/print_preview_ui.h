@@ -36,58 +36,55 @@ class PrintPreviewUI : public ChromeWebUI {
   // Clear the existing print preview data.
   void ClearAllPreviewData();
 
-  // Notify the Web UI that there is a print preview request.
-  // There should be a matching call to OnPreviewDataIsAvailable() or
-  // OnPrintPreviewFailed().
+  // Notifies the Web UI that there is a print preview request. There should be
+  // a matching call to OnPreviewDataIsAvailable() or OnPrintPreviewFailed().
   void OnPrintPreviewRequest();
 
-  // Notify the Web UI that the print preview will have |page_count| pages.
+  // Notifies the Web UI that the print preview will have |page_count| pages.
   // |is_modifiable| indicates if the preview can be rerendered with different
   // print settings.
   void OnDidGetPreviewPageCount(int document_cookie_,
                                 int page_count,
                                 bool is_modifiable);
 
-  // Notify the Web UI that the 0-based page |page_number| has been rendered.
+  // Notifies the Web UI that the 0-based page |page_number| has been rendered.
   void OnDidPreviewPage(int page_number);
 
-  // Notify the Web UI renderer that preview data is available.
-  // |expected_pages_count| specifies the total number of pages.
-  // |job_title| is the title of the page being previewed.
-  // |preview_request_id| indicates wich request resulted in this response.
+  // Notifies the Web UI renderer that preview data is available.
+  // |expected_pages_count| specifies the total number of pages. |job_title| is
+  // the title of the page being previewed. |preview_request_id| indicates which
+  // request resulted in this response.
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 const string16& job_title,
                                 int preview_request_id);
 
   void OnReusePreviewData(int preview_request_id);
 
-  // Notify the Web UI that a navigation has occurred in this tab. This is the
-  // last chance to communicate with the source tab before the assocation is
+  // Notifies the Web UI that a navigation has occurred in this tab. This is the
+  // last chance to communicate with the source tab before the association is
   // erased.
   void OnNavigation();
 
-  // Notify the Web UI that the print preview failed to render.
+  // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
 
-  // Notify the Web UI that the print preview request has been cancelled.
+  // Notifies the Web UI that the print preview request has been cancelled.
   void OnPrintPreviewCancelled();
 
-  // Notify the Web UI that initiator tab is closed, so we can disable all
-  // the controls that need the initiator tab for generating the preview data.
-  // |initiator_tab_url| is passed in order to display a more accurate error
-  // message.
-  void OnInitiatorTabClosed(const std::string& initiator_tab_url);
+  // Notifies the Web UI that initiator tab is closed, so we can disable all the
+  // controls that need the initiator tab for generating the preview data.
+  void OnInitiatorTabClosed(const std::string& initiator_url);
 
-  // Notify the Web UI renderer that file selection has been cancelled.
+  // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
 
-  // Return true if there are pending requests.
+  // Returns true if there are pending requests.
   bool HasPendingRequests();
 
   int document_cookie();
 
  private:
-  // Helper function
+  // Returns the Singleton instance of the PrintPreviewDataService.
   PrintPreviewDataService* print_preview_data_service();
 
   void DecrementRequestCount();

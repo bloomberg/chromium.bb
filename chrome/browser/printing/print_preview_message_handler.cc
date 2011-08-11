@@ -48,6 +48,7 @@ RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
     NOTREACHED();
     return NULL;
   }
+
   char* preview_data = static_cast<char*>(shared_buf->memory());
   std::vector<unsigned char> data(data_size);
   memcpy(&data[0], preview_data, data_size);
@@ -73,6 +74,7 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
       printing::PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
+
   return tab_controller->GetPrintPreviewForTab(tab_contents());
 }
 
@@ -85,8 +87,9 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
                                                           bool is_modifiable) {
   if (page_count <= 0)
     return;
+
   TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab)
+  if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
@@ -99,7 +102,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
   RenderViewHost* rvh = tab_contents()->render_view_host();
   TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!(print_preview_tab && print_preview_tab->web_ui())) {
+  if (!print_preview_tab || !print_preview_tab->web_ui()) {
     // Can't find print preview tab means we should abort.
     rvh->Send(new PrintMsg_AbortPreview(rvh->routing_id()));
     return;
@@ -109,8 +112,8 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   bool has_pending = print_preview_ui->HasPendingRequests();
   if (has_pending) {
-    // Cancel. Next print preview request will cancel the current one.
-    // Just do the required maintainance work here.
+    // Cancel. Next print preview request will cancel the current one. Just do
+    // the required maintenance work here.
     StopWorker(print_preview_ui->document_cookie());
     print_preview_ui->OnPrintPreviewCancelled();
     return;
