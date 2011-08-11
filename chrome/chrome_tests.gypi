@@ -866,6 +866,7 @@
         'test/webdriver/session_manager.cc',
         'test/webdriver/utility_functions.h',
         'test/webdriver/utility_functions.cc',
+        'test/webdriver/utility_functions_mac.mm',
         'test/webdriver/webdriver_error.h',
         'test/webdriver/webdriver_error.cc',
         'test/webdriver/webdriver_logging.h',

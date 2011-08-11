@@ -53,9 +53,23 @@ struct FrameId {
 // A session manages its own lifetime.
 class Session {
  public:
+  struct Options {
+    Options();
+    ~Options();
+
+    // True if the session should simulate OS-level input. Currently only
+    // applies to keyboard input.
+    bool use_native_events;
+
+    // True if the session should not wait for page loads and navigate
+    // asynchronously.
+    bool load_async;
+  };
+
   // Adds this |Session| to the |SessionManager|. The session manages its own
   // lifetime. Do not call delete.
-  Session();
+  explicit Session(const Options& options);
+
   // Removes this |Session| from the |SessionManager|.
   ~Session();
 
@@ -68,6 +82,10 @@ class Session {
   Error* Init(const FilePath& browser_exe,
               const FilePath& user_data_dir,
               const CommandLine& options);
+
+  // Should be called before executing a command. Performs necessary waits
+  // and frame switching.
+  Error* BeforeExecuteCommand();
 
   // Terminates this session and deletes itself.
   void Terminate();
@@ -296,13 +314,9 @@ class Session {
   void set_implicit_wait(int timeout_ms);
   int implicit_wait() const;
 
-  void set_screenshot_on_error(bool error);
-  bool screenshot_on_error() const;
-
-  void set_use_native_events(bool use_native_events);
-  bool use_native_events() const;
-
   const gfx::Point& get_mouse_position() const;
+
+  const Options& options() const;
 
  private:
   void RunSessionTask(Task* task);
@@ -357,15 +371,6 @@ class Session {
   // Time (in ms) of how long to wait while searching for a single element.
   int implicit_wait_;
 
-  // Since screenshots can be very large when in base64 PNG format; the
-  // client is allowed to dyamically enable/disable screenshots on error
-  // during the lifetime of the session.
-  bool screenshot_on_error_;
-
-  // True if the session should simulate OS-level input. Currently only applies
-  // to keyboard input.
-  bool use_native_events_;
-
   // Vector of the |WebElementId|s for each frame of the current target frame
   // path. The first refers to the first frame element in the root document.
   // If the target frame is window.top, this will be empty.
@@ -381,6 +386,8 @@ class Session {
   // is true, so that the default prompt text is not overridden.
   std::string alert_prompt_text_;
   bool has_alert_prompt_text_;
+
+  Options options_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

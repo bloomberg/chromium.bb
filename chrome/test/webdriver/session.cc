@@ -54,15 +54,22 @@ FrameId& FrameId::operator=(const FrameId& other) {
   return *this;
 }
 
-Session::Session()
+Session::Options::Options()
+    : use_native_events(false),
+      load_async(false) {
+}
+
+Session::Options::~Options() {
+}
+
+Session::Session(const Options& options)
     : id_(GenerateRandomID()),
       current_target_(FrameId(0, FramePath())),
       thread_(id_.c_str()),
       async_script_timeout_(0),
       implicit_wait_(0),
-      screenshot_on_error_(false),
-      use_native_events_(false),
-      has_alert_prompt_text_(false) {
+      has_alert_prompt_text_(false),
+      options_(options) {
   SessionManager::GetInstance()->Add(this);
 }
 
@@ -88,6 +95,19 @@ Error* Session::Init(const FilePath& browser_exe,
       &error));
   if (error)
     Terminate();
+  return error;
+}
+
+Error* Session::BeforeExecuteCommand() {
+  Error* error = NULL;
+  if (!options_.load_async) {
+    LOG(INFO) << "Waiting for the page to stop loading";
+    error = WaitForAllTabsToStopLoading();
+    LOG(INFO) << "Done waiting for the page to stop loading";
+  }
+  if (!error) {
+    error = SwitchToTopFrameIfCurrentFrameInvalid();
+  }
   return error;
 }
 
@@ -228,12 +248,21 @@ Error* Session::DragAndDropFilePaths(
 
 Error* Session::NavigateToURL(const std::string& url) {
   Error* error = NULL;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::NavigateToURL,
-      current_target_.window_id,
-      url,
-      &error));
+  if (options_.load_async) {
+    RunSessionTask(NewRunnableMethod(
+        automation_.get(),
+        &Automation::NavigateToURLAsync,
+        current_target_.window_id,
+        url,
+        &error));
+  } else {
+    RunSessionTask(NewRunnableMethod(
+        automation_.get(),
+        &Automation::NavigateToURL,
+        current_target_.window_id,
+        url,
+        &error));
+  }
   return error;
 }
 
@@ -1070,24 +1099,12 @@ int Session::implicit_wait() const {
   return implicit_wait_;
 }
 
-void Session::set_screenshot_on_error(bool error) {
-  screenshot_on_error_ = error;
-}
-
-bool Session::screenshot_on_error() const {
-  return screenshot_on_error_;
-}
-
-void Session::set_use_native_events(bool use_native_events) {
-  use_native_events_ = use_native_events;
-}
-
-bool Session::use_native_events() const {
-  return use_native_events_;
-}
-
 const gfx::Point& Session::get_mouse_position() const {
   return mouse_position_;
+}
+
+const Session::Options& Session::options() const {
+  return options_;
 }
 
 void Session::RunSessionTask(Task* task) {
@@ -1197,7 +1214,7 @@ void Session::SendKeysOnSessionThread(const string16& keys, Error** error) {
     return;
   }
   for (size_t i = 0; i < key_events.size(); ++i) {
-    if (use_native_events_) {
+    if (options_.use_native_events) {
       // The automation provider will generate up/down events for us, we
       // only need to call it once as compared to the WebKeyEvent method.
       // Hence we filter events by their types, keeping only rawkeydown.

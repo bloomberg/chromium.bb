@@ -9,6 +9,7 @@
 #endif
 
 #include "base/base_paths.h"
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -16,6 +17,7 @@
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -29,9 +31,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
+#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/webdriver/frame_path.h"
+#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "ui/gfx/point.h"
 
@@ -42,14 +47,71 @@
 
 namespace {
 
+// Iterates through each browser executable path, and checks if the path exists
+// in any of the given locations. If found, returns true and sets |browser_exe|.
+bool CheckForChromeExe(const std::vector<FilePath>& browser_exes,
+                       const std::vector<FilePath>& locations,
+                       FilePath* browser_exe) {
+  for (size_t i = 0; i < browser_exes.size(); ++i) {
+    for (size_t j = 0; j < locations.size(); ++j) {
+      FilePath path = locations[j].Append(browser_exes[i]);
+      if (file_util::PathExists(path)) {
+        *browser_exe = path;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Gets the path to the default Chrome executable. Returns true on success.
 bool GetDefaultChromeExe(FilePath* browser_exe) {
-  std::vector<FilePath> locations;
-  // Add the directory which this module resides in.
-  FilePath module_dir;
-  if (PathService::Get(base::DIR_MODULE, &module_dir))
-    locations.push_back(module_dir);
+  // Instead of using chrome constants, we hardcode these constants here so
+  // that we can locate chrome or chromium regardless of the branding
+  // chromedriver is built with. It may be argued that then we need to keep
+  // these in sync with chrome constants. However, if chrome constants changes,
+  // we need to look for the previous and new versions to support some
+  // backwards compatibility.
+#if defined(OS_WIN)
+  FilePath browser_exes_array[] = {
+      FilePath(L"chrome.exe")
+  };
+#elif defined(OS_MACOSX)
+  FilePath browser_exes_array[] = {
+      FilePath("Google Chrome.app/Contents/MacOS/Google Chrome"),
+      FilePath("Chromium.app/Contents/MacOS/Chromium")
+  };
+#elif defined(OS_LINUX)
+  FilePath browser_exes_array[] = {
+      FilePath("google-chrome"),
+      FilePath("chrome"),
+      FilePath("chromium"),
+      FilePath("chromium-browser")
+  };
+#endif
+  std::vector<FilePath> browser_exes(
+      browser_exes_array, browser_exes_array + arraysize(browser_exes_array));
 
+  // Step 1: Check the directory this module resides in. This is done
+  // before all else so that the tests will pickup the built chrome.
+  FilePath module_dir;
+  if (PathService::Get(base::DIR_MODULE, &module_dir)) {
+    for (size_t j = 0; j < browser_exes.size(); ++j) {
+      FilePath path = module_dir.Append(browser_exes[j]);
+      if (file_util::PathExists(path)) {
+        *browser_exe = path;
+        return true;
+      }
+    }
+  }
+
+  // Step 2: Add all possible install locations, in order they should be
+  // searched. If a location can only hold a chromium install, add it to
+  // |chromium_locations|. Since on some platforms we cannot tell by the binary
+  // name whether it is chrome or chromium, we search these locations last.
+  // We attempt to run chrome before chromium, if any install can be found.
+  std::vector<FilePath> locations;
+  std::vector<FilePath> chromium_locations;
 #if defined(OS_WIN)
   // Add the App Paths registry key location.
   const wchar_t kSubKey[] =
@@ -64,6 +126,7 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
 
   // Add the user-level location for Chrome.
   FilePath app_from_google(L"Google\\Chrome\\Application");
+  FilePath app_from_chromium(L"Chromium\\Application");
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string home_dir;
   if (env->GetVar("userprofile", &home_dir)) {
@@ -75,6 +138,7 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
       default_location = default_location.Append(L"AppData\\Local");
     }
     locations.push_back(default_location.Append(app_from_google));
+    chromium_locations.push_back(default_location.Append(app_from_chromium));
   }
 
   // Add the system-level location for Chrome.
@@ -82,22 +146,27 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
   if (env->GetVar("ProgramFiles", &program_dir)) {
     locations.push_back(FilePath(UTF8ToWide(program_dir))
         .Append(app_from_google));
+    chromium_locations.push_back(FilePath(UTF8ToWide(program_dir))
+        .Append(app_from_chromium));
   }
   if (env->GetVar("ProgramFiles(x86)", &program_dir)) {
     locations.push_back(FilePath(UTF8ToWide(program_dir))
         .Append(app_from_google));
+    chromium_locations.push_back(FilePath(UTF8ToWide(program_dir))
+        .Append(app_from_chromium));
   }
 #elif defined(OS_MACOSX)
-  locations.push_back(FilePath("/Applications"));
+  std::vector<FilePath> app_dirs;
+  webdriver::GetApplicationDirs(&app_dirs);
+  locations.insert(locations.end(), app_dirs.begin(), app_dirs.end());
 #elif defined(OS_LINUX)
-  // Proxy launcher doesn't check for google-chrome, only chrome.
-  FilePath chrome_sym_link("/usr/bin/google-chrome");
-  if (file_util::PathExists(chrome_sym_link)) {
-    FilePath chrome;
-    if (file_util::ReadSymbolicLink(chrome_sym_link, &chrome)) {
-      locations.push_back(chrome.DirName());
-    }
-  }
+  locations.push_back(FilePath("/opt/google/chrome"));
+  locations.push_back(FilePath("/usr/local/bin"));
+  locations.push_back(FilePath("/usr/local/sbin"));
+  locations.push_back(FilePath("/usr/bin"));
+  locations.push_back(FilePath("/usr/sbin"));
+  locations.push_back(FilePath("/bin"));
+  locations.push_back(FilePath("/sbin"));
 #endif
 
   // Add the current directory.
@@ -105,15 +174,10 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
   if (file_util::GetCurrentDirectory(&current_dir))
     locations.push_back(current_dir);
 
-  // Determine the default directory.
-  for (size_t i = 0; i < locations.size(); ++i) {
-    FilePath path = locations[i].Append(chrome::kBrowserProcessExecutablePath);
-    if (file_util::PathExists(path)) {
-      *browser_exe = path;
-      return true;
-    }
-  }
-  return false;
+  // Step 3: For each browser exe path, check each location to see if the
+  // browser is installed there. Check the chromium locations lastly.
+  return CheckForChromeExe(browser_exes, locations, browser_exe) ||
+      CheckForChromeExe(browser_exes, chromium_locations, browser_exe);
 }
 
 }  // namespace
@@ -428,6 +492,30 @@ void Automation::NavigateToURL(int tab_id,
   // TODO(kkania): Do not rely on this enum.
   if (navigate_response == AUTOMATION_MSG_NAVIGATION_ERROR)
     *error = new Error(kUnknownError, "Navigation error occurred");
+}
+
+void Automation::NavigateToURLAsync(int tab_id,
+                                    const std::string& url,
+                                    Error** error) {
+  int windex = 0, tab_index = 0;
+  *error = GetIndicesForTab(tab_id, &windex, &tab_index);
+  if (*error)
+    return;
+
+  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(windex);
+  if (!browser) {
+    *error = new Error(kUnknownError, "Couldn't obtain browser proxy");
+    return;
+  }
+  scoped_refptr<TabProxy> tab = browser->GetTab(tab_index);
+  if (!tab) {
+    *error = new Error(kUnknownError, "Couldn't obtain tab proxy");
+    return;
+  }
+  if (!tab->NavigateToURLAsync(GURL(url))) {
+    *error = new Error(kUnknownError, "Unable to navigate to url");
+    return;
+  }
 }
 
 void Automation::GoForward(int tab_id, Error** error) {

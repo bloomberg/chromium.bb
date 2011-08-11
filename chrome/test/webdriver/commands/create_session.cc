@@ -25,6 +25,8 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 
+namespace webdriver {
+
 namespace {
 
 bool WriteBase64DataToFile(const FilePath& filename,
@@ -42,9 +44,18 @@ bool WriteBase64DataToFile(const FilePath& filename,
   return true;
 }
 
-}  // namespace
+Error* GetBooleanCapability(
+    const base::DictionaryValue* dict, const std::string& key, bool* option) {
+  Value* value = NULL;
+  if (dict->GetWithoutPathExpansion(key, &value)) {
+    if (!value->GetAsBoolean(option)) {
+      return new Error(kUnknownError, key + " must be a boolean");
+    }
+  }
+  return NULL;
+}
 
-namespace webdriver {
+}  // namespace
 
 CreateSession::CreateSession(const std::vector<std::string>& path_segments,
                              const DictionaryValue* const parameters)
@@ -175,11 +186,24 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
+  Session::Options options;
+  Error* error = NULL;
+  error = GetBooleanCapability(capabilities, "chrome.nativeEvents",
+                               &options.use_native_events);
+  if (!error) {
+    error = GetBooleanCapability(capabilities, "chrome.loadAsync",
+                                 &options.load_async);
+  }
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+
   // Session manages its own liftime, so do not call delete.
-  Session* session = new Session();
-  Error* error = session->Init(browser_exe,
-                               temp_user_data_dir,
-                               command_line_options);
+  Session* session = new Session(options);
+  error = session->Init(browser_exe,
+                        temp_user_data_dir,
+                        command_line_options);
   if (error) {
     response->SetError(error);
     return;
@@ -192,20 +216,6 @@ void CreateSession::ExecutePost(Response* const response) {
       response->SetError(error);
       return;
     }
-  }
-
-  bool native_events_required = false;
-  Value* native_events_value = NULL;
-  if (capabilities->GetWithoutPathExpansion(
-          "chrome.nativeEvents", &native_events_value)) {
-    if (native_events_value->GetAsBoolean(&native_events_required)) {
-      session->set_use_native_events(native_events_required);
-    }
-  }
-  bool screenshot_on_error = false;
-  if (capabilities->GetBoolean(
-          "takeScreenshotOnError", &screenshot_on_error)) {
-    session->set_screenshot_on_error(screenshot_on_error);
   }
 
   LOG(INFO) << "Created session " << session->id();

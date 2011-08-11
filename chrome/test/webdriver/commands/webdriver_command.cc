@@ -41,19 +41,11 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
-  LOG(INFO) << "Waiting for the page to stop loading";
-  Error* error = session_->WaitForAllTabsToStopLoading();
+  Error* error = session_->BeforeExecuteCommand();
   if (error) {
     response->SetError(error);
     return false;
   }
-  LOG(INFO) << "Done waiting for the page to stop loading";
-  error = session_->SwitchToTopFrameIfCurrentFrameInvalid();
-  if (error) {
-    response->SetError(error);
-    return false;
-  }
-
   response->SetField("sessionId", Value::CreateStringValue(session_id));
   return true;
 }

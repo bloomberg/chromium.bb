@@ -93,6 +93,7 @@ class Automation {
   void CaptureEntirePageAsPNG(int tab_id, const FilePath& path, Error** error);
 
   void NavigateToURL(int tab_id, const std::string& url, Error** error);
+  void NavigateToURLAsync(int tab_id, const std::string& url, Error** error);
   void GoForward(int tab_id, Error** error);
   void GoBack(int tab_id, Error** error);
   void Reload(int tab_id, Error** error);

@@ -50,7 +50,8 @@ void AssertTimeoutSet(const Session& test_session, int expected_timeout,
 }  // namespace
 
 TEST(ImplicitWaitCommandTest, SettingImplicitWaits) {
-  Session test_session;
+  Session::Options options = Session::Options();
+  Session test_session(options);
   ASSERT_EQ(0, test_session.implicit_wait()) << "Sanity check failed";
 
   std::vector<std::string> path_segments;
