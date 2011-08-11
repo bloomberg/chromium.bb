@@ -58,12 +58,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
   // requested.  A better way would be to have utility functions to
   // create sync nodes from some bookmark structure and to use that.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
-    std::wstring tag_wide;
-    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
-      NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
-      return false;
-    }
-
+    std::string tag_str = std::string(tag.c_str(), tag.length());
     bool root_exists = false;
     syncable::ModelType type = model_type();
     {
@@ -98,7 +93,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
       sync_api::ReadNode child(&trans);
       child.InitByIdLookup(id);
       last_child_id = id;
-      if (tag_wide == child.GetTitle()) {
+      if (tag_str == child.GetTitle()) {
         *sync_id = id;
         return true;
       }
@@ -115,7 +110,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     // Create new fake tagged nodes at the end of the ordering.
     node.InitByCreation(type, root, predecessor);
     node.SetIsFolder(true);
-    node.SetTitle(tag_wide);
+    node.SetTitle(UTF8ToWide(tag_str));
     node.SetExternalId(0);
     *sync_id = node.GetId();
     return true;
@@ -213,10 +208,10 @@ class FakeServerChange {
   std::wstring ModifyTitle(int64 id, const std::wstring& new_title) {
     sync_api::WriteNode node(trans_);
     EXPECT_TRUE(node.InitByIdLookup(id));
-    std::wstring old_title = node.GetTitle();
+    std::string old_title = node.GetTitle();
     node.SetTitle(new_title);
     SetModified(id);
-    return old_title;
+    return UTF8ToWide(old_title);
   }
 
   // Set a new parent and predecessor value.  Return the old parent id.
@@ -370,7 +365,7 @@ class ProfileSyncServiceBookmarkTest : public TestingBrowserProcessTest {
     ASSERT_TRUE(InitSyncNodeFromChromeNode(bnode, &gnode));
     // Non-root node titles and parents must match.
     if (!model_->is_permanent_node(bnode)) {
-      EXPECT_EQ(bnode->GetTitle(), WideToUTF16Hack(gnode.GetTitle()));
+      EXPECT_EQ(bnode->GetTitle(), UTF8ToUTF16(gnode.GetTitle()));
       EXPECT_EQ(
           model_associator_->GetChromeNodeFromSyncId(gnode.GetParentId()),
           bnode->parent());

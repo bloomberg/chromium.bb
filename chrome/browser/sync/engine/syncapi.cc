@@ -181,15 +181,14 @@ static void SyncAPINameToServerName(const std::wstring& sync_api_name,
 // server-illegal name followed by one or more spaces, remove the trailing
 // space.
 static void ServerNameToSyncAPIName(const std::string& server_name,
-                                    std::wstring* out) {
+                                    std::string* out) {
+  CHECK(out);
   int length_to_copy = server_name.length();
   if (IsNameServerIllegalAfterTrimming(server_name) &&
       EndsWithSpace(server_name)) {
     --length_to_copy;
   }
-  if (!UTF8ToWide(server_name.c_str(), length_to_copy, out)) {
-    NOTREACHED() << "Could not convert server name from UTF8 to wide";
-  }
+  *out = std::string(server_name.c_str(), length_to_copy);
 }
 
 // Compare the values of two EntitySpecifics, accounting for encryption.
@@ -370,8 +369,8 @@ bool BaseNode::GetIsFolder() const {
   return GetEntry()->Get(syncable::IS_DIR);
 }
 
-std::wstring BaseNode::GetTitle() const {
-  std::wstring result;
+std::string BaseNode::GetTitle() const {
+  std::string result;
   // TODO(zea): refactor bookmarks to not need this functionality.
   if (syncable::BOOKMARKS == GetModelType() &&
       GetEntry()->Get(syncable::SPECIFICS).has_encrypted()) {
@@ -379,7 +378,7 @@ std::wstring BaseNode::GetTitle() const {
     ServerNameToSyncAPIName(GetBookmarkSpecifics().title(), &result);
   } else {
     ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME),
-        &result);
+                            &result);
   }
   return result;
 }
@@ -416,8 +415,7 @@ DictionaryValue* BaseNode::GetSummaryAsValue() const {
   DictionaryValue* node_info = new DictionaryValue();
   node_info->SetString("id", base::Int64ToString(GetId()));
   node_info->SetBoolean("isFolder", GetIsFolder());
-  // TODO(akalin): Add a std::string accessor for the title.
-  node_info->SetString("title", WideToUTF8(GetTitle()));
+  node_info->SetString("title", GetTitle());
   node_info->Set("type", ModelTypeToValue(GetModelType()));
   return node_info;
 }

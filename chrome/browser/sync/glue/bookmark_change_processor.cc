@@ -474,7 +474,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
 
     if (!src->GetIsFolder())
       model->SetURL(dst, src->GetURL());
-    model->SetTitle(dst, WideToUTF16Hack(src->GetTitle()));
+    model->SetTitle(dst, UTF8ToUTF16(src->GetTitle()));
 
     SetBookmarkFavicon(src, dst, model);
   }
@@ -496,10 +496,10 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
     node = model->AddFolder(parent, index,
-                            WideToUTF16Hack(sync_node->GetTitle()));
+                            UTF8ToUTF16(sync_node->GetTitle()));
   } else {
     node = model->AddURL(parent, index,
-                         WideToUTF16Hack(sync_node->GetTitle()),
+                         UTF8ToUTF16(sync_node->GetTitle()),
                          sync_node->GetURL());
     SetBookmarkFavicon(sync_node, node, model);
   }

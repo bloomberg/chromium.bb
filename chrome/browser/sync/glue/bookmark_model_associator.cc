@@ -103,7 +103,7 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const sync_api::BaseNode& sync_node) {
   // Create a bookmark node from the given sync node.
   BookmarkNode temp_node(sync_node.GetURL());
-  temp_node.set_title(WideToUTF16Hack(sync_node.GetTitle()));
+  temp_node.set_title(UTF8ToUTF16(sync_node.GetTitle()));
   if (sync_node.GetIsFolder())
     temp_node.set_type(BookmarkNode::FOLDER);
   else
@@ -280,9 +280,10 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
+bool BookmarkModelAssociator::NodesMatch(
+    const BookmarkNode* bookmark,
     const sync_api::BaseNode* sync_node) const {
-  if (bookmark->GetTitle() != WideToUTF16Hack(sync_node->GetTitle()))
+  if (bookmark->GetTitle() != UTF8ToUTF16(sync_node->GetTitle()))
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;

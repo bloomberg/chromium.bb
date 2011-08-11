@@ -205,7 +205,7 @@ class BaseNode {
   // Returns the title of the object.
   // Uniqueness of the title is not enforced on siblings -- it is not an error
   // for two children to share a title.
-  std::wstring GetTitle() const;
+  std::string GetTitle() const;
 
   // Returns the model type of this object.  The model type is set at node
   // creation time and is expected never to change.

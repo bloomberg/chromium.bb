@@ -292,7 +292,7 @@ TEST_F(SyncApiTest, ReadMissingTagsFails) {
 TEST_F(SyncApiTest, TestDeleteBehavior) {
   int64 node_id;
   int64 folder_id;
-  std::wstring test_title(L"test1");
+  std::string test_title("test1");
 
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
@@ -309,7 +309,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     EXPECT_TRUE(wnode.InitUniqueByCreation(syncable::BOOKMARKS,
         root_node, "testtag"));
     wnode.SetIsFolder(false);
-    wnode.SetTitle(test_title);
+    wnode.SetTitle(UTF8ToWide(test_title));
 
     node_id = wnode.GetId();
   }
@@ -351,7 +351,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     EXPECT_EQ(wnode.GetParentId(), folder_node.GetId());
     EXPECT_EQ(wnode.GetId(), node_id);
     EXPECT_NE(wnode.GetTitle(), test_title);  // Title should be cleared
-    wnode.SetTitle(test_title);
+    wnode.SetTitle(UTF8ToWide(test_title));
   }
 
   // Now look up should work.
@@ -445,7 +445,7 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
     EXPECT_TRUE(value.GetBoolean("isFolder", &is_folder));
     EXPECT_EQ(node.GetIsFolder(), is_folder);
   }
-  ExpectDictStringValue(WideToUTF8(node.GetTitle()), value, "title");
+  ExpectDictStringValue(node.GetTitle(), value, "title");
   {
     ModelType expected_model_type = node.GetModelType();
     std::string type_str;
