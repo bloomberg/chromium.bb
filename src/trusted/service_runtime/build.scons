@@ -254,16 +254,7 @@ else:
 
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
-
-
-  # TODO(ncbray) why do we need to link against Cocoa?
-  # run_fake_browser_ppapi_test fails on mac, otherwise.
-  # http://code.google.com/p/nativeclient/issues/detail?id=1242
-  sel_ldr_env = env.Clone()
-  if env.Bit('mac'):
-    sel_ldr_env.Append(FRAMEWORKS=['Cocoa'])
-
-  SEL_LDR_NODE = sel_ldr_env.ComponentProgram(
+  SEL_LDR_NODE = env.ComponentProgram(
       'sel_ldr',
       'sel_main.c',
       EXTRA_LIBS=['sel',
