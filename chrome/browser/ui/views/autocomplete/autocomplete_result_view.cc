@@ -116,8 +116,7 @@ AutocompleteResultView::AutocompleteResultView(
       normal_font_(font),
       bold_font_(bold_font),
       ellipsis_width_(font.GetStringWidth(string16(kEllipsis))),
-      mirroring_context_(new MirroringContext()),
-      match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
+      mirroring_context_(new MirroringContext()) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(

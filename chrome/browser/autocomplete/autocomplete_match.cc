@@ -11,6 +11,7 @@
 AutocompleteMatch::AutocompleteMatch()
     : provider(NULL),
       relevance(0),
+      confidence(0.0f),
       deletable(false),
       inline_autocomplete_offset(string16::npos),
       transition(PageTransition::GENERATED),
@@ -23,10 +24,12 @@ AutocompleteMatch::AutocompleteMatch()
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
+                                     float confidence,
                                      bool deletable,
                                      Type type)
     : provider(provider),
       relevance(relevance),
+      confidence(confidence),
       deletable(deletable),
       inline_autocomplete_offset(string16::npos),
       transition(PageTransition::TYPED),

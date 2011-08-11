@@ -816,7 +816,10 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    bool is_keyword,
                                    bool prevent_inline_autocomplete,
                                    MatchMap* map) {
-  AutocompleteMatch match(this, relevance, false, type);
+  // TODO(dominich): Confidence. In this case, the confidence must depend on the
+  // source. Scored terms can be calculated based on score, but other sources
+  // need more care. Eg, suggest.
+  AutocompleteMatch match(this, relevance, 0.0f, false, type);
   std::vector<size_t> content_param_offsets;
   const TemplateURL& provider = is_keyword ? providers_.keyword_provider() :
                                              providers_.default_provider();
@@ -917,7 +920,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
     bool is_keyword) {
   const string16& input_text =
       is_keyword ? keyword_input_text_ : input_.text();
-  AutocompleteMatch match(this, relevance, false,
+  // TODO(dominich): Confidence calculation.
+  AutocompleteMatch match(this, relevance, 0.0f, false,
                           AutocompleteMatch::NAVSUGGEST);
   match.destination_url = navigation.url;
   match.contents =

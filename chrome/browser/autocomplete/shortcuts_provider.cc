@@ -183,7 +183,9 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const AutocompleteInput& input,
     const string16& term_string,
     ShortcutMap::iterator it) {
-  AutocompleteMatch match(this, CalculateScore(term_string, it->second),
+  // TODO(dominich): Use the same score calculation for confidence and
+  // relevance.
+  AutocompleteMatch match(this, CalculateScore(term_string, it->second), 0.0f,
                           true, AutocompleteMatch::HISTORY_TITLE);
   match.destination_url = it->second.url;
   DCHECK(match.destination_url.is_valid());

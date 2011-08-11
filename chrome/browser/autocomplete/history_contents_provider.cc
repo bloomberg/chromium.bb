@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 
 using base::TimeTicks;
+using history::HistoryDatabase;
 
 namespace {
 
@@ -24,31 +25,25 @@ namespace {
 // time it will take.
 const int kDaysToSearch = 30;
 
-// When processing the results from the history query, this structure points to
-// a single result. It allows the results to be sorted and processed without
-// modifying the larger and slower results structure.
-struct MatchReference {
-  MatchReference(const history::URLResult* result, int relevance)
-      : result(result),
-        relevance(relevance) {
-  }
+}  // end namespace
 
-  const history::URLResult* result;
-  int relevance;  // Score of relevance computed by CalculateRelevance.
-};
-
-// This is a > operator for MatchReference.
-bool CompareMatchRelevance(const MatchReference& a, const MatchReference& b) {
-  if (a.relevance != b.relevance)
-    return a.relevance > b.relevance;
-
-  // Want results in reverse-chronological order all else being equal.
-  return a.result->last_visit() > b.result->last_visit();
+HistoryContentsProvider::MatchReference::MatchReference(
+    const history::URLResult* result,
+    int relevance,
+    float confidence)
+    : result(result),
+      relevance(relevance),
+      confidence(confidence) {
 }
 
-}  // namespace
-
-using history::HistoryDatabase;
+// static
+bool HistoryContentsProvider::MatchReference::CompareRelevance(
+    const HistoryContentsProvider::MatchReference& lhs,
+    const HistoryContentsProvider::MatchReference& rhs) {
+  if (lhs.relevance != rhs.relevance)
+    return lhs.relevance > rhs.relevance;
+  return lhs.result->last_visit() > rhs.result->last_visit();
+}
 
 HistoryContentsProvider::HistoryContentsProvider(ACProviderListener* listener,
                                                  Profile* profile,
@@ -187,18 +182,21 @@ void HistoryContentsProvider::ConvertResults() {
   for (std::vector<history::URLResult*>::const_reverse_iterator i =
        results_.rbegin(); i != results_.rend(); ++i) {
     history::URLResult* result = *i;
-    MatchReference ref(result, CalculateRelevance(*result));
+    MatchReference ref(result, CalculateRelevance(*result),
+                       CalculateConfidence(*result, results_));
     result_refs.push_back(ref);
   }
 
   // Get the top matches and add them.
   size_t max_for_provider = std::min(kMaxMatches, result_refs.size());
   std::partial_sort(result_refs.begin(), result_refs.begin() + max_for_provider,
-                    result_refs.end(), &CompareMatchRelevance);
+                    result_refs.end(), &MatchReference::CompareRelevance);
   matches_.clear();
   for (size_t i = 0; i < max_for_provider; i++) {
-    matches_.push_back(ResultToMatch(*result_refs[i].result,
-                                     result_refs[i].relevance));
+    AutocompleteMatch match(ResultToMatch(result_refs[i]));
+    UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryContents",
+                             match.confidence * 100);
+    matches_.push_back(match);
   }
 }
 
@@ -208,10 +206,11 @@ bool HistoryContentsProvider::MatchInTitle(const history::URLResult& result) {
 }
 
 AutocompleteMatch HistoryContentsProvider::ResultToMatch(
-    const history::URLResult& result,
-    int score) {
-  AutocompleteMatch match(this, score, true, MatchInTitle(result) ?
-      AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
+    const MatchReference& match_reference) {
+  const history::URLResult& result = *match_reference.result;
+  AutocompleteMatch match(this, match_reference.relevance,
+      match_reference.confidence, true, MatchInTitle(result) ?
+          AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
   match.contents = StringForURLDisplay(result.url(), true, trim_http_);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(result.url(),
@@ -261,6 +260,46 @@ int HistoryContentsProvider::CalculateRelevance(
     return in_title ? (700 + title_count_++) : (500 + contents_count_++);
   return in_title ?
       (1000 + star_title_count_++) : (550 + star_contents_count_++);
+}
+
+float HistoryContentsProvider::CalculateConfidence(
+    const history::URLResult& result,
+    const history::QueryResults& results) const {
+  // Calculate a score of [0, 0.9] based on typed count.
+  // Using typed count in place of visit count as:
+  // - It's a better indicator of what the user wants to open given that they
+  //   are typing in the address bar (users tend to open certain URLs by typing
+  //   and others by e.g. bookmarks, so visit_count is a good indicator of
+  //   overall interest but a bad one for specifically omnibox interest).
+  // - Since the DB query is sorted by typed_count, the results may be
+  //   effectively a random selection as far as visit_counts are concerned
+  //   (meaning many high-visit_count-URLs may be present in one query and
+  //   absent in a similar one), leading to wild swings in confidence for the
+  //   same result across distinct queries.
+  float numerator = result.typed_count();
+  float denominator = 0.0f;
+  for (std::vector<history::URLResult*>::const_iterator it = results.begin();
+       it != results.end(); ++it) {
+    denominator += (*it)->typed_count();
+  }
+  // It should only be equal to 0 if the result is not in the results vector.
+  if (denominator < 1) {
+    numerator = result.visit_count();
+    for (std::vector<history::URLResult*>::const_iterator it = results.begin();
+         it != results.end(); ++it) {
+      denominator += (*it)->visit_count();
+    }
+  }
+
+  float score = 0.9f * (denominator > 0.0f ? numerator / denominator : 0);
+
+  // Add 0.1 if the URL is bookmarked to get a final range of [0, 1].
+  if (profile_->GetBookmarkModel() &&
+      profile_->GetBookmarkModel()->IsBookmarked(result.url())) {
+    score += 0.1f;
+  }
+
+  return score;
 }
 
 void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {

@@ -112,9 +112,11 @@ void HistoryQuickProvider::DoAutocomplete() {
     const ScoredHistoryMatch& history_match(*match_iter);
     if (history_match.raw_score > 0) {
       AutocompleteMatch ac_match = QuickMatchToACMatch(
-          history_match,
+          history_match, matches,
           PreventInlineAutocomplete(autocomplete_input_),
           &max_match_score);
+      UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryQuick",
+                               ac_match.confidence * 100);
       matches_.push_back(ac_match);
     }
   }
@@ -126,15 +128,17 @@ const int HistoryQuickProvider::kMaxNonInliningScore =
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,
+    const ScoredHistoryMatches& history_matches,
     bool prevent_inline_autocomplete,
     int* max_match_score) {
   DCHECK(max_match_score);
   const history::URLRow& info = history_match.url_info;
   int score = CalculateRelevance(history_match, max_match_score);
-  AutocompleteMatch match(this, score, !!info.visit_count(),
+  float confidence = CalculateConfidence(history_match, history_matches);
+  AutocompleteMatch match(this, score, confidence, !!info.visit_count(),
                           history_match.url_matches.empty() ?
-                          AutocompleteMatch::HISTORY_URL :
-                          AutocompleteMatch::HISTORY_TITLE);
+                              AutocompleteMatch::HISTORY_URL :
+                              AutocompleteMatch::HISTORY_TITLE);
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
 
@@ -198,6 +202,20 @@ int HistoryQuickProvider::CalculateRelevance(
   *max_match_score = ((*max_match_score < 0) ?
       score : std::min(score, *max_match_score)) - 1;
   return *max_match_score + 1;
+}
+
+// static
+float HistoryQuickProvider::CalculateConfidence(
+    const ScoredHistoryMatch& match,
+    const ScoredHistoryMatches& matches) {
+  float denominator = 0.0f;
+  for (ScoredHistoryMatches::const_iterator it = matches.begin();
+       it != matches.end(); ++it) {
+    denominator += it->raw_score;
+  }
+  DCHECK(denominator > 0);
+
+  return static_cast<float>(match.raw_score) / denominator;
 }
 
 // static

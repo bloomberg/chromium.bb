@@ -245,7 +245,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     params->matches.push_back(what_you_typed_match);
   } else if (params->prevent_inline_autocomplete ||
       history_matches.empty() ||
-      !PromoteMatchForInlineAutocomplete(params, history_matches.front())) {
+      !PromoteMatchForInlineAutocomplete(params, history_matches.front(),
+                                         history_matches)) {
     // Failed to promote any URLs for inline autocompletion.  Use the What You
     // Typed match, if we have it.
     first_match = 0;
@@ -268,8 +269,12 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     DCHECK(!have_what_you_typed_match ||
            (match.url_info.url() !=
             GURL(params->matches.front().destination_url)));
-    params->matches.push_back(HistoryMatchToACMatch(params, match, NORMAL,
-        history_matches.size() - 1 - i));
+    AutocompleteMatch ac_match =
+        HistoryMatchToACMatch(params, match, history_matches, NORMAL,
+                              history_matches.size() - 1 - i);
+    UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryUrl",
+                             ac_match.confidence * 100);
+    params->matches.push_back(ac_match);
   }
 }
 
@@ -302,9 +307,12 @@ void HistoryURLProvider::QueryComplete(
 AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const AutocompleteInput& input,
     bool trim_http) {
+  // TODO(dominich): Find a confidence measure for this.
   AutocompleteMatch match(this,
-      CalculateRelevance(input.type(), WHAT_YOU_TYPED, 0), false,
+      CalculateRelevance(input.type(), WHAT_YOU_TYPED, 0), 0.0f, false,
       AutocompleteMatch::URL_WHAT_YOU_TYPED);
+  UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryUrl",
+                           match.confidence * 100);
 
   const GURL& url = input.canonicalized_url();
   if (url.is_valid()) {
@@ -411,7 +419,8 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
     HistoryURLProviderParams* params,
-    const HistoryMatch& match) {
+    const HistoryMatch& match,
+    const HistoryMatches& matches) {
   // Promote the first match if it's been typed at least n times, where n == 1
   // for "simple" (host-only) URLs and n == 2 for others.  We set a higher bar
   // for these long URLs because it's less likely that users will want to visit
@@ -430,7 +439,7 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   // there's no way to know about "foo/", make reaching this point prevent any
   // future pass from suggesting the exact input as a better match.
   params->dont_suggest_exact_input = true;
-  params->matches.push_back(HistoryMatchToACMatch(params, match,
+  params->matches.push_back(HistoryMatchToACMatch(params, match, matches,
                                                   INLINE_AUTOCOMPLETE, 0));
   return true;
 }
@@ -468,6 +477,38 @@ int HistoryURLProvider::CalculateRelevance(AutocompleteInput::Type input_type,
     default:
       return 900 + static_cast<int>(match_number);
   }
+}
+
+// static
+float HistoryURLProvider::CalculateConfidence(
+    const history::HistoryMatch& match,
+    const history::HistoryMatches& matches) {
+  // TODO(dominich): Take into account bookmarked page?
+  // TODO(dominich): See CompareHistoryMatch for more measures to include.
+  // Using typed count in place of visit count as:
+  // - It's a better indicator of what the user wants to open given that they
+  //   are typing in the address bar (users tend to open certain URLs by typing
+  //   and others by e.g. bookmarks, so visit_count is a good indicator of
+  //   overall interest but a bad one for specifically omnibox interest).
+  // - Since the DB query is sorted by typed_count, the results may be
+  //   effectively a random selection as far as visit_counts are concerned
+  //   (meaning many high-visit_count-URLs may be present in one query and
+  //   absent in a similar one), leading to wild swings in confidence for the
+  //   same result across distinct queries.
+  float numerator = match.url_info.typed_count();
+  float denominator = 0.0f;
+  for (history::HistoryMatches::const_iterator it = matches.begin();
+       it != matches.end(); ++it) {
+    denominator += it->url_info.typed_count();
+  }
+  if (denominator < 1) {
+    numerator = match.url_info.visit_count();
+    for (history::HistoryMatches::const_iterator it = matches.begin();
+         it != matches.end(); ++it) {
+      denominator += it->url_info.visit_count();
+    }
+  }
+  return (denominator > 0.0f ? numerator / denominator : 0);
 }
 
 // static
@@ -774,11 +815,13 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     HistoryURLProviderParams* params,
     const HistoryMatch& history_match,
+    const HistoryMatches& history_matches,
     MatchType match_type,
     size_t match_number) {
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this,
       CalculateRelevance(params->input.type(), match_type, match_number),
+      CalculateConfidence(history_match, history_matches),
       !!info.visit_count(), AutocompleteMatch::HISTORY_URL);
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());

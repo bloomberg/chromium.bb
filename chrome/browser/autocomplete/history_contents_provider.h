@@ -35,6 +35,22 @@ class HistoryContentsProvider : public HistoryProvider {
   virtual void Stop() OVERRIDE;
 
  private:
+  // When processing the results from the history query, this structure points
+  // to a single result. It allows the results to be sorted and processed
+  // without modifying the larger and slower results structure.
+  struct MatchReference {
+    MatchReference(const history::URLResult* result,
+                   int relevance,
+                   float confidence);
+
+    static bool CompareRelevance(const MatchReference& lhs,
+                                 const MatchReference& rhs);
+
+    const history::URLResult* result;
+    int relevance;  // Score of relevance computed by CalculateRelevance.
+    float confidence;  // Confidence computed by CalculateConfidence.
+  };
+
   virtual ~HistoryContentsProvider();
 
   void QueryComplete(HistoryService::Handle handle,
@@ -45,8 +61,7 @@ class HistoryContentsProvider : public HistoryProvider {
   void ConvertResults();
 
   // Creates and returns an AutocompleteMatch from a MatchingPageResult.
-  AutocompleteMatch ResultToMatch(const history::URLResult& result,
-                                  int score);
+  AutocompleteMatch ResultToMatch(const MatchReference& match_reference);
 
   // Adds ACMatchClassifications to match from the offset positions in
   // page_result.
@@ -56,6 +71,12 @@ class HistoryContentsProvider : public HistoryProvider {
   // Calculates and returns the relevance of a particular result. See the
   // chart in autocomplete.h for the list of values this returns.
   int CalculateRelevance(const history::URLResult& result);
+
+  // Calculates and returns the confidence for a particular result. This is
+  // calculated by comparing the result's |visit_count| to that of all the
+  // results.
+  float CalculateConfidence(const history::URLResult& result,
+                            const history::QueryResults& results) const;
 
   // Queries the bookmarks for any bookmarks whose title matches input. All
   // matches are added directly to results_.

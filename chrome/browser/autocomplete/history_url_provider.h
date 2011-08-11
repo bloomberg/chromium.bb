@@ -196,6 +196,11 @@ class HistoryURLProvider : public HistoryProvider {
                                 MatchType match_type,
                                 size_t match_number);
 
+  // Determines the confidence for a |match| when compared to all the
+  // |matches|. Returns a number in the range [0, 1].
+  static float CalculateConfidence(const history::HistoryMatch& match,
+                                   const history::HistoryMatches& matches);
+
   // Given the user's |input| and a |match| created from it, reduce the
   // match's URL to just a host.  If this host still matches the user input,
   // return it.  Returns the empty string on failure.
@@ -259,8 +264,10 @@ class HistoryURLProvider : public HistoryProvider {
 
   // Determines if |match| is suitable for inline autocomplete, and promotes it
   // if so.
-  bool PromoteMatchForInlineAutocomplete(HistoryURLProviderParams* params,
-                                         const history::HistoryMatch& match);
+  bool PromoteMatchForInlineAutocomplete(
+      HistoryURLProviderParams* params,
+      const history::HistoryMatch& match,
+      const history::HistoryMatches& history_matches);
 
   // Sorts the given list of matches.
   void SortMatches(history::HistoryMatches* matches) const;
@@ -292,6 +299,7 @@ class HistoryURLProvider : public HistoryProvider {
   AutocompleteMatch HistoryMatchToACMatch(
       HistoryURLProviderParams* params,
       const history::HistoryMatch& history_match,
+      const history::HistoryMatches& history_matches,
       MatchType match_type,
       size_t match_number);
 

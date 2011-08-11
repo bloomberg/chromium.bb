@@ -204,6 +204,8 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 }
 
 void AutocompleteEditModel::OnChanged() {
+  UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence",
+                           CurrentMatch().confidence * 100);
   InstantController* instant = controller_->GetInstant();
   string16 suggested_text;
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
