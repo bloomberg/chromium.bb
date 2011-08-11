@@ -139,9 +139,6 @@ function FileManager(dialogDom, filesystem, rootEntries) {
   this.summarizeSelection_();
   this.updatePreview_();
 
-  chrome.fileBrowserPrivate.onDiskChanged.addListener(
-      this.onDiskChanged_.bind(this));
-
   this.refocus();
 
   // Pass all URLs to the metadata reader until we have a correct filter.
@@ -1685,9 +1682,18 @@ FileManager.prototype = {
           }
         }
       }
+
+      if (event.eventType == 'unmount' && event.status == 'success' &&
+          self.currentDirEntry_ &&
+          isParentPath(event.mountPath, self.currentDirEntry_.fullPath)) {
+        self.changeDirectory(getParentPath(event.mountPath));
+        return;
+      }
+
       // TODO(dgozman): rescan directory, only if it contains mounted points,
       // when mounts location will be decided.
-      this.rescanDirectory_();
+      if (event.status == 'success')
+        self.rescanDirectory_();
     });
   };
 
@@ -2438,23 +2444,6 @@ FileManager.prototype = {
         // is loaded at this point.
         chrome.test.sendMessage('directory-change-complete');
       });
-  };
-
-  /**
-   * Update the UI when a disk is mounted or unmounted.
-   *
-   * @param {string} path The path that has been mounted or unmounted.
-   */
-  FileManager.prototype.onDiskChanged_ = function(event) {
-    if (event.eventType == 'added') {
-      this.changeDirectory(event.volumeInfo.mountPath);
-    } else if (event.eventType == 'removed') {
-      if (this.currentDirEntry_ &&
-          isParentPath(event.volumeInfo.mountPath,
-                       this.currentDirEntry_.fullPath)) {
-        this.changeDirectory(getParentPath(event.volumeInfo.mountPath));
-      }
-    }
   };
 
   /**

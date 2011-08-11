@@ -101,7 +101,6 @@ class MountLibrary {
   };
   typedef std::map<std::string, Disk*> DiskMap;
 
-  // MountPointInfo: {mount_path, mount_type}.
   struct MountPointInfo {
     std::string source_path;
     std::string mount_path;
@@ -114,7 +113,7 @@ class MountLibrary {
     }
   };
 
-  // MountPointMap key is source_path.
+  // MountPointMap key is mount_path.
   typedef std::map<std::string, MountPointInfo> MountPointMap;
 
   typedef void(*UnmountDeviceRecursiveCallbackType)(void*, bool);
@@ -128,8 +127,8 @@ class MountLibrary {
     virtual void DeviceChanged(MountLibraryEventType event,
                                const std::string& device_path ) = 0;
     virtual void MountCompleted(MountEvent event_type,
-        MountError error_code,
-        const MountPointInfo& mount_info) = 0;
+                                MountError error_code,
+                                const MountPointInfo& mount_info) = 0;
   };
 
   virtual ~MountLibrary() {}
@@ -142,7 +141,7 @@ class MountLibrary {
   virtual void MountPath(const char* source_path,
                          MountType type,
                          const MountPathOptions& options) = 0;
-  // |path| may be source od mount path.
+  // |path| is device's mount path.
   virtual void UnmountPath(const char* path) = 0;
 
   // Unmounts device_poath and all of its known children.

@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -158,8 +159,6 @@ void ExtensionFileBrowserEventRouter::DiskChanged(
     OnDiskAdded(disk);
   } else if (event == chromeos::MOUNT_DISK_REMOVED) {
     OnDiskRemoved(disk);
-  } else if (event == chromeos::MOUNT_DISK_CHANGED) {
-    OnDiskChanged(disk);
   }
 }
 
@@ -178,6 +177,38 @@ void ExtensionFileBrowserEventRouter::MountCompleted(
     chromeos::MountLibrary::MountEvent event_type,
     chromeos::MountError error_code,
     const chromeos::MountLibrary::MountPointInfo& mount_info) {
+  if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
+      event_type == chromeos::MountLibrary::MOUNTING) {
+    chromeos::MountLibrary* mount_lib =
+        chromeos::CrosLibrary::Get()->GetMountLibrary();
+    chromeos::MountLibrary::Disk* disk =
+        mount_lib->disks().find(mount_info.source_path)->second;
+
+    if (!error_code) {
+      HideDeviceNotification(disk->system_path());
+    } else {
+      HideDeviceNotification(disk->system_path());
+      if (!disk->drive_label().empty()) {
+        ShowDeviceNotification(disk->system_path(),
+            IDR_PAGEINFO_INFO,
+            // TODO(tbarzic): Find more suitable message.
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED,
+                ASCIIToUTF16(disk->drive_label()),
+                ASCIIToUTF16(MountErrorToString(error_code))));
+      } else {
+        ShowDeviceNotification(disk->system_path(),
+            IDR_PAGEINFO_INFO,
+            // TODO(tbarzic): Find more suitable message.
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED,
+                l10n_util::GetStringUTF16(
+                    IDS_FILE_BROWSER_DEVICE_TYPE_UNDEFINED),
+                ASCIIToUTF16(MountErrorToString(error_code))));
+      }
+    }
+  }
+
   DispatchMountCompletedEvent(event_type, error_code, mount_info);
 }
 
@@ -224,7 +255,7 @@ void ExtensionFileBrowserEventRouter::DispatchFolderChangeEvent(
   }
 }
 
-void ExtensionFileBrowserEventRouter::DispatchMountEvent(
+void ExtensionFileBrowserEventRouter::DispatchDiskEvent(
     const chromeos::MountLibrary::Disk* disk, bool added) {
   if (!profile_) {
     NOTREACHED();
@@ -279,15 +310,18 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
     mount_info_value->SetString("sourceUrl", mount_info.source_path);
   }
 
+  FilePath relative_mount_path;
+  bool relative_mount_path_set = false;
   // If there were no error, add mountPath to the event.
   if (error_code == chromeos::MOUNT_ERROR_NONE) {
-    FilePath relative_mount_path;
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
     if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
             FilePath(mount_info.mount_path),
             &relative_mount_path)) {
-      mount_info_value->SetString("mountPath", relative_mount_path.value());
+      mount_info_value->SetString("mountPath",
+                                  "/" + relative_mount_path.value());
+      relative_mount_path_set = true;
     }
   }
 
@@ -296,6 +330,12 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
       GURL());
+
+  if (relative_mount_path_set &&
+      mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
+      event == chromeos::MountLibrary::MOUNTING) {
+    FileManagerUtil::ShowFullTabUrl(profile_, relative_mount_path);
+  }
 }
 
 void ExtensionFileBrowserEventRouter::OnDiskAdded(
@@ -304,12 +344,6 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
   if (disk->device_path().empty()) {
     VLOG(1) << "Empty system path for " << disk->device_path();
     return;
-  }
-  if (disk->is_parent()) {
-    if (!disk->has_media()) {
-      HideDeviceNotification(disk->system_path());
-      return;
-    }
   }
 
   // If disk is not mounted yet, give it a try.
@@ -321,41 +355,20 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
                    chromeos::MOUNT_TYPE_DEVICE,
                    chromeos::MountPathOptions());  // Unused.
   }
+  DispatchDiskEvent(disk, true);
 }
 
 void ExtensionFileBrowserEventRouter::OnDiskRemoved(
     const chromeos::MountLibrary::Disk* disk) {
   VLOG(1) << "Disk removed: " << disk->device_path();
   HideDeviceNotification(disk->system_path());
-  MountPointMap::iterator iter = mounted_devices_.find(disk->device_path());
-  if (iter == mounted_devices_.end())
-    return;
 
-  chromeos::MountLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  // TODO(zelidrag): This for some reason does not work as advertized.
-  // we might need to clean up mount directory on FILE thread here as well.
-  lib->UnmountPath(disk->device_path().c_str());
-
-  DispatchMountEvent(disk, false);
-  mounted_devices_.erase(iter);
-}
-
-void ExtensionFileBrowserEventRouter::OnDiskChanged(
-    const chromeos::MountLibrary::Disk* disk) {
-  VLOG(1) << "Disk changed : " << disk->device_path();
   if (!disk->mount_path().empty()) {
-    HideDeviceNotification(disk->system_path());
-    // Remember this mount point.
-    if (mounted_devices_.find(disk->device_path()) == mounted_devices_.end()) {
-      mounted_devices_.insert(
-          std::pair<std::string, std::string>(disk->device_path(),
-                                              disk->mount_path()));
-      DispatchMountEvent(disk, true);
-      HideDeviceNotification(disk->system_path());
-      FileManagerUtil::ShowFullTabUrl(profile_, FilePath(disk->mount_path()));
-    }
+    chromeos::MountLibrary* lib =
+       chromeos::CrosLibrary::Get()->GetMountLibrary();
+    lib->UnmountPath(disk->mount_path().c_str());
   }
+  DispatchDiskEvent(disk, false);
 }
 
 void ExtensionFileBrowserEventRouter::OnDeviceAdded(
@@ -425,7 +438,6 @@ ExtensionFileBrowserEventRouter::NotificationMap::iterator
   }
   return notifications_.end();
 }
-
 
 // ExtensionFileBrowserEventRouter::WatcherDelegate methods.
 ExtensionFileBrowserEventRouter::FileWatcherDelegate::FileWatcherDelegate(
