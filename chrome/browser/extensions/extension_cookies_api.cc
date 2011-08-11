@@ -35,7 +35,7 @@ void ExtensionCookiesEventRouter::Init() {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
                  chrome::NOTIFICATION_COOKIE_CHANGED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 void ExtensionCookiesEventRouter::Observe(int type,

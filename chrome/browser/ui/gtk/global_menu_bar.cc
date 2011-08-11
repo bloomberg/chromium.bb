@@ -213,13 +213,14 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
     browser_->command_updater()->AddCommandObserver(it->first, this);
   }
 
-  // Listen for bookmark bar visibility changes and set the initial state.
-  Source<Profile> source(browser->profile());
+  // We listen to all notification sources because the bookmark bar
+  // state needs to stay in sync between the incognito and normal profiles.
   registrar_.Add(this,
                  chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 source);
+                 NotificationService::AllBrowserContextsAndSources());
   Observe(chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-          source, NotificationService::NoDetails());
+          Source<Profile>(browser->profile()),
+          NotificationService::NoDetails());
 }
 
 GlobalMenuBar::~GlobalMenuBar() {
@@ -233,14 +234,14 @@ void GlobalMenuBar::Disable() {
     browser_->command_updater()->RemoveCommandObserver(it->first, this);
   }
   id_to_menu_item_.clear();
-  Source<Profile> source(browser_->profile());
+
   if (registrar_.IsRegistered(this,
                     chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                    source)) {
+                    NotificationService::AllBrowserContextsAndSources())) {
     registrar_.Remove(
         this,
         chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-        source);
+        NotificationService::AllBrowserContextsAndSources());
   }
 }
 
@@ -321,7 +322,9 @@ void GlobalMenuBar::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
-  DCHECK_EQ(Source<Profile>(source).ptr(), browser_->profile());
+
+  if (!browser_->profile()->IsSameProfile(Source<Profile>(source).ptr()))
+    return;
 
   CommandIDMenuItemMap::iterator it =
       id_to_menu_item_.find(IDC_SHOW_BOOKMARK_BAR);

@@ -277,9 +277,11 @@ Browser::Browser(Type type, Profile* profile)
       Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
+  // We listen to all notification sources because the bookmark bar
+  // state needs to stay in sync between the incognito and normal profiles.
   registrar_.Add(this,
                  chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 Source<Profile>(profile_));
+                 NotificationService::AllBrowserContextsAndSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
@@ -3737,8 +3739,8 @@ void Browser::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
-      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
+      if (profile_->IsSameProfile(Source<Profile>(source).ptr()))
+        UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
 
     default:

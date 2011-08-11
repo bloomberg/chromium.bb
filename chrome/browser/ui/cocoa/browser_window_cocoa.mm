@@ -52,12 +52,13 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser) {
-  // This pref applies to all windows, so all must watch for it.
+  // Listen for bookmark bar visibility changes and set the initial state; we
+  // need to listen to all profiles because of normal profile/incognito issues.
   registrar_.Add(this,
                  chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
-                 NotificationService::AllSources());
+                 Source<SidebarManager>(SidebarManager::GetInstance()));
 }
 
 BrowserWindowCocoa::~BrowserWindowCocoa() {
@@ -608,7 +609,8 @@ void BrowserWindowCocoa::Observe(int type,
     // Only the key window gets a direct toggle from the menu.
     // Other windows hear about it from the notification.
     case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
+      if (browser_->profile()->IsSameProfile(Source<Profile>(source).ptr()))
+        [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
     case chrome::NOTIFICATION_SIDEBAR_CHANGED:
       UpdateSidebarForContents(
