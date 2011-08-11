@@ -54,6 +54,8 @@ fast -- Use parallel_emerge for faster (but slightly more risky) builds.
 usepkg_chroot -- Use binary packages for make_chroot. (emerge --usepkg)
 usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
 usepkg_build_packages -- Use binary packages for build_packages.
+nowithdebug -- Pass the --nowithdebug flag to build_packages (sets the sets
+               -DNDEBUG compiler flag).
 
 chroot_replace -- wipe and replace chroot, but not source.
 
@@ -139,6 +141,7 @@ default = {
   'usepkg_chroot' : True,
   'usepkg_setup_board' : True,
   'usepkg_build_packages' : True,
+  'nowithdebug' : False,
   'latest_toolchain' : False,
   'gcc_46' : False,
 
@@ -260,6 +263,7 @@ release = {
   'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
+  'nowithdebug' : True,
   # --official
   # --officialversion
 }

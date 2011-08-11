@@ -581,6 +581,7 @@ class BuildTargetStage(BuilderStage):
                    skip_toolchain_update=skip_toolchain_update,
                    fast=self._build_config['fast'],
                    usepkg=self._build_config['usepkg_build_packages'],
+                   nowithdebug=self._build_config['nowithdebug'],
                    extra_env=env)
 
     if self._options.tests and (self._build_config['vm_tests'] or
