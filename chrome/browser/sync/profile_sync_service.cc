@@ -830,7 +830,10 @@ void ProfileSyncService::ShowErrorUI() {
     return;
   }
 
-  ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
+  if (last_auth_error_.state() != AuthError::NONE)
+    ShowLoginDialog();
+  else
+    ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
 }
 
 void ProfileSyncService::ShowConfigure(bool sync_everything) {
