@@ -72,7 +72,8 @@ class StopTestOnCallback {
   BrowsingDataDatabaseHelper* database_helper_;
 };
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, FetchData) {
+// Flaky on Win/Mac/Linux: http://crbug.com/92460
+IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, DISABLED_FetchData) {
   CreateDatabases();
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper(
       new BrowsingDataDatabaseHelper(browser()->profile()));
