@@ -648,14 +648,69 @@ bind_to_unix_socket(int display)
 	return fd;
 }
 
+static int
+create_lockfile(int display, char *lockfile, size_t lsize)
+{
+	char pid[16], *end;
+	int fd, size;
+	pid_t other;
+
+	snprintf(lockfile, lsize, "/tmp/.X%d-lock", display);
+	fd = open(lockfile, O_WRONLY | O_CLOEXEC | O_CREAT | O_EXCL, 0444);
+	if (fd < 0 && errno == EEXIST) {
+		fd = open(lockfile, O_CLOEXEC, O_RDONLY);
+		if (fd < 0 || read(fd, pid, 11) != 11) {
+			fprintf(stderr, "can't read lock file %s: %s\n",
+				lockfile, strerror(errno));
+			errno = EEXIST;
+			return -1;
+		}
+
+		other = strtol(pid, &end, 0);
+		if (end != pid + 10) {
+			fprintf(stderr, "can't parse lock file %s\n",
+				lockfile);
+			errno = EEXIST;
+			return -1;
+		}
+
+		if (kill(other, 0) < 0 && errno == ESRCH) {
+			/* stale lock file; unlink and try again */
+			fprintf(stderr,
+				"unlinking stale lock file %s\n", lockfile);
+			unlink(lockfile);
+			errno = EAGAIN;
+			return -1;
+		}
+
+		errno = EEXIST;
+		return -1;
+	} else if (fd < 0) {
+		fprintf(stderr, "failed to create lock file %s: %s\n",
+			lockfile, strerror(errno));
+		return -1;
+	}
+
+	/* Subtle detail: we use the pid of the wayland
+	 * compositor, not the xserver in the lock file. */
+	size = snprintf(pid, sizeof pid, "%10d\n", getpid());
+	if (write(fd, pid, size) != size) {
+		unlink(lockfile);
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int
 wlsc_xserver_init(struct wlsc_compositor *compositor)
 {
 	struct wl_display *display = compositor->wl_display;
 	struct wlsc_xserver *mxs;
-	char lockfile[256], pid[16], *end;
-	pid_t other;
-	int fd, size;
+	char lockfile[256];
 
 	mxs = malloc(sizeof *mxs);
 	memset(mxs, 0, sizeof *mxs);
@@ -664,70 +719,34 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 	mxs->wl_display = display;
 
 	mxs->display = 0;
-	do {
-		snprintf(lockfile, sizeof lockfile,
-			 "/tmp/.X%d-lock", mxs->display);
-		fd = open(lockfile,
-			  O_WRONLY | O_CLOEXEC | O_CREAT | O_EXCL, 0444);
-		if (fd < 0 && errno == EEXIST) {
-			fd = open(lockfile, O_CLOEXEC, O_RDONLY);
-			if (fd < 0 || read(fd, pid, 11) != 11) {
-				fprintf(stderr,
-					"can't read lock file %s: %s\n",
-					lockfile, strerror(errno));
-				mxs->display++;
-				continue;
-			}
 
-			other = strtol(pid, &end, 0);
-			if (end != pid + 10) {
-				fprintf(stderr, "can't parse lock file %s\n",
-					lockfile);
-				mxs->display++;
-				continue;
-			}
-
-			if (kill(other, 0) < 0 && errno == ESRCH) {
-				/* stale lock file; unlink and try again */
-				fprintf(stderr,
-					"unlinking stale lock file %s\n",
-					lockfile);
-				unlink(lockfile);
-				continue;
-			}
-
+ retry:
+	if (create_lockfile(mxs->display, lockfile, sizeof lockfile) < 0) {
+		if (errno == EAGAIN) {
+			goto retry;
+		} else if (errno == EEXIST) {
 			mxs->display++;
-			continue;
-		} else if (fd < 0) {
-			fprintf(stderr, "failed to create lock file %s: %s\n",
-				lockfile, strerror(errno));
+			goto retry;
+		} else {
 			free(mxs);
 			return -1;
 		}
+	}				
 
-		/* Subtle detail: we use the pid of the wayland
-		 * compositor, not the xserver in the lock file. */
-		size = snprintf(pid, sizeof pid, "%10d\n", getpid());
-		write(fd, pid, size);
-		close(fd);
+	mxs->abstract_fd = bind_to_abstract_socket(mxs->display);
+	if (mxs->abstract_fd < 0 && errno == EADDRINUSE) {
+		mxs->display++;
+		unlink(lockfile);
+		goto retry;
+	}
 
-		mxs->abstract_fd = bind_to_abstract_socket(mxs->display);
-		if (mxs->abstract_fd < 0 && errno == EADDRINUSE) {
-			mxs->display++;
-			unlink(lockfile);
-			continue;
-		}
-
-		mxs->unix_fd = bind_to_unix_socket(mxs->display);
-		if (mxs->unix_fd < 0) {
-			unlink(lockfile);
-			close(mxs->abstract_fd);
-			free(mxs);
-			return -1;
-		}
-
-		break;
-	} while (errno != 0);
+	mxs->unix_fd = bind_to_unix_socket(mxs->display);
+	if (mxs->unix_fd < 0) {
+		unlink(lockfile);
+		close(mxs->abstract_fd);
+		free(mxs);
+		return -1;
+	}
 
 	fprintf(stderr, "xserver listening on display :%d\n", mxs->display);
 
