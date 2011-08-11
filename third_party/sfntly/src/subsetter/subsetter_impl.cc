@@ -154,6 +154,9 @@ bool SubsetterImpl::HasName(const char* font_name, Font* font) {
   typedef std::map<int32_t, UnicodeString> NameMap;
   NameMap names;
   NameTablePtr name_table = down_cast<NameTable*>(font->GetTable(Tag::name));
+  if (name_table == NULL) {
+    return false;
+  }
 
   for (int32_t i = 0; i < name_table->NameCount(); ++i) {
     switch(name_table->NameId(i)) {
