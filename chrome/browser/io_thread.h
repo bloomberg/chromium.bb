@@ -36,12 +36,14 @@ class Predictor;
 
 namespace net {
 class CertVerifier;
+class CookieStore;
 class DnsRRResolver;
 class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class NetworkDelegate;
+class OriginBoundCertService;
 class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
@@ -87,6 +89,10 @@ class IOThread : public BrowserProcessSubThread {
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
     scoped_refptr<net::URLRequestContext> system_request_context;
+    // |cookie_store| and |origin_bound_cert_service| are shared between
+    // |proxy_script_fetcher_context| and |system_request_context|.
+    scoped_refptr<net::CookieStore> system_cookie_store;
+    scoped_ptr<net::OriginBoundCertService> system_origin_bound_cert_service;
     scoped_refptr<ExtensionEventRouterForwarder>
         extension_event_router_forwarder;
   };

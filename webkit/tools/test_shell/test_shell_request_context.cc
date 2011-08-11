@@ -10,7 +10,9 @@
 #include "base/file_path.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/default_origin_bound_cert_store.h"
 #include "net/base/host_resolver.h"
+#include "net/base/origin_bound_cert_service.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -46,6 +48,8 @@ void TestShellRequestContext::Init(
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
+  storage_.set_origin_bound_cert_service(new net::OriginBoundCertService(
+      new net::DefaultOriginBoundCertStore(NULL)));
 
   // hard-code A-L and A-C for test shells
   set_accept_language("en-us,en");
@@ -86,7 +90,8 @@ void TestShellRequestContext::Init(
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
-      new net::HttpCache(host_resolver(), cert_verifier(), NULL, NULL,
+      new net::HttpCache(host_resolver(), cert_verifier(),
+                         origin_bound_cert_service(), NULL, NULL,
                          proxy_service(), ssl_config_service(),
                          http_auth_handler_factory(), NULL, NULL, backend);
 

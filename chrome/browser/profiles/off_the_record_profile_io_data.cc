@@ -19,6 +19,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "net/base/default_origin_bound_cert_store.h"
+#include "net/base/origin_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "webkit/database/database_tracker.h"
@@ -160,6 +162,13 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_dns_cert_checker(dns_cert_checker());
   main_context->set_proxy_service(proxy_service());
 
+  // For incognito, we use a non-persistent origin bound cert store.
+  net::OriginBoundCertService* origin_bound_cert_service =
+      new net::OriginBoundCertService(
+          new net::DefaultOriginBoundCertStore(NULL));
+  set_origin_bound_cert_service(origin_bound_cert_service);
+  main_context->set_origin_bound_cert_service(origin_bound_cert_service);
+
   main_context->set_cookie_store(
       new net::CookieMonster(NULL, profile_params->cookie_monster_delegate));
   // All we care about for extensions is the cookie store. For incognito, we
@@ -178,6 +187,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   net::HttpCache* cache =
       new net::HttpCache(main_context->host_resolver(),
                          main_context->cert_verifier(),
+                         main_context->origin_bound_cert_service(),
                          main_context->dnsrr_resolver(),
                          main_context->dns_cert_checker(),
                          main_context->proxy_service(),

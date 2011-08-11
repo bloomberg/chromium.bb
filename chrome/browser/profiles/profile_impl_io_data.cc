@@ -12,6 +12,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/sqlite_origin_bound_cert_store.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "net/base/origin_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 
@@ -53,6 +55,7 @@ ProfileImplIOData::Handle::~Handle() {
 }
 
 void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
+                                     const FilePath& origin_bound_cert_path,
                                      const FilePath& cache_path,
                                      int cache_max_size,
                                      const FilePath& media_cache_path,
@@ -64,6 +67,7 @@ void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
   LazyParams* lazy_params = new LazyParams;
 
   lazy_params->cookie_path = cookie_path;
+  lazy_params->origin_bound_cert_path = origin_bound_cert_path;
   lazy_params->cache_path = cache_path;
   lazy_params->cache_max_size = cache_max_size;
   lazy_params->media_cache_path = media_cache_path;
@@ -230,40 +234,15 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_proxy_service(proxy_service());
   media_request_context_->set_proxy_service(proxy_service());
 
-  net::HttpCache::DefaultBackend* main_backend =
-      new net::HttpCache::DefaultBackend(
-          net::DISK_CACHE,
-          lazy_params_->cache_path,
-          lazy_params_->cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
-  net::HttpCache* main_cache = new net::HttpCache(
-      main_context->host_resolver(),
-      main_context->cert_verifier(),
-      main_context->dnsrr_resolver(),
-      main_context->dns_cert_checker(),
-      main_context->proxy_service(),
-      main_context->ssl_config_service(),
-      main_context->http_auth_handler_factory(),
-      main_context->network_delegate(),
-      main_context->net_log(),
-      main_backend);
-
-  net::HttpCache::DefaultBackend* media_backend =
-      new net::HttpCache::DefaultBackend(
-          net::MEDIA_CACHE, lazy_params_->media_cache_path,
-          lazy_params_->media_cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
-  net::HttpNetworkSession* main_network_session = main_cache->GetSession();
-  net::HttpCache* media_cache =
-      new net::HttpCache(main_network_session, media_backend);
-
   scoped_refptr<net::CookieStore> cookie_store = NULL;
+  net::OriginBoundCertService* origin_bound_cert_service = NULL;
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
     cookie_store = new net::CookieMonster(
         NULL, profile_params->cookie_monster_delegate);
-    main_cache->set_mode(
-        record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
+    // Don't use existing origin-bound certs and use an in-memory store.
+    origin_bound_cert_service = new net::OriginBoundCertService(
+        new net::DefaultOriginBoundCertStore(NULL));
   }
 
   // setup cookie store
@@ -291,6 +270,56 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_cookie_store(cookie_store);
   media_request_context_->set_cookie_store(cookie_store);
   extensions_context->set_cookie_store(extensions_cookie_store);
+
+  // Setup origin bound cert service.
+  if (!origin_bound_cert_service) {
+    DCHECK(!lazy_params_->origin_bound_cert_path.empty());
+
+    scoped_refptr<SQLiteOriginBoundCertStore> origin_bound_cert_db =
+        new SQLiteOriginBoundCertStore(lazy_params_->origin_bound_cert_path);
+    origin_bound_cert_db->SetClearLocalStateOnExit(
+        profile_params->clear_local_state_on_exit);
+    origin_bound_cert_service = new net::OriginBoundCertService(
+        new net::DefaultOriginBoundCertStore(origin_bound_cert_db.get()));
+  }
+
+  set_origin_bound_cert_service(origin_bound_cert_service);
+  main_context->set_origin_bound_cert_service(origin_bound_cert_service);
+  media_request_context_->set_origin_bound_cert_service(
+      origin_bound_cert_service);
+
+  net::HttpCache::DefaultBackend* main_backend =
+      new net::HttpCache::DefaultBackend(
+          net::DISK_CACHE,
+          lazy_params_->cache_path,
+          lazy_params_->cache_max_size,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpCache* main_cache = new net::HttpCache(
+      main_context->host_resolver(),
+      main_context->cert_verifier(),
+      main_context->origin_bound_cert_service(),
+      main_context->dnsrr_resolver(),
+      main_context->dns_cert_checker(),
+      main_context->proxy_service(),
+      main_context->ssl_config_service(),
+      main_context->http_auth_handler_factory(),
+      main_context->network_delegate(),
+      main_context->net_log(),
+      main_backend);
+
+  net::HttpCache::DefaultBackend* media_backend =
+      new net::HttpCache::DefaultBackend(
+          net::MEDIA_CACHE, lazy_params_->media_cache_path,
+          lazy_params_->media_cache_max_size,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpNetworkSession* main_network_session = main_cache->GetSession();
+  net::HttpCache* media_cache =
+      new net::HttpCache(main_network_session, media_backend);
+
+  if (record_mode || playback_mode) {
+    main_cache->set_mode(
+        record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
+  }
 
   main_http_factory_.reset(main_cache);
   media_http_factory_.reset(media_cache);

@@ -36,12 +36,14 @@
 #include "content/common/url_fetcher.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/default_origin_bound_cert_store.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
+#include "net/base/origin_bound_cert_service.h"
 #include "net/dns/async_host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
@@ -253,8 +255,9 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
       globals->proxy_script_fetcher_http_transaction_factory.get());
   context->set_ftp_transaction_factory(
       globals->proxy_script_fetcher_ftp_transaction_factory.get());
-  // In-memory cookie store.
-  context->set_cookie_store(new net::CookieMonster(NULL, NULL));
+  context->set_cookie_store(globals->system_cookie_store.get());
+  context->set_origin_bound_cert_service(
+      globals->system_origin_bound_cert_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   return context;
 }
@@ -275,8 +278,9 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
       globals->system_http_transaction_factory.get());
   context->set_ftp_transaction_factory(
       globals->system_ftp_transaction_factory.get());
-  // In-memory cookie store.
-  context->set_cookie_store(new net::CookieMonster(NULL, NULL));
+  context->set_cookie_store(globals->system_cookie_store.get());
+  context->set_origin_bound_cert_service(
+      globals->system_origin_bound_cert_service.get());
   return context;
 }
 
@@ -468,9 +472,17 @@ void IOThread::Init() {
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
+  // In-memory cookie store.
+  globals_->system_cookie_store = new net::CookieMonster(NULL, NULL);
+  // In-memory origin-bound cert store.
+  globals_->system_origin_bound_cert_service.reset(
+      new net::OriginBoundCertService(
+          new net::DefaultOriginBoundCertStore(NULL)));
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = globals_->host_resolver.get();
   session_params.cert_verifier = globals_->cert_verifier.get();
+  session_params.origin_bound_cert_service =
+      globals_->system_origin_bound_cert_service.get();
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
   session_params.http_auth_handler_factory =
@@ -485,9 +497,8 @@ void IOThread::Init() {
   globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
 
-  scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context =
+  globals_->proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
-  globals_->proxy_script_fetcher_context = proxy_script_fetcher_context;
 }
 
 void IOThread::CleanUp() {
@@ -680,6 +691,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   net::HttpNetworkSession::Params system_params;
   system_params.host_resolver = globals_->host_resolver.get();
   system_params.cert_verifier = globals_->cert_verifier.get();
+  system_params.origin_bound_cert_service =
+      globals_->system_origin_bound_cert_service.get();
   system_params.dnsrr_resolver = globals_->dnsrr_resolver.get();
   system_params.dns_cert_checker = NULL;
   system_params.ssl_host_info_factory = NULL;

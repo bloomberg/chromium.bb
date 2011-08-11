@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
 #include "content/common/notification_service.h"
+#include "net/base/origin_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -518,4 +519,9 @@ void ProfileIOData::ShutdownOnUIThread() {
                                         new DeleteTask<ProfileIOData>(this));
   if (!posted)
     delete this;
+}
+
+void ProfileIOData::set_origin_bound_cert_service(
+    net::OriginBoundCertService* origin_bound_cert_service) const {
+  origin_bound_cert_service_.reset(origin_bound_cert_service);
 }
