@@ -12,6 +12,16 @@
 #include "mkvreader.hpp"
 #include "mkvparser.hpp"
 
+#ifdef _MSC_VER
+// Silences these warnings:
+// warning C4996: 'mbstowcs': This function or variable may be unsafe. Consider
+// using mbstowcs_s instead. To disable deprecation, use
+// _CRT_SECURE_NO_WARNINGS. See online help for details.
+// Fixing this warning requires use of a function available only on Windows,
+// and this sample code must support non-windows platforms.
+#pragma warning(disable:4996)
+#endif
+
 static const wchar_t* utf8towcs(const char* str)
 {
     if (str == NULL)

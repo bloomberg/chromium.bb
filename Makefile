@@ -1,8 +1,7 @@
 CXX      := g++
 CXXFLAGS := -W -Wall -g
-LIBS     := libmkvparser.a libmkvmuxer.a
-PARSEOBJ := mkvparser.o mkvreader.o
-MUXEROBJ := mkvmuxer.o mkvmuxerutil.o mkvwriter.o
+LIBWEBM  := libwebm.a
+WEBMOBJS := mkvparser.o mkvreader.o mkvmuxer.o mkvmuxerutil.o mkvwriter.o
 OBJECTS1 := $(PARSEOBJ) sample.o
 OBJECTS2 := $(PARSEOBJ) $(MUXEROBJ) sample_muxer/sample_muxer.o
 INCLUDES := -I.
@@ -10,20 +9,17 @@ EXES     := samplemuxer sample
 
 all: $(EXES)
 
-sample: sample.o libmkvparser.a
+sample: sample.o $(LIBWEBM)
 	$(CXX) $^ -o $@
 
-samplemuxer: sample_muxer/sample_muxer.o $(LIBS)
+samplemuxer: sample_muxer/sample_muxer.o $(LIBWEBM)
 	$(CXX) $^ -o $@
 
-libmkvparser.a: $(PARSEOBJ)
-	$(AR) rcs $@ $^
-
-libmkvmuxer.a: $(MUXEROBJ)
+libwebm.a: $(WEBMOBJS)
 	$(AR) rcs $@ $^
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $< -o $@
 
 clean:
-	$(RM) -f $(OBJECTS1) $(OBJECTS2) $(LIBS) $(EXES) Makefile.bak
+	$(RM) -f $(OBJECTS1) $(OBJECTS2) $(WEBMOBJS) $(LIBWEBM) $(EXES) Makefile.bak
