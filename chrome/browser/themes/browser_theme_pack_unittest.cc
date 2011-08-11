@@ -393,7 +393,7 @@ TEST_F(BrowserThemePackTest, TestNonExistantImages) {
 TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
+  FilePath file = dir.path().AppendASCII("data.pak");
 
   // Part 1: Build the pack from an extension.
   {

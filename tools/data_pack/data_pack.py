@@ -9,7 +9,7 @@ See base/pack_file* for details.
 
 import struct
 
-FILE_FORMAT_VERSION = 2
+FILE_FORMAT_VERSION = 3
 HEADER_LENGTH = 2 * 4  # Two uint32s. (file version and number of entries)
 
 class WrongFileVersion(Exception):
@@ -26,13 +26,17 @@ def ReadDataPack(input_file):
     raise WrongFileVersion
 
   resources = {}
+  if num_entries == 0:
+    return resources
+
   # Read the index and data.
   data = data[HEADER_LENGTH:]
-  kIndexEntrySize = 2 + 2 * 4  # Each entry is 1 uint16 and 2 uint32s.
+  kIndexEntrySize = 2 + 4  # Each entry is a uint16 and a uint32.
   for _ in range(num_entries):
-    id, offset, length = struct.unpack("<HII", data[:kIndexEntrySize])
+    id, offset = struct.unpack("<HI", data[:kIndexEntrySize])
     data = data[kIndexEntrySize:]
-    resources[id] = original_data[offset:offset + length]
+    next_id, next_offset = struct.unpack("<HI", data[:kIndexEntrySize])
+    resources[id] = original_data[offset:next_offset]
 
   return resources
 
@@ -44,14 +48,17 @@ def WriteDataPack(resources, output_file):
   # Write file header.
   file.write(struct.pack("<II", FILE_FORMAT_VERSION, len(ids)))
 
-  # Each entry is 1 uint16 and 2 uint32s.
-  index_length = len(ids) * (2 + 2 * 4)
+  # Each entry is a uint16 and a uint32. We have one extra entry for the last
+  # item.
+  index_length = (len(ids) + 1) * (2 + 4)
 
   # Write index.
   data_offset = HEADER_LENGTH + index_length
   for id in ids:
-    file.write(struct.pack("<HII", id, data_offset, len(resources[id])))
+    file.write(struct.pack("<HI", id, data_offset))
     data_offset += len(resources[id])
+
+  file.write(struct.pack("<HI", 0, data_offset))
 
   # Write data.
   for id in ids:

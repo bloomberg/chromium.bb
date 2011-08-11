@@ -17,7 +17,7 @@
 
 namespace {
 
-static const uint32 kFileFormatVersion = 2;
+static const uint32 kFileFormatVersion = 3;
 // Length of file header: version and entry count.
 static const size_t kHeaderLength = 2 * sizeof(uint32);
 
@@ -25,7 +25,6 @@ static const size_t kHeaderLength = 2 * sizeof(uint32);
 struct DataPackEntry {
   uint16 resource_id;
   uint32 file_offset;
-  uint32 length;
 
   static int CompareById(const void* void_key, const void* void_entry) {
     uint16 key = *reinterpret_cast<const uint16*>(void_key);
@@ -42,7 +41,7 @@ struct DataPackEntry {
 };
 #pragma pack(pop)
 
-COMPILE_ASSERT(sizeof(DataPackEntry) == 10, size_of_header_must_be_ten);
+COMPILE_ASSERT(sizeof(DataPackEntry) == 6, size_of_entry_must_be_six);
 
 // We're crashing when trying to load a pak file on Windows.  Add some error
 // codes for logging.
@@ -101,11 +100,12 @@ bool DataPack::Load(const FilePath& path) {
     mmap_.reset();
     return false;
   }
-  // 2) Verify the entries are within the appropriate bounds.
-  for (size_t i = 0; i < resource_count_; ++i) {
+  // 2) Verify the entries are within the appropriate bounds. There's an extra
+  // entry after the last item which gives us the length of the last item.
+  for (size_t i = 0; i < resource_count_ + 1; ++i) {
     const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
         mmap_->data() + kHeaderLength + (i * sizeof(DataPackEntry)));
-    if (entry->file_offset + entry->length > mmap_->length()) {
+    if (entry->file_offset > mmap_->length()) {
       LOG(ERROR) << "Entry #" << i << " in data pack points off end of file. "
                  << "Was the file corrupted?";
       UMA_HISTOGRAM_ENUMERATION("DataPack.Load", ENTRY_NOT_FOUND,
@@ -131,14 +131,17 @@ bool DataPack::GetStringPiece(uint16 resource_id,
   #error DataPack assumes little endian
 #endif
 
-  DataPackEntry* target = reinterpret_cast<DataPackEntry*>(
+  const DataPackEntry* target = reinterpret_cast<const DataPackEntry*>(
       bsearch(&resource_id, mmap_->data() + kHeaderLength, resource_count_,
               sizeof(DataPackEntry), DataPackEntry::CompareById));
   if (!target) {
     return false;
   }
 
-  data->set(mmap_->data() + target->file_offset, target->length);
+  const DataPackEntry* next_entry = target + 1;
+  size_t length = next_entry->file_offset - target->file_offset;
+
+  data->set(mmap_->data() + target->file_offset, length);
   return true;
 }
 
@@ -173,8 +176,9 @@ bool DataPack::WritePack(const FilePath& path,
     return false;
   }
 
-  // Each entry is 1 uint16 + 2 uint32s.
-  uint32 index_length = entry_count * sizeof(DataPackEntry);
+  // Each entry is a uint16 + a uint32. We have an extra entry after the last
+  // item so we can compute the size of the list item.
+  uint32 index_length = (entry_count + 1) * sizeof(DataPackEntry);
   uint32 data_offset = kHeaderLength + index_length;
   for (std::map<uint16, base::StringPiece>::const_iterator it =
            resources.begin();
@@ -192,14 +196,22 @@ bool DataPack::WritePack(const FilePath& path,
       return false;
     }
 
-    uint32 len = it->second.length();
-    if (fwrite(&len, sizeof(len), 1, file) != 1) {
-      LOG(ERROR) << "Failed to write length for " << resource_id;
-      file_util::CloseFile(file);
-      return false;
-    }
+    data_offset += it->second.length();
+  }
 
-    data_offset += len;
+  // We place an extra entry after the last item that allows us to read the
+  // size of the last item.
+  uint16 resource_id = 0;
+  if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
+    LOG(ERROR) << "Failed to write extra resource id.";
+    file_util::CloseFile(file);
+    return false;
+  }
+
+  if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
+    LOG(ERROR) << "Failed to write extra offset.";
+    file_util::CloseFile(file);
+    return false;
   }
 
   for (std::map<uint16, base::StringPiece>::const_iterator it =
