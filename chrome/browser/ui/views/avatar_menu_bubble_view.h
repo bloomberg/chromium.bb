@@ -27,7 +27,7 @@ class AvatarMenuBubbleView : public views::View,
                              public AvatarMenuModelObserver {
  public:
   explicit AvatarMenuBubbleView(Browser* browser);
-  ~AvatarMenuBubbleView();
+  virtual ~AvatarMenuBubbleView();
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
