@@ -44,6 +44,16 @@ class DesktopWindow : public Widget {
     return native_widget ? native_widget->OnKeyEvent(event) : false;
   }
 
+  virtual bool OnMouseEvent(const MouseEvent& event) {
+    if (event.type() == ui::ET_MOUSEWHEEL) {
+      NativeWidgetViews* native_widget =
+          desktop_window_view_->active_native_widget();
+      if (native_widget)
+        return native_widget->delegate()->OnMouseEvent(event);
+    }
+    return Widget::OnMouseEvent(event);
+  }
+
   DesktopWindowView* desktop_window_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindow);
@@ -178,8 +188,8 @@ void DesktopWindowView::ViewHierarchyChanged(
       active_native_widget_ &&
       active_native_widget_->GetView() == child) {
     active_native_widget_ = NULL;
-  } else if (child->GetClassName() ==
-      internal::NativeWidgetView::kViewClassName) {
+  } else if (is_add &&
+      child->GetClassName() == internal::NativeWidgetView::kViewClassName) {
     internal::NativeWidgetView* native_widget_view =
         static_cast<internal::NativeWidgetView*>(child);
     native_widget_view->GetAssociatedWidget()->AddObserver(this);
