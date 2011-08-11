@@ -414,6 +414,7 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 	wl_client_flush(wxs->client);
 	close(sv[1]);
 	
+	/* xcb_connect_to_fd takes ownership of the fd. */
 	wm->conn = xcb_connect_to_fd(sv[0], NULL);
 	if (xcb_connection_has_error(wm->conn)) {
 		fprintf(stderr, "xcb_connect_to_fd failed\n");
@@ -448,6 +449,16 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 	fprintf(stderr, "created wm\n");
 
 	return wm;
+}
+
+static void
+wlsc_wm_destroy(struct wlsc_wm *wm)
+{
+	/* FIXME: Free windows in hash. */
+	wl_hash_table_destroy(wm->window_hash);
+	xcb_disconnect(wm->conn);
+	wl_event_source_remove(wm->source);
+	free(wm);
 }
 
 static void
@@ -556,6 +567,9 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
 				     WL_EVENT_READABLE,
 				     wlsc_xserver_handle_event, mxs);
+
+	wlsc_wm_destroy(mxs->wm);
+	mxs->wm = NULL;
 }
 
 static void
