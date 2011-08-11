@@ -6,6 +6,7 @@ nacl64.exe
 chrome.dll
 nacl64.dll
 crash_service.exe
+crash_service64.exe
 First Run
 ppGoogleNaClPluginChrome.dll
 nacl_irt_x86_32.nexe
