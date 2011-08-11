@@ -24,7 +24,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -145,8 +144,6 @@ void Shutdown() {
   PrefService* user_prefs = profile_manager->GetDefaultProfile()->GetPrefs();
 
   chrome_browser_net::SavePredictorStateForNextStartupAndTrim(user_prefs);
-
-  PluginUpdater::GetInstance()->Shutdown();
 
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics)

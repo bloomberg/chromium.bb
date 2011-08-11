@@ -57,7 +57,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
-#include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -1905,9 +1905,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // need to read prefs that get set after that runs.
   browser_process->google_url_tracker();
   browser_process->intranet_redirect_detector();
-
-  // Do initialize the plug-in service (and related preferences).
-  PluginUpdater::GetInstance()->SetProfile(profile);
 
   // Prepare for memory caching of SDCH dictionaries.
   // Perform A/B test to measure global impact of SDCH support.

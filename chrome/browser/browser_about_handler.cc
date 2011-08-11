@@ -32,6 +32,7 @@
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1113,8 +1114,9 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
       GURL(), "application/x-shockwave-flash", false, NULL, &info_array, NULL);
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
   for (size_t i = 0; i < info_array.size(); ++i) {
-    if (webkit::npapi::IsPluginEnabled(info_array[i])) {
+    if (plugin_prefs->IsPluginEnabled(info_array[i])) {
       flash_version = info_array[i].version;
       break;
     }
