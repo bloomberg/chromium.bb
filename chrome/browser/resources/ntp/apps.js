@@ -357,6 +357,7 @@ var apps = (function() {
 
         $('apps-launch-command').label = app['name'];
         $('apps-options-command').canExecuteChange();
+        $('apps-uninstall-command').canExecuteChange();
 
         var launchTypeEl;
         if (el.getAttribute('app-id') === app['id']) {
@@ -425,7 +426,7 @@ var apps = (function() {
         e.canExecute = true;
         break;
       case 'apps-uninstall-command':
-        e.canExecute = currentApp && !currentApp['can_uninstall'];
+        e.canExecute = currentApp && currentApp['can_uninstall'];
         break;
     }
   });
