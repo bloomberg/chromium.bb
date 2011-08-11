@@ -55,12 +55,12 @@ struct xserver {
 struct wlsc_xserver {
 	struct wl_display *wl_display;
 	struct wl_event_loop *loop;
-	struct wl_event_source *source;
 	struct wl_event_source *sigchld_source;
 	struct wl_client *client;
-	int fd;
-	struct sockaddr_un addr;
-	char lock_addr[113];
+	int abstract_fd;
+	struct wl_event_source *abstract_source;
+	int unix_fd;
+	struct wl_event_source *unix_source;
 	int display;
 	struct wlsc_process process;
 
@@ -470,7 +470,11 @@ wlsc_xserver_bind(struct wl_client *client,
 
 	wl_client_post_event(wxs->client,
 			     &wxs->xserver.object,
-			     XSERVER_LISTEN_SOCKET, wxs->fd);
+			     XSERVER_LISTEN_SOCKET, wxs->abstract_fd);
+
+	wl_client_post_event(wxs->client,
+			     &wxs->xserver.object,
+			     XSERVER_LISTEN_SOCKET, wxs->unix_fd);
 }
 
 static int
@@ -522,7 +526,8 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 
 		wlsc_watch_process(&mxs->process);
 
-		wl_event_source_remove(mxs->source);
+		wl_event_source_remove(mxs->abstract_source);
+		wl_event_source_remove(mxs->unix_source);
 		break;
 
 	case -1:
@@ -541,8 +546,15 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 
 	fprintf(stderr, "xserver exited, code %d\n", status);
 	mxs->process.pid = 0;
-	mxs->source =
-		wl_event_loop_add_fd(mxs->loop, mxs->fd, WL_EVENT_READABLE,
+
+	mxs->abstract_source =
+		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
+				     WL_EVENT_READABLE,
+				     wlsc_xserver_handle_event, mxs);
+
+	mxs->unix_source =
+		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
+				     WL_EVENT_READABLE,
 				     wlsc_xserver_handle_event, mxs);
 }
 
@@ -574,27 +586,82 @@ static const struct xserver_interface xserver_implementation = {
 	xserver_set_window_id
 };
 
+static int
+bind_to_abstract_socket(int display)
+{
+	struct sockaddr_un addr;
+	socklen_t size, name_size;
+	int fd;
+
+	fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	if (fd < 0)
+		return -1;
+
+	addr.sun_family = AF_LOCAL;
+	name_size = snprintf(addr.sun_path, sizeof addr.sun_path,
+			     "%c/tmp/.X11-unix/X%d", 0, display);
+	size = offsetof(struct sockaddr_un, sun_path) + name_size;
+	if (bind(fd, (struct sockaddr *) &addr, size) < 0) {
+		fprintf(stderr, "failed to bind to @%s: %s\n",
+			addr.sun_path + 1, strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	if (listen(fd, 1) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	return fd;
+}
+
+static int
+bind_to_unix_socket(int display)
+{
+	struct sockaddr_un addr;
+	socklen_t size, name_size;
+	int fd;
+
+	fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	if (fd < 0)
+		return -1;
+
+	addr.sun_family = AF_LOCAL;
+	name_size = snprintf(addr.sun_path, sizeof addr.sun_path,
+			     "/tmp/.X11-unix/X%d", display) + 1;
+	size = offsetof(struct sockaddr_un, sun_path) + name_size;
+	unlink(addr.sun_path);
+	if (bind(fd, (struct sockaddr *) &addr, size) < 0) {
+		fprintf(stderr, "failed to bind to %s (%s)\n",
+			addr.sun_path, strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	if (listen(fd, 1) < 0) {
+		unlink(addr.sun_path);
+		close(fd);
+		return -1;
+	}
+
+	return fd;
+}
+
 int
 wlsc_xserver_init(struct wlsc_compositor *compositor)
 {
 	struct wl_display *display = compositor->wl_display;
 	struct wlsc_xserver *mxs;
 	char lockfile[256], pid[16], *end;
-	socklen_t size, name_size;
 	pid_t other;
-	int fd;
+	int fd, size;
 
 	mxs = malloc(sizeof *mxs);
 	memset(mxs, 0, sizeof *mxs);
 
 	mxs->process.cleanup = wlsc_xserver_cleanup;
 	mxs->wl_display = display;
-	mxs->addr.sun_family = AF_LOCAL;
-	mxs->fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
-	if (mxs->fd < 0) {
-		free(mxs);
-		return -1;
-	}
 
 	mxs->display = 0;
 	do {
@@ -634,7 +701,6 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 		} else if (fd < 0) {
 			fprintf(stderr, "failed to create lock file %s: %s\n",
 				lockfile, strerror(errno));
-			close(mxs->fd);
 			free(mxs);
 			return -1;
 		}
@@ -645,35 +711,34 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 		write(fd, pid, size);
 		close(fd);
 
-		name_size = snprintf(mxs->addr.sun_path,
-				     sizeof mxs->addr.sun_path,
-				     "/tmp/.X11-unix/X%d", mxs->display) + 1;
-		size = offsetof(struct sockaddr_un, sun_path) + name_size;
-		unlink(mxs->addr.sun_path);
-		if (bind(mxs->fd, (struct sockaddr *) &mxs->addr, size) < 0) {
-			fprintf(stderr, "failed to bind to %s (%s)\n",
-				mxs->addr.sun_path, strerror(errno));
+		mxs->abstract_fd = bind_to_abstract_socket(mxs->display);
+		if (mxs->abstract_fd < 0 && errno == EADDRINUSE) {
+			mxs->display++;
 			unlink(lockfile);
-			close(mxs->fd);
+			continue;
+		}
+
+		mxs->unix_fd = bind_to_unix_socket(mxs->display);
+		if (mxs->unix_fd < 0) {
+			unlink(lockfile);
+			close(mxs->abstract_fd);
 			free(mxs);
 			return -1;
 		}
+
 		break;
 	} while (errno != 0);
 
 	fprintf(stderr, "xserver listening on display :%d\n", mxs->display);
 
-	if (listen(mxs->fd, 1) < 0) {
-		unlink(mxs->addr.sun_path);
-		unlink(lockfile);
-		close(mxs->fd);
-		free(mxs);
-		return -1;
-	}
-
 	mxs->loop = wl_display_get_event_loop(display);
-	mxs->source =
-		wl_event_loop_add_fd(mxs->loop, mxs->fd, WL_EVENT_READABLE,
+	mxs->abstract_source =
+		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
+				     WL_EVENT_READABLE,
+				     wlsc_xserver_handle_event, mxs);
+	mxs->unix_source =
+		wl_event_loop_add_fd(mxs->loop, mxs->unix_fd,
+				     WL_EVENT_READABLE,
 				     wlsc_xserver_handle_event, mxs);
 
 	mxs->xserver.object.interface = &xserver_interface;
@@ -698,7 +763,9 @@ wlsc_xserver_destroy(struct wlsc_compositor *compositor)
 	unlink(path);
 	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
 	unlink(path);
-	close(wxs->fd);
-	wl_event_source_remove(wxs->source);
+	close(wxs->abstract_fd);
+	wl_event_source_remove(wxs->abstract_source);
+	close(wxs->unix_fd);
+	wl_event_source_remove(wxs->unix_source);
 	free(wxs);
 }
