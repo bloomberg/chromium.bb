@@ -304,7 +304,6 @@
         'view_text_utils.cc',
         'view_text_utils.h',
         'view_win.cc',
-        'views_api.h',
         'views_delegate.h',
         'widget/aero_tooltip_manager.cc',
         'widget/aero_tooltip_manager.h',
