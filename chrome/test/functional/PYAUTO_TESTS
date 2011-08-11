@@ -397,6 +397,8 @@
     'win': [
       'enterprise',
       'gpu',
+      # crbug.com/92446
+      '-gpu.GpuTest.testGpuWithVideo',
     ],
 
     'mac': [
