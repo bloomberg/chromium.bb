@@ -705,8 +705,8 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
 #endif
   GURL gcp_url(CloudPrintURL(BrowserList::GetLastActive()->profile()).
                GetCloudPrintServiceURL());
-  FundamentalValue enable(enable_cloud_print_integration);
-  StringValue gcp_url_value(gcp_url.spec());
+  base::FundamentalValue enable(enable_cloud_print_integration);
+  base::StringValue gcp_url_value(gcp_url.spec());
   web_ui_->CallJavascriptFunction("setUseCloudPrint", enable, gcp_url_value);
 }
 

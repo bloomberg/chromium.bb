@@ -121,7 +121,7 @@ void MostVisitedHandler::SendPagesValue() {
     history::TopSites* ts = profile->GetTopSites();
     if (ts)
       has_blacklisted_urls = ts->HasBlacklistedItems();
-    FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
+    base::FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
     web_ui_->CallJavascriptFunction("setMostVisitedPages",
                                     *(pages_value_.get()),
                                     has_blacklisted_urls_value);

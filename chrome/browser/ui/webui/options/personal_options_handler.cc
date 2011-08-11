@@ -340,7 +340,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 #if defined(TOOLKIT_GTK)
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   bool is_gtk_theme = theme_service->UsingNativeTheme();
-  FundamentalValue gtk_enabled(!is_gtk_theme);
+  base::FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
@@ -349,7 +349,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 #endif
 
   bool is_classic_theme = !is_gtk_theme && theme_service->UsingDefaultTheme();
-  FundamentalValue enabled(!is_classic_theme);
+  base::FundamentalValue enabled(!is_classic_theme);
   web_ui_->CallJavascriptFunction(
       "options.PersonalOptions.setThemesResetButtonEnabled", enabled);
 }

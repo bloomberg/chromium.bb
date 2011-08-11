@@ -407,7 +407,7 @@ void AdvancedOptionsHandler::HandleBackgroundModeCheckbox(
 }
 
 void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
-    FundamentalValue checked(background_mode_enabled_.GetValue());
+    base::FundamentalValue checked(background_mode_enabled_.GetValue());
     web_ui_->CallJavascriptFunction(
         "options.AdvancedOptions.SetBackgroundModeCheckboxState", checked);
 }
@@ -473,14 +473,14 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   bool cloud_print_proxy_allowed =
       !cloud_print_proxy_enabled_.IsManaged() ||
       cloud_print_proxy_enabled_.GetValue();
-  FundamentalValue allowed(cloud_print_proxy_allowed);
+  base::FundamentalValue allowed(cloud_print_proxy_allowed);
 
   std::string email;
   if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
       cloud_print_proxy_allowed) {
     email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
   }
-  FundamentalValue disabled(email.empty());
+  base::FundamentalValue disabled(email.empty());
 
   string16 label_str;
   if (email.empty()) {
@@ -506,8 +506,8 @@ void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
 
 void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  FundamentalValue checked(enable_metrics_recording_.GetValue());
-  FundamentalValue disabled(enable_metrics_recording_.IsManaged());
+  base::FundamentalValue checked(enable_metrics_recording_.GetValue());
+  base::FundamentalValue disabled(enable_metrics_recording_.IsManaged());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled);
@@ -518,7 +518,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
   // Don't show the reporting setting if we are in the guest mode.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
-    FundamentalValue visible(false);
+    base::FundamentalValue visible(false);
     web_ui_->CallJavascriptFunction(
         "options.AdvancedOptions.SetMetricsReportingSettingVisibility",
         visible);
@@ -528,7 +528,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
 
 void AdvancedOptionsHandler::SetupFontSizeLabel() {
   // We're only interested in integer values, so convert to int.
-  FundamentalValue font_size(default_font_size_.GetValue());
+  base::FundamentalValue font_size(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetFontSize", font_size);
 }
@@ -538,18 +538,18 @@ void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   // In case allow_file_selection_dialogs_ is false, we will not display any
   // file-selection dialogs but show an InfoBar. That is why we can disable
   // the DownloadLocationPath-Chooser right-away.
-  FundamentalValue disabled(default_download_location_.IsManaged() ||
+  base::FundamentalValue disabled(default_download_location_.IsManaged() ||
                             !allow_file_selection_dialogs_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
 }
 
 void AdvancedOptionsHandler::SetupPromptForDownload() {
-  FundamentalValue checked(ask_for_save_location_.GetValue());
+  base::FundamentalValue checked(ask_for_save_location_.GetValue());
   // If either the DownloadDirectory is managed or if file-selection dialogs are
   // disallowed then |ask_for_save_location_| must currently be false and cannot
   // be changed.
-  FundamentalValue disabled(default_download_location_.IsManaged() ||
+  base::FundamentalValue disabled(default_download_location_.IsManaged() ||
                             !allow_file_selection_dialogs_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetPromptForDownload", checked, disabled);
@@ -561,7 +561,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   DownloadManager* manager =
       web_ui_->tab_contents()->browser_context()->GetDownloadManager();
   bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
-  FundamentalValue value(disabled);
+  base::FundamentalValue value(disabled);
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
@@ -575,7 +575,7 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 
-  FundamentalValue disabled(proxy_prefs_->IsManaged() ||
+  base::FundamentalValue disabled(proxy_prefs_->IsManaged() ||
                             is_extension_controlled);
 
   // Get the appropriate info string to describe the button.

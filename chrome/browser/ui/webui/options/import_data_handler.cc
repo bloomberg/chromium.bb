@@ -96,7 +96,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
 
   uint16 import_services = (selected_items & supported_items);
   if (import_services) {
-    FundamentalValue state(true);
+    base::FundamentalValue state(true);
     web_ui_->CallJavascriptFunction("ImportDataOverlay.setImportingState",
                                     state);
 

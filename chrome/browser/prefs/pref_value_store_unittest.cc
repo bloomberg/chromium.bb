@@ -365,7 +365,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
 
   // Test getting a preference value that the |PrefValueStore|
   // does not contain.
-  FundamentalValue tmp_dummy_value(true);
+  base::FundamentalValue tmp_dummy_value(true);
   value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref,
                                            Value::TYPE_STRING, &value));

@@ -83,7 +83,7 @@ void EulaScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
     return;
 
-  FundamentalValue checked(delegate_->IsUsageStatsEnabled());
+  base::FundamentalValue checked(delegate_->IsUsageStatsEnabled());
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUsageStats", checked);
 
   // This OEM EULA is a file:// URL which we're unable to load in iframe.

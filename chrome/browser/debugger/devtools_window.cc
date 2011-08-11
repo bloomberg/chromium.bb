@@ -373,7 +373,7 @@ void DevToolsWindow::UpdateFrontendAttachedState() {
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (inspected_tab_) {
-    FundamentalValue tabId(
+    base::FundamentalValue tabId(
         inspected_tab_->restore_tab_helper()->session_id().id());
     CallClientFunction(ASCIIToUTF16("WebInspector.setInspectedTabId"), tabId);
   }

@@ -167,21 +167,21 @@ TEST_F(UserPolicyCacheTest, DecodeIntegerValue) {
   scoped_ptr<Value> value(
       DecodeIntegerValue(static_cast<google::protobuf::int64>(42)));
   ASSERT_TRUE(value.get());
-  FundamentalValue expected_42(42);
+  base::FundamentalValue expected_42(42);
   EXPECT_TRUE(value->Equals(&expected_42));
   value.reset(
       DecodeIntegerValue(static_cast<google::protobuf::int64>(min - 1LL)));
   EXPECT_EQ(NULL, value.get());
   value.reset(DecodeIntegerValue(static_cast<google::protobuf::int64>(min)));
   ASSERT_TRUE(value.get());
-  FundamentalValue expected_min(min);
+  base::FundamentalValue expected_min(min);
   EXPECT_TRUE(value->Equals(&expected_min));
   value.reset(
       DecodeIntegerValue(static_cast<google::protobuf::int64>(max + 1LL)));
   EXPECT_EQ(NULL, value.get());
   value.reset(DecodeIntegerValue(static_cast<google::protobuf::int64>(max)));
   ASSERT_TRUE(value.get());
-  FundamentalValue expected_max(max);
+  base::FundamentalValue expected_max(max);
   EXPECT_TRUE(value->Equals(&expected_max));
 }
 

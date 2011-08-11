@@ -71,7 +71,7 @@ class CloudPolicyControllerTest : public testing::Test {
   }
 
   void ExpectHasSpdyPolicy() {
-    FundamentalValue expected(true);
+    base::FundamentalValue expected(true);
     const PolicyMap* policy_map = cache_->policy(
         CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
     ASSERT_TRUE(Value::Equals(&expected, policy_map->Get(kPolicyDisableSpdy)));

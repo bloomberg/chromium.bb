@@ -62,7 +62,7 @@ void SaveOAuthTokenStatusToLocalState(const std::string& username,
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate oauth_status_update(local_state, kUserOAuthTokenStatus);
   oauth_status_update->SetWithoutPathExpansion(username,
-      new FundamentalValue(static_cast<int>(oauth_token_status)));
+      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
   DVLOG(1) << "Saving user OAuth token status in Local State.";
   local_state->SavePersistentPrefs();
 }

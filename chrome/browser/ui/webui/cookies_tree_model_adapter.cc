@@ -68,10 +68,10 @@ void CookiesTreeModelAdapter::TreeNodesAdded(ui::TreeModel* model,
 
   CookieTreeNode* parent_node = model_->AsNode(parent);
 
-  StringValue tree_id(tree_id_);
+  base::StringValue tree_id(tree_id_);
   scoped_ptr<Value> parend_id(GetTreeNodeId(parent_node));
-  FundamentalValue start_value(start);
-  ListValue children;
+  base::FundamentalValue start_value(start);
+  base::ListValue children;
   cookies_tree_model_util::GetChildNodeList(parent_node, start, count,
                                             &children);
   web_ui_->CallJavascriptFunction("ui.CookiesTree.onTreeItemAdded",
@@ -86,10 +86,10 @@ void CookiesTreeModelAdapter::TreeNodesRemoved(ui::TreeModel* model,
   if (batch_update_)
     return;
 
-  StringValue tree_id(tree_id_);
+  base::StringValue tree_id(tree_id_);
   scoped_ptr<Value> parend_id(GetTreeNodeId(model_->AsNode(parent)));
-  FundamentalValue start_value(start);
-  FundamentalValue count_value(count);
+  base::FundamentalValue start_value(start);
+  base::FundamentalValue count_value(count);
   web_ui_->CallJavascriptFunction("ui.CookiesTree.onTreeItemRemoved",
       tree_id, *parend_id.get(), start_value, count_value);
 }

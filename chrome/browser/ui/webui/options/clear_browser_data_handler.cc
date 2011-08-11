@@ -112,7 +112,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
 
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
-  FundamentalValue state(true);
+  base::FundamentalValue state(true);
   web_ui_->CallJavascriptFunction("ClearBrowserDataOverlay.setClearingState",
                                   state);
 

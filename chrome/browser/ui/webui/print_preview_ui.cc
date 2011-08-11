@@ -68,23 +68,23 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(int document_cookie,
                                               bool is_modifiable) {
   DCHECK_GT(page_count, 0);
   document_cookie_ = document_cookie;
-  FundamentalValue count(page_count);
-  FundamentalValue modifiable(is_modifiable);
+  base::FundamentalValue count(page_count);
+  base::FundamentalValue modifiable(is_modifiable);
   CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number) {
   DCHECK_GE(page_number, 0);
-  FundamentalValue number(page_number);
-  StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue number(page_number);
+  base::StringValue ui_identifier(preview_ui_addr_str_);
   CallJavascriptFunction("onDidPreviewPage", number, ui_identifier);
 }
 
 void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
   DecrementRequestCount();
 
-  StringValue ui_identifier(preview_ui_addr_str_);
-  FundamentalValue ui_preview_request_id(preview_request_id);
+  base::StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue ui_preview_request_id(preview_request_id);
   CallJavascriptFunction("reloadPreviewPages", ui_identifier,
                          ui_preview_request_id);
 }
@@ -103,9 +103,9 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          expected_pages_count);
     initial_preview_start_time_ = base::TimeTicks();
   }
-  StringValue title(job_title);
-  StringValue ui_identifier(preview_ui_addr_str_);
-  FundamentalValue ui_preview_request_id(preview_request_id);
+  base::StringValue title(job_title);
+  base::StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue ui_preview_request_id(preview_request_id);
   CallJavascriptFunction("updatePrintPreview", title, ui_identifier,
                          ui_preview_request_id);
 }

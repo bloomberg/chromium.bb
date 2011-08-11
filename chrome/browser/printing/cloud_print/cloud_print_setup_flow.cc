@@ -319,8 +319,8 @@ void CloudPrintSetupFlow::ShowSetupDone() {
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES,
         approximate_web_font);
 
-    FundamentalValue new_width(done_size.width());
-    FundamentalValue new_height(done_size.height());
+    base::FundamentalValue new_width(done_size.width());
+    base::FundamentalValue new_height(done_size.height());
     web_ui_->CallJavascriptFunction("cloudprint.showSetupDone",
                                     new_width, new_height);
   }

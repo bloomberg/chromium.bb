@@ -194,12 +194,12 @@ TaskManagerHandler::~TaskManagerHandler() {
 void TaskManagerHandler::OnModelChanged() {
   const int count = model_->GroupCount();
 
-  FundamentalValue start_value(0);
-  FundamentalValue length_value(count);
-  ListValue tasks_value;
-  for (int i = 0; i < count; i++) {
+  base::FundamentalValue start_value(0);
+  base::FundamentalValue length_value(count);
+  base::ListValue tasks_value;
+  for (int i = 0; i < count; ++i)
     tasks_value.Append(CreateTaskGroupValue(model_, i));
-  }
+
   if (is_enabled_) {
     web_ui_->CallJavascriptFunction("taskChanged",
                                     start_value, length_value, tasks_value);
@@ -370,13 +370,13 @@ void TaskManagerHandler::UpdateResourceGroupTable(int start, int length) {
 
 void TaskManagerHandler::OnGroupChanged(const int group_start,
                                         const int group_length) {
-  FundamentalValue start_value(group_start);
-  FundamentalValue length_value(group_length);
-  ListValue tasks_value;
+  base::FundamentalValue start_value(group_start);
+  base::FundamentalValue length_value(group_length);
+  base::ListValue tasks_value;
 
-  for (int i = 0; i < group_length; i++) {
+  for (int i = 0; i < group_length; ++i)
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
-  }
+
   if (is_enabled_) {
     web_ui_->CallJavascriptFunction("taskChanged",
                                     start_value, length_value, tasks_value);
@@ -385,12 +385,12 @@ void TaskManagerHandler::OnGroupChanged(const int group_start,
 
 void TaskManagerHandler::OnGroupAdded(const int group_start,
                                       const int group_length) {
-  FundamentalValue start_value(group_start);
-  FundamentalValue length_value(group_length);
-  ListValue tasks_value;
-  for (int i = 0; i < group_length; i++) {
+  base::FundamentalValue start_value(group_start);
+  base::FundamentalValue length_value(group_length);
+  base::ListValue tasks_value;
+  for (int i = 0; i < group_length; ++i)
     tasks_value.Append(CreateTaskGroupValue(model_, group_start + i));
-  }
+
   if (is_enabled_) {
     web_ui_->CallJavascriptFunction("taskAdded",
                                     start_value, length_value, tasks_value);
@@ -399,9 +399,8 @@ void TaskManagerHandler::OnGroupAdded(const int group_start,
 
 void TaskManagerHandler::OnGroupRemoved(const int group_start,
                                         const int group_length) {
-  FundamentalValue start_value(group_start);
-  FundamentalValue length_value(group_length);
+  base::FundamentalValue start_value(group_start);
+  base::FundamentalValue length_value(group_length);
   if (is_enabled_)
     web_ui_->CallJavascriptFunction("taskRemoved", start_value, length_value);
 }
-

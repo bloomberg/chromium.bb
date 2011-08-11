@@ -118,7 +118,7 @@ TEST_F(DevicePolicyCacheTest, Startup) {
                                              policy));
   cache_->Load();
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
-  FundamentalValue expected(120);
+  base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetMandatoryPolicy(
                                 kPolicyDevicePolicyRefreshRate)));
@@ -137,7 +137,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
                                              policy));
   cache_->Load();
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
-  FundamentalValue expected(120);
+  base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetMandatoryPolicy(
                                 kPolicyDevicePolicyRefreshRate)));
@@ -153,7 +153,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   EXPECT_CALL(signed_settings_helper_, CancelCallback(_));
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
-  FundamentalValue updated_expected(300);
+  base::FundamentalValue updated_expected(300);
   EXPECT_TRUE(Value::Equals(&updated_expected,
                             GetMandatoryPolicy(
                                 kPolicyDevicePolicyRefreshRate)));
@@ -180,7 +180,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
 
-  FundamentalValue expected(120);
+  base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetMandatoryPolicy(
                                 kPolicyDevicePolicyRefreshRate)));
@@ -205,7 +205,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
 
-  FundamentalValue expected(120);
+  base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetMandatoryPolicy(
                                 kPolicyDevicePolicyRefreshRate)));

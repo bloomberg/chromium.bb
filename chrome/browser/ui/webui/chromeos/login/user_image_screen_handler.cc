@@ -87,7 +87,7 @@ void UserImageScreenHandler::SelectImage(int index) {
   selected_image_ = index;
   if (page_is_ready()) {
     // Skip Take Photo button.
-    FundamentalValue index_value(index + 1);
+    base::FundamentalValue index_value(index + 1);
     web_ui_->CallJavascriptFunction(
         "oobe.UserImageScreen.selectUserImage",
         index_value);

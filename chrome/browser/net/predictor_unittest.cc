@@ -282,8 +282,9 @@ static ListValue* FindSerializationMotivation(
 
 // Create a new empty serialization list.
 static ListValue* NewEmptySerializationList() {
-  ListValue* list = new ListValue;
-  list->Append(new FundamentalValue(Predictor::PREDICTOR_REFERRER_VERSION));
+  base::ListValue* list = new base::ListValue;
+  list->Append(
+      new base::FundamentalValue(Predictor::PREDICTOR_REFERRER_VERSION));
   return list;
 }
 
@@ -316,8 +317,8 @@ static void AddToSerializedList(const GURL& motivation,
   // case, during deserialization, the latency value we supply plus the
   // existing value(s) will be added to the referrer.
 
-  subresource_list->Append(new StringValue(subresource.spec()));
-  subresource_list->Append(new FundamentalValue(use_rate));
+  subresource_list->Append(new base::StringValue(subresource.spec()));
+  subresource_list->Append(new base::FundamentalValue(use_rate));
 }
 
 static const int kLatencyNotFound = -1;

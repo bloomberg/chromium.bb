@@ -174,35 +174,35 @@ void FontSettingsHandler::Observe(int type,
 }
 
 void FontSettingsHandler::SetUpStandardFontSample() {
-  StringValue font_value(standard_font_.GetValue());
-  FundamentalValue size_value(default_font_size_.GetValue());
+  base::StringValue font_value(standard_font_.GetValue());
+  base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "FontSettings.setUpStandardFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSerifFontSample() {
-  StringValue font_value(serif_font_.GetValue());
-  FundamentalValue size_value(default_font_size_.GetValue());
+  base::StringValue font_value(serif_font_.GetValue());
+  base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "FontSettings.setUpSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSansSerifFontSample() {
-  StringValue font_value(sans_serif_font_.GetValue());
-  FundamentalValue size_value(default_font_size_.GetValue());
+  base::StringValue font_value(sans_serif_font_.GetValue());
+  base::FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "FontSettings.setUpSansSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpFixedFontSample() {
-  StringValue font_value(fixed_font_.GetValue());
-  FundamentalValue size_value(default_fixed_font_size_.GetValue());
+  base::StringValue font_value(fixed_font_.GetValue());
+  base::FundamentalValue size_value(default_fixed_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "FontSettings.setUpFixedFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpMinimumFontSample() {
-  FundamentalValue size_value(minimum_font_size_.GetValue());
+  base::FundamentalValue size_value(minimum_font_size_.GetValue());
   web_ui_->CallJavascriptFunction("FontSettings.setUpMinimumFontSample",
                                   size_value);
 }

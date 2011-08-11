@@ -155,7 +155,7 @@ TEST_F(PrefNotifierTest, AddAndRemovePrefObservers) {
 }
 
 TEST_F(PrefNotifierTest, FireObservers) {
-  FundamentalValue value_true(true);
+  base::FundamentalValue value_true(true);
   PrefNotifierImpl notifier(&pref_service_);
   notifier.AddPrefObserver(kChangedPref, &obs1_);
   notifier.AddPrefObserver(kUnchangedPref, &obs1_);

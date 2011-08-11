@@ -329,7 +329,7 @@ void BrowserOptionsHandler::UpdateRestoreOnStartup() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   const SessionStartupPref startup_pref =
       SessionStartupPref::GetStartupPref(profile->GetPrefs());
-  FundamentalValue restore_on_startup(startup_pref.type);
+  base::FundamentalValue restore_on_startup(startup_pref.type);
   web_ui_->CallJavascriptFunction("BrowserOptions.updateRestoreOnStartup",
                                   restore_on_startup);
 }
@@ -526,7 +526,7 @@ void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
-  FundamentalValue enabled(
+  base::FundamentalValue enabled(
       InstantFieldTrial::IsExperimentGroup(Profile::FromWebUI(web_ui_)));
   web_ui_->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
                                   enabled);

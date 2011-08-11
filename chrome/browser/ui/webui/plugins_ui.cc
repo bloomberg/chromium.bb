@@ -241,7 +241,7 @@ void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
 }
 
 void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
-  FundamentalValue show_details(show_details_.GetValue());
+  base::FundamentalValue show_details(show_details_.GetValue());
   web_ui_->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
 }
 

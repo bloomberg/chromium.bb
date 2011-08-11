@@ -51,9 +51,9 @@ TEST(PolicyMapTest, Swap) {
   b.Set(kPolicyHomepageLocation, Value::CreateStringValue("bbb"));
   b.Set(kPolicyHomepageIsNewTabPage, Value::CreateBooleanValue(true));
   a.Swap(&b);
-  StringValue expected("bbb");
+  base::StringValue expected("bbb");
   EXPECT_TRUE(expected.Equals(a.Get(kPolicyHomepageLocation)));
-  FundamentalValue expected_bool(true);
+  base::FundamentalValue expected_bool(true);
   EXPECT_TRUE(expected_bool.Equals(a.Get(kPolicyHomepageIsNewTabPage)));
   StringValue expected_a("aaa");
   EXPECT_TRUE(expected_a.Equals(b.Get(kPolicyHomepageLocation)));

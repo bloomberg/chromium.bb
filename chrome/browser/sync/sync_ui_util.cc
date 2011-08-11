@@ -349,7 +349,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
                        full_status.summary));
 
     strings->Set("authenticated",
-                 new FundamentalValue(full_status.authenticated));
+                 new base::FundamentalValue(full_status.authenticated));
     strings->SetString("auth_problem",
                        sync_ui_util::MakeSyncAuthErrorText(
                        service->GetAuthError().state()));
@@ -468,7 +468,8 @@ void ConstructAboutInformation(ProfileSyncService* service,
     }
 
     if (service->unrecoverable_error_detected()) {
-      strings->Set("unrecoverable_error_detected", new FundamentalValue(true));
+      strings->Set("unrecoverable_error_detected",
+                   new base::FundamentalValue(true));
       tracked_objects::Location loc(service->unrecoverable_error_location());
       std::string location_str;
       loc.Write(true, true, &location_str);

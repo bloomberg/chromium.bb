@@ -266,7 +266,7 @@ TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
-  EXPECT_TRUE(FundamentalValue(2).Equals(value));
+  EXPECT_TRUE(base::FundamentalValue(2).Equals(value));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -723,7 +723,7 @@ class ConfigurationPolicyPrefStoreIncognitoModeTest : public testing::Test {
     const Value* value = NULL;
     EXPECT_EQ(PrefStore::READ_OK,
               store_->GetValue(prefs::kIncognitoModeAvailability, &value));
-    EXPECT_TRUE(FundamentalValue(availability).Equals(value));
+    EXPECT_TRUE(base::FundamentalValue(availability).Equals(value));
   }
 
   MockConfigurationPolicyProvider provider_;

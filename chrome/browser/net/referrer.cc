@@ -145,10 +145,10 @@ void Referrer::Deserialize(const Value& value) {
 }
 
 Value* Referrer::Serialize() const {
-  ListValue* subresource_list(new ListValue);
+  base::ListValue* subresource_list(new base::ListValue);
   for (const_iterator it = begin(); it != end(); ++it) {
-    StringValue* url_spec(new StringValue(it->first.spec()));
-    FundamentalValue* rate(new FundamentalValue(
+    base::StringValue* url_spec(new base::StringValue(it->first.spec()));
+    base::FundamentalValue* rate(new base::FundamentalValue(
         it->second.subresource_use_rate()));
 
     subresource_list->Append(url_spec);

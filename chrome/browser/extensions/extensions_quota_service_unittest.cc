@@ -201,14 +201,14 @@ TEST_F(ExtensionsQuotaServiceTest, NoHeuristic) {
 TEST_F(ExtensionsQuotaServiceTest, FrozenHeuristic) {
   scoped_refptr<MockFunction> f(new FrozenMockFunction("foo"));
   ListValue args;
-  args.Append(new FundamentalValue(1));
+  args.Append(new base::FundamentalValue(1));
   EXPECT_FALSE(service_->Assess(extension_a_, f, &args, kStartTime));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, SingleHeuristic) {
   scoped_refptr<MockFunction> f(new TimedLimitMockFunction("foo"));
   ListValue args;
-  args.Append(new FundamentalValue(1));
+  args.Append(new base::FundamentalValue(1));
   EXPECT_TRUE(service_->Assess(extension_a_, f, &args, kStartTime));
   EXPECT_TRUE(service_->Assess(extension_a_, f, &args,
               kStartTime + TimeDelta::FromSeconds(10)));
@@ -216,8 +216,8 @@ TEST_F(ExtensionsQuotaServiceTest, SingleHeuristic) {
               kStartTime + TimeDelta::FromSeconds(15)));
 
   ListValue args2;
-  args2.Append(new FundamentalValue(1));
-  args2.Append(new FundamentalValue(2));
+  args2.Append(new base::FundamentalValue(1));
+  args2.Append(new base::FundamentalValue(2));
   EXPECT_TRUE(service_->Assess(extension_b_, f, &args2, kStartTime));
   EXPECT_TRUE(service_->Assess(extension_b_, f, &args2,
               kStartTime + TimeDelta::FromSeconds(10)));
@@ -231,7 +231,7 @@ TEST_F(ExtensionsQuotaServiceTest, SingleHeuristic) {
 
   // Test that items are independent.
   ListValue args3;
-  args3.Append(new FundamentalValue(3));
+  args3.Append(new base::FundamentalValue(3));
   EXPECT_TRUE(service_->Assess(extension_c_, f, &args, kStartTime));
   EXPECT_TRUE(service_->Assess(extension_c_, f, &args3,
               kStartTime + TimeDelta::FromSeconds(10)));
@@ -248,7 +248,7 @@ TEST_F(ExtensionsQuotaServiceTest, SingleHeuristic) {
 TEST_F(ExtensionsQuotaServiceTest, ChainedHeuristics) {
   scoped_refptr<MockFunction> f(new ChainedLimitsMockFunction("foo"));
   ListValue args;
-  args.Append(new FundamentalValue(1));
+  args.Append(new base::FundamentalValue(1));
 
   // First, test that the low limit can be avoided but the higher one is hit.
   // One event per minute for 20 minutes comes in under the sustained limit,
@@ -282,8 +282,8 @@ TEST_F(ExtensionsQuotaServiceTest, MultipleFunctionsDontInterfere) {
 
   ListValue args_f;
   ListValue args_g;
-  args_f.Append(new FundamentalValue(1));
-  args_g.Append(new FundamentalValue(2));
+  args_f.Append(new base::FundamentalValue(1));
+  args_g.Append(new base::FundamentalValue(2));
 
   EXPECT_TRUE(service_->Assess(extension_a_, f, &args_f, kStartTime));
   EXPECT_TRUE(service_->Assess(extension_a_, g, &args_g, kStartTime));
@@ -301,7 +301,7 @@ TEST_F(ExtensionsQuotaServiceTest, ViolatorsWillBeViolators) {
   scoped_refptr<MockFunction> f(new TimedLimitMockFunction("foo"));
   scoped_refptr<MockFunction> g(new TimedLimitMockFunction("bar"));
   ListValue arg;
-  arg.Append(new FundamentalValue(1));
+  arg.Append(new base::FundamentalValue(1));
   EXPECT_TRUE(service_->Assess(extension_a_, f, &arg, kStartTime));
   EXPECT_TRUE(service_->Assess(extension_a_, f, &arg,
               kStartTime + TimeDelta::FromSeconds(10)));

@@ -269,7 +269,8 @@ void InitialObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
   DCHECK(startup_list);
   startup_list->Clear();
   DCHECK_EQ(0u, startup_list->GetSize());
-  startup_list->Append(new FundamentalValue(kPredictorStartupFormatVersion));
+  startup_list->Append(
+      new base::FundamentalValue(kPredictorStartupFormatVersion));
   for (FirstNavigations::iterator it = first_navigations_.begin();
        it != first_navigations_.end();
        ++it) {

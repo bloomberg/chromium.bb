@@ -62,13 +62,13 @@ void UpdateScreenHandler::ShowManualRebootInfo() {
 }
 
 void UpdateScreenHandler::SetProgress(int progress) {
-  FundamentalValue progress_value(progress);
+  base::FundamentalValue progress_value(progress);
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.setUpdateProgress",
                                   progress_value);
 }
 
 void UpdateScreenHandler::ShowCurtain(bool enable) {
-  FundamentalValue enable_value(enable);
+  base::FundamentalValue enable_value(enable);
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.showUpdateCurtain", enable_value);
 }
 

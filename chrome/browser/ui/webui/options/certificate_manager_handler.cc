@@ -466,6 +466,7 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
 
   int trust = certificate_manager_model_->cert_db().GetCertTrust(
       cert, net::CA_CERT);
+  using base::FundamentalValue;
   FundamentalValue ssl_value(bool(trust & net::CertDatabase::TRUSTED_SSL));
   FundamentalValue email_value(bool(trust & net::CertDatabase::TRUSTED_EMAIL));
   FundamentalValue obj_sign_value(
@@ -993,7 +994,7 @@ void CertificateManagerHandler::CheckTpmTokenReady(const ListValue* args) {
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
 
   // TODO(xiyuan): Use async way when underlying supports it.
-  FundamentalValue ready(cryptohome->Pkcs11IsTpmTokenReady());
+  base::FundamentalValue ready(cryptohome->Pkcs11IsTpmTokenReady());
   web_ui_->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
                                   ready);
 }

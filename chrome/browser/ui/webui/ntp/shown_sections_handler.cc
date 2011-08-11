@@ -73,7 +73,7 @@ void ShownSectionsHandler::Observe(int type,
     std::string* pref_name = Details<std::string>(details).ptr();
     DCHECK(*pref_name == prefs::kNTPShownSections);
     int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
-    FundamentalValue sections_value(sections);
+    base::FundamentalValue sections_value(sections);
     web_ui_->CallJavascriptFunction("setShownSections", sections_value);
   } else {
     NOTREACHED();

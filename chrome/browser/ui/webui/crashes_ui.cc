@@ -138,10 +138,10 @@ void CrashesDOMHandler::UpdateUI() {
     }
   }
 
-  FundamentalValue enabled(crash_reporting_enabled);
+  base::FundamentalValue enabled(crash_reporting_enabled);
 
   const chrome::VersionInfo version_info;
-  StringValue version(version_info.Version());
+  base::StringValue version(version_info.Version());
 
   web_ui_->CallJavascriptFunction("updateCrashList", enabled, crash_list,
                                   version);

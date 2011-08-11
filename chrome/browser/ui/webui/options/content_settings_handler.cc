@@ -388,7 +388,8 @@ bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 #if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
   DCHECK(web_ui_);
-  FundamentalValue handlers_enabled(GetProtocolHandlerRegistry()->enabled());
+  base::FundamentalValue handlers_enabled(
+      GetProtocolHandlerRegistry()->enabled());
 
   web_ui_->CallJavascriptFunction("ContentSettings.updateHandlersEnabledRadios",
       handlers_enabled);

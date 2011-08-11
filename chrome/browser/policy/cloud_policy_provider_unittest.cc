@@ -175,8 +175,8 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsSame) {
         Value::CreateStringValue("http://www.google.com"));
   A.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("hu"));
   B.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("us"));
-  A.Set(kPolicyDevicePolicyRefreshRate, new FundamentalValue(100));
-  B.Set(kPolicyDevicePolicyRefreshRate, new FundamentalValue(200));
+  A.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(100));
+  B.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(200));
   CombineTwoPolicyMaps(A, B, &C);
   EXPECT_TRUE(A.Equals(C));
 }
@@ -197,8 +197,8 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsPartial) {
   B.Set(kPolicyHomepageLocation,
         Value::CreateStringValue("http://www.google.com"));
   B.Set(kPolicyApplicationLocaleValue, Value::CreateStringValue("us"));
-  A.Set(kPolicyDevicePolicyRefreshRate, new FundamentalValue(100));
-  B.Set(kPolicyDevicePolicyRefreshRate, new FundamentalValue(200));
+  A.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(100));
+  B.Set(kPolicyDevicePolicyRefreshRate, new base::FundamentalValue(200));
   CombineTwoPolicyMaps(A, B, &C);
 
   const Value* value;

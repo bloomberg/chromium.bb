@@ -89,7 +89,7 @@ void SystemOptionsHandler::Initialize() {
   DCHECK(web_ui_);
   PrefService* pref_service = g_browser_process->local_state();
   bool acc_enabled = pref_service->GetBoolean(prefs::kAccessibilityEnabled);
-  FundamentalValue checked(acc_enabled);
+  base::FundamentalValue checked(acc_enabled);
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
 }

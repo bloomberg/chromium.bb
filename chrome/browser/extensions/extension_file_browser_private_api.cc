@@ -233,7 +233,7 @@ void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
   DictionaryPrefUpdate prefs_usage_update(profile->GetPrefs(),
       prefs::kLastUsedFileBrowserHandlers);
   prefs_usage_update->SetWithoutPathExpansion(task_id,
-      new FundamentalValue(
+      new base::FundamentalValue(
           static_cast<int>(base::Time::Now().ToInternalValue()/
                            base::Time::kMicrosecondsPerSecond)));
 }
@@ -798,7 +798,7 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
           source_url_,
           task_id,
           file_urls));
-  result_.reset(new FundamentalValue(true));
+  result_.reset(new base::FundamentalValue(true));
   return true;
 }
 

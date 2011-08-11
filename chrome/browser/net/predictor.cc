@@ -606,7 +606,7 @@ void Predictor::TrimReferrersNow() {
 void Predictor::SerializeReferrers(ListValue* referral_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   referral_list->Clear();
-  referral_list->Append(new FundamentalValue(PREDICTOR_REFERRER_VERSION));
+  referral_list->Append(new base::FundamentalValue(PREDICTOR_REFERRER_VERSION));
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it) {
     // Serialize the list of subresource names.

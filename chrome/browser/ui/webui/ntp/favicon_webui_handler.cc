@@ -54,7 +54,7 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
   FaviconService* favicon_service =
       Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
-  FundamentalValue id_value(id);
+  base::FundamentalValue id_value(id);
   scoped_ptr<StringValue> color_value;
 
   if (favicon.is_valid()) {
