@@ -23,3 +23,6 @@ URLRequestTest.FileTest
 # http://crbug.com/88228
 SSLClientSocketTest.Connect
 SSLClientSocketTest.ConnectClientAuthSendNullCert
+
+# http://crbug.com/92439
+OriginBoundCertServiceTest.*
