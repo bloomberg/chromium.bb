@@ -136,7 +136,7 @@
       'targets': [
         {
           'target_name': 'sandbox',
-          'type': 'static_library',
+          'type': 'settings',
           'conditions': [
             # Only compile in the seccomp code for the flag combination
             # where we support it.
