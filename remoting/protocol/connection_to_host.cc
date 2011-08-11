@@ -38,11 +38,13 @@ ConnectionToHost::ConnectionToHost(
       host_resolver_factory_(host_resolver_factory),
       port_allocator_session_factory_(session_factory),
       allow_nat_traversal_(allow_nat_traversal),
-      state_(STATE_EMPTY),
       event_callback_(NULL),
-      dispatcher_(new ClientMessageDispatcher()),
       client_stub_(NULL),
-      video_stub_(NULL) {
+      video_stub_(NULL),
+      state_(STATE_EMPTY),
+      control_connected_(false),
+      input_connected_(false),
+      video_connected_(false) {
 }
 
 ConnectionToHost::~ConnectionToHost() {
@@ -176,8 +178,7 @@ void ConnectionToHost::OnSessionStateChange(
   switch (state) {
     case Session::FAILED:
       state_ = STATE_FAILED;
-      CloseChannels();
-      event_callback_->OnConnectionFailed(this);
+      CloseOnError();
       break;
 
     case Session::CLOSED:
@@ -187,14 +188,24 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::CONNECTED:
-      state_ = STATE_CONNECTED;
       // Initialize reader and writer.
       video_reader_.reset(VideoReader::Create(session_->config()));
-      video_reader_->Init(session_.get(), video_stub_);
+      video_reader_->Init(
+          session_.get(), video_stub_,
+          base::Bind(&ConnectionToHost::OnVideoChannelInitialized,
+                     base::Unretained(this)));
+      break;
+
+    case Session::CONNECTED_CHANNELS:
+      state_ = STATE_CONNECTED;
       host_control_sender_.reset(
           new HostControlSender(session_->control_channel()));
+      dispatcher_.reset(new ClientMessageDispatcher());
       dispatcher_->Initialize(session_.get(), client_stub_);
-      event_callback_->OnConnectionOpened(this);
+
+      control_connected_ = true;
+      input_connected_ = true;
+      NotifyIfChannelsReady();
       break;
 
     default:
@@ -203,12 +214,36 @@ void ConnectionToHost::OnSessionStateChange(
   }
 }
 
+void ConnectionToHost::OnVideoChannelInitialized(bool successful) {
+  if (!successful) {
+    LOG(ERROR) << "Failed to connect video channel";
+    CloseOnError();
+    return;
+  }
+
+  video_connected_ = true;
+  NotifyIfChannelsReady();
+}
+
+void ConnectionToHost::NotifyIfChannelsReady() {
+  if (control_connected_ && input_connected_ && video_connected_)
+    event_callback_->OnConnectionOpened(this);
+}
+
+void ConnectionToHost::CloseOnError() {
+  state_ = STATE_FAILED;
+  CloseChannels();
+  event_callback_->OnConnectionFailed(this);
+}
+
 void ConnectionToHost::CloseChannels() {
   if (input_sender_.get())
     input_sender_->Close();
 
   if (host_control_sender_.get())
     host_control_sender_->Close();
+
+  video_reader_.reset();
 }
 
 void ConnectionToHost::OnClientAuthenticated() {

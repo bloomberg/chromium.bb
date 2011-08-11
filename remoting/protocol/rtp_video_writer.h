@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_RTP_VIDEO_WRITER_H_
 #define REMOTING_PROTOCOL_RTP_VIDEO_WRITER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/rtp_writer.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -19,7 +20,8 @@ class RtpVideoWriter : public VideoWriter {
   virtual ~RtpVideoWriter();
 
   // VideoWriter interface.
-  virtual void Init(protocol::Session* session) OVERRIDE;
+  virtual void Init(protocol::Session* session,
+                    const InitializedCallback& callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   // VideoStub interface.
@@ -28,7 +30,14 @@ class RtpVideoWriter : public VideoWriter {
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
+  void OnChannelReady(const std::string& name, net::Socket* socket);
+
+  bool initialized_;
+  InitializedCallback initialized_callback_;
+
+  scoped_ptr<net::Socket> rtp_channel_;
   RtpWriter rtp_writer_;
+  scoped_ptr<net::Socket> rtcp_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpVideoWriter);
 };

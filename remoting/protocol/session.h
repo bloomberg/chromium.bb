@@ -28,10 +28,24 @@ namespace protocol {
 class Session : public base::NonThreadSafe {
  public:
   enum State {
+    // Created, but not connecting yet.
     INITIALIZING,
+
+    // Sent or received session-initiate, but haven't sent or received
+    // session-accept.
     CONNECTING,
+
+    // Session has been accepted, but channels are connected yet.
     CONNECTED,
+
+    // Video and control channels are connected.
+    // TODO(sergeyu): Remove this state.
+    CONNECTED_CHANNELS,
+
+    // Session has been closed.
     CLOSED,
+
+    // Connection has failed.
     FAILED,
   };
 
@@ -64,9 +78,6 @@ class Session : public base::NonThreadSafe {
   // instead.
   virtual net::Socket* control_channel() = 0;
   virtual net::Socket* event_channel() = 0;
-  virtual net::Socket* video_channel() = 0;
-  virtual net::Socket* video_rtp_channel() = 0;
-  virtual net::Socket* video_rtcp_channel() = 0;
 
   // JID of the other side.
   virtual const std::string& jid() = 0;

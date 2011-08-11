@@ -41,7 +41,8 @@ class BufferedSocketWriterBase
 
   // Initializes the writer. Must be called on the thread that will be used
   // to access the socket in the future. |callback| will be called after each
-  // failed write.
+  // failed write. Caller retains ownership of |socket|.
+  // TODO(sergeyu): Change it so that it take ownership of |socket|.
   void Init(net::Socket* socket, WriteFailedCallback* callback);
 
   // Puts a new data chunk in the buffer. Returns false and doesn't enqueue

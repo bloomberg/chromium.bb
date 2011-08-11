@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/base_mock_objects.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -34,6 +35,8 @@ class ConnectionToClientTest : public testing::Test {
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
     session_->state_change_callback()->Run(
         protocol::Session::CONNECTED);
+    session_->state_change_callback()->Run(
+        protocol::Session::CONNECTED_CHANNELS);
     message_loop_.RunAllPending();
   }
 
@@ -60,7 +63,9 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
 
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
-  EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
+  ASSERT_TRUE(session_->GetStreamChannel(kVideoChannelName));
+  EXPECT_GT(session_->GetStreamChannel(kVideoChannelName)->
+            written_data().size(), 0u);
 
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();

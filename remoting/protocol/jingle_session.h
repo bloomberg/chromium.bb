@@ -38,9 +38,6 @@ class JingleSession : public protocol::Session,
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual net::Socket* control_channel() OVERRIDE;
   virtual net::Socket* event_channel() OVERRIDE;
-  virtual net::Socket* video_channel() OVERRIDE;
-  virtual net::Socket* video_rtp_channel() OVERRIDE;
-  virtual net::Socket* video_rtcp_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig* config() OVERRIDE;
@@ -185,7 +182,6 @@ class JingleSession : public protocol::Session,
 
   scoped_ptr<net::Socket> control_channel_socket_;
   scoped_ptr<net::Socket> event_channel_socket_;
-  scoped_ptr<net::Socket> video_channel_socket_;
 
   ScopedRunnableMethodFactory<JingleSession> task_factory_;
 

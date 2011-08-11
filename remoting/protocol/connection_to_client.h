@@ -90,16 +90,15 @@ class ConnectionToClient :
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
 
+  // Callback for VideoReader::Init().
+  void OnVideoInitialized(bool successful);
+
+  void NotifyIfChannelsReady();
+
+  void CloseOnError();
+
   // Stops writing in the channels.
   void CloseChannels();
-
-  // The libjingle channel used to send and receive data from the remote client.
-  scoped_ptr<Session> session_;
-
-  scoped_ptr<VideoWriter> video_writer_;
-
-  // ClientStub for sending messages to the client.
-  scoped_ptr<ClientControlSender> client_control_sender_;
 
   // The message loop that this object runs on.
   MessageLoop* loop_;
@@ -107,14 +106,24 @@ class ConnectionToClient :
   // Event handler for handling events sent from this object.
   EventHandler* handler_;
 
-  // HostStub for receiving control events from the client.
+  // Stubs that are called for incoming messages.
   HostStub* host_stub_;
-
-  // InputStub for receiving input events from the client.
   InputStub* input_stub_;
 
-  // Dispatcher for submitting messages to stubs.
+  // The libjingle channel used to send and receive data from the remote client.
+  scoped_ptr<Session> session_;
+
+  // Writers for outgoing channels.
+  scoped_ptr<VideoWriter> video_writer_;
+  scoped_ptr<ClientControlSender> client_control_sender_;
+
+  // Dispatcher for incoming messages.
   scoped_ptr<HostMessageDispatcher> dispatcher_;
+
+  // State of the channels.
+  bool control_connected_;
+  bool input_connected_;
+  bool video_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);
 };
