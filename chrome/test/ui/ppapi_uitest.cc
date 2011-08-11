@@ -159,7 +159,8 @@ TEST_PPAPI_IN_PROCESS(CursorControl)
 TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
 
 TEST_PPAPI_IN_PROCESS(Instance)
-TEST_PPAPI_OUT_OF_PROCESS(Instance)
+// http://crbug.com/91729
+TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Instance)
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 // Disabled because it times out: http://crbug.com/89961
