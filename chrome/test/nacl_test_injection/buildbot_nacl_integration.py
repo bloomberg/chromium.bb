@@ -12,15 +12,6 @@ def Main(args):
   pwd = os.environ.get('PWD', '')
   is_integration_bot = 'nacl-chrome' in pwd
 
-
-  if sys.platform == 'darwin' and 'Debug' in args:
-    # The nacl integration tests don't work with clang in debug mode. Disable
-    # them to get the waterfall green until this is resolved.
-    # http://crbug.com/91371
-    sys.stdout.write('Skipping nacl_integration, see http://crbug.com/91371\n')
-    sys.stdout.flush()
-    return
-
   # On the main Chrome waterfall, we may need to control where the tests are
   # run.
   # If there is serious skew in the PPAPI interface that causes all of
