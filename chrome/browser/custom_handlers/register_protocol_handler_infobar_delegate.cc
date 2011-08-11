@@ -9,6 +9,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -69,11 +70,15 @@ bool RegisterProtocolHandlerInfoBarDelegate::NeedElevation(
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
+  UserMetrics::RecordAction(UserMetricsAction(
+      "RegisterProtocolHandler.Infobar_Accept"));
   registry_->OnAcceptRegisterProtocolHandler(handler_);
   return true;
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
+  UserMetrics::RecordAction(UserMetricsAction(
+      "RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
   return true;
 }
@@ -84,6 +89,8 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
 
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  UserMetrics::RecordAction(UserMetricsAction(
+      "RegisterProtocolHandler.InfoBar_LearnMore"));
   tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,

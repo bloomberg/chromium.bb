@@ -62,6 +62,7 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
@@ -585,6 +586,8 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
 
   if (!handler.IsEmpty() &&
       registry->CanSchemeBeOverridden(handler.protocol())) {
+    UserMetrics::RecordAction(UserMetricsAction(
+        "RegisterProtocolHandler.InfoBar_Shown"));
     AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab_contents(),
                                                           registry,
                                                           handler));
