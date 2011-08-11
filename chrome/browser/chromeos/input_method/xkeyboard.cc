@@ -76,6 +76,7 @@ const char* kKeepRightAltInputMethods[] = {
   "xkb:no::nob",
   "xkb:pl::pol",
   "xkb:pt::por",
+  "xkb:ro::rum",
   "xkb:se::swe",
   "xkb:si::slv",
   "xkb:sk::slo",
