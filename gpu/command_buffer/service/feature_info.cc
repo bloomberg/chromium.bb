@@ -120,15 +120,17 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool enable_dxt3 = false;
   bool enable_dxt5 = false;
   bool have_s3tc = ext.Have("GL_EXT_texture_compression_s3tc");
+  bool have_dxt3 = have_s3tc || ext.Have("GL_ANGLE_texture_compression_dxt3");
+  bool have_dxt5 = have_s3tc || ext.Have("GL_ANGLE_texture_compression_dxt5");
 
   if (ext.Desire("GL_EXT_texture_compression_dxt1") &&
       (ext.Have("GL_EXT_texture_compression_dxt1") || have_s3tc)) {
     enable_dxt1 = true;
   }
-  if (have_s3tc && ext.Desire("GL_CHROMIUM_texture_compression_dxt3")) {
+  if (have_dxt3 && ext.Desire("GL_CHROMIUM_texture_compression_dxt3")) {
     enable_dxt3 = true;
   }
-  if (have_s3tc && ext.Desire("GL_CHROMIUM_texture_compression_dxt5")) {
+  if (have_dxt5 && ext.Desire("GL_CHROMIUM_texture_compression_dxt5")) {
     enable_dxt5 = true;
   }
 
