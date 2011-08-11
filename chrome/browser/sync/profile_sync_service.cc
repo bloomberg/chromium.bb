@@ -320,6 +320,24 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncAutofillProfile,
                                     enable_by_default,
                                     PrefService::UNSYNCABLE_PREF);
+
+  // We started prompting people about new data types starting with the
+  // rollout of TYPED_URLs - all previously launched data types are treated
+  // as if they are already acknowledged.
+  syncable::ModelTypeBitSet model_set;
+  model_set.set(syncable::BOOKMARKS);
+  model_set.set(syncable::PREFERENCES);
+  model_set.set(syncable::PASSWORDS);
+  model_set.set(syncable::AUTOFILL_PROFILE);
+  model_set.set(syncable::AUTOFILL);
+  model_set.set(syncable::THEMES);
+  model_set.set(syncable::EXTENSIONS);
+  model_set.set(syncable::NIGORI);
+  model_set.set(syncable::SEARCH_ENGINES);
+  model_set.set(syncable::APPS);
+  pref_service->RegisterListPref(prefs::kAcknowledgedSyncTypes,
+                                 syncable::ModelTypeBitSetToValue(model_set),
+                                 PrefService::UNSYNCABLE_PREF);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -947,6 +965,7 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
       sync_everything);
 
   ChangePreferredDataTypes(chosen_types);
+  AcknowledgeSyncedTypes();
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 }
 
@@ -1410,3 +1429,37 @@ bool ProfileSyncService::ShouldPushChanges() {
 
   return data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
+
+void ProfileSyncService::AcknowledgeSyncedTypes() {
+  syncable::ModelTypeBitSet acknowledged = syncable::ModelTypeBitSetFromValue(
+      *profile_->GetPrefs()->GetList(prefs::kAcknowledgedSyncTypes));
+  syncable::ModelTypeSet registered;
+  GetRegisteredDataTypes(&registered);
+  syncable::ModelTypeBitSet registered_bit_set =
+      syncable::ModelTypeBitSetFromSet(registered);
+
+  // Add the registered types to the current set of acknowledged types, and then
+  // store the resulting set in prefs.
+  acknowledged |= registered_bit_set;
+  scoped_ptr<ListValue> value(syncable::ModelTypeBitSetToValue(acknowledged));
+  profile_->GetPrefs()->Set(prefs::kAcknowledgedSyncTypes, *value);
+  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
+}
+
+syncable::ModelTypeBitSet ProfileSyncService::GetUnacknowledgedTypes() const {
+  syncable::ModelTypeBitSet unacknowledged;
+  if (HasSyncSetupCompleted() &&
+      profile_->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced)) {
+    // User is "syncing everything" - see if we've added any new data types.
+    syncable::ModelTypeBitSet acknowledged =
+        syncable::ModelTypeBitSetFromValue(
+            *profile_->GetPrefs()->GetList(prefs::kAcknowledgedSyncTypes));
+    syncable::ModelTypeSet registered;
+    GetRegisteredDataTypes(&registered);
+    syncable::ModelTypeBitSet registered_bit_set =
+        syncable::ModelTypeBitSetFromSet(registered);
+    unacknowledged = registered_bit_set & ~acknowledged;
+  }
+  return unacknowledged;
+}
+

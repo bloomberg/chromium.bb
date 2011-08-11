@@ -145,10 +145,6 @@ cr.define('ntp4', function() {
       window.history.replaceState({}, '', '/');
     }
 
-    document.querySelector('#notification button').onclick = function(e) {
-      hideNotification();
-    };
-
     // Request data on the apps so we can fill them in.
     // Note that this is kicked off asynchronously.  'getAppsCallback' will be
     // invoked at some point after this function returns.
@@ -626,8 +622,10 @@ cr.define('ntp4', function() {
    *     records describing the links in the notification. Each record should
    *     have a 'text' attribute (the display string) and an 'action' attribute
    *     (a function to run when the link is activated).
+   * @param {Function} opt_closeHandler The callback invoked if the user
+   *     manually dismisses the notification.
    */
-  function showNotification(text, links) {
+  function showNotification(text, links, opt_closeHandler) {
     window.clearTimeout(notificationTimeout_);
     document.querySelector('#notification > span').textContent = text;
 
@@ -646,6 +644,12 @@ cr.define('ntp4', function() {
       link.className = "linkButton";
       linksBin.appendChild(link);
     }
+
+    document.querySelector('#notification button').onclick = function(e) {
+      if (opt_closeHandler)
+        opt_closeHandler();
+      hideNotification();
+    };
 
     $('notification').classList.remove('inactive');
     notificationTimeout_ = window.setTimeout(hideNotification, 10000);

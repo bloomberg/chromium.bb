@@ -7,6 +7,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
@@ -14,6 +15,8 @@
 void NewTabPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("closePromo", NewCallback(
       this, &NewTabPageHandler::HandleClosePromo));
+  web_ui_->RegisterMessageCallback("closeSyncNotification", NewCallback(
+      this, &NewTabPageHandler::HandleCloseSyncNotification));
   web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
       this, &NewTabPageHandler::HandlePageSelected));
 }
@@ -24,6 +27,12 @@ void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageHandler>(this),
                   NotificationService::NoDetails());
+}
+
+void NewTabPageHandler::HandleCloseSyncNotification(const ListValue* args) {
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  if (service)
+    service->AcknowledgeSyncedTypes();
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {

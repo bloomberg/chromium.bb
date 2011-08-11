@@ -32,6 +32,8 @@ class NewTabPageSyncHandler : public WebUIMessageHandler,
   void HandleGetSyncMessage(const base::ListValue* args);
   // Callback for "SyncLinkClicked".
   void HandleSyncLinkClicked(const base::ListValue* args);
+  // Callback for "SyncTypeLinkClicked".
+  void HandleSyncTypeLinkClicked(const base::ListValue* args);
 
   // ProfileSyncServiceObserver
   virtual void OnStateChanged() OVERRIDE;

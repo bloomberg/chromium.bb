@@ -1272,6 +1272,10 @@ const char kSyncSuppressStart[] = "sync.suppress_start";
 // migrated to the new model.
 const char kAutofillProfileMigrated[] = "sync.autofill_migrated";
 
+// List of the currently acknowledged set of sync types, used to figure out
+// if a new sync type has rolled out so we can notify the user.
+const char kAcknowledgedSyncTypes[] = "sync.acknowledged_types";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";

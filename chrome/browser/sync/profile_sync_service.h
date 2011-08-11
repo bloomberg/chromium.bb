@@ -471,6 +471,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   SigninManager* signin() { return signin_.get(); }
   const std::string& cros_user() const { return cros_user_; }
 
+  // Returns the set of unacknowledged types (new data types added since the
+  // last call to AcknowledgedSyncTypes())..
+  syncable::ModelTypeBitSet GetUnacknowledgedTypes() const;
+
+  // Marks all currently registered types as "acknowledged" so we won't prompt
+  // the user about them any more.
+  void AcknowledgeSyncedTypes();
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();

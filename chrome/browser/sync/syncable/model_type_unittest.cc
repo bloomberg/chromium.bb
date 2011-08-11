@@ -29,6 +29,15 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
                           ModelTypeToValue(UNSPECIFIED));
 }
 
+TEST_F(ModelTypeTest, ModelTypeFromValue) {
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    ModelType model_type = ModelTypeFromInt(i);
+    scoped_ptr<StringValue> value(ModelTypeToValue(model_type));
+    EXPECT_EQ(model_type, ModelTypeFromValue(*value));
+  }
+}
+
 TEST_F(ModelTypeTest, ModelTypeBitSetToValue) {
   ModelTypeBitSet model_types;
   model_types.set(syncable::BOOKMARKS);
@@ -41,6 +50,20 @@ TEST_F(ModelTypeTest, ModelTypeBitSetToValue) {
   EXPECT_TRUE(value->GetString(1, &types[1]));
   EXPECT_EQ("Bookmarks", types[0]);
   EXPECT_EQ("Apps", types[1]);
+}
+
+TEST_F(ModelTypeTest, ModelTypeBitSetFromValue) {
+  // Try empty set first.
+  ModelTypeBitSet model_types;
+  scoped_ptr<ListValue> value(ModelTypeBitSetToValue(model_types));
+  EXPECT_EQ(model_types, ModelTypeBitSetFromValue(*value));
+
+  // Now try with a few random types.
+  model_types.set(syncable::BOOKMARKS);
+  model_types.set(syncable::APPS);
+  value.reset(ModelTypeBitSetToValue(model_types));
+  EXPECT_EQ(model_types, ModelTypeBitSetFromValue(*value));
+
 }
 
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
@@ -62,20 +85,18 @@ TEST_F(ModelTypeTest, ModelTypeBitSetFromString) {
   input.set(BOOKMARKS);
   input.set(AUTOFILL);
   input.set(APPS);
-  std::string input_string = input.to_string();
+  std::string input_string = "Bookmarks, Autofill, Apps";
   EXPECT_TRUE(ModelTypeBitSetFromString(input_string, &output));
   EXPECT_EQ(input, output);
 
-  input_string.clear();
-  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
+  // Check that ModelTypeBitSetFromString(ModelTypeBitSetToString(set)) == set.
+  std::string set_as_string = ModelTypeBitSetToString(input);
+  EXPECT_TRUE(ModelTypeBitSetFromString(set_as_string, &output));
+  EXPECT_EQ(input, output);
 
-  input_string = "hello world";
-  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
-
   input_string.clear();
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i)
-    input_string += '0' + (i%10);
-  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
+  EXPECT_TRUE(ModelTypeBitSetFromString(input_string, &output));
+  EXPECT_EQ(ModelTypeBitSet(), output);
 }
 
 TEST_F(ModelTypeTest, IsRealDataType) {

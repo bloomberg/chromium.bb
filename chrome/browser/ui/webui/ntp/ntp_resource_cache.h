@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/string16.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/common/notification_observer.h"
@@ -34,6 +35,10 @@ class NTPResourceCache : public NotificationObserver,
 
  private:
   Profile* profile_;
+
+  // Returns a message describing any newly-added sync types, or an empty
+  // string if all types have already been acknowledged.
+  string16 GetSyncTypeMessage();
 
   void CreateNewTabIncognitoHTML();
   scoped_refptr<RefCountedMemory> new_tab_incognito_html_;

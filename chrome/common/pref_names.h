@@ -451,6 +451,7 @@ extern const char kGoogleServicesUsername[];
 extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kEncryptionBootstrapToken[];
 extern const char kAutofillProfileMigrated[];
+extern const char kAcknowledgedSyncTypes[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

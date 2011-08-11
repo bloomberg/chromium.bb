@@ -20,6 +20,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -175,8 +176,10 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(prefs::kAcknowledgedSyncTypes, this);
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kEnableBookmarkBar, this);
+  pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);
   pref_change_registrar_.Add(prefs::kNTPShownSections, this);
   pref_change_registrar_.Add(prefs::kNTPShownPage, this);
 }
@@ -219,17 +222,10 @@ void NTPResourceCache::Observe(int type,
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
   } else if (chrome::NOTIFICATION_PREF_CHANGED == type) {
-    std::string* pref_name = Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kShowBookmarkBar ||
-        *pref_name == prefs::kEnableBookmarkBar ||
-        *pref_name == prefs::kHomePageIsNewTabPage ||
-        *pref_name == prefs::kNTPShownSections ||
-        *pref_name == prefs::kNTPShownPage) {
-      new_tab_incognito_html_ = NULL;
-      new_tab_html_ = NULL;
-    } else {
-      NOTREACHED();
-    }
+    // A change occurred to one of the preferences we care about, so flush the
+    // cache.
+    new_tab_incognito_html_ = NULL;
+    new_tab_html_ = NULL;
   } else {
     NOTREACHED();
   }
@@ -358,6 +354,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       GetUrlWithLang(GURL(Extension::ChromeStoreLaunchURL())));
   localized_strings.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
+  localized_strings.SetString("syncLinkText",
+      l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
   localized_strings.SetString("trashLabel",
       l10n_util::GetStringFUTF16(
           IDS_NEW_TAB_TRASH_LABEL,
@@ -407,13 +405,19 @@ void NTPResourceCache::CreateNewTabHTML() {
   if (profile_->GetPrefs()->FindPreference(prefs::kNTPPromoStart) &&
       profile_->GetPrefs()->FindPreference(prefs::kNTPPromoEnd) &&
       profile_->GetPrefs()->FindPreference(prefs::kNTPPromoLine) &&
-      PromoResourceServiceUtil::CanShowPromo(profile_)) {
-    localized_strings.SetString("serverpromo",
-        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
-                    profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd)) ?
-                    profile_->GetPrefs()->GetString(prefs::kNTPPromoLine) :
-                                                    std::string());
+      PromoResourceServiceUtil::CanShowPromo(profile_) &&
+      InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
+                  profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd))) {
+    localized_strings.SetString(
+        "serverpromo",
+        profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
+  } else {
+    // Not showing a server-provided promo, so check if we need to show a
+    // notification from the sync service instead (don't want to show both).
+    // If no notification is desired, the "syncNotification" attribute is set
+    // to the empty string.
+    localized_strings.SetString("syncNotification", GetSyncTypeMessage());
   }
 
   // Load the new tab page appropriate for this build
@@ -453,6 +457,31 @@ void NTPResourceCache::CreateNewTabHTML() {
   }
 
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
+}
+
+string16 NTPResourceCache::GetSyncTypeMessage() {
+  if (profile_->HasProfileSyncService()) {
+    syncable::ModelTypeBitSet unacknowledged =
+        profile_->GetProfileSyncService()->GetUnacknowledgedTypes();
+
+    // TODO(sync): As we add new data types, we'll probably need some more
+    // generic string to display to the user, since the method below won't
+    // scale indefinitely (we'd need N*(N+1)/2 different strings to represent
+    // all the combinations of unacknowledged types). But for now, we just
+    // have sessions and typed urls so this is OK.
+    if (unacknowledged.test(syncable::SESSIONS) &&
+        unacknowledged.test(syncable::TYPED_URLS)) {
+      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_SESSIONS_AND_TYPED_URLS);
+    } else if (unacknowledged.test(syncable::SESSIONS)) {
+      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_SESSIONS);
+    } else if (unacknowledged.test(syncable::TYPED_URLS)) {
+      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_TYPED_URLS);
+    } else {
+      // Shouldn't be possible for any other types to be unacknowledged.
+      CHECK(!unacknowledged.any());
+    }
+  }
+  return string16();
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {

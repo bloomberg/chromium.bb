@@ -20,6 +20,7 @@
 namespace base {
 class ListValue;
 class StringValue;
+class Value;
 }
 
 namespace sync_pb {
@@ -120,6 +121,9 @@ std::string ModelTypeToString(ModelType model_type);
 // Caller takes ownership of returned value.
 base::StringValue* ModelTypeToValue(ModelType model_type);
 
+// Converts a Value into a ModelType - complement to ModelTypeToValue().
+ModelType ModelTypeFromValue(const base::Value& value);
+
 std::string ModelTypeSetToString(const ModelTypeSet& model_types);
 
 // Returns the ModelType corresponding to the name |model_type_string|.
@@ -138,6 +142,8 @@ ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
 
 // Caller takes ownership of returned list.
 base::ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
+
+ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value);
 
 // Caller takes ownership of returned list.
 base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);

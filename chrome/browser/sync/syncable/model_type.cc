@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 
 #include "base/metrics/histogram.h"
+#include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
@@ -254,6 +255,21 @@ std::string ModelTypeSetToString(const ModelTypeSet& model_types) {
   return result;
 }
 
+ModelType ModelTypeFromValue(const Value& value) {
+  if (value.IsType(Value::TYPE_STRING)) {
+    std::string result;
+    CHECK(value.GetAsString(&result));
+    return ModelTypeFromString(result);
+  } else if (value.IsType(Value::TYPE_INTEGER)) {
+    int result;
+    CHECK(value.GetAsInteger(&result));
+    return ModelTypeFromInt(result);
+  } else {
+    NOTREACHED() << "Unsupported value type: " << value.GetType();
+    return UNSPECIFIED;
+  }
+}
+
 ModelType ModelTypeFromString(const std::string& model_type_string) {
   if (model_type_string == "Bookmarks")
     return BOOKMARKS;
@@ -302,11 +318,23 @@ bool ModelTypeBitSetFromString(
     const std::string& model_type_bitset_string,
     ModelTypeBitSet* model_types) {
   DCHECK(model_types);
-  if (model_type_bitset_string.length() != MODEL_TYPE_COUNT)
-    return false;
-  if (model_type_bitset_string.find_first_not_of("01") != std::string::npos)
-    return false;
-  *model_types = ModelTypeBitSet(model_type_bitset_string);
+  ModelTypeBitSet bitset;
+  if (!model_type_bitset_string.empty()) {
+    std::vector<std::string> types;
+    // Parse the comma-delimited list of types.
+    base::SplitString(model_type_bitset_string, ',', &types);
+
+    // Walk the list of types and set them in our ModelTypeBitSet.
+    for (std::vector<std::string>::const_iterator it = types.begin();
+         it != types.end();
+         ++it) {
+      ModelType type = ModelTypeFromString(*it);
+      if (type == UNSPECIFIED)
+        return false;
+      bitset.set(type);
+    }
+  }
+  *model_types = bitset;
   return true;
 }
 
@@ -328,6 +356,14 @@ ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
     }
   }
   return value;
+}
+
+ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value) {
+  ModelTypeBitSet result;
+  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
+    result.set(ModelTypeFromValue(**i));
+  }
+  return result;
 }
 
 ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types) {
