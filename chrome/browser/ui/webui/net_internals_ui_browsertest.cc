@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,6 +19,47 @@ namespace {
 
 const string16 kPassTitle = ASCIIToUTF16("Test Passed");
 const string16 kFailTitle = ASCIIToUTF16("Test Failed");
+
+// Class to handle messages from the renderer needed by certain tests.
+class NetInternalsTestMessageHandler : public WebUIMessageHandler {
+ public:
+  NetInternalsTestMessageHandler();
+
+  void set_browser(Browser* browser) {
+    ASSERT_TRUE(browser);
+    browser_ = browser;
+  }
+
+ private:
+  virtual void RegisterMessages() OVERRIDE;
+
+  // Opens the given URL in a new tab.
+  void OpenNewTab(const ListValue* list_value);
+
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetInternalsTestMessageHandler);
+};
+
+NetInternalsTestMessageHandler::NetInternalsTestMessageHandler()
+    : browser_(NULL) {
+}
+
+void NetInternalsTestMessageHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("openNewTab", NewCallback(
+      this, &NetInternalsTestMessageHandler::OpenNewTab));
+}
+
+void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
+  std::string url;
+  ASSERT_TRUE(list_value->GetString(0, &url));
+  ASSERT_TRUE(browser_);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser_,
+      GURL(url),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+}
 
 // Each test involves calls a single Javascript function and then waits for the
 // title to be changed to "Test Passed" or "Test Failed" when done.
@@ -48,6 +90,13 @@ class NetInternalsTest : public WebUIBrowserTest {
   void set_expected_title_(const string16& value) { expected_title_ = value; }
 
  private:
+  virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
+    message_handler_.set_browser(browser());
+    return &message_handler_;
+  }
+
+  NetInternalsTestMessageHandler message_handler_;
+
   // The expected title at the end of the test.  Defaults to kPassTitle.
   string16 expected_title_;
 
@@ -135,7 +184,7 @@ void NetInternalsTest::RunTestAndWaitForTitle(const std::string& function_name,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// framework.js
+// net_internals_ui.js
 ////////////////////////////////////////////////////////////////////////////////
 
 // Checks testDone.
@@ -213,19 +262,30 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTestViewFailTwice) {
 // prerender_view.js
 ////////////////////////////////////////////////////////////////////////////////
 
-// Prerender two pages and check PrerenderView behavior.  The first is expected
-// to fail, the second is expected to succeed.
-// Test flaky on XP due to http://crbug.com/91799.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, FLAKY_NetInternalsPrerenderView) {
+// Prerender a page and navigate to it, once prerendering starts.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewSucceed) {
+  ASSERT_TRUE(test_server()->Start());
+  RunTestAndWaitForTitle(
+      "NetInternalsPrerenderView",
+      // URL that can be prerendered.
+      Value::CreateStringValue(
+          test_server()->GetURL("files/title1.html").spec()),
+      Value::CreateBooleanValue(true),
+      Value::CreateStringValue(
+          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_USED)));
+}
+
+// Prerender a page that is expected to fail.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewFail) {
   ASSERT_TRUE(test_server()->Start());
   RunTestAndWaitForTitle(
       "NetInternalsPrerenderView",
       // URL that can't be prerendered, since it triggers a download.
       Value::CreateStringValue(
           test_server()->GetURL("files/download-test1.lib").spec()),
-      // URL that can be prerendered.
+      Value::CreateBooleanValue(false),
       Value::CreateStringValue(
-          test_server()->GetURL("files/title1.html").spec()));
+          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_DOWNLOAD)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

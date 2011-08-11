@@ -3,14 +3,20 @@
 // found in the LICENSE file.
 
 /**
- * Tries to prerender two pages, one that will fail and one that will succeed.
+ * Tries to prerender a page.  |shouldSucceed| indicates whether the prerender
+ * is expected to succeed or not.  If it's false, we just wait for the page
+ * to fail, possibly seeing it as active first.  If it's true, we open the
+ * URL in another tab.  This is done via a message to the test handler, rather
+ * than via Javascript, so we don't cancel the prerender since prerendering
+ * can't currently set window.opener properly.
+ *
  * Checks that we see all relevant events, and update the corresponding tables.
- * The prerender that will fail will briefly be active before it fails.  Having
- * an active prerender will block another prerender from starting too soon, so
- * |failureUrl| must be prerendered first.
+ * In both cases, we exit the test once we see the prerender in the history.
+ * |finalStatus| is the expected status value when the page reaches the
+ * history.
  */
 netInternalsTest.test('NetInternalsPrerenderView',
-                      function (failureUrl, successUrl) {
+                      function (url, shouldSucceed, finalStatus) {
   // IDs for special HTML elements in prerender_view.html
   var HISTORY_DIV_ID = 'prerender-view-history-div';
   var ACTIVE_DIV_ID = 'prerender-view-active-div';
@@ -21,27 +27,31 @@ netInternalsTest.test('NetInternalsPrerenderView',
     // resulting onPrerenderInfoChanged event with no prerenders active or in
     // the history.
     START: 0,
-    // We've added the prefetch link for |failureUrl|.  We may receive more
-    // than one event while in this state, as we may see it as active once
-    // or more before it moves to the history.  We will not receive any
-    // event with both history and active prerenders empty in this state,
-    // as we only send notifications when the values change.
-    FAILURE_URL_LINKED: 1,
-    // We've added the prefetch link for |successUrl|.
-    SUCCESS_URL_LINKED: 2
+    // We've added the prerender link, but still need to open the link in a new
+    // tab.  Only visit this state if |shouldSucceed| is true.
+    NEED_OPEN_IN_NEW_TAB: 1,
+    // We've added the prefetch link for |url|, opened a new tab if needed,
+    // and are waiting for it to move to the history.  We may see the prerender
+    // one or more times in the active list, or it may move straight to the
+    // history.  We will not receive any event with both history and active
+    // prerenders empty while in this state, as we only send notifications
+    // when the values change.
+    HISTORY_WAIT: 2
   };
 
   /**
    * Observer responsible for running the test and checking results.
-   * @param {string} failureUrl URL that can't be prerendered.
-   * @param {string} successUrl URL that can be prerendered.
+   * @param {string} url URL to be prerendered.
+   * @param {string} shouldSucceed Whether or not the prerender should succeed.
+   * @param {string} finalStatus The expected value of |final_status|.
    * @constructor
    */
-  function PrerenderTestObserver(failureUrl, successUrl) {
+  function PrerenderTestObserver(url, shouldSucceed, finalStatus) {
     // True if we've started prerendering |successUrl|.
     this.startedSuccessfulPrerender_ = false;
-    this.failureUrl_ = failureUrl;
-    this.successUrl_ = successUrl;
+    this.url_ = url;
+    this.shouldSucceed_ = shouldSucceed;
+    this.finalStatus_ = finalStatus;
     this.state_ = STATE.START;
   }
 
@@ -52,8 +62,6 @@ netInternalsTest.test('NetInternalsPrerenderView',
      * @param {Object} prerenderInfo State of prerendering pages.
      */
     onPrerenderInfoChanged: function(prerenderInfo) {
-      console.log('State: ' + this.state_);
-
       // Verify that prerendering is enabled.
       assertTrue(prerenderInfo.enabled, 'Prerendering not enabled.');
 
@@ -65,15 +73,15 @@ netInternalsTest.test('NetInternalsPrerenderView',
 
       if (this.state_ == STATE.START) {
         this.start_(prerenderInfo);
-      } else if (this.state_ == STATE.FAILURE_URL_LINKED) {
-        this.failureUrlLinked_(prerenderInfo);
-      } else if (this.state_ == STATE.SUCCESS_URL_LINKED) {
-        this.successUrlLinked_(prerenderInfo);
+      } else if (this.state_ == STATE.NEED_OPEN_IN_NEW_TAB) {
+        this.openInNewTab_(prerenderInfo);
+      } else if (this.state_ == STATE.HISTORY_WAIT) {
+        this.checkDone_(prerenderInfo);
       }
     },
 
     /**
-     * Start by triggering a prerender of |failureUrl_|.
+     * Start by triggering a prerender of |url_|.
      * At this point, we expect no active or historical prerender entries.
      * @param {Object} prerenderInfo State of prerendering pages.
      */
@@ -82,60 +90,60 @@ netInternalsTest.test('NetInternalsPrerenderView',
       expectEquals(0, prerenderInfo.history.length);
 
       // Adding the url we expect to fail.
-      addPrerenderLink(this.failureUrl_);
-      this.state_ = STATE.FAILURE_URL_LINKED;
+      addPrerenderLink(this.url_);
+      if (this.shouldSucceed_) {
+        this.state_ = STATE.NEED_OPEN_IN_NEW_TAB;
+      } else {
+        this.state_ = STATE.HISTORY_WAIT;
+      }
+    },
+
+    /**
+     * Starts opening |url_| in a new tab.
+     * At this point, we expect the prerender to be active.
+     * Only called if |shouldSucceed_| is true, and |urlOpenedInNewTab_| is
+     * false.
+     * @param {Object} prerenderInfo State of prerendering pages.
+     */
+    openInNewTab_: function(prerenderInfo) {
+      expectEquals(0, prerenderInfo.history.length);
+      assertEquals(1, prerenderInfo.active.length);
+      expectEquals(this.url_, prerenderInfo.active[0].url);
+      expectTrue(this.shouldSucceed_);
+
+      chrome.send('openNewTab', [this.url_]);
+      this.state_ = STATE.HISTORY_WAIT;
     },
 
     /**
      * We expect to either see the failure url as an active entry, or see it
-     * move straight to the history.  In the latter case, we skip a state.
+     * in the history.  In the latter case, the test completes.
      * @param {Object} prerenderInfo State of prerendering pages.
      */
-    failureUrlLinked_: function(prerenderInfo) {
-      // May see the failure url as active, or may see it move straight to the
-      // history.  If not, skip to the next state.
+    checkDone_: function(prerenderInfo) {
+      // If we see the url as active, continue running the test.
       if (prerenderInfo.active.length == 1) {
-        expectEquals(this.failureUrl_, prerenderInfo.active[0].url);
+        expectEquals(this.url_, prerenderInfo.active[0].url);
         expectEquals(0, prerenderInfo.history.length);
         return;
       }
 
-      // The prerender of |failureUrl_| has been cancelled, and is now in the
-      // history.  Go ahead and prerender |successUrl_|.
-      this.prerenderSuccessUrl_(prerenderInfo);
+      // The prerender of |url_| is now in the history.
+      this.checkHistory_(prerenderInfo);
     },
 
     /**
-     * Prerender |successUrl_|.  The prerender of |failureUrl_| should have
-     * failed, and it should now be in the history.
+     * Check if the history is consistent with expectations, and end the test.
      * @param {Object} prerenderInfo State of prerendering pages.
      */
-    prerenderSuccessUrl_: function(prerenderInfo) {
-      // We may see the duration of the active prerender increase.  If so,
-      // do nothing.
-      if (prerenderInfo.active.length == 1)
-        return;
-
-      assertEquals(1, prerenderInfo.history.length);
-      expectEquals(this.failureUrl_, prerenderInfo.history[0].url);
+    checkHistory_: function(prerenderInfo) {
       expectEquals(0, prerenderInfo.active.length);
-
-      addPrerenderLink(this.successUrl_);
-      this.state_ = STATE.SUCCESS_URL_LINKED;
-    },
-
-    /**
-     * At this point, we expect to see the failure url in the history, and the
-     * successUrl in the active entry list, and the test is done.
-     * @param {Object} prerenderInfo State of prerendering pages.
-     */
-    successUrlLinked_: function(prerenderInfo) {
       assertEquals(1, prerenderInfo.history.length);
-      expectEquals(this.failureUrl_, prerenderInfo.history[0].url);
-      assertEquals(1, prerenderInfo.active.length);
-      expectEquals(this.successUrl_, prerenderInfo.active[0].url);
+      expectEquals(this.url_, prerenderInfo.history[0].url);
+      expectEquals(this.finalStatus_, prerenderInfo.history[0].final_status);
+
       netInternalsTest.testDone();
-    },
+    }
   };
 
   /**
@@ -153,6 +161,7 @@ netInternalsTest.test('NetInternalsPrerenderView',
 
   // Create the test observer, which will start the test once we see the initial
   // onPrerenderInfoChanged event from changing the active tab.
-  var prerenderObserver = new PrerenderTestObserver(failureUrl, successUrl);
+  var prerenderObserver = new PrerenderTestObserver(url, shouldSucceed,
+                                                    finalStatus);
   g_browser.addPrerenderInfoObserver(prerenderObserver);
 });

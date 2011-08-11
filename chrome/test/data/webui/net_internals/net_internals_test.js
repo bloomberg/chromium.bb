@@ -21,8 +21,8 @@
 // Start of namespace.
 var netInternalsTest = (function() {
   /**
-   * Use a shorter poll interval for tests, since a few tests wait for polled
-   * values to change.
+   * A shorter poll interval is used for tests, since a few tests wait for
+   * polled values to change.
    * @type {number}
    * @const
    */
@@ -161,6 +161,7 @@ var netInternalsTest = (function() {
       BrowserBridge.prototype.receive.apply(g_browser, arguments);
     });
 
+    g_browser.setPollInterval(TESTING_POLL_INTERVAL_MS);
     createTestFunction(testName, tests[testName]).apply(null, testArguments);
   }
 
