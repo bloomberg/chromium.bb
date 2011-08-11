@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_old.h"
@@ -102,9 +101,8 @@ class AudioMixerAlsa : public AudioMixer {
   // Connection to ALSA.  NULL if not connected.
   _snd_mixer* alsa_mixer_;
 
-  // Master mixers (some hardware has e.g. separate headphone and speaker
-  // elements).
-  std::vector<_snd_mixer_elem*> master_elements_;
+  // Master mixer.
+  _snd_mixer_elem* master_element_;
 
   // PCM mixer.  May be NULL if the driver doesn't expose one.
   _snd_mixer_elem* pcm_element_;
