@@ -151,7 +151,6 @@ void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
   }
 
   extensions_.Insert(extension);
-  extension->SetActivePermissions(params.GetActivePermissions());
 }
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {

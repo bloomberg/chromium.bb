@@ -1390,8 +1390,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
         Profile::FromBrowserContext(host->browser_context());
     if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile()) {
       host->Send(
-          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(
-              extension, extension->GetActivePermissions())));
+          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
     }
   }
 
@@ -2455,8 +2454,7 @@ void ExtensionService::Observe(int type,
       // Loaded extensions.
       for (size_t i = 0; i < extensions_.size(); ++i) {
         process->Send(new ExtensionMsg_Loaded(
-            ExtensionMsg_Loaded_Params(
-                extensions_[i], extensions_[i]->GetActivePermissions())));
+            ExtensionMsg_Loaded_Params(extensions_[i])));
       }
       break;
     }

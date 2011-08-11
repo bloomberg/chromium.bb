@@ -91,9 +91,7 @@ typedef std::map<std::string, std::string> SubstitutionMap;
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
-  explicit ExtensionMsg_Loaded_Params(
-      const Extension* extension,
-      const ExtensionPermissionSet* active_permissions);
+  explicit ExtensionMsg_Loaded_Params(const Extension* extension);
 
   // A copy constructor is needed because this structure can end up getting
   // copied inside the IPC machinery on gcc <= 4.2.
@@ -101,9 +99,6 @@ struct ExtensionMsg_Loaded_Params {
 
   // Creates a new extension from the data in this object.
   scoped_refptr<Extension> ConvertToExtension() const;
-
-  // Passes ownership to the caller.
-  const ExtensionPermissionSet* GetActivePermissions() const;
 
   // The subset of the extension manifest data we send to renderers.
   scoped_ptr<DictionaryValue> manifest;

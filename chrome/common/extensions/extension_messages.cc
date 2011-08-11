@@ -8,30 +8,29 @@
 #include "content/common/common_param_traits.h"
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
-    : location(Extension::INVALID) {
-}
+    : location(Extension::INVALID) {}
 
-ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {
-}
+ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     const ExtensionMsg_Loaded_Params& other)
     : manifest(other.manifest->DeepCopy()),
       location(other.location),
       path(other.path),
+      apis(other.apis),
+      explicit_hosts(other.explicit_hosts),
+      scriptable_hosts(other.scriptable_hosts),
       id(other.id),
-      creation_flags(other.creation_flags) {
-}
+      creation_flags(other.creation_flags) {}
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
-    const Extension* extension,
-    const ExtensionPermissionSet* active)
+    const Extension* extension)
     : manifest(new DictionaryValue()),
       location(extension->location()),
       path(extension->path()),
-      apis(active->apis()),
-      explicit_hosts(active->explicit_hosts()),
-      scriptable_hosts(active->scriptable_hosts()),
+      apis(extension->GetActivePermissions()->apis()),
+      explicit_hosts(extension->GetActivePermissions()->explicit_hosts()),
+      scriptable_hosts(extension->GetActivePermissions()->scriptable_hosts()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
   // As we need more bits of extension data in the renderer, add more keys to
@@ -65,13 +64,11 @@ scoped_refptr<Extension>
                         &error));
   if (!extension.get())
     LOG(ERROR) << "Error deserializing extension: " << error;
+  else
+    extension->SetActivePermissions(
+        new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));
 
   return extension;
-}
-
-const ExtensionPermissionSet*
-    ExtensionMsg_Loaded_Params::GetActivePermissions() const {
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
 }
 
 namespace IPC {
