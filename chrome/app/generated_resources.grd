@@ -4419,6 +4419,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
+      <message name="IDS_FLAGS_SYNC_SESSIONS_NAME" desc="Title for the flag to enable syncing the Sessions datatype">
+        Enable syncing sessions
+      </message>
+      <message name="IDS_FLAGS_SYNC_SESSIONS_DESCRIPTION" desc="Description for the flag to enable syncing the Sessions datatype">
+        Enable sessions in the sync options. This allows syncing your sessions to other clients.
+      </message>
       <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
         Enable syncing typed URLs
       </message>

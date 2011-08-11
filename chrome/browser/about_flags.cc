@@ -291,6 +291,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
   },
   {
+    "sync-sessions",
+    IDS_FLAGS_SYNC_SESSIONS_NAME,
+    IDS_FLAGS_SYNC_SESSIONS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncSessions)
+  },
+  {
     "sync-typed-urls",
     IDS_FLAGS_SYNC_TYPED_URLS_NAME,
     IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION,
