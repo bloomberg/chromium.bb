@@ -1,0 +1,56 @@
+<html>
+<!-- 
+This test file causes Chrome to attempt to create the NaCl plugin as a simple
+embed and as a content type handler. The script allows the test to check if
+the plugin was created or blocked in either case.
+-->
+<head>
+<title>Native Client CWS Restriction</title>
+
+<script>
+    var embedded_event;
+    var content_handler_event;
+    
+    function setListeners(body_element) {
+        var eventListener = function(e) {
+            var target_element = e.target;
+            if (target_element.className != 'naclModule')
+                return;
+
+            var element_id = target_element.id;
+            if (element_id == 'embedded')
+                embedded_event = e.type;
+            else if (element_id == 'content_handler')
+                content_handler_event = e.type;
+        }
+        body_element.addEventListener('loadstart', eventListener, true);
+        body_element.addEventListener('error', eventListener, true);
+    }
+
+    function EmbeddedPluginCreated() {
+        return embedded_event != undefined;
+    }
+
+    function ContentHandlerPluginCreated() {
+        return content_handler_event != undefined;
+    }
+
+</script>
+
+</head>
+<body>
+  <embed id="embedded"
+         class="naclModule"
+         type="application/x-nacl"
+         src="dummy.nmf">
+  </embed>
+  <embed id="content_handler"
+         class="naclModule"
+         type="application/pdf"
+         src="test.pdf">
+  </embed>
+  <script>
+      setListeners(document.body);
+  </script>
+</body>
+</html>

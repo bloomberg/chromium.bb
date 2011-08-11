@@ -214,19 +214,27 @@ class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
   }
 };
 
+bool ExtensionBrowserTest::InstallExtensionFromWebstore(const FilePath& path,
+                                                        int expected_change) {
+  return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
+                                  expected_change, browser()->profile(),
+                                  true);
+}
+
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                                                     const FilePath& path,
                                                     InstallUIType ui_type,
                                                     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  browser()->profile());
+                                  browser()->profile(), false);
 }
 
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                                                     const FilePath& path,
                                                     InstallUIType ui_type,
                                                     int expected_change,
-                                                    Profile* profile) {
+                                                    Profile* profile,
+                                                    bool from_webstore) {
   ExtensionService* service = profile->GetExtensionService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
@@ -260,6 +268,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
     scoped_refptr<CrxInstaller> installer(
         service->MakeCrxInstaller(install_ui));
     installer->set_expected_id(id);
+    installer->set_is_gallery_install(from_webstore);
     installer->InstallCrx(crx_path);
 
     ui_test_utils::RunMessageLoop();

@@ -51,6 +51,9 @@ class ExtensionBrowserTest
                                     expected_change);
   }
 
+  // Installs extension as if it came from the Chrome Webstore.
+  bool InstallExtensionFromWebstore(const FilePath& path, int expected_change);
+
   // Same as above but passes an id to CrxInstaller and does not allow a
   // privilege increase.
   bool UpdateExtension(const std::string& id, const FilePath& path,
@@ -69,7 +72,7 @@ class ExtensionBrowserTest
                                          int expected_change,
                                          Profile* profile) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_AUTO_CONFIRM,
-                                    expected_change, profile);
+                                    expected_change, profile, false);
   }
 
   // Begins install process but simulates a user cancel.
@@ -140,7 +143,8 @@ class ExtensionBrowserTest
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
                                 InstallUIType ui_type,
                                 int expected_change,
-                                Profile* profile);
+                                Profile* profile,
+                                bool from_webstore);
 
   bool WaitForExtensionHostsToLoad();
 
