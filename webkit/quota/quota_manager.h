@@ -99,6 +99,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   // Called by clients or webapps.
   // This method is declared as virtual to allow test code to override it.
+  // note: returns host usage and quota
   virtual void GetUsageAndQuota(const GURL& origin,
                                 StorageType type,
                                 GetUsageAndQuotaCallback* callback);

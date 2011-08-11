@@ -87,34 +87,44 @@ class ClientUsageTracker {
 
   void GetGlobalUsage(GlobalUsageCallback* callback);
   void GetHostUsage(const std::string& host, HostUsageCallback* callback);
-  void DetermineOriginsToGetUsage(const std::set<GURL>& origins,
-                                  std::set<GURL>* origins_to_process);
   void UpdateUsageCache(const GURL& origin, int64 delta);
-
-  const std::set<GURL>& cached_origins() const { return cached_origins_; }
+  void GetCachedOrigins(std::set<GURL>* origins) const;
 
  private:
+  typedef std::set<std::string> HostSet;
+  typedef std::map<GURL, int64> UsageMap;
+  typedef std::map<std::string, UsageMap> HostUsageMap;
+
   class GatherUsageTaskBase;
   class GatherGlobalUsageTask;
   class GatherHostUsageTask;
 
-  void DidGetGlobalUsage(const std::map<GURL, int64>& origin_usage_map);
-  void DidGetHostUsage(const std::string& host,
-                       const std::map<GURL, int64>& origin_usage_map);
+  // Methods used by our GatherUsage tasks, as a task makes progress
+  // origins and hosts are added incrementally to the cache.
+  void AddCachedOrigin(const GURL& origin, int64 usage);
+  void AddCachedHost(const std::string& host);
+  void GatherGlobalUsageComplete();
+  void GatherHostUsageComplete(const std::string& host);
+
+  int64 GetCachedHostUsage(const std::string& host);
+
+  void NoopHostUsageCallback(
+    const std::string& host,  StorageType type, int64 usage);
+
   bool IsStorageUnlimited(const GURL& origin) const;
 
   UsageTracker* tracker_;
   QuotaClient* client_;
   const StorageType type_;
-  std::set<GURL> cached_origins_;
 
   int64 global_usage_;
   int64 global_unlimited_usage_;
   bool global_usage_retrieved_;
+  HostSet cached_hosts_;
+  HostUsageMap cached_usage_;
+
   GatherGlobalUsageTask* global_usage_task_;
   GlobalUsageCallbackQueue global_usage_callback_;
-
-  std::map<std::string, int64> host_usage_map_;
   std::map<std::string, GatherHostUsageTask*> host_usage_tasks_;
   HostUsageCallbackMap host_usage_callbacks_;
 

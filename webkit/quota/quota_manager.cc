@@ -975,6 +975,7 @@ void QuotaManager::GetUsageAndQuota(
     return;
   }
 
+  // note: returns host usage and quota
   std::string host = net::GetHostOrSpecFromURL(origin);
   UsageAndQuotaDispatcherTaskMap::iterator found =
       usage_and_quota_dispatchers_.find(std::make_pair(host, type));
