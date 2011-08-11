@@ -692,7 +692,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
 
-  if (installer_state.is_chrome_frame_running()) {
+  if (installer_state.IsChromeFrameRunning(original_state)) {
     VLOG(1) << "Chrome Frame in use. Copying to new_chrome.exe";
     install_list->AddCopyTreeWorkItem(
         src_path.Append(installer::kChromeExe).value(),

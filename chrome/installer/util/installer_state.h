@@ -105,11 +105,6 @@ class InstallerState {
   // TODO(grt): Eradicate the bool in favor of the enum.
   bool is_multi_install() const;
 
-  // Returns whether or not there is currently a Chrome Frame instance running.
-  // Note that there isn't a mechanism to lock Chrome Frame in place, so Chrome
-  // Frame may either exit or start up after this is called.
-  bool is_chrome_frame_running() const { return is_chrome_frame_running_; }
-
   // The full path to the place where the operand resides.
   const FilePath& target_path() const { return target_path_; }
 
@@ -148,6 +143,11 @@ class InstallerState {
   // Returns the currently installed version in |target_path|, or NULL if no
   // products are installed.  Ownership is passed to the caller.
   Version* GetCurrentVersion(const InstallationState& machine_state) const;
+
+  // Returns whether or not there is currently a Chrome Frame instance running.
+  // Note that there isn't a mechanism to lock Chrome Frame in place, so Chrome
+  // Frame may either exit or start up after this is called.
+  bool IsChromeFrameRunning(const InstallationState& machine_state) const;
 
   // Returns the path to the installer under Chrome version folder
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
@@ -197,7 +197,6 @@ class InstallerState {
       const InstallationState& machine_state);
   bool IsMultiInstallUpdate(const MasterPreferences& prefs,
                             const InstallationState& machine_state);
-  bool DetectChromeFrameInUse(const InstallationState& machine_state);
 
   // Sets this object's level and updates the root_key_ accordingly.
   void set_level(Level level);
@@ -219,7 +218,6 @@ class InstallerState {
 #endif
   bool msi_;
   bool verbose_logging_;
-  bool is_chrome_frame_running_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);
