@@ -165,6 +165,7 @@
         'remoting_base',
         'remoting_host',
         'remoting_jingle_glue',
+        '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
@@ -211,15 +212,6 @@
           'sources!': [
             'host/plugin/host_plugin.def',
             'host/plugin/host_plugin.rc',
-          ],
-        }],
-        ['target_arch=="arm"', {
-          'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx_lib',
-          ],
-        }, {
-          'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }],
       ],
@@ -283,7 +275,6 @@
         '../ui/ui.gyp:ui',
         '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../third_party/libvpx/libvpx.gyp:libvpx_include',
         '../third_party/zlib/zlib.gyp:zlib',
         '../media/media.gyp:yuv_convert',
         'remoting_jingle_glue',
@@ -297,6 +288,11 @@
         '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
+      ],
+      # TODO(hclam): Remove this and depend on libvpx directly once we remove
+      # libvpx from FFmpeg.
+      'include_dirs': [
+        '../third_party/libvpx/source/libvpx',
       ],
       # This target needs a hard dependency because dependent targets
       # depend on chromotocol_proto_lib for headers.

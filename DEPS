@@ -19,8 +19,8 @@ vars = {
   "nacl_chrome_ppapi_revision": "93797", # native_client/DEPS: chrome_ppapi_rev 
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
   "libjingle_revision": "77",
-  "libvpx_revision": "90416",
-  "ffmpeg_revision": "96257",
+  "libvpx_revision": "96377",
+  "ffmpeg_revision": "96373",
   "sfntly_revision": "43",
   "skia_revision": "2096",
   "v8_revision": "8902",
@@ -86,7 +86,7 @@ deps = {
     (Var("googlecode_url") % "snappy") + "/trunk@37",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@989",
+    (Var("googlecode_url") % "gyp") + "/trunk@990",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
