@@ -21,6 +21,13 @@ enum ButtonState {
 
 } // namespace ImageButtonCell
 
+@protocol ImageButton
+@optional
+// Sent from an ImageButtonCell to it's view when the mouse enters or exits the
+// cell.
+- (void)mouseInsideStateDidChange:(BOOL)isInside;
+@end
+
 // A button cell that can disable a different image for each possible button
 // state. Images are specified by image IDs.
 @interface ImageButtonCell : NSButtonCell {

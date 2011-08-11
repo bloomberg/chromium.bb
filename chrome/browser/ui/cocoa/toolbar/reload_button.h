@@ -8,25 +8,17 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 
 // ToolbarButton subclass which defers certain state changes when the mouse
 // is hovering over it.
 
-@interface ReloadButton : ToolbarButton {
+@interface ReloadButton : ToolbarButton<ImageButton> {
  @private
-  // Tracks whether the mouse is hovering for purposes of not making
-  // unexpected state changes.
-  BOOL isMouseInside_;
-  scoped_nsobject<NSTrackingArea> trackingArea_;
-
   // Timer used when setting reload mode while the mouse is hovered.
-  scoped_nsobject<NSTimer> pendingReloadTimer_;
+  NSTimer* pendingReloadTimer_;
 }
-
-// Returns YES if the mouse is currently inside the bounds.
-- (BOOL)isMouseInside;
 
 // Update the tag, and the image and tooltip to match.  If |anInt|
 // matches the current tag, no action is taken.  |anInt| must be
@@ -41,11 +33,6 @@
 // inadvertent click _just_ as the state changes.
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
-@end
-
-@interface ReloadButton (PrivateTestingMethods)
-+ (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
-- (NSTrackingArea*)trackingArea;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_RELOAD_BUTTON_H_
