@@ -90,7 +90,9 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 void WebDragDestGtk::DragLeave() {
   tab_contents_->render_view_host()->DragTargetDragLeave();
 
-  DCHECK(tab_);
+  // TODO(thestig) Turn back to DCHECKs after we figure out bug 89388.
+  CHECK(tab_);
+  CHECK(tab_->bookmark_tab_helper());
   if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
         bookmark_drag_data_);
