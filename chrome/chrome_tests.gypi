@@ -3944,6 +3944,7 @@
                           '-I..',
                           '-python',
                           '-c++',
+                          '-threads',
                           '-outdir',
                           '<(PRODUCT_DIR)',
                           '-o',
