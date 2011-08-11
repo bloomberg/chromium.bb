@@ -212,63 +212,15 @@
 #include "views/touchui/touch_factory.h"
 #endif
 
-namespace {
-void SetSocketReusePolicy(int warmest_socket_trial_group,
-                          const int socket_policy[],
-                          int num_groups) {
-  const int* result = std::find(socket_policy, socket_policy + num_groups,
-                                warmest_socket_trial_group);
-  DCHECK_NE(result, socket_policy + num_groups)
-      << "Not a valid socket reuse policy group";
-  net::SetSocketReusePolicy(result - socket_policy);
-}
-}
-
 namespace net {
 class NetLog;
 }  // namespace net
 
-// This code is specific to the Windows-only PreReadExperiment field-trial.
-static void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
-  const base::TimeDelta kMin(base::TimeDelta::FromMilliseconds(1));
-  const base::TimeDelta kMax(base::TimeDelta::FromHours(1));
-  static const size_t kBuckets(100);
-
-  // FactoryTimeGet will always return a pointer to the same histogram object,
-  // keyed on its name. There's no need for us to store it explicitly anywhere.
-  base::Histogram* counter = base::Histogram::FactoryTimeGet(
-      name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
-
-  counter->AddTime(time);
-}
-
-// This code is specific to the Windows-only PreReadExperiment field-trial.
-void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
-  DCHECK(name != NULL);
-
-  // This gets called with different histogram names, so we don't want to use
-  // the UMA_HISTOGRAM_CUSTOM_TIMES macro--it uses a static variable, and the
-  // first call wins.
-  AddPreReadHistogramTime(name, time);
-
-#if defined(OS_WIN)
-  static const char kEnvVar[] = "CHROME_PRE_READ_EXPERIMENT";
-
-  // The pre-read experiment is Windows specific.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  DCHECK(env.get() != NULL);
-
-  // Only record the sub-histogram result if the experiment is running
-  // (environment variable is set, and valid).
-  std::string pre_read;
-  if (env->GetVar(kEnvVar, &pre_read) && (pre_read == "0" || pre_read == "1")) {
-    std::string uma_name(name);
-    uma_name += "_PreRead";
-    uma_name += pre_read == "1" ? "Enabled" : "Disabled";
-    AddPreReadHistogramTime(uma_name.c_str(), time);
-  }
-#endif
-}
+namespace {
+void SetSocketReusePolicy(int warmest_socket_trial_group,
+                          const int socket_policy[],
+                          int num_groups);
+}  // namespace
 
 // BrowserMainParts ------------------------------------------------------------
 
@@ -1265,30 +1217,29 @@ void RegisterTranslateableItems(void) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-}  // namespace
-
-#if defined(OS_CHROMEOS)
-// Allows authenticator to be invoked without adding refcounting. The instances
-// will delete themselves upon completion.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(StubLogin);
-#endif
-
-#if defined(OS_WIN)
-#define DLLEXPORT __declspec(dllexport)
-
-// We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
-extern "C" {
-DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+void SetSocketReusePolicy(int warmest_socket_trial_group,
+                          const int socket_policy[],
+                          int num_groups) {
+  const int* result = std::find(socket_policy, socket_policy + num_groups,
+                                warmest_socket_trial_group);
+  DCHECK_NE(result, socket_policy + num_groups)
+      << "Not a valid socket reuse policy group";
+  net::SetSocketReusePolicy(result - socket_policy);
 }
 
-DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  // Need an instance of AtExitManager to handle singleton creations and
-  // deletions.  We need this new instance because, the old instance created
-  // in ChromeMain() got destructed when the function returned.
-  base::AtExitManager exit_manager;
-  upgrade_util::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+// This code is specific to the Windows-only PreReadExperiment field-trial.
+void AddPreReadHistogramTime(const char* name, base::TimeDelta time) {
+  const base::TimeDelta kMin(base::TimeDelta::FromMilliseconds(1));
+  const base::TimeDelta kMax(base::TimeDelta::FromHours(1));
+  static const size_t kBuckets(100);
+
+  // FactoryTimeGet will always return a pointer to the same histogram object,
+  // keyed on its name. There's no need for us to store it explicitly anywhere.
+  base::Histogram* counter = base::Histogram::FactoryTimeGet(
+      name, kMin, kMax, kBuckets, base::Histogram::kUmaTargetedHistogramFlag);
+
+  counter->AddTime(time);
 }
-#endif
 
 #if defined(USE_LINUX_BREAKPAD)
 bool IsCrashReportingEnabled(const PrefService* local_state) {
@@ -1320,6 +1271,31 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
   return breakpad_enabled;
 }
 #endif  // #if defined(USE_LINUX_BREAKPAD)
+
+}  // namespace
+
+#if defined(OS_CHROMEOS)
+// Allows authenticator to be invoked without adding refcounting. The instances
+// will delete themselves upon completion.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(StubLogin);
+#endif
+
+#if defined(OS_WIN)
+#define DLLEXPORT __declspec(dllexport)
+
+// We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
+extern "C" {
+DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+}
+
+DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
+  // Need an instance of AtExitManager to handle singleton creations and
+  // deletions.  We need this new instance because, the old instance created
+  // in ChromeMain() got destructed when the function returned.
+  base::AtExitManager exit_manager;
+  upgrade_util::RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+}
+#endif
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
@@ -2164,4 +2140,32 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
   TRACE_EVENT_END_ETW("BrowserMain", 0, 0);
   return result_code;
+}
+
+// This code is specific to the Windows-only PreReadExperiment field-trial.
+void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
+  DCHECK(name != NULL);
+
+  // This gets called with different histogram names, so we don't want to use
+  // the UMA_HISTOGRAM_CUSTOM_TIMES macro--it uses a static variable, and the
+  // first call wins.
+  AddPreReadHistogramTime(name, time);
+
+#if defined(OS_WIN)
+  static const char kEnvVar[] = "CHROME_PRE_READ_EXPERIMENT";
+
+  // The pre-read experiment is Windows specific.
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  DCHECK(env.get() != NULL);
+
+  // Only record the sub-histogram result if the experiment is running
+  // (environment variable is set, and valid).
+  std::string pre_read;
+  if (env->GetVar(kEnvVar, &pre_read) && (pre_read == "0" || pre_read == "1")) {
+    std::string uma_name(name);
+    uma_name += "_PreRead";
+    uma_name += pre_read == "1" ? "Enabled" : "Disabled";
+    AddPreReadHistogramTime(uma_name.c_str(), time);
+  }
+#endif
 }
