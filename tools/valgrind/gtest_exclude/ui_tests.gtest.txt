@@ -102,3 +102,6 @@ ResourceDispatcherTest.CrossSiteImmediateLoadOnunloadCookie
 OutOfProcessPPAPITest.Instance
 OutOfProcessPPAPITest.CursorControl
 OutOfProcessPPAPITest.PostMessage
+
+# Flakily times out, http://crbug.com/92527
+NamedInterfaceTest.BasicNamedInterface
