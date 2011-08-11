@@ -82,7 +82,8 @@ bool HandleCloserAgent::CloseHandles() {
     // Get the type name, reusing the buffer.
     ULONG size = static_cast<ULONG>(type_info_buffer.size());
     rc = QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
-    while (rc == STATUS_INFO_LENGTH_MISMATCH) {
+    while (rc == STATUS_INFO_LENGTH_MISMATCH ||
+           rc == STATUS_BUFFER_OVERFLOW) {
       type_info_buffer.resize(size + sizeof(wchar_t));
       type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(
           &(type_info_buffer[0]));

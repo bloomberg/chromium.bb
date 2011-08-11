@@ -187,7 +187,8 @@ bool GetHandleName(HANDLE handle, string16* handle_name) {
     name.reset(reinterpret_cast<UNICODE_STRING*>(new BYTE[size]));
     result = QueryObject(handle, ObjectNameInformation, name.get(),
                          size, &size);
-  } while (result == STATUS_INFO_LENGTH_MISMATCH);
+  } while (result == STATUS_INFO_LENGTH_MISMATCH ||
+           result == STATUS_BUFFER_OVERFLOW);
 
   if (NT_SUCCESS(result) && name->Buffer && name->Length)
     handle_name->assign(name->Buffer, name->Length / sizeof(wchar_t));
