@@ -130,8 +130,7 @@ PersonalDataManager* GetPersonalDataManager(int index) {
   return test()->GetProfile(index)->GetPersonalDataManager();
 }
 
-void AddKeys(int profile,
-                             const std::set<AutofillKey>& keys) {
+void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   std::vector<webkit_glue::FormField> form_fields;
   for (std::set<AutofillKey>::const_iterator i = keys.begin();
        i != keys.end();
@@ -244,6 +243,10 @@ const std::vector<AutofillProfile*>& GetAllProfiles(
 
 int GetProfileCount(int profile) {
   return GetAllProfiles(profile).size();
+}
+
+int GetKeyCount(int profile) {
+  return GetAllKeys(profile).size();
 }
 
 bool ProfilesMatch(int profile_a, int profile_b) {
