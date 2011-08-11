@@ -25,10 +25,6 @@ AudioImpl::~AudioImpl() {
   }
 }
 
-::ppapi::thunk::PPB_Audio_API* AudioImpl::AsPPB_Audio_API() {
-  return this;
-}
-
 void AudioImpl::SetCallback(PPB_Audio_Callback callback, void* user_data) {
   callback_ = callback;
   user_data_ = user_data;

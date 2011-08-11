@@ -7,6 +7,8 @@
 
 #include <stddef.h>  // For NULL.
 
+#include "base/memory/ref_counted.h"
+
 #define FOR_ALL_PPAPI_RESOURCE_APIS(F) \
   F(PPB_AudioConfig_API) \
   F(PPB_AudioTrusted_API) \
@@ -51,7 +53,7 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 }  // namespace thunk
 
-class ResourceObjectBase {
+class ResourceObjectBase : public base::RefCounted<ResourceObjectBase> {
  public:
   virtual ~ResourceObjectBase();
 

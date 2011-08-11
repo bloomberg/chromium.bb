@@ -22,10 +22,6 @@ VideoDecoderImpl::VideoDecoderImpl()
       gles2_impl_(NULL) {
 }
 
-thunk::PPB_VideoDecoder_API* VideoDecoderImpl::AsPPB_VideoDecoder_API() {
-  return this;
-}
-
 VideoDecoderImpl::~VideoDecoderImpl() {
 }
 
