@@ -772,16 +772,14 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   }
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);
-    // We send non-left buttons immediately, but delay left incase future
+    // We send non-left buttons immediately, but delay left in case future
     // packets indicate non-left button.
     if (button_type_ != GESTURES_BUTTON_LEFT ||
-        (button_type_ == GESTURES_BUTTON_LEFT &&
-         button_down_timeout_ >= hwstate.timestamp) ||
+        button_down_timeout_ >= hwstate.timestamp ||
         phys_up_edge) {
       // Send button down
-      if (result_.type != kGestureTypeButtonsChange) {
+      if (result_.type == kGestureTypeButtonsChange)
         Err("Gesture type already button?!");
-      }
       result_ = Gesture(kGestureButtonsChange,
                         prev_state_.timestamp,
                         hwstate.timestamp,
