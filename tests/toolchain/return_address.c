@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* NOTE: because of fun pointer casting we need to disable -padantic. */
@@ -9,10 +9,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "native_client/tests/toolchain/utils.h"
 
 int main(int argc, char* argv[]);
-
-#define ASSERT(cond, message) if (!(cond) ) { puts(message); abort(); }
 
 void recurse(int n, int is_first) {
   void* ra = (void*) __builtin_return_address (0);

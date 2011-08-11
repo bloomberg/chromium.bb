@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include "native_client/tests/toolchain/utils.h"
 
 /*
  * Note, we intentionally do not include math.h to avoid any magic that
@@ -58,8 +59,6 @@ float llvm_intrinsic_cosf(float) asm("llvm.cos.f32");
 
 double llvm_intrinsic_pow(double, double) asm("llvm.pow.f64");
 float llvm_intrinsic_powf(float, float) asm("llvm.pow.f32");
-
-#define ARRAY_SIZE_UNSAFE(arr) ((sizeof arr)/sizeof arr[0])
 
 #define print_op1(op, x) \
   printf("%s: %.6f\n", #op, llvm_intrinsic_ ## op(x))

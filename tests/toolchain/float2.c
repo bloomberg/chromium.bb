@@ -9,6 +9,7 @@
  */
 
 #include <stdio.h>
+#include "native_client/tests/toolchain/utils.h"
 
 /* NOTE: we use our own definitions instead of stdint.h's */
 /* to ensure compatibility with printf format strings. */
@@ -38,8 +39,6 @@ volatile double f64[] = { 5.6, 5.5, 5.4,
 /*                         1e50, 1e10 */
 };
 
-
-#define ARRAY_SIZE_UNSAFE(arr) ((sizeof arr)/sizeof arr[0])
 
 int main(int argc, char* argv[]) {
   int i;

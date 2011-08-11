@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* NOTE: because of fun pointer casting we need to disable -padantic. */
@@ -10,15 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unwind.h>
+#include "native_client/tests/toolchain/utils.h"
 
 int main(int argc, char* argv[]);
 void recurse(int n);
-
-#define ASSERT(cond, message) \
-  if (!(cond) ) { puts(#cond); puts(message); abort(); }
-
-/* C++ does not like us casting function pointers to data pointers */
-#define FUNPTR2PTR(a)   ((void*)((int)a))
 
 void DumpContext(struct _Unwind_Context* context) {
   ASSERT(context != 0, "null context\n");

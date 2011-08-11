@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "native_client/tests/toolchain/utils.h"
 
 /*  __builtin_popcount(x) */
 uint32_t llvm_intrinsic_ctpop(uint32_t) asm("llvm.ctpop.i32");
@@ -31,8 +32,6 @@ uint64_t llvm_intrinsic_bswapll(uint64_t) asm("llvm.bswap.i64");
 /* volatile prevents partial evaluation by llvm */
 volatile uint32_t i32[] = {0xaa, 0xaa00};
 volatile uint64_t i64[] = {0xaa000000ll, 0xaa00000000ll};
-
-#define ARRAY_SIZE_UNSAFE(arr) ((sizeof arr)/sizeof arr[0])
 
 #define print_op(op, x) \
   printf("%s: %u\n", #op, (unsigned) llvm_intrinsic_ ## op(x))
