@@ -149,6 +149,12 @@ class TypedUrlModelAssociator
                          std::vector<history::VisitInfo>* new_visits,
                          history::VisitVector* removed_visits);
 
+  // Converts the passed URL information to a TypedUrlSpecifics structure for
+  // writing to the sync DB
+  static void WriteToTypedUrlSpecifics(const history::URLRow& url,
+                                       const history::VisitVector& visits,
+                                       sync_pb::TypedUrlSpecifics* specifics);
+
   // Updates the passed |url_row| based on the values in |specifics|. Fields
   // that are not contained in |specifics| (such as typed_count) are left
   // unchanged.

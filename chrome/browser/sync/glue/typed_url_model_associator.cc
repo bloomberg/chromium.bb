@@ -18,6 +18,10 @@
 
 namespace browser_sync {
 
+// The server backend can't handle arbitrarily large node sizes, so to keep
+// the size under control we limit the visit array.
+static const int kMaxTypedUrlVisits = 100;
+
 const char kTypedUrlTag[] = "google_chrome_typed_urls";
 
 static bool CheckVisitOrdering(const history::VisitVector& visits) {
@@ -537,23 +541,80 @@ void TypedUrlModelAssociator::WriteToSyncNode(
     const history::URLRow& url,
     const history::VisitVector& visits,
     sync_api::WriteNode* node) {
+  sync_pb::TypedUrlSpecifics typed_url;
+  WriteToTypedUrlSpecifics(url, visits, &typed_url);
+  node->SetTypedUrlSpecifics(typed_url);
+}
+
+void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
+    const history::URLRow& url,
+    const history::VisitVector& visits,
+    sync_pb::TypedUrlSpecifics* typed_url) {
+
   DCHECK(!url.last_visit().is_null());
   DCHECK(!visits.empty());
   DCHECK(url.last_visit() == visits.back().visit_time);
 
-  sync_pb::TypedUrlSpecifics typed_url;
-  typed_url.set_url(url.url().spec());
-  typed_url.set_title(UTF16ToUTF8(url.title()));
-  typed_url.set_hidden(url.hidden());
+  typed_url->set_url(url.url().spec());
+  typed_url->set_title(UTF16ToUTF8(url.title()));
+  typed_url->set_hidden(url.hidden());
 
   DCHECK(CheckVisitOrdering(visits));
-  for (history::VisitVector::const_iterator visit = visits.begin();
-       visit != visits.end(); ++visit) {
-    typed_url.add_visits(visit->visit_time.ToInternalValue());
-    typed_url.add_visit_transitions(visit->transition);
+
+  bool only_typed = false;
+  int skip_count = 0;
+
+  if (visits.size() > static_cast<size_t>(kMaxTypedUrlVisits)) {
+    int typed_count = 0;
+    int total = 0;
+    // Walk the passed-in visit vector and count the # of typed visits.
+    for (history::VisitVector::const_iterator visit = visits.begin();
+         visit != visits.end(); ++visit) {
+      PageTransition::Type transition = static_cast<PageTransition::Type>(
+          visit->transition) & PageTransition::CORE_MASK;
+      // We ignore reload visits.
+      if (transition == PageTransition::RELOAD)
+        continue;
+      ++total;
+      if (transition == PageTransition::TYPED)
+        ++typed_count;
+    }
+
+    if (typed_count > kMaxTypedUrlVisits) {
+      only_typed = true;
+      skip_count = typed_count - kMaxTypedUrlVisits;
+    } else if (total > kMaxTypedUrlVisits) {
+      skip_count = total - kMaxTypedUrlVisits;
+    }
   }
 
-  node->SetTypedUrlSpecifics(typed_url);
+
+  for (history::VisitVector::const_iterator visit = visits.begin();
+       visit != visits.end(); ++visit) {
+    PageTransition::Type transition = static_cast<PageTransition::Type>(
+        visit->transition) & PageTransition::CORE_MASK;
+    // Skip reload visits.
+    if (transition == PageTransition::RELOAD)
+      continue;
+
+    // If we only have room for typed visits, then only add typed visits.
+    if (only_typed && transition != PageTransition::TYPED)
+      continue;
+
+    if (skip_count > 0) {
+      // We have too many entries to fit, so we need to skip the oldest ones.
+      // Only skip typed URLs if there are too many typed URLs to fit.
+      if (only_typed || transition != PageTransition::TYPED) {
+        --skip_count;
+        continue;
+      }
+    }
+    typed_url->add_visits(visit->visit_time.ToInternalValue());
+    typed_url->add_visit_transitions(visit->transition);
+  }
+  DCHECK_EQ(skip_count, 0);
+  CHECK_GT(typed_url->visits_size(), 0);
+  CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
 }
 
 // static
