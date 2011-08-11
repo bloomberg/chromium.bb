@@ -562,9 +562,10 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
   }
 
   if (log_debug_info_func_) {
-    NPVariant* arg = new NPVariant();
-    STRINGZ_TO_NPVARIANT(message.c_str(), *arg);
-    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_, arg, 1);
+    NPVariant log_message;
+    STRINGZ_TO_NPVARIANT(message.c_str(), log_message);
+    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_,
+                                         &log_message, 1);
     LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";
   }
 }
