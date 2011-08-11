@@ -9,8 +9,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
+
+namespace base {
+struct SystemMemoryInfoKB;
+}
 
 namespace views {
 class MenuItemView;
@@ -23,7 +29,8 @@ class StatusAreaHost;
 // Memory debugging display that lives in the status area.
 class MemoryMenuButton : public StatusAreaButton,
                          public views::MenuDelegate,
-                         public views::ViewMenuDelegate {
+                         public views::ViewMenuDelegate,
+                         public NotificationObserver {
  public:
   explicit MemoryMenuButton(StatusAreaHost* host);
   virtual ~MemoryMenuButton();
@@ -33,6 +40,14 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
+  // views::ViewMenuDelegate implementation.
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+
+  // NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   // Updates the text on the menu button.
   void UpdateText();
 
@@ -40,9 +55,6 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual int horizontal_padding() OVERRIDE;
 
  private:
-  // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
-
   // Create and initialize menu if not already present.
   void EnsureMenu();
 
@@ -55,11 +67,13 @@ class MemoryMenuButton : public StatusAreaButton,
   // constructor.
   scoped_ptr<views::MenuItemView> menu_;
 
-  int mem_total_;
-  int shmem_;  // video driver memory, hidden from OS
-  int mem_free_;
-  int mem_buffers_;
-  int mem_cache_;
+  // Raw data from /proc/meminfo
+  scoped_ptr<base::SystemMemoryInfoKB> meminfo_;
+
+  NotificationRegistrar registrar_;
+
+  // Number of renderer kills we have observed.
+  int renderer_kills_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryMenuButton);
 };
