@@ -10,7 +10,6 @@
 #include "base/tracked.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::DirectoryManager;

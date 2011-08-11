@@ -16,7 +16,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/common/deprecated/event_sys.h"
 
 namespace syncable {
 class BaseTransaction;

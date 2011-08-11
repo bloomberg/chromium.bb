@@ -11,6 +11,7 @@
 
 #include "base/tracked.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 

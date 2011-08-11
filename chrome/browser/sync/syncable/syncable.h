@@ -31,7 +31,6 @@
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/dbgq.h"
-#include "chrome/common/deprecated/event_sys.h"
 
 struct PurgeInfo;
 
@@ -851,14 +850,7 @@ class Directory {
 
   template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
-  struct DirectoryEventTraits {
-    typedef DirectoryEvent EventType;
-    static inline bool IsChannelShutdownEvent(const DirectoryEvent& event) {
-      return DIRECTORY_DESTROYED == event;
-    }
-  };
  public:
-  typedef EventChannel<DirectoryEventTraits, base::Lock> Channel;
   typedef std::vector<int64> ChildHandles;
 
   // Returns the child meta handles for given parent id.  Clears
@@ -912,11 +904,6 @@ class Directory {
   typedef std::vector<int64> UnappliedUpdateMetaHandles;
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
                                      UnappliedUpdateMetaHandles* result);
-
-  // Get the channel for post save notification, used by the syncer.
-  inline Channel* channel() const {
-    return kernel_->channel;
-  }
 
   // Checks tree metadata consistency.
   // If full_scan is false, the function will avoid pulling any entries from the
@@ -1046,9 +1033,6 @@ class Directory {
     // When a purge takes place, we remove items from all our indices and stash
     // them in here so that SaveChanges can persist their permanent deletion.
     MetahandleSet* const metahandles_to_purge;
-
-    // TODO(ncarter): Figure out what the hell this is, and comment it.
-    Channel* const channel;
 
     KernelShareInfoStatus info_status;
 

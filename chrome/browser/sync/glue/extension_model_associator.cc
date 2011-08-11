@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "content/browser/browser_thread.h"
 
 namespace browser_sync {

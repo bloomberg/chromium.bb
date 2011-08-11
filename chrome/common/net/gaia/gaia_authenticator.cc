@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/port.h"
 #include "base/string_split.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
@@ -47,13 +46,9 @@ GaiaAuthenticator::GaiaAuthenticator(const string& user_agent,
       next_allowed_auth_attempt_time_(0),
       early_auth_attempt_count_(0),
       message_loop_(NULL) {
-  GaiaAuthEvent done = { GaiaAuthEvent::GAIA_AUTHENTICATOR_DESTROYED, None,
-                         this };
-  channel_ = new Channel(done);
 }
 
 GaiaAuthenticator::~GaiaAuthenticator() {
-  delete channel_;
 }
 
 // mutex_ must be entered before calling this function.
@@ -98,13 +93,6 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   AuthResults results;
   const bool succeeded = AuthenticateImpl(params, &results);
-  if (params.request_id == request_count_) {
-    auth_results_ = results;
-    GaiaAuthEvent event = { succeeded ? GaiaAuthEvent::GAIA_AUTH_SUCCEEDED
-                                      : GaiaAuthEvent::GAIA_AUTH_FAILED,
-                                      results.auth_error, this };
-    channel_->NotifyListeners(event);
-  }
   return succeeded;
 }
 

@@ -34,7 +34,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/sync/engine/test_id_factory.h"

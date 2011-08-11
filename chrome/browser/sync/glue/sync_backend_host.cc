@@ -17,6 +17,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
@@ -34,7 +35,6 @@
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"

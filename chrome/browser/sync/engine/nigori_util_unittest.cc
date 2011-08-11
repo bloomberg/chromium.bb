@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncable {

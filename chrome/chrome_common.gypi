@@ -154,8 +154,6 @@
         'common/custom_handlers/protocol_handler.h',
         'common/default_plugin.cc',
         'common/default_plugin.h',
-        'common/deprecated/event_sys-inl.h',
-        'common/deprecated/event_sys.h',
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
         'common/extensions/extension_action.cc',

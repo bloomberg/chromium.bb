@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/syncable/nigori_util.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 
 #include <queue>
 #include <string>

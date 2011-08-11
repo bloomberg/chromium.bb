@@ -14,8 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
 class GURL;

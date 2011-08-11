@@ -39,8 +39,6 @@
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
@@ -53,7 +51,6 @@
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -69,7 +66,6 @@ static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 static const int kInvariantCheckMaxMs = 50;
 }  // namespace
 
-using browser_sync::SyncerUtil;
 using std::string;
 
 
@@ -387,7 +383,6 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       unsynced_metahandles(new MetahandleSet),
       dirty_metahandles(new MetahandleSet),
       metahandles_to_purge(new MetahandleSet),
-      channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
       info_status(Directory::KERNEL_SHARE_INFO_VALID),
       persisted_info(info.kernel_info),
       cache_guid(info.cache_guid),
@@ -408,7 +403,6 @@ void Directory::Kernel::Release() {
 
 Directory::Kernel::~Kernel() {
   CHECK_EQ(0, refcount);
-  delete channel;
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete dirty_metahandles;

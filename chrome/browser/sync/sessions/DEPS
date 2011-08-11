@@ -1,0 +1,12 @@
+include_rules = [
+  "-chrome",
+  "+chrome/test/base",
+  "+chrome/test/sync",
+
+  # TODO(tim): Restrict this further.
+  "+chrome/browser/sync",
+  "-chrome/browser/sync/api",
+  "-chrome/browser/sync/glue",
+  "-chrome/browser/sync/notifier",
+]
+

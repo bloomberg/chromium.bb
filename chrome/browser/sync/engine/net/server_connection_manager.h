@@ -14,8 +14,6 @@
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/common/deprecated/event_sys.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"
 
 namespace syncable {

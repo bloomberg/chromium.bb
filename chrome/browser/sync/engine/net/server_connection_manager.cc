@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/http_return.h"
 #include "googleurl/src/gurl.h"
 

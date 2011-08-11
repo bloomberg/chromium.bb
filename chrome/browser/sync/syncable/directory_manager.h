@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/common/deprecated/event_sys.h"
 
 namespace sync_api { class BaseTransaction; }
 namespace syncable { class BaseTransaction; }
@@ -31,24 +30,8 @@ namespace syncable {
 
 class DirectoryChangeDelegate;
 
-struct DirectoryManagerEvent {
-  enum {
-    CLOSED,
-    CLOSED_ALL,
-    SHUTDOWN,
-  } what_happened;
-  std::string dirname;
-  typedef DirectoryManagerEvent EventType;
-  static inline bool IsChannelShutdownEvent(const EventType& event) {
-    return SHUTDOWN == event.what_happened;
-  }
-};
-
-DirectoryManagerEvent DirectoryManagerShutdownEvent();
-
 class DirectoryManager {
  public:
-  typedef EventChannel<DirectoryManagerEvent> Channel;
 
   // root_path specifies where db is stored.
   explicit DirectoryManager(const FilePath& root_path);
@@ -77,8 +60,6 @@ class DirectoryManager {
   typedef std::vector<std::string> DirNames;
   void GetOpenDirectories(DirNames* result);
 
-  Channel* channel() const { return channel_; }
-
   // Wrappers for cryptographer() that enforce holding a transaction.
   // Note: the Cryptographer is NOT thread safe. It must only be accessed while
   // the transaction is still active. The Cryptographer's pointer should not be
@@ -104,8 +85,6 @@ class DirectoryManager {
   // protects managed_directory_
   base::Lock lock_;
   Directory* managed_directory_;
-
-  Channel* const channel_;
 
   scoped_ptr<browser_sync::Cryptographer> cryptographer_;
 

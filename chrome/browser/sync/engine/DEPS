@@ -1,0 +1,20 @@
+include_rules = [
+  "-chrome",
+  "+chrome/test/base",
+  "+chrome/test/sync",
+
+  # TODO(tim): Restrict this further.
+  "+chrome/browser/sync",
+  "-chrome/browser/sync/api",
+  "-chrome/browser/sync/glue",
+
+  # unittests need this for mac osx keychain overriding
+  "+chrome/browser/password_manager/encryptor.h",
+
+  "+chrome/common/net/gaia/google_service_auth_error.h",
+  "+chrome/common/net/http_return.h",
+
+  # various command line flags
+  "+chrome/common/chrome_switches.h",
+]
+

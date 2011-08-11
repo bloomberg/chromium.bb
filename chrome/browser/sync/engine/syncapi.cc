@@ -36,6 +36,8 @@
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
+#include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/nudge_source.h"
@@ -68,12 +70,9 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/deprecated/event_sys.h"
-#include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "net/base/network_change_notifier.h"
 
 using base::TimeDelta;

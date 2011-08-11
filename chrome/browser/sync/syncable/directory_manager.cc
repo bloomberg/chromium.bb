@@ -13,7 +13,6 @@
 #include "base/port.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 
 using browser_sync::Cryptographer;
 
@@ -21,12 +20,6 @@ namespace syncable {
 
 static const FilePath::CharType kSyncDataDatabaseFilename[] =
     FILE_PATH_LITERAL("SyncData.sqlite3");
-
-DirectoryManagerEvent DirectoryManagerShutdownEvent() {
-  DirectoryManagerEvent event;
-  event.what_happened = DirectoryManagerEvent::SHUTDOWN;
-  return event;
-}
 
 // static
 const FilePath DirectoryManager::GetSyncDataDatabaseFilename() {
@@ -40,7 +33,6 @@ const FilePath DirectoryManager::GetSyncDataDatabasePath() const {
 DirectoryManager::DirectoryManager(const FilePath& path)
     : root_path_(path),
       managed_directory_(NULL),
-      channel_(new Channel(DirectoryManagerShutdownEvent())),
       cryptographer_(new Cryptographer) {
 }
 
@@ -48,7 +40,6 @@ DirectoryManager::~DirectoryManager() {
   base::AutoLock lock(lock_);
   DCHECK_EQ(managed_directory_, static_cast<Directory*>(NULL))
       << "Dir " << managed_directory_->name() << " not closed!";
-  delete channel_;
 }
 
 bool DirectoryManager::Open(const std::string& name,
@@ -102,12 +93,6 @@ void DirectoryManager::Close(const std::string& name) {
       return;
     }
   }
-
-  // TODO(timsteele): No lock?!
-  // Notify listeners.
-  managed_directory_->channel()->NotifyListeners(DIRECTORY_CLOSED);
-  DirectoryManagerEvent event = { DirectoryManagerEvent::CLOSED, name };
-  channel_->NotifyListeners(event);
 
   delete managed_directory_;
   managed_directory_ = NULL;

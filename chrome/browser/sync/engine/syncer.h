@@ -21,8 +21,6 @@
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
-#include "chrome/common/deprecated/event_sys.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
 
 namespace syncable {
 class Directory;
@@ -134,4 +132,3 @@ void ClearServerData(syncable::MutableEntry* entry);
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_H_
-

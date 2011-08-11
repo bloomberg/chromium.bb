@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Various utility methods for nigory-based multi-type encryption.
+// Various utility methods for nigori-based multi-type encryption.
 
-#ifndef CHROME_BROWSER_SYNC_SYNCABLE_NIGORI_UTIL_H_
-#define CHROME_BROWSER_SYNC_SYNCABLE_NIGORI_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_ENGINE_NIGORI_UTIL_H_
+#define CHROME_BROWSER_SYNC_ENGINE_NIGORI_UTIL_H_
 #pragma once
 
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
@@ -51,4 +51,4 @@ bool VerifyDataTypeEncryption(BaseTransaction* const trans,
 
 }  // namespace syncable
 
-#endif  // CHROME_BROWSER_SYNC_SYNCABLE_NIGORI_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_ENGINE_NIGORI_UTIL_H_
