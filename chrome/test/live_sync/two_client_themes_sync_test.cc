@@ -4,15 +4,27 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_themes_sync_test.h"
+#include "chrome/test/live_sync/themes_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class TwoClientLiveThemesSyncTest : public LiveThemesSyncTest {
+using themes_helper::GetCustomTheme;
+using themes_helper::GetThemeID;
+using themes_helper::HasOrWillHaveCustomTheme;
+using themes_helper::ThemeIsPendingInstall;
+using themes_helper::UseCustomTheme;
+using themes_helper::UseDefaultTheme;
+using themes_helper::UseNativeTheme;
+using themes_helper::UsingCustomTheme;
+using themes_helper::UsingDefaultTheme;
+using themes_helper::UsingNativeTheme;
+
+class TwoClientThemesSyncTest : public LiveSyncTest {
  public:
-  TwoClientLiveThemesSyncTest() : LiveThemesSyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientLiveThemesSyncTest() {}
+  TwoClientThemesSyncTest() : LiveSyncTest(TWO_CLIENT) {}
+  virtual ~TwoClientThemesSyncTest() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientLiveThemesSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(TwoClientThemesSyncTest);
 };
 
 // TODO(akalin): Add tests for model association (i.e., tests that
@@ -20,7 +32,7 @@ class TwoClientLiveThemesSyncTest : public LiveThemesSyncTest {
 // SetupSync()).
 
 // TCM ID - 3667311.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
@@ -46,9 +58,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
 // TCM ID - 3599303.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_NativeTheme) {
 #else
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeTheme) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -71,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
 }
 
 // TCM ID - 7247455.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);
@@ -95,9 +107,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
 // TCM ID - 7292065.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeDefaultRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_NativeDefaultRace) {
 #else
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -120,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
 // TCM ID - 7294077.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_CustomNativeRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_CustomNativeRace) {
 #else
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomNativeRace) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -141,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
 }
 
 // TCM ID - 7307225.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);
@@ -156,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
 }
 
 // TCM ID - 7264758.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomCustomRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomCustomRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // TODO(akalin): Generalize this to n clients.
@@ -180,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomCustomRace) {
 }
 
 // TCM ID - 3723272.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableThemes) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DisableThemes) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
@@ -206,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableThemes) {
 }
 
 // TCM ID - 3687288.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));

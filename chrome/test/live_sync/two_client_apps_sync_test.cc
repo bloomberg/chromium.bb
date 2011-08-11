@@ -4,28 +4,36 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_apps_sync_test.h"
+#include "chrome/test/live_sync/apps_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class TwoClientLiveAppsSyncTest : public LiveAppsSyncTest {
+using apps_helper::AllProfilesHaveSameAppsAsVerifier;
+using apps_helper::DisableApp;
+using apps_helper::EnableApp;
+using apps_helper::HasSameAppsAsVerifier;
+using apps_helper::IncognitoDisableApp;
+using apps_helper::IncognitoEnableApp;
+using apps_helper::InstallApp;
+using apps_helper::InstallAppsPendingForSync;
+using apps_helper::UninstallApp;
+
+class TwoClientAppsSyncTest : public LiveSyncTest {
  public:
-  TwoClientLiveAppsSyncTest()
-      : LiveAppsSyncTest(TWO_CLIENT) {}
+  TwoClientAppsSyncTest() : LiveSyncTest(TWO_CLIENT) {}
 
-  virtual ~TwoClientLiveAppsSyncTest() {}
+  virtual ~TwoClientAppsSyncTest() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientLiveAppsSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(TwoClientAppsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
-                       StartWithNoApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
-                       StartWithSameApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithSameApps) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumApps = 5;
@@ -42,8 +50,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
-                       StartWithDifferentApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithDifferentApps) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
@@ -77,8 +84,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
-                       InstallDifferentApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, InstallDifferentApps) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
@@ -115,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
 }
 
 // TCM ID - 3711279.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, Add) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -129,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Add) {
 }
 
 // TCM ID - 3706267.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Uninstall) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, Uninstall) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -148,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Uninstall) {
 }
 
 // TCM ID - 3699295.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Merge) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, Merge) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -174,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, Merge) {
 }
 
 // TCM ID - 7723126.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, UpdateEnableDisableApp) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateEnableDisableApp) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -202,8 +208,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, UpdateEnableDisableApp) {
 }
 
 // TCM ID - 7706637.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
-                       UpdateIncognitoEnableDisable) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateIncognitoEnableDisable) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -231,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest,
 }
 
 // TCM ID - 3718276.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DisableApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
@@ -251,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableApps) {
 }
 
 // TCM ID - 3720303.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAppsSyncTest, DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 

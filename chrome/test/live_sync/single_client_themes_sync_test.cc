@@ -4,22 +4,32 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_themes_sync_test.h"
+#include "chrome/test/live_sync/themes_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class SingleClientLiveThemesSyncTest : public LiveThemesSyncTest {
+using themes_helper::GetCustomTheme;
+using themes_helper::GetThemeID;
+using themes_helper::UseCustomTheme;
+using themes_helper::UseDefaultTheme;
+using themes_helper::UseNativeTheme;
+using themes_helper::UsingCustomTheme;
+using themes_helper::UsingDefaultTheme;
+using themes_helper::UsingNativeTheme;
+
+class SingleClientThemesSyncTest : public LiveSyncTest {
  public:
-  SingleClientLiveThemesSyncTest() : LiveThemesSyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientLiveThemesSyncTest() {}
+  SingleClientThemesSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
+  virtual ~SingleClientThemesSyncTest() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientLiveThemesSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(SingleClientThemesSyncTest);
 };
 
 // TODO(akalin): Add tests for model association (i.e., tests that
 // start with SetupClients(), change the theme state, then call
 // SetupSync()).
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, CustomTheme) {
+IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_FALSE(UsingCustomTheme(GetProfile(0)));
@@ -39,9 +49,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, CustomTheme) {
 
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, FAILS_NativeTheme) {
+IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, FAILS_NativeTheme) {
 #else
-IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
+IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -65,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, DefaultTheme) {
+IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_LIVE_SYNC_LIVE_SYNC_EXTENSION_HELPER_H_
-#define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_EXTENSION_HELPER_H_
+#ifndef CHROME_TEST_LIVE_SYNC_SYNC_EXTENSION_HELPER_H_
+#define CHROME_TEST_LIVE_SYNC_SYNC_EXTENSION_HELPER_H_
 #pragma once
 
 #include <map>
@@ -13,23 +13,24 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "chrome/common/extensions/extension.h"
 
 class Extension;
 class LiveSyncTest;
 class Profile;
 
-class LiveSyncExtensionHelper {
+class SyncExtensionHelper {
  public:
-  LiveSyncExtensionHelper();
-  ~LiveSyncExtensionHelper();
+  // Singleton implementation.
+  static SyncExtensionHelper* GetInstance();
 
   // Returns a generated extension ID for the given name.
   static std::string NameToId(const std::string& name);
 
   // Initializes the profiles in |test| and registers them with
   // internal data structures.
-  void Setup(LiveSyncTest* test);
+  void SetupIfNecessary(LiveSyncTest* test);
 
   // Installs the extension with the given name to |profile|.
   void InstallExtension(
@@ -90,6 +91,11 @@ class LiveSyncExtensionHelper {
   typedef std::map<Profile*, ExtensionNameMap> ProfileExtensionNameMap;
   typedef std::map<std::string, std::string> StringMap;
 
+  friend struct DefaultSingletonTraits<SyncExtensionHelper>;
+
+  SyncExtensionHelper();
+  ~SyncExtensionHelper();
+
   // Returns a map from |profile|'s installed extensions to their state.
   static ExtensionStateMap GetExtensionStates(Profile* profile);
 
@@ -106,8 +112,9 @@ class LiveSyncExtensionHelper {
 
   ProfileExtensionNameMap profile_extensions_;
   StringMap id_to_name_;
+  bool setup_completed_;
 
-  DISALLOW_COPY_AND_ASSIGN(LiveSyncExtensionHelper);
+  DISALLOW_COPY_AND_ASSIGN(SyncExtensionHelper);
 };
 
-#endif  // CHROME_TEST_LIVE_SYNC_LIVE_SYNC_EXTENSION_HELPER_H_
+#endif  // CHROME_TEST_LIVE_SYNC_SYNC_EXTENSION_HELPER_H_

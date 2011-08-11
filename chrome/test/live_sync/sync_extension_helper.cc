@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_sync_extension_helper.h"
+#include "chrome/test/live_sync/sync_extension_helper.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -14,38 +14,51 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-LiveSyncExtensionHelper::ExtensionState::ExtensionState()
+SyncExtensionHelper::ExtensionState::ExtensionState()
     : enabled_state(ENABLED), incognito_enabled(false) {}
 
-LiveSyncExtensionHelper::ExtensionState::~ExtensionState() {}
+SyncExtensionHelper::ExtensionState::~ExtensionState() {}
 
-bool LiveSyncExtensionHelper::ExtensionState::Equals(
-    const LiveSyncExtensionHelper::ExtensionState &other) const {
+bool SyncExtensionHelper::ExtensionState::Equals(
+    const SyncExtensionHelper::ExtensionState &other) const {
   return ((enabled_state == other.enabled_state) &&
           (incognito_enabled == other.incognito_enabled));
 }
 
-LiveSyncExtensionHelper::LiveSyncExtensionHelper() {}
+// static
+SyncExtensionHelper* SyncExtensionHelper::GetInstance() {
+  SyncExtensionHelper* instance = Singleton<SyncExtensionHelper>::get();
+  instance->SetupIfNecessary(sync_datatype_helper::test());
+  return instance;
+}
 
-LiveSyncExtensionHelper::~LiveSyncExtensionHelper() {}
+SyncExtensionHelper::SyncExtensionHelper() : setup_completed_(false) {}
+
+SyncExtensionHelper::~SyncExtensionHelper() {}
 
 // static
-std::string LiveSyncExtensionHelper::NameToId(const std::string& name) {
+std::string SyncExtensionHelper::NameToId(const std::string& name) {
   std::string id;
   EXPECT_TRUE(Extension::GenerateId(name, &id));
   return id;
 }
 
-void LiveSyncExtensionHelper::Setup(LiveSyncTest* test) {
+void SyncExtensionHelper::SetupIfNecessary(LiveSyncTest* test) {
+  if (setup_completed_)
+    return;
+
   for (int i = 0; i < test->num_clients(); ++i) {
     SetupProfile(test->GetProfile(i));
   }
   SetupProfile(test->verifier());
+
+  setup_completed_ = true;
 }
 
-void LiveSyncExtensionHelper::InstallExtension(
+void SyncExtensionHelper::InstallExtension(
     Profile* profile, const std::string& name, Extension::Type type) {
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
   ASSERT_TRUE(extension.get()) << "Could not get extension " << name
@@ -54,13 +67,13 @@ void LiveSyncExtensionHelper::InstallExtension(
       extension, extension->UpdatesFromGallery());
 }
 
-void LiveSyncExtensionHelper::UninstallExtension(
+void SyncExtensionHelper::UninstallExtension(
     Profile* profile, const std::string& name) {
   ExtensionService::UninstallExtensionHelper(profile->GetExtensionService(),
                                              NameToId(name));
 }
 
-std::vector<std::string> LiveSyncExtensionHelper::GetInstalledExtensionNames(
+std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(
     Profile* profile) const {
   std::vector<std::string> names;
   ExtensionService* extension_service = profile->GetExtensionService();
@@ -88,38 +101,38 @@ std::vector<std::string> LiveSyncExtensionHelper::GetInstalledExtensionNames(
   return names;
 }
 
-void LiveSyncExtensionHelper::EnableExtension(Profile* profile,
-                                              const std::string& name) {
+void SyncExtensionHelper::EnableExtension(Profile* profile,
+                                          const std::string& name) {
   profile->GetExtensionService()->EnableExtension(NameToId(name));
 }
 
-void LiveSyncExtensionHelper::DisableExtension(Profile* profile,
-                                               const std::string& name) {
+void SyncExtensionHelper::DisableExtension(Profile* profile,
+                                           const std::string& name) {
   profile->GetExtensionService()->DisableExtension(NameToId(name));
 }
 
-bool LiveSyncExtensionHelper::IsExtensionEnabled(
+bool SyncExtensionHelper::IsExtensionEnabled(
     Profile* profile, const std::string& name) const {
   return profile->GetExtensionService()->IsExtensionEnabled(NameToId(name));
 }
 
-void LiveSyncExtensionHelper::IncognitoEnableExtension(
+void SyncExtensionHelper::IncognitoEnableExtension(
     Profile* profile, const std::string& name) {
   profile->GetExtensionService()->SetIsIncognitoEnabled(NameToId(name), true);
 }
 
-void LiveSyncExtensionHelper::IncognitoDisableExtension(
+void SyncExtensionHelper::IncognitoDisableExtension(
     Profile* profile, const std::string& name) {
   profile->GetExtensionService()->SetIsIncognitoEnabled(NameToId(name), false);
 }
 
-bool LiveSyncExtensionHelper::IsIncognitoEnabled(
+bool SyncExtensionHelper::IsIncognitoEnabled(
     Profile* profile, const std::string& name) const {
   return profile->GetExtensionService()->IsIncognitoEnabled(NameToId(name));
 }
 
 
-bool LiveSyncExtensionHelper::IsExtensionPendingInstallForSync(
+bool SyncExtensionHelper::IsExtensionPendingInstallForSync(
     Profile* profile, const std::string& id) const {
   const PendingExtensionManager* pending_extension_manager =
       profile->GetExtensionService()->pending_extension_manager();
@@ -130,7 +143,7 @@ bool LiveSyncExtensionHelper::IsExtensionPendingInstallForSync(
   return info.is_from_sync();
 }
 
-void LiveSyncExtensionHelper::InstallExtensionsPendingForSync(
+void SyncExtensionHelper::InstallExtensionsPendingForSync(
     Profile* profile, Extension::Type type) {
   // TODO(akalin): Mock out the servers that the extensions auto-update
   // mechanism talk to so as to more closely match what actually happens.
@@ -159,8 +172,8 @@ void LiveSyncExtensionHelper::InstallExtensionsPendingForSync(
   }
 }
 
-LiveSyncExtensionHelper::ExtensionStateMap
-    LiveSyncExtensionHelper::GetExtensionStates(Profile* profile) {
+SyncExtensionHelper::ExtensionStateMap
+    SyncExtensionHelper::GetExtensionStates(Profile* profile) {
   const std::string& profile_debug_name = profile->GetDebugName();
 
   ExtensionStateMap extension_state_map;
@@ -206,7 +219,7 @@ LiveSyncExtensionHelper::ExtensionStateMap
   return extension_state_map;
 }
 
-bool LiveSyncExtensionHelper::ExtensionStatesMatch(
+bool SyncExtensionHelper::ExtensionStatesMatch(
     Profile* profile1, Profile* profile2) {
   const ExtensionStateMap& state_map1 = GetExtensionStates(profile1);
   const ExtensionStateMap& state_map2 = GetExtensionStates(profile2);
@@ -234,7 +247,7 @@ bool LiveSyncExtensionHelper::ExtensionStatesMatch(
   return true;
 }
 
-void LiveSyncExtensionHelper::SetupProfile(Profile* profile) {
+void SyncExtensionHelper::SetupProfile(Profile* profile) {
   profile->InitExtensions(true);
   profile_extensions_.insert(make_pair(profile, ExtensionNameMap()));
 }
@@ -311,7 +324,7 @@ scoped_refptr<Extension> CreateExtension(
 
 }  // namespace
 
-scoped_refptr<Extension> LiveSyncExtensionHelper::GetExtension(
+scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
     Profile* profile, const std::string& name,
     Extension::Type type) {
   if (name.empty()) {

@@ -4,16 +4,29 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_extensions_sync_test.h"
+#include "chrome/test/live_sync/extensions_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
-                       StartWithNoExtensions) {
+using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
+using extensions_helper::InstallExtension;
+
+class SingleClientExtensionsSyncTest : public LiveSyncTest {
+ public:
+  SingleClientExtensionsSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
+
+  virtual ~SingleClientExtensionsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientExtensionsSyncTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest,
                        StartWithSomeExtensions) {
   ASSERT_TRUE(SetupClients());
 
@@ -28,8 +41,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
-                       InstallSomeExtensions) {
+IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, InstallSomeExtensions) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumExtensions = 5;

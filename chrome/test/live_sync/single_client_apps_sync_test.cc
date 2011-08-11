@@ -4,28 +4,29 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_apps_sync_test.h"
+#include "chrome/test/live_sync/apps_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-class SingleClientLiveAppsSyncTest : public LiveAppsSyncTest {
+using apps_helper::AllProfilesHaveSameAppsAsVerifier;
+using apps_helper::InstallApp;
+
+class SingleClientAppsSyncTest : public LiveSyncTest {
  public:
-  SingleClientLiveAppsSyncTest()
-      : LiveAppsSyncTest(SINGLE_CLIENT) {}
+  SingleClientAppsSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
 
-  virtual ~SingleClientLiveAppsSyncTest() {}
+  virtual ~SingleClientAppsSyncTest() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientLiveAppsSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(SingleClientAppsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveAppsSyncTest,
-                       StartWithNoApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveAppsSyncTest,
-                       StartWithSomeApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomeApps) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumApps = 5;
@@ -39,8 +40,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveAppsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientLiveAppsSyncTest,
-                       InstallSomeApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumApps = 5;

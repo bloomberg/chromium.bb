@@ -4,17 +4,36 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_extensions_sync_test.h"
+#include "chrome/test/live_sync/extensions_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       StartWithNoExtensions) {
+using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
+using extensions_helper::DisableExtension;
+using extensions_helper::EnableExtension;
+using extensions_helper::HasSameExtensionsAsVerifier;
+using extensions_helper::IncognitoDisableExtension;
+using extensions_helper::IncognitoEnableExtension;
+using extensions_helper::InstallExtension;
+using extensions_helper::InstallExtensionsPendingForSync;
+using extensions_helper::UninstallExtension;
+
+class TwoClientExtensionsSyncTest : public LiveSyncTest {
+ public:
+  TwoClientExtensionsSyncTest() : LiveSyncTest(TWO_CLIENT) {}
+
+  virtual ~TwoClientExtensionsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionsSyncTest);
+};
+
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       StartWithSameExtensions) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, StartWithSameExtensions) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
@@ -31,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        StartWithDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
@@ -66,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        InstallDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
@@ -104,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
 }
 
 // TCM ID - 3637311.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Add) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
@@ -118,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Add) {
 }
 
 // TCM ID - 3724281.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Uninstall) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Uninstall) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
@@ -137,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Uninstall) {
 }
 
 // TCM ID - 3635304.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Merge) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Merge) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
@@ -163,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, Merge) {
 }
 
 // TCM ID - 3605300.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        UpdateEnableDisableExtension) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
@@ -192,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
 }
 
 // TCM ID - 3728322.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        UpdateIncognitoEnableDisable) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
@@ -221,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
 }
 
 // TCM ID - 3732278.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableExtensions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
@@ -240,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableExtensions) {
 }
 
 // TCM ID - 3606290.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest, DisableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 

@@ -4,8 +4,19 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_extensions_sync_test.h"
+#include "chrome/test/live_sync/extensions_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
+
+using extensions_helper::AllProfilesHaveSameExtensions;
+using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
+using extensions_helper::DisableExtension;
+using extensions_helper::EnableExtension;
+using extensions_helper::GetInstalledExtensions;
+using extensions_helper::InstallExtension;
+using extensions_helper::InstallExtensionsPendingForSync;
+using extensions_helper::IsExtensionEnabled;
+using extensions_helper::UninstallExtension;
 
 // TODO(braffert): Replicate these tests for apps.
 
@@ -17,9 +28,11 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-class ExtensionsSyncPerfTest : public TwoClientLiveExtensionsSyncTest {
+class ExtensionsSyncPerfTest : public LiveSyncTest {
  public:
-  ExtensionsSyncPerfTest() : extension_number_(0) {}
+  ExtensionsSyncPerfTest()
+      : LiveSyncTest(TWO_CLIENT),
+        extension_number_(0) {}
 
   // Adds |num_extensions| new unique extensions to |profile|.
   void AddExtensions(int profile, int num_extensions);
@@ -42,8 +55,7 @@ class ExtensionsSyncPerfTest : public TwoClientLiveExtensionsSyncTest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionsSyncPerfTest);
 };
 
-void ExtensionsSyncPerfTest::AddExtensions(int profile,
-                                                      int num_extensions) {
+void ExtensionsSyncPerfTest::AddExtensions(int profile, int num_extensions) {
   for (int i = 0; i < num_extensions; ++i) {
     InstallExtension(GetProfile(profile), extension_number_++);
   }
