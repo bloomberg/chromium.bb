@@ -31,7 +31,6 @@ const char kVideoTag[] = "video";
 const char kResolutionTag[] = "initial-resolution";
 const char kAuthenticationTag[] = "authentication";
 const char kCertificateTag[] = "certificate";
-const char kMasterKeyTag[] = "master-key";
 const char kAuthTokenTag[] = "auth-token";
 
 const char kTransportAttr[] = "transport";
@@ -153,11 +152,9 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 ContentDescription::ContentDescription(
     const CandidateSessionConfig* candidate_config,
     const std::string& auth_token,
-    const std::string& master_key,
     const std::string& certificate)
     : candidate_config_(candidate_config),
       auth_token_(auth_token),
-      master_key_(master_key),
       certificate_(certificate) {
 }
 
@@ -172,8 +169,6 @@ ContentDescription::~ContentDescription() { }
 //     <initial-resolution width="800" height="600" />
 //     <authentication>
 //       <certificate>[BASE64 Encoded Certificate]</certificate>
-//       <master-key>[master key encrypted with hosts
-//                    public key encoded with BASE64]</master-key>
 //       <auth-token>...</auth-token>  // IT2Me only.
 //     </authentication>
 //   </description>
@@ -224,19 +219,6 @@ XmlElement* ContentDescription::ToXml() const {
 
       certificate_tag->SetBodyText(base64_cert);
       authentication_tag->AddElement(certificate_tag);
-    }
-
-    if (!master_key().empty()) {
-      XmlElement* master_key_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kMasterKeyTag));
-
-      std::string master_key_base64;
-      if (!base::Base64Encode(master_key(), &master_key_base64)) {
-        LOG(DFATAL) << "Cannot perform base64 encode on master key";
-      }
-
-      master_key_tag->SetBodyText(master_key_base64);
-      authentication_tag->AddElement(master_key_tag);
     }
 
     if (!auth_token().empty()) {
@@ -315,7 +297,6 @@ cricket::ContentDescription* ContentDescription::ParseXml(
     // Parse authentication information.
     std::string certificate;
     std::string auth_token;
-    std::string master_key;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
                                       kAuthenticationTag));
     if (child) {
@@ -330,17 +311,6 @@ cricket::ContentDescription* ContentDescription::ParseXml(
         }
       }
 
-      // Parse master-key.
-      const XmlElement* master_key_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kMasterKeyTag));
-      if (master_key_tag) {
-        if (!base::Base64Decode(master_key_tag->BodyText(), &master_key)) {
-          LOG(ERROR) << "Failed to decode master-key received from the peer.";
-          return NULL;
-        }
-        master_key = master_key_tag->BodyText();
-      }
-
       // Parse auth-token.
       const XmlElement* auth_token_tag =
           child->FirstNamed(QName(kChromotingXmlNamespace, kAuthTokenTag));
@@ -349,8 +319,7 @@ cricket::ContentDescription* ContentDescription::ParseXml(
       }
     }
 
-    return new ContentDescription(config.release(), auth_token, master_key,
-                                  certificate);
+    return new ContentDescription(config.release(), auth_token, certificate);
   }
   LOG(ERROR) << "Invalid description: " << element->Str();
   return NULL;

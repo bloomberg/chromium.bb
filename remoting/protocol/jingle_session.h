@@ -80,7 +80,6 @@ class JingleSession : public protocol::Session,
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
   const std::string& local_certificate() const;
   void Init(cricket::Session* cricket_session);
-  std::string GetEncryptedMasterKey() const;
 
   // Close all the channels and terminate the session.
   void CloseInternal(int result, bool failed);
@@ -145,11 +144,6 @@ class JingleSession : public protocol::Session,
 
   // Public key of the peer.
   std::string peer_public_key_;
-
-  // Master key used to derive ice keys for each ice
-  // session. Generated on the client and sent to the host in the
-  // session-initiate message (encrypted with the host's key).
-  std::string master_key_;
 
   // Shared secret to use in channel authentication.  This is currently only
   // used in IT2Me.

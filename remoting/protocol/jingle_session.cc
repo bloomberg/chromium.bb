@@ -34,54 +34,6 @@ namespace {
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
 
-const int kMasterKeyLength = 16;
-const int kChannelKeyLength = 16;
-
-std::string GenerateRandomMasterKey() {
-  std::string result;
-  result.resize(kMasterKeyLength);
-  base::RandBytes(&result[0], result.size());
-  return result;
-}
-
-std::string EncryptMasterKey(const std::string& host_public_key,
-                             const std::string& master_key) {
-  // TODO(sergeyu): Implement RSA public key encryption in src/crypto
-  // and actually encrypt the key here.
-  return master_key;
-}
-
-bool DecryptMasterKey(const crypto::RSAPrivateKey* private_key,
-                      const std::string& encrypted_master_key,
-                      std::string* master_key) {
-  // TODO(sergeyu): Implement RSA public key encryption in src/crypto
-  // and actually encrypt the key here.
-  *master_key = encrypted_master_key;
-  return true;
-}
-
-// Generates channel key from master key and channel name. Must be
-// used to generate channel key so that we don't use the same key for
-// different channels. The key is calculated as
-//   HMAC_SHA256(master_key, channel_name)
-bool GetChannelKey(const std::string& channel_name,
-                   const std::string& master_key,
-                   std::string* channel_key) {
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  if (!hmac.Init(channel_name)) {
-    channel_key->clear();
-    return false;
-  }
-  channel_key->resize(kChannelKeyLength);
-  if (!hmac.Sign(master_key,
-                 reinterpret_cast<unsigned char*>(&(*channel_key)[0]),
-                 channel_key->size())) {
-    channel_key->clear();
-    return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -105,7 +57,6 @@ JingleSession::JingleSession(
     const std::string& peer_public_key)
     : jingle_session_manager_(jingle_session_manager),
       local_cert_(local_cert),
-      master_key_(GenerateRandomMasterKey()),
       state_(INITIALIZING),
       closed_(false),
       closing_(false),
@@ -137,11 +88,6 @@ void JingleSession::Init(cricket::Session* cricket_session) {
       this, &JingleSession::OnSessionState);
   cricket_session_->SignalError.connect(
       this, &JingleSession::OnSessionError);
-}
-
-std::string JingleSession::GetEncryptedMasterKey() const {
-  DCHECK(CalledOnValidThread());
-  return EncryptMasterKey(peer_public_key_, master_key_);
 }
 
 void JingleSession::CloseInternal(int result, bool failed) {
@@ -360,13 +306,6 @@ void JingleSession::OnInitiate() {
         static_cast<const protocol::ContentDescription*>(
             GetContentInfo()->description);
     CHECK(content_description);
-
-    if (!DecryptMasterKey(local_private_key_.get(),
-                          content_description->master_key(), &master_key_)) {
-      LOG(ERROR) << "Failed to decrypt master-key";
-      CloseInternal(net::ERR_CONNECTION_FAILED, true);
-      return;
-    }
   }
 
   if (cricket_session_->initiator()) {

@@ -176,8 +176,7 @@ Session* JingleSessionManager::Connect(
   sessions_.push_back(jingle_session);
 
   cricket_session->Initiate(host_jid, CreateClientSessionDescription(
-      jingle_session->candidate_config()->Clone(), receiver_token,
-      jingle_session->GetEncryptedMasterKey()));
+      jingle_session->candidate_config()->Clone(), receiver_token));
 
   return jingle_session;
 }
@@ -332,12 +331,11 @@ bool JingleSessionManager::WriteContent(
 cricket::SessionDescription*
 JingleSessionManager::CreateClientSessionDescription(
     const CandidateSessionConfig* config,
-    const std::string& auth_token,
-    const std::string& master_key) {
+    const std::string& auth_token) {
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
       JingleSession::kChromotingContentName, kChromotingXmlNamespace,
-      new ContentDescription(config, auth_token, master_key, ""));
+      new ContentDescription(config, auth_token, ""));
   return desc;
 }
 
@@ -348,7 +346,7 @@ cricket::SessionDescription* JingleSessionManager::CreateHostSessionDescription(
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
       JingleSession::kChromotingContentName, kChromotingXmlNamespace,
-      new ContentDescription(config, "", "", certificate));
+      new ContentDescription(config, "", certificate));
   return desc;
 }
 

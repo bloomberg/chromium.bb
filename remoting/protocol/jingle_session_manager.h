@@ -103,8 +103,7 @@ class JingleSessionManager
   // Creates session description for outgoing session.
   static cricket::SessionDescription* CreateClientSessionDescription(
       const CandidateSessionConfig* candidate_config,
-      const std::string& auth_token,
-      const std::string& master_key);
+      const std::string& auth_token);
   // Creates session description for incoming session.
   static cricket::SessionDescription* CreateHostSessionDescription(
       const CandidateSessionConfig* candidate_config,
