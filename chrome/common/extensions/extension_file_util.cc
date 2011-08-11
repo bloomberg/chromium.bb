@@ -139,7 +139,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   return extension;
 }
 
-bool ValidateExtension(Extension* extension, std::string* error) {
+bool ValidateExtension(const Extension* extension, std::string* error) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
            extension->icons().map().begin();

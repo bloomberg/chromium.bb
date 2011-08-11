@@ -1080,7 +1080,7 @@ const Extension* ExtensionService::LoadComponentExtension(
   JSONStringValueSerializer serializer(info.manifest);
   scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
   if (!manifest.get()) {
-    DLOG(ERROR) << "Failed to parse manifest for extension";
+    LOG(ERROR) << "Failed to parse manifest for extension";
     return NULL;
   }
 
@@ -1095,7 +1095,7 @@ const Extension* ExtensionService::LoadComponentExtension(
       flags,
       &error));
   if (!extension.get()) {
-    NOTREACHED() << error;
+    LOG(ERROR) << error;
     return NULL;
   }
   AddExtension(extension);
@@ -1107,7 +1107,7 @@ void ExtensionService::UnloadComponentExtension(
   JSONStringValueSerializer serializer(info.manifest);
   scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
   if (!manifest.get()) {
-    DLOG(ERROR) << "Failed to parse manifest for extension";
+    LOG(ERROR) << "Failed to parse manifest for extension";
     return;
   }
   std::string public_key;
@@ -1117,7 +1117,7 @@ void ExtensionService::UnloadComponentExtension(
       GetString(extension_manifest_keys::kPublicKey, &public_key) ||
       !Extension::ParsePEMKeyBytes(public_key, &public_key_bytes) ||
       !Extension::GenerateId(public_key_bytes, &id)) {
-    DLOG(ERROR) << "Failed to get extension id";
+    LOG(ERROR) << "Failed to get extension id";
     return;
   }
   UnloadExtension(id, UnloadedExtensionInfo::DISABLE);

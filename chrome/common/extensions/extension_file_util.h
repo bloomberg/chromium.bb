@@ -44,7 +44,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
 
 // Returns true if the given extension object is valid and consistent.
 // Otherwise, a description of the error is returned in |error|.
-bool ValidateExtension(Extension* extension, std::string* error);
+bool ValidateExtension(const Extension* extension, std::string* error);
 
 // Cleans up the extension install directory. It can end up with garbage in it
 // if extensions can't initially be removed when they are uninstalled (eg if a
