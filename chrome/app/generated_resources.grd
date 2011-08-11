@@ -10451,57 +10451,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
         Checking for updates...
       </message>
-      <message name="IDS_IMAGEBURN_CONFIM_BURN1" desc="Ask if user wants to burn image to stateful device (part one)">
-        Are you sure you want to burn image to folowing device:
-      </message>
-      <message name="IDS_IMAGEBURN_TITLE" desc="Image-burn html page title">
-        ChromiumOs Image Burn
-      </message>
-      <message name="IDS_IMAGEBURN_ROOT_LIST_TITLE" desc="Title of the list that shows partitions available for burning image to">
-        Available image targets
-      </message>
-      <message name="IDS_IMAGEBURN_CONFIM_BURN2" desc="Ask if user wants to burn image to stateful device (part two)">
-        ? All data on the device will be lost.
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_UNSUCCESSFUL" desc="Inform user that burning operation ended unsuccessfully">
-        Image burn did not succeed!
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_SUCCESSFUL" desc="Inform user that burning operation was successful">
-        Image burnt successfully!
-      </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_UNSUCCESSFUL" desc="Inform user that image could not be downloaded">
-        Image download unsuccessful, burning aborted!
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_PROGRESS" desc="Burnt byte counts (with total)">
-        <ph name="BURNT_AMOUNT">$1<ex>40kB</ex></ph> of <ph name="TOTAL_SIZE">$2<ex>250kB</ex></ph>
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_PROGRESS_SIZE_UNKNOWN" desc="Burnt byte counts (without total)">
-        <ph name="BURNT_AMOUNT">$1<ex>40kB</ex></ph> of Unknown
-      </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_STARTING_STATUS" desc="Progress message shown when image download is starting">
-        Waiting for download to start...
-      </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_IN_PROGRESS_STATUS" desc="Progress message shown when image download is in progress">
-        Downloading image...
-      </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_COMPLETE_STATUS" desc="Progress message shown when image download is finished">
-        Image downloaded.
-      </message>
-      <message name="IDS_IMAGEBURN_DOWNLOAD_CANCELED_STATUS" desc="Progress message shown when image download breaks">
-        Image downloaded has been terminated
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_STARTING_STATUS" desc="Progress message shown when burning image is starting">
-        Initializing burn process...
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_IN_PROGRESS_STATUS" desc="Progress message shown while actually burning the image">
-        Burning image...
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_COMPLETE_STATUS" desc="Progress message shown when image burn is finished">
-        Image burn complete.
-      </message>
-      <message name="IDS_IMAGEBURN_BURN_CANCELED_STATUS" desc="Progress message shown when burning image breaks">
-        Image burning has been terminated
-      </message>
       <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning webpage ">
         Create OS Recovery Media
       </message>
@@ -12316,6 +12265,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
         Scanning content...
+      </message>
+      <message name="IDS_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, <ph name="DEVICE_LABEL">$1<ex>SD card</ex></ph> is not supported on your Chromebook at this time.
+      </message>
+      <message name="IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, the external storage device is not supported on your Chromebook at this time.
       </message>
 
       <!-- Network state strings for ChromeOS -->
