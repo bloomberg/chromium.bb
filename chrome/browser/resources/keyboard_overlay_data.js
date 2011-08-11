@@ -10316,7 +10316,7 @@ var keyboardOverlayData = {
         },
         "E0 38": {
           "format": "smaller",
-          "label": "alt"
+          "label": "alt gr"
         },
         "E0 48": {
           "label": "up"
