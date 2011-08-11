@@ -148,3 +148,14 @@ for tag, e in ENVIRONMENTS_TO_TRY:
                                    exit_status='55')
     e.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                          'run_' + name  +'_test', is_broken=is_broken)
+
+
+abi_types_nexe = env.ComponentProgram('abi_types',
+                                      'abi_types.cc',
+                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('abi_types_test.out',
+                                 abi_types_nexe)
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests', 'small_tests'],
+                       'run_abi_types_test')
