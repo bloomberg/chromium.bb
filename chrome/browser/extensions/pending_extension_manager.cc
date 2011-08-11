@@ -74,13 +74,21 @@ void PendingExtensionManager::AddFromExternalUpdateUrl(
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
 
-  if (service_.IsExternalExtensionUninstalled(id))
-    return;
-
-  if (service_.GetInstalledExtension(id)) {
-    LOG(DFATAL) << "Trying to add extension " << id
-                << " by external update, but it is already installed.";
-    return;
+  const Extension* extension = service_.GetInstalledExtension(id);
+  if (extension &&
+      location == Extension::GetHigherPriorityLocation(location,
+                                                       extension->location())) {
+    // If the new location has higher priority than the location of an existing
+    // extension, let the update process overwrite the existing extension.
+  } else {
+    if (service_.IsExternalExtensionUninstalled(id)) {
+      return;
+    }
+    if (extension) {
+      LOG(DFATAL) << "Trying to add extension " << id
+                  << " by external update, but it is already installed.";
+      return;
+    }
   }
 
   AddExtensionImpl(id, update_url, &AlwaysInstall,

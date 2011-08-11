@@ -442,6 +442,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       << "Uninstalling non-external extension should not set kill bit.";
 }
 
+namespace {
+
+const char* kForceInstallNotEmptyHelp =
+    "A policy may already be controlling the list of force-installed "
+    "extensions. Please remove all policy settings from your computer "
+    "before running tests. E.g. from /etc/chromium/policies Linux or "
+    "from the registry on Windows, etc.";
+
+}
+
 // See http://crbug.com/57378 for flakiness details.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
@@ -466,11 +476,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   const ListValue* forcelist =
       prefs->GetList(prefs::kExtensionInstallForceList);
-  ASSERT_TRUE(forcelist->empty())
-      << "A policy may already be controlling the list of force-installed "
-      << "extensions. Please remove all policy settings from your computer "
-      << "before running tests. E.g. from /etc/chromium/policies Linux or "
-      << "from the registry on Windows, etc.";
+  ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
 
   {
     // Set the policy as a user preference and fire notification observers.
@@ -515,4 +521,101 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ExtensionList::const_iterator i;
   for (i = extensions->begin(); i != extensions->end(); ++i)
     EXPECT_NE(kExtensionId, (*i)->id());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  service->updater()->set_blacklist_checks_enabled(false);
+  const size_t size_before = service->extensions()->size();
+  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  ASSERT_TRUE(service->disabled_extensions()->empty());
+
+  // Note: This interceptor gets requests on the IO thread.
+  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
+  URLFetcher::enable_interception_for_tests(true);
+
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v2.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+                                     basedir.AppendASCII("v2.crx"));
+
+  // Check that the policy is initially empty.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  const ListValue* forcelist =
+      prefs->GetList(prefs::kExtensionInstallForceList);
+  ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
+
+  // User install of the extension.
+  ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  const Extension* extension = extensions->at(size_before);
+  ASSERT_EQ(kExtensionId, extension->id());
+  EXPECT_EQ(Extension::INTERNAL, extension->location());
+  EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
+
+  // Setup the force install policy. It should override the location.
+  {
+    ListPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    ListValue* forcelist = pref_update.Get();
+    ASSERT_TRUE(forcelist->empty());
+    forcelist->Append(Value::CreateStringValue(
+        std::string(kExtensionId) + ";http://localhost/autoupdate/manifest"));
+  }
+  ASSERT_TRUE(WaitForExtensionInstall());
+  extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  extension = extensions->at(size_before);
+  ASSERT_EQ(kExtensionId, extension->id());
+  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
+  EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
+
+  // Remove the policy, and verify that the extension was uninstalled.
+  // TODO(joaodasilva): it would be nicer if the extension was kept instead,
+  // and reverted location to INTERNAL or whatever it was before the policy
+  // was applied.
+  {
+    ListPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    ListValue* forcelist = pref_update.Get();
+    ASSERT_TRUE(!forcelist->empty());
+    forcelist->Clear();
+  }
+  extensions = service->extensions();
+  ASSERT_EQ(size_before, extensions->size());
+  extension = service->GetExtensionById(kExtensionId, true);
+  EXPECT_TRUE(extension == NULL);
+
+  // User install again, but have it disabled too before setting the policy.
+  ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
+  extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  extension = extensions->at(size_before);
+  ASSERT_EQ(kExtensionId, extension->id());
+  EXPECT_EQ(Extension::INTERNAL, extension->location());
+  EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
+  EXPECT_TRUE(service->disabled_extensions()->empty());
+
+  service->DisableExtension(kExtensionId);
+  EXPECT_EQ(1u, service->disabled_extensions()->size());
+  EXPECT_EQ(kExtensionId, service->disabled_extensions()->at(0)->id());
+  EXPECT_FALSE(service->IsExtensionEnabled(kExtensionId));
+
+  // Install the policy again. It should overwrite the extension's location,
+  // and force enable it too.
+  {
+    ListPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    ListValue* forcelist = pref_update.Get();
+    ASSERT_TRUE(forcelist->empty());
+    forcelist->Append(Value::CreateStringValue(
+        std::string(kExtensionId) + ";http://localhost/autoupdate/manifest"));
+  }
+  ASSERT_TRUE(WaitForExtensionInstall());
+  extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  extension = extensions->at(size_before);
+  ASSERT_EQ(kExtensionId, extension->id());
+  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
+  EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
+  EXPECT_TRUE(service->disabled_extensions()->empty());
 }

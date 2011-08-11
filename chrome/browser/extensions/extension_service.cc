@@ -415,9 +415,14 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
 
-  if (GetExtensionById(id, true)) {
-    // Already installed.  Do not change the update URL that the extension set.
-    return;
+  const Extension* extension = GetExtensionById(id, true);
+  if (extension) {
+    // Already installed. Skip this install if the current location has
+    // higher priority than |location|.
+    Extension::Location current = extension->location();
+    if (current == Extension::GetHigherPriorityLocation(current, location))
+      return;
+    // Otherwise, overwrite the current installation.
   }
   pending_extension_manager()->AddFromExternalUpdateUrl(
       id, update_url, location);
@@ -2163,7 +2168,11 @@ void ExtensionService::OnExtensionInstalled(
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
-  bool initial_enable = !extension_prefs_->IsExtensionDisabled(id);
+  // Extensions installed by policy can't be disabled. So even if a previous
+  // installation disabled the extension, make sure it is now enabled.
+  bool initial_enable =
+      !extension_prefs_->IsExtensionDisabled(id) ||
+      !Extension::UserMayDisable(extension->location());
   PendingExtensionInfo pending_extension_info;
   if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
     pending_extension_manager()->Remove(id);

@@ -1000,14 +1000,9 @@ void ExtensionUpdater::CheckNow() {
   NotifyStarted();
   ManifestFetchesBuilder fetches_builder(service_, extension_prefs_);
 
-  const ExtensionList* extensions = service_->extensions();
-  for (ExtensionList::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    fetches_builder.AddExtension(**iter);
-  }
-
   const PendingExtensionManager* pending_extension_manager =
       service_->pending_extension_manager();
+  std::set<std::string> pending_ids;
 
   PendingExtensionManager::const_iterator iter;
   for (iter = pending_extension_manager->begin();
@@ -1016,8 +1011,21 @@ void ExtensionUpdater::CheckNow() {
     // class PendingExtensionManager.
     Extension::Location location = iter->second.install_source();
     if (location != Extension::EXTERNAL_PREF &&
-        location != Extension::EXTERNAL_REGISTRY)
+        location != Extension::EXTERNAL_REGISTRY) {
       fetches_builder.AddPendingExtension(iter->first, iter->second);
+      pending_ids.insert(iter->first);
+    }
+  }
+
+  const ExtensionList* extensions = service_->extensions();
+  for (ExtensionList::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
+    // An extension might be overwritten by policy, and have its update url
+    // changed. Make sure existing extensions aren't fetched again, if a
+    // pending fetch for an extension with the same id already exists.
+    if (!ContainsKey(pending_ids, (*iter)->id())) {
+      fetches_builder.AddExtension(**iter);
+    }
   }
 
   fetches_builder.ReportStats();

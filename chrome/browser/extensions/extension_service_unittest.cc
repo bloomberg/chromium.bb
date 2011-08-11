@@ -3704,6 +3704,33 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
+TEST_F(ExtensionServiceTest, HigherPriorityInstall) {
+  InitializeEmptyExtensionService();
+
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCrx(path, true);
+  ValidatePrefKeyCount(1u);
+  ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
+
+  PendingExtensionManager* pending = service_->pending_extension_manager();
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+
+  // Skip install when the location is the same.
+  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
+      Extension::INTERNAL);
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+  // Force install when the location has higher priority.
+  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
+      Extension::EXTERNAL_POLICY_DOWNLOAD);
+  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  pending->Remove(kGoodId);
+  // Skip install when the location has lower priority.
+  service_->OnExternalExtensionUpdateUrlFound(kGoodId, GURL(kGoodUpdateURL),
+      Extension::INTERNAL);
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+}
+
 // Test that when multiple sources try to install an extension,
 // we consistently choose the right one. To make tests easy to read,
 // methods that fake requests to install crx files in several ways
