@@ -5330,6 +5330,38 @@
    fun:_ZN3net20GetHostOrSpecFromURLERK4GURL
    fun:_ZN20AsyncResourceHandler17OnResponseStartedEiP16ResourceResponse
 }
+{
+   bug_92571
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history16TopSitesDatabase8CreateDBERK8FilePath
+   fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
+   fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
+   fun:_Z16DispatchToMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathE6Tuple1IS2_EE3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+}
+{
+   bug_92573
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:gdk_region_new
+   fun:gdk_region_copy
+   ...
+   fun:_ZN5views15NativeWidgetGtk7OnPaintEP10_GtkWidgetP15_GdkEventExpose
+   fun:_ZN5views15NativeWidgetGtk12OnPaintThunkEP10_GtkWidgetP15_GdkEventExposePv
+   fun:_gtk_marshal_BOOLEAN__BOXED
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_widget_event_internal
+   fun:gtk_main_do_event
+   fun:_ZN5views18AcceleratorHandler8DispatchEP9_GdkEvent
+   fun:_ZN4base14MessagePumpGtk14DispatchEventsEP9_GdkEvent
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
