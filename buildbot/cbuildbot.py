@@ -45,7 +45,7 @@ def _PrintValidConfigs(trybot_only=True):
     trybot_only: Only print selected trybot configs, as specified by the
                  'trybot_list' config setting.
   """
-  COLUMN_WIDTH=45
+  COLUMN_WIDTH = 45
   print 'config'.ljust(COLUMN_WIDTH), 'description'
   print '------'.ljust(COLUMN_WIDTH), '-----------'
   config_names = cbuildbot_config.config.keys()
@@ -220,6 +220,9 @@ def RunBuildStages(bot_id, options, build_config):
                                       constants.CHROME_PFQ_TYPE):
       sync_stage_class = stages.LKGMCandidateSyncStage
       completion_stage_class = stages.LKGMCandidateSyncCompletionStage
+    elif build_config['build_type'] == constants.COMMIT_QUEUE_TYPE:
+      sync_stage_class = stages.CommitQueueSyncStage
+      completion_stage_class = stages.CommitQueueCompletionStage
     else:
       sync_stage_class = stages.ManifestVersionedSyncStage
       completion_stage_class = stages.ManifestVersionedSyncCompletionStage
@@ -315,7 +318,8 @@ def RunBuildStages(bot_id, options, build_config):
                                               success=build_and_test_success)
 
   publish_changes = (options.buildbot and build_config['master'] and
-                     build_and_test_success)
+                     build_and_test_success and
+                     stages.BuilderStage.push_overlays)
 
   if completion_stage:
     # Wait for slave builds to complete.

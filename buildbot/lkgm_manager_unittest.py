@@ -14,6 +14,7 @@ import tempfile
 import threading
 import time
 import unittest
+from xml.dom import minidom
 
 if __name__ == '__main__':
   import constants
@@ -22,6 +23,7 @@ if __name__ == '__main__':
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import manifest_version_unittest
+from chromite.buildbot import patch
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -410,6 +412,40 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.manager.GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()
+
+  def testAddPatchesToManifest(self):
+    """Tests whether we can add a fake patch to an empty manifest file.
+
+    This test creates an empty xml file with just manifest/ tag in it then
+    runs the AddPatchesToManifest with one mocked out GerritPatch and ensures
+    the newly generated manifest has the correct patch information afterwards.
+    """
+    tmp_manifest = tempfile.mktemp('manifest')
+    try:
+      # Create fake but empty manifest file.
+      new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
+                                                              None)
+      with open(tmp_manifest, 'w+') as manifest_file:
+        print new_doc.toxml()
+        new_doc.writexml(manifest_file)
+
+      gerrit_patch = self.mox.CreateMock(patch.GerritPatch)
+      gerrit_patch.project = 'chromite/tacos'
+      gerrit_patch.id = '1234567890'
+      gerrit_patch.commit = '0987654321'
+      self.manager.AddPatchesToManifest(tmp_manifest, [gerrit_patch])
+
+      new_doc = minidom.parse(tmp_manifest)
+      element = new_doc.getElementsByTagName(
+          lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
+      self.assertEqual(element.getAttribute(
+          lkgm_manager.PALADIN_CHANGE_ID_ATTR), '1234567890')
+      self.assertEqual(element.getAttribute(
+          lkgm_manager.PALADIN_COMMIT_ATTR), '0987654321')
+      self.assertEqual(element.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR),
+                       'chromite/tacos')
+    finally:
+      os.remove(tmp_manifest)
 
 
   def tearDown(self):

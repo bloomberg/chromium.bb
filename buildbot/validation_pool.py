@@ -9,8 +9,10 @@ ready for the commit queue to try.
 """
 
 import logging
+from xml.dom import minidom
 
 from chromite.buildbot import gerrit_helper
+from chromite.buildbot import lkgm_manager
 from chromite.buildbot import patch as cros_patch
 
 
@@ -30,7 +32,7 @@ class ValidationPool(object):
     Generally use AcquirePool as an entry pool to a pool rather than this
     method.
     """
-    self._changes = None
+    self.changes = []
     self._gerrit_helper = None
 
   @classmethod
@@ -40,7 +42,7 @@ class ValidationPool(object):
     return True
 
   @classmethod
-  def AcquirePool(cls, branch, internal):
+  def AcquirePool(cls, branch, internal, buildroot):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -51,31 +53,54 @@ class ValidationPool(object):
       pool = ValidationPool()
       pool._gerrit_helper = gerrit_helper.GerritHelper(internal)
       raw_changes = pool._gerrit_helper.GrabChangesReadyForCommit(branch)
-      pool._changes = pool._gerrit_helper.FilterProjectsNotInSourceTree(
-          raw_changes)
+      pool.changes = pool._gerrit_helper.FilterProjectsNotInSourceTree(
+          raw_changes, buildroot)
       return pool
     else:
       return None
 
-  def ApplyPoolIntoRepo(self, repo):
+  @classmethod
+  def AcquirePoolFromManifest(cls, manifest, internal, buildroot):
+    """Acquires the current pool from a given manifest.
+
+    Returns:  ValidationPool object.
+    """
+    pool = ValidationPool()
+    pool._gerrit_helper = gerrit_helper.GerritHelper(internal)
+    manifest_dom = minidom.parse(manifest)
+    pending_commits = manifest_dom.getElementsByTagName(
+        lkgm_manager.PALADIN_COMMIT_ELEMENT)
+    for pending_commit in pending_commits:
+      project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
+      change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
+      commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
+      pool.changes.append(pool._gerrit_helper.GrabPatchFromGerrit(
+          project, change, commit))
+
+    return pool
+
+  def ApplyPoolIntoRepo(self, directory):
     """Cherry picks changes from pool into repository."""
     non_applied_changes = []
-    for change in self._changes:
+    for change in self.changes:
       try:
-        change.Apply(repo.directory)
+        change.Apply(directory)
       except cros_patch.ApplyPatchException:
-        non_applied_changes.add(change)
+        non_applied_changes.append(change)
+      else:
+        lkgm_manager.PrintLink(str(change), change.url)
 
     if non_applied_changes:
       logging.debug('Some changes could not be applied cleanly.')
       self.HandleApplicationFailure(non_applied_changes)
-      self._changes = list(set(self._changes) - set(non_applied_changes))
+      self.changes = list(set(self.changes) - set(non_applied_changes))
 
   def SubmitPool(self):
     """Commits changes to Gerrit from Pool."""
-    for change in self._changes:
+    for change in self.changes:
       logging.info('Change %s will be submitted' % change)
-      change.Submit(gerrit_helper)
+      # TODO(sosa): Remove debug once we are ready to deploy.
+      change.Submit(self._gerrit_helper, debug=True)
 
   def HandleApplicationFailure(self, changes):
     """Handles changes that were not able to be applied cleanly."""
@@ -86,6 +111,6 @@ class ValidationPool(object):
   def HandleValidationFailure(self):
     """Handles failed changes by removing them from next Validation Pools."""
     # TODO(sosa): crosbug.com/17708.
-    for change in self._changes:
+    for change in self.changes:
       logging.info('Validation failed for change %s.' % change)
 

@@ -52,9 +52,14 @@ class GerritHelper():
 
     This methods returns a a list of GerritPatch's to try.
     """
-    ready_for_commit = (['--current-patch-set',
-                         '"status:open AND CodeReview=+2 AND Verified=1 '
-                         'AND branch:%s"' % branch])
+    query_string = ('status:open AND CodeReview=+2 AND Verified=1 '
+                    'AND branch:%s' % branch)
+    # Whitelist specific repositories.
+    query_string = (query_string + ' AND '
+                    '(project:chromiumos/chromite OR'
+                    ' project:chromiumos/platform/crosutils)')
+    ready_for_commit = ['--current-patch-set', '"%s"' % query_string]
+
     query_cmd = self.GetGerritQueryCommand(ready_for_commit)
     raw_results = cros_build_lib.RunCommand(query_cmd,
                                             redirect_stdout=True)
@@ -71,6 +76,30 @@ class GerritHelper():
                                                       self.internal))
 
     return changes_to_commit
+
+  def GrabPatchFromGerrit(self, project, change, commit):
+    """Returns the GerritChange described by the arguments.
+
+    Args:
+      project: Name of the Gerrit project for the change.
+      change:  The change ID for the change.
+      commit:  The specific commit hash for the patch from the review.
+    """
+    grab_change = (
+        ['--current-patch-set',
+         '"project:%(project)s AND change:%(change)s AND commit:%(commit)s"' %
+             {'project': project, 'change': change, 'commit': commit}
+        ])
+
+    query_cmd = self.GetGerritQueryCommand(grab_change)
+    raw_results = cros_build_lib.RunCommand(query_cmd,
+                                            redirect_stdout=True)
+
+    # First line returned is the json.
+    raw_result = raw_results.output.splitlines()[0]
+    result_dict = json.loads(raw_result)
+    assert result_dict.get('id'), 'Code Review json missing change-id!'
+    return cros_patch.GerritPatch(result_dict, self.internal)
 
   def FilterProjectsNotInSourceTree(self, changes, buildroot):
     """Returns new filtered set of relevant changes to this source checkout.

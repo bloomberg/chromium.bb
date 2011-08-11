@@ -11,15 +11,28 @@ import logging
 import os
 import re
 import time
+from xml.dom import minidom
 
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
 
 
+# Paladin constants for manifest names.
+PALADIN_COMMIT_ELEMENT = 'pending_commit'
+PALADIN_PROJECT_ATTR = 'project'
+PALADIN_CHANGE_ID_ATTR = 'change_id'
+PALADIN_COMMIT_ATTR = 'commit'
+
+
 class PromoteCandidateException(Exception):
   """Exception thrown for failure to promote manifest candidate."""
   pass
+
+
+def PrintLink(text, url):
+  """Prints out a link to buildbot."""
+  print '@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
 
 
 def _SyncGitRepo(local_dir):
@@ -103,6 +116,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
+  COMMIT_QUEUE_SUBDIR = 'paladin'
 
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
@@ -136,6 +150,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.build_type = build_type
     if self.build_type == constants.CHROME_PFQ_TYPE:
       self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
+    elif self.build_type == constants.COMMIT_QUEUE_TYPE:
+      self.lkgm_subdir = self.COMMIT_QUEUE_SUBDIR
     else:
       assert self.build_type, constants.PFQ_TYPE
       self.lkgm_subdir = self.LKGM_SUBDIR
@@ -182,10 +198,24 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return _LKGMCandidateInfo(version_info.VersionString())
 
-  def CreateNewCandidate(self, force_version=None, retries=3):
+  def AddPatchesToManifest(self, manifest, patches):
+    manifest_dom = minidom.parse(manifest)
+    for patch in patches:
+      pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
+      pending_commit.setAttribute(PALADIN_PROJECT_ATTR, patch.project)
+      pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.id)
+      pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
+      manifest_dom.documentElement.appendChild(pending_commit)
+
+    with open(manifest, 'w+') as manifest_file:
+      manifest_dom.writexml(manifest_file)
+
+  def CreateNewCandidate(self, force_version=None, patches=None, retries=3):
     """Gets the version number of the next build spec to build.
       Args:
         force_version: Forces us to use this version.
+        patches: An array of GerritPatches that should be built with this
+          manifest as part of a Commit Queue run.
         retries: Number of retries for updating the status.
       Returns:
         next_build: a string of the next build number for the builder to consume
@@ -204,6 +234,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
         self._PrepSpecChanges()
         self.current_version = self._CreateNewBuildSpec(lkgm_info)
+        path_to_new_build_spec = self.GetLocalManifest(self.current_version)
+        if patches: self.AddPatchesToManifest(path_to_new_build_spec, patches)
         if self.current_version:
           logging.debug('Using build spec: %s', self.current_version)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
@@ -211,7 +243,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           self._SetInFlight()
           self._PushSpecChanges(commit_message)
 
-        return self.GetLocalManifest(self.current_version)
+        return path_to_new_build_spec
 
       except (cros_lib.RunCommandError,
               manifest_version.GitCommandException) as e:
@@ -335,11 +367,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise PromoteCandidateException(last_error)
 
-  def _PrintLink(self, text, url):
-    """Prints out a link to buildbot."""
-    print '@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text,
-                                                 'url': url }
-
   def GenerateBlameListSinceLKGM(self):
     """Prints out links to all CL's that have been committed since LKGM.
 
@@ -378,4 +405,4 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         if review_match:
           review = review_match.group(1)
           _, _, change_number = review.rpartition('/')
-          self._PrintLink('%s:%s' % (current_author, change_number), review)
+          PrintLink('%s:%s' % (current_author, change_number), review)

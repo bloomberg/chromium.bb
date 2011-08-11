@@ -24,6 +24,7 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
+from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib as cros_lib
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -442,6 +443,46 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     self.manifest_manager.GenerateBlameListSinceLKGM()
 
 
+class CommitQueueSyncStage(LKGMCandidateSyncStage):
+  """Commit Queue Sync stage that handles syncing and applying patches.
+
+  This stage handles syncing to a manifest, passing around that manifest to
+  other builders and finding the Gerrit Reviews ready to be committed and
+  applying them into its out checkout.
+  """
+  pool = None
+
+  def __init__(self, bot_id, options, build_config):
+    super(CommitQueueSyncStage, self).__init__(bot_id, options, build_config)
+    CommitQueueSyncStage.pool = None
+
+  def GetNextManifest(self):
+    """Gets the next manifest using LKGM logic."""
+    assert self.manifest_manager, \
+        'Must run InitializeManifestManager before we can get a manifest.'
+    assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
+        'Manifest manager instantiated with wrong class.'
+
+    internal = cbuildbot_config._IsInternalBuild(self._build_config['git_url'])
+    if self._build_config['master']:
+      CommitQueueSyncStage.pool = validation_pool.ValidationPool.AcquirePool(
+        self._tracking_branch, internal, self._build_root)
+      return self.manifest_manager.CreateNewCandidate(
+          force_version=self._options.force_version, patches=self.pool.changes)
+    else:
+      manifest = self.manifest_manager.GetLatestCandidate(
+          force_version=self._options.force_version)
+      CommitQueueSyncStage.pool = \
+          validation_pool.ValidationPool.AcquirePoolFromManifest(
+              manifest, internal, self._build_root)
+      return manifest
+
+  def _PerformStage(self):
+    """Performs normal stage and prints blamelist at end."""
+    super(LKGMCandidateSyncStage, self)._PerformStage()
+    self.pool.ApplyPoolIntoRepo(self._build_root)
+
+
 class LKGMSyncStage(ManifestVersionedSyncStage):
   """Stage that syncs to the last known good manifest blessed by builders."""
 
@@ -457,6 +498,7 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
 
     repository.CloneGitRepo(manifests_dir, self._GetManifestVersionsRepoUrl())
     return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
+
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
@@ -479,13 +521,13 @@ class ImportantBuilderFailedException(Exception):
 class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  def _PerformStage(self):
+  def WasBuildSuccessful(self):
     if not ManifestVersionedSyncStage.manifest_manager:
-      return
+      return True
 
     super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
     if not self._build_config['master']:
-      return
+      return True
 
     builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
     statuses = ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
@@ -497,12 +539,36 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         cros_lib.Warning('Builder %s reported status %s' % (builder, status))
         success = False
 
-    if not success:
-      raise ImportantBuilderFailedException(
+    return success
+
+  def HandleError(self):
+    raise ImportantBuilderFailedException(
           'An important build failed with this manifest.')
-    elif self._build_config['build_type'] == constants.PFQ_TYPE:
-      # We only promote for the pfq, not chrome pfq.
+
+  def HandleSuccess(self):
+    # We only promote for the pfq, not chrome pfq.
+    if self._build_config['build_type'] == constants.PFQ_TYPE:
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
+
+  def _PerformStage(self):
+    success = self.WasBuildSuccessful()
+    if success:
+      self.HandleSuccess()
+    else:
+      self.HandleError()
+
+
+class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
+  """Commits or reports errors to CL's that failed to be validated."""
+  def HandleSuccess(self):
+    if self._build_config['master']:
+      CommitQueueSyncStage.pool.SubmitPool()
+      # TODO(sosa): Generate a manifest after we submit -- new LKGM.
+
+  def HandleError(self):
+    if self._build_config['master']:
+      CommitQueueSyncStage.pool.HandleValidationFailure()
+      super(CommitQueueCompletionStage, self).HandleError()
 
 
 class RefreshPackageStatusStage(BuilderStage):
@@ -1115,3 +1181,5 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
                        self._build_config['board'],
                        BuilderStage.push_overlays,
                        self._options.debug)
+
+

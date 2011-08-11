@@ -352,7 +352,19 @@ add_config('x86-generic-commit-queue', [{
 
   'uprev' : True,
   'overlays': 'public',
-  'push_overlays': 'public',
+  'push_overlays': None,
+  'prebuilts': False,
+  'manifest_version': True,
+}])
+
+add_config('arm-generic-commit-queue', [{
+  'board' : 'arm-generic',
+  'important': False,
+  'build_type': constants.COMMIT_QUEUE_TYPE,
+
+  'uprev' : True,
+  'overlays': 'public',
+  'prebuilts': False,
   'manifest_version': True,
 }])
 

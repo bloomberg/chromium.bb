@@ -65,6 +65,10 @@ class GerritPatch(Patch):
     # revision - The CL's SHA1 hash.
     self.revision = patch_dict['currentPatchSet']['revision']
     self.patch_number = patch_dict['currentPatchSet']['number']
+    self.commit = patch_dict['currentPatchSet']['revision']
+    self.owner, _, _ = patch_dict['owner']['email'].partition('@')
+    self.gerrit_number = patch_dict['number']
+    self.url = patch_dict['url']
 
   def Apply(self, buildroot):
     """Implementation of Patch.Apply()."""
@@ -87,6 +91,8 @@ class GerritPatch(Patch):
       cros_lib.RunCommand(['git', 'rebase', 'm/' + manifest_default_branch],
                           cwd=project_dir)
     except cros_lib.RunCommandError as e:
+      cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
+                          error_ok=True)
       raise ApplyPatchException(e)
 
   def Submit(self, helper, debug=False):
@@ -101,8 +107,7 @@ class GerritPatch(Patch):
 
   def __str__(self):
     """Returns custom string to identify this patch."""
-    return '%s:%s,%s' % (self.project, self.id, self.patch_number)
-
+    return '%s:%s' % (self.owner, self.gerrit_number)
 
 
 def RemovePatchRoot(patch_root):
