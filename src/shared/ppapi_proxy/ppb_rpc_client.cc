@@ -2014,6 +2014,23 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_IsScrollbar(
   return retval;
 }
 
+NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_IsOverlay(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_overlay)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Scrollbar_IsOverlay:i:i",
+      resource,
+      is_overlay
+  );
+  return retval;
+}
+
 NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetThickness(
     NaClSrpcChannel* channel,
     PP_Resource resource,

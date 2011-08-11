@@ -190,6 +190,11 @@ class PppScrollbarRpcClient {
       PP_Instance instance,
       PP_Resource scrollbar,
       int32_t value);
+  static NaClSrpcError PPP_Scrollbar_OverlayChanged(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource scrollbar,
+      int32_t value);
 
  private:
   PppScrollbarRpcClient();

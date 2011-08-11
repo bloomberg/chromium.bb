@@ -210,6 +210,12 @@ class PppScrollbarRpcServer {
       PP_Instance instance,
       PP_Resource scrollbar,
       int32_t value);
+  static void PPP_Scrollbar_OverlayChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource scrollbar,
+      int32_t value);
 
  private:
   PppScrollbarRpcServer();

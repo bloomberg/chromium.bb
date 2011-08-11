@@ -75,6 +75,26 @@ uint32_t GetThickness(PP_Resource resource) {
   return thickness;
 }
 
+PP_Bool IsOverlay(PP_Resource resource) {
+  DebugPrintf("PPB_Scrollbar::IsOverlay: "
+              "resource=%"NACL_PRIu32"\n",
+              resource);
+
+  int32_t is_overlay = 0;
+  NaClSrpcError srpc_result =
+      PpbScrollbarRpcClient::PPB_Scrollbar_IsOverlay(
+          GetMainSrpcChannel(),
+          resource,
+          &is_overlay);
+
+  DebugPrintf("PPB_Scrollbar::IsOverlay: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK && is_overlay)
+    return PP_TRUE;
+  return PP_FALSE;
+}
+
 uint32_t GetValue(PP_Resource scrollbar) {
   DebugPrintf("PPB_Scrollbar::GetValue: "
               "scrollbar=%"NACL_PRIu32"\n",
@@ -167,6 +187,7 @@ const PPB_Scrollbar_Dev* PluginScrollbar::GetInterface() {
     Create,
     IsScrollbar,
     GetThickness,
+    IsOverlay,
     GetValue,
     SetValue,
     SetDocumentSize,

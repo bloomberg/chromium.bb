@@ -817,6 +817,11 @@ class PpbScrollbarRpcServer {
       NaClSrpcClosure* done,
       PP_Resource resource,
       int32_t* is_scrollbar);
+  static void PPB_Scrollbar_IsOverlay(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_overlay);
   static void PPB_Scrollbar_GetThickness(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

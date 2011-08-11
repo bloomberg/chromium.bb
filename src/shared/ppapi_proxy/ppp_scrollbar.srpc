@@ -15,5 +15,13 @@
            'outputs': [
                       ]
           },
+          {'name': 'PPP_Scrollbar_OverlayChanged',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['scrollbar', 'PP_Resource'],
+                      ['overlay', 'int32_t'],              # PP_Bool
+                     ],
+           'outputs': [
+                      ]
+          },
          ]
 }

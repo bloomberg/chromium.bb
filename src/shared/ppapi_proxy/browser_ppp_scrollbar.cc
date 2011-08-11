@@ -36,11 +36,30 @@ void ValueChanged(
               NaClSrpcErrorString(srpc_result));
 }
 
+void OverlayChanged(
+    PP_Instance instance,
+    PP_Resource resource,
+    PP_Bool type) {
+  DebugPrintf("PPP_Scrollbar_Dev::OverlayChanged: instance=%"NACL_PRIu32"\n",
+              instance);
+
+  NaClSrpcError srpc_result =
+      PppScrollbarRpcClient::PPP_Scrollbar_OverlayChanged(
+          GetMainSrpcChannel(instance),
+          instance,
+          resource,
+          type);
+
+  DebugPrintf("PPP_Scrollbar_Dev::OverlayChanged: %s\n",
+              NaClSrpcErrorString(srpc_result));
+}
+
 }  // namespace
 
 const PPP_Scrollbar_Dev* BrowserScrollbar::GetInterface() {
   static const PPP_Scrollbar_Dev scrollbar_interface = {
-    ValueChanged
+    ValueChanged,
+    OverlayChanged
   };
   return &scrollbar_interface;
 }

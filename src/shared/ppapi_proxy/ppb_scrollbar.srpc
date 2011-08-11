@@ -20,6 +20,12 @@
            'outputs': [['is_scrollbar', 'int32_t'],  # PP_Bool
                       ]
           },
+          {'name': 'PPB_Scrollbar_IsOverlay',
+           'inputs': [['resource', 'PP_Resource'],
+                     ],
+           'outputs': [['is_overlay', 'int32_t'],  # PP_Bool
+                      ]
+          },
           {'name': 'PPB_Scrollbar_GetThickness',
            'inputs': [['resource', 'PP_Resource'],
                      ],

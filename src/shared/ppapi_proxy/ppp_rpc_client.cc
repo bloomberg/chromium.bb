@@ -368,6 +368,24 @@ NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_ValueChanged(
   return retval;
 }
 
+NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_OverlayChanged(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource scrollbar,
+    int32_t value)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Scrollbar_OverlayChanged:iii:",
+      instance,
+      scrollbar,
+      value
+  );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
+  return retval;
+}
+
 NaClSrpcError PppSelectionRpcClient::PPP_Selection_GetSelectedText(
     NaClSrpcChannel* channel,
     PP_Instance instance,

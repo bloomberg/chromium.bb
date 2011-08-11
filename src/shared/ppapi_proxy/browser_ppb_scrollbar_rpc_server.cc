@@ -64,6 +64,23 @@ void PpbScrollbarRpcServer::PPB_Scrollbar_GetThickness(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbScrollbarRpcServer::PPB_Scrollbar_IsOverlay(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Resource resource,
+    int32_t* is_overlay) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  PP_Bool result = PPBScrollbarInterface()->IsOverlay(resource);
+  *is_overlay = (result == PP_TRUE);
+
+  DebugPrintf(
+      "PPB_Scrollbar::IsScrollbar: is_overlay=%"NACL_PRId32"\n",
+      *is_overlay);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbScrollbarRpcServer::PPB_Scrollbar_GetValue(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,

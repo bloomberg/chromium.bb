@@ -471,6 +471,14 @@ class WidgetClientAdapter : public pp::WidgetClient_Dev {
     }
   }
 
+  void ScrollbarOverlayChanged(pp::Scrollbar_Dev scrollbar, bool overlay) {
+    if (ppp_scrollbar_ != NULL) {
+      ppp_scrollbar_->OverlayChanged(plugin_->pp_instance(),
+                                     scrollbar.pp_resource(),
+                                     PP_FromBool(overlay));
+    }
+  }
+
  private:
   Plugin* plugin_;
   const PPP_Widget_Dev* ppp_widget_;

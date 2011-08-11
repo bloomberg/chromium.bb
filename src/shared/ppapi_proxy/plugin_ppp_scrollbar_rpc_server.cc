@@ -33,3 +33,21 @@ void PppScrollbarRpcServer::PPP_Scrollbar_ValueChanged(
   DebugPrintf("PPP_Scrollbar::ValueChanged: value=%"NACL_PRId32"\n", value);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
+
+void PppScrollbarRpcServer::PPP_Scrollbar_OverlayChanged(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // inputs
+    PP_Instance instance,
+    PP_Resource resource,
+    int32_t overlay) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
+
+  PPPScrollbarInterface()->OverlayChanged(
+      instance, resource, overlay ? PP_TRUE : PP_FALSE);
+
+  DebugPrintf("PPP_Scrollbar::OverlayChanged: value=%s\n",
+              overlay ? "true" : "false");
+  rpc->result = NACL_SRPC_RESULT_OK;
+}

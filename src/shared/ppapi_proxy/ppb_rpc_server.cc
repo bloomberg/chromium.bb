@@ -1618,6 +1618,20 @@ static void PPB_Scrollbar_IsScrollbarDispatcher(
   );
 }
 
+static void PPB_Scrollbar_IsOverlayDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbScrollbarRpcServer::PPB_Scrollbar_IsOverlay(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_Scrollbar_GetThicknessDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2250,6 +2264,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_PDF_SaveAs:i:", PPB_PDF_SaveAsDispatcher },
   { "PPB_Scrollbar_Create:ii:i", PPB_Scrollbar_CreateDispatcher },
   { "PPB_Scrollbar_IsScrollbar:i:i", PPB_Scrollbar_IsScrollbarDispatcher },
+  { "PPB_Scrollbar_IsOverlay:i:i", PPB_Scrollbar_IsOverlayDispatcher },
   { "PPB_Scrollbar_GetThickness:i:i", PPB_Scrollbar_GetThicknessDispatcher },
   { "PPB_Scrollbar_GetValue:i:i", PPB_Scrollbar_GetValueDispatcher },
   { "PPB_Scrollbar_SetValue:ii:", PPB_Scrollbar_SetValueDispatcher },

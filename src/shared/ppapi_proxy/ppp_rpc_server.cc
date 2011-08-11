@@ -332,6 +332,22 @@ static void PPP_Scrollbar_ValueChangedDispatcher(
   );
 }
 
+static void PPP_Scrollbar_OverlayChangedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PppScrollbarRpcServer::PPP_Scrollbar_OverlayChanged(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival
+  );
+}
+
 static void PPP_Selection_GetSelectedTextDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -402,6 +418,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Printing_PrintPages:iCi:i", PPP_Printing_PrintPagesDispatcher },
   { "PPP_Printing_End:i:", PPP_Printing_EndDispatcher },
   { "PPP_Scrollbar_ValueChanged:iii:", PPP_Scrollbar_ValueChangedDispatcher },
+  { "PPP_Scrollbar_OverlayChanged:iii:", PPP_Scrollbar_OverlayChangedDispatcher },
   { "PPP_Selection_GetSelectedText:ii:C", PPP_Selection_GetSelectedTextDispatcher },
   { "PPP_Widget_Invalidate:iiC:", PPP_Widget_InvalidateDispatcher },
   { "PPP_Zoom_Zoom:idi:", PPP_Zoom_ZoomDispatcher },
