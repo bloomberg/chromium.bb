@@ -465,6 +465,13 @@
     ],
   },
 
+  # ChromeOS performance tests.
+  'CHROMEOS_PERF': {
+    'chromeos': [
+      'perf',
+    ],
+  },
+
   # HTML5 media performance tests.
   'AV_PERF': {
      'linux': [

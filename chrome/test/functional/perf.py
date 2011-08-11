@@ -3,6 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Basic pyauto performance tests.
+
+For tests that need to be run for multiple iterations (e.g., so that average
+and standard deviation values can be reported), the default number of iterations
+run for each of these tests is specified by |_DEFAULT_NUM_ITERATIONS|.
+That value can optionally be tweaked by setting an environment variable
+'NUM_ITERATIONS' to a positive integer, representing the number of iterations
+to run.
+"""
+
 import logging
 import math
 import os
@@ -15,7 +25,20 @@ import pyauto
 class PerfTest(pyauto.PyUITest):
   """Basic performance tests."""
 
-  _NUM_ITERATIONS = 50
+  _DEFAULT_NUM_ITERATIONS = 50
+
+  def setUp(self):
+    """Performs necessary setup work before running each test."""
+    self._num_iterations = self._DEFAULT_NUM_ITERATIONS
+    if 'NUM_ITERATIONS' in os.environ:
+      try:
+        self._num_iterations = int(os.environ['NUM_ITERATIONS'])
+        if self._num_iterations <= 0:
+          raise ValueError('Environment variable NUM_ITERATIONS must be an '
+                           'integer > 0.')
+      except ValueError, e:
+        self.fail('Error processing environment variable: %s' % e)
+    pyauto.PyUITest.setUp(self)
 
   def _MeasureElapsedTime(self, python_command, num_invocations):
     """Measures time (in msec) to execute a python command one or more times.
@@ -49,23 +72,23 @@ class PerfTest(pyauto.PyUITest):
     std_dev = math.sqrt(sum(temp_vals) / len(temp_vals))
     return avg, std_dev
 
-  def _PrintSummaryResults(self, first_val, num_iter, values, units):
+  def _PrintSummaryResults(self, first_val, units, values=[]):
     """Logs summary measurement information.
 
     Args:
       first_val: A numeric measurement value for a single initial trial.
-      num_iter: An integer number of iterations used for multiple trials.
-      values: A list of numeric value measurements.
       units: A string specifying the units for the specified measurements.
+      values: A list of numeric value measurements.
     """
-    avg, std_dev = self._AvgAndStdDev(values)
-    logging.debug('First trial: %.2f %s', first_val, units)
-    logging.info('Number of iterations: %d', num_iter)
-    for val in values:
-      logging.info('  %.2f %s', val, units)
-    logging.info('  --------------------------')
-    logging.info('  Average: %.2f %s', avg, units)
-    logging.info('  Std dev: %.2f %s', std_dev, units)
+    logging.debug('Single trial: %.2f %s', first_val, units)
+    if values:
+      avg, std_dev = self._AvgAndStdDev(values)
+      logging.info('Number of iterations: %d', len(values))
+      for val in values:
+        logging.info('  %.2f %s', val, units)
+      logging.info('  --------------------------')
+      logging.info('  Average: %.2f %s', avg, units)
+      logging.info('  Std dev: %.2f %s', std_dev, units)
 
   def _RunNewTabTest(self, open_tab_command, num_tabs=1):
     """Runs a perf test that involves opening new tab(s).
@@ -87,7 +110,7 @@ class PerfTest(pyauto.PyUITest):
       self.GetBrowserWindow(0).GetTab(1).Close(True)
 
     timings = []
-    for _ in range(self._NUM_ITERATIONS):
+    for _ in range(self._num_iterations):
       elapsed = self._MeasureElapsedTime(open_tab_command, num_tabs)
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
                        msg='Did not open %d new tab(s).' % num_tabs)
@@ -95,7 +118,7 @@ class PerfTest(pyauto.PyUITest):
         self.GetBrowserWindow(0).GetTab(1).Close(True)
       timings.append(elapsed)
 
-    self._PrintSummaryResults(orig_elapsed, self._NUM_ITERATIONS, timings, 'ms')
+    self._PrintSummaryResults(orig_elapsed, 'ms', values=timings)
 
   def testNewTab(self):
     """Measures time to open a new tab."""
@@ -118,39 +141,20 @@ class PerfTest(pyauto.PyUITest):
 
   def testV8BenchmarkSuite(self):
     """Measures score from online v8 benchmark suite."""
-
-    def _RunSingleV8BenchmarkSuite():
-      """Runs a single v8 benchmark suite test and returns the final score.
-
-      Returns:
-        The integer score computed from running the v8 benchmark suite.
-      """
-      url = self.GetFileURLForDataPath('v8_benchmark_v6', 'run.html')
-      self.AppendTab(pyauto.GURL(url))
-      js = """
-          var val = document.getElementById("status").innerHTML;
-          window.domAutomationController.send(val);
-      """
-      self.WaitUntil(
-          lambda: 'Score:' in self.ExecuteJavascript(js, 0, 1), timeout=300,
-          expect_retval=True)
-      val = self.ExecuteJavascript(js, 0, 1)
-      score = val[val.find(':') + 2:]
-      self.GetBrowserWindow(0).GetTab(1).Close(True)
-      return int(score)
-
-    orig_score = _RunSingleV8BenchmarkSuite()
-    self.assertEqual(1, self.GetTabCount(),
-                     msg='Did not clean up after running benchmark suite.')
-
-    scores = []
-    for _ in range(self._NUM_ITERATIONS):
-      score = _RunSingleV8BenchmarkSuite()
-      self.assertEqual(1, self.GetTabCount(),
-                       msg='Did not clean up after running benchmark suite.')
-      scores.append(score)
-
-    self._PrintSummaryResults(orig_score, self._NUM_ITERATIONS, scores, 'score')
+    url = self.GetFileURLForDataPath('v8_benchmark_v6', 'run.html')
+    self.AppendTab(pyauto.GURL(url))
+    js = """
+        var val = document.getElementById("status").innerHTML;
+        window.domAutomationController.send(val);
+    """
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: 'Score:' in self.ExecuteJavascript(js, 0, 1), timeout=300,
+            expect_retval=True),
+        msg='Timed out when waiting for v8 benchmark score.')
+    val = self.ExecuteJavascript(js, 0, 1)
+    score = int(val[val.find(':') + 2:])
+    self._PrintSummaryResults(score, 'score')
 
 
 if __name__ == '__main__':
