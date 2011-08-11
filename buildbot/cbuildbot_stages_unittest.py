@@ -340,7 +340,7 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         fast=True,
                         replace=True,
-                        usepkg=False)
+                        usepkg=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -368,7 +368,7 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         fast=True,
                         replace=True,
-                        usepkg=False)
+                        usepkg=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -384,7 +384,7 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.VerifyAll()
 
   def testFullBuildWithOverriddenProfile(self):
-    """Tests whether full builds add profile flag when requested."""
+    """Tests whether full builds add overridden profile flag when requested."""
     self.bot_id = 'arm-tegra2_seaboard-tangent-private-release'
     self.options.profile = 'smock'
     self.build_config = config.config[self.bot_id]
@@ -397,7 +397,7 @@ class BuildBoardTest(AbstractStageTest):
     commands.MakeChroot(buildroot=self.build_root,
                         fast=True,
                         replace=True,
-                        usepkg=False)
+                        usepkg=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -584,7 +584,7 @@ class TestHWStageTest(AbstractStageTest):
                            self.build_config['board'],
                            ip,
                            'test_Test',
-                           ('abc'))
+                           (('abc',)))
 
     self.mox.ReplayAll()
     self.RunStage()
