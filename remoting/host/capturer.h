@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "remoting/base/capture_data.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "remoting/base/types.h"
 
 namespace remoting {
 
@@ -51,11 +51,11 @@ class Capturer {
   // Return the pixel format of the screen.
   virtual media::VideoFrame::Format pixel_format() const = 0;
 
-  // Clear out the invalid region.
-  virtual void ClearInvalidRegion() = 0;
+  // Clear out the list of invalid rects.
+  virtual void ClearInvalidRects() = 0;
 
-  // Invalidate the specified region.
-  virtual void InvalidateRegion(const SkRegion& invalid_region) = 0;
+  // Invalidate the specified screen rects.
+  virtual void InvalidateRects(const InvalidRects& inval_rects) = 0;
 
   // Invalidate the entire screen, of a given size.
   virtual void InvalidateScreen(const gfx::Size& size) = 0;
@@ -65,15 +65,19 @@ class Capturer {
   virtual void InvalidateFullScreen() = 0;
 
   // Capture the screen data associated with each of the accumulated
-  // dirty region.
-  // When the capture is complete, |callback| is called even if the dirty region
-  // is empty.
+  // rects in |inval_rects|.
+  // This routine will first call CalculateInvalidRects to update the
+  // list of |inval_rects|.
+  // When the capture is complete, |callback| is called.
+  //
+  // If |inval_rects_| is empty, then this does nothing except
+  // call the |callback| routine.
   //
   // It is OK to call this method while another thread is reading
-  // data of the previous capture.
+  // data of the last capture.
   // There can be at most one concurrent read going on when this
   // method is called.
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback) = 0;
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) = 0;
 
   // Get the size of the most recently captured screen.
   virtual const gfx::Size& size_most_recent() const = 0;

@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/base/types.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/x_server_pixel_buffer.h"
@@ -74,12 +75,11 @@ class CapturerLinux : public Capturer {
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
+  virtual void ClearInvalidRects() OVERRIDE;
+  virtual void InvalidateRects(const InvalidRects& inval_rects) OVERRIDE;
   virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) OVERRIDE;
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
@@ -114,12 +114,12 @@ class CapturerLinux : public Capturer {
 
   // Capture a rectangle from |x_server_pixel_buffer_|, and copy the data into
   // |capture_data|.
-  void CaptureRect(const SkIRect& rect, CaptureData* capture_data);
+  void CaptureRect(const gfx::Rect& rect, CaptureData* capture_data);
 
   // We expose two forms of blitting to handle variations in the pixel format.
   // In FastBlit, the operation is effectively a memcpy.
-  void FastBlit(uint8* image, const SkIRect& rect, CaptureData* capture_data);
-  void SlowBlit(uint8* image, const SkIRect& rect, CaptureData* capture_data);
+  void FastBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
+  void SlowBlit(uint8* image, const gfx::Rect& rect, CaptureData* capture_data);
 
   // X11 graphics context.
   Display* display_;
@@ -147,9 +147,9 @@ class CapturerLinux : public Capturer {
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
 
-  // Invalid region from the previous capture. This is used to synchronize the
-  // current with the last buffer used.
-  SkRegion last_invalid_region_;
+  // Invalid rects in the last capture. This is used to synchronize current with
+  // the previous buffer used.
+  InvalidRects last_invalid_rects_;
 
   // Last capture buffer used.
   uint8* last_buffer_;
@@ -240,7 +240,8 @@ void CapturerLinux::ScreenConfigurationChanged() {
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].set_needs_update();
   }
-  helper_.ClearInvalidRegion();
+  InvalidRects rects;
+  helper_.SwapInvalidRects(rects);
   x_server_pixel_buffer_.Init(display_);
 }
 
@@ -248,12 +249,12 @@ media::VideoFrame::Format CapturerLinux::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerLinux::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
+void CapturerLinux::ClearInvalidRects() {
+  helper_.ClearInvalidRects();
 }
 
-void CapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
+void CapturerLinux::InvalidateRects(const InvalidRects& inval_rects) {
+  helper_.InvalidateRects(inval_rects);
 }
 
 void CapturerLinux::InvalidateScreen(const gfx::Size& size) {
@@ -265,7 +266,7 @@ void CapturerLinux::InvalidateFullScreen() {
   last_buffer_ = NULL;
 }
 
-void CapturerLinux::CaptureInvalidRegion(
+void CapturerLinux::CaptureInvalidRects(
     CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
@@ -296,7 +297,7 @@ void CapturerLinux::ProcessPendingXEvents() {
   // on XPending because we want to guarantee this terminates.
   int events_to_process = XPending(display_);
   XEvent e;
-  SkRegion invalid_region;
+  InvalidRects invalid_rects;
 
   for (int i = 0; i < events_to_process; i++) {
     XNextEvent(display_, &e);
@@ -307,23 +308,21 @@ void CapturerLinux::ProcessPendingXEvents() {
       if (event->area.width <= 0 || event->area.height <= 0)
         continue;
 
-      SkIRect damage_rect = SkIRect::MakeXYWH(event->area.x,
-                                              event->area.y,
-                                              event->area.width,
-                                              event->area.height);
-      invalid_region.op(damage_rect, SkRegion::kUnion_Op);
-      DVLOG(3) << "Damage received for rect at ("
-               << damage_rect.fLeft << "," << damage_rect.fTop << ") size ("
-               << damage_rect.width() << "," << damage_rect.height() << ")";
+      gfx::Rect damage_rect(event->area.x, event->area.y, event->area.width,
+                            event->area.height);
+      invalid_rects.insert(damage_rect);
+      VLOG(3) << "Damage received for rect at ("
+              << damage_rect.x() << "," << damage_rect.y() << ") size ("
+              << damage_rect.width() << "," << damage_rect.height() << ")";
     } else if (e.type == ConfigureNotify) {
       ScreenConfigurationChanged();
-      invalid_region.setEmpty();
+      invalid_rects.clear();
     } else {
       LOG(WARNING) << "Got unknown event type: " << e.type;
     }
   }
 
-  helper_.InvalidateRegion(invalid_region);
+  helper_.InvalidateRects(invalid_rects);
 }
 
 CaptureData* CapturerLinux::CaptureFrame() {
@@ -342,60 +341,60 @@ CaptureData* CapturerLinux::CaptureFrame() {
   if (use_damage_ && last_buffer_)
     SynchronizeFrame();
 
-  SkRegion invalid_region;
+  InvalidRects invalid_rects;
 
   x_server_pixel_buffer_.Synchronize();
   if (use_damage_ && last_buffer_) {
-    helper_.SwapInvalidRegion(&invalid_region);
-    for (SkRegion::Iterator it(invalid_region); !it.done(); it.next()) {
-      CaptureRect(it.rect(), capture_data);
+    helper_.SwapInvalidRects(invalid_rects);
+    for (InvalidRects::const_iterator it = invalid_rects.begin();
+         it != invalid_rects.end();
+         ++it) {
+      CaptureRect(*it, capture_data);
     }
     // TODO(ajwong): We should only repair the rects that were copied!
     XDamageSubtract(display_, damage_handle_, None, None);
   } else {
     // Doing full-screen polling, or this is the first capture after a
     // screen-resolution change.  In either case, need a full-screen capture.
-    SkIRect screen_rect = SkIRect::MakeWH(buffer.size().width(),
-                                          buffer.size().height());
+    gfx::Rect screen_rect(buffer.size());
     CaptureRect(screen_rect, capture_data);
 
     if (last_buffer_) {
       // Full-screen polling, so calculate the invalid rects here, based on the
       // changed pixels between current and previous buffers.
       DCHECK(differ_ != NULL);
-      differ_->CalcDirtyRegion(last_buffer_, buffer.ptr(), &invalid_region);
+      differ_->CalcDirtyRects(last_buffer_, buffer.ptr(), &invalid_rects);
     } else {
       // No previous buffer, so always invalidate the whole screen, whether
       // or not DAMAGE is being used.  DAMAGE doesn't necessarily send a
       // full-screen notification after a screen-resolution change, so
       // this is done here.
-      invalid_region.op(screen_rect, SkRegion::kUnion_Op);
+      invalid_rects.insert(screen_rect);
     }
   }
 
-  capture_data->mutable_dirty_region() = invalid_region;
-  last_invalid_region_ = invalid_region;
+  capture_data->mutable_dirty_rects() = invalid_rects;
+  last_invalid_rects_ = invalid_rects;
   last_buffer_ = buffer.ptr();
   return capture_data;
 }
 
 void CapturerLinux::SynchronizeFrame() {
-  // Synchronize the current buffer with the previous one since we do not
-  // capture the entire desktop. Note that encoder may be reading from the
-  // previous buffer at this time so thread access complaints are false
-  // positives.
+  // Synchronize the current buffer with the last one since we do not capture
+  // the entire desktop. Note that encoder may be reading from the previous
+  // buffer at this time so thread access complaints are false positives.
 
   // TODO(hclam): We can reduce the amount of copying here by subtracting
-  // |capturer_helper_|s region from |last_invalid_region_|.
-  // http://crbug.com/92354
+  // |rects| from |last_invalid_rects_|.
   DCHECK(last_buffer_);
   VideoFrameBuffer& buffer = buffers_[current_buffer_];
-  for (SkRegion::Iterator it(last_invalid_region_); !it.done(); it.next()) {
-    const SkIRect& r = it.rect();
-    int offset = r.fTop * buffer.bytes_per_row() + r.fLeft * kBytesPerPixel;
-    for (int i = 0; i < r.height(); ++i) {
+  for (InvalidRects::const_iterator it = last_invalid_rects_.begin();
+       it != last_invalid_rects_.end();
+       ++it) {
+    int offset = it->y() * buffer.bytes_per_row() + it->x() * kBytesPerPixel;
+    for (int i = 0; i < it->height(); ++i) {
       memcpy(buffer.ptr() + offset, last_buffer_ + offset,
-             r.width() * kBytesPerPixel);
+             it->width() * kBytesPerPixel);
       offset += buffer.size().width() * kBytesPerPixel;
     }
   }
@@ -413,26 +412,26 @@ void CapturerLinux::DeinitXlib() {
   }
 }
 
-void CapturerLinux::CaptureRect(const SkIRect& rect,
+void CapturerLinux::CaptureRect(const gfx::Rect& rect,
                                 CaptureData* capture_data) {
   uint8* image = x_server_pixel_buffer_.CaptureRect(rect);
   int depth = x_server_pixel_buffer_.GetDepth();
   int bpp = x_server_pixel_buffer_.GetBitsPerPixel();
   bool is_rgb = x_server_pixel_buffer_.IsRgb();
   if ((depth == 24 || depth == 32) && bpp == 32 && is_rgb) {
-    DVLOG(3) << "Fast blitting";
+    VLOG(3) << "Fast blitting";
     FastBlit(image, rect, capture_data);
   } else {
-    DVLOG(3) << "Slow blitting";
+    VLOG(3) << "Slow blitting";
     SlowBlit(image, rect, capture_data);
   }
 }
 
-void CapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
+void CapturerLinux::FastBlit(uint8* image, const gfx::Rect& rect,
                              CaptureData* capture_data) {
   uint8* src_pos = image;
   int src_stride = x_server_pixel_buffer_.GetStride();
-  int dst_x = rect.fLeft, dst_y = rect.fTop;
+  int dst_x = rect.x(), dst_y = rect.y();
 
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
@@ -450,13 +449,13 @@ void CapturerLinux::FastBlit(uint8* image, const SkIRect& rect,
   }
 }
 
-void CapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
+void CapturerLinux::SlowBlit(uint8* image, const gfx::Rect& rect,
                              CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
   uint8* dst_buffer = planes.data[0];
   const int dst_stride = planes.strides[0];
   int src_stride = x_server_pixel_buffer_.GetStride();
-  int dst_x = rect.fLeft, dst_y = rect.fTop;
+  int dst_x = rect.x(), dst_y = rect.y();
   int width = rect.width(), height = rect.height();
 
   unsigned int red_mask = x_server_pixel_buffer_.GetRedMask();

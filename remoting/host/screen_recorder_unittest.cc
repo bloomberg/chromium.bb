@@ -31,9 +31,13 @@ namespace remoting {
 
 namespace {
 
-ACTION_P2(RunCallback, region, data) {
-  SkRegion& dirty_region = data->mutable_dirty_region();
-  dirty_region.op(region, SkRegion::kUnion_Op);
+ACTION_P2(RunCallback, rects, data) {
+  InvalidRects& dirty_rects = data->mutable_dirty_rects();
+  InvalidRects temp_rects;
+  std::set_union(dirty_rects.begin(), dirty_rects.end(),
+                 rects.begin(), rects.end(),
+                 std::inserter(temp_rects, temp_rects.begin()));
+  dirty_rects.swap(temp_rects);
   arg0->Run(data);
   delete arg0;
 }
@@ -103,7 +107,8 @@ class ScreenRecorderTest : public testing::Test {
 // This test mocks capturer, encoder and network layer to operate one recording
 // cycle.
 TEST_F(ScreenRecorderTest, OneRecordCycle) {
-  SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
+  InvalidRects update_rects;
+  update_rects.insert(gfx::Rect(0, 0, 10, 10));
   DataPlanes planes;
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
@@ -114,8 +119,8 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRegion(NotNull()))
-      .WillOnce(RunCallback(update_region, data));
+  EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
+      .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
@@ -151,7 +156,8 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
 // ScreenRecorder is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(ScreenRecorderTest, StartAndStop) {
-  SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
+  InvalidRects update_rects;
+  update_rects.insert(gfx::Rect(0, 0, 10, 10));
   DataPlanes planes;
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
@@ -163,8 +169,8 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRegion(NotNull()))
-      .WillRepeatedly(RunCallback(update_region, data));
+  EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
+      .WillRepeatedly(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))

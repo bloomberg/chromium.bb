@@ -54,12 +54,12 @@ media::VideoFrame::Format CapturerFake::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerFake::ClearInvalidRegion() {
-  helper.ClearInvalidRegion();
+void CapturerFake::ClearInvalidRects() {
+  helper.ClearInvalidRects();
 }
 
-void CapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
-  helper.InvalidateRegion(invalid_region);
+void CapturerFake::InvalidateRects(const InvalidRects& inval_rects) {
+  helper.InvalidateRects(inval_rects);
 }
 
 void CapturerFake::InvalidateScreen(const gfx::Size& size) {
@@ -70,14 +70,14 @@ void CapturerFake::InvalidateFullScreen() {
   helper.InvalidateFullScreen();
 }
 
-void CapturerFake::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
+void CapturerFake::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
   GenerateImage();
   InvalidateScreen(size_);
 
-  SkRegion invalid_region;
-  helper.SwapInvalidRegion(&invalid_region);
+  InvalidRects inval_rects;
+  helper.SwapInvalidRects(inval_rects);
 
   DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
@@ -87,7 +87,7 @@ void CapturerFake::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
   scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
                                                           size_,
                                                           pixel_format_));
-  capture_data->mutable_dirty_region() = invalid_region;
+  capture_data->mutable_dirty_rects() = inval_rects;
 
   helper.set_size_most_recent(capture_data->size());
 

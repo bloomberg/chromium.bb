@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,19 +66,16 @@ void EncoderRowBased::Encode(scoped_refptr<CaptureData> capture_data,
   capture_data_ = capture_data;
   callback_.reset(data_available_callback);
 
-  const SkRegion& region = capture_data->dirty_region();
-  SkRegion::Iterator iter(region);
-  while (!iter.done()) {
-    SkIRect rect = iter.rect();
-    iter.next();
-    EncodeRect(rect, iter.done());
+  const InvalidRects& rects = capture_data->dirty_rects();
+  for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
+    EncodeRect(*r, r == --rects.end());
   }
 
   capture_data_ = NULL;
   callback_.reset();
 }
 
-void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
+void EncoderRowBased::EncodeRect(const gfx::Rect& rect, bool last) {
   CHECK(capture_data_->data_planes().data[0]);
   const int strides = capture_data_->data_planes().strides[0];
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
@@ -89,7 +86,7 @@ void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
   VideoPacket* packet = new VideoPacket();
   PrepareUpdateStart(rect, packet);
   const uint8* in = capture_data_->data_planes().data[0] +
-      rect.fTop * strides + rect.fLeft * bytes_per_pixel;
+      rect.y() * strides + rect.x() * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
   uint8* out = GetOutputBuffer(packet, packet_size_);
   int filled = 0;
@@ -145,13 +142,13 @@ void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
   }
 }
 
-void EncoderRowBased::PrepareUpdateStart(const SkIRect& rect,
+void EncoderRowBased::PrepareUpdateStart(const gfx::Rect& rect,
                                          VideoPacket* packet) {
   packet->set_flags(packet->flags() | VideoPacket::FIRST_PACKET);
 
   VideoPacketFormat* format = packet->mutable_format();
-  format->set_x(rect.fLeft);
-  format->set_y(rect.fTop);
+  format->set_x(rect.x());
+  format->set_y(rect.y());
   format->set_width(rect.width());
   format->set_height(rect.height());
   format->set_encoding(encoding_);

@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
-#include "skia/ext/skia_utils_mac.h"
 
 namespace remoting {
 
@@ -135,20 +134,19 @@ class CapturerMac : public Capturer {
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
+  virtual void ClearInvalidRects() OVERRIDE;
+  virtual void InvalidateRects(const InvalidRects& inval_rects) OVERRIDE;
   virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) OVERRIDE;
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
-  void GlBlitFast(const VideoFrameBuffer& buffer, const SkRegion& region);
+  void GlBlitFast(const VideoFrameBuffer& buffer, const InvalidRects& rects);
   void GlBlitSlow(const VideoFrameBuffer& buffer);
-  void CgBlit(const VideoFrameBuffer& buffer, const SkRegion& region);
-  void CaptureRegion(const SkRegion& region,
-                     CaptureCompletedCallback* callback);
+  void CgBlit(const VideoFrameBuffer& buffer, const InvalidRects& rects);
+  void CaptureRects(const InvalidRects& rects,
+                    CaptureCompletedCallback* callback);
 
   void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
@@ -178,12 +176,12 @@ class CapturerMac : public Capturer {
   // The current buffer with valid data for reading.
   int current_buffer_;
 
-  // The previous buffer into which we captured, or NULL for the first capture
-  // for a particular screen resolution.
+  // The last buffer into which we captured, or NULL for the first capture for
+  // a particular screen resolution.
   uint8* last_buffer_;
 
-  // Contains an invalid region from the previous capture.
-  SkRegion last_invalid_region_;
+  // Contains a list of invalid rectangles in the last capture.
+  InvalidRects last_invalid_rects_;
 
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
@@ -242,7 +240,8 @@ void CapturerMac::ReleaseBuffers() {
 
 void CapturerMac::ScreenConfigurationChanged() {
   ReleaseBuffers();
-  helper_.ClearInvalidRegion();
+  InvalidRects rects;
+  helper_.SwapInvalidRects(rects);
   last_buffer_ = NULL;
 
   CGDirectDisplayID mainDevice = CGMainDisplayID();
@@ -281,12 +280,12 @@ media::VideoFrame::Format CapturerMac::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerMac::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
+void CapturerMac::ClearInvalidRects() {
+  helper_.ClearInvalidRects();
 }
 
-void CapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
+void CapturerMac::InvalidateRects(const InvalidRects& inval_rects) {
+  helper_.InvalidateRects(inval_rects);
 }
 
 void CapturerMac::InvalidateScreen(const gfx::Size& size) {
@@ -297,25 +296,25 @@ void CapturerMac::InvalidateFullScreen() {
   helper_.InvalidateFullScreen();
 }
 
-void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
+void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   scoped_refptr<CaptureData> data;
   if (capturing_) {
-    SkRegion region;
-    helper_.SwapInvalidRegion(&region);
+    InvalidRects rects;
+    helper_.SwapInvalidRects(rects);
     VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
     current_buffer.Update();
 
     bool flip = true;  // GL capturers need flipping.
     if (cgl_context_) {
       if (pixel_buffer_object_.get() != 0) {
-        GlBlitFast(current_buffer, region);
+        GlBlitFast(current_buffer, rects);
       } else {
         // See comment in scoped_pixel_buffer_object::Init about why the slow
         // path is always used on 10.5.
         GlBlitSlow(current_buffer);
       }
     } else {
-      CgBlit(current_buffer, region);
+      CgBlit(current_buffer, rects);
       flip = false;
     }
 
@@ -330,7 +329,7 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
 
     data = new CaptureData(planes, gfx::Size(current_buffer.size()),
                            pixel_format());
-    data->mutable_dirty_region() = region;
+    data->mutable_dirty_rects() = rects;
 
     current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
     helper_.set_size_most_recent(data->size());
@@ -341,28 +340,31 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
 }
 
 void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
-           const SkRegion& region) {
+           const InvalidRects& rects) {
   if (last_buffer_) {
     // We are doing double buffer for the capture data so we just need to copy
-    // the invalid region from the previous capture in the current buffer.
-    // TODO(hclam): We can reduce the amount of copying here by subtracting
-    // |capturer_helper_|s region from |last_invalid_region_|.
-    // http://crbug.com/92354
+    // invalid rects in the last capture in the current buffer.
+    // TODO(hclam): |last_invalid_rects_| and |rects| can overlap and this
+    // causes extra copies on the overlapped region. Subtract |rects| from
+    // |last_invalid_rects_| to do a minimal amount of copy when we have proper
+    // region algorithms implemented.
 
     // Since the image obtained from OpenGL is upside-down, need to do some
     // magic here to copy the correct rectangle.
     const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
-    for(SkRegion::Iterator i(last_invalid_region_); !i.done(); i.next()) {
+    for (InvalidRects::iterator i = last_invalid_rects_.begin();
+         i != last_invalid_rects_.end();
+         ++i) {
       CopyRect(last_buffer_ + y_offset,
                -buffer.bytes_per_row(),
                buffer.ptr() + y_offset,
                -buffer.bytes_per_row(),
                4,  // Bytes for pixel for RGBA.
-               i.rect());
+               *i);
     }
   }
   last_buffer_ = buffer.ptr();
-  last_invalid_region_ = region;
+  last_invalid_rects_ = rects;
 
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
@@ -378,13 +380,13 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
     // Copy only from the dirty rects. Since the image obtained from OpenGL is
     // upside-down we need to do some magic here to copy the correct rectangle.
     const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
-    for(SkRegion::Iterator i(region); !i.done(); i.next()) {
+    for (InvalidRects::iterator i = rects.begin(); i != rects.end(); ++i) {
       CopyRect(ptr + y_offset,
          -buffer.bytes_per_row(),
          buffer.ptr() + y_offset,
          -buffer.bytes_per_row(),
          4,  // Bytes for pixel for RGBA.
-         i.rect());
+         *i);
     }
   }
   if (!glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB)) {
@@ -413,7 +415,7 @@ void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
 }
 
 void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
-                         const SkRegion& region) {
+                         const InvalidRects& rects) {
   if (last_buffer_)
     memcpy(buffer.ptr(), last_buffer_,
            buffer.bytes_per_row() * buffer.size().height());
@@ -423,16 +425,13 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
       reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
   int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
   int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
-  // TODO(hclam): We can reduce the amount of copying here by subtracting
-  // |capturer_helper_|s region from |last_invalid_region_|.
-  // http://crbug.com/92354
-  for(SkRegion::Iterator i(region); !i.done(); i.next()) {
+  for (InvalidRects::iterator i = rects.begin(); i != rects.end(); ++i) {
     CopyRect(display_base_address,
              src_bytes_per_row,
              buffer.ptr(),
              buffer.bytes_per_row(),
              src_bytes_per_pixel,
-             i.rect());
+             *i);
   }
 }
 
@@ -441,27 +440,24 @@ const gfx::Size& CapturerMac::size_most_recent() const {
 }
 
 void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
-  SkIRect skirect_array[count];
+  InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
-    skirect_array[i] = gfx::CGRectToSkIRect(rect_array[i]);
+    rects.insert(gfx::Rect(rect_array[i]));
   }
-  SkRegion region;
-  region.setRects(skirect_array, count);
-  InvalidateRegion(region);
+  InvalidateRects(rects);
 }
 
 void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                    size_t count,
                                    const CGRect *rect_array) {
-  SkIRect skirect_new_array[count];
+  InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
+    rects.insert(gfx::Rect(rect));
     rect = CGRectOffset(rect, delta.dX, delta.dY);
-    skirect_new_array[i] = gfx::CGRectToSkIRect(rect);
+    rects.insert(gfx::Rect(rect));
   }
-  SkRegion region;
-  region.setRects(skirect_new_array, count);
-  InvalidateRegion(region);
+  InvalidateRects(rects);
 }
 
 void CapturerMac::ScreenRefreshCallback(CGRectCount count,

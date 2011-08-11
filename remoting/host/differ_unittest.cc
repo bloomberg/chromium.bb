@@ -44,24 +44,6 @@ class DifferTest : public testing::Test {
     memset(buffer, 0, buffer_size_);
   }
 
-  // Here in DifferTest so that tests can access private methods of Differ.
-  void MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
-    differ_->MarkDirtyBlocks(prev_buffer, curr_buffer);
-  }
-
-  void MergeBlocks(SkRegion* dirty) {
-    differ_->MergeBlocks(dirty);
-  }
-
-  // Convenience method to count rectangles in a region.
-  int RegionRectCount(const SkRegion& region) {
-    int count = 0;
-    for(SkRegion::Iterator iter(region); !iter.done(); iter.next()) {
-      ++count;
-    }
-    return count;
-  }
-
   // Convenience wrapper for Differ's DiffBlock that calculates the appropriate
   // offset to the start of the desired block.
   DiffInfo DiffBlock(int block_x, int block_y) {
@@ -141,37 +123,29 @@ class DifferTest : public testing::Test {
     }
   }
 
-  // Verify that |region| contains a rectangle defined by |x|, |y|, |width| and
-  // |height|.
+  // Verify that the given dirty rect matches the expected |x|, |y|, |width|
+  // and |height|.
   // |x|, |y|, |width| and |height| are specified in block (not pixel) units.
-  bool CheckDirtyRegionContainsRect(const SkRegion& region, int x, int y,
-                                    int width, int height) {
-    SkIRect r = SkIRect::MakeXYWH(x * kBlockSize, y * kBlockSize,
-                                  width * kBlockSize, height * kBlockSize);
-    bool found = false;
-    for (SkRegion::Iterator i(region); !found && !i.done(); i.next()) {
-      found = (i.rect() == r);
-    }
-    return found;
+  void CheckDirtyRect(const InvalidRects& rects, int x, int y,
+                      int width, int height) {
+    gfx::Rect r(x * kBlockSize, y * kBlockSize,
+                width * kBlockSize, height * kBlockSize);
+    EXPECT_TRUE(rects.find(r) != rects.end());
   }
 
   // Mark the range of blocks specified and then verify that they are
   // merged correctly.
   // Only one rectangular region of blocks can be checked with this routine.
-  bool MarkBlocksAndCheckMerge(int x_origin, int y_origin,
+  void MarkBlocksAndCheckMerge(int x_origin, int y_origin,
                                int width, int height) {
     ClearDiffInfo();
     MarkBlocks(x_origin, y_origin, width, height);
 
-    SkRegion dirty;
-    MergeBlocks(&dirty);
+    scoped_ptr<InvalidRects> dirty(new InvalidRects());
+    differ_->MergeBlocks(dirty.get());
 
-    bool is_good = dirty.isRect();
-    if (is_good) {
-     is_good = CheckDirtyRegionContainsRect(dirty, x_origin, y_origin,
-                                            width, height);
-    }
-    return is_good;
+    ASSERT_EQ(1UL, dirty->size());
+    CheckDirtyRect(*dirty.get(), x_origin, y_origin, width, height);
   }
 
   // The differ class we're testing.
@@ -222,7 +196,7 @@ TEST_F(DifferTest, MarkDirtyBlocks_All) {
     }
   }
 
-  MarkDirtyBlocks(prev_.get(), curr_.get());
+  differ_->MarkDirtyBlocks(prev_.get(), curr_.get());
 
   // Make sure each block is marked as dirty.
   for (int y = 0; y < GetDiffInfoHeight() - 1; y++) {
@@ -242,7 +216,7 @@ TEST_F(DifferTest, MarkDirtyBlocks_Sampling) {
   WriteBlockPixel(curr_.get(), 2, 1, 10, 10, 0xff00ff);
   WriteBlockPixel(curr_.get(), 0, 2, 10, 10, 0xff00ff);
 
-  MarkDirtyBlocks(prev_.get(), curr_.get());
+  differ_->MarkDirtyBlocks(prev_.get(), curr_.get());
 
   // Make sure corresponding blocks are updated.
   EXPECT_EQ(0, GetDiffInfo(0, 0));
@@ -310,7 +284,7 @@ TEST_F(DifferTest, Partial_FirstPixel) {
     }
   }
 
-  MarkDirtyBlocks(prev_.get(), curr_.get());
+  differ_->MarkDirtyBlocks(prev_.get(), curr_.get());
 
   // Make sure each block is marked as dirty.
   for (int y = 0; y < GetDiffInfoHeight() - 1; y++) {
@@ -333,7 +307,7 @@ TEST_F(DifferTest, Partial_BorderPixel) {
     WritePixel(curr_.get(), x, height_ - 1, 0xff00ff);
   }
 
-  MarkDirtyBlocks(prev_.get(), curr_.get());
+  differ_->MarkDirtyBlocks(prev_.get(), curr_.get());
 
   // Make sure last (partial) block in each row/column is marked as dirty.
   int x_last = GetDiffInfoWidth() - 2;
@@ -369,10 +343,10 @@ TEST_F(DifferTest, MergeBlocks_Empty) {
   // +---+---+---+---+
   ClearDiffInfo();
 
-  SkRegion dirty;
-  MergeBlocks(&dirty);
+  scoped_ptr<InvalidRects> dirty(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  EXPECT_TRUE(dirty.isEmpty());
+  EXPECT_EQ(0UL, dirty->size());
 }
 
 TEST_F(DifferTest, MergeBlocks_SingleBlock) {
@@ -381,8 +355,7 @@ TEST_F(DifferTest, MergeBlocks_SingleBlock) {
   // rect with the correct bounds.
   for (int y = 0; y < GetDiffInfoHeight() - 1; y++) {
     for (int x = 0; x < GetDiffInfoWidth() - 1; x++) {
-      ASSERT_TRUE(MarkBlocksAndCheckMerge(x, y, 1, 1)) << "x: " << x
-                                                       << "y: " << y;
+      MarkBlocksAndCheckMerge(x, y, 1, 1);
     }
   }
 }
@@ -399,7 +372,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRow) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 0, 2, 1));
+  MarkBlocksAndCheckMerge(0, 0, 2, 1);
 
   // +---+---+---+---+
   // |   |   |   | _ |
@@ -410,7 +383,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRow) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 1, 3, 1));
+  MarkBlocksAndCheckMerge(0, 1, 3, 1);
 
   // +---+---+---+---+
   // |   |   |   | _ |
@@ -421,7 +394,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRow) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(1, 2, 2, 1));
+  MarkBlocksAndCheckMerge(1, 2, 2, 1);
 }
 
 TEST_F(DifferTest, MergeBlocks_BlockColumn) {
@@ -436,7 +409,7 @@ TEST_F(DifferTest, MergeBlocks_BlockColumn) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 0, 1, 2));
+  MarkBlocksAndCheckMerge(0, 0, 1, 2);
 
   // +---+---+---+---+
   // |   |   |   | _ |
@@ -447,7 +420,7 @@ TEST_F(DifferTest, MergeBlocks_BlockColumn) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(1, 1, 1, 2));
+  MarkBlocksAndCheckMerge(1, 1, 1, 2);
 
   // +---+---+---+---+
   // |   |   | X | _ |
@@ -458,7 +431,7 @@ TEST_F(DifferTest, MergeBlocks_BlockColumn) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(2, 0, 1, 3));
+  MarkBlocksAndCheckMerge(2, 0, 1, 3);
 }
 
 TEST_F(DifferTest, MergeBlocks_BlockRect) {
@@ -473,7 +446,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 0, 2, 2));
+  MarkBlocksAndCheckMerge(0, 0, 2, 2);
 
   // +---+---+---+---+
   // |   |   |   | _ |
@@ -484,7 +457,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(1, 1, 2, 2));
+  MarkBlocksAndCheckMerge(1, 1, 2, 2);
 
   // +---+---+---+---+
   // |   | X | X | _ |
@@ -495,7 +468,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(1, 0, 2, 3));
+  MarkBlocksAndCheckMerge(1, 0, 2, 3);
 
   // +---+---+---+---+
   // |   |   |   | _ |
@@ -506,7 +479,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 1, 3, 2));
+  MarkBlocksAndCheckMerge(0, 1, 3, 2);
 
   // +---+---+---+---+
   // | X | X | X | _ |
@@ -517,7 +490,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
   // +---+---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
-  ASSERT_TRUE(MarkBlocksAndCheckMerge(0, 0, 3, 3));
+  MarkBlocksAndCheckMerge(0, 0, 3, 3);
 }
 
 // This tests marked regions that require more than 1 single dirty rect.
@@ -525,7 +498,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
 // may need to be updated if we modify how we merge blocks.
 TEST_F(DifferTest, MergeBlocks_MultiRect) {
   InitDiffer(kScreenWidth, kScreenHeight);
-  SkRegion dirty;
+  scoped_ptr<InvalidRects> dirty;
 
   // +---+---+---+---+      +---+---+---+
   // |   | X |   | _ |      |   | 0 |   |
@@ -541,40 +514,40 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 1, 1, 1);
   MarkBlocks(2, 2, 1, 1);
 
-  dirty.setEmpty();
-  MergeBlocks(&dirty);
+  dirty.reset(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  ASSERT_EQ(3, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 0, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 2, 1, 1));
+  ASSERT_EQ(3UL, dirty->size());
+  CheckDirtyRect(*dirty.get(), 1, 0, 1, 1);
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 1);
+  CheckDirtyRect(*dirty.get(), 2, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // |   |   | X | _ |      |   |   | 0 |
-  // +---+---+---+---+      +---+---+---+
-  // | X | X | X | _ |      | 1   1   1 |
-  // +---+---+---+---+  =>  +           +
-  // | X | X | X | _ |      | 1   1   1 |
+  // +---+---+---+---+      +---+---+   +
+  // | X | X | X | _ |      | 1   1 | 0 |
+  // +---+---+---+---+  =>  +       +   +
+  // | X | X | X | _ |      | 1   1 | 0 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
   ClearDiffInfo();
-  MarkBlocks(2, 0, 1, 1);
-  MarkBlocks(0, 1, 3, 2);
+  MarkBlocks(2, 0, 1, 3);
+  MarkBlocks(0, 1, 2, 2);
 
-  dirty.setEmpty();
-  MergeBlocks(&dirty);
+  dirty.reset(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  ASSERT_EQ(2, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 0, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 3, 2));
+  ASSERT_EQ(2UL, dirty->size());
+  CheckDirtyRect(*dirty.get(), 2, 0, 1, 3);
+  CheckDirtyRect(*dirty.get(), 0, 1, 2, 2);
 
   // +---+---+---+---+      +---+---+---+
   // |   |   |   | _ |      |   |   |   |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 0 |   | 1 |
   // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 2 | 2 | 2 |
+  // | X | X | X | _ |      | 0 | 2 | 1 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -583,20 +556,20 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.setEmpty();
-  MergeBlocks(&dirty);
+  dirty.reset(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  ASSERT_EQ(3, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
+  ASSERT_EQ(3UL, dirty->size());
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 2, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // | X | X | X | _ |      | 0   0   0 |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 1 |   | 2 |
   // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 3 | 3 | 3 |
+  // | X | X | X | _ |      | 1 | 3 | 2 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -606,14 +579,14 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.setEmpty();
-  MergeBlocks(&dirty);
+  dirty.reset(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  ASSERT_EQ(4, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 0, 3, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
+  ASSERT_EQ(4UL, dirty->size());
+  CheckDirtyRect(*dirty.get(), 0, 0, 3, 1);
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 2, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // | X | X |   | _ |      | 0   0 |   |
@@ -628,12 +601,12 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 0, 2, 2);
   MarkBlocks(1, 2, 1, 1);
 
-  dirty.setEmpty();
-  MergeBlocks(&dirty);
+  dirty.reset(new InvalidRects());
+  differ_->MergeBlocks(dirty.get());
 
-  ASSERT_EQ(2, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 0, 2, 2));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 2, 1, 1));
+  ASSERT_EQ(2UL, dirty->size());
+  CheckDirtyRect(*dirty.get(), 0, 0, 2, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 }
 
 }  // namespace remoting

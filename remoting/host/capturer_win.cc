@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/differ.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 
@@ -26,12 +27,11 @@ class CapturerGdi : public Capturer {
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
-  virtual void ClearInvalidRegion() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
+  virtual void ClearInvalidRects() OVERRIDE;
+  virtual void InvalidateRects(const InvalidRects& inval_rects) OVERRIDE;
   virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
-  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
-      OVERRIDE;
+  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback) OVERRIDE;
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
@@ -60,9 +60,9 @@ class CapturerGdi : public Capturer {
   // allocated for that buffer.
   void ReallocateBuffer(int buffer_index, const gfx::Size& size);
 
-  void CalculateInvalidRegion();
-  void CaptureRegion(const SkRegion& region,
-                     CaptureCompletedCallback* callback);
+  void CalculateInvalidRects();
+  void CaptureRects(const InvalidRects& rects,
+                    CaptureCompletedCallback* callback);
 
   void ReleaseBuffers();
   // Generates an image in the current buffer.
@@ -77,7 +77,7 @@ class CapturerGdi : public Capturer {
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
-  CapturerHelper helper_;
+  CapturerHelper helper;
 
   // There are two buffers for the screen images, as required by Capturer.
   static const int kNumBuffers = 2;
@@ -132,31 +132,31 @@ media::VideoFrame::Format CapturerGdi::pixel_format() const {
   return pixel_format_;
 }
 
-void CapturerGdi::ClearInvalidRegion() {
-  helper_.ClearInvalidRegion();
+void CapturerGdi::ClearInvalidRects() {
+  helper.ClearInvalidRects();
 }
 
-void CapturerGdi::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
+void CapturerGdi::InvalidateRects(const InvalidRects& inval_rects) {
+  helper.InvalidateRects(inval_rects);
 }
 
 void CapturerGdi::InvalidateScreen(const gfx::Size& size) {
-  helper_.InvalidateScreen(size);
+  helper.InvalidateScreen(size);
 }
 
 void CapturerGdi::InvalidateFullScreen() {
-  helper_.InvalidateFullScreen();
+  helper.InvalidateFullScreen();
 }
 
-void CapturerGdi::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
-  CalculateInvalidRegion();
-  SkRegion invalid_region;
-  helper_.SwapInvalidRegion(&invalid_region);
-  CaptureRegion(invalid_region, callback);
+void CapturerGdi::CaptureInvalidRects(CaptureCompletedCallback* callback) {
+  CalculateInvalidRects();
+  InvalidRects inval_rects;
+  helper.SwapInvalidRects(inval_rects);
+  CaptureRects(inval_rects, callback);
 }
 
 const gfx::Size& CapturerGdi::size_most_recent() const {
-  return helper_.size_most_recent();
+  return helper.size_most_recent();
 }
 
 void CapturerGdi::ReleaseBuffers() {
@@ -243,11 +243,11 @@ void CapturerGdi::ReallocateBuffer(int buffer_index, const gfx::Size& size) {
       bmi.bmiHeader.biSizeImage / std::abs(bmi.bmiHeader.biHeight);
 }
 
-void CapturerGdi::CalculateInvalidRegion() {
+void CapturerGdi::CalculateInvalidRects() {
   CaptureImage();
 
   const VideoFrameBuffer& current = buffers_[current_buffer_];
-  if (helper_.IsCaptureFullScreen(current.size))
+  if (helper.IsCaptureFullScreen(current.size))
     capture_fullscreen_ = true;
 
   if (capture_fullscreen_) {
@@ -282,14 +282,14 @@ void CapturerGdi::CalculateInvalidRegion() {
       current.bytes_per_pixel, current.bytes_per_row));
   }
 
-  SkRegion region;
-  differ_->CalcDirtyRegion(prev.data, current.data, &region);
+  InvalidRects rects;
+  differ_->CalcDirtyRects(prev.data, current.data, &rects);
 
-  InvalidateRegion(region);
+  InvalidateRects(rects);
 }
 
-void CapturerGdi::CaptureRegion(const SkRegion& region,
-                                CaptureCompletedCallback* callback) {
+void CapturerGdi::CaptureRects(const InvalidRects& rects,
+                               CaptureCompletedCallback* callback) {
   scoped_ptr<CaptureCompletedCallback> callback_deleter(callback);
 
   const VideoFrameBuffer& buffer = buffers_[current_buffer_];
@@ -302,9 +302,9 @@ void CapturerGdi::CaptureRegion(const SkRegion& region,
   scoped_refptr<CaptureData> data(new CaptureData(planes,
                                                   buffer.size,
                                                   pixel_format_));
-  data->mutable_dirty_region() = region;
+  data->mutable_dirty_rects() = rects;
 
-  helper_.set_size_most_recent(data->size());
+  helper.set_size_most_recent(data->size());
 
   callback->Run(data);
 }

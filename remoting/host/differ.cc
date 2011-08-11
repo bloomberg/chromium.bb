@@ -26,12 +26,12 @@ Differ::Differ(int width, int height, int bpp, int stride) {
 
 Differ::~Differ() {}
 
-void Differ::CalcDirtyRegion(const void* prev_buffer, const void* curr_buffer,
-                             SkRegion* region) {
-  if (!region) {
+void Differ::CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,
+                            InvalidRects* rects) {
+  if (!rects) {
     return;
   }
-  region->setEmpty();
+  rects->clear();
 
   if (!prev_buffer || !curr_buffer) {
     return;
@@ -42,7 +42,7 @@ void Differ::CalcDirtyRegion(const void* prev_buffer, const void* curr_buffer,
 
   // Now that we've identified the blocks that have changed, merge adjacent
   // blocks to minimize the number of rects that we return.
-  MergeBlocks(region);
+  MergeBlocks(rects);
 }
 
 void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
@@ -131,9 +131,9 @@ DiffInfo Differ::DiffPartialBlock(const uint8* prev_buffer,
   return 0;
 }
 
-void Differ::MergeBlocks(SkRegion* region) {
-  DCHECK(region);
-  region->setEmpty();
+void Differ::MergeBlocks(InvalidRects* rects) {
+  DCHECK(rects);
+  rects->clear();
 
   uint8* diff_info_row_start = static_cast<uint8*>(diff_info_.get());
   int diff_info_stride = diff_info_width_ * sizeof(DiffInfo);
@@ -195,8 +195,7 @@ void Differ::MergeBlocks(SkRegion* region) {
         if (top + height > height_) {
           height = height_ - top;
         }
-        region->op(SkIRect::MakeXYWH(left, top, width, height),
-                   SkRegion::kUnion_Op);
+        rects->insert(gfx::Rect(left, top, width, height));
       }
 
       // Increment to next block in this row.

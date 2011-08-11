@@ -167,9 +167,6 @@
         'remoting_jingle_glue',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
-      'include_dirs': [
-        '../skia/config',
-      ],
       'sources': [
         'host/plugin/host_plugin.cc',
         'host/plugin/host_plugin.def',
@@ -181,11 +178,6 @@
         'host/plugin/host_script_object.h',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
-          ],
-        }],
         ['OS=="mac"', {
           'mac_bundle': 1,
           'xcode_settings': {
@@ -300,9 +292,6 @@
         # TODO(hclam): Enable VP8 in the build.
         #'third_party/on2/on2.gyp:vp8',
       ],
-      'include_dirs': [
-        '../skia/config',
-      ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -349,6 +338,7 @@
         'base/task_thread_proxy.h',
         'base/tracer.cc',
         'base/tracer.h',
+        'base/types.h',
         'base/util.cc',
         'base/util.h',
       ],
@@ -359,11 +349,6 @@
             'base/decoder_vp8.h',
             'base/encoder_vp8.cc',
             'base/encoder_vp8.h',
-          ],
-        }],
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
           ],
         }],
       ],
@@ -378,9 +363,6 @@
         'remoting_protocol',
         'differ_block',
         '../crypto/crypto.gyp:crypto',
-      ],
-      'include_dirs': [
-        '../skia/config',
       ],
       'sources': [
         'host/access_verifier.h',
@@ -468,11 +450,6 @@
             ],
           },
         }],
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
-          ],
-        }],
         ['OS=="mac"', {
           'sources': [
             '../third_party/GTM/AppKit/GTMCarbonEvent.h',
@@ -505,9 +482,6 @@
         'remoting_jingle_glue',
         'remoting_protocol',
       ],
-      'include_dirs': [
-        '../skia/config',
-      ],
       'sources': [
         'client/chromoting_client.cc',
         'client/chromoting_client.h',
@@ -527,13 +501,6 @@
         'client/rectangle_update_decoder.cc',
         'client/rectangle_update_decoder.h',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
-          ],
-        }],
-      ],
     },  # end of target 'remoting_client'
 
     {
@@ -546,9 +513,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../media/media.gyp:media',
-      ],
-      'include_dirs': [
-        '../skia/config',
       ],
       'sources': [
         'host/capturer_fake_ascii.cc',
@@ -565,13 +529,6 @@
         'host/simple_host_process.cc',
         '../base/test/mock_chrome_application_mac.mm',
         '../base/test/mock_chrome_application_mac.h',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
-          ],
-        }],
       ],
     },  # end of target 'remoting_simple_host'
 
@@ -726,6 +683,9 @@
     {
       'target_name': 'differ_block',
       'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
       'dependencies': [
         '../media/media.gyp:cpu_features',
       ],
@@ -745,6 +705,9 @@
     {
       'target_name': 'differ_block_sse2',
       'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac"', {
           'cflags': [
@@ -791,7 +754,6 @@
       ],
       'include_dirs': [
         '../testing/gmock/include',
-        '../skia/config',
       ],
       'sources': [
         'base/auth_token_util_unittest.cc',
@@ -867,11 +829,6 @@
             'base/decoder_vp8_unittest.cc',
             'base/encoder_vp8_unittest.cc',
           ],
-        }],
-        ['OS=="win"', {
-          'include_dirs': [
-            '../third_party/skia/include/config',
-        	],
         }],
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
