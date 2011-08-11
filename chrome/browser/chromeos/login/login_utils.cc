@@ -41,6 +41,7 @@
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
@@ -546,6 +547,9 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
     }
     btl->AddLoginTimeMarker("TPMOwn-End", false);
   }
+
+  // Enable/disable plugins based on user preferences.
+  PluginUpdater::GetInstance()->SetProfile(user_profile);
 
   // We suck. This is a hack since we do not have the enterprise feature
   // done yet to pull down policies from the domain admin. We'll take this

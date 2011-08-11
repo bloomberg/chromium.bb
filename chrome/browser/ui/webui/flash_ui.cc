@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/crash_upload_list.h"
-#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -21,9 +20,9 @@
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -229,10 +228,8 @@ void FlashDOMHandler::MaybeRespondToPage() {
   if (info_array.empty()) {
     AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");
   } else {
-    PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
     for (size_t i = 0; i < info_array.size(); ++i) {
-      if (plugin_prefs->IsPluginEnabled(info_array[i])) {
+      if (webkit::npapi::IsPluginEnabled(info_array[i])) {
         flash_version = info_array[i].version + ASCIIToUTF16(" ") +
                         info_array[i].path.LossyDisplayName();
         if (i != 0)

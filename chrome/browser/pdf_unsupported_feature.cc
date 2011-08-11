@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
@@ -114,12 +114,12 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
   UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
   webkit::npapi::PluginList::Singleton()->EnableGroup(false,
       ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
+  PluginUpdater* plugin_updater = PluginUpdater::GetInstance();
+  plugin_updater->EnablePluginGroup(true,
+      ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
   Profile* profile =
       Profile::FromBrowserContext(tab_contents_->browser_context());
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
-  plugin_prefs->EnablePluginGroup(
-      true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
-  plugin_prefs->UpdatePreferences(0);
+  plugin_updater->UpdatePreferences(profile, 0);
 }
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
