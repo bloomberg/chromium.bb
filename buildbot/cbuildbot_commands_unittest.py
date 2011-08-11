@@ -147,7 +147,9 @@ class CBuildBotTest(mox.MoxTestBase):
                    build_autotest=False,
                    fast=True,
                    usepkg=False,
-                   skip_toolchain_update=False)
+                   skip_toolchain_update=False,
+                   nowithdebug=False,
+                   )
     self.mox.VerifyAll()
 
   def testBuildMaximum(self):
@@ -156,7 +158,8 @@ class CBuildBotTest(mox.MoxTestBase):
     arg_test = mox.SameElementsAs(['./build_packages',
                                    '--fast',
                                    '--board=x86-generic',
-                                   '--skip_toolchain_update'])
+                                   '--skip_toolchain_update',
+                                   '--nowithdebug'])
     cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
@@ -167,7 +170,9 @@ class CBuildBotTest(mox.MoxTestBase):
                    fast=True,
                    build_autotest=True,
                    usepkg=True,
-                   skip_toolchain_update=True)
+                   skip_toolchain_update=True,
+                   nowithdebug=True,
+                   )
     self.mox.VerifyAll()
 
   def testBuildWithEnv(self):
@@ -187,6 +192,7 @@ class CBuildBotTest(mox.MoxTestBase):
                    fast=False,
                    usepkg=False,
                    skip_toolchain_update=False,
+                   nowithdebug=False,
                    extra_env=extra)
     self.mox.VerifyAll()
 
