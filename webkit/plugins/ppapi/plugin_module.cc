@@ -26,6 +26,7 @@
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
@@ -340,6 +341,8 @@ const void* GetInterface(const char* name) {
 #ifdef ENABLE_GPU
   if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
+  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics3DTrusted_Thunk();
   if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Context3D_Thunk();
   if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)

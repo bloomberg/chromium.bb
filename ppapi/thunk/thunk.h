@@ -30,6 +30,7 @@ struct PPB_Fullscreen_Dev;
 struct PPB_GLESChromiumTextureMapping_Dev;
 struct PPB_Graphics2D;
 struct PPB_Graphics3D_Dev;
+struct PPB_Graphics3DTrusted_Dev;
 struct PPB_ImageData;
 struct PPB_ImageDataTrusted;
 struct PPB_InputEvent;
@@ -85,6 +86,7 @@ const PPB_GLESChromiumTextureMapping_Dev*
     GetPPB_GLESChromiumTextureMapping_Thunk();
 const PPB_Graphics2D* GetPPB_Graphics2D_Thunk();
 const PPB_Graphics3D_Dev* GetPPB_Graphics3D_Thunk();
+const PPB_Graphics3DTrusted_Dev* GetPPB_Graphics3DTrusted_Thunk();
 const PPB_InputEvent* GetPPB_InputEvent_Thunk();
 const PPB_ImageData* GetPPB_ImageData_Thunk();
 const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
