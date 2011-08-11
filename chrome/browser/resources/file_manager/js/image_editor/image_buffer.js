@@ -145,7 +145,7 @@ ImageBuffer.prototype.onClick = function (x, y) {
 
 /**
  * Searches for a drag handler in the descending Z-order.
- * @return {Function} A closure to be called on mouse drag.
+ * @return {function(number,number)} A function to be called on mouse drag.
  */
 ImageBuffer.prototype.getDragHandler = function (x, y) {
   for (var i = this.overlays_.length - 1; i >= 0; i--) {
@@ -191,7 +191,8 @@ ImageBuffer.Margin.prototype.draw = function(context) {
   Rect.fillBetween(context,
       this.viewport_.getImageBoundsOnScreen(),
       this.viewport_.getScreenBounds());
-  Rect.stroke(context, this.viewport_.getImageBoundsOnScreen());
+
+  Rect.outline(context, this.viewport_.getImageBoundsOnScreen());
   context.restore();
 };
 
@@ -252,8 +253,8 @@ ImageBuffer.Content.prototype.getCanvas = function() { return this.canvas_ };
  * If the logical width/height are supplied they override the canvas dimensions
  * and the canvas contents is scaled when displayed.
  * @param {HTMLCanvasElement} canvas
- * @param {Number} opt_width Logical width (=canvas.width by default)
- * @param {Number} opt_height Logical height (=canvas.height by default)
+ * @param {number} opt_width Logical width (=canvas.width by default)
+ * @param {number} opt_height Logical height (=canvas.height by default)
  */
 ImageBuffer.Content.prototype.setCanvas = function(
     canvas, opt_width, opt_height) {
@@ -275,8 +276,8 @@ ImageBuffer.Content.prototype.createBlankCanvas = function (width, height) {
 };
 
 /**
- * @param {Number} opt_width Width of the copy, original width by default.
- * @param {Number} opt_height Height of the copy, original height by default.
+ * @param {number} opt_width Width of the copy, original width by default.
+ * @param {number} opt_height Height of the copy, original height by default.
  * @return {HTMLCanvasElement} A new canvas with a copy of the content.
  */
 ImageBuffer.Content.prototype.copyCanvas = function (opt_width, opt_height) {
@@ -342,27 +343,23 @@ ImageBuffer.Overview.prototype.update = function() {
     this.contentGeneration_ = this.content_.getCacheGeneration();
 
     var aspect = imageBounds.width / imageBounds.height;
-    if (aspect > 1) {
-      this.bounds_ = new Rect(ImageBuffer.Overview.MAX_SIZE,
-                              ImageBuffer.Overview.MAX_SIZE / aspect);
-    } else {
-      this.bounds_ = new Rect(ImageBuffer.Overview.MAX_SIZE * aspect,
-                              ImageBuffer.Overview.MAX_SIZE);
-    }
 
-    this.canvas_ =
-        this.content_.copyCanvas(this.bounds_.width, this.bounds_.height);
+    this.canvas_ = this.content_.copyCanvas(
+        ImageBuffer.Overview.MAX_SIZE * Math.min(aspect, 1),
+        ImageBuffer.Overview.MAX_SIZE / Math.max(aspect, 1));
   }
 
+  this.bounds_ = null;
   this.clipped_ = null;
 
   if (this.viewport_.isClipped()) {
     var screenBounds = this.viewport_.getScreenBounds();
 
-    this.bounds_ = this.bounds_.moveTo(
-        screenBounds.width - ImageBuffer.Overview.RIGHT - this.bounds_.width,
-        screenBounds.height - ImageBuffer.Overview.BOTTOM -
-            this.bounds_.height);
+    this.bounds_ = new Rect(
+        screenBounds.width - ImageBuffer.Overview.RIGHT - this.canvas_.width,
+        screenBounds.height - ImageBuffer.Overview.BOTTOM - this.canvas_.height,
+        this.canvas_.width,
+        this.canvas_.height);
 
     this.scale_ = this.bounds_.width / imageBounds.width;
 
@@ -380,10 +377,6 @@ ImageBuffer.Overview.prototype.draw = function(context) {
   // Draw the thumbnail.
   Rect.drawImage(context, this.canvas_, this.bounds_);
 
-  // Draw the thumbnail border.
-  context.strokeStyle = '#000000';
-  Rect.stroke(context, this.bounds_);
-
   // Draw the shadow over the off-screen part of the thumbnail.
   context.globalAlpha = 0.3;
   context.fillStyle = '#000000';
@@ -391,14 +384,19 @@ ImageBuffer.Overview.prototype.draw = function(context) {
 
   // Outline the on-screen part of the thumbnail.
   context.strokeStyle = '#FFFFFF';
-  Rect.stroke(context, this.clipped_);
+  Rect.outline(context, this.clipped_);
+
+  context.globalAlpha = 1;
+  // Draw the thumbnail border.
+  context.strokeStyle = '#000000';
+  Rect.outline(context, this.bounds_);
 };
 
 ImageBuffer.Overview.prototype.getCursorStyle = function(x, y) {
   if (!this.bounds_ || !this.bounds_.inside(x, y)) return null;
 
   // Indicate that the on-screen part is draggable.
-  if (this.clipped_.inside(x, y)) return 'move';
+  if (this.clipped_ && this.clipped_.inside(x, y)) return 'move';
 
   // Indicate that the rest of the thumbnail is clickable.
   return 'crosshair';

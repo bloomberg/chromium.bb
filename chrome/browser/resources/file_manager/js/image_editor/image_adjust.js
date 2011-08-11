@@ -5,81 +5,347 @@
 /**
  * The base class for simple filters that only modify the image content
  * but do not modify the image dimensions.
+ * @constructor
  */
-ImageEditor.Mode.Adjust = function(displayName, filterFunc) {
+ImageEditor.Mode.Adjust = function(displayName) {
   ImageEditor.Mode.call(this, displayName);
-  this.filterFunc_ = filterFunc;
-}
+  this.viewportGeneration_ = 0;
+};
 
 ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
 
-ImageEditor.Mode.Adjust.prototype.rollback = function() {
-  if (!this.backup_) return; // Did not do anything yet.
-  this.getContent().drawImageData(this.backup_, 0, 0);
-  this.backup_ = null;
-  this.repaint();
-};
+/*
+ *  ImageEditor.Mode methods overridden.
+ */
 
-ImageEditor.Mode.Adjust.prototype.update = function(options) {
-  if (!this.backup_) {
-    this.backup_ = this.getContent().copyImageData();
-    this.scratch_ = this.getContent().copyImageData();
+ImageEditor.Mode.Adjust.prototype.commit = function() {
+  if (!this.filter_) return; // Did not do anything yet.
+
+  // Applying the filter to the entire image takes some time, so we do
+  // it in small increments, providing visual feedback.
+  // TODO: provide modal progress indicator.
+
+  // First hide the preview and show the original image.
+  this.repaint();
+
+  var self = this;
+
+  function repaintStrip(fromRow, toRow) {
+    var imageStrip = new Rect(self.getViewport().getImageBounds());
+    imageStrip.top = fromRow;
+    imageStrip.height = toRow - fromRow;
+
+    var screenStrip = new Rect(self.getViewport().getImageBoundsOnScreen());
+    screenStrip.top = Math.round(self.getViewport().imageToScreenY(fromRow));
+    screenStrip.height = Math.round(self.getViewport().imageToScreenY(toRow)) -
+        screenStrip.top;
+
+    self.getBuffer().repaintScreenRect(screenStrip, imageStrip);
   }
 
   ImageUtil.trace.resetTimer('filter');
-  this.filterFunc_(this.scratch_, this.backup_, options);
-  ImageUtil.trace.reportTimer('filter');
-  this.getContent().drawImageData(this.scratch_, 0, 0);
+
+  var lastUpdatedRow = 0;
+
+  filter.applyByStrips(
+      this.getContent().getCanvas().getContext('2d'),
+      this.filter_,
+      function (updatedRow, rowCount) {
+        repaintStrip(lastUpdatedRow, updatedRow);
+        lastUpdatedRow = updatedRow;
+        if (updatedRow == rowCount) {
+          ImageUtil.trace.reportTimer('filter');
+          self.getContent().invalidateCaches();
+          self.repaint();
+        }
+      });
+};
+
+ImageEditor.Mode.Adjust.prototype.rollback = function() {
+  this.filter_ = null;
+  this.previewImageData_ = null;
+};
+
+ImageEditor.Mode.Adjust.prototype.update = function(options) {
+  // We assume filter names are used in the UI directly.
+  // This will have to change with i18n.
+  this.filter_ = this.createFilter(options);
+  this.previewValid_ = false;
   this.repaint();
 };
 
 /**
- * A simple filter that multiplies every component of a pixel by some number.
+ * Clip and scale the source image data for the preview.
+ * Use the cached copy if the viewport has not changed.
  */
-ImageEditor.Mode.Brightness = function() {
-  ImageEditor.Mode.Adjust.call(
-      this, 'Brightness', ImageEditor.Mode.Brightness.filter);
-}
+ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
+  if (!this.previewImageData_ ||
+      this.viewportGeneration_ != this.getViewport().getCacheGeneration()) {
+    this.viewportGeneration_ = this.getViewport().getCacheGeneration();
 
-ImageEditor.Mode.Brightness.prototype =
+    var imageRect = this.getPreviewRect(this.getViewport().getImageClipped());
+    var screenRect = this.getPreviewRect(this.getViewport().getScreenClipped());
+
+    // Copy the visible part of the image at the current screen scale.
+    var canvas = this.getContent().createBlankCanvas(
+        screenRect.width, screenRect.height);
+    var context = canvas.getContext('2d');
+    Rect.drawImage(context, this.getContent().getCanvas(), null, imageRect);
+    this.originalImageData =
+        context.getImageData(0, 0, screenRect.width, screenRect.height);
+    this.previewImageData_ =
+        context.getImageData(0, 0, screenRect.width, screenRect.height);
+    this.previewValid_ = false;
+  }
+
+  if (this.filter_ && !this.previewValid_) {
+    ImageUtil.trace.resetTimer('preview');
+    this.filter_(this.previewImageData_, this.originalImageData, 0, 0);
+    ImageUtil.trace.reportTimer('preview');
+    this.previewValid_ = true;
+  }
+};
+
+ImageEditor.Mode.Adjust.prototype.draw = function(context) {
+  this.updatePreviewImage();
+
+  var screenClipped = this.getViewport().getScreenClipped();
+
+  var previewRect = this.getPreviewRect(screenClipped);
+  context.putImageData(
+      this.previewImageData_, previewRect.left,  previewRect.top);
+
+  if (previewRect.width < screenClipped.width &&
+      previewRect.height < screenClipped.height) {
+    // Some part of the original image is not covered by the preview,
+    // shade it out.
+    context.globalAlpha = 0.75;
+    context.fillStyle = '#000000';
+    context.strokeStyle = '#000000';
+    Rect.fillBetween(
+        context, previewRect, this.getViewport().getScreenBounds());
+    Rect.outline(context, previewRect);
+  }
+};
+
+/*
+ * Own methods
+ */
+
+ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
+  return filter.create(this.displayName.toLowerCase(), options);
+};
+
+ImageEditor.Mode.Adjust.prototype.getPreviewRect = function(rect) {
+  if (this.getViewport().getScale() >= 1) {
+    return rect;
+  } else {
+    var bounds = this.getViewport().getImageBounds();
+    var screen = this.getViewport().getScreenClipped();
+
+    screen = screen.inflate(-screen.width / 8, -screen.height / 8);
+
+    return rect.inflate(-rect.width / 2, -rect.height / 2).
+        inflate(Math.min(screen.width, bounds.width) / 2,
+                Math.min(screen.height, bounds.height) / 2);
+  }
+};
+
+/**
+ * A base class for color filters that are scale independent (i.e. can
+ * be applied to a scaled image with basicaly the same effect).
+ * Displays a histogram.
+ * @constructor
+ */
+ImageEditor.Mode.ColorFilter = function() {
+  ImageEditor.Mode.Adjust.apply(this, arguments);
+};
+
+ImageEditor.Mode.ColorFilter.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
-ImageEditor.Mode.register(ImageEditor.Mode.Brightness);
-
-ImageEditor.Mode.Brightness.UI_RANGE = 100;
-
-ImageEditor.Mode.Brightness.prototype.createTools = function(toolbar) {
-  toolbar.addRange(
-      'brightness',
-      -ImageEditor.Mode.Brightness.UI_RANGE,
-      0,
-      ImageEditor.Mode.Brightness.UI_RANGE);
+ImageEditor.Mode.ColorFilter.prototype.setUp = function() {
+  ImageEditor.Mode.Adjust.prototype.setUp.apply(this, arguments);
+  this.histogram_ =
+      new ImageEditor.Mode.Histogram(this.getViewport(), this.getContent());
 };
 
-ImageEditor.Mode.Brightness.filter = function(dst, src, options) {
-  // Translate from -100..100 range to 1/5..5
-  var factor =
-      Math.pow(5, options.brightness / ImageEditor.Mode.Brightness.UI_RANGE);
+ImageEditor.Mode.ColorFilter.prototype.draw = function(context) {
+  ImageEditor.Mode.Adjust.prototype.draw.apply(this, arguments);
+  this.histogram_.draw(context);
+};
 
-  var dstData = dst.data;
-  var srcData = src.data;
-  var width = src.width;
-  var height = src.height;
+ImageEditor.Mode.ColorFilter.prototype.getPreviewRect = function(rect) {
+  return rect;
+};
 
-  function scale(value) {
-    return value * factor;
+ImageEditor.Mode.ColorFilter.prototype.createFilter = function(options) {
+  var filterFunc =
+      ImageEditor.Mode.Adjust.prototype.createFilter.apply(this, arguments);
+  this.histogram_.update(filterFunc);
+  return filterFunc;
+};
+
+ImageEditor.Mode.ColorFilter.prototype.rollback = function() {
+  ImageEditor.Mode.Adjust.prototype.rollback.apply(this, arguments);
+  this.histogram_.update(null);
+};
+
+/**
+ * A histogram container.
+ * @constructor
+ */
+ImageEditor.Mode.Histogram = function(viewport, content) {
+  this.viewport_ = viewport;
+
+  var canvas = content.getCanvas();
+  var downScale = Math.max(1, Math.sqrt(canvas.width * canvas.height / 10000));
+  var thumbnail = content.copyCanvas(canvas.width / downScale,
+                                     canvas.height / downScale);
+  var context = thumbnail.getContext('2d');
+
+  this.originalImageData_ =
+      context.getImageData(0, 0, thumbnail.width, thumbnail.height);
+  this.filteredImageData_ =
+      context.getImageData(0, 0, thumbnail.width, thumbnail.height);
+
+  this.update();
+};
+
+ImageEditor.Mode.Histogram.prototype.getData = function() { return this.data_ };
+
+ImageEditor.Mode.Histogram.BUCKET_WIDTH = 8;
+ImageEditor.Mode.Histogram.BAR_WIDTH = 2;
+ImageEditor.Mode.Histogram.RIGHT = 5;
+ImageEditor.Mode.Histogram.TOP = 5;
+
+ImageEditor.Mode.Histogram.prototype.update = function(filterFunc) {
+  if (filterFunc) {
+    filterFunc(this.filteredImageData_, this.originalImageData_, 0, 0);
+    this.data_ = filter.getHistogram(this.filteredImageData_);
+  } else {
+    this.data_ = filter.getHistogram(this.originalImageData_);
   }
+};
 
-  var values = ImageUtil.precomputeByteFunction(scale, 255);
+ImageEditor.Mode.Histogram.prototype.draw = function(context) {
+  var screen = this.viewport_.getScreenBounds();
 
-  var index = 0;
-  for (var y = 0; y != height; y++) {
-    for (var x = 0; x != width; x++ ) {
-      dstData[index] = values[srcData[index]]; index++;
-      dstData[index] = values[srcData[index]]; index++;
-      dstData[index] = values[srcData[index]]; index++;
-      dstData[index] = 0xFF; index++;
+  var barCount = 2 + 3 * (256 / ImageEditor.Mode.Histogram.BUCKET_WIDTH);
+  var width = ImageEditor.Mode.Histogram.BAR_WIDTH * barCount;
+  var height = Math.round(width / 2);
+  var rect = new Rect(
+      screen.left + screen.width - ImageEditor.Mode.Histogram.RIGHT - width,
+      ImageEditor.Mode.Histogram.TOP,
+      width,
+      height);
+
+  context.globalAlpha = 1;
+  context.fillStyle = '#E0E0E0';
+  context.strokeStyle = '#000000';
+  context.lineCap = 'square';
+  Rect.fill(context, rect);
+  Rect.outline(context, rect);
+
+  function drawChannel(channel, style, offsetX, offsetY) {
+    context.strokeStyle = style;
+    context.beginPath();
+    for (var i  = 0; i != 256; i += ImageEditor.Mode.Histogram.BUCKET_WIDTH) {
+      var barHeight = channel[i];
+      for (var b = 1; b < ImageEditor.Mode.Histogram.BUCKET_WIDTH; b++)
+        barHeight = Math.max(barHeight, channel[i + b]);
+      barHeight = Math.min(barHeight, height);
+      for (var j = 0; j != ImageEditor.Mode.Histogram.BAR_WIDTH; j++) {
+        context.moveTo(offsetX, offsetY);
+        context.lineTo(offsetX, offsetY - barHeight);
+        offsetX++;
+      }
+      offsetX += 2 * ImageEditor.Mode.Histogram.BAR_WIDTH;
     }
+    context.closePath();
+    context.stroke();
   }
+
+  var offsetX = rect.left + 0.5 + ImageEditor.Mode.Histogram.BAR_WIDTH;
+  var offsetY = rect.top + rect.height;
+
+  drawChannel(this.data_.r, '#F00000', offsetX, offsetY);
+  offsetX += ImageEditor.Mode.Histogram.BAR_WIDTH;
+  drawChannel(this.data_.g, '#00F000', offsetX, offsetY);
+  offsetX += ImageEditor.Mode.Histogram.BAR_WIDTH;
+  drawChannel(this.data_.b, '#0000F0', offsetX, offsetY);
 };
 
+/**
+ * Exposure/contrast filter.
+ * @constructor
+ */
+ImageEditor.Mode.Exposure = function() {
+  ImageEditor.Mode.ColorFilter.call(this, 'Exposure');
+};
+
+ImageEditor.Mode.Exposure.prototype =
+    {__proto__: ImageEditor.Mode.ColorFilter.prototype};
+
+ImageEditor.Mode.register(ImageEditor.Mode.Exposure);
+
+ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
+  toolbar.addRange('brightness', -1, 0, 1, 100);
+  toolbar.addRange('contrast', -1, 0, 1, 100);
+};
+
+/**
+ * Autofix.
+ * @constructor
+ */
+ImageEditor.Mode.Autofix = function() {
+  ImageEditor.Mode.ColorFilter.call(this, 'Autofix');
+};
+
+ImageEditor.Mode.Autofix.prototype =
+    {__proto__: ImageEditor.Mode.ColorFilter.prototype};
+
+ImageEditor.Mode.register(ImageEditor.Mode.Autofix);
+
+ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
+  var self = this;
+  toolbar.addButton('Apply', function() {
+    self.update({histogram: self.histogram_.getData()});
+  });
+};
+
+/**
+ * Blur filter.
+ * @constructor
+ */
+ImageEditor.Mode.Blur = function() {
+  ImageEditor.Mode.Adjust.call(this, 'Blur');
+};
+
+ImageEditor.Mode.Blur.prototype =
+    {__proto__: ImageEditor.Mode.Adjust.prototype};
+
+ImageEditor.Mode.register(ImageEditor.Mode.Blur);
+
+ImageEditor.Mode.Blur.prototype.createTools = function(toolbar) {
+  toolbar.addRange('strength', 0, 0, 1, 100);
+  toolbar.addRange('radius', 1, 1, 3);
+};
+
+/**
+ * Sharpen filter.
+ * @constructor
+ */
+ImageEditor.Mode.Sharpen = function() {
+  ImageEditor.Mode.Adjust.call(this, 'Sharpen');
+};
+
+ImageEditor.Mode.Sharpen.prototype =
+    {__proto__: ImageEditor.Mode.Adjust.prototype};
+
+ImageEditor.Mode.register(ImageEditor.Mode.Sharpen);
+
+ImageEditor.Mode.Sharpen.prototype.createTools = function(toolbar) {
+  toolbar.addRange('strength', 0, 0, 1, 100);
+  toolbar.addRange('radius', 1, 1, 3);
+};

@@ -68,8 +68,10 @@ ImageEditor.Mode.Rotate.prototype.createTools = function(toolbar) {
   this.tiltRange_ =
       toolbar.addRange('angle', -maxTilt, 0, maxTilt, 10);
 
-  this.tiltRange_.addEventListener('mousedown', this.onTiltStart.bind(this));
-  this.tiltRange_.addEventListener('mouseup', this.onTiltStop.bind(this));
+  this.tiltRange_.
+      addEventListener('mousedown', this.onTiltStart.bind(this), false);
+  this.tiltRange_.
+      addEventListener('mouseup', this.onTiltStop.bind(this), false);
 };
 
 ImageEditor.Mode.Rotate.prototype.getOriginal = function() {
@@ -161,23 +163,23 @@ ImageEditor.Mode.Rotate.prototype.draw = function(context) {
   context.globalAlpha = 0.4;
   context.strokeStyle = "#C0C0C0";
 
-  for(var x = Math.floor(screenClipped.left / STEP) * STEP;
+  context.beginPath();
+  var top = screenClipped.top + 0.5;
+  var left = screenClipped.left + 0.5;
+  for(var x = Math.ceil(screenClipped.left / STEP) * STEP;
           x < screenClipped.left + screenClipped.width;
           x += STEP) {
-    var left = Math.max(screenClipped.left, x);
-    var right = Math.min(screenClipped.left + screenClipped.width, x + STEP);
-    context.strokeRect(
-        left, screenClipped.top, right - left, screenClipped.height);
+    context.moveTo(x + 0.5, top);
+    context.lineTo(x + 0.5, top + screenClipped.height);
   }
-
-  for(var y = Math.floor(screenClipped.top / STEP) * STEP;
+  for(var y = Math.ceil(screenClipped.top / STEP) * STEP;
           y < screenClipped.top + screenClipped.height;
           y += STEP) {
-    var top = Math.max(screenClipped.top, y);
-    var bottom = Math.min(screenClipped.top + screenClipped.height, y + STEP);
-    context.strokeRect(
-        screenClipped.left, top, screenClipped.width, bottom - top);
+    context.moveTo(left, y + 0.5);
+    context.lineTo(left + screenClipped.width, y + 0.5);
   }
+  context.closePath();
+  context.stroke();
 
   context.restore();
 };
@@ -351,7 +353,8 @@ ImageEditor.Mode.Crop.prototype.rollback = function() {
 
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   var rect = new Rect(this.getViewport().getImageClipped());
-  rect = rect.inflate (-rect.width / 6, -rect.height / 6);
+  rect = rect.inflate (
+      -Math.round(rect.width / 6), -Math.round(rect.height / 6));
   this.cropRect_ = new DraggableRect(
       rect, this.getViewport(), ImageEditor.Mode.Crop.GRAB_RADIUS);
 };
@@ -368,7 +371,6 @@ ImageEditor.Mode.Crop.prototype.draw = function(context) {
   context.globalAlpha = 0.25;
   context.fillStyle = '#000000';
   Rect.fillBetween(context, inner, outer);
-  Rect.stroke(context, inner);
 
   context.fillStyle = '#FFFFFF';
   context.beginPath();
@@ -380,15 +382,24 @@ ImageEditor.Mode.Crop.prototype.draw = function(context) {
   context.arc(inner_right, inner.top, R, 0, Math.PI * 2);
   context.moveTo(inner_right, inner_bottom);
   context.arc(inner_right, inner_bottom, R, 0, Math.PI * 2);
+  context.closePath();
   context.fill();
 
-  context.globalAlpha = 1;
-  context.strokeStyle = '#808080';
-  context.strokeRect(inner.left, inner.top, inner.width, inner.height);
-  context.strokeRect(
-      inner.left + inner.width / 3, inner.top, inner.width / 3, inner.height);
-  context.strokeRect(
-      inner.left, inner.top + inner.height / 3, inner.width, inner.height / 3);
+  context.globalAlpha = 0.5;
+  context.strokeStyle = '#FFFFFF';
+
+  context.beginPath();
+  context.closePath();
+  for (var i = 0; i <= 3; i++) {
+    var y = inner.top - 0.5 + Math.round((inner.height + 1) * i / 3);
+    context.moveTo(inner.left, y);
+    context.lineTo(inner.left + inner.width, y);
+
+    var x = inner.left - 0.5 + Math.round((inner.width + 1) * i / 3);
+    context.moveTo(x, inner.top);
+    context.lineTo(x, inner.top + inner.height);
+  }
+  context.stroke();
 };
 
 ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {

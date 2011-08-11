@@ -48,23 +48,6 @@ ImageUtil.between = function(min, value, max) {
 };
 
 /**
- * Computes the function for every integer value between 0 and max and stores
- * the results. Rounds and clips the results to fit the [0..255] range.
- * Used to speed up pixel manipulations.
- * @param {Function} func Function returning a number.
- * @param {Number} max Maximum argument value (inclusive).
- * @return {Array<Number>} Computed results
- */
-
-ImageUtil.precomputeByteFunction = function(func, max) {
-  var results = [];
-  for (var arg = 0; arg <= max; arg ++) {
-    results.push(Math.max(0, Math.min(0xFF, Math.round(func(arg)))));
-  }
-  return results;
-}
-
-/**
  * Rectangle class.
  */
 
@@ -97,10 +80,10 @@ function Rect(args) {
 
     case 1: {
       var source = arguments[0];
-      if (source.hasOwnProperty('left') && source.hasOwnProperty('top')) {
+      if ('left' in source && 'top' in source) {
         this.left = source.left;
         this.top = source.top;
-        if (source.hasOwnProperty('right') && source.hasOwnProperty('bottom')) {
+        if ('right' in source && 'bottom' in source) {
           this.width = source.right - source.left;
           this.height = source.bottom - source.top;
           return;
@@ -109,7 +92,7 @@ function Rect(args) {
         this.left = 0;
         this.top = 0;
       }
-      if (source.hasOwnProperty('width') && source.hasOwnProperty('height')) {
+      if ('width' in source && 'height' in source) {
         this.width = source.width;
         this.height = source.height;
         return;
@@ -204,7 +187,7 @@ Rect.prototype.clamp = function(bounds) {
  */
 
 /**
- * Draws the image in context with appropriate scaling.
+ * Draw the image in context with appropriate scaling.
  */
 Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
   opt_dstRect = opt_dstRect || new Rect(context.canvas);
@@ -215,10 +198,18 @@ Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
 };
 
 /**
- * Strokes the rectangle.
+ * Draw a box around the rectangle.
  */
-Rect.stroke = function(context, rect) {
-  context.strokeRect(rect.left, rect.top, rect.width, rect.height);
+Rect.outline = function(context, rect) {
+  context.strokeRect(
+      rect.left - 0.5, rect.top - 0.5, rect.width + 1, rect.height + 1);
+};
+
+/**
+ * Fill the rectangle.
+ */
+Rect.fill = function(context, rect) {
+  context.fillRect(rect.left, rect.top, rect.width, rect.height);
 };
 
 /**

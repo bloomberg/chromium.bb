@@ -89,12 +89,13 @@ Viewport.prototype.setCenter = function(x, y, ignoreClipping) {
 /**
  * Return a closure that can be called to pan the image.
  * Useful for implementing non-trivial variants of panning (overview etc).
- * @param {Number} originalX The x coordinate on the screen canvas that
+ * @param {number} originalX The x coordinate on the screen canvas that
  *                 corresponds to zero change to offsetX.
- * @param {Number} originalY The y coordinate on the screen canvas that
+ * @param {number} originalY The y coordinate on the screen canvas that
  *                 corresponds to zero change to offsetY.
- * @param {Function} scaleFunc returns the current image to screen scale.
- * @param {Function} hitFunc returns true if (x,y) is in the valid region.
+ * @param {function():number} scaleFunc returns the image to screen scale.
+ * @param {function(number,number):boolean} hitFunc returns true if (x,y) is
+ *                                                  in the valid region.
  */
 Viewport.prototype.createOffsetSetter = function (
     originalX, originalY, scaleFunc, hitFunc) {
@@ -213,7 +214,7 @@ Viewport.prototype.isClipped = function () {
  * Horizontal margin. Negative if the image is clipped horizontally.
  */
 Viewport.prototype.getMarginX_ = function() {
-  return Math.floor(
+  return Math.round(
     (this.screenBounds_.width  - this.imageBounds_.width * this.scale_) / 2);
 };
 
@@ -221,17 +222,17 @@ Viewport.prototype.getMarginX_ = function() {
  * Vertical margin. Negative if the image is clipped vertically.
  */
 Viewport.prototype.getMarginY_ = function() {
-  return Math.floor(
+  return Math.round(
     (this.screenBounds_.height - this.imageBounds_.height * this.scale_) / 2);
 };
 
 Viewport.prototype.clampOffsetX_ = function(x) {
-  var limit = Math.max(0, -this.getMarginX_() / this.getScale());
+  var limit = Math.round(Math.max(0, -this.getMarginX_() / this.getScale()));
   return ImageUtil.clamp(-limit, x, limit);
 };
 
 Viewport.prototype.clampOffsetY_ = function(y) {
-  var limit = Math.max(0, -this.getMarginY_() / this.getScale());
+  var limit = Math.round(Math.max(0, -this.getMarginY_() / this.getScale()));
   return ImageUtil.clamp(-limit, y, limit);
 };
 
@@ -245,8 +246,8 @@ Viewport.prototype.update = function() {
   this.imageOnScreen_ = new Rect(
       this.getMarginX_(),
       this.getMarginY_(),
-      Math.floor(this.imageBounds_.width * scale),
-      Math.floor(this.imageBounds_.height * scale));
+      Math.round(this.imageBounds_.width * scale),
+      Math.round(this.imageBounds_.height * scale));
 
   // A visible part of the image in image coordinates.
   this.imageClipped_ = new Rect(this.imageBounds_);
@@ -256,18 +257,20 @@ Viewport.prototype.update = function() {
 
   // Adjust for the offset.
   if (this.imageOnScreen_.left < 0) {
-    this.imageOnScreen_.left += this.clampOffsetX_(this.offsetX_) * scale;
-    this.imageClipped_.left = -this.imageOnScreen_.left / scale;
-    this.imageClipped_.width = this.screenBounds_.width / scale;
+    this.imageOnScreen_.left +=
+        Math.round(this.clampOffsetX_(this.offsetX_) * scale);
+    this.imageClipped_.left = Math.round(-this.imageOnScreen_.left / scale);
+    this.imageClipped_.width = Math.round(this.screenBounds_.width / scale);
   } else {
     this.screenClipped_.left = this.imageOnScreen_.left;
     this.screenClipped_.width = this.imageOnScreen_.width;
   }
 
   if (this.imageOnScreen_.top < 0) {
-    this.imageOnScreen_.top += this.clampOffsetY_(this.offsetY_) * scale;
-    this.imageClipped_.top = -this.imageOnScreen_.top / scale;
-    this.imageClipped_.height = this.screenBounds_.height / scale;
+    this.imageOnScreen_.top +=
+        Math.round(this.clampOffsetY_(this.offsetY_) * scale);
+    this.imageClipped_.top = Math.round(-this.imageOnScreen_.top / scale);
+    this.imageClipped_.height = Math.round(this.screenBounds_.height / scale);
   } else {
     this.screenClipped_.top = this.imageOnScreen_.top;
     this.screenClipped_.height = this.imageOnScreen_.height;
