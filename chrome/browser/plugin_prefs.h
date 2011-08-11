@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_UPDATER_H_
-#define CHROME_BROWSER_PLUGIN_UPDATER_H_
+#ifndef CHROME_BROWSER_PLUGIN_PREFS_H_
+#define CHROME_BROWSER_PLUGIN_PREFS_H_
 #pragma once
 
 #include <set>
@@ -11,13 +11,17 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/memory/singleton.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 
 class NotificationDetails;
 class NotificationSource;
 class Profile;
+
+namespace content {
+class ResourceContext;
+}
 
 namespace base {
 class DictionaryValue;
@@ -31,59 +35,68 @@ struct WebPluginInfo;
 }
 }
 
-class PluginUpdater : public NotificationObserver {
+// This class stores information about whether a plug-in or a plug-in group is
+// enabled or disabled.
+// Except for the |IsPluginEnabled| method, it should only be used on the UI
+// thread.
+class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
+                    public NotificationObserver {
  public:
-  // Get a list of all the plugin groups. The caller should take ownership
-  // of the returned ListValue.
-  static base::ListValue* GetPluginGroupsData();
+  // Initializes the factory for this class for dependency tracking.
+  // This should be called before the first profile is created.
+  static void Initialize();
+
+  static PluginPrefs* GetForProfile(Profile* profile);
 
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
 
   // Enable or disable a specific plugin file.
-  void EnablePlugin(bool enable, const FilePath::StringType& file_path);
+  void EnablePlugin(bool enable, const FilePath& file_path);
 
-  // Associates the PluginUpdater with |profile|. This enables or disables
-  // plugin groups as defined by the user's preferences.
-  void SetProfile(Profile* profile);
-
-  // Called at shutdown before the profile is destroyed.
-  void Shutdown();
+  // Returns whether the plugin is enabled or not.
+  bool IsPluginEnabled(const webkit::npapi::WebPluginInfo& plugin);
 
   // Write the enable/disable status to the user's preference file.
-  void UpdatePreferences(Profile* profile, int delay_ms);
+  void UpdatePreferences(int delay_ms);
 
   // NotificationObserver method overrides
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  static PluginUpdater* GetInstance();
-
   static void RegisterPrefs(PrefService* prefs);
 
+  void ShutdownOnUIThread();
+
  private:
-  PluginUpdater();
-  virtual ~PluginUpdater() {}
+  friend class base::RefCountedThreadSafe<PluginPrefs>;
+
+  class Factory;
+
+  PluginPrefs();
+  virtual ~PluginPrefs();
+
+  // Associates the PluginPrefs with |profile|. This enables or disables
+  // plugin groups as defined by the user's preferences.
+  void SetProfile(Profile* profile);
 
   // Called on the file thread to get the data necessary to update the saved
-  // preferences.  The profile pointer is only to be passed to the UI thread.
-  static void GetPreferencesDataOnFileThread(void* profile);
+  // preferences.
+  void GetPreferencesDataOnFileThread();
 
   // Called on the UI thread with the plugin data to save the preferences.
-  static void OnUpdatePreferences(
-      Profile* profile,
-      const std::vector<webkit::npapi::WebPluginInfo>& plugins,
-      const std::vector<webkit::npapi::PluginGroup>& groups);
+  void OnUpdatePreferences(std::vector<webkit::npapi::WebPluginInfo> plugins,
+                           std::vector<webkit::npapi::PluginGroup> groups);
 
   // Queues sending the notification that plugin data has changed.  This is done
   // so that if a bunch of changes happen, we only send one notification.
   void NotifyPluginStatusChanged();
 
   // Used for the post task to notify that plugin enabled status changed.
-  static void OnNotifyPluginStatusChanged();
+  void OnNotifyPluginStatusChanged();
 
-  static base::DictionaryValue* CreatePluginFileSummary(
+  base::DictionaryValue* CreatePluginFileSummary(
       const webkit::npapi::WebPluginInfo& plugin);
 
   // Force plugins to be enabled or disabled due to policy.
@@ -97,14 +110,14 @@ class PluginUpdater : public NotificationObserver {
   void ListValueToStringSet(const base::ListValue* src,
                             std::set<string16>* dest);
 
-  // Needed to allow singleton instantiation using private constructor.
-  friend struct DefaultSingletonTraits<PluginUpdater>;
+  // Weak pointer, owned by the profile.
+  PrefService* prefs_;
 
   PrefChangeRegistrar registrar_;
 
   bool notify_pending_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginUpdater);
+  DISALLOW_COPY_AND_ASSIGN(PluginPrefs);
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_UPDATER_H_
+#endif  // CHROME_BROWSER_PLUGIN_PREFS_H_

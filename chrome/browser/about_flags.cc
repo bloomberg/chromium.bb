@@ -14,7 +14,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_content_client.h"
@@ -725,21 +724,10 @@ void FlagsState::SetExperimentEnabled(
   DCHECK(e);
 
   if (e->type == Experiment::SINGLE_VALUE) {
-    if (enable) {
+    if (enable)
       enabled_experiments.insert(internal_name);
-      // If enabling NaCl, make sure the plugin is also enabled. See bug
-      // http://code.google.com/p/chromium/issues/detail?id=81010 for more
-      // information.
-      // TODO(dspringer): When NaCl is on by default, remove this code.
-      if (internal_name == switches::kEnableNaCl) {
-        PluginUpdater* plugin_updater = PluginUpdater::GetInstance();
-        string16 nacl_plugin_name =
-            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
-        plugin_updater->EnablePluginGroup(true, nacl_plugin_name);
-      }
-    } else {
+    else
       enabled_experiments.erase(internal_name);
-    }
   } else {
     if (enable) {
       // Enable the first choice.
