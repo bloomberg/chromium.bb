@@ -211,6 +211,9 @@
                   '|chrome/browser/resources/login.html' \
                   '|chrome/browser/ui/webui/chromeos/login/.*'
     },
+    'task_manager': {
+      'filepath': 'task_manager'
+    },
     'filebrowse': {
       'filepath': 'file_browser' \
                   '|file_manager' \
@@ -320,6 +323,7 @@
                   'dominich+watch@chromium.org', 'mmenke@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
     'dom_login': ['rharrison@chromium.org'],
+    'task_manager': ['yoshiki+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
     'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
@@ -338,6 +342,7 @@
                       'davidbarr+watch@chromium.org',
                       'zork+watch@chromium.org',
                       'hashimoto+watch@chromium.org',
+                      'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
   },
 }
