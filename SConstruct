@@ -2728,7 +2728,6 @@ nonvariant_tests = [
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_browser/ppb_core/nacl.scons',
     'tests/ppapi_browser/ppb_dev/nacl.scons',
-    'tests/ppapi_browser/ppb_file_io/nacl.scons',
     'tests/ppapi_browser/ppb_file_system/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
     'tests/ppapi_browser/ppb_image_data/nacl.scons',
