@@ -53,7 +53,6 @@
             'src/libFLAC/include/private/md5.h',
             'src/libFLAC/include/private/memory.h',
             'src/libFLAC/include/private/metadata.h',
-            'src/libFLAC/include/private/nasm.h',
             'src/libFLAC/include/private/stream_encoder_framing.h',
             'src/libFLAC/include/private/window.h',
             'src/libFLAC/include/protected/all.h',
