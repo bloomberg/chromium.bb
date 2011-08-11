@@ -5,12 +5,14 @@
 OBJDIR = obj
 
 OBJECTS=\
+	$(OBJDIR)/accel_filter_interpreter.o \
 	$(OBJDIR)/gestures.o \
 	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
 	$(OBJDIR)/scaling_filter_interpreter.o
 
 TEST_OBJECTS=\
+	$(OBJDIR)/accel_filter_interpreter_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter_unittest.o \

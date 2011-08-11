@@ -6,6 +6,7 @@
 
 #include <sys/time.h>
 
+#include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/logging.h"
@@ -82,7 +83,7 @@ void GestureInterpreterSetTimerProvider(GestureInterpreter* obj,
 void GestureInterpreterSetPropProvider(GestureInterpreter* obj,
                                        GesturesPropProvider* pp,
                                        void* data) {
-    obj->SetPropProvider(pp, data);
+  obj->SetPropProvider(pp, data);
 }
 
 // C++ API:
@@ -96,7 +97,9 @@ GestureInterpreter::GestureInterpreter(int version)
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
   interpreter_.reset(new IntegralGestureFilterInterpreter(
-      new ScalingFilterInterpreter(new ImmediateInterpreter)));
+      new ScalingFilterInterpreter(
+          new AccelFilterInterpreter(
+              new ImmediateInterpreter))));
 }
 
 GestureInterpreter::~GestureInterpreter() {
