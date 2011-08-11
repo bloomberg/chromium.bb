@@ -620,7 +620,7 @@ bool MinidumpGenerator::WriteContextX86(breakpad_thread_state_data_t state,
   AddReg(eflags);
 
   AddReg(eip);
-#undef AddReg(a)
+#undef AddReg
 
   return true;
 }
@@ -666,7 +666,7 @@ bool MinidumpGenerator::WriteContextX86_64(
   AddReg(cs);
   AddReg(fs);
   AddReg(gs);
-#undef AddReg(a)
+#undef AddReg
 
   return true;
 }

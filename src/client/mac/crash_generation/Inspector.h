@@ -78,7 +78,7 @@ using google_breakpad::MinidumpGenerator;
 
 namespace google_breakpad {
 
-static BOOL EnsureDirectoryPathExists(NSString *dirPath);
+BOOL EnsureDirectoryPathExists(NSString *dirPath);
 
 //=============================================================================
 class ConfigFile {

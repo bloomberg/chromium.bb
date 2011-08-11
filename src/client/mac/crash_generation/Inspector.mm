@@ -57,7 +57,7 @@
 namespace google_breakpad {
 
 //=============================================================================
-static BOOL EnsureDirectoryPathExists(NSString *dirPath) {
+BOOL EnsureDirectoryPathExists(NSString *dirPath) {
   NSFileManager *mgr = [NSFileManager defaultManager];
 
   // If we got a relative path, prepend the current directory
