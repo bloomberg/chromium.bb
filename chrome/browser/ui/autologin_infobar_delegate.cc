@@ -265,12 +265,8 @@ InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType() const {
 }
 
 string16 AutoLoginInfoBarDelegate::GetMessageText() const {
-  string16 format = l10n_util::GetStringUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE);
-  std::wstring format_wide = UTF16ToWide(format);
-  std::wstring account_wide = UTF8ToWide(account_);
-  std::wstring message = base::StringPrintf(format_wide.c_str(),  // NOLINT
-                                            account_wide.c_str());
-  return WideToUTF16(message);
+  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(account_));
 }
 
 int AutoLoginInfoBarDelegate::GetButtons() const {

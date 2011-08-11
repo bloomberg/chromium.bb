@@ -8010,7 +8010,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Auto-login infobar -->
       <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
-        Sign in to this site using: <ph name="EMAIL_ADDRESS">%ls</ph>
+        Sign in to this site using: <ph name="EMAIL_ADDRESS">$1</ph>
       </message>
       <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
         Sign in
