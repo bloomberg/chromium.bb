@@ -353,13 +353,6 @@ class ExtensionService
   // Loads all known extensions (used by startup and testing code).
   void LoadAllExtensions();
 
-  // Continues loading all know extensions. It can be called from
-  // LoadAllExtensions or from file thread if we had to relocalize manifest
-  // (write_to_prefs is true in that case).
-  void ContinueLoadAllExtensions(ExtensionPrefs::ExtensionsInfo* info,
-                                 base::TimeTicks start_time,
-                                 bool write_to_prefs);
-
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
