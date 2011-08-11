@@ -24,9 +24,9 @@
 
 namespace {
 const char kAutofillQueryServerRequestUrl[] =
-    "http://toolbarqueries.clients.google.com:80/tbproxy/af/query";
+    "https://toolbarqueries.google.com/tbproxy/af/query";
 const char kAutofillUploadServerRequestUrl[] =
-    "http://toolbarqueries.clients.google.com:80/tbproxy/af/upload";
+    "https://toolbarqueries.google.com/tbproxy/af/upload";
 const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 
 const size_t kMaxFormCacheSize = 16;
