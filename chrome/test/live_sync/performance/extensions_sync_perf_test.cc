@@ -20,13 +20,7 @@ using extensions_helper::UninstallExtension;
 
 // TODO(braffert): Replicate these tests for apps.
 
-// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
-// datatypes into a performance test base class, once it is possible to do so.
 static const int kNumExtensions = 150;
-static const int kNumBenchmarkPoints = 18;
-static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
-                                       150, 175, 200, 225, 250, 300, 350, 400,
-                                       500};
 
 class ExtensionsSyncPerfTest : public LiveSyncTest {
  public:
@@ -45,10 +39,6 @@ class ExtensionsSyncPerfTest : public LiveSyncTest {
 
   // Returns the number of currently installed extensions for |profile|.
   int GetExtensionCount(int profile);
-
-  // Uninstalls all extensions from all profiles.  Called between benchmark
-  // iterations.
-  void Cleanup();
 
  private:
   int extension_number_;
@@ -85,14 +75,6 @@ void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   }
 }
 
-void ExtensionsSyncPerfTest::Cleanup() {
-  for (int i = 0; i < num_clients(); ++i) {
-    RemoveExtensions(i);
-  }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameExtensions());
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   int num_default_extensions = GetExtensionCount(0);
@@ -117,32 +99,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(num_default_extensions, GetExtensionCount(1));
   SyncTimingHelper::PrintResult("extensions", "delete_extensions", dt);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, DISABLED_Benchmark) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  for (int i = 0; i < kNumBenchmarkPoints; ++i) {
-    int num_extensions = kBenchmarkPoints[i];
-    AddExtensions(0, num_extensions);
-    base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    InstallExtensionsPendingForSync(GetProfile(1));
-    VLOG(0) << std::endl << "Add: " << num_extensions << " "
-            << dt_add.InSecondsF();
-
-    UpdateExtensions(0);
-    base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    VLOG(0) << std::endl << "Update: " << num_extensions << " "
-            << dt_update.InSecondsF();
-
-    RemoveExtensions(0);
-    base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    VLOG(0) << std::endl << "Delete: " << num_extensions << " "
-            << dt_delete.InSecondsF();
-
-    Cleanup();
-  }
 }

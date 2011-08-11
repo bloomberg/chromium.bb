@@ -15,13 +15,7 @@ using bookmarks_helper::IndexedURLTitle;
 using bookmarks_helper::Remove;
 using bookmarks_helper::SetURL;
 
-// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
-// datatypes into a performance test base class, once it is possible to do so.
 static const int kNumBookmarks = 150;
-static const int kNumBenchmarkPoints = 18;
-static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
-                                       150, 175, 200, 225, 250, 300, 350, 400,
-                                       500};
 
 class BookmarksSyncPerfTest : public LiveSyncTest {
  public:
@@ -41,10 +35,6 @@ class BookmarksSyncPerfTest : public LiveSyncTest {
 
   // Returns the number of bookmarks stored in the bookmark bar for |profile|.
   int GetURLCount(int profile);
-
-  // Remvoes all bookmarks in the bookmark bars for all profiles.  Called
-  // between benchmark iterations.
-  void Cleanup();
 
  private:
   // Returns a new unique bookmark URL.
@@ -85,15 +75,6 @@ int BookmarksSyncPerfTest::GetURLCount(int profile) {
   return GetBookmarkBarNode(profile)->child_count();
 }
 
-void BookmarksSyncPerfTest::Cleanup() {
-  for (int i = 0; i < num_clients(); ++i) {
-    RemoveURLs(i);
-  }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(AllModelsMatch());
-}
-
 std::string BookmarksSyncPerfTest::NextIndexedURL() {
   return IndexedURL(url_number_++);
 }
@@ -123,38 +104,4 @@ IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
   SyncTimingHelper::PrintResult("bookmarks", "delete_bookmarks", dt);
-}
-
-IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, DISABLED_Benchmark) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  DisableVerifier();
-
-  for (int i = 0; i < kNumBenchmarkPoints; ++i) {
-    int num_bookmarks = kBenchmarkPoints[i];
-    AddURLs(0, num_bookmarks);
-    base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(AllModelsMatch());
-    VLOG(0) << std::endl << "Add: " << num_bookmarks << " "
-            << dt_add.InSecondsF();
-
-    UpdateURLs(0);
-    base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(AllModelsMatch());
-    VLOG(0) << std::endl << "Update: " << num_bookmarks << " "
-            << dt_update.InSecondsF();
-
-    RemoveURLs(0);
-    base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
-    ASSERT_TRUE(AllModelsMatch());
-    VLOG(0) << std::endl << "Delete: " << num_bookmarks << " "
-            << dt_delete.InSecondsF();
-
-    Cleanup();
-  }
 }

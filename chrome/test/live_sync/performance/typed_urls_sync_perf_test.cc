@@ -13,13 +13,7 @@ using typed_urls_helper::AssertAllProfilesHaveSameURLsAsVerifier;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
-// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
-// datatypes into a performance test base class, once it is possible to do so.
 static const int kNumUrls = 150;
-static const size_t kNumBenchmarkPoints = 18;
-static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
-                                          150, 175, 200, 225, 250, 300, 350,
-                                          400, 500};
 
 class TypedUrlsSyncPerfTest : public LiveSyncTest {
  public:
@@ -38,10 +32,6 @@ class TypedUrlsSyncPerfTest : public LiveSyncTest {
 
   // Returns the number of typed urls stored in |profile|.
   int GetURLCount(int profile);
-
-  // Removes all typed urls for all profiles.  Called between benchmark
-  // iterations.
-  void Cleanup();
 
  private:
   // Returns a new unique typed URL.
@@ -80,15 +70,6 @@ int TypedUrlsSyncPerfTest::GetURLCount(int profile) {
   return GetTypedUrlsFromClient(profile).size();
 }
 
-void TypedUrlsSyncPerfTest::Cleanup() {
-  for (int i = 0; i < num_clients(); ++i) {
-    RemoveURLs(i);
-  }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
-  AssertAllProfilesHaveSameURLsAsVerifier();
-}
-
 GURL TypedUrlsSyncPerfTest::NextURL() {
   return IntToURL(url_number_++);
 }
@@ -118,36 +99,4 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
   SyncTimingHelper::PrintResult("typed_urls", "delete_typed_urls", dt);
-}
-
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, DISABLED_Benchmark) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  for (size_t i = 0; i < kNumBenchmarkPoints; ++i) {
-    size_t num_urls = kBenchmarkPoints[i];
-    AddURLs(0, num_urls);
-    base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_urls, GetTypedUrlsFromClient(0).size());
-    AssertAllProfilesHaveSameURLsAsVerifier();
-    VLOG(0) << std::endl << "Add: " << num_urls << " " << dt_add.InSecondsF();
-
-    UpdateURLs(0);
-    base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(num_urls, GetTypedUrlsFromClient(0).size());
-    AssertAllProfilesHaveSameURLsAsVerifier();
-    VLOG(0) << std::endl << "Update: " << num_urls << " "
-         << dt_update.InSecondsF();
-
-    RemoveURLs(0);
-    base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
-    ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
-    AssertAllProfilesHaveSameURLsAsVerifier();
-    VLOG(0) << std::endl << "Delete: " << num_urls << " "
-            << dt_delete.InSecondsF();
-
-    Cleanup();
-  }
 }
