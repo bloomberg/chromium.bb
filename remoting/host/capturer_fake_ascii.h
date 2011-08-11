@@ -22,13 +22,14 @@ class CapturerFakeAscii : public Capturer {
   virtual ~CapturerFakeAscii();
 
   // Capturer interface.
-  virtual void ScreenConfigurationChanged();
-  virtual media::VideoFrame::Format pixel_format() const;
-  virtual void ClearInvalidRects();
-  virtual void InvalidateRects(const InvalidRects& inval_rects);
-  virtual void InvalidateScreen(const gfx::Size& size);
-  virtual void InvalidateFullScreen();
-  virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
+  virtual void ScreenConfigurationChanged() OVERRIDE;
+  virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
+  virtual void ClearInvalidRegion() OVERRIDE;
+  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
+  virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
+  virtual void InvalidateFullScreen() OVERRIDE;
+  virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
+      OVERRIDE;
   virtual const gfx::Size& size_most_recent() const;
 
  private:
@@ -40,7 +41,7 @@ class CapturerFakeAscii : public Capturer {
   int height_;
   int bytes_per_row_;
 
-  CapturerHelper helper;
+  CapturerHelper helper_;
 
   // We have two buffers for the screen images as required by Capturer.
   static const int kNumBuffers = 2;

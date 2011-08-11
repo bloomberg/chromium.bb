@@ -148,21 +148,21 @@ void XServerPixelBuffer::Synchronize() {
   }
 }
 
-uint8* XServerPixelBuffer::CaptureRect(const gfx::Rect& rect) {
+uint8* XServerPixelBuffer::CaptureRect(const SkIRect& rect) {
   if (shm_segment_info_) {
     if (shm_pixmap_) {
       XCopyArea(display_, root_window_, shm_pixmap_, shm_gc_,
-                rect.x(), rect.y(), rect.width(), rect.height(),
-                rect.x(), rect.y());
+                rect.fLeft, rect.fTop, rect.width(), rect.height(),
+                rect.fLeft, rect.fTop);
       XSync(display_, False);
     }
     return reinterpret_cast<uint8*>(x_image_->data) +
-        rect.y() * x_image_->bytes_per_line +
-        rect.x() * x_image_->bits_per_pixel / 8;
+        rect.fTop * x_image_->bytes_per_line +
+        rect.fLeft * x_image_->bits_per_pixel / 8;
   } else {
     if (x_image_)
       XDestroyImage(x_image_);
-    x_image_ = XGetImage(display_, root_window_, rect.x(), rect.y(),
+    x_image_ = XGetImage(display_, root_window_, rect.fLeft, rect.fTop,
                          rect.width(), rect.height(), AllPlanes, ZPixmap);
     return reinterpret_cast<uint8*>(x_image_->data);
   }

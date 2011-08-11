@@ -218,7 +218,7 @@ void ScreenRecorder::DoCapture() {
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
-  capturer()->CaptureInvalidRects(
+  capturer()->CaptureInvalidRegion(
       NewCallback(this, &ScreenRecorder::CaptureDoneCallback));
 }
 
@@ -365,7 +365,7 @@ void ScreenRecorder::DoEncode(
   TraceContext::tracer()->PrintString("DoEncode called");
 
   // Early out if there's nothing to encode.
-  if (!capture_data || !capture_data->dirty_rects().size()) {
+  if (!capture_data || capture_data->dirty_region().isEmpty()) {
     // Send an empty video packet to keep network active.
     VideoPacket* packet = new VideoPacket();
     packet->set_flags(VideoPacket::LAST_PARTITION);

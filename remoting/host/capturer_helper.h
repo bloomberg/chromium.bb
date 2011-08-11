@@ -6,24 +6,24 @@
 #define REMOTING_HOST_CAPTURER_HELPER_H_
 
 #include "base/synchronization/lock.h"
-#include "remoting/base/types.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/size.h"
 
 namespace remoting {
 
 // CapturerHelper is intended to be used by an implementation of the Capturer
-// interface. It maintains a thread-safe list of invalid rectangles, and the
-// size of the most recently captured screen, on behalf of the Capturer that
-// owns it.
+// interface. It maintains a thread-safe invalid region, and the size of the
+// most recently captured screen, on behalf of the Capturer that owns it.
 class CapturerHelper {
  public:
   CapturerHelper();
   ~CapturerHelper();
 
-  // Clear out the list of invalid rects.
-  void ClearInvalidRects();
+  // Clear out the invalid region.
+  void ClearInvalidRegion();
 
-  // Invalidate the specified screen rects.
-  void InvalidateRects(const InvalidRects& inval_rects);
+  // Invalidate the specified region.
+  void InvalidateRegion(const SkRegion& invalid_region);
 
   // Invalidate the entire screen, of a given size.
   void InvalidateScreen(const gfx::Size& size);
@@ -35,29 +35,21 @@ class CapturerHelper {
   // Whether the invalid region is a full screen of a given size.
   bool IsCaptureFullScreen(const gfx::Size& size);
 
-  // Swap the given set of rects with the stored invalid rects.
-  // This should be used like this:
-  //
-  // InvalidRects inval_rects;
-  // common.SwapInvalidRects(inval_rects);
-  //
-  // This passes the invalid rects to the caller, and removes them from this
-  // object. The caller should then pass the raster data in those rects to the
-  // client.
-  void SwapInvalidRects(InvalidRects& inval_rects);
+  // Swap the given region with the stored invalid region.
+  void SwapInvalidRegion(SkRegion* invalid_region);
 
   // Access the size of the most recently captured screen.
   const gfx::Size& size_most_recent() const;
   void set_size_most_recent(const gfx::Size& size);
 
  private:
-  // Rects that have been manually invalidated (through InvalidateRect).
-  // These will be returned as dirty_rects in the capture data during the next
+  // A region that has been manually invalidated (through InvalidateRegion).
+  // These will be returned as dirty_region in the capture data during the next
   // capture.
-  InvalidRects inval_rects_;
+  SkRegion invalid_region_;
 
-  // A lock protecting |inval_rects_| across threads.
-  base::Lock inval_rects_lock_;
+  // A lock protecting |invalid_region_| across threads.
+  base::Lock invalid_region_lock_;
 
   // The size of the most recently captured screen.
   gfx::Size size_most_recent_;

@@ -9,13 +9,16 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/base/types.h"
-#include "ui/gfx/rect.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace remoting {
 
 typedef uint8 DiffInfo;
 
+// TODO: Simplify differ now that we are working with SkRegions.
+// diff_info_ should no longer be needed, as we can put our data directly into
+// the region that we are calculating.
+// http://crbug.com/92379
 class Differ {
  public:
   // Create a differ that operates on bitmaps with the specified width, height
@@ -28,24 +31,22 @@ class Differ {
   int bytes_per_pixel() { return bytes_per_pixel_; }
   int bytes_per_row() { return bytes_per_row_; }
 
-  // Given the previous and current screen buffer, calculate the set of
-  // rectangles that enclose all the changed pixels in the new screen.
-  void CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,
-                      InvalidRects* rects);
+  // Given the previous and current screen buffer, calculate the dirty region
+  // that encloses all of the changed pixels in the new screen.
+  void CalcDirtyRegion(const void* prev_buffer, const void* curr_buffer,
+                       SkRegion* region);
+
+ private:
+  // Allow tests to access our private parts.
+  friend class DifferTest;
 
   // Identify all of the blocks that contain changed pixels.
   void MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer);
 
   // After the dirty blocks have been identified, this routine merges adjacent
-  // blocks into larger rectangular units.
-  // The goal is to minimize the number of rects that cover the dirty blocks,
-  // although it is not required to calc the absolute minimum of rects.
-  void MergeBlocks(InvalidRects* rects);
-
-  // Allow tests to access our private parts.
-  friend class DifferTest;
-
- private:
+  // blocks into a region.
+  // The goal is to minimize the region that covers the dirty blocks.
+  void MergeBlocks(SkRegion* region);
 
   // Check for diffs in upper-left portion of the block. The size of the portion
   // to check is specified by the |width| and |height| values.

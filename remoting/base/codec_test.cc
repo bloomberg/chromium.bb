@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <deque>
 #include <stdlib.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/base_mock_objects.h"
 #include "remoting/base/codec_test.h"
@@ -12,19 +13,18 @@
 #include "remoting/base/encoder.h"
 #include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
 
 static const int kWidth = 320;
 static const int kHeight = 240;
 static const int kBytesPerPixel = 4;
 
 // Some sample rects for testing.
-static const gfx::Rect kTestRects[] = {
-  gfx::Rect(0, 0, kWidth, kHeight),
-  gfx::Rect(0, 0, kWidth / 2, kHeight / 2),
-  gfx::Rect(kWidth / 2, kHeight / 2, kWidth / 2, kHeight / 2),
-  gfx::Rect(16, 16, 16, 16),
-  gfx::Rect(128, 64, 32, 32),
+static const SkIRect kTestRects[] = {
+  SkIRect::MakeXYWH(0, 0, kWidth, kHeight),
+  SkIRect::MakeXYWH(0, 0, kWidth / 2, kHeight / 2),
+  SkIRect::MakeXYWH(kWidth / 2, kHeight / 2, kWidth / 2, kHeight / 2),
+  SkIRect::MakeXYWH(16, 16, 16, 16),
+  SkIRect::MakeXYWH(128, 64, 32, 32),
 };
 
 namespace remoting {
@@ -58,10 +58,10 @@ class EncoderMessageTester {
       ++begin_rect_;
 
       if (strict_) {
-        gfx::Rect rect = rects_.front();
+        SkIRect rect = rects_.front();
         rects_.pop_front();
-        EXPECT_EQ(rect.x(), packet->format().x());
-        EXPECT_EQ(rect.y(), packet->format().y());
+        EXPECT_EQ(rect.fLeft, packet->format().x());
+        EXPECT_EQ(rect.fTop, packet->format().y());
         EXPECT_EQ(rect.width(), packet->format().width());
         EXPECT_EQ(rect.height(), packet->format().height());
       }
@@ -93,7 +93,7 @@ class EncoderMessageTester {
     strict_ = strict;
   }
 
-  void AddRects(const gfx::Rect* rects, int count) {
+  void AddRects(const SkIRect* rects, int count) {
     rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
     added_rects_ += count;
   }
@@ -111,7 +111,7 @@ class EncoderMessageTester {
   State state_;
   bool strict_;
 
-  std::deque<gfx::Rect> rects_;
+  std::deque<SkIRect> rects_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderMessageTester);
 };
@@ -152,7 +152,7 @@ class DecoderTester {
     capture_data_ = data;
   }
 
-  void AddRects(const gfx::Rect* rects, int count) {
+  void AddRects(const SkIRect* rects, int count) {
     rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
   }
 
@@ -165,7 +165,8 @@ class DecoderTester {
     // Test the content of the update rect.
     ASSERT_EQ(rects_.size(), update_rects_.size());
     for (size_t i = 0; i < update_rects_.size(); ++i) {
-      gfx::Rect rect = rects_[i];
+      SkIRect &r = rects_[i];
+      gfx::Rect rect(r.fLeft, r.fTop, r.width(), r.height());
       EXPECT_EQ(rect, update_rects_[i]);
 
       EXPECT_EQ(frame_->stride(0), capture_data_->data_planes().strides[0]);
@@ -186,7 +187,7 @@ class DecoderTester {
 
  private:
   bool strict_;
-  std::deque<gfx::Rect> rects_;
+  std::deque<SkIRect> rects_;
   UpdatedRects update_rects_;
   Decoder* decoder_;
   scoped_refptr<media::VideoFrame> frame_;
@@ -221,7 +222,7 @@ class EncoderTester {
     delete packet;
   }
 
-  void AddRects(const gfx::Rect* rects, int count) {
+  void AddRects(const SkIRect* rects, int count) {
     message_tester_->AddRects(rects, count);
   }
 
@@ -263,10 +264,10 @@ scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
 static void TestEncodingRects(Encoder* encoder,
                               EncoderTester* tester,
                               scoped_refptr<CaptureData> data,
-                              const gfx::Rect* rects, int count) {
-  data->mutable_dirty_rects().clear();
+                              const SkIRect* rects, int count) {
+  data->mutable_dirty_region().setEmpty();
   for (int i = 0; i < count; ++i) {
-    data->mutable_dirty_rects().insert(rects[i]);
+    data->mutable_dirty_region().op(rects[i], SkRegion::kUnion_Op);
   }
   tester->AddRects(rects, count);
 
@@ -283,22 +284,22 @@ void TestEncoder(Encoder* encoder, bool strict) {
   uint8* memory;
   scoped_refptr<CaptureData> data =
       PrepareEncodeData(media::VideoFrame::RGB32, &memory);
+  scoped_array<uint8> memory_wrapper(memory);
 
   TestEncodingRects(encoder, &tester, data, kTestRects, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 1, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 2, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 3, 2);
-  delete [] memory;
 }
 
 static void TestEncodingRects(Encoder* encoder,
                               EncoderTester* encoder_tester,
                               DecoderTester* decoder_tester,
                               scoped_refptr<CaptureData> data,
-                              const gfx::Rect* rects, int count) {
-  data->mutable_dirty_rects().clear();
+                              const SkIRect* rects, int count) {
+  data->mutable_dirty_region().setEmpty();
   for (int i = 0; i < count; ++i) {
-    data->mutable_dirty_rects().insert(rects[i]);
+    data->mutable_dirty_region().op(rects[i], SkRegion::kUnion_Op);
   }
   encoder_tester->AddRects(rects, count);
   decoder_tester->AddRects(rects, count);
@@ -306,12 +307,12 @@ static void TestEncodingRects(Encoder* encoder,
   // Generate random data for the updated rects.
   srand(0);
   for (int i = 0; i < count; ++i) {
-    const gfx::Rect rect = rects[i];
+    const SkIRect& rect = rects[i];
     const int bytes_per_pixel = GetBytesPerPixel(data->pixel_format());
     const int row_size = bytes_per_pixel * rect.width();
     uint8* memory = data->data_planes().data[0] +
-                    data->data_planes().strides[0] * rect.y() +
-                    bytes_per_pixel * rect.x();
+                    data->data_planes().strides[0] * rect.fTop +
+                    bytes_per_pixel * rect.fLeft;
     for (int y = 0; y < rect.height(); ++y) {
       for (int x = 0; x < row_size; ++x)
         memory[x] = rand() % 256;
@@ -334,6 +335,8 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
   uint8* memory;
   scoped_refptr<CaptureData> data =
       PrepareEncodeData(media::VideoFrame::RGB32, &memory);
+  scoped_array<uint8> memory_wrapper(memory);
+
   DecoderTester decoder_tester(decoder);
   decoder_tester.set_strict(strict);
   decoder_tester.set_capture_data(data);
@@ -347,7 +350,6 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
                     kTestRects + 2, 1);
   TestEncodingRects(encoder, &encoder_tester, &decoder_tester, data,
                     kTestRects + 3, 2);
-  delete [] memory;
 }
 
 }  // namespace remoting

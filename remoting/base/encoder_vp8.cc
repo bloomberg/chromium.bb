@@ -10,6 +10,7 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -148,7 +149,7 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
     return false;
   }
 
-  const InvalidRects& rects = capture_data->dirty_rects();
+  const SkRegion& region = capture_data->dirty_region();
   const uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
   const int plane_size =
@@ -160,9 +161,11 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   const int uv_stride = image_->stride[1];
 
   DCHECK(updated_rects->empty());
-  for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
+  for (SkRegion::Iterator r(region); !r.done(); r.next()) {
     // Align the rectangle, report it as updated.
-    gfx::Rect rect = AlignAndClipRect(*r, image_->w, image_->h);
+    SkIRect skRect = r.rect();
+    gfx::Rect rect(skRect.fLeft, skRect.fTop, skRect.width(), skRect.height());
+    rect = AlignAndClipRect(rect, image_->w, image_->h);
     if (!rect.IsEmpty())
       updated_rects->push_back(rect);
 
