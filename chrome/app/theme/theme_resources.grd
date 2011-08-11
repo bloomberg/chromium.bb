@@ -232,6 +232,10 @@
       <include name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita.png" type="BINDATA" />
       <include name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note.png" type="BINDATA" />
       <include name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud.png" type="BINDATA" />
+      <include name="IDR_PROFILE_EDIT" file="profile_edit.png" type="BINDATA" />
+      <include name="IDR_PROFILE_EDIT_HOVER" file="profile_edit_hover.png" type="BINDATA" />
+      <include name="IDR_PROFILE_EDIT_PRESSED" file="profile_edit_pressed.png" type="BINDATA" />
+      <include name="IDR_PROFILE_SELECTED" file="profile_selected.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" type="BINDATA" />

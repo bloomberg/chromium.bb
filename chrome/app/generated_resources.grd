@@ -8375,6 +8375,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
           New User
         </message>
       </if>
+      <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
+        New user
+      </message>
+      <message name="IDS_PROFILES_CUSTOMIZE_PROFILE_ACCESSIBLE_NAME" desc="Description of the customize profile button. This is used for accessibility.">
+        Customize user: <ph name="PROFILE_NAME">$1<ex>First user</ex></ph>
+      </message>
+      <message name="IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME" desc="Description of the switch to profile button. This is used for accessibility.">
+        Switch to user: <ph name="PROFILE_NAME">$1<ex>First user</ex></ph>
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_MENU" desc="The title of the profiles submenu in the wrench menu.">
           Users

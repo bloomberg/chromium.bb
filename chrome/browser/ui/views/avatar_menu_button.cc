@@ -6,7 +6,8 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/profile_menu_model.h"
-#include "chrome/browser/ui/views/avatar_menu.h"
+#include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/widget/widget.h"
 
@@ -62,9 +63,16 @@ void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   if (!has_menu_)
     return;
 
-  menu_model_.reset(new ProfileMenuModel(browser_));
-  // The avatar menu will automatically delete itself when done.
-  AvatarMenu* avatar_menu =
-      new AvatarMenu(menu_model_.get(), browser_->profile());
-  avatar_menu->RunMenu(this);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+      browser_->window()->GetNativeHandle());
+
+  gfx::Point origin;
+  views::View::ConvertPointToScreen(this, &origin);
+  gfx::Rect bounds(0, 0, width(), height());
+  bounds.set_origin(origin);
+
+  AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_);
+  // Bubble::Show() takes ownership of the view.
+  Bubble::Show(browser_view->GetWidget(), bounds, BubbleBorder::TOP_LEFT,
+               bubble_view, bubble_view);
 }
