@@ -412,7 +412,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
 
     std::vector<std::wstring> links;
     links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(link_message_id)));
-    if (!deal_topup_url_.empty())
+    if (!deal_info_url_.empty())
       links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
     mobile_data_bubble_ = MessageBubble::ShowWithLinks(
         GetWidget(),
