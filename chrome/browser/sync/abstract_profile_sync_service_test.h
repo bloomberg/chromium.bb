@@ -14,7 +14,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

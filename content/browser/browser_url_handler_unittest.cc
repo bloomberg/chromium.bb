@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_url_handler.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

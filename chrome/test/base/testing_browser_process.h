@@ -7,8 +7,8 @@
 // keep the profile clean. Clients of this class must handle the NULL return
 // value, however.
 
-#ifndef CHROME_TEST_TESTING_BROWSER_PROCESS_H_
-#define CHROME_TEST_TESTING_BROWSER_PROCESS_H_
+#ifndef CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
+#define CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
 #pragma once
 
 #include <string>
@@ -165,4 +165,4 @@ class ScopedTestingBrowserProcess {
   DISALLOW_COPY_AND_ASSIGN(ScopedTestingBrowserProcess);
 };
 
-#endif  // CHROME_TEST_TESTING_BROWSER_PROCESS_H_
+#endif  // CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_

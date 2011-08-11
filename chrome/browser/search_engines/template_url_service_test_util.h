@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 
 class TemplateURLService;

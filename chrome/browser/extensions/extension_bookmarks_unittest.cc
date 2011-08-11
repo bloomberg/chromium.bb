@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 
 namespace keys = extension_bookmarks_module_constants;
 

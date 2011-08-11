@@ -6,8 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"

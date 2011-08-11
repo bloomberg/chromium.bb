@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/instant/promo_counter.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef TestingBrowserProcessTest PromoCounterTest;

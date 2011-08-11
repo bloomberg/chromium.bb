@@ -6,8 +6,8 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

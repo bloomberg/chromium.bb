@@ -8,7 +8,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 

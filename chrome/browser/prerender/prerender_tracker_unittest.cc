@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 
 using base::WaitableEvent;

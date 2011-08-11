@@ -5,7 +5,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"

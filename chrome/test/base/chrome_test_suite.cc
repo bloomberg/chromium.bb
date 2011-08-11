@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/common/content_paths.h"
 #include "net/base/net_errors.h"
 #include "ui/base/resource/resource_bundle.h"

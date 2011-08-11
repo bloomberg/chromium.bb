@@ -14,7 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

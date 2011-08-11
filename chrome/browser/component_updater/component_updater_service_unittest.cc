@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/test_notification_tracker.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"

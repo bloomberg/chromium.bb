@@ -45,7 +45,7 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"

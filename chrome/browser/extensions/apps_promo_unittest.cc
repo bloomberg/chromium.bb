@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

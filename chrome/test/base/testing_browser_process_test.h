@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TESTING_BROWSER_PROCESS_TEST_H_
-#define CHROME_TEST_TESTING_BROWSER_PROCESS_TEST_H_
+#ifndef CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_TEST_H_
+#define CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_TEST_H_
 #pragma once
 
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Base class for tests that need |g_browser_process| to be initialized.
@@ -15,4 +15,4 @@ class TestingBrowserProcessTest : public testing::Test {
   ScopedTestingBrowserProcess testing_browser_process_;
 };
 
-#endif  // CHROME_TEST_TESTING_BROWSER_PROCESS_TEST_H_
+#endif  // CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_TEST_H_

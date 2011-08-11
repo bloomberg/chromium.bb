@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

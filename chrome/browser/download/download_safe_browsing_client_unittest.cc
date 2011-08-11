@@ -5,7 +5,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/download/download_safe_browsing_client.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

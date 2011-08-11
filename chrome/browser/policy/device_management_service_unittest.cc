@@ -10,7 +10,7 @@
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
-#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/base/escape.h"

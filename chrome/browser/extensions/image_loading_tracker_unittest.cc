@@ -10,7 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"

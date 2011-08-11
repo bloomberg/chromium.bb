@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/profile_mock.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"

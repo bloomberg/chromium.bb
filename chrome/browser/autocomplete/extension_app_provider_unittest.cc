@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/history/history.h"

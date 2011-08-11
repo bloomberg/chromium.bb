@@ -12,8 +12,8 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/testing_browser_process_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
