@@ -586,6 +586,9 @@ message ClientCommand {
   // action and sending a commit message to the
   // server
   optional int32 sessions_commit_delay_seconds = 4;
+
+  // Number of seconds to delay before the throttled client should retry.
+  optional int32 throttle_delay_seconds = 5;
 };
 
 message ClientToServerResponse {

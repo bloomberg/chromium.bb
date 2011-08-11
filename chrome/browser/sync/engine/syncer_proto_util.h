@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,6 +114,9 @@ class SyncerProtoUtil {
                                     sessions::SyncSession* session,
                                     const ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
+
+  static base::TimeDelta GetThrottleDelay(
+      const sync_pb::ClientToServerResponse& response);
 
   friend class SyncerProtoUtilTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);

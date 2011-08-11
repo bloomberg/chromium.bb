@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -182,6 +183,20 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   return false;
 }
 
+base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
+    const sync_pb::ClientToServerResponse& response) {
+  base::TimeDelta throttle_delay =
+      base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled);
+  if (response.has_client_command()) {
+    const sync_pb::ClientCommand& command = response.client_command();
+    if (command.has_throttle_delay_seconds()) {
+      throttle_delay =
+          base::TimeDelta::FromSeconds(command.throttle_delay_seconds());
+    }
+  }
+  return throttle_delay;
+}
+
 namespace {
 
 // Helper function for an assertion in PostClientToServerMessage.
@@ -236,7 +251,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(
     case ClientToServerResponse::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
-          base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
+          GetThrottleDelay(*response));
       return false;
     case ClientToServerResponse::TRANSIENT_ERROR:
       return false;
