@@ -78,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
 
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 // Times out: http://crbug.com/91715
-// TODO(mpcomplete): currently investigating, please don't disable yet.
-#define MAYBE_WebRequestBlocking FLAKY_WebRequestBlocking
+#define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
 #else
 #define MAYBE_WebRequestBlocking WebRequestBlocking
 #endif
