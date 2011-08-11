@@ -29,12 +29,14 @@
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
-  if ([draggableButtonImpl_ mouseUp:theEvent] == kDraggableButtonMixinCallSuper)
+  if ([draggableButtonImpl_ mouseUpImpl:theEvent] ==
+          kDraggableButtonMixinCallSuper) {
     [super mouseUp:theEvent];
+  }
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
-  if ([draggableButtonImpl_ mouseDown:theEvent] ==
+  if ([draggableButtonImpl_ mouseDownImpl:theEvent] ==
           kDraggableButtonMixinCallSuper) {
     [super mouseDown:theEvent];
   }

@@ -64,7 +64,7 @@ const CGFloat kDragExpirationTimeout = 0.45;
 
 // NSButton/NSResponder Implementations ////////////////////////////////////////
 
-- (DraggableButtonResult)mouseUp:(NSEvent*)theEvent {
+- (DraggableButtonResult)mouseUpImpl:(NSEvent*)theEvent {
   durationMouseWasDown_ = [theEvent timestamp] - whenMouseDown_;
 
   if (actionHasFired_)
@@ -85,7 +85,7 @@ const CGFloat kDragExpirationTimeout = 0.45;
 
 // Mimic "begin a click" operation visually.  Do NOT follow through with normal
 // button event handling.
-- (DraggableButtonResult)mouseDown:(NSEvent*)theEvent {
+- (DraggableButtonResult)mouseDownImpl:(NSEvent*)theEvent {
   [[NSCursor arrowCursor] set];
 
   whenMouseDown_ = [theEvent timestamp];

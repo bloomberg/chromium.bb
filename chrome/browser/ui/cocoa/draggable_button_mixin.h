@@ -126,8 +126,8 @@ enum DraggableButtonResult {
 
 // NSResponder implementation. NSButton subclasses should invoke these methods
 // and only call super if the return value indicates such.
-- (DraggableButtonResult)mouseDown:(NSEvent*)event;
-- (DraggableButtonResult)mouseUp:(NSEvent*)event;
+- (DraggableButtonResult)mouseDownImpl:(NSEvent*)event;
+- (DraggableButtonResult)mouseUpImpl:(NSEvent*)event;
 
 @end
 
