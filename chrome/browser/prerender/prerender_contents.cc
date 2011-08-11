@@ -503,9 +503,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   if (prerendering_has_been_cancelled_)
     return;
 
-  prerendering_has_been_cancelled_ = true;
-  prerender_manager_->MoveEntryToPendingDelete(this);
-
   if (child_id_ != -1 && route_id_ != -1) {
     // Cancel the prerender in the PrerenderTracker.  This is needed
     // because destroy may be called directly from the UI thread without calling
@@ -523,6 +520,11 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     }
   }
   set_final_status(final_status);
+
+  prerendering_has_been_cancelled_ = true;
+  // This has to be done after setting the final status, as it adds the
+  // prerender to the history.
+  prerender_manager_->MoveEntryToPendingDelete(this);
 
   // We may destroy the PrerenderContents before we have initialized the
   // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
