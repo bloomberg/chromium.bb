@@ -499,7 +499,8 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: gcc-extras \
 # by the Native Client threads package build.
 ##################################################################
 
-NEWLIB_CFLAGS = -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS -mtls-use-call
+NEWLIB_CFLAGS = -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS -DSIGNAL_PROVIDED \
+  -mtls-use-call
 
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
