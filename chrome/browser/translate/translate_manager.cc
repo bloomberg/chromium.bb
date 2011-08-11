@@ -651,7 +651,8 @@ void TranslateManager::PageTranslated(TabContents* tab,
 bool TranslateManager::IsAcceptLanguage(TabContents* tab,
                                         const std::string& language) {
   Profile* profile = Profile::FromBrowserContext(tab->browser_context());
-  PrefService* pref_service = profile->GetOriginalProfile()->GetPrefs();
+  profile = profile->GetOriginalProfile();
+  PrefService* pref_service = profile->GetPrefs();
   PrefServiceLanguagesMap::const_iterator iter =
       accept_languages_.find(pref_service);
   if (iter == accept_languages_.end()) {
