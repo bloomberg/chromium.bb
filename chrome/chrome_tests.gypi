@@ -1511,8 +1511,6 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
-        'browser/notifications/desktop_notifications_unittest.cc',
-        'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_exceptions_table_model_unittest.cc',
         'browser/notifications/notifications_prefs_cache_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
@@ -2117,7 +2115,6 @@
         }],
         ['chromeos==1', {
           'sources/': [
-            ['exclude', '^browser/notifications/desktop_notifications_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
@@ -2569,6 +2566,8 @@
 	'browser/magic_iframe_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
+        'browser/notifications/desktop_notifications_unittest.cc',
+        'browser/notifications/desktop_notifications_unittest.h',
         'browser/plugin_data_remover_browsertest.cc',
         'browser/policy/device_management_backend_mock.cc',
         'browser/policy/device_management_backend_mock.h',
@@ -2680,6 +2679,7 @@
           ],
         }, { #else: OS == "chromeos"
           'sources!': [
+            'browser/notifications/desktop_notifications_unittest.cc',
             'browser/service/service_process_control_browsertest.cc',
             'browser/ui/webui/print_preview.js',
           ],

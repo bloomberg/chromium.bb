@@ -24,6 +24,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 
 class MetricsServiceTest : public UITest {
@@ -56,6 +57,13 @@ class MetricsServiceTest : public UITest {
     FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
     return PrefServiceMockBuilder().WithUserFilePrefs(path).Create();
   }
+#if defined(OS_WIN)
+  // This is not really Windows-specific, the transition is just being done
+  // in stages, and Windows is first. See below for more info.
+  // TODO(phajdan.jr): Remove #ifdef after fixing http://crbug.com/61062.
+ private:
+  NotificationService notification_service_;
+#endif
 };
 
 TEST_F(MetricsServiceTest, CloseRenderersNormally) {

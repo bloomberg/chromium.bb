@@ -9,9 +9,11 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
+#include "chrome/test/testing_browser_process_test.h"
+
 namespace keys = extension_bookmarks_module_constants;
 
-class ExtensionBookmarksTest : public testing::Test {
+class ExtensionBookmarksTest : public TestingBrowserProcessTest {
  public:
   virtual void SetUp() {
     model_.reset(new BookmarkModel(NULL));
