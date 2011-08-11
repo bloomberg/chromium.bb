@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2011 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Utility functions for finding prebuilt Chrome binaries.
 """
@@ -13,6 +13,8 @@ import urllib
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
 
 directory_pattern = re.compile('<Prefix>([\w\d]+/[\d]+)/?</Prefix>', re.I)
+nextmarker_pattern = re.compile(
+    '<NextMarker>([\w\d]+/[\d]+)/?</NextMarker>', re.I)
 
 # (os, arch) -> (base_directory, archive_name, pyautopy_name, pyautolib_name)
 # Used from constructing the full URL for a snapshot
@@ -36,14 +38,33 @@ SNAPSHOT_MAP = {
            }
 
 
-def GetIndexData(verbose, platform, base_url=None):
+def GetIndexData(verbose, platform, min_rev, base_url=None):
   if base_url is None:
     base_url = BASE_URL
-  path = '%s/?delimiter=/&prefix=%s/' % (base_url, platform)
-  if verbose:
-    print 'Getting', path
-  index = urllib.urlopen(path)
-  return index.read()
+  # Setup marker based on min_rev.
+  if min_rev:
+    marker = '%s/%s' % (platform, min_rev)
+  else:
+    marker = ''
+  # Gather result of several queries into total.
+  total = []
+  while True:
+    path = '%s/?delimiter=/&prefix=%s/&marker=%s' % (
+        base_url, platform, marker)
+    if verbose:
+      print 'Getting', path
+    # Get one page worth.
+    index = urllib.urlopen(path)
+    page = index.read()
+    index.close()
+    total.append(page)
+    # Find a next marker item, if any, or stop.
+    next_markers = nextmarker_pattern.findall(page)
+    if next_markers:
+      marker = next_markers[0]
+    else:
+      break
+  return ''.join(total)
 
 
 # The index file is a list of directories.  Parse the directory names to build
@@ -74,7 +95,7 @@ def GetIndex(min_rev, max_rev, verbose, base_url=None):
   data = {}
   for _, v in SNAPSHOT_MAP.iteritems():
     platform = v[0]
-    data[platform] = GetIndexData(verbose, platform, base_url=base_url)
+    data[platform] = GetIndexData(verbose, platform, min_rev, base_url=base_url)
   return ParseIndex(data, min_rev, max_rev)
 
 
