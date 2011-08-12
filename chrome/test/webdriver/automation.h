@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +17,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class AutomationProxy;
+class CommandLine;
+class FilePath;
 class ProxyLauncher;
 struct WebKeyEvent;
 
@@ -41,20 +42,19 @@ class FramePath;
 // by posting a task from NewRunnableMethod.
 class Automation {
  public:
-  struct BrowserOptions {
-    BrowserOptions();
-    ~BrowserOptions();
-
-    CommandLine cmdline;
-    FilePath user_data_dir;
-    std::string channel_id;
-  };
-
   Automation();
   virtual ~Automation();
 
+  // Creates a browser, using the specified |browser_exe| and |user_data_dir|.
+  void InitWithBrowserPath(const FilePath& browser_exe,
+                           const FilePath& user_data_dir,
+                           const CommandLine& options,
+                           Error** error);
+
   // Start the system's default Chrome binary.
-  void Init(const BrowserOptions& options, Error** error);
+  void Init(const CommandLine& options,
+            const FilePath& user_data_dir,
+            Error** error);
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Automation can safely be deleted.

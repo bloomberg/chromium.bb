@@ -73,11 +73,7 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  Automation::BrowserOptions browser_options;
-  FilePath::StringType path;
-  if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
-    browser_options.cmdline = CommandLine(FilePath(path));
-
+  CommandLine command_line_options(CommandLine::NO_PROGRAM);
   ListValue* switches = NULL;
   const char* kCustomSwitchesKey = "chrome.switches";
   if (capabilities->GetListWithoutPathExpansion(kCustomSwitchesKey,
@@ -97,11 +93,11 @@ void CreateSession::ExecutePost(Response* const response) {
               kBadRequest, "Custom switch is not a string"));
           return;
         }
-        browser_options.cmdline.AppendSwitchNative(
+        command_line_options.AppendSwitchNative(
             switch_string.substr(0, separator_index),
             switch_string_native.substr(separator_index + 1));
       } else {
-        browser_options.cmdline.AppendSwitch(switch_string);
+        command_line_options.AppendSwitch(switch_string);
       }
     }
   } else if (capabilities->HasKey(kCustomSwitchesKey)) {
@@ -109,16 +105,14 @@ void CreateSession::ExecutePost(Response* const response) {
         kBadRequest, "Custom switches must be a list"));
     return;
   }
-
   Value* verbose_value;
   if (capabilities->GetWithoutPathExpansion("chrome.verbose", &verbose_value)) {
-    bool verbose = false;
-    if (verbose_value->GetAsBoolean(&verbose)) {
+    bool verbose;
+    if (verbose_value->GetAsBoolean(&verbose) && verbose) {
       // Since logging is shared among sessions, if any session requests verbose
       // logging, verbose logging will be enabled for all sessions. It is not
       // possible to turn it off.
-      if (verbose)
-        logging::SetMinLogLevel(logging::LOG_INFO);
+      logging::SetMinLogLevel(logging::LOG_INFO);
     } else {
       response->SetError(new Error(
           kBadRequest, "verbose must be a boolean true or false"));
@@ -126,8 +120,10 @@ void CreateSession::ExecutePost(Response* const response) {
     }
   }
 
-  capabilities->GetStringWithoutPathExpansion(
-      "chrome.channel", &browser_options.channel_id);
+  FilePath browser_exe;
+  FilePath::StringType path;
+  if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
+    browser_exe = FilePath(path);
 
   ScopedTempDir temp_profile_dir;
   FilePath temp_user_data_dir;
@@ -190,13 +186,13 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  Session::Options session_options;
+  Session::Options options;
   Error* error = NULL;
   error = GetBooleanCapability(capabilities, "chrome.nativeEvents",
-                               &session_options.use_native_events);
+                               &options.use_native_events);
   if (!error) {
     error = GetBooleanCapability(capabilities, "chrome.loadAsync",
-                                 &session_options.load_async);
+                                 &options.load_async);
   }
   if (error) {
     response->SetError(error);
@@ -204,8 +200,10 @@ void CreateSession::ExecutePost(Response* const response) {
   }
 
   // Session manages its own liftime, so do not call delete.
-  Session* session = new Session(session_options);
-  error = session->Init(browser_options);
+  Session* session = new Session(options);
+  error = session->Init(browser_exe,
+                        temp_user_data_dir,
+                        command_line_options);
   if (error) {
     response->SetError(error);
     return;

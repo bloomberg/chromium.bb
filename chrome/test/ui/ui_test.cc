@@ -125,8 +125,8 @@ void UITestBase::SetUp() {
   test_start_time_ = Time::NowFromSystemTime();
 
   SetLaunchSwitches();
-  ASSERT_TRUE(launcher_->InitializeConnection(DefaultLaunchState(),
-                                              wait_for_initial_loads_));
+  launcher_->InitializeConnection(DefaultLaunchState(),
+                                  wait_for_initial_loads_);
 }
 
 void UITestBase::TearDown() {

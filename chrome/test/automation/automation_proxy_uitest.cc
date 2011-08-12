@@ -63,13 +63,9 @@ class ExternalTabUITestMockLauncher : public ProxyLauncher {
     return *mock_;
   }
 
-  bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT {
-    bool launch_browser_and_server =
-        LaunchBrowserAndServer(state, wait_for_initial_loads);
-    EXPECT_TRUE(launch_browser_and_server);
-    return launch_browser_and_server;
+  void InitializeConnection(const LaunchState& state,
+                            bool wait_for_initial_loads) {
+    ASSERT_TRUE(LaunchBrowserAndServer(state, wait_for_initial_loads));
   }
 
   void TerminateConnection() {

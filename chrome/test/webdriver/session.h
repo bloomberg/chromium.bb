@@ -79,7 +79,9 @@ class Session {
   // It |user_data_dir| is empty, it will use a temporary dir.
   // Returns true on success. On failure, the session will delete
   // itself and return an error code.
-  Error* Init(const Automation::BrowserOptions& options);
+  Error* Init(const FilePath& browser_exe,
+              const FilePath& user_data_dir,
+              const CommandLine& options);
 
   // Should be called before executing a command. Performs necessary waits
   // and frame switching.
@@ -327,7 +329,9 @@ class Session {
   void RunSessionTaskOnSessionThread(
       Task* task,
       base::WaitableEvent* done_event);
-  void InitOnSessionThread(const Automation::BrowserOptions& options,
+  void InitOnSessionThread(const FilePath& browser_exe,
+                           const FilePath& user_data_dir,
+                           const CommandLine& options,
                            Error** error);
   void TerminateOnSessionThread();
 

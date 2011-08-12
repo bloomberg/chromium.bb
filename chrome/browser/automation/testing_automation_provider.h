@@ -1150,14 +1150,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void UpdateExtensionsNow(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // Creates a new |TestingAutomationProvider| that opens a server channel
-  // for the given |channel_id|.
-  // The server channel will be available for connection when this returns.
-  // Example:
-  //   input: { "channel_id": "testChannel123" }
-  void CreateNewAutomationProvider(base::DictionaryValue* args,
-                                   IPC::Message* reply_message);
-
 #if defined(OS_CHROMEOS)
   // Login.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);

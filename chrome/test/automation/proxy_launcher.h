@@ -65,10 +65,8 @@ class ProxyLauncher {
   virtual ~ProxyLauncher();
 
   // Launches the browser if needed and establishes a connection with it.
-  // Returns true on success.
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) WARN_UNUSED_RESULT = 0;
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads) = 0;
 
   // Shuts down the browser if needed and destroys any
   // connections established by InitalizeConnection.
@@ -290,9 +288,8 @@ class NamedProxyLauncher : public ProxyLauncher {
                      bool launch_browser, bool disconnect_on_failure);
 
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads);
   virtual void TerminateConnection();
   virtual std::string PrefixedChannelID() const;
 
@@ -310,9 +307,8 @@ class AnonymousProxyLauncher : public ProxyLauncher {
  public:
   explicit AnonymousProxyLauncher(bool disconnect_on_failure);
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
-  virtual bool InitializeConnection(
-      const LaunchState& state,
-      bool wait_for_initial_loads) OVERRIDE WARN_UNUSED_RESULT;
+  virtual void InitializeConnection(const LaunchState& state,
+                                    bool wait_for_initial_loads);
   virtual void TerminateConnection();
   virtual std::string PrefixedChannelID() const;
 
