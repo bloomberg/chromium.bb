@@ -480,8 +480,8 @@ def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
   """
   rules_filename = '%s%s.rules' % (spec['target_name'],
                                    options.suffix)
-  rules_file = MSVSToolFile.Writer(os.path.join(output_dir, rules_filename))
-  rules_file.Create(spec['target_name'])
+  rules_file = MSVSToolFile.Writer(os.path.join(output_dir, rules_filename),
+                                   spec['target_name'])
   # Add each rule.
   for r in rules:
     rule_name = r['rule_name']
@@ -496,7 +496,7 @@ def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
                                   outputs=outputs,
                                   cmd=cmd)
   # Write out rules file.
-  rules_file.Write()
+  rules_file.WriteIfChanged()
 
   # Add rules file to project.
   p.AddToolFile(rules_filename)
@@ -851,8 +851,8 @@ def _GenerateMSVSProject(project, options, version):
     os.makedirs(vcproj_dir)
 
   platforms = _GetUniquePlatforms(spec)
-  p = MSVSProject.Writer(project.path, version=version)
-  p.Create(spec['target_name'], guid=project.guid, platforms=platforms)
+  p = MSVSProject.Writer(project.path, version, spec['target_name'],
+                         project.guid, platforms)
 
   # Get directory project file is in.
   gyp_dir = os.path.split(project.path)[0]
@@ -878,7 +878,7 @@ def _GenerateMSVSProject(project, options, version):
           spec, options, gyp_dir, sources, excluded_sources))
 
   # Add in files.
-  _VerifySourcesExist(sources, gyp_dir)
+  # _VerifySourcesExist(sources, gyp_dir)
   p.AddFiles(sources)
 
   _AddToolFilesToMSVS(p, spec)
@@ -895,7 +895,7 @@ def _GenerateMSVSProject(project, options, version):
   _AddAccumulatedActionsToMSVS(p, spec, actions_to_add)
 
   # Write it out.
-  p.Write()
+  p.WriteIfChanged()
 
 
 def _GetUniquePlatforms(spec):
@@ -927,8 +927,8 @@ def _CreateMSVSUserFile(proj_path, version, spec):
   """
   (domain, username) = _GetDomainAndUserName()
   vcuser_filename = '.'.join([proj_path, domain, username, 'user'])
-  user_file = MSVSUserFile.Writer(vcuser_filename, version=version)
-  user_file.Create(spec['target_name'])
+  user_file = MSVSUserFile.Writer(vcuser_filename, version,
+                                  spec['target_name'])
   return user_file
 
 
@@ -1419,7 +1419,7 @@ def _WriteMSVSUserFile(project_path, version, spec):
   for config_name, c_data in spec['configurations'].iteritems():
     user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
                                action, environment, working_directory)
-  user_file.Write()
+  user_file.WriteIfChanged()
 
 
 def _AddCopies(actions_to_add, spec):
@@ -1772,15 +1772,14 @@ def _GenerateMSBuildFiltersFile(filters_path, source_files,
   _AppendFiltersForMSBuild('', source_files, extension_to_rule_name,
                            filter_group, source_group)
   if filter_group:
-    doc = easy_xml.EasyXml(
-        'Project',
-        {'ToolsVersion': '4.0',
-         'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'})
-    root = doc.Root()
-    doc.AppendChildren(root, [
-        ['ItemGroup'] + filter_group,
-        ['ItemGroup'] + source_group])
-    doc.WriteIfChanged(filters_path)
+    content = ['Project',
+               {'ToolsVersion': '4.0',
+                'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'
+               },
+               ['ItemGroup'] + filter_group,
+               ['ItemGroup'] + source_group
+              ]
+    easy_xml.WriteXmlIfChanged(content, filters_path)
   elif os.path.exists(filters_path):
     # We don't need this filter anymore.  Delete the old filter file.
     os.unlink(filters_path)
@@ -1948,12 +1947,10 @@ class MSBuildRule(object):
 
 def _GenerateMSBuildRulePropsFile(props_path, msbuild_rules):
   """Generate the .props file."""
-  doc = easy_xml.EasyXml(
-      'Project',
-      {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'})
-  root = doc.Root()
+  content = ['Project',
+             {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'}]
   for rule in msbuild_rules:
-    doc.AppendChildren(root, [
+    content.extend([
         ['PropertyGroup',
          {'Condition': "'$(%s)' == '' and '$(%s)' == '' and "
           "'$(ConfigurationType)' != 'Makefile'" % (rule.before_targets,
@@ -1977,32 +1974,31 @@ def _GenerateMSBuildRulePropsFile(props_path, msbuild_rules):
          ],
         ]
     ])
-  doc.WriteIfChanged(props_path)
+  easy_xml.WriteXmlIfChanged(content, props_path)
 
 
 def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
   """Generate the .targets file."""
-  doc = easy_xml.EasyXml(
-      'Project',
-      {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'})
-  root = doc.Root()
-  item_group = doc.AppendNode(
-      root,
-      ['ItemGroup',
-       ['PropertyPageSchema',
-        {'Include': '$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml'}
-       ],
-      ])
+  content = ['Project',
+             {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003'
+             }
+            ]
+  item_group = [
+      'ItemGroup',
+      ['PropertyPageSchema',
+       {'Include': '$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml'}
+      ]
+    ]
   for rule in msbuild_rules:
-    doc.AppendNode(
-        item_group,
+    item_group.append(
         ['AvailableItemName',
          {'Include': rule.rule_name},
          ['Targets', rule.target_name],
         ])
+  content.append(item_group)
+
   for rule in msbuild_rules:
-    doc.AppendNode(
-        root,
+    content.append(
         ['UsingTask',
          {'TaskName': rule.rule_name,
           'TaskFactory': 'XamlTaskFactory',
@@ -2064,7 +2060,7 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
          'Inputs': rule_inputs
         }
     ]
-    doc.AppendChildren(root, [
+    content.extend([
         ['Target',
          {'Name': rule.target_name,
           'BeforeTargets': '$(%s)' % rule.before_targets,
@@ -2125,22 +2121,23 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
          ]
         ],
     ])
-  doc.WriteIfChanged(targets_path)
+  easy_xml.WriteXmlIfChanged(content, targets_path)
 
 
 def _GenerateMSBuildRuleXmlFile(xml_path, msbuild_rules):
   # Generate the .xml file
-  doc = easy_xml.EasyXml(
+  content = [
       'ProjectSchemaDefinitions',
       {'xmlns': ('clr-namespace:Microsoft.Build.Framework.XamlTypes;'
                  'assembly=Microsoft.Build.Framework'),
        'xmlns:x': 'http://schemas.microsoft.com/winfx/2006/xaml',
        'xmlns:sys': 'clr-namespace:System;assembly=mscorlib',
        'xmlns:transformCallback':
-       'Microsoft.Cpp.Dev10.ConvertPropertyCallback'})
-  root = doc.Root()
+       'Microsoft.Cpp.Dev10.ConvertPropertyCallback'
+      }
+  ]
   for rule in msbuild_rules:
-    doc.AppendChildren(root, [
+    content.extend([
         ['Rule',
          {'Name': rule.rule_name,
           'PageTemplate': 'tool',
@@ -2302,7 +2299,7 @@ def _GenerateMSBuildRuleXmlFile(xml_path, msbuild_rules):
          }
         ]
     ])
-  doc.WriteIfChanged(xml_path)
+  easy_xml.WriteXmlIfChanged(content, xml_path)
 
 
 def _GetConfigurationAndPlatform(name, settings):
@@ -2739,19 +2736,12 @@ def _GenerateMSBuildProject(project, options, version):
 
   _GenerateMSBuildFiltersFile(project.path + '.filters', sources,
                               extension_to_rule_name)
-  _VerifySourcesExist(sources, gyp_dir)
+  # _VerifySourcesExist(sources, gyp_dir)
 
   for (_, configuration) in configurations.iteritems():
     _FinalizeMSBuildSettings(spec, configuration)
 
   # Add attributes to root element
-
-  doc = easy_xml.EasyXml(
-      'Project',
-      {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003',
-       'ToolsVersion': version.ProjectVersion(),
-       'DefaultTargets': 'Build'
-      })
 
   import_default_section = [
       ['Import', {'Project': r'$(VCTargetsPath)\Microsoft.Cpp.Default.props'}]]
@@ -2761,7 +2751,14 @@ def _GenerateMSBuildProject(project, options, version):
       ['Import', {'Project': r'$(VCTargetsPath)\Microsoft.Cpp.targets'}]]
   macro_section = [['PropertyGroup', {'Label': 'UserMacros'}]]
 
-  content = _GetMSBuildProjectConfigurations(configurations)
+  content = [
+      'Project',
+      {'xmlns': 'http://schemas.microsoft.com/developer/msbuild/2003',
+       'ToolsVersion': version.ProjectVersion(),
+       'DefaultTargets': 'Build'
+      }]
+
+  content += _GetMSBuildProjectConfigurations(configurations)
   content += _GetMSBuildGlobalProperties(spec, project.guid, gyp_file_name)
   content += import_default_section
   content += _GetMSBuildConfigurationDetails(spec, project.build_file)
@@ -2782,8 +2779,7 @@ def _GenerateMSBuildProject(project, options, version):
   # TODO(jeanluc) File a bug to get rid of runas.  We had in MSVS:
   # has_run_as = _WriteMSVSUserFile(project.path, version, spec)
 
-  doc.AppendChildren(doc.Root(), content)
-  doc.WriteIfChanged(project.path)
+  easy_xml.WriteXmlIfChanged(content, project.path)
 
 
 def _GetMSBuildExtensions(props_files_of_rules):
