@@ -53,8 +53,9 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
   // But this is only used for status, so it is better to have visibility.
   status.conflicting_count += snapshot->num_conflicting_updates;
 
-  status.syncing |= snapshot->syncer_status.syncing;
-  status.syncing = snapshot->has_more_to_sync && snapshot->is_silenced;
+  status.syncing |= snapshot->syncer_status.sync_in_progress;
+  status.syncing =
+      snapshot->has_more_to_sync && snapshot->is_silenced;
   status.initial_sync_ended |= snapshot->is_share_usable;
   status.syncer_stuck |= snapshot->syncer_status.syncer_stuck;
 

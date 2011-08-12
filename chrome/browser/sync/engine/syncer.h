@@ -85,6 +85,16 @@ class Syncer {
                          SyncerStep first_step,
                          SyncerStep last_step);
 
+  class ScopedSyncStartStopTracker {
+   public:
+    explicit ScopedSyncStartStopTracker(sessions::SyncSession* session);
+    ~ScopedSyncStartStopTracker();
+   private:
+    sessions::SyncSession* session_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedSyncStartStopTracker);
+  };
+
  private:
   // Implements the PROCESS_CLIENT_COMMAND syncer step.
   void ProcessClientCommand(sessions::SyncSession* session);

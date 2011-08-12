@@ -54,6 +54,15 @@ using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::ConflictProgress;
 
+Syncer::ScopedSyncStartStopTracker::ScopedSyncStartStopTracker(
+    sessions::SyncSession* session) : session_(session) {
+  session_->status_controller()->SetSyncInProgressAndUpdateStartTime(true);
+}
+
+Syncer::ScopedSyncStartStopTracker::~ScopedSyncStartStopTracker() {
+  session_->status_controller()->SetSyncInProgressAndUpdateStartTime(false);
+}
+
 Syncer::Syncer()
     : early_exit_requested_(false),
       pre_conflict_resolution_closure_(NULL) {
@@ -83,6 +92,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
   ScopedSessionContextConflictResolver scoped(session->context(),
                                               &resolver_);
+
+  ScopedSyncStartStopTracker start_stop_tracker(session);
   SyncerStep current_step = first_step;
 
   SyncerStep next_step = current_step;
@@ -168,8 +179,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       // These two steps are combined since they are executed within the same
       // write transaction.
       case BUILD_COMMIT_REQUEST: {
-        session->status_controller()->set_syncing(true);
-
         VLOG(1) << "Processing Commit Request";
         ScopedDirLookup dir(session->context()->directory_manager(),
                             session->context()->account_name());

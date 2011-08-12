@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +46,7 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   SyncerStatus status;
   status.invalid_store = true;
   status.syncer_stuck = false;
-  status.syncing = true;
+  status.sync_in_progress = true;
   status.num_successful_commits = 5;
   status.num_successful_bookmark_commits = 10;
   status.num_updates_downloaded_total = 100;
@@ -57,7 +58,7 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   EXPECT_EQ(9u, value->size());
   ExpectDictBooleanValue(status.invalid_store, *value, "invalidStore");
   ExpectDictBooleanValue(status.syncer_stuck, *value, "syncerStuck");
-  ExpectDictBooleanValue(status.syncing, *value, "syncing");
+  ExpectDictBooleanValue(status.sync_in_progress, *value, "syncInProgress");
   ExpectDictIntegerValue(status.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(status.num_successful_bookmark_commits,
@@ -160,7 +161,8 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kNumConflictingUpdates,
                                kDidCommitItems,
                                source,
-                               0);
+                               0,
+                               base::Time::Now());
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(14u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,

@@ -2149,6 +2149,8 @@
         'browser/sync/profile_sync_service_harness.cc',
         'browser/sync/profile_sync_service_harness.h',
         'browser/sync/profile_sync_service_observer.h',
+        'browser/sync/retry_verifier.cc',
+        'browser/sync/retry_verifier.h',
         'browser/sync/signin_manager.cc',
         'browser/sync/signin_manager.h',
         'browser/sync/sync_setup_flow.cc',

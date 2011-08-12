@@ -437,6 +437,16 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertEqual(pickle.loads(marker.token), (3000, 1))
     self.assertFalse(marker.HasField('timestamp_token_for_migration'))
 
+  def testCheckRaiseTransientError(self):
+    testserver = chromiumsync.TestServer()
+    http_code, raw_respon = testserver.HandleSetTransientError()
+    self.assertEqual(http_code, 200)
+    try:
+      testserver.CheckTransientError()
+      self.fail('Should have raised transient error exception')
+    except chromiumsync.TransientError:
+      self.assertTrue(testserver.transient_error)
+
   def testUpdateSieveStoreMigration(self):
     autofill = autofill_specifics_pb2.autofill
     theme = theme_specifics_pb2.theme

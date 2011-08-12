@@ -101,6 +101,10 @@ class StoreBirthdayError(Error):
   """The client sent a birthday that doesn't correspond to this server."""
 
 
+class TransientError(Error):
+  """The client would be sent a transient error."""
+
+
 def GetEntryType(entry):
   """Extract the sync type from a SyncEntry.
 
@@ -877,6 +881,7 @@ class TestServer(object):
     self.clients = {}
     self.client_name_generator = ('+' * times + chr(c)
         for times in xrange(0, sys.maxint) for c in xrange(ord('A'), ord('Z')))
+    self.transient_error = False
 
   def GetShortClientName(self, query):
     parsed = cgi.parse_qs(query[query.find('?')+1:])
@@ -894,6 +899,11 @@ class TestServer(object):
       return
     if self.account.StoreBirthday() != request.store_birthday:
       raise StoreBirthdayError
+
+  def CheckTransientError(self):
+    """Raises TransientError if transient_error variable is set."""
+    if self.transient_error:
+      raise TransientError
 
   def HandleMigrate(self, path):
     query = urlparse.urlparse(path)[4]
@@ -923,6 +933,12 @@ class TestServer(object):
         200,
         '<html><title>Birthday error</title><H1>Birthday error</H1></html>')
 
+  def HandleSetTransientError(self):
+    self.transient_error = True
+    return (
+        200,
+        '<html><title>Transient error</title><H1>Transient error</H1></html>')
+
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.
 
@@ -951,6 +967,7 @@ class TestServer(object):
       response.error_code = sync_pb2.ClientToServerResponse.SUCCESS
       self.CheckStoreBirthday(request)
       response.store_birthday = self.account.store_birthday
+      self.CheckTransientError();
 
       print_context('->')
 
@@ -987,6 +1004,12 @@ class TestServer(object):
       response = sync_pb2.ClientToServerResponse()
       response.store_birthday = self.account.store_birthday
       response.error_code = sync_pb2.ClientToServerResponse.NOT_MY_BIRTHDAY
+      return (200, response.SerializeToString())
+    except TransientError as error:
+      print_context('<-')
+      print 'TRANSIENT_ERROR'
+      response.store_birthday = self.account.store_birthday
+      response.error_code = sync_pb2.ClientToServerResponse.TRANSIENT_ERROR
       return (200, response.SerializeToString())
     finally:
       self.account_lock.release()

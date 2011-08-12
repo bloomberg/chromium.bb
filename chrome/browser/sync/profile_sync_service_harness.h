@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/retry_verifier.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 class Profile;
@@ -33,7 +34,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
                             const std::string& username,
                             const std::string& password);
 
-  virtual ~ProfileSyncServiceHarness() {}
+  virtual ~ProfileSyncServiceHarness();
 
   // Creates a ProfileSyncServiceHarness object and attaches it to |profile|, a
   // profile that is assumed to have been signed into sync in the past. Caller
@@ -75,6 +76,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Blocks the caller until the sync has been disabled for this client. Returns
   // true if sync is disabled.
   bool AwaitSyncDisabled(const std::string& reason);
+
+  // Blocks the caller until exponential backoff has been verified to happen.
+  bool AwaitExponentialBackoffVerification();
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
@@ -190,6 +194,14 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
     // The sync client is waiting for the sync to be disabled for this client.
     WAITING_FOR_SYNC_DISABLED,
 
+    // The sync client is in the exponential backoff mode. Verify that
+    // backoffs are triggered correctly.
+    WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION,
+
+    // The client verification is complete. We don't care about the state of
+    // the syncer any more.
+    WAITING_FOR_NOTHING,
+
     // The sync client needs a passphrase in order to decrypt data.
     SET_PASSPHRASE_FAILED,
 
@@ -261,6 +273,10 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
 
   // Used for logging.
   const std::string profile_debug_name_;
+
+  // Keeps track of the number of attempts at exponential backoff and its
+  // related bookkeeping information for verification.
+  browser_sync::RetryVerifier retry_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };

@@ -120,7 +120,8 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->TotalNumConflictingItems(),
       status_controller_->did_commit_items(),
       source_,
-      dir->GetEntriesCount());
+      dir->GetEntriesCount(),
+      status_controller_->sync_start_time());
 }
 
 SyncSourceInfo SyncSession::TestAndSetSource() {

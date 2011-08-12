@@ -75,7 +75,7 @@ void SyncBackendHostForProfileSyncTest::
   core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
-      SyncSourceInfo(), 0));
+      SyncSourceInfo(), 0, base::Time::Now()));
 }
 
 sync_api::HttpPostProviderFactory*
@@ -116,7 +116,7 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
         sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
-        SyncSourceInfo(), 0));
+        SyncSourceInfo(), 0, base::Time::Now()));
   }
 }
 

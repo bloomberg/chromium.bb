@@ -524,6 +524,14 @@ void LiveSyncTest::TriggerBirthdayError() {
             browser()->GetSelectedTabContents()->GetTitle());
 }
 
+void LiveSyncTest::TriggerTransientError() {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/transienterror";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ(ASCIIToUTF16("Transient error"),
+            browser()->GetSelectedTabContents()->GetTitle());
+}
+
 void LiveSyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
                                   const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);

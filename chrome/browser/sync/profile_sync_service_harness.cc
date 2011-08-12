@@ -25,8 +25,12 @@
 
 using browser_sync::sessions::SyncSessionSnapshot;
 
+// TODO(rsimha): Remove the following lines once crbug.com/91863 is fixed.
 // The amount of time for which we wait for a live sync operation to complete.
 static const int kLiveSyncOperationTimeoutMs = 45000;
+
+// The amount of time we wait for test cases that verify exponential backoff.
+static const int kExponentialBackoffVerificationTimeoutMs = 60000;
 
 // Simple class to implement a timeout using PostDelayedTask.  If it is not
 // aborted before picked up by a message queue, then it asserts with the message
@@ -106,6 +110,8 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     wait_state_ = FULLY_SYNCED;
   }
 }
+
+ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {}
 
 // static
 ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
@@ -327,6 +333,17 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       }
       break;
     }
+    case WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION: {
+      VLOG(1) << GetClientInfoString(
+                     "WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION");
+      const browser_sync::sessions::SyncSessionSnapshot *snap =
+          GetLastSessionSnapshot();
+      CHECK(snap);
+      retry_verifier_.VerifyRetryInterval(*snap);
+      if (retry_verifier_.done())
+        SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
+      break;
+    }
     case SERVER_UNREACHABLE: {
       VLOG(1) << GetClientInfoString("SERVER_UNREACHABLE");
       if (GetStatus().server_reachable) {
@@ -350,6 +367,12 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case SYNC_DISABLED: {
       // Syncing is disabled for the client. There is nothing to do.
       VLOG(1) << GetClientInfoString("SYNC_DISABLED");
+      break;
+    }
+    case WAITING_FOR_NOTHING: {
+      // We don't care about the state of the syncer for the rest of the test
+      // case.
+      VLOG(1) << GetClientInfoString("WAITING_FOR_NOTHING");
       break;
     }
     default:
@@ -475,6 +498,17 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled(const std::string& reason) {
   wait_state_ = WAITING_FOR_SYNC_DISABLED;
   AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
   return wait_state_ == SYNC_DISABLED;
+}
+
+bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
+  const browser_sync::sessions::SyncSessionSnapshot *snap =
+      GetLastSessionSnapshot();
+  CHECK(snap);
+  retry_verifier_.Initialize(*snap);
+  wait_state_ = WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION;
+  AwaitStatusChangeWithTimeout(kExponentialBackoffVerificationTimeoutMs,
+      "Verify Exponential backoff");
+  return (retry_verifier_.Succeeded());
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(

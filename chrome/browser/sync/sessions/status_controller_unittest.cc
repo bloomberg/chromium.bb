@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,9 +60,9 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.set_syncer_stuck(false);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
-  status.set_syncing(true);
+  status.SetSyncInProgressAndUpdateStartTime(true);
   EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.set_syncing(false);
+  status.SetSyncInProgressAndUpdateStartTime(false);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
   status.increment_num_successful_commits();
@@ -135,9 +135,9 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_syncer_stuck(true);
   EXPECT_TRUE(status.syncer_status().syncer_stuck);
 
-  EXPECT_FALSE(status.syncer_status().syncing);
-  status.set_syncing(true);
-  EXPECT_TRUE(status.syncer_status().syncing);
+  EXPECT_FALSE(status.syncer_status().sync_in_progress);
+  status.SetSyncInProgressAndUpdateStartTime(true);
+  EXPECT_TRUE(status.syncer_status().sync_in_progress);
 
   for (int i = 0; i < 14; i++)
     status.increment_num_successful_commits();

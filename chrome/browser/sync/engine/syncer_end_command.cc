@@ -15,7 +15,6 @@ SyncerEndCommand::~SyncerEndCommand() {}
 
 void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   // Always send out a cycle ended notification, regardless of end-state.
-  session->status_controller()->set_syncing(false);
   SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
   sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
   event.snapshot = &snapshot;

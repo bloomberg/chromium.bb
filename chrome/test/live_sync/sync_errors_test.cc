@@ -31,3 +31,18 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   SetTitle(0, node2, L"new_title2");
   ASSERT_TRUE(GetClient(0)->AwaitSyncDisabled("Birthday error."));
 }
+
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, TransientErrorTest) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
+  SetTitle(0, node1, L"new_title1");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
+  TriggerTransientError();
+
+  // Now make one more change so we will do another sync.
+  const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
+  SetTitle(0, node2, L"new_title2");
+  ASSERT_TRUE(
+      GetClient(0)->AwaitExponentialBackoffVerification());
+}

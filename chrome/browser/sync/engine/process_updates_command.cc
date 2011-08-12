@@ -67,9 +67,6 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   status->set_num_consecutive_errors(0);
 
   status->mutable_update_progress()->ClearVerifiedUpdates();
-
-  // TODO(nick): The following line makes no sense to me.
-  status->set_syncing(true);
   return;
 }
 

@@ -70,7 +70,7 @@ struct SyncerStatus {
   bool invalid_store;
   // True iff we're stuck.
   bool syncer_stuck;
-  bool syncing;
+  bool sync_in_progress;
   int num_successful_commits;
   // This is needed for monitoring extensions activity.
   int num_successful_bookmark_commits;
@@ -130,7 +130,8 @@ struct SyncSessionSnapshot {
       int num_conflicting_updates,
       bool did_commit_items,
       const SyncSourceInfo& source,
-      size_t num_entries);
+      size_t num_entries,
+      base::Time sync_start_time);
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
@@ -152,6 +153,7 @@ struct SyncSessionSnapshot {
   const bool did_commit_items;
   const SyncSourceInfo source;
   const size_t num_entries;
+  base::Time sync_start_time;
 };
 
 // Tracks progress of conflicts and their resolution using conflict sets.

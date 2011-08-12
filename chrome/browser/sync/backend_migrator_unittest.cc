@@ -55,7 +55,8 @@ class BackendMigratorTest : public TestingBrowserProcessTest {
 
     snap_.reset(new SyncSessionSnapshot(SyncerStatus(), ErrorCounters(),
         0, false, syncable::ModelTypeBitSet(), download_progress_markers,
-        false, false, 0, 0, 0, false, sessions::SyncSourceInfo(), 0));
+        false, false, 0, 0, 0, false, sessions::SyncSourceInfo(), 0,
+        base::Time::Now()));
     EXPECT_CALL(service_, GetLastSessionSnapshot())
         .WillOnce(Return(snap_.get()));
   }

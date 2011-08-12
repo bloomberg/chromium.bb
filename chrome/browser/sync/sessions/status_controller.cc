@@ -105,9 +105,12 @@ void StatusController::set_syncer_stuck(bool syncer_stuck) {
     shared_.syncer_status.mutate()->syncer_stuck = syncer_stuck;
 }
 
-void StatusController::set_syncing(bool syncing) {
-  if (shared_.syncer_status.value().syncing != syncing)
-    shared_.syncer_status.mutate()->syncing = syncing;
+void StatusController::SetSyncInProgressAndUpdateStartTime(
+    bool sync_in_progress) {
+  if (shared_.syncer_status.value().sync_in_progress != sync_in_progress) {
+    shared_.syncer_status.mutate()->sync_in_progress = sync_in_progress;
+    sync_start_time_ = base::Time::Now();
+  }
 }
 
 void StatusController::set_num_successful_bookmark_commits(int value) {
