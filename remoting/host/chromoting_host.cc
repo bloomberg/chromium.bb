@@ -55,6 +55,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       access_verifier_(access_verifier),
       allow_nat_traversal_(allow_nat_traversal),
       state_(kInitial),
+      stopping_recorders_(0),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
       is_it2me_(false) {
@@ -376,13 +377,11 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
     recorder_->RemoveConnection(connection);
     // The recorder only exists to serve the unique authenticated client.
     // If that client has disconnected, then we can kill the recorder.
-    if (client->get()->authenticated()) {
-      recorder_->Stop(NULL);
-      recorder_ = NULL;
-    }
+    if (client->get()->authenticated())
+      StopScreenRecorder();
   }
 
-  // Close the connection to connection just to be safe.
+  // Close the connection to client just to be safe.
   connection->Disconnect();
 
   // Also remove reference to ConnectionToClient from this object.
@@ -538,6 +537,35 @@ void ChromotingHost::ProcessPreAuthentication(
   client->get()->OnAuthorizationComplete(true);
 }
 
+void ChromotingHost::StopScreenRecorder() {
+  DCHECK(MessageLoop::current() == context_->main_message_loop());
+  DCHECK(recorder_.get());
+
+  ++stopping_recorders_;
+  recorder_->Stop(base::Bind(&ChromotingHost::OnScreenRecorderStopped, this));
+  recorder_ = NULL;
+}
+
+void ChromotingHost::OnScreenRecorderStopped() {
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingHost::OnScreenRecorderStopped, this));
+    return;
+  }
+
+  --stopping_recorders_;
+  DCHECK_GE(stopping_recorders_, 0);
+
+  bool stopping;
+  {
+    base::AutoLock auto_lock(lock_);
+    stopping = state_ == kStopping;
+  }
+
+  if (!stopping_recorders_ && stopping)
+    ShutdownFinish();
+}
+
 void ChromotingHost::ShutdownNetwork() {
   if (MessageLoop::current() != context_->network_message_loop()) {
     context_->network_message_loop()->PostTask(
@@ -573,8 +601,8 @@ void ChromotingHost::ShutdownRecorder() {
   }
 
   if (recorder_.get()) {
-    recorder_->Stop(NewRunnableMethod(this, &ChromotingHost::ShutdownFinish));
-  } else {
+    StopScreenRecorder();
+  } else if (!stopping_recorders_) {
     ShutdownFinish();
   }
 }

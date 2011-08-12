@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/screen_recorder.h"
+
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "remoting/base/base_mock_objects.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/screen_recorder.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -184,8 +186,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
       .WillOnce(DoAll(
           FinishSend(),
           StopScreenRecorder(record_,
-                             NewRunnableFunction(&QuitMessageLoop,
-                                                 &message_loop_))))
+                             base::Bind(&QuitMessageLoop, &message_loop_))))
       .RetiresOnSaturation();
 
   // Add the mock client connection to the session.
@@ -197,7 +198,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
 }
 
 TEST_F(ScreenRecorderTest, StopWithoutStart) {
-  record_->Stop(NewRunnableFunction(&QuitMessageLoop, &message_loop_));
+  record_->Stop(base::Bind(&QuitMessageLoop, &message_loop_));
   message_loop_.Run();
 }
 

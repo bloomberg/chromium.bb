@@ -182,6 +182,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ProcessPreAuthentication(
       const scoped_refptr<protocol::ConnectionToClient>& connection);
 
+  void StopScreenRecorder();
+  void OnScreenRecorderStopped();
+
   // The following methods are called during shutdown.
   void ShutdownNetwork();
   void ShutdownRecorder();
@@ -211,6 +214,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // This variable is written on the main thread of ChromotingHostContext
   // and read by jingle thread.
   State state_;
+
+  // Number of screen recorders that are currently being
+  // stopped. Normally set to 0 or 1, but in some cases it may be
+  // greater than 1, particularly if when second client can connect
+  // immidiately after previous one disconnected.
+  int stopping_recorders_;
 
   // Lock is to lock the access to |state_|.
   base::Lock lock_;

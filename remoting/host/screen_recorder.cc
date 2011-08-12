@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -67,9 +68,20 @@ void ScreenRecorder::Start() {
       FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoStart));
 }
 
-void ScreenRecorder::Stop(Task* done_task) {
-  capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoStop, done_task));
+void ScreenRecorder::Stop(const base::Closure& done_task) {
+  if (MessageLoop::current() != capture_loop_) {
+    capture_loop_->PostTask(FROM_HERE, base::Bind(
+        &ScreenRecorder::Stop, this, done_task));
+    return;
+  }
+
+  DCHECK(!done_task.is_null());
+
+  capture_timer_.Stop();
+  is_recording_ = false;
+
+  network_loop_->PostTask(FROM_HERE, base::Bind(
+      &ScreenRecorder::DoStopOnNetworkThread, this, done_task));
 }
 
 void ScreenRecorder::SetMaxRate(double rate) {
@@ -146,30 +158,6 @@ void ScreenRecorder::DoStart() {
 
   // Capture first frame immedately.
   DoCapture();
-}
-
-void ScreenRecorder::DoStop(Task* done_task) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  base::ScopedTaskRunner done_runner(done_task);
-
-  // We might have not started when we receive a stop command, simply run the
-  // task and then return.
-  if (!is_recording_)
-    return;
-
-  capture_timer_.Stop();
-  is_recording_ = false;
-
-  DCHECK_GE(recordings_, 0);
-  if (recordings_) {
-    network_loop_->PostTask(
-        FROM_HERE,
-        NewTracedMethod(this,
-                        &ScreenRecorder::DoStopOnNetworkThread,
-                        done_runner.Release()));
-    return;
-  }
 }
 
 void ScreenRecorder::DoSetMaxRate(double max_rate) {
@@ -341,7 +329,7 @@ void ScreenRecorder::DoRemoveAllClients() {
   connections_.clear();
 }
 
-void ScreenRecorder::DoStopOnNetworkThread(Task* done_task) {
+void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // There could be tasks on the network thread when this method is being
@@ -385,7 +373,7 @@ void ScreenRecorder::DoEncode(
   TraceContext::tracer()->PrintString("Encode Done");
 }
 
-void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
+void ScreenRecorder::DoStopOnEncodeThread(const base::Closure& done_task) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   encoder_stopped_ = true;
@@ -393,8 +381,7 @@ void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
   // When this method is being executed there are no more tasks on encode thread
   // for this object. We can then post a task to capture thread to finish the
   // stop sequence.
-  if (done_task)
-    capture_loop_->PostTask(FROM_HERE, done_task);
+  capture_loop_->PostTask(FROM_HERE, done_task);
 }
 
 void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
