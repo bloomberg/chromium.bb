@@ -27,6 +27,9 @@ const char kSettingDeviceName[] = "deviceName";
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 
+// True, when a new set of draft preview data is required.
+const char kSettingGenerateDraftData[] = "generateDraftData";
+
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 

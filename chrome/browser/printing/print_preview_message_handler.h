@@ -33,10 +33,11 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   void OnRequestPrintPreview();
   void OnDidGetPreviewPageCount(int document_cookie,
                                 int page_count,
-                                bool is_modifiable);
+                                bool is_modifiable,
+                                bool clear_preview_data);
   // |page_number| is 0-based.
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
-  void OnPagesReadyForPreview(
+  void OnMetafileReadyForPrinting(
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewFailed(int document_cookie);
 
