@@ -12,6 +12,9 @@
 //
 //  91533 WIN : gl_min_uniforms = FAIL
 //    This will mark the test as FAILS_*.
+//
+//  91532 MAC : tex_image_and_sub_image_2d_with_video = PASS FAIL
+//    This will mark the test as FLAKY_*.
 
 // -----------------------------------------------------------------------------
 // SLOW TESTS
@@ -29,3 +32,9 @@
 91533 WIN : gl_min_uniforms = FAIL
 91533 WIN : oes_standard_derivatives = FAIL
 91533 WIN : texture_npot = FAIL
+
+// -----------------------------------------------------------------------------
+// FLAKY TESTS
+// -----------------------------------------------------------------------------
+
+92587 MAC : tex_image_and_sub_image_2d_with_video = PASS FAIL
