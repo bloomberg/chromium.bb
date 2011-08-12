@@ -193,8 +193,7 @@ class CompletionCallbackFactory {
   // CompletionCallback to a PPAPI method, the method does not return
   // PP_OK_COMPLETIONPENDING, then you should manually call the
   // CompletionCallback's Run method, or memory will be leaked.
-  // NewCallback() is equivalent to NewOptionalCallback().
-  // TODO(polina): update this comment when this is no longer true.
+  // NewCallback() is equivalent to NewRequiredCallback().
 
   template <typename Method>
   CompletionCallback NewCallback(Method method) {
