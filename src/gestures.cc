@@ -167,9 +167,9 @@ void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
   if (prop_provider_ == pp && prop_provider_data_ == data)
     return;
   if (prop_provider_)
-    interpreter_->Deconfigure(pp, data);
+    interpreter_->Deconfigure(prop_provider_, prop_provider_data_);
   prop_provider_ = pp;
   prop_provider_data_ = data;
   if (prop_provider_)
-    interpreter_->Configure(pp, data);
+    interpreter_->Configure(prop_provider_, prop_provider_data_);
 }
