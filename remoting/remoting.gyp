@@ -338,16 +338,6 @@
         'base/util.cc',
         'base/util.h',
       ],
-      'conditions': [
-        ['target_arch=="arm"', {
-          'sources!': [
-            'base/decoder_vp8.cc',
-            'base/decoder_vp8.h',
-            'base/encoder_vp8.cc',
-            'base/encoder_vp8.h',
-          ],
-        }],
-      ],
     },  # end of target 'remoting_base'
 
     {
@@ -818,12 +808,6 @@
                 ],
               },
             ],
-          ],
-        }],
-        ['target_arch=="arm"', {
-          'sources!': [
-            'base/decoder_vp8_unittest.cc',
-            'base/encoder_vp8_unittest.cc',
           ],
         }],
       ],  # end of 'conditions'

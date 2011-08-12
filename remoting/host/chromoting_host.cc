@@ -415,13 +415,9 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig* config) {
     return EncoderRowBased::CreateVerbatimEncoder();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
     return EncoderRowBased::CreateZlibEncoder();
-  }
-  // TODO(sergeyu): Enable VP8 on ARM builds.
-#if !defined(ARCH_CPU_ARM_FAMILY)
-  else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
     return new remoting::EncoderVp8();
   }
-#endif
 
   return NULL;
 }
