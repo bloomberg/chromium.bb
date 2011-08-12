@@ -201,7 +201,7 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
 
  private:
   // RenderViewHostObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SpellCheckRenderViewObserver, message)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,

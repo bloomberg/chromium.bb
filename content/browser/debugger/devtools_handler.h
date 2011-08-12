@@ -16,7 +16,7 @@ class DevToolsHandler : public RenderViewHostObserver {
   virtual ~DevToolsHandler();
 
   // RenderViewHostObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   void OnForwardToAgent(const IPC::Message& message);
