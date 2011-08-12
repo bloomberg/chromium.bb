@@ -545,6 +545,7 @@ add_config('x86-alex-toolchain', [internal, full, official, {
   'hw_tests_reimage' : False,
   'remote_ip' : '172.18.221.163',
   'use_lkgm' : True,
+  'gs_path': GS_PATH_DEFAULT,
 }])
 
 add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
@@ -555,6 +556,7 @@ add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
   'latest_toolchain' : True,
   'useflags' : ['chrome_internal'],
   'use_lkgm' : True,
+  'gs_path': GS_PATH_DEFAULT,
 }])
 
 add_config('arm-tegra2_seaboard-tangent-private-release',
