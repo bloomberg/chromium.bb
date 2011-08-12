@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/http_post_provider_interface.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/net/http_return.h"
 
 using browser_sync::HttpResponse;
@@ -36,7 +37,12 @@ bool SyncAPIBridgedPost::Init(const char* path,
   http->SetURL(connection_url.c_str(), sync_server_port);
 
   if (!auth_token.empty()) {
-    std::string headers = "Authorization: GoogleLogin auth=" + auth_token;
+    std::string headers;
+    if (browser_sync::IsUsingOAuth()) {
+      headers = "Authorization: OAuth " + auth_token;
+    } else {
+      headers = "Authorization: GoogleLogin auth=" + auth_token;
+    }
     http->SetExtraRequestHeaders(headers.c_str());
   }
 

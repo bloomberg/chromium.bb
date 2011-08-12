@@ -330,7 +330,7 @@ void TokenService::LoadTokensIntoMemory(
         db_tokens.count(kServices[i])) {
       std::string db_token = db_tokens.find(kServices[i])->second;
       if (!db_token.empty()) {
-        VLOG(1) << "Loading " << kServices[i] << "token from DB: " << db_token;
+        VLOG(1) << "Loading " << kServices[i] << " token from DB: " << db_token;
         (*in_memory_tokens)[kServices[i]] = db_token;
         FireTokenAvailableNotification(kServices[i], db_token);
         // Failures are only for network errors.
@@ -371,7 +371,7 @@ void TokenService::LoadTokensIntoMemory(
         db_tokens.count(kOAuthServices[i])) {
       std::string db_token = db_tokens.find(kOAuthServices[i])->second;
       if (!db_token.empty()) {
-        VLOG(1) << "Loading " << kOAuthServices[i] << "token from DB: "
+        VLOG(1) << "Loading " << kOAuthServices[i] << " OAuth token from DB: "
                 << db_token;
         (*in_memory_tokens)[kOAuthServices[i]] = db_token;
         FireTokenAvailableNotification(kOAuthServices[i], db_token);

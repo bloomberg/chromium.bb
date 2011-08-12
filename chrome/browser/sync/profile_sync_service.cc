@@ -36,6 +36,7 @@
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -117,11 +118,9 @@ bool ProfileSyncService::AreCredentialsAvailable() {
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
   if (!cros_user_.empty() || !signin_->GetUsername().empty()) {
     // TODO(chron): Verify CrOS unit test behavior.
-    if (profile()->GetTokenService() &&
+    return profile()->GetTokenService() &&
         profile()->GetTokenService()->HasTokenForService(
-            GaiaConstants::kSyncService)) {
-      return true;
-    }
+            browser_sync::SyncServiceName());
   }
   return false;
 }
@@ -353,11 +352,11 @@ void ProfileSyncService::ClearPreferences() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = !cros_user_.empty() ? cros_user_ : signin_->GetUsername();
+  credentials.email = cros_user_.empty() ? signin_->GetUsername() : cros_user_;
   DCHECK(!credentials.email.empty());
   TokenService* service = profile_->GetTokenService();
   credentials.sync_token = service->GetTokenForService(
-      GaiaConstants::kSyncService);
+      browser_sync::SyncServiceName());
   return credentials;
 }
 
@@ -1344,7 +1343,13 @@ void ProfileSyncService::Observe(int type,
       // update the implicit passphrase (idempotent if the passphrase didn't
       // actually change), or the user has an explicit passphrase set so this
       // becomes a no-op.
-      SetPassphrase(successful->password, false, true);
+      if (browser_sync::IsUsingOAuth()) {
+        // TODO(rickcam): Bug 92323: Fetch password through special Gaia request
+        DCHECK(successful->password.empty());
+        LOG(WARNING) << "Not initializing sync passphrase.";
+      } else {
+        SetPassphrase(successful->password, false, true);
+      }
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
@@ -1364,7 +1369,6 @@ void ProfileSyncService::Observe(int type,
         if (backend_initialized_) {
           backend_->UpdateCredentials(GetCredentials());
         }
-
         if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart))
           StartUp();
       }

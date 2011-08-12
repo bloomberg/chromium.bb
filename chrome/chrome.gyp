@@ -704,6 +704,8 @@
         'browser/sync/util/logging.h',
         'browser/sync/util/nigori.cc',
         'browser/sync/util/nigori.h',
+        'browser/sync/util/oauth.cc',
+        'browser/sync/util/oauth.h',
         'browser/sync/util/sqlite_utils.cc',
         'browser/sync/util/sqlite_utils.h',
         'browser/sync/util/user_settings.cc',

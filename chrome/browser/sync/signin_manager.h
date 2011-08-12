@@ -116,11 +116,17 @@ class SigninManager : public GaiaAuthConsumer,
 
  private:
   void PrepareForSignin();
+  void PrepareForOAuthSignin();
 
   Profile* profile_;
+
+  // ClientLogin identity.
   std::string username_;
   std::string password_;  // This is kept empty whenever possible.
   bool had_two_factor_error_;
+
+  // OAuth identity.
+  std::string oauth_username_;
 
   void CleanupNotificationRegistration();
 

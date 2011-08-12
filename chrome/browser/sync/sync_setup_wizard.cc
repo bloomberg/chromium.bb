@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -93,9 +94,9 @@ bool SyncSetupWizard::IsVisible() const {
 
 // static
 SyncSetupWizard::State SyncSetupWizard::GetLoginState() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSyncOAuth))
-    return SyncSetupWizard::OAUTH_LOGIN;
-  return SyncSetupWizard::GAIA_LOGIN;
+  return browser_sync::IsUsingOAuth() ?
+      SyncSetupWizard::OAUTH_LOGIN :
+      SyncSetupWizard::GAIA_LOGIN;
 }
 
 void SyncSetupWizard::Focus() {
