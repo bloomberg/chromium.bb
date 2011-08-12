@@ -117,7 +117,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
   extension_tracker_.reset(new AutomationExtensionTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));
   window_tracker_.reset(new AutomationWindowTracker(this));
-  new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this));
+  new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this, profile));
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
   extension_test_result_observer_.reset(
       new ExtensionTestResultNotificationObserver(this));

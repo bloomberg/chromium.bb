@@ -469,7 +469,7 @@ void SessionService::Init() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       NotificationService::AllSources());

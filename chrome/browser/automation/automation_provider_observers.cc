@@ -160,10 +160,11 @@ void InitialLoadObserver::ConditionMet() {
     automation_->OnInitialTabLoadsComplete();
 }
 
-NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation)
+NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation,
+                                           Profile* profile)
     : automation_(automation->AsWeakPtr()) {
   registrar_.Add(this, chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
 }
 
 NewTabUILoadObserver::~NewTabUILoadObserver() {
@@ -763,9 +764,9 @@ BrowserOpenedNotificationObserver::BrowserOpenedNotificationObserver(
       new_window_id_(extension_misc::kUnknownWindowId),
       for_browser_command_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 BrowserOpenedNotificationObserver::~BrowserOpenedNotificationObserver() {
@@ -859,9 +860,9 @@ BrowserCountChangeNotificationObserver::BrowserCountChangeNotificationObserver(
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 BrowserCountChangeNotificationObserver::

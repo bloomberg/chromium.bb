@@ -58,6 +58,7 @@ class Browser;
 class Extension;
 class ExtensionProcessManager;
 class NavigationController;
+class Profile;
 class RenderViewHost;
 class SavePackage;
 class TabContents;
@@ -134,7 +135,8 @@ class NetworkManagerInitObserver
 // Watches for NewTabUI page loads for performance timing purposes.
 class NewTabUILoadObserver : public NotificationObserver {
  public:
-  explicit NewTabUILoadObserver(AutomationProvider* automation);
+  explicit NewTabUILoadObserver(AutomationProvider* automation,
+                                Profile* profile);
   virtual ~NewTabUILoadObserver();
 
   virtual void Observe(int type,

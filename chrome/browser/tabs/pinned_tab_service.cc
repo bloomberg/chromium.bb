@@ -27,7 +27,7 @@ PinnedTabService::PinnedTabService(Profile* profile)
       got_exiting_(false),
       has_normal_browser_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
                  NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_APP_EXITING,

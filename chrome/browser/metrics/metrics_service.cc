@@ -535,7 +535,7 @@ bool MetricsService::reporting_active() const {
 void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
                                         NotificationObserver* observer) {
     registrar->Add(observer, chrome::NOTIFICATION_BROWSER_OPENED,
-                   NotificationService::AllSources());
+                   NotificationService::AllBrowserContextsAndSources());
     registrar->Add(observer, chrome::NOTIFICATION_BROWSER_CLOSED,
                    NotificationService::AllSources());
     registrar->Add(observer, content::NOTIFICATION_USER_ACTION,

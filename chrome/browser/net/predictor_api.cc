@@ -309,7 +309,7 @@ class OffTheRecordObserver : public NotificationObserver {
       registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                      NotificationService::AllSources());
       registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                     NotificationService::AllSources());
+                     NotificationService::AllBrowserContextsAndSources());
     }
   }
 
