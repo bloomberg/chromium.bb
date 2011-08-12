@@ -1,6 +1,0 @@
-include_rules = [
-  "-chrome",
-  "+chrome/browser/sync/protocol",
-  "+chrome/browser/sync/syncable/model_type.h",
-]
-

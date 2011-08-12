@@ -3,10 +3,10 @@ include_rules = [
   "+chrome/test/base",
   "+chrome/test/sync",
 
-  "+chrome/browser/sync/engine",
-  "+chrome/browser/sync/protocol",
-  "+chrome/browser/sync/sessions",
-  "+chrome/browser/sync/syncable",
-  "+chrome/browser/sync/util",
+  # TODO(tim): Restrict this further.
+  "+chrome/browser/sync",
+  "-chrome/browser/sync/api",
+  "-chrome/browser/sync/glue",
+  "-chrome/browser/sync/notifier",
 ]
 

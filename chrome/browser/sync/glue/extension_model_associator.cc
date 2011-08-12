@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
