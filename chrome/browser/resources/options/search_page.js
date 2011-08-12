@@ -545,7 +545,8 @@ cr.define('options', function() {
           }
           break;
         case FORWARD_SLASH_KEY_CODE:
-          if (!/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName)) {
+          if (!/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName) &&
+              !event.ctrlKey && !event.altKey) {
             this.searchField.focus();
             event.stopPropagation();
             event.preventDefault();
