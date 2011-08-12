@@ -84,6 +84,8 @@ deps = {
         Var('git_url') + '/chromium/deps/speex.git@0c94ee62322ce3272783cafda02b3ee172c45553',
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
+    'src/third_party/v8-i18n':
+        Var('git_url') + '/external/v8-i18n.git@8b6c2f831db1ac1420f088c83b0393077fb99b9a',
     'src/third_party/webdriver/python/selenium':
         Var('git_url') + '/external/selenium/py/selenium.git@b05610b1d6530b4c79eae751666f96bcf3996e81',
     'src/third_party/webgl_conformance':
