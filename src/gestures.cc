@@ -150,11 +150,12 @@ void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
                                           void* data) {
   if (timer_provider_ == tp && timer_provider_data_ == data)
     return;
-  if (timer_provider_ && interpret_timer_)
+  if (timer_provider_ && interpret_timer_) {
     timer_provider_->free_fn(timer_provider_data_, interpret_timer_);
+    interpret_timer_ = NULL;
+  }
   if (interpret_timer_)
     Log("How was interpret_timer_ not NULL?!");
-  interpret_timer_ = NULL;
   timer_provider_ = tp;
   timer_provider_data_ = data;
   if (timer_provider_)
