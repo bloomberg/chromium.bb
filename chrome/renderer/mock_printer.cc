@@ -94,12 +94,10 @@ void MockPrinter::ScriptedPrint(int cookie,
 }
 
 void MockPrinter::UpdateSettings(int cookie,
-                                 PrintMsg_PrintPages_Params* params,
-                                 const std::vector<int>& pages) {
+                                 PrintMsg_PrintPages_Params* params) {
   EXPECT_EQ(document_cookie_, cookie);
 
   memset(params, 0, sizeof(PrintMsg_PrintPages_Params));
-  params->pages = pages;
   SetPrintParams(&(params->params));
   printer_status_ = PRINTER_PRINTING;
 }

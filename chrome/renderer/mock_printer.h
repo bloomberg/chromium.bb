@@ -75,8 +75,7 @@ class MockPrinter {
                      int expected_pages_count,
                      bool has_selection,
                      PrintMsg_PrintPages_Params* settings);
-  void UpdateSettings(int cookie, PrintMsg_PrintPages_Params* params,
-                      const std::vector<int>& page_range_array);
+  void UpdateSettings(int cookie, PrintMsg_PrintPages_Params* params);
   void SetPrintedPagesCount(int cookie, int number_pages);
   void PrintPage(const PrintHostMsg_DidPrintPage_Params& params);
 
