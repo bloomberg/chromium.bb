@@ -188,7 +188,7 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
   DCHECK(context_->IsUIThread());
 
-  if (start && ! continue_timer_started_) {
+  if (start && !continue_timer_started_) {
     continue_timer_target_time_ = base::Time::Now() +
         base::TimeDelta::FromMilliseconds(kContinueWindowTimeoutMs);
     proxy_->CallOnUIThreadDelayed(
@@ -208,6 +208,7 @@ void DesktopEnvironment::ContinueWindowTimerFunc() {
   if (continue_timer_target_time_ > base::Time::Now())
     return;
 
+  continue_timer_started_ = false;
   host_->PauseSession(true);
   ShowContinueWindow(true);
 }
