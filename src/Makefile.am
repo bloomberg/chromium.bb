@@ -37,12 +37,12 @@ AM_CFLAGS = $(GCC_CFLAGS)
 protocoldir = $(top_srcdir)/protocol
 
 if ENABLE_SCANNER
-wayland_scanner = $(top_builddir)/wayland/wayland-scanner
+wayland_scanner = $(top_builddir)/src/wayland-scanner
 else
 wayland_scanner = wayland-scanner
 endif
 
-include $(top_srcdir)/wayland/scanner.mk
+include $(top_srcdir)/src/scanner.mk
 
 if ENABLE_SCANNER
 bin_PROGRAMS = wayland-scanner

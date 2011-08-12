@@ -48,7 +48,7 @@ AC_SUBST(EXPAT_LIBS)
 
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
-		 wayland/Makefile
-		 wayland/wayland-server.pc
-		 wayland/wayland-client.pc])
+		 src/Makefile
+		 src/wayland-server.pc
+		 src/wayland-client.pc])
 AC_OUTPUT
