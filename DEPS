@@ -143,6 +143,11 @@ deps = {
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
+  # TODO(cira): Replace http://v8-i18n.googlecode.com/svn with
+  # Var("googlecode_url") once the golo-mirror is setup.
+  "src/third_party/v8-i18n":
+    "http://v8-i18n.googlecode.com/svn" + "/trunk@4",
+
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@93490",
 
