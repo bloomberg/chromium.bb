@@ -63,6 +63,7 @@
       'plugins_check',
       'popups',
       'prefs',
+      'pyauto_webdriver',
       'search_engines',
       'shortcuts',
       'special_tabs',

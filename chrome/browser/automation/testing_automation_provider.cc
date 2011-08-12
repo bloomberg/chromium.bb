@@ -78,6 +78,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -2213,6 +2214,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
   handler_map["UpdateExtensionsNow"] =
       &TestingAutomationProvider::UpdateExtensionsNow;
+  handler_map["CreateNewAutomationProvider"] =
+      &TestingAutomationProvider::CreateNewAutomationProvider;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -6004,6 +6007,28 @@ void TestingAutomationProvider::GetChromeDriverAutomationVersion(
   DictionaryValue reply_dict;
   reply_dict.SetInteger("version", automation::kChromeDriverAutomationVersion);
   AutomationJSONReply(this, reply_message).SendSuccess(&reply_dict);
+}
+
+void TestingAutomationProvider::CreateNewAutomationProvider(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string channel_id;
+  if (!args->GetString("channel_id", &channel_id)) {
+    reply.SendError("'channel_id' missing or invalid");
+    return;
+  }
+
+  // TODO(kkania): Remove this when crbug.com/91311 is fixed.
+  // Named server channels should ideally be created and closed on the file
+  // thread, within the IPC channel code.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  if (!BrowserInit::CreateAutomationProvider<TestingAutomationProvider>(
+          automation::kNamedInterfacePrefix + channel_id, profile_, 0)) {
+    reply.SendError("Failed to initialize channel: " + channel_id);
+    return;
+  }
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

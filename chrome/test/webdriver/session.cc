@@ -77,9 +77,7 @@ Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-Error* Session::Init(const FilePath& browser_exe,
-                     const FilePath& user_data_dir,
-                     const CommandLine& options) {
+Error* Session::Init(const Automation::BrowserOptions& options) {
   if (!thread_.Start()) {
     delete this;
     return new Error(kUnknownError, "Cannot start session thread");
@@ -89,8 +87,6 @@ Error* Session::Init(const FilePath& browser_exe,
   RunSessionTask(NewRunnableMethod(
       this,
       &Session::InitOnSessionThread,
-      browser_exe,
-      user_data_dir,
       options,
       &error));
   if (error)
@@ -1124,18 +1120,11 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   done_event->Signal();
 }
 
-void Session::InitOnSessionThread(const FilePath& browser_exe,
-                                  const FilePath& user_data_dir,
-                                  const CommandLine& options,
+
+void Session::InitOnSessionThread(const Automation::BrowserOptions& options,
                                   Error** error) {
   automation_.reset(new Automation());
-  if (browser_exe.empty()) {
-    automation_->Init(options, user_data_dir, error);
-  } else {
-    automation_->InitWithBrowserPath(
-        browser_exe, user_data_dir, options, error);
-  }
-
+  automation_->Init(options, error);
   if (*error)
     return;
 
