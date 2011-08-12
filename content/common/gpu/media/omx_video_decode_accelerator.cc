@@ -281,10 +281,10 @@ void OmxVideoDecodeAccelerator::Decode(
   TRACE_EVENT1("Video Decoder", "OVDA::Decode",
                "Buffer id", bitstream_buffer.id());
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK(!free_input_buffers_.empty());
 
   if (current_state_change_ == RESETTING ||
-      !queued_bitstream_buffers_.empty()) {
+      !queued_bitstream_buffers_.empty() ||
+      free_input_buffers_.empty()) {
     queued_bitstream_buffers_.push_back(bitstream_buffer);
     return;
   }
@@ -517,6 +517,13 @@ void OmxVideoDecodeAccelerator::OnReachedPauseInResetting() {
   FlushIOPorts();
 }
 
+void OmxVideoDecodeAccelerator::DecodeQueuedBitstreamBuffers() {
+  BitstreamBufferList buffers;
+  buffers.swap(queued_bitstream_buffers_);
+  for (size_t i = 0; i < buffers.size(); ++i)
+    Decode(buffers[i]);
+}
+
 void OmxVideoDecodeAccelerator::OnReachedExecutingInResetting() {
   DCHECK_EQ(client_state_, OMX_StatePause);
   client_state_ = OMX_StateExecuting;
@@ -524,14 +531,8 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInResetting() {
   if (!client_)
     return;
 
-  // Drain queued bitstream & picture buffers that were held away from the
-  // decoder during the reset.
-  BitstreamBufferList buffers;
-  buffers.swap(queued_bitstream_buffers_);
-  for (size_t i = 0; i < buffers.size(); ++i)
-    Decode(buffers[i]);
-  // Ensure the Decode() calls above didn't end up re-enqueuing.
-  DCHECK(queued_bitstream_buffers_.empty());
+  // Drain queues of input & output buffers held during the reset.
+  DecodeQueuedBitstreamBuffers();
   for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
     ReusePictureBuffer(queued_picture_buffer_ids_[i]);
   queued_picture_buffer_ids_.clear();
@@ -806,6 +807,8 @@ void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
   if (client_)
     client_->NotifyEndOfBitstreamBuffer(input_buffer_details->second);
   delete input_buffer_details;
+
+  DecodeQueuedBitstreamBuffers();
 }
 
 void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {

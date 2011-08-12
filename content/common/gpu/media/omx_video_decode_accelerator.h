@@ -137,6 +137,9 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void OnOutputPortDisabled();
   void OnOutputPortEnabled();
 
+  // Decode bitstream buffers that were queued (see queued_bitstream_buffers_).
+  void DecodeQueuedBitstreamBuffers();
+
   // IL-client state.
   OMX_STATETYPE client_state_;
   // See comment on CurrentStateChange above.
@@ -175,10 +178,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::set<OMX_BUFFERHEADERTYPE*> fake_output_buffers_;
 
   // Encoded bitstream buffers awaiting decode, queued while the decoder was
-  // Resetting and thus unable to accept them.  This will be empty most of the
-  // time, is populated when Decode()'s are received between Reset() is called
-  // and NotifyResetDone() is sent, and is drained right before
-  // NotifyResetDone() is sent.
+  // unable to accept them.
   typedef std::vector<media::BitstreamBuffer> BitstreamBufferList;
   BitstreamBufferList queued_bitstream_buffers_;
   // Available output picture buffers released during Reset() and awaiting

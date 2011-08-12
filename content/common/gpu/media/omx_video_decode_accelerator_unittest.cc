@@ -462,6 +462,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
                         ClientStateNotification* note,
                         const std::string& encoded_data,
                         int num_NALUs_per_decode,
+                        int num_in_flight_decodes,
                         int reset_after_frame_num,
                         int delete_decoder_state);
   virtual ~EglRenderingVDAClient();
@@ -510,6 +511,8 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   int rendering_window_id_;
   std::string encoded_data_;
   const int num_NALUs_per_decode_;
+  const int num_in_flight_decodes_;
+  int outstanding_decodes_;
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
@@ -531,17 +534,20 @@ EglRenderingVDAClient::EglRenderingVDAClient(
     ClientStateNotification* note,
     const std::string& encoded_data,
     int num_NALUs_per_decode,
+    int num_in_flight_decodes,
     int reset_after_frame_num,
     int delete_decoder_state)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data), num_NALUs_per_decode_(num_NALUs_per_decode),
+      num_in_flight_decodes_(num_in_flight_decodes), outstanding_decodes_(0),
       encoded_data_next_pos_to_decode_(0), next_bitstream_buffer_id_(0),
       note_(note), reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0) {
   CHECK_GT(num_NALUs_per_decode, 0);
+  CHECK_GT(num_in_flight_decodes, 0);
 }
 
 EglRenderingVDAClient::~EglRenderingVDAClient() {
@@ -639,7 +645,8 @@ void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
 void EglRenderingVDAClient::NotifyInitializeDone() {
   SetState(CS_INITIALIZED);
   initialize_done_ticks_ = base::TimeTicks::Now();
-  DecodeNextNALUs();
+  for (int i = 0; i < num_in_flight_decodes_; ++i)
+    DecodeNextNALUs();
 }
 
 void EglRenderingVDAClient::NotifyEndOfStream() {
@@ -649,6 +656,7 @@ void EglRenderingVDAClient::NotifyEndOfStream() {
 void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
   ++num_done_bitstream_buffers_;
+  --outstanding_decodes_;
   DecodeNextNALUs();
 }
 
@@ -730,8 +738,10 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   if (decoder_deleted())
     return;
   if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
-    decoder_->Flush();
-    SetState(CS_FLUSHING);
+    if (outstanding_decodes_ == 0) {
+      decoder_->Flush();
+      SetState(CS_FLUSHING);
+    }
     return;
   }
   size_t start_pos = encoded_data_next_pos_to_decode_;
@@ -749,6 +759,7 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   media::BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_++, dup_handle, end_pos - start_pos);
   decoder_->Decode(bitstream_buffer);
+  ++outstanding_decodes_;
   encoded_data_next_pos_to_decode_ = end_pos;
 
   if (-delete_decoder_state_ == next_bitstream_buffer_id_)
@@ -765,11 +776,12 @@ double EglRenderingVDAClient::frames_per_second() {
 // Test parameters:
 // - Number of NALUs per Decode() call.
 // - Number of concurrent decoders.
+// - Number of concurrent in-flight Decode() calls per decoder.
 // - reset_after_frame_num: see EglRenderingVDAClient ctor.
 // - delete_decoder_phase: see EglRenderingVDAClient ctor.
 class OmxVideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<
-        Tuple4<int, int, ResetPoint, ClientState> > {
+  Tuple5<int, int, int, ResetPoint, ClientState> > {
 };
 
 // Wait for |note| to report a state and if it's not |expected_state| then
@@ -799,8 +811,9 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   const int num_NALUs_per_decode = GetParam().a;
   const size_t num_concurrent_decoders = GetParam().b;
-  const int reset_after_frame_num = GetParam().c;
-  const int delete_decoder_state = GetParam().d;
+  const size_t num_in_flight_decodes = GetParam().c;
+  const int reset_after_frame_num = GetParam().d;
+  const int delete_decoder_state = GetParam().e;
 
   std::string test_video_file;
   int frame_width, frame_height;
@@ -848,6 +861,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     EglRenderingVDAClient* client = new EglRenderingVDAClient(
         &rendering_helper, index,
         note, data_str, num_NALUs_per_decode,
+        num_in_flight_decodes,
         reset_after_frame_num, delete_decoder_state);
     clients[index] = client;
 
@@ -931,41 +945,44 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 INSTANTIATE_TEST_CASE_P(
     MidStreamReset, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, static_cast<ResetPoint>(100), CS_RESET)));
+        MakeTuple(1, 1, 1, static_cast<ResetPoint>(100), CS_RESET)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
 INSTANTIATE_TEST_CASE_P(
     TearDownTiming, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_FLUSHING),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_FLUSHED),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_RESETTING),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-1)),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-10)),
-        MakeTuple(1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-100))));
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-1)),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, static_cast<ClientState>(-10)),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET,
+                  static_cast<ClientState>(-100))));
 
 // Test that decoding various variation works: multiple concurrent decoders and
 // multiple NALUs per Decode() call.
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, 3, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(2, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(3, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(5, 1, END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(8, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 10, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(1, 1, 15, END_OF_STREAM_RESET, CS_RESET),  // Tests queuing.
+        MakeTuple(1, 3, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(2, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(3, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(5, 1, 1, END_OF_STREAM_RESET, CS_RESET),
+        MakeTuple(8, 1, 1, END_OF_STREAM_RESET, CS_RESET),
         // TODO(fischman): decoding more than 15 NALUs at once breaks decode -
         // visual artifacts are introduced as well as spurious frames are
         // delivered (more pictures are returned than NALUs are fed to the
         // decoder).  Increase the "15" below when
         // http://code.google.com/p/chrome-os-partner/issues/detail?id=4378 is
         // fixed.
-        MakeTuple(15, 1, END_OF_STREAM_RESET, CS_RESET)));
+        MakeTuple(15, 1, 1, END_OF_STREAM_RESET, CS_RESET)));
 
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
@@ -973,9 +990,9 @@ INSTANTIATE_TEST_CASE_P(
     ResourceExhaustion, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
         // +0 hack below to promote enum to int.
-        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 0,
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 0, 1,
                   END_OF_STREAM_RESET, CS_RESET),
-        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 1,
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 1, 1,
                   END_OF_STREAM_RESET, CS_RESET)));
 
 // TODO(fischman, vrk): add more tests!  In particular:
