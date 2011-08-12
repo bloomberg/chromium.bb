@@ -639,7 +639,6 @@ class ExecuteTasksFileSystemCallbackDispatcher
   }
 
   virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
-    LOG(WARNING) << "Local file system cant be resolved";
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(function_,
@@ -1212,12 +1211,11 @@ bool RemoveMountFunction::RunImpl() {
 
   std::string mount_path;
   if (!args_->GetString(0, &mount_path)) {
-   return false;
+    return false;
   }
 
   UrlList file_paths;
   file_paths.push_back(GURL(mount_path));
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
@@ -1235,7 +1233,6 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     SendResponse(false);
     return;
   }
-
 #ifdef OS_CHROMEOS
   chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
       files[0].value().c_str());
@@ -1257,7 +1254,7 @@ bool GetMountPointsFunction::RunImpl() {
   base::ListValue *mounts = new base::ListValue();
   result_.reset(mounts);
 
-  #ifdef OS_CHROMEOS
+#ifdef OS_CHROMEOS
   chromeos::MountLibrary *mount_lib =
       chromeos::CrosLibrary::Get()->GetMountLibrary();
   chromeos::MountLibrary::MountPointMap mount_points =
@@ -1270,6 +1267,33 @@ bool GetMountPointsFunction::RunImpl() {
     mounts->Append(MountPointToValue(profile_, it->second));
   }
 #endif
+
+  SendResponse(true);
+  return true;
+}
+
+FormatDeviceFunction::FormatDeviceFunction() {
+}
+
+FormatDeviceFunction::~FormatDeviceFunction() {
+}
+
+bool FormatDeviceFunction::RunImpl() {
+  if (args_->GetSize() != 1) {
+    return false;
+  }
+
+  std::string volume_mount_path;
+  if (!args_->GetString(0, &volume_mount_path)) {
+    NOTREACHED();
+    return false;
+  }
+
+#ifdef OS_CHROMEOS
+  chromeos::CrosLibrary::Get()->GetMountLibrary()->FormatMountedDevice(
+      volume_mount_path.c_str());
+#endif
+
   SendResponse(true);
   return true;
 }
@@ -1426,6 +1450,8 @@ bool FileDialogStringsFunction::RunImpl() {
 
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_DELETE_ONE);
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_DELETE_SOME);
+
+  SET_STRING(IDS_FILE_BROWSER, FORMATTING_WARNING);
 
   SET_STRING(IDS_FILE_BROWSER, SELECT_FOLDER_TITLE);
   SET_STRING(IDS_FILE_BROWSER, SELECT_OPEN_FILE_TITLE);

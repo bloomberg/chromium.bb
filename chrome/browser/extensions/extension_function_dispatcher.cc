@@ -369,6 +369,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<AddMountFunction>();
   RegisterFunction<RemoveMountFunction>();
   RegisterFunction<GetMountPointsFunction>();
+  RegisterFunction<FormatDeviceFunction>();
   RegisterFunction<ViewFilesFunction>();
 
   // Mediaplayer

@@ -31,6 +31,8 @@ class MockMountLibrary : public MountLibrary {
   MOCK_METHOD3(MountPath, void(const char*, MountType,
                                const MountPathOptions&));
   MOCK_METHOD1(UnmountPath, void(const char*));
+  MOCK_METHOD1(FormatUnmountedDevice, void(const char*));
+  MOCK_METHOD1(FormatMountedDevice, void(const char*));
   MOCK_METHOD3(UnmountDeviceRecursive, void(const char*,
       MountLibrary::UnmountDeviceRecursiveCallbackType, void*));
 
