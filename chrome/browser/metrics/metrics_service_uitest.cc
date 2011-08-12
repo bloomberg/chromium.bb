@@ -66,7 +66,14 @@ class MetricsServiceTest : public UITest {
 #endif
 };
 
-TEST_F(MetricsServiceTest, CloseRenderersNormally) {
+#if defined(OS_MACOSX)
+// Flaky across all Mac bots: http://crbug.com/92635
+#define MAYBE_CloseRenderersNormally FLAKY_CloseRenderersNormally
+#else
+#define MAYBE_CloseRenderersNormally CloseRenderersNormally
+#endif
+
+TEST_F(MetricsServiceTest, MAYBE_CloseRenderersNormally) {
   OpenTabs();
   QuitBrowser();
 
