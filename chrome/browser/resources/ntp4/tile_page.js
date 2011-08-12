@@ -391,7 +391,7 @@ cr.define('ntp4', function() {
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
       this.tileGrid_.style.minWidth = (this.gridValues_.minColCount *
-          this.gridValues_.minTileWidth) + 'px';
+          tileWidthFraction(this.gridValues_.minTileWidth)) + 'px';
       this.content_.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.
@@ -612,24 +612,26 @@ cr.define('ntp4', function() {
      * that this function doesn't care where the tiles actually are, and will
      * return an index even for the space between two tiles. This function is
      * effectively the inverse of |positionTile_|.
-     * @param {number} x The x coordinate, in pixels, relative to the top left
-     *     of tileGrid_.
-     * @param {number} y The y coordinate.
+     * @param {number} x The x coordinate, in pixels, relative to the left of
+     *     |this|.
+     * @param {number} y The y coordinate, in pixels, relative to the top of
+     *     |this|.
      * @private
      */
     getWouldBeIndexForPoint_: function(x, y) {
       var grid = this.gridValues_;
       var layout = this.layoutValues_;
 
-      var col = Math.floor((x - layout.leftMargin) / layout.colWidth);
+      var gridClientRect = this.tileGrid_.getBoundingClientRect();
+      var col = Math.floor((x - gridClientRect.left - layout.leftMargin) /
+                           layout.colWidth);
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
 
       if (ntp4.isRTL())
         col = layout.numRowTiles - 1 - col;
 
-      var row = Math.floor(
-          (y - this.tileGrid_.getBoundingClientRect().top) / layout.rowHeight);
+      var row = Math.floor((y - gridClientRect.top) / layout.rowHeight);
       return row * layout.numRowTiles + col;
     },
 
