@@ -323,19 +323,6 @@ void UsageTracker::DidGetClientHostUsage(const std::string& host,
   }
 }
 
-bool UsageTracker::IsWorking() {
-  if (global_usage_.pending_clients > 0)
-    return false;
-  for (std::map<std::string, TrackingInfo>::iterator iter =
-           outstanding_host_usage_.begin();
-       iter != outstanding_host_usage_.end();
-       ++iter) {
-    if (iter->second.pending_clients > 0)
-      return false;
-  }
-  return true;
-}
-
 // ClientUsageTracker ----------------------------------------------------
 
 ClientUsageTracker::ClientUsageTracker(

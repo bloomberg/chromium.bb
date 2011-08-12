@@ -163,6 +163,10 @@ class CallbackQueueMapBase {
     return (callback_map_.find(key) != callback_map_.end());
   }
 
+  bool HasAnyCallbacks() const {
+    return !callback_map_.empty();
+  }
+
   iterator Begin() { return callback_map_.begin(); }
   iterator End() { return callback_map_.end(); }
 

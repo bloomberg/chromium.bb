@@ -42,9 +42,11 @@ class UsageTracker : public QuotaTaskObserver {
   void UpdateUsageCache(QuotaClient::ID client_id,
                         const GURL& origin,
                         int64 delta);
-
   void GetCachedOrigins(std::set<GURL>* origins) const;
-  bool IsWorking();
+  bool IsWorking() const {
+    return global_usage_callbacks_.HasCallbacks() ||
+           host_usage_callbacks_.HasAnyCallbacks();
+  }
 
  private:
   struct TrackingInfo {
