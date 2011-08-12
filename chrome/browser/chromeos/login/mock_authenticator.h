@@ -94,6 +94,7 @@ class MockLoginUtils : public LoginUtils {
                               const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
                               bool using_oauth,
+                              bool has_cookies,
                               Delegate* delegate);
 
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {}

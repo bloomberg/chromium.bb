@@ -247,6 +247,7 @@ class LoginUtilsImpl : public LoginUtils,
       : background_view_(NULL),
         pending_requests_(false),
         using_oauth_(false),
+        has_cookies_(false),
         delegate_(NULL) {
   }
 
@@ -256,6 +257,7 @@ class LoginUtilsImpl : public LoginUtils,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth,
+      bool has_cookies,
       LoginUtils::Delegate* delegate) OVERRIDE;
 
   // Invoked after the tmpfs is successfully mounted.
@@ -363,6 +365,7 @@ class LoginUtilsImpl : public LoginUtils,
   GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
   bool using_oauth_;
+  bool has_cookies_;
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
   scoped_refptr<Authenticator> authenticator_;
   scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
@@ -409,6 +412,7 @@ void LoginUtilsImpl::PrepareProfile(
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests,
     bool using_oauth,
+    bool has_cookies,
     LoginUtils::Delegate* delegate) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
@@ -433,6 +437,7 @@ void LoginUtilsImpl::PrepareProfile(
   credentials_ = credentials;
   pending_requests_ = pending_requests;
   using_oauth_ = using_oauth;
+  has_cookies_ = has_cookies;
   delegate_ = delegate;
 
   // The default profile will have been changed because the ProfileManager
@@ -471,8 +476,8 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   if (using_oauth_) {
-    // Transfer cookies for the new user login.
-    if (!pending_requests_) {
+    // Transfer cookies when user signs in using extension.
+    if (has_cookies_) {
       // Transfer cookies from the profile that was used for authentication.
       // This profile contains cookies that auth extension should have already
       // put in place that will ensure that the newly created session is
@@ -485,10 +490,10 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
     }
     std::string oauth1_token;
     std::string oauth1_secret;
-    if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
-        pending_requests_) {
-      // Verify OAuth access token when we find it in the profile and always if
-      // we are performing parallel authentication.
+    if (!has_cookies_ &&
+        ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret)) {
+      // Verify OAuth access token when we find it in the profile and no cookies
+      // available because user is not signing in using extension.
       authenticator_->VerifyOAuth1AccessToken(oauth1_token, oauth1_secret);
     } else {
       // If we don't have it, fetch OAuth1 access token.

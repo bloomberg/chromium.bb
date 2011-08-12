@@ -114,15 +114,15 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_captcha(const std::string& captcha) { captcha_ = captcha; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
- private:
-
   typedef enum AuthorizationMode {
     // Authorization performed internally by Chrome.
     AUTH_MODE_INTERNAL,
     // Authorization performed by an extension.
     AUTH_MODE_EXTENSION
   } AuthorizationMode;
+  AuthorizationMode auth_mode() const { return auth_mode_; }
 
+ private:
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const NotificationSource& source,

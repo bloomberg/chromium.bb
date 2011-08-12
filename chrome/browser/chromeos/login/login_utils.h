@@ -57,6 +57,7 @@ class LoginUtils {
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
       bool using_oauth,
+      bool has_cookies,
       Delegate* delegate) = 0;
 
   // Invoked after the tmpfs is successfully mounted.

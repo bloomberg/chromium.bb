@@ -344,6 +344,9 @@ void ExistingUserController::OnLoginSuccess(
 
   two_factor_credentials_ = credentials.two_factor;
 
+  bool has_cookies =
+      login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;
+
   // LoginPerformer instance will delete itself once online auth result is OK.
   // In case of failure it'll bring up ScreenLock and ask for
   // correct password/display error message.
@@ -359,6 +362,7 @@ void ExistingUserController::OnLoginSuccess(
                                     credentials,
                                     pending_requests,
                                     using_oauth,
+                                    has_cookies,
                                     this);
 
 

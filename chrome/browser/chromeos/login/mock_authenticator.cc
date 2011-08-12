@@ -90,6 +90,7 @@ void MockLoginUtils::PrepareProfile(
     const GaiaAuthConsumer::ClientLoginResult& res,
     bool pending_requests,
     bool using_oauth,
+    bool has_cookies,
     Delegate* delegate) {
   DCHECK_EQ(expected_username_, username);
   DCHECK_EQ(expected_password_, password);
