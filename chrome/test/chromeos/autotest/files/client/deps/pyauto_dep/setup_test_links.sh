@@ -8,8 +8,10 @@
 
 ln -f -s /opt/google/chrome/chrome $(dirname $0)/chrome
 ln -f -s /opt/google/chrome/chrome.pak $(dirname $0)/chrome.pak
-ln -f -s /opt/google/chrome/locales $(dirname $0)/locales
-ln -f -s /opt/google/chrome/resources $(dirname $0)/resources
+[ -L $(dirname $0)/locales ] || ln -f -s /opt/google/chrome/locales \
+    $(dirname $0)/locales
+[ -L $(dirname $0)/resources ] || ln -f -s /opt/google/chrome/resources \
+    $(dirname $0)/resources
 ln -f -s /opt/google/chrome/resources.pak $(dirname $0)/resources.pak
 
 mkdir -p $(dirname $0)/chromeos
