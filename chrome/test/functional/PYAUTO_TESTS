@@ -99,8 +99,6 @@
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
-      # Crashes browser. crbug.com/89000
-      '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # Flaky: crbug.com/67851
@@ -168,6 +166,8 @@
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # crbug.com/89784
       '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
+      # Crashes browser. crbug.com/89000
+      '-prefs.PrefsTest.testGeolocationPref',
     ],
 
     'mac': [
