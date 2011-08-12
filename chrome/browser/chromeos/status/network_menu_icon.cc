@@ -170,6 +170,7 @@ const SkBitmap* BadgeForNetworkTechnology(const CellularNetwork* cellular) {
 // Sets up and generates an SkBitmap for a Network icon.
 class NetworkIcon {
  public:
+  // Default constructor is used by the status bar icon (NetworkMenuIcon).
   NetworkIcon()
       : state_(STATE_UNKNOWN),
         strength_index_(-1),
@@ -177,9 +178,11 @@ class NetworkIcon {
         top_left_badge_(NULL),
         top_right_badge_(NULL),
         bottom_left_badge_(NULL),
-        bottom_right_badge_(NULL) {
+        bottom_right_badge_(NULL),
+        is_status_bar_(true) {
   }
 
+  // Service path constructor for cached network service icons.
   explicit NetworkIcon(const std::string& service_path)
       : service_path_(service_path),
         state_(STATE_UNKNOWN),
@@ -188,7 +191,8 @@ class NetworkIcon {
         top_left_badge_(NULL),
         top_right_badge_(NULL),
         bottom_left_badge_(NULL),
-        bottom_right_badge_(NULL) {
+        bottom_right_badge_(NULL),
+        is_status_bar_(false) {
   }
 
   ~NetworkIcon() {
@@ -299,7 +303,7 @@ class NetworkIcon {
       case TYPE_WIFI: {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(network);
-        if (wifi->encrypted())
+        if (wifi->encrypted() && !is_status_bar_)
           bottom_right_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
         break;
       }
@@ -399,6 +403,7 @@ class NetworkIcon {
   const SkBitmap* top_right_badge_;
   const SkBitmap* bottom_left_badge_;
   const SkBitmap* bottom_right_badge_;
+  bool is_status_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkIcon);
 };
