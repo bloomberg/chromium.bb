@@ -149,12 +149,13 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     mock_profile_ = new NiceMock<MockTestingProfile>();
     profile_.reset(mock_profile_);
 
-    TabContentsWrapperTestHarness::SetUp();
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
     // Note: we're starting a real IO thread to make sure our DCHECKs that
     // verify which thread is running are actually tested.
     io_thread_.reset(new BrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
+
+    TabContentsWrapperTestHarness::SetUp();
 
     // Inject service classes.
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>());

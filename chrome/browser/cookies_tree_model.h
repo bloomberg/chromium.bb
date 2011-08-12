@@ -26,6 +26,7 @@
 #include "net/base/cookie_monster.h"
 #include "ui/base/models/tree_node_model.h"
 
+class BrowsingDataCookieHelper;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
@@ -545,7 +546,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   };
 
   CookiesTreeModel(
-      net::CookieMonster* cookie_monster_,
+      BrowsingDataCookieHelper* cookie_helper,
       BrowsingDataDatabaseHelper* database_helper,
       BrowsingDataLocalStorageHelper* local_storage_helper,
       BrowsingDataLocalStorageHelper* session_storage_helper,
@@ -599,10 +600,8 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
       FileSystemInfoList;
   typedef std::vector<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoArray;
 
-  void LoadCookies();
-  void LoadCookiesWithFilter(const std::wstring& filter);
-
   void OnAppCacheModelInfoLoaded();
+  void OnCookiesModelInfoLoaded(const CookieList& cookie_list);
   void OnDatabaseModelInfoLoaded(const DatabaseInfoList& database_info);
   void OnLocalStorageModelInfoLoaded(
       const LocalStorageInfoList& local_storage_info);
@@ -615,6 +614,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void OnQuotaModelInfoLoaded(const QuotaInfoArray& quota_info);
 
   void PopulateAppCacheInfoWithFilter(const std::wstring& filter);
+  void PopulateCookieInfoWithFilter(const std::wstring& filter);
   void PopulateDatabaseInfoWithFilter(const std::wstring& filter);
   void PopulateLocalStorageInfoWithFilter(const std::wstring& filter);
   void PopulateSessionStorageInfoWithFilter(const std::wstring& filter);
@@ -625,19 +625,18 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void NotifyObserverBeginBatch();
   void NotifyObserverEndBatch();
 
-  scoped_refptr<net::CookieMonster> cookie_monster_;
-  CookieList all_cookies_;
-
   scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper_;
+  scoped_refptr<BrowsingDataCookieHelper> cookie_helper_;
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper_;
-  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
-  DatabaseInfoList database_info_list_;
-
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
   scoped_refptr<BrowsingDataLocalStorageHelper> session_storage_helper_;
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
+
+  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
+  CookieList cookie_list_;
+  DatabaseInfoList database_info_list_;
   LocalStorageInfoList local_storage_info_list_;
   LocalStorageInfoList session_storage_info_list_;
   IndexedDBInfoList indexed_db_info_list_;

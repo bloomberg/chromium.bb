@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "grit/generated_resources.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 CookiesViewHandler::CookiesViewHandler() : batch_update_(false) {
@@ -144,8 +144,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   if (!cookies_tree_model_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui_);
     cookies_tree_model_.reset(new CookiesTreeModel(
-        profile->GetRequestContext()->DONTUSEME_GetCookieStore()->
-            GetCookieMonster(),
+        new BrowsingDataCookieHelper(profile),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         NULL,

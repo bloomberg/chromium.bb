@@ -617,6 +617,12 @@ class NET_EXPORT CookieMonster::CanonicalCookie {
 
   // Supports the default copy constructor.
 
+  // Creates a canonical cookie from parsed cookie.
+  // Canonicalizes and validates inputs.  May return NULL if an attribute
+  // value is invalid.
+  static CanonicalCookie* Create(const GURL& url,
+                                 const ParsedCookie& pc);
+
   // Creates a canonical cookie from unparsed attribute values.
   // Canonicalizes and validates inputs.  May return NULL if an attribute
   // value is invalid.

@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 #pragma once
 
+#include <set>
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
@@ -16,6 +19,7 @@
 #include "content/common/notification_registrar.h"
 
 class CannedBrowsingDataAppCacheHelper;
+class CannedBrowsingDataCookieHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
@@ -27,7 +31,6 @@ struct ContentSettings;
 
 namespace net {
 class CookieList;
-class CookieMonster;
 class CookieOptions;
 }
 
@@ -205,9 +208,11 @@ class TabSpecificContentSettings : public TabContentsObserver,
     // Empties the container.
     void Reset();
 
-    net::CookieMonster* cookies() const { return cookies_; }
     CannedBrowsingDataAppCacheHelper* appcaches() const {
       return appcaches_;
+    }
+    CannedBrowsingDataCookieHelper* cookies() const {
+      return cookies_;
     }
     CannedBrowsingDataDatabaseHelper* databases() const {
       return databases_;
@@ -230,15 +235,15 @@ class TabSpecificContentSettings : public TabContentsObserver,
     bool empty() const;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
-
-    scoped_refptr<net::CookieMonster> cookies_;
     scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
+    scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
     scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
     scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
     scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
+
+    DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
   };
 
   void AddBlockedResource(ContentSettingsType content_type,
