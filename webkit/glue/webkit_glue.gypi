@@ -114,6 +114,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         'webkit_resources',
         'webkit_strings',
         'webkit_user_agent',
@@ -509,7 +510,6 @@
             ['inside_chromium_build==1 and component=="shared_library"', {
               'dependencies': [
                 '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
                'export_dependent_settings': [
                  '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
