@@ -105,3 +105,12 @@ OutOfProcessPPAPITest.PostMessage
 
 # Flakily times out, http://crbug.com/92527
 NamedInterfaceTest.BasicNamedInterface
+
+# Consistently timing out. http://crbug.com/92630
+AutomationProxyTest.Cookies
+AutomationProxyTest.GetActiveTabIndex
+AutomationProxyTest.GetBrowserWindow
+AutomationProxyTest.GetBrowserWindowCount
+AutomationProxyTest.GetTab
+AutomationProxyTest.GetTabCount
+BookmarksUITest.TwoCommandsOneTab
