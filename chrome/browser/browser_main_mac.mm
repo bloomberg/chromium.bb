@@ -45,6 +45,10 @@ void WarnAboutMinimumSystemRequirements() {
   // Nothing to check for on Mac right now.
 }
 
+void ShowMissingLocaleMessageBox() {
+  // Not called on Mac because we load the locale files differently.
+}
+
 // From browser_main_win.h, stubs until we figure out the right thing...
 
 int DoUninstallTasks(bool chrome_still_running) {

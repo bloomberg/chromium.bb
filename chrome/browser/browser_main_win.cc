@@ -83,6 +83,12 @@ void WarnAboutMinimumSystemRequirements() {
   }
 }
 
+void ShowMissingLocaleMessageBox() {
+  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
+                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+                 MB_OK | MB_ICONERROR | MB_TOPMOST);
+}
+
 void RecordBrowserStartupTime() {
   // Calculate the time that has elapsed from our own process creation.
   FILETIME creation_time = {};

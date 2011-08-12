@@ -30,6 +30,12 @@ namespace net {
 class NetworkChangeNotifier;
 }
 
+namespace chrome_browser {
+// For use by ShowMissingLocaleMessageBox.
+extern const char kMissingLocaleDataTitle[];
+extern const char kMissingLocaleDataMessage[];
+}
+
 // BrowserMainParts:
 // This class contains different "stages" to be executed in |BrowserMain()|,
 // mostly initialization. This is made into a class rather than just functions
@@ -200,6 +206,9 @@ void RecordBreakpadStatusUMA(MetricsService* metrics);
 // Displays a warning message if some minimum level of OS support is not
 // present on the current platform.
 void WarnAboutMinimumSystemRequirements();
+
+// Displays a warning message that we can't find any locale data files.
+void ShowMissingLocaleMessageBox();
 
 // Records the time from our process' startup to the present time in
 // the UMA histogram |metric_name|.

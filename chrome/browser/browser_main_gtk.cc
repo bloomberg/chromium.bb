@@ -179,6 +179,22 @@ void WarnAboutMinimumSystemRequirements() {
   // Nothing to warn about on GTK right now.
 }
 
+void ShowMissingLocaleMessageBox() {
+  GtkWidget* dialog = gtk_message_dialog_new(
+      NULL,
+      static_cast<GtkDialogFlags>(0),
+      GTK_MESSAGE_ERROR,
+      GTK_BUTTONS_CLOSE,
+      "%s",
+      chrome_browser::kMissingLocaleDataMessage);
+
+  gtk_window_set_title(GTK_WINDOW(dialog),
+                       chrome_browser::kMissingLocaleDataTitle);
+
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+}
+
 void RecordBrowserStartupTime() {
   // Not implemented on GTK for now.
 }

@@ -831,6 +831,14 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 
 }  // namespace
 
+namespace chrome_browser {
+// This error message is not localized because we failed to load the
+// localization data files.
+const char kMissingLocaleDataTitle[] = "Missing File Error";
+const char kMissingLocaleDataMessage[] =
+    "Unable to find locale data files. Please reinstall.";
+}  // namespace chrome_browser
+
 // BrowserMainParts ------------------------------------------------------------
 
 BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
@@ -1440,6 +1448,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // method InitSharedInstance is ignored.
     const std::string loaded_locale =
         ResourceBundle::InitSharedInstance(locale);
+    if (loaded_locale.empty() &&
+        !parsed_command_line.HasSwitch(switches::kNoErrorDialogs)) {
+      ShowMissingLocaleMessageBox();
+      return chrome::RESULT_CODE_MISSING_DATA;
+    }
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
     g_browser_process->SetApplicationLocale(loaded_locale);
 
