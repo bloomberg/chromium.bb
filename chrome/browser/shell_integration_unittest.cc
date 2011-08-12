@@ -342,7 +342,7 @@ TEST(ShellIntegrationTest, GetChromiumAppIdTest) {
   FilePath default_user_data_dir;
   chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   FilePath default_profile_path =
-      default_user_data_dir.AppendASCII(chrome::kNotSignedInProfile);
+      default_user_data_dir.AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(BrowserDistribution::GetDistribution()->GetBrowserAppId(),
             ShellIntegration::GetChromiumAppId(default_profile_path));
 

@@ -50,7 +50,7 @@ std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
       profile_path.DirName() == default_user_data_dir &&
       profile_path.BaseName().value() ==
-          ASCIIToUTF16(chrome::kNotSignedInProfile)) {
+          ASCIIToUTF16(chrome::kInitialProfile)) {
     return std::wstring();
   }
 
@@ -223,7 +223,7 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
   if (command_line.HasSwitch(switches::kUserDataDir)) {
     profile_path =
         command_line.GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
-            chrome::kNotSignedInProfile);
+            chrome::kInitialProfile);
   }
 
   std::wstring app_name;

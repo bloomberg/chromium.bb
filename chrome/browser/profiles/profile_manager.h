@@ -98,9 +98,9 @@ class ProfileManager : public base::NonThreadSafe,
   // profile.
   bool IsValidProfile(Profile* profile);
 
-  // Returns the directory where the currently active profile is
-  // stored, relative to the user data directory currently in use..
-  FilePath GetCurrentProfileDir();
+  // Returns the directory where the first created profile is stored,
+  // relative to the user data directory currently in use..
+  FilePath GetInitialProfileDir();
 
   // Get the Profile last used with this Chrome build. If no signed profile has
   // been stored in Local State, hand back the Default profile.

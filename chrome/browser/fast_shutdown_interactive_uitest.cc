@@ -53,7 +53,7 @@ static void GetCookie(
     const scoped_refptr<base::ThreadTestHelper>& thread_helper) {
   scoped_refptr<SQLitePersistentCookieStore> cookie_store(
       new SQLitePersistentCookieStore(
-          user_data_dir.AppendASCII(chrome::kNotSignedInProfile)
+          user_data_dir.AppendASCII(chrome::kInitialProfile)
                        .Append(chrome::kCookieFilename)));
   HERE(1);
   std::vector<net::CookieMonster::CanonicalCookie*> cookies;

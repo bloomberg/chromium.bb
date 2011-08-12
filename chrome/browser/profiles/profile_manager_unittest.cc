@@ -105,9 +105,9 @@ TEST_F(ProfileManagerTest, DefaultProfileDir) {
   cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =
-      FilePath().AppendASCII(chrome::kNotSignedInProfile);
+      FilePath().AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(expected_default.value(),
-            profile_manager_->GetCurrentProfileDir().value());
+            profile_manager_->GetInitialProfileDir().value());
 }
 
 #if defined(OS_CHROMEOS)
@@ -120,18 +120,18 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =
-      FilePath().AppendASCII(chrome::kNotSignedInProfile);
+      FilePath().AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(expected_default.value(),
-            profile_manager_->GetCurrentProfileDir().value());
+            profile_manager_->GetInitialProfileDir().value());
 
   profile_manager_->Observe(chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                            NotificationService::AllSources(),
                            NotificationService::NoDetails());
   FilePath expected_logged_in(profile_dir);
   EXPECT_EQ(expected_logged_in.value(),
-            profile_manager_->GetCurrentProfileDir().value());
+            profile_manager_->GetInitialProfileDir().value());
   VLOG(1) << temp_dir_.path().Append(
-      profile_manager_->GetCurrentProfileDir()).value();
+      profile_manager_->GetInitialProfileDir()).value();
 }
 
 #endif

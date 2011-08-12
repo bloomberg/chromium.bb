@@ -572,7 +572,7 @@ DictionaryValue* UITest::GetLocalState() {
 DictionaryValue* UITest::GetDefaultProfilePreferences() {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
-  path = path.AppendASCII(chrome::kNotSignedInProfile);
+  path = path.AppendASCII(chrome::kInitialProfile);
   return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
 }
 

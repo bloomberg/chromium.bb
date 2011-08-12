@@ -129,7 +129,7 @@ FilePath ProfileManager::GetDefaultProfileDir(
     const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
   default_profile_dir =
-      default_profile_dir.AppendASCII(chrome::kNotSignedInProfile);
+      default_profile_dir.AppendASCII(chrome::kInitialProfile);
   return default_profile_dir;
 }
 
@@ -140,7 +140,7 @@ FilePath ProfileManager::GetProfilePrefsPath(
   return default_prefs_path;
 }
 
-FilePath ProfileManager::GetCurrentProfileDir() {
+FilePath ProfileManager::GetInitialProfileDir() {
   FilePath relative_profile_dir;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -160,7 +160,7 @@ FilePath ProfileManager::GetCurrentProfileDir() {
 #endif
   // TODO(mirandac): should not automatically be default profile.
   relative_profile_dir =
-      relative_profile_dir.AppendASCII(chrome::kNotSignedInProfile);
+      relative_profile_dir.AppendASCII(chrome::kInitialProfile);
   return relative_profile_dir;
 }
 
@@ -173,7 +173,7 @@ Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
   if (local_state->HasPrefPath(prefs::kProfileLastUsed))
     last_profile_used = local_state->GetString(prefs::kProfileLastUsed);
   last_used_profile_dir = last_profile_used.empty() ?
-      last_used_profile_dir.AppendASCII(chrome::kNotSignedInProfile) :
+      last_used_profile_dir.AppendASCII(chrome::kInitialProfile) :
       last_used_profile_dir.AppendASCII(last_profile_used);
   return GetProfile(last_used_profile_dir);
 }
@@ -192,7 +192,7 @@ void ProfileManager::RegisterProfileName(Profile* profile) {
 
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
-  default_profile_dir = default_profile_dir.Append(GetCurrentProfileDir());
+  default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
 #if defined(OS_CHROMEOS)
   if (!logged_in_) {
     Profile* profile;
@@ -293,7 +293,7 @@ void ProfileManager::CreateDefaultProfileAsync(
   PathService::Get(chrome::DIR_USER_DATA, &default_profile_dir);
   // TODO(mirandac): current directory will not always be default in the future
   default_profile_dir = default_profile_dir.Append(
-      profile_manager->GetCurrentProfileDir());
+      profile_manager->GetInitialProfileDir());
 
   profile_manager->CreateProfileAsync(default_profile_dir,
                                       observer);
