@@ -494,8 +494,11 @@ bool WifiConfigView::HandleKeyEvent(views::Textfield* sender,
 void WifiConfigView::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
   if (sender == passphrase_visible_button_) {
-    if (passphrase_textfield_)
+    if (passphrase_textfield_) {
       passphrase_textfield_->SetPassword(!passphrase_textfield_->IsPassword());
+      passphrase_visible_button_->SetToggled(
+          !passphrase_textfield_->IsPassword());
+    }
   } else {
     NOTREACHED();
   }
@@ -872,11 +875,25 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
       label_text_id));
   layout->AddView(passphrase_textfield_);
   // Password visible button.
-  passphrase_visible_button_ = new views::ImageButton(this);
+  passphrase_visible_button_ = new views::ToggleImageButton(this);
+  passphrase_visible_button_->SetTooltipText(
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW)));
+  passphrase_visible_button_->SetToggledTooltipText(
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE)));
   passphrase_visible_button_->SetImage(
       views::ImageButton::BS_NORMAL,
       ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
+      GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_OFF));
+  passphrase_visible_button_->SetImage(
+      views::ImageButton::BS_HOT,
+      ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_HOVER));
+  passphrase_visible_button_->SetToggledImage(
+      views::ImageButton::BS_NORMAL,
+      ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_ON));
   passphrase_visible_button_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
   layout->AddView(passphrase_visible_button_);

@@ -20,7 +20,7 @@
 
 namespace views {
 class Checkbox;
-class ImageButton;
+class ToggleImageButton;
 class Label;
 }
 
@@ -126,7 +126,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;
-  views::ImageButton* passphrase_visible_button_;
+  views::ToggleImageButton* passphrase_visible_button_;
   views::Label* error_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);

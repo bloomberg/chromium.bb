@@ -10986,6 +10986,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings Internet options, the label for the passphrase.">
         Password:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW" desc="In settings Internet options, the label for the passphrase visible toggle button to show passphrase.">
+        Click to show password
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE" desc="In settings Internet options, the label for the passphrase visible toggle button to hide passphrase.">
+        Click to hide password
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS" desc="In settings Internet options, the label for the checkbox to save identity and password.">
         Save identity and password
       </message>

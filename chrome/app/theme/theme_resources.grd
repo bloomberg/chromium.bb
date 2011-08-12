@@ -483,6 +483,9 @@
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" type="BINDATA" />
+        <include name="IDR_NETWORK_SHOW_PASSWORD_OFF" file="network_show_password_off.png" type="BINDATA" />
+        <include name="IDR_NETWORK_SHOW_PASSWORD_ON" file="network_show_password_on.png" type="BINDATA" />
+        <include name="IDR_NETWORK_SHOW_PASSWORD_HOVER" file="network_show_password_hover.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_3G" file="notification_3g.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_EMPTY" file="notification_bars_empty.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_CRITICAL" file="notification_bars_critical.png" type="BINDATA" />
