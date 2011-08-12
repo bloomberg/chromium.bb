@@ -30,6 +30,7 @@ class UpgradeTable(table.Table):
   COL_LATEST_UPSTREAM_VER = 'Latest Upstream ARCH Version'
   COL_STATE = 'State On ARCH'
   COL_DEPENDS_ON = 'Dependencies On ARCH'
+  COL_USED_BY = 'Required By On ARCH'
   COL_TARGET = 'Root Target'
   COL_UPGRADED = 'Upgraded ARCH Version'
 
@@ -64,6 +65,7 @@ class UpgradeTable(table.Table):
                self.COL_LATEST_UPSTREAM_VER,
                self.COL_STATE,
                self.COL_DEPENDS_ON,
+               self.COL_USED_BY,
                self.COL_TARGET,
                ]
 

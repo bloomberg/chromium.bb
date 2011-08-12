@@ -105,10 +105,12 @@ def MergeTables(tables):
     prfx = utable.UpgradeTable.COL_DEPENDS_ON.replace('ARCH', '')
     if col.startswith(prfx):
       # Merge dependencies by taking the superset.
-      deps = set(val.split())
-      other_deps = set(other_val.split())
-      all_deps = deps.union(other_deps)
-      return ' '.join(sorted(dep for dep in all_deps))
+      return MergeToSuperset(col, val, other_val)
+
+    prfx = utable.UpgradeTable.COL_USED_BY.replace('ARCH', '')
+    if col.startswith(prfx):
+      # Merge users by taking the superset.
+      return MergeToSuperset(col, val, other_val)
 
     regexp = utable.UpgradeTable.COL_UPGRADED.replace('ARCH', '\S+')
     if re.search(regexp, col):
@@ -125,6 +127,13 @@ def MergeTables(tables):
     # Raise a generic ValueError, which MergeTable function will clarify.
     # The effect should be the same as having no merge_rule for this column.
     raise ValueError
+
+  def MergeToSuperset(col, val, other_val):
+    """Merge |col| values as superset of tokens in |val| and |other_val|."""
+    tokens = set(val.split())
+    other_tokens = set(other_val.split())
+    all_tokens = tokens.union(other_tokens)
+    return ' '.join(sorted(tok for tok in all_tokens))
 
   # This is only needed because the automake-wrapper package is coming from
   # different overlays for different boards right now!

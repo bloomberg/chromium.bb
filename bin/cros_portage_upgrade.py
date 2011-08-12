@@ -544,6 +544,8 @@ class Upgrader(object):
         upgraded_ver = '(emerge fails)' + upstream_ver
 
     depslist = sorted(self._deps_graph[cpv]['needs'].keys()) # dependencies
+    usedset = self._deps_graph[cpv]['provides'].keys() # used by
+    usedlist = sorted([p for p in usedset])
     stable_up_ver = Upgrader._GetVerRevFromCpv(info['stable_upstream_cpv'])
     if not stable_up_ver:
       stable_up_ver = 'N/A'
@@ -559,6 +561,7 @@ class Upgrader(object):
            self._curr_table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
            self._curr_table.COL_STATE: info['state'],
            self._curr_table.COL_DEPENDS_ON: ' '.join(depslist),
+           self._curr_table.COL_USED_BY: ' '.join(usedlist),
            self._curr_table.COL_TARGET: ' '.join(self._targets),
            }
 
