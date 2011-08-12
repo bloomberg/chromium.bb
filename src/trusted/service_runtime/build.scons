@@ -253,10 +253,8 @@ else:
 
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
-  SEL_LDR_NODE = env.ComponentProgram(
-      'sel_ldr',
-      'sel_main.c',
-      EXTRA_LIBS=['sel',
+  sel_main_obj = env.ComponentObject('sel_main.c')
+  sel_ldr_libs = ['sel',
                   'env_cleanser',
                   'nacl_error_code',
                   'manifest_proxy',
@@ -272,7 +270,23 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                   'platform',
                   'platform_qual_lib',
                   VALIDATOR_LIB,
-                  ] + DEBUG_LIBS)
+                  ] + DEBUG_LIBS
+  SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_obj,
+                                      EXTRA_LIBS=sel_ldr_libs)
+
+  if env.Bit('mac'):
+    # This target exists only to check that the service_runtime code
+    # can successfully be linked into a Mac OS X dynamic library.  Our
+    # assembly code needs to be PIC-friendly and linkable in this
+    # context, because it is linked into a dynamic library inside
+    # Chromium, and OS X is strict about TEXTRELs.  Without this, the
+    # standalone build won't catch some mistakes that can break the
+    # Chromium build.  Linking a dylib here works because -fPIC is the
+    # default for all C code on OS X.
+    dylib_env = env.Clone()
+    dylib_env.Append(LINKFLAGS=['-bundle'])
+    dylib_env.ComponentProgram('dummy_sel_ldr.dylib', sel_main_obj,
+                               EXTRA_LIBS=sel_ldr_libs)
 
   # NOTE: we do not have segments on ARM
   if env.Bit('build_x86'):
