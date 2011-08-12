@@ -12,7 +12,7 @@ as well as generating the lists of possible actions in situations where
 there are many possible actions.
 
 See also:
-  chrome/browser/user_metrics.h
+  content/browser/user_metrics.h
   http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
 If run with a "--hash" argument, chromeactions.txt will be updated.
@@ -331,11 +331,13 @@ def AddLiteralActions(actions):
   EXTENSIONS = ('.cc', '.mm', '.c', '.m')
 
   # Walk the source tree to process all .cc files.
-  chrome_root = os.path.join(path_utils.ScriptDir(), '..')
+  chrome_root = os.path.normpath(os.path.join(path_utils.ScriptDir(), '..'))
   WalkDirectory(chrome_root, actions, EXTENSIONS, GrepForActions)
-  content_root = os.path.join(path_utils.ScriptDir(), '..', '..', 'content')
+  content_root = os.path.normpath(os.path.join(path_utils.ScriptDir(),
+                                               '..', '..', 'content'))
   WalkDirectory(content_root, actions, EXTENSIONS, GrepForActions)
-  webkit_root = os.path.join(path_utils.ScriptDir(), '..', '..', 'webkit')
+  webkit_root = os.path.normpath(os.path.join(path_utils.ScriptDir(),
+                                              '..', '..', 'webkit'))
   WalkDirectory(os.path.join(webkit_root, 'glue'), actions, EXTENSIONS,
                 GrepForActions)
   WalkDirectory(os.path.join(webkit_root, 'port'), actions, EXTENSIONS,

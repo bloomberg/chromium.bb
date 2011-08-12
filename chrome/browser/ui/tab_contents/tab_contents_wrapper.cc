@@ -589,8 +589,8 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
 
   if (!handler.IsEmpty() &&
       registry->CanSchemeBeOverridden(handler.protocol())) {
-    UserMetrics::RecordAction(UserMetricsAction(
-        "RegisterProtocolHandler.InfoBar_Shown"));
+    UserMetrics::RecordAction(
+        UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
     AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab_contents(),
                                                           registry,
                                                           handler));
