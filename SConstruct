@@ -2926,6 +2926,7 @@ def NaClAddHeader(env, nodes, subdir='nacl'):
 nacl_env.AddMethod(NaClAddHeader, 'AddHeaderToSdk')
 
 def NaClAddLibrary(env, nodes, is_platform=False):
+  nodes = env.Replicate('${LIB_DIR}', nodes)
   PublishLibrary(env, nodes, is_platform)
   return nodes
 nacl_env.AddMethod(NaClAddLibrary, 'AddLibraryToSdk')
