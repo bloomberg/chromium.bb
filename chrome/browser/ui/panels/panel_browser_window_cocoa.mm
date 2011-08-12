@@ -167,6 +167,10 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   controller_ = NULL;
 }
 
-NativePanelTesting* PanelBrowserWindowCocoa::GetNativePanelTesting() {
-  return this;
+// NativePanelTesting implementation.
+
+// static
+NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
+  NOTIMPLEMENTED();
+  return NULL;
 }

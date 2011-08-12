@@ -9,11 +9,12 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 
 class Panel;
+class NativePanelTestingGtk;
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel,
-                              public NativePanelTesting,
                               public MessageLoopForUI::Observer {
+  friend class NativePanelTestingGtk;
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
@@ -58,7 +59,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
-  virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
  private:
   void SetBoundsImpl();

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -56,6 +57,8 @@ class PanelBrowserTest : public InProcessBrowserTest {
 
     Panel* panel = static_cast<Panel*>(panel_browser->window());
     panel->Show();
+    MessageLoopForUI::current()->RunAllPending();
+
     return panel;
   }
 
@@ -150,6 +153,119 @@ class PanelBrowserTest : public InProcessBrowserTest {
     panel1->Close();
     panel6->Close();
   }
+
+  struct DragTestData {
+    DragTestData(int drag_delta_x,
+                 int drag_delta_y,
+                 bool is_big_delta,
+                 bool should_cancel_drag)
+        : drag_delta_x(drag_delta_x), drag_delta_y(drag_delta_y),
+          is_big_delta(is_big_delta), should_cancel_drag(should_cancel_drag) {}
+    int drag_delta_x;
+    int drag_delta_y;
+    bool is_big_delta;  // Drag big enough to cause shuffling.
+    bool should_cancel_drag;
+  };
+
+  void TestDragging(std::vector<Panel*>* panels,
+                    const DragTestData& drag_test_data) {
+    size_t num_panels = panels->size();
+
+    // Test dragging each panel in the list.
+    for (size_t drag_index = 0; drag_index < num_panels; ++drag_index) {
+      std::vector<int> expected_delta_x_after_drag(num_panels, 0);
+      std::vector<int> expected_delta_x_after_finish(num_panels, 0);
+
+      for (size_t j = 0; j < num_panels; ++j) {
+        expected_delta_x_after_drag.push_back(0);
+        expected_delta_x_after_finish.push_back(0);
+      }
+
+      expected_delta_x_after_drag[drag_index] = drag_test_data.drag_delta_x;
+      size_t swap_index = drag_index;
+      if (drag_test_data.is_big_delta) {
+        if (drag_test_data.drag_delta_x > 0 && drag_index != 0) {
+          // Dragged to right.
+          swap_index = drag_index - 1;
+        } else if (drag_test_data.drag_delta_x < 0 &&
+            drag_index != num_panels - 1) {
+          // Dragged to left.
+          swap_index = drag_index + 1;
+        }
+      }
+      if (swap_index != drag_index) {
+        expected_delta_x_after_drag[swap_index] =
+            (*panels)[drag_index]->GetRestoredBounds().x() -
+            (*panels)[swap_index]->GetRestoredBounds().x();
+        expected_delta_x_after_finish[swap_index] =
+            expected_delta_x_after_drag[swap_index];
+        expected_delta_x_after_finish[drag_index] =
+            -expected_delta_x_after_drag[swap_index];
+      }
+      ValidateDragging(*panels, drag_index, drag_test_data.drag_delta_x,
+          drag_test_data.drag_delta_y, expected_delta_x_after_drag,
+          expected_delta_x_after_finish, drag_test_data.should_cancel_drag);
+
+      if (swap_index != drag_index && !drag_test_data.should_cancel_drag) {
+        // Swap the panels in the vector so they reflect their true relative
+        // positions.
+        Panel* tmp_panel = (*panels)[swap_index];
+        (*panels)[swap_index] = (*panels)[drag_index];
+        (*panels)[drag_index] = tmp_panel;
+      }
+    }
+  }
+
+  void ValidateDragging(const std::vector<Panel*>& panels,
+                        int index_to_drag,
+                        int delta_x,
+                        int delta_y,
+                        const std::vector<int>& expected_delta_x_after_drag,
+                        const std::vector<int>& expected_delta_x_after_finish,
+                        bool should_cancel_drag) {
+    // Keep track of the initial bounds for comparison.
+    std::vector<gfx::Rect> initial_bounds(panels.size());
+    for (size_t i = 0; i < panels.size(); ++i)
+      initial_bounds[i] = panels[i]->GetRestoredBounds();
+
+    // Trigger the mouse-pressed event.
+    // All panels should remain in their original positions.
+    NativePanel* panel_to_drag = panels[index_to_drag]->native_panel();
+    scoped_ptr<NativePanelTesting> panel_testing_to_drag(
+        NativePanelTesting::Create(panel_to_drag));
+
+    gfx::Point button_press_point(initial_bounds[index_to_drag].x(),
+                                  initial_bounds[index_to_drag].y());
+    panel_testing_to_drag->PressLeftMouseButtonTitlebar(button_press_point);
+    for (size_t i = 0; i < panels.size(); ++i)
+      EXPECT_EQ(initial_bounds[i], panels[i]->GetRestoredBounds());
+
+    // Trigger the drag.
+    panel_testing_to_drag->DragTitlebar(delta_x, delta_y);
+
+    for (size_t i = 0; i < panels.size(); ++i) {
+      gfx::Rect expected_bounds = initial_bounds[i];
+      expected_bounds.Offset(expected_delta_x_after_drag[i], 0);
+      EXPECT_EQ(expected_bounds, panels[i]->GetRestoredBounds());
+    }
+
+    // Cancel drag if asked.
+    // All panels should stay in their original positions.
+    if (should_cancel_drag) {
+      panel_testing_to_drag->CancelDragTitlebar();
+      for (size_t i = 0; i < panels.size(); ++i)
+        EXPECT_EQ(initial_bounds[i], panels[i]->GetRestoredBounds());
+      return;
+    }
+
+    // Otherwise finish the drag.
+    panel_testing_to_drag->FinishDragTitlebar();
+    for (size_t i = 0; i < panels.size(); ++i) {
+      gfx::Rect expected_bounds = initial_bounds[i];
+      expected_bounds.Offset(expected_delta_x_after_finish[i], 0);
+      EXPECT_EQ(expected_bounds, panels[i]->GetRestoredBounds());
+    }
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
@@ -186,6 +302,46 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
+}
+
+#ifdef OS_MACOSX
+#define MAYBE_DragPanels DISABLED_DragPanels
+#else
+#define MAYBE_DragPanels DragPanels
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
+  std::vector<Panel*> panels;
+  panels.push_back(CreatePanel("PanelTest0", gfx::Rect()));
+
+  int small_delta = 5;
+  int big_delta = panels[0]->GetRestoredBounds().width() * 0.5 + 5;
+
+  // Setup test data.
+  // Template - DragTestData(delta_x, delta_y, is_big_delta, should_cancel_drag)
+  std::vector<DragTestData> drag_test_data;
+  drag_test_data.push_back(DragTestData(
+      small_delta, small_delta, false, false));
+  drag_test_data.push_back(DragTestData(
+      -small_delta, -small_delta, false, false));
+  drag_test_data.push_back(DragTestData(big_delta, big_delta, true, false));
+  drag_test_data.push_back(DragTestData(big_delta, small_delta, true, false));
+  drag_test_data.push_back(DragTestData(-big_delta, -big_delta, true, false));
+  drag_test_data.push_back(DragTestData(-big_delta, 0, true, false));
+  drag_test_data.push_back(DragTestData(big_delta, big_delta, true, true));
+  drag_test_data.push_back(DragTestData(-big_delta, -big_delta, true, true));
+
+  for (int num_panels = 1; num_panels <= 3; ++num_panels) {
+    if (num_panels > 1)
+      panels.push_back(CreatePanel("PanelTest", gfx::Rect()));
+    for (size_t j = 0; j < drag_test_data.size(); ++j) {
+      // Test for each combination of drag test data and number of panels.
+      TestDragging(&panels, drag_test_data[j]);
+    }
+  }
+
+  for (size_t i = 0; i < panels.size(); ++i)
+    panels[i]->Close();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

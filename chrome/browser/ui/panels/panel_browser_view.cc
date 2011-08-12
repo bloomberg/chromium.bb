@@ -309,29 +309,23 @@ void PanelBrowserView::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
-NativePanelTesting* PanelBrowserView::GetNativePanelTesting() {
-  return this;
-}
-
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }
 
-bool PanelBrowserView::OnTitleBarMousePressed(const views::MouseEvent& event) {
-  if (!event.IsOnlyLeftMouseButton())
-    return false;
+bool PanelBrowserView::OnTitleBarMousePressed(const gfx::Point& location) {
   mouse_pressed_ = true;
-  mouse_pressed_point_ = event.location();
+  mouse_pressed_point_ = location;
   mouse_dragging_ = false;
   return true;
 }
 
-bool PanelBrowserView::OnTitleBarMouseDragged(const views::MouseEvent& event) {
+bool PanelBrowserView::OnTitleBarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
   // We do not allow dragging vertically.
-  int delta_x = event.location().x() - mouse_pressed_point_.x();
+  int delta_x = location.x() - mouse_pressed_point_.x();
   if (!mouse_dragging_ && ExceededDragThreshold(delta_x, 0)) {
     panel_->manager()->StartDragging(panel_.get());
     mouse_dragging_ = true;
@@ -341,7 +335,7 @@ bool PanelBrowserView::OnTitleBarMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
+bool PanelBrowserView::OnTitleBarMouseReleased() {
   if (mouse_dragging_)
     return EndDragging(false);
 
@@ -376,4 +370,54 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
   mouse_dragging_ = false;
   panel_->manager()->EndDragging(cancelled);
   return true;
+}
+
+// NativePanelTesting implementation.
+class NativePanelTestingWin : public NativePanelTesting {
+ public:
+  explicit NativePanelTestingWin(PanelBrowserView* panel_browser_view);
+
+ private:
+  virtual void PressLeftMouseButtonTitlebar(
+      const gfx::Point& point) OVERRIDE;
+  virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
+  virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
+  virtual void CancelDragTitlebar() OVERRIDE;
+  virtual void FinishDragTitlebar() OVERRIDE;
+
+  PanelBrowserView* panel_browser_view_;
+};
+
+// static
+NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
+  return new NativePanelTestingWin(static_cast<PanelBrowserView*>(
+      native_panel));
+}
+
+NativePanelTestingWin::NativePanelTestingWin(
+    PanelBrowserView* panel_browser_view) :
+    panel_browser_view_(panel_browser_view) {
+}
+
+void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
+    const gfx::Point& point) {
+  panel_browser_view_->OnTitleBarMousePressed(point);
+}
+
+void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
+  panel_browser_view_->OnTitleBarMouseReleased();
+}
+
+void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
+  gfx::Rect current_bounds = panel_browser_view_->panel()->GetRestoredBounds();
+  panel_browser_view_->OnTitleBarMouseDragged(gfx::Point(
+      current_bounds.x() + delta_x, current_bounds.y() + delta_y));
+}
+
+void NativePanelTestingWin::CancelDragTitlebar() {
+  panel_browser_view_->OnTitleBarMouseCaptureLost();
+}
+
+void NativePanelTestingWin::FinishDragTitlebar() {
+  panel_browser_view_->OnTitleBarMouseReleased();
 }

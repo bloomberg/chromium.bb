@@ -19,8 +19,7 @@ class Panel;
 // Bridges between C++ and the Cocoa NSWindow. Cross-platform code will
 // interact with this object when it needs to manipulate the window.
 
-class PanelBrowserWindowCocoa : public NativePanel,
-                                public NativePanelTesting {
+class PanelBrowserWindowCocoa : public NativePanel {
  public:
   PanelBrowserWindowCocoa(Browser* browser, Panel* panel,
                           const gfx::Rect& bounds);
@@ -48,7 +47,6 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
-  virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }

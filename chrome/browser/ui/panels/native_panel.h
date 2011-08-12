@@ -62,18 +62,22 @@ class NativePanel {
   virtual bool IsDrawingAttention() const = 0;
   virtual Browser* GetPanelBrowser() const = 0;
   virtual void DestroyPanelBrowser() = 0;
-
-  // Returns a pointer to the testing interface to the native panel.
-  virtual NativePanelTesting* GetNativePanelTesting() = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the
 // native panel used only by test automation.
 class NativePanelTesting {
  public:
+  static NativePanelTesting* Create(NativePanel* native_panel);
 
- protected:
+  // clang gives error on delete if the destructor is not virtual.
   virtual ~NativePanelTesting() {}
+
+  virtual void PressLeftMouseButtonTitlebar(const gfx::Point& point) = 0;
+  virtual void ReleaseMouseButtonTitlebar() = 0;
+  virtual void DragTitlebar(int delta_x, int delta_y) = 0;
+  virtual void CancelDragTitlebar() = 0;
+  virtual void FinishDragTitlebar() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

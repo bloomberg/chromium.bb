@@ -15,6 +15,7 @@
 
 class Browser;
 class Panel;
+class NativePanelTestingWin;
 class PanelBrowserFrameView;
 namespace ui {
 class SlideAnimation;
@@ -23,7 +24,6 @@ class SlideAnimation;
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
                          public NativePanel,
-                         public NativePanelTesting,
                          public ui::AnimationDelegate {
  public:
   PanelBrowserView(Browser* browser, Panel* panel, const gfx::Rect& bounds);
@@ -37,12 +37,13 @@ class PanelBrowserView : public BrowserView,
 
   // Called from frame view when title bar receives a mouse event.
   // Return true if the event is handled.
-  bool OnTitleBarMousePressed(const views::MouseEvent& event);
-  bool OnTitleBarMouseDragged(const views::MouseEvent& event);
-  bool OnTitleBarMouseReleased(const views::MouseEvent& event);
+  bool OnTitleBarMousePressed(const gfx::Point& location);
+  bool OnTitleBarMouseDragged(const gfx::Point& location);
+  bool OnTitleBarMouseReleased();
   bool OnTitleBarMouseCaptureLost();
 
  private:
+  friend class NativePanelTestingWin;
   friend class PanelBrowserViewTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
@@ -90,7 +91,6 @@ class PanelBrowserView : public BrowserView,
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
-  virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

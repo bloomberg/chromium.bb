@@ -413,19 +413,21 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
-  if (browser_view_->OnTitleBarMousePressed(event))
+  if (event.IsOnlyLeftMouseButton() &&
+      browser_view_->OnTitleBarMousePressed(event.location())) {
     return true;
+  }
   return BrowserNonClientFrameView::OnMousePressed(event);
 }
 
 bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
-  if (browser_view_->OnTitleBarMouseDragged(event))
+  if (browser_view_->OnTitleBarMouseDragged(event.location()))
     return true;
   return BrowserNonClientFrameView::OnMouseDragged(event);
 }
 
 void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
-  if (browser_view_->OnTitleBarMouseReleased(event))
+  if (browser_view_->OnTitleBarMouseReleased())
     return;
   BrowserNonClientFrameView::OnMouseReleased(event);
 }
