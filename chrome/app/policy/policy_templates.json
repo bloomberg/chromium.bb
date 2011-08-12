@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 95
+#   For your editing convenience: highest ID currently used: 96
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1681,6 +1681,16 @@
       The value of this policy should be lower than 100 and higher than 6 and the default value is 32.
 
       Some web apps are known to consume many connections with hanging GETs, so lowering below 32 may lead to browser networking hangs if too many such web apps are open. Lower below the default at your own risk.''',
+    },
+    {
+      'name': 'HideWebStorePromo',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
+      'features': {'dynamic_refresh': 0},
+      'example_value': False,
+      'id': 96,
+      'caption': '''Prevent app promotions from appearing on the new tab page''',
+      'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.''',
     },
 
   ],

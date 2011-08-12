@@ -295,6 +295,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kEditBookmarksEnabled },
   { Value::TYPE_INTEGER, kPolicyMaxConnectionsPerProxy,
     prefs::kMaxConnectionsPerProxy },
+  { Value::TYPE_BOOLEAN, kPolicyHideWebStorePromo,
+    prefs::kNTPHideWebStorePromo },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -1159,6 +1161,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDiskCacheDir },
     { kPolicyMaxConnectionsPerProxy, Value::TYPE_INTEGER,
       key::kMaxConnectionsPerProxy },
+    { kPolicyHideWebStorePromo, Value::TYPE_BOOLEAN,
+      key::kHideWebStorePromo },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

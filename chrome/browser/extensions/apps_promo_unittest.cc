@@ -35,6 +35,8 @@ void ExpectAppsPromoHidden(PrefService* prefs) {
   // Hiding the promo places the apps section in menu mode and maximizes the
   // most visited section.
   EXPECT_TRUE((ShownSectionsHandler::GetShownSections(prefs) &
+               APPS) == 0);
+  EXPECT_TRUE((ShownSectionsHandler::GetShownSections(prefs) &
                (MENU_APPS | THUMB)) != 0);
 }
 
@@ -69,6 +71,7 @@ void ExtensionAppsPromo::SetUp() {
 // TODO(dpolukhin): On Chrome OS all apps are installed via external extensions,
 // and the web store promo is never shown.
 #if !defined(OS_CHROMEOS)
+
 TEST_F(ExtensionAppsPromo, HappyPath) {
   const ExtensionIdSet& default_app_ids = apps_promo()->old_default_apps();
 
@@ -310,4 +313,25 @@ TEST_F(ExtensionAppsPromo, UpdatePromoFocus_UsersAll) {
   ExpectAppsSectionMaximized(prefs(), true);
 }
 
-#endif  // OS_CHROMEOS
+TEST_F(ExtensionAppsPromo, PromoHiddenByPref) {
+  prefs()->SetInteger(prefs::kAppsPromoCounter, 0);
+  prefs()->SetBoolean(prefs::kDefaultAppsInstalled, true);
+
+  // When the "hide" pref is false, the promo should still appear.
+  prefs()->SetBoolean(prefs::kNTPHideWebStorePromo, false);
+  AppsPromo::SetPromo(kPromoId, kPromoHeader, kPromoButton,
+                      GURL(kPromoLink), kPromoExpire, GURL(""),
+                      AppsPromo::USERS_NEW | AppsPromo::USERS_EXISTING);
+  bool just_expired;
+  bool show_promo = apps_promo()->ShouldShowPromo(
+      apps_promo()->old_default_apps(), &just_expired);
+  EXPECT_TRUE(show_promo);
+
+  // When the "hide" pref is true, the promo should NOT appear.
+  prefs()->SetBoolean(prefs::kNTPHideWebStorePromo, true);
+  show_promo = apps_promo()->ShouldShowPromo(
+      apps_promo()->old_default_apps(), &just_expired);
+  EXPECT_FALSE(show_promo);
+}
+
+#endif // OS_CHROMEOS

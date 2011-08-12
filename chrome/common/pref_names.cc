@@ -1221,6 +1221,9 @@ const char kNTPWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 // Customized app page names that appear on the New Tab Page.
 const char kNTPAppPageNames[] = "ntp.app_page_names";
 
+// When true, web store promos will never be shown.
+const char kNTPHideWebStorePromo[] = "ntp.hide_webstore_promo";
+
 // The most up-to-date GPU blacklist downloaded from the web, which replaces
 // the one that's installed with chrome.
 const char kGpuBlacklist[] = "gpu_blacklist";
