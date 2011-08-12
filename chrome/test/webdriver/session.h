@@ -318,6 +318,12 @@ class Session {
 
   const Options& options() const;
 
+  // Gets the browser connection state.
+  Error* GetBrowserConnectionState(bool* online);
+
+  // Gets the status of the application cache.
+  Error* GetAppCacheStatus(int* status);
+
  private:
   void RunSessionTask(Task* task);
   void RunSessionTaskOnSessionThread(

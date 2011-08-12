@@ -1497,4 +1497,40 @@ Error* Session::GetScreenShot(std::string* png) {
   return NULL;
 }
 
+Error* Session::GetBrowserConnectionState(bool* online) {
+  std::string jscript = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::IS_ONLINE);
+  base::ListValue no_args;
+  Value* unscoped_value = NULL;
+  Error* error = ExecuteScript(jscript,
+                               &no_args,
+                               &unscoped_value);
+  scoped_ptr<base::Value> value(unscoped_value);
+  if (error)
+    return error;
+  if (!value->GetAsBoolean(online))
+    return new Error(kUnknownError,
+                     "IS_ONLINE script returned non-boolean: " +
+                     JsonStringify(value.get()));
+  return NULL;
+}
+
+Error* Session::GetAppCacheStatus(int* status) {
+  std::string jscript = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_APPCACHE_STATUS);
+  base::ListValue no_args;
+  Value* unscoped_value = NULL;
+  Error* error = ExecuteScript(jscript,
+                               &no_args,
+                               &unscoped_value);
+  scoped_ptr<base::Value> value(unscoped_value);
+  if (error)
+    return error;
+  if (!value->GetAsInteger(status))
+    return new Error(kUnknownError,
+                     "GET_APPCACHE_STATUS script returned non-integer: " +
+                     JsonStringify(value.get()));
+  return NULL;
+}
+
 }  // namespace webdriver
