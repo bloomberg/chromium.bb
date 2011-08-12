@@ -48,10 +48,10 @@ class URLRequestInfoTest : public PpapiUnittest {
   URLRequestInfoTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() {
     PpapiUnittest::SetUp();
 
-    // Must do this after the normal SetUp so the instance is valid.
+    // Must be after our base class's SetUp for the instance to be valid.
     info_ = new PPB_URLRequestInfo_Impl(instance());
   }
 

@@ -56,9 +56,6 @@ class Font : public PluginResource,
   // ResourceObjectBase.
   virtual ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
 
-  // PluginResource overrides.
-  virtual Font* AsFont() OVERRIDE;
-
   // PPB_Font_API implementation.
   virtual PP_Bool Describe(PP_FontDescription_Dev* description,
                            PP_FontMetrics_Dev* metrics) OVERRIDE;

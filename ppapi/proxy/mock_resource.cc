@@ -14,9 +14,5 @@ MockResource::MockResource(const HostResource& resource)
 MockResource::~MockResource() {
 }
 
-MockResource* MockResource::AsMockResource() {
-  return this;
-}
-
 }  // namespace proxy
 }  // namespace pp

@@ -12,52 +12,13 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/shared_impl/resource_object_base.h"
 
-// If you inherit from resource, make sure you add the class name here.
-#define FOR_ALL_PLUGIN_RESOURCES(F)                   \
-  F(Audio) \
-  F(AudioConfig) \
-  F(Broker) \
-  F(Buffer) \
-  F(Context3D) \
-  F(FileChooser) \
-  F(FileRef) \
-  F(FileSystem) \
-  F(FlashMenu) \
-  F(FlashNetConnector) \
-  F(Font) \
-  F(Graphics2D) \
-  F(Graphics3D) \
-  F(ImageData) \
-  F(MockResource) \
-  F(PrivateFontFile) \
-  F(Surface3D) \
-  F(URLLoader) \
-  F(URLRequestInfo) \
-  F(URLResponseInfo) \
-  F(VideoCapture) \
-  F(VideoDecoder)
-
 namespace pp {
 namespace proxy {
-
-// Forward declaration of Resource classes.
-#define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
-FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
-#undef DECLARE_RESOURCE_CLASS
 
 class PluginResource : public ::ppapi::ResourceObjectBase {
  public:
   PluginResource(const HostResource& resource);
   virtual ~PluginResource();
-
-  // Returns NULL if the resource is invalid or is a different type.
-  template<typename T> static T* GetAs(PP_Resource res) {
-    PluginResource* resource =
-        PluginResourceTracker::GetInstance()->GetResourceObject(res);
-    return resource ? resource->Cast<T>() : NULL;
-  }
-
-  template <typename T> T* Cast() { return NULL; }
 
   PP_Instance instance() const { return host_resource_.instance(); }
 
@@ -69,14 +30,6 @@ class PluginResource : public ::ppapi::ResourceObjectBase {
   PluginDispatcher* GetDispatcher();
 
  private:
-  // Type-specific getters for individual resource types. These will return
-  // NULL if the resource does not match the specified type. Used by the Cast()
-  // function.
-  #define DEFINE_TYPE_GETTER(RESOURCE)  \
-    virtual RESOURCE* As##RESOURCE();
-  FOR_ALL_PLUGIN_RESOURCES(DEFINE_TYPE_GETTER)
-  #undef DEFINE_TYPE_GETTER
-
   // The resource ID in the host that this object corresponds to. Inside the
   // plugin we'll remap the resource IDs so we can have many host processes
   // each independently generating resources (which may conflict) but the IDs
@@ -85,14 +38,6 @@ class PluginResource : public ::ppapi::ResourceObjectBase {
 
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
 };
-
-// Cast() specializations.
-#define DEFINE_RESOURCE_CAST(Type)                   \
-  template <> inline Type* PluginResource::Cast<Type>() {  \
-      return As##Type();                             \
-  }
-FOR_ALL_PLUGIN_RESOURCES(DEFINE_RESOURCE_CAST)
-#undef DEFINE_RESOURCE_CAST
 
 }  // namespace proxy
 }  // namespace pp

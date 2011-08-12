@@ -16,9 +16,6 @@ class MockResource : public PluginResource {
   MockResource(const HostResource& resource);
   virtual ~MockResource();
 
-  // Resource overrides.
-  virtual MockResource* AsMockResource();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockResource);
 };

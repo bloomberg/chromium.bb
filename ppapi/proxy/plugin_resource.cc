@@ -15,11 +15,6 @@ PluginResource::PluginResource(const HostResource& resource)
 PluginResource::~PluginResource() {
 }
 
-#define DEFINE_TYPE_GETTER(RESOURCE)                    \
-  RESOURCE* PluginResource::As##RESOURCE() { return NULL; }
-FOR_ALL_PLUGIN_RESOURCES(DEFINE_TYPE_GETTER)
-#undef DEFINE_TYPE_GETTER
-
 PluginDispatcher* PluginResource::GetDispatcher() {
   PluginDispatcher* disp = PluginDispatcher::GetForInstance(instance());
   CHECK(disp);

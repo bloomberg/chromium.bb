@@ -57,9 +57,6 @@ class ImageData : public PluginResource,
   // ResourceObjectBase overrides.
   virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
 
-  // Resource overrides.
-  virtual ImageData* AsImageData() OVERRIDE;
-
   // PPB_ImageData API.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
   virtual void* Map() OVERRIDE;

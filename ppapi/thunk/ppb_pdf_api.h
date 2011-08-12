@@ -11,14 +11,9 @@ namespace ppapi {
 namespace thunk {
 
 class PPB_PDFFont_API {
- private:
+ public:
   virtual ~PPB_PDFFont_API() {}
-
-  virtual bool GetFontTableForPrivateFontFile(PP_Resource font_file,
-                                              uint32_t table,
-                                              void* output,
-                                              uint32_t* output_length) = 0;
-}
+};
 
 }  // namespace thunk
 }  // namespace ppapi

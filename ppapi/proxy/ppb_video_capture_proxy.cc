@@ -149,9 +149,6 @@ class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
   VideoCapture(const HostResource& resource);
   virtual ~VideoCapture();
 
-  // Resource overrides.
-  virtual VideoCapture* AsVideoCapture() OVERRIDE;
-
   // ResourceObjectBase overrides.
   virtual ppapi::thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
 
@@ -259,10 +256,6 @@ VideoCapture::VideoCapture(const HostResource& resource)
 }
 
 VideoCapture::~VideoCapture() {
-}
-
-VideoCapture* VideoCapture::AsVideoCapture() {
-  return this;
 }
 
 ppapi::thunk::PPB_VideoCapture_API* VideoCapture::AsPPB_VideoCapture_API() {

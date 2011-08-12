@@ -118,10 +118,6 @@ ppapi::thunk::PPB_Font_API* Font::AsPPB_Font_API() {
   return this;
 }
 
-Font* Font::AsFont() {
-  return this;
-}
-
 PP_Bool Font::Describe(PP_FontDescription_Dev* description,
                        PP_FontMetrics_Dev* metrics) {
   TRACE_EVENT0("ppapi proxy", "Font::Describe");

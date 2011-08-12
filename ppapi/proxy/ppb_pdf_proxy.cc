@@ -16,18 +16,23 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_pdf_api.h"
+
+using ppapi::thunk::PPB_PDFFont_API;
+using ppapi::thunk::EnterResource;
 
 namespace pp {
 namespace proxy {
 
-class PrivateFontFile : public PluginResource {
+class PrivateFontFile : public PluginResource,
+                        public PPB_PDFFont_API {
  public:
   PrivateFontFile(const HostResource& resource) : PluginResource(resource) {
   }
   virtual ~PrivateFontFile() {}
 
-  // Resource overrides.
-  virtual PrivateFontFile* AsPrivateFontFile() { return this; }
+  PPB_PDFFont_API* AsPPB_PDFFont_API() { return this; }
 
   // Sees if we have a cache of the font table and returns a pointer to it.
   // Returns NULL if we don't have it.
@@ -83,9 +88,11 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     uint32_t table,
                                     void* output,
                                     uint32_t* output_length) {
-  PrivateFontFile* object = PluginResource::GetAs<PrivateFontFile>(font_file);
-  if (!object)
+  EnterResource<PPB_PDFFont_API> enter(font_file, true);
+  if (enter.failed())
     return false;
+
+  PrivateFontFile* object = static_cast<PrivateFontFile*>(enter.object());
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
       object->instance());
   if (!dispatcher)

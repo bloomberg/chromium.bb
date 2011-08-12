@@ -80,10 +80,6 @@ ImageData::~ImageData() {
   return this;
 }
 
-ImageData* ImageData::AsImageData() {
-  return this;
-}
-
 PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
   memcpy(desc, &desc_, sizeof(PP_ImageDataDesc));
   return PP_TRUE;
