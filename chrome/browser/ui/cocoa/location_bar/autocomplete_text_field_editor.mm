@@ -275,23 +275,29 @@ BOOL ThePasteboardIsTooDamnBig() {
 // Prevent control characters from being entered into the Omnibox.
 // This is invoked for keyboard entry, not for pasting.
 - (void)insertText:(id)aString {
-  // This method is documented as received either |NSString| or
-  // |NSAttributedString|.  The autocomplete code will restyle the
-  // results in any case, so simplify by always using |NSString|.
-  if ([aString isKindOfClass:[NSAttributedString class]])
-    aString = [aString string];
-
   // Repeatedly remove control characters.  The loop will only ever
-  // execute at allwhen the user enters control characters (using
+  // execute at all when the user enters control characters (using
   // Ctrl-Alt- or Ctrl-Q).  Making this generally efficient would
   // probably be a loss, since the input always seems to be a single
   // character.
-  NSRange range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
-  while (range.location != NSNotFound) {
-    aString = [aString stringByReplacingCharactersInRange:range withString:@""];
-    range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
+  if ([aString isKindOfClass:[NSAttributedString class]]) {
+    NSRange range =
+        [[aString string] rangeOfCharacterFromSet:forbiddenCharacters_];
+    while (range.location != NSNotFound) {
+      aString = [[aString mutableCopy] autorelease];
+      [aString deleteCharactersInRange:range];
+      range = [[aString string] rangeOfCharacterFromSet:forbiddenCharacters_];
+    }
+    DCHECK_EQ(range.length, 0U);
+  } else {
+    NSRange range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
+    while (range.location != NSNotFound) {
+      aString =
+          [aString stringByReplacingCharactersInRange:range withString:@""];
+      range = [aString rangeOfCharacterFromSet:forbiddenCharacters_];
+    }
+    DCHECK_EQ(range.length, 0U);
   }
-  DCHECK_EQ(range.length, 0U);
 
   // NOTE: If |aString| is empty, this intentionally replaces the
   // selection with empty.  This seems consistent with the case where
