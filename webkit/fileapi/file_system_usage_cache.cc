@@ -11,7 +11,7 @@
 namespace fileapi {
 
 const char FileSystemUsageCache::kUsageFileName[] = ".usage";
-const char FileSystemUsageCache::kUsageFileHeader[] = "FSU2";
+const char FileSystemUsageCache::kUsageFileHeader[] = "FSU3";
 const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
 const int FileSystemUsageCache::kUsageFileSize =
     sizeof(Pickle::Header) +
