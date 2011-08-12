@@ -481,7 +481,13 @@ class Upgrader(object):
 
     # Gather status details for this package
     if cpv_cmp_upstream is None:
-      state = utable.UpgradeTable.STATE_UNKNOWN
+      # No upstream cpv to compare to (although this might include a
+      # a restriction to only stable upstream versions).  This is concerning
+      # if the package is coming from 'portage' or 'portage-stable' overlays.
+      if locally_patched and info['latest_upstream_cpv'] is None:
+        state = utable.UpgradeTable.STATE_LOCAL_ONLY
+      else:
+        state = utable.UpgradeTable.STATE_UNKNOWN
     elif cpv_cmp_upstream > 0:
       if locally_duplicated:
         state = utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED
@@ -510,6 +516,7 @@ class Upgrader(object):
     else:
       action_stat = ''
     up_stat = {utable.UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
+               utable.UpgradeTable.STATE_LOCAL_ONLY: ' (exists locally only)',
                utable.UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % upstream_cpv,
                utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED:
                ' <-> %s' % upstream_cpv,

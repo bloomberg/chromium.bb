@@ -35,6 +35,7 @@ class UpgradeTable(table.Table):
 
   # COL_STATE values should be one of the following:
   STATE_UNKNOWN = 'unknown'
+  STATE_LOCAL_ONLY = 'local only'
   STATE_NEEDS_UPGRADE = 'needs upgrade'
   STATE_PATCHED = 'patched locally'
   STATE_DUPLICATED = 'duplicated locally'
