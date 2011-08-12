@@ -36,7 +36,7 @@ class ConfigurationPolicyProvider {
   struct PolicyDefinitionList {
     struct Entry {
       ConfigurationPolicyType policy_type;
-      Value::ValueType value_type;
+      base::Value::Type value_type;
       const char* name;
     };
 

@@ -56,7 +56,7 @@ class PrefService : public base::NonThreadSafe {
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
                const char* name,
-               base::Value::ValueType type);
+               base::Value::Type type);
     ~Preference() {}
 
     // Returns the name of the Preference (i.e., the key, e.g.,
@@ -64,7 +64,7 @@ class PrefService : public base::NonThreadSafe {
     const std::string name() const { return name_; }
 
     // Returns the registered type of the preference.
-    base::Value::ValueType GetType() const;
+    base::Value::Type GetType() const;
 
     // Returns the value of the Preference, falling back to the registered
     // default value if no other has been set.
@@ -115,7 +115,7 @@ class PrefService : public base::NonThreadSafe {
 
     std::string name_;
 
-    base::Value::ValueType type_;
+    base::Value::Type type_;
 
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
@@ -375,7 +375,7 @@ class PrefService : public base::NonThreadSafe {
   // |path| must point to a registered preference of type |type|.
   // Ownership of the returned value remains at the user pref store.
   base::Value* GetMutableUserPref(const char* path,
-                                  base::Value::ValueType type);
+                                  base::Value::Type type);
 
   // The PrefValueStore provides prioritized preference values. It is created
   // and owned by this PrefService. Subclasses may access it for unit testing.

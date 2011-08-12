@@ -304,7 +304,7 @@ void CoreOptionsHandler::HandleSetListPref(const ListValue* args) {
 }
 
 void CoreOptionsHandler::HandleSetPref(const ListValue* args,
-                                       Value::ValueType type) {
+                                       base::Value::Type type) {
   DCHECK_GT(static_cast<int>(args->GetSize()), 1);
 
   std::string pref_name;

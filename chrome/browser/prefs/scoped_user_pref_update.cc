@@ -20,7 +20,7 @@ ScopedUserPrefUpdateBase::~ScopedUserPrefUpdateBase() {
   Notify();
 }
 
-Value* ScopedUserPrefUpdateBase::Get(Value::ValueType type) {
+Value* ScopedUserPrefUpdateBase::Get(base::Value::Type type) {
   if (!value_)
     value_ = service_->GetMutableUserPref(path_.c_str(), type);
   return value_;

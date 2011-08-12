@@ -108,7 +108,7 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
 }
 
 bool PrefValueStore::GetValue(const std::string& name,
-                              Value::ValueType type,
+                              base::Value::Type type,
                               const Value** out_value) const {
   *out_value = NULL;
   // Check the |PrefStore|s in order of their priority from highest to lowest

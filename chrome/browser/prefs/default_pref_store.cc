@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/default_pref_store.h"
 
+using base::Value;
+
 DefaultPrefStore::DefaultPrefStore() {}
 
 DefaultPrefStore::~DefaultPrefStore() {}
@@ -13,8 +15,7 @@ void DefaultPrefStore::SetDefaultValue(const std::string& key, Value* value) {
   SetValue(key, value);
 }
 
-Value::ValueType DefaultPrefStore::GetType(const std::string& key) const {
+base::Value::Type DefaultPrefStore::GetType(const std::string& key) const {
   const Value* value;
-  return GetValue(key, &value) == READ_OK ? value->GetType()
-                                          : Value::TYPE_NULL;
+  return GetValue(key, &value) == READ_OK ? value->GetType() : Value::TYPE_NULL;
 }

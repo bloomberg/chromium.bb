@@ -91,7 +91,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleSetStringPref(const ListValue* args);
   void HandleSetListPref(const ListValue* args);
 
-  void HandleSetPref(const ListValue* args, Value::ValueType type);
+  void HandleSetPref(const ListValue* args, base::Value::Type type);
 
   // Callback for the "clearPref" message.  This message clears a preference
   // value. |args| is an array of parameters as follows:

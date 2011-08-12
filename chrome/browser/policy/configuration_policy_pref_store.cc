@@ -57,7 +57,7 @@ class ConfigurationPolicyPrefKeeper
   // by an automated converter. Each one of these policies
   // has an entry in |simple_policy_map_| with the following type.
   struct PolicyToPreferenceMapEntry {
-    Value::ValueType value_type;
+    base::Value::Type value_type;
     ConfigurationPolicyType policy_type;
     const char* preference_path;  // A DictionaryValue path, not a file path.
   };

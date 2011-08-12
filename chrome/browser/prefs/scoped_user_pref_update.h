@@ -40,7 +40,7 @@ class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
   virtual ~ScopedUserPrefUpdateBase();
 
   // Sets |value_| to |service_|->GetMutableUserPref and returns it.
-  base::Value* Get(Value::ValueType type);
+  base::Value* Get(base::Value::Type type);
 
  private:
   // If |value_| is not null, triggers a notification of PrefObservers and
@@ -64,7 +64,7 @@ class ScopedUserPrefUpdateBase : public base::NonThreadSafe {
 //
 // This class may only be used on the UI thread as it requires access to the
 // PrefService.
-template <typename T, Value::ValueType type_enum_value>
+template <typename T, base::Value::Type type_enum_value>
 class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
  public:
   ScopedUserPrefUpdate(PrefService* service, const char* path)

@@ -40,7 +40,7 @@ namespace {
 // A helper function for RegisterLocalized*Pref that creates a Value* based on
 // the string value in the locale dll.  Because we control the values in a
 // locale dll, this should always return a Value of the appropriate type.
-Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
+Value* CreateLocaleDefaultValue(base::Value::Type type, int message_id) {
   std::string resource_string = l10n_util::GetStringUTF8(message_id);
   DCHECK(!resource_string.empty());
   switch (type) {
@@ -638,7 +638,7 @@ const PrefService::Preference* PrefService::FindPreference(
   PreferenceSet::const_iterator it = prefs_.find(&p);
   if (it != prefs_.end())
     return *it;
-  const Value::ValueType type = default_store_->GetType(pref_name);
+  const base::Value::Type type = default_store_->GetType(pref_name);
   if (type == Value::TYPE_NULL)
     return NULL;
   Preference* new_pref = new Preference(this, pref_name, type);
@@ -710,7 +710,7 @@ void PrefService::RegisterPreference(const char* path,
     return;
   }
 
-  Value::ValueType orig_type = default_value->GetType();
+  base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
          "invalid preference type: " << orig_type;
 
@@ -779,7 +779,7 @@ int64 PrefService::GetInt64(const char* path) const {
 }
 
 Value* PrefService::GetMutableUserPref(const char* path,
-                                       Value::ValueType type) {
+                                       base::Value::Type type) {
   CHECK(type == Value::TYPE_DICTIONARY || type == Value::TYPE_LIST);
   DCHECK(CalledOnValidThread());
 
@@ -843,7 +843,7 @@ SyncableService* PrefService::GetSyncableService() {
 
 PrefService::Preference::Preference(const PrefService* service,
                                     const char* name,
-                                    Value::ValueType type)
+                                    base::Value::Type type)
       : name_(name),
         type_(type),
         pref_service_(service) {
@@ -851,7 +851,7 @@ PrefService::Preference::Preference(const PrefService* service,
   DCHECK(service);
 }
 
-Value::ValueType PrefService::Preference::GetType() const {
+base::Value::Type PrefService::Preference::GetType() const {
   return type_;
 }
 

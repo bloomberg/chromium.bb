@@ -36,7 +36,7 @@ Value* LoadValue(const std::string& filename) {
   return result;
 }
 
-Value* LoadValue(const std::string& filename, Value::ValueType type) {
+Value* LoadValue(const std::string& filename, base::Value::Type type) {
   scoped_ptr<Value> result(LoadValue(filename));
   if (!result.get())
     return NULL;

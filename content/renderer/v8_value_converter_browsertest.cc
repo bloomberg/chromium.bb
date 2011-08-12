@@ -99,7 +99,7 @@ class V8ValueConverterTest : public testing::Test {
 
   void TestWeirdType(const V8ValueConverter& converter,
                      v8::Handle<v8::Value> val,
-                     Value::ValueType expected_type,
+                     base::Value::Type expected_type,
                      Value* expected_value) {
     scoped_ptr<Value> raw(converter.FromV8Value(val, context_));
     ASSERT_TRUE(raw.get());

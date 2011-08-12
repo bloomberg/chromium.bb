@@ -80,7 +80,7 @@ class PrefValueStore {
   // was found in any of the available PrefStores. Most callers should use
   // Preference::GetValue() instead of calling this method directly.
   bool GetValue(const std::string& name,
-                Value::ValueType type,
+                base::Value::Type type,
                 const Value** out_value) const;
 
   // These methods return true if a preference with the given name is in the
@@ -169,7 +169,7 @@ class PrefValueStore {
     DISALLOW_COPY_AND_ASSIGN(PrefStoreKeeper);
   };
 
-  typedef std::map<std::string, Value::ValueType> PrefTypeMap;
+  typedef std::map<std::string, base::Value::Type> PrefTypeMap;
 
   friend class PrefValueStorePolicyRefreshTest;
   FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest, TestPolicyRefresh);
