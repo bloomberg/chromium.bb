@@ -122,6 +122,7 @@ HistoryTester.VerifyHistoryLength3
 IFrameTest.Crash
 IFrameTest.InEmptyFrame
 LocaleTestsDa.TestStart
+LocaleTestsZhTw.TestStart
 LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
@@ -129,6 +130,7 @@ OutOfProcessPPAPITest.Broker
 OutOfProcessPPAPITest.Buffer
 OutOfProcessPPAPITest.CharSet
 OutOfProcessPPAPITest.Core
+OutOfProcessPPAPITest.ImageData
 OutOfProcessPPAPITest.Memory
 OutOfProcessPPAPITest.PaintAggregator
 OutOfProcessPPAPITest.URLUtil
@@ -143,6 +145,7 @@ PPAPITest.Graphics2SD
 PPAPITest.ImageData
 PPAPITest.Instance
 PPAPITest.PaintAggregator
+PPAPITest.QueryPolicy
 PPAPITest.Scrollbar
 PPAPITest.UMA
 PPAPITest.URLUtil
