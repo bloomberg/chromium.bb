@@ -204,6 +204,7 @@ void AdvancedOptionsHandler::Initialize() {
   SetupPromptForDownload();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
+  SetupSSLConfigSettings();
 #if !defined(OS_CHROMEOS)
   if (cloud_print_proxy_ui_enabled_) {
     SetupCloudPrintProxySection();
@@ -232,6 +233,13 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   cloud_print_proxy_email_.Init(prefs::kCloudPrintEmail, prefs, this);
   cloud_print_proxy_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs, this);
 #endif
+
+  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
+                             g_browser_process->local_state(), this);
+  ssl3_enabled_.Init(prefs::kSSL3Enabled, g_browser_process->local_state(),
+                     this);
+  tls1_enabled_.Init(prefs::kTLS1Enabled, g_browser_process->local_state(),
+                     this);
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   background_mode_enabled_.Init(prefs::kBackgroundModeEnabled,
@@ -293,6 +301,15 @@ void AdvancedOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
 #endif
+  web_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
+  web_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
+  web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("backgroundModeAction",
       NewCallback(this,
@@ -393,6 +410,37 @@ void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
       SetupFontSizeLabel();
     }
   }
+}
+
+void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
+    const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  UserMetrics::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_CheckCertRevocation_Enable") :
+          UserMetricsAction("Options_CheckCertRevocation_Disable"));
+  rev_checking_enabled_.SetValue(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  UserMetrics::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_SSL3_Enable") :
+          UserMetricsAction("Options_SSL3_Disable"));
+  ssl3_enabled_.SetValue(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  UserMetrics::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_TLS1_Enable") :
+          UserMetricsAction("Options_TLS1_Disable"));
+  tls1_enabled_.SetValue(enabled);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -590,4 +638,26 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
+}
+
+void AdvancedOptionsHandler::SetupSSLConfigSettings() {
+  {
+    base::FundamentalValue checked(rev_checking_enabled_.GetValue());
+    base::FundamentalValue disabled(rev_checking_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetCheckRevocationCheckboxState", checked,
+        disabled);
+  }
+  {
+    base::FundamentalValue checked(ssl3_enabled_.GetValue());
+    base::FundamentalValue disabled(ssl3_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetUseSSL3CheckboxState", checked, disabled);
+  }
+  {
+    base::FundamentalValue checked(tls1_enabled_.GetValue());
+    base::FundamentalValue disabled(tls1_enabled_.IsManaged());
+    web_ui_->CallJavascriptFunction(
+        "options.AdvancedOptions.SetUseTLS1CheckboxState", checked, disabled);
+  }
 }
