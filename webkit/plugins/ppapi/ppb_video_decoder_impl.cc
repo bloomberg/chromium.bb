@@ -100,9 +100,10 @@ int32_t PPB_VideoDecoder_Impl::Decode(
     return PP_ERROR_FAILED;
 
   PPB_Buffer_Impl* buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
-  media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
-                                       buffer->shared_memory()->handle(),
-                                       static_cast<size_t>(buffer->size()));
+  media::BitstreamBuffer decode_buffer(
+      bitstream_buffer->id,
+      buffer->shared_memory()->handle(),
+      static_cast<size_t>(bitstream_buffer->size));
   SetBitstreamBufferCallback(bitstream_buffer->id, callback);
 
   FlushCommandBuffer();
