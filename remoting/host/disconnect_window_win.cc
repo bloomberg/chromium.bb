@@ -25,6 +25,8 @@
 //   SimpleHost: simple_host_process.cc
 extern HMODULE g_hModule;
 
+const int DISCONNECT_HOTKEY_ID = 1000;
+
 namespace remoting {
 
 class DisconnectWindowWin : public DisconnectWindow {
@@ -42,11 +44,14 @@ private:
 
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-  void EndDialog();
+  void ShutdownHost();
+  void SetDisconnectButtonText(HWND hwnd);
+  void EndDialog(int result);
 
   remoting::ChromotingHost* host_;
   std::string username_;
   HWND hwnd_;
+  bool has_hotkey_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowWin);
 };
@@ -54,11 +59,12 @@ private:
 DisconnectWindowWin::DisconnectWindowWin()
     : host_(NULL),
       username_(""),
-      hwnd_(NULL) {
+      hwnd_(NULL),
+      has_hotkey_(false) {
 }
 
 DisconnectWindowWin::~DisconnectWindowWin() {
-  EndDialog();
+  EndDialog(0);
 }
 
 BOOL CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT msg,
@@ -86,11 +92,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
         std::wstring w_title = UTF8ToWide(kTitle);
         SetWindowText(hwnd, w_title.c_str());
 
-        HWND hwndButton = GetDlgItem(hwnd, IDC_DISCONNECT);
-        CHECK(hwndButton);
-        std::wstring w_button = UTF8ToWide(kDisconnectButton);
-        w_button += UTF8ToWide(kDisconnectKeysWin);
-        SetWindowText(hwndButton, w_button.c_str());
+        SetDisconnectButtonText(hwnd);
 
         HWND hwndSharingWith = GetDlgItem(hwnd, IDC_DISCONNECT_SHARINGWITH);
         CHECK(hwndSharingWith);
@@ -104,6 +106,12 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
         SetWindowText(hwndUsername, w_username.c_str());
       }
       return TRUE;
+    case WM_HOTKEY:
+      {
+        ShutdownHost();
+        EndDialog(0);
+      }
+      return TRUE;
     case WM_CLOSE:
       // Ignore close messages.
       return TRUE;
@@ -115,10 +123,8 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       switch (LOWORD(wParam)) {
         case IDC_DISCONNECT:
           {
-            CHECK(host_);
-            host_->Shutdown(NULL);
-            ::EndDialog(hwnd, LOWORD(wParam));
-            hwnd_ = NULL;
+            ShutdownHost();
+            EndDialog(LOWORD(wParam));
           }
           return TRUE;
       }
@@ -140,15 +146,41 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
   }
 
   ShowWindow(hwnd_, SW_SHOW);
+
+  // Set up handler for Ctrl-Alt-Esc shortcut.
+  if (!has_hotkey_ && RegisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID,
+                                     MOD_ALT | MOD_CONTROL, VK_ESCAPE)) {
+    has_hotkey_ = true;
+  }
+  SetDisconnectButtonText(hwnd_);
+}
+
+void DisconnectWindowWin::ShutdownHost() {
+  CHECK(host_);
+  host_->Shutdown(NULL);
+}
+
+void DisconnectWindowWin::SetDisconnectButtonText(HWND hwnd) {
+  HWND hwndButton = GetDlgItem(hwnd, IDC_DISCONNECT);
+  CHECK(hwndButton);
+  std::wstring w_button = UTF8ToWide(kDisconnectButton);
+  if (has_hotkey_)
+    w_button += UTF8ToWide(kDisconnectKeysWin);
+  SetWindowText(hwndButton, w_button.c_str());
 }
 
 void DisconnectWindowWin::Hide() {
-  EndDialog();
+  EndDialog(0);
 }
 
-void DisconnectWindowWin::EndDialog() {
+void DisconnectWindowWin::EndDialog(int result) {
+  if (has_hotkey_) {
+    UnregisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID);
+    has_hotkey_ = false;
+  }
+
   if (hwnd_) {
-    ::EndDialog(hwnd_, 0);
+    ::EndDialog(hwnd_, result);
     hwnd_ = NULL;
   }
 }
