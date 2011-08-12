@@ -11,7 +11,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@fa384844ca1f82b35b088a5fe56153cfdf6e3fb4',
+        Var('git_url') + '/external/google-breakpad/src.git@e3192937351161f6898dba41bcfc8939ad2a6f1f',
     'src/build/util/support':
         Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
@@ -21,7 +21,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@290665e5ec3f648c6d94f0a4e2d0f1c603f65b84',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@10c3932b3515287ae23fbea90a4376a39376fc4b',
+        Var('git_url') + '/native_client/src/native_client.git@933103d5829b63c5ce40e1b2eb8345669a5784fc',
     'src/native_client/src/third_party/ppapi':
         Var('git_url') + '/chromium/src/ppapi.git@9c715e4b7592baa0aed34059c6b29cee21d361f6',
     'src/sdch/open-vcdiff':
