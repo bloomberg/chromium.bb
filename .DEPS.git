@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@0d01c748af38a3b22be628223bb31f65d12f5230'
+         '@80412e3b1de27983966784f837020e552ef5f601'
 }
 
 deps = {
@@ -43,7 +43,7 @@ deps = {
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/deps/ffmpeg/source.git@ca8d1e94c8c59fd0635dc1f8d5b40ec39ffbb3f8',
     'src/third_party/flac':
-        Var('git_url') + '/chromium/deps/flac.git@6972a925d910bf0a284bcd98c6698013bb651f51',
+        Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
         Var('git_url') + '/chromium/deps/hunspell.git@8302bf595703e69c81c939d4b6ea964460e8e50b',
     'src/third_party/hunspell_dictionaries':
@@ -57,7 +57,7 @@ deps = {
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7101b2d94bfd6768e0942616f2eda2dc718feb9c',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@f958e0da9b74be2bc62e6c5f4451af75dc0e1c63',
+        Var('git_url') + '/chromium/deps/libvpx.git@4175134aaf3dad1ee4f6617f520222ee0a7c39a7',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@7f9bebe3906fb30f0632f9d010754d12dd6c02d7',
     'src/third_party/pyftpdlib/src':
