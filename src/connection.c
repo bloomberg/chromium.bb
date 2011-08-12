@@ -600,7 +600,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
 			object = wl_hash_table_lookup(objects, *p);
-			if (object != NULL) {
+			if (*p == 0 || object != NULL) {
 				printf("not a new object (%d), "
 				       "message %s(%s)\n",
 				       *p, message->name, message->signature);
