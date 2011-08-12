@@ -16,6 +16,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 
@@ -116,9 +117,11 @@ class SSLUITest : public InProcessBrowserTest {
   void ProceedThroughInterstitial(TabContents* tab) {
     InterstitialPage* interstitial_page = tab->interstitial_page();
     ASSERT_TRUE(interstitial_page);
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
     interstitial_page->Proceed();
-    // Wait for the navigation to be done.
-    ui_test_utils::WaitForNavigation(&(tab->controller()));
+    observer.Wait();
   }
 
   static bool GetFilePathWithHostAndPortReplacement(
@@ -411,8 +414,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
   ASSERT_TRUE(entry2);
 
   // Now go back so that a page is in the forward history.
-  tab->controller().GoBack();
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    tab->controller().GoBack();
+    observer.Wait();
+  }
   ASSERT_TRUE(tab->controller().CanGoForward());
   NavigationEntry* entry3 = tab->controller().GetActiveEntry();
   ASSERT_TRUE(entry1 == entry3);
@@ -424,8 +432,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
                                  true);  // Interstitial showing
 
   // Simulate user clicking and holding on forward button.
-  tab->controller().GoToOffset(1);
-  ui_test_utils::WaitForNavigation(&(tab->controller()));
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    tab->controller().GoToOffset(1);
+    observer.Wait();
+  }
 
   // We should be showing the second good page.
   EXPECT_FALSE(browser()->GetSelectedTabContents()->interstitial_page());
@@ -597,9 +610,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   browser::Navigate(&params);
   TabContentsWrapper* tab2 = params.target_contents;
-  ui_test_utils::WaitForNavigation(&(tab2->controller()));
+  observer.Wait();
 
   // The new tab has insecure content.
   CheckAuthenticatedState(tab2->tab_contents(), true);
@@ -634,9 +649,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   browser::NavigateParams params(browser(), url, PageTransition::TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   browser::Navigate(&params);
   TabContentsWrapper* tab2 = params.target_contents;
-  ui_test_utils::WaitForNavigation(&(tab2->controller()));
+  observer.Wait();
 
   // The new tab has insecure content.
   CheckAuthenticationBrokenState(tab2->tab_contents(), 0, true, false);
@@ -807,9 +824,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
   GURL url = test_server()->GetURL("files/ssl/google.html");
-  TabContentsWrapper* tab2 =
-      browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
-  ui_test_utils::WaitForNavigation(&(tab2->controller()));
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  observer.Wait();
 
   // Close the first tab.
   browser()->CloseTabContents(tab1);
@@ -952,23 +970,33 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
 
   bool success = false;
   // Now navigate inside the frame.
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
-      L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
-      &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), std::wstring(),
+        L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
+        &success));
+    ASSERT_TRUE(success);
+    observer.Wait();
+  }
 
   // We should still be fine.
   CheckAuthenticatedState(tab, false);
 
   // Now let's hit a bad page.
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
-      L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
-      &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), std::wstring(),
+        L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
+        &success));
+    ASSERT_TRUE(success);
+    observer.Wait();
+  }
 
   // The security style should still be secure.
   CheckAuthenticatedState(tab, false);
@@ -984,24 +1012,39 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   EXPECT_FALSE(is_content_evil);
 
   // Now go back, our state should still be OK.
-  tab->controller().GoBack();
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    tab->controller().GoBack();
+    observer.Wait();
+  }
   CheckAuthenticatedState(tab, false);
 
   // Navigate to a page served over HTTP.
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
-      L"window.domAutomationController.send(clickLink('HTTPLink'));",
-      &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), std::wstring(),
+        L"window.domAutomationController.send(clickLink('HTTPLink'));",
+        &success));
+    ASSERT_TRUE(success);
+    observer.Wait();
+  }
 
   // Our state should be insecure.
   CheckAuthenticatedState(tab, true);
 
   // Go back, our state should be unchanged.
-  tab->controller().GoBack();
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    tab->controller().GoBack();
+    observer.Wait();
+  }
   CheckAuthenticatedState(tab, true);
 }
 
@@ -1028,12 +1071,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestBadFrameNavigation) {
 
   // Navigate to a good frame.
   bool success = false;
+  ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), std::wstring(),
       L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
       &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  ASSERT_TRUE(success);
+  observer.Wait();
 
   // We should still be authentication broken.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
@@ -1060,24 +1106,35 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
   CheckUnauthenticatedState(tab);
 
   // Now navigate inside the frame to a secure HTTPS frame.
-  bool success = false;
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
-      L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
-      &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    bool success = false;
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), std::wstring(),
+        L"window.domAutomationController.send(clickLink('goodHTTPSLink'));",
+        &success));
+    ASSERT_TRUE(success);
+    observer.Wait();
+  }
 
   // We should still be unauthenticated.
   CheckUnauthenticatedState(tab);
 
   // Now navigate to a bad HTTPS frame.
-  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), std::wstring(),
-      L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
-      &success));
-  EXPECT_TRUE(success);
-  ui_test_utils::WaitForNavigation(&tab->controller());
+  {
+    bool success = false;
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab->render_view_host(), std::wstring(),
+        L"window.domAutomationController.send(clickLink('badHTTPSLink'));",
+        &success));
+    ASSERT_TRUE(success);
+    observer.Wait();
+  }
 
   // State should not have changed.
   CheckUnauthenticatedState(tab);

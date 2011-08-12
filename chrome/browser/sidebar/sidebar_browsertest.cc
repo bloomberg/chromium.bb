@@ -72,13 +72,11 @@ class SidebarTest : public ExtensionBrowserTest {
 
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
 
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab->controller()));
     sidebar_manager->NavigateSidebar(tab, content_id_, url);
-
-    SidebarContainer* sidebar_container =
-        sidebar_manager->GetSidebarContainerFor(tab, content_id_);
-
-    TabContents* client_contents = sidebar_container->sidebar_contents();
-    ui_test_utils::WaitForNavigation(&client_contents->controller());
+    observer.Wait();
   }
 
   void ShowSidebar(TabContents* tab) {
@@ -199,4 +197,3 @@ IN_PROC_BROWSER_TEST_F(SidebarTest, SidebarNavigate) {
 }
 
 }  // namespace
-
