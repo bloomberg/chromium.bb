@@ -8,15 +8,14 @@
  */
 
 /**
- * PP_CompletionCallback_Func defines the function signature that you implement
- * to receive callbacks on asynchronous completion of an operation.
+ * This typedef defines the signature that you implement to receive callbacks
+ * on asynchronous completion of an operation.
  *
- * |user_data| is a pointer to user-specified data associated with this
- * function at callback creation. See PP_MakeCompletionCallback() for details.
- *
- * |result| is the result of the operation. Non-positive values correspond to
- * the error codes from pp_errors.h (excluding PP_OK_COMPLETIONPENDING).
- * Positive values indicate additional information such as bytes read.
+ * @param[in] user_data A pointer to user data passed to a callback function.
+ * @param[in] result If result is 0 (PP_OK), the operation succeeded.  Negative
+ * values (other than -1 or PP_OK_COMPLETE) indicate error and are specified
+ * in pp_errors.h. Positive values for result usually indicate success and have
+ * some operation-dependent meaning (such as bytes read).
  */
 typedef void PP_CompletionCallback_Func([inout] mem_t user_data,
                                         [in] int32_t result);
@@ -52,17 +51,36 @@ enum PP_CompletionCallback_Flag {
 
 
 /**
- * Any method that takes a PP_CompletionCallback can complete asynchronously.
- * Refer to PP_CompletionCallback_Flag for more information.
+ * Any method that takes a <code>PP_CompletionCallback</code> has the option of
+ * completing asynchronously if the operation would block.  Such a method
+ * should return <code>PP_OK_COMPLETIONPENDING</code> to indicate that the
+ * method will complete asynchronously and notify the caller and will always be
+ * invoked from the main thread of PPAPI execution.  If the completion callback
+ * is NULL, then the operation will block if necessary to complete its work.
+ * <code>PP_BlockUntilComplete()</code> provides a convenient way to specify
+ * blocking behavior. Refer to <code>PP_BlockUntilComplete</code> for more
+ * information.
  *
- * If PP_CompletionCallback_Func is NULL, the operation might block if necessary
- * to complete the work. Refer to PP_BlockUntilComplete for more information.
- *
- * See PP_MakeCompletionCallback() for the description of each field.
+ * The result parameter passed to <code>func</code> is an int32_t that, if
+ * negative indicates an error code whose meaning is specific to the calling
+ * method (refer to <code>pp_error.h</code> for further information). A
+ * positive or 0 value is a return result indicating success whose meaning
+ * depends on the calling method (e.g. number of bytes read).
  */
 [passByValue] struct PP_CompletionCallback {
+  /**
+   * This value is a callback function that will be called.
+   */
   PP_CompletionCallback_Func func;
+  /**
+   * This value is a pointer to user data passed to a callback function.
+   */
   mem_t user_data;
+
+  /**
+   * Flags used to control how non-NULL callbacks are scheduled by
+   * asynchronous methods.
+   */
   int32_t flags;
 };
 
@@ -74,20 +92,23 @@ enum PP_CompletionCallback_Flag {
  * @{
  */
 /**
- * PP_MakeCompletionCallback() is used to create a PP_CompletionCallback
- * without flags. If you want to alter the default callback behavior, set the
- * flags to a bit field combination of PP_CompletionCallback_Flag's.
+ * PP_MakeCompletionCallback() is used to create a
+ * <code>PP_CompletionCallback</code>.
  *
- * Example:
- *   struct PP_CompletionCallback cc = PP_MakeCompletionCallback(Foo, NULL);
- *   cc.flags = cc.flags | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+ * <strong>Example:</strong>
  *
- * @param[in] func A PP_CompletionCallback_Func to be called on completion.
- * @param[in] user_data A pointer to user data passed to be passed to the
- * callback function. This is optional and is typically used to help track state
- * in case of multiple pending callbacks.
+ * <code>
+ * struct PP_CompletionCallback cc = PP_MakeCompletionCallback(Foo, NULL);
+ * cc.flags = cc.flags | PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+ * </code>
  *
- * @return A PP_CompletionCallback structure.
+ * @param[in] func A <code>PP_CompletionCallback_Func</code> that will be
+ * called.
+ * @param[in] user_data A pointer to user data passed to your callback
+ * function. This is optional and is typically used to help track state
+ * when you may have multiple callbacks pending.
+ *
+ * @return A <code>PP_CompletionCallback</code> structure.
  */
 PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
     PP_CompletionCallback_Func func,
@@ -131,7 +152,8 @@ PP_INLINE struct PP_CompletionCallback PP_MakeOptionalCompletionCallback(
  * the callback function passing it user data specified on creation and
  * completion |result|.
  *
- * @param[in] cc A pointer to a PP_CompletionCallback that will be run.
+ * @param[in] cc A pointer to a <code>PP_CompletionCallback</code> that will be
+ * run.
  * @param[in] result The result of the operation. Non-positive values correspond
  * to the error codes from pp_errors.h (excluding PP_OK_COMPLETIONPENDING).
  * Positive values indicate additional information such as bytes read.
@@ -156,24 +178,24 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
  * until the function completes. Blocking completion callbacks are only allowed
  * from background threads.
  *
- * @return A PP_CompletionCallback structure corresponding to a NULL callback.
+ * @return A <code>PP_CompletionCallback</code> structure.
  */
 PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
   return PP_MakeCompletionCallback(NULL, NULL);
 }
 
 /**
- * Runs a callback and clears the reference to it.
+ * PP_RunAndClearCompletionCallback() runs a callback and clears the reference
+ * to that callback.
  *
- * This is used when the null-ness of a completion callback is used as a signal
- * for whether a completion callback has been registered. In this case, after
- * the execution of the callback, it should be cleared.
- *
- * However, this introduces a conflict if the completion callback wants to
- * schedule more work that involves the same completion callback again (for
- * example, when reading data from an URLLoader, one would typically queue up
- * another read callback). As a result, this function clears the pointer
- * *before* the given callback is executed.
+ * This function is used when the null-ness of a completion callback is used as
+ * a signal for whether a completion callback has been registered. In this
+ * case, after the execution of the callback, it should be cleared. However,
+ * this introduces a conflict if the completion callback wants to schedule more
+ * work that involves the same completion callback again (for example, when
+ * reading data from an URLLoader, one would typically queue up another read
+ * callback). As a result, this function clears the pointer
+ * before the provided callback is executed.
  */
 PP_INLINE void PP_RunAndClearCompletionCallback(
     struct PP_CompletionCallback* cc,

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_point.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_point.idl modified Wed Aug 10 14:06:40 2011. */
 
 #ifndef PPAPI_C_PP_POINT_H_
 #define PPAPI_C_PP_POINT_H_
@@ -60,10 +60,12 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_FloatPoint, 8);
 /**
  * PP_MakePoint() creates a <code>PP_Point</code> given the x and y coordinates
  * as int32_t values.
+ *
  * @param[in] x An int32_t value representing a horizontal coordinate of a
  * point, starting with 0 as the left-most coordinate.
  * @param[in] y An int32_t value representing a vertical coordinate of a point,
  * starting with 0 as the top-most coordinate.
+ *
  * @return A <code>PP_Point</code> structure.
  */
 PP_INLINE struct PP_Point PP_MakePoint(int32_t x, int32_t y) {

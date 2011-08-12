@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_input_event.idl modified Wed Jul 20 11:21:44 2011. */
+/* From pp_input_event.idl modified Thu Aug 11 14:47:50 2011. */
 
 #ifndef PPAPI_C_PP_INPUT_EVENT_H_
 #define PPAPI_C_PP_INPUT_EVENT_H_
@@ -137,10 +137,9 @@ struct PP_InputEvent_Wheel {
    */
   uint32_t modifier;
   /**
-   * Indicates the amount vertically and horizontally the user has requested
-   * to scroll by with their mouse wheel. A scroll down or to the right (where
-   * the content moves up or left) is represented as positive values, and
-   * a scroll up or to the left (where the content moves down or right) is
+   * The mouse wheel's horizontal scroll amount. A scroll to the right
+   * (where the content moves left) is represented as positive values,
+   * and a scroll to the left (where the content moves right) is
    * represented as negative values.
    *
    * The units are either in pixels (when scroll_by_page is false) or pages
@@ -158,7 +157,25 @@ struct PP_InputEvent_Wheel {
    * "clicks".
    */
   float delta_x;
-  /** This value represents */
+  /**
+   * The mouse wheel's vertical scroll amount. A scroll down (where the
+   * content moves up) is represented as positive values, and a scroll up
+   * (where the content moves down) is represented as negative values.
+   *
+   * The units are either in pixels (when scroll_by_page is false) or pages
+   * (when scroll_by_page is true). For example, delta_y = -3 means scroll up 3
+   * pixels when scroll_by_page is false, and scroll up 3 pages when
+   * scroll_by_page is true.
+   *
+   * This amount is system dependent and will take into account the user's
+   * preferred scroll sensitivity and potentially also nonlinear acceleration
+   * based on the speed of the scrolling.
+   *
+   * Devices will be of varying resolution. Some mice with large detents will
+   * only generate integer scroll amounts. But fractional values are also
+   * possible, for example, on some trackpads and newer mice that don't have
+   * "clicks".
+   */
   float delta_y;
   /**
    * The number of "clicks" of the scroll wheel that have produced the

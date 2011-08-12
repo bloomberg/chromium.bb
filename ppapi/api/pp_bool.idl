@@ -22,6 +22,10 @@
 #inline cc
 /**
  * Converts a C++ "bool" type to a PP_Bool.
+ *
+ * @param[in] b A C++ "bool" type.
+ *
+ * @return A PP_Bool.
  */
 inline PP_Bool PP_FromBool(bool b) {
   return b ? PP_TRUE : PP_FALSE;
@@ -29,6 +33,10 @@ inline PP_Bool PP_FromBool(bool b) {
 
 /**
  * Converts a PP_Bool to a C++ "bool" type.
+ *
+ * @param[in] b A PP_Bool.
+ *
+ * @return A C++ "bool" type.
  */
 inline bool PP_ToBool(PP_Bool b) {
   return (b != PP_FALSE);

@@ -45,10 +45,12 @@ struct PP_FloatPoint {
 /**
  * PP_MakePoint() creates a <code>PP_Point</code> given the x and y coordinates
  * as int32_t values.
+ *
  * @param[in] x An int32_t value representing a horizontal coordinate of a
  * point, starting with 0 as the left-most coordinate.
  * @param[in] y An int32_t value representing a vertical coordinate of a point,
  * starting with 0 as the top-most coordinate.
+ *
  * @return A <code>PP_Point</code> structure.
  */
 PP_INLINE struct PP_Point PP_MakePoint(int32_t x, int32_t y) {

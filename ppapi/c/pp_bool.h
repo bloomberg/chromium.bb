@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_bool.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_bool.idl modified Wed Aug 10 15:19:02 2011. */
 
 #ifndef PPAPI_C_PP_BOOL_H_
 #define PPAPI_C_PP_BOOL_H_
@@ -39,6 +39,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
 #ifdef __cplusplus
 /**
  * Converts a C++ "bool" type to a PP_Bool.
+ *
+ * @param[in] b A C++ "bool" type.
+ *
+ * @return A PP_Bool.
  */
 inline PP_Bool PP_FromBool(bool b) {
   return b ? PP_TRUE : PP_FALSE;
@@ -46,6 +50,10 @@ inline PP_Bool PP_FromBool(bool b) {
 
 /**
  * Converts a PP_Bool to a C++ "bool" type.
+ *
+ * @param[in] b A PP_Bool.
+ *
+ * @return A C++ "bool" type.
  */
 inline bool PP_ToBool(PP_Bool b) {
   return (b != PP_FALSE);
