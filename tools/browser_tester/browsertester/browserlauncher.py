@@ -28,7 +28,8 @@ def SelectRunCommand():
 RunCommand = SelectRunCommand()
 
 def RemoveDirectory(path):
-  retry = 4
+  retry = 5
+  sleep_time = 0.25
   while True:
     try:
       shutil.rmtree(path)
@@ -36,7 +37,8 @@ def RemoveDirectory(path):
       # Windows processes sometime hang onto files too long
       if retry > 0:
         retry -= 1
-        time.sleep(0.125)
+        time.sleep(sleep_time)
+        sleep_time *= 2
       else:
         # No luck - don't mask the error
         raise
