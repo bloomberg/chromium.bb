@@ -53,7 +53,7 @@ class Texture : public base::RefCounted<Texture> {
 
   // Draws the portion of the texture contained within clip_bounds
   virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) = 0;
+                    const gfx::Rect& clip_bounds_in_texture) = 0;
 
  protected:
   virtual ~Texture() {}

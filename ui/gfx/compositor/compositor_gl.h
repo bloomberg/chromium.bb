@@ -36,7 +36,7 @@ class TextureGL : public Texture {
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
   virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) OVERRIDE;
+                    const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  protected:
   TextureGL(CompositorGL* compositor, const gfx::Size& size);
@@ -46,7 +46,7 @@ class TextureGL : public Texture {
   // Only the region defined by draw_bounds will be drawn.
   void DrawInternal(const TextureProgramGL& program,
                     const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds);
+                    const gfx::Rect& clip_bounds_in_texture);
 
   unsigned int texture_id_;
   gfx::Size size_;

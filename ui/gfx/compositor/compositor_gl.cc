@@ -338,13 +338,17 @@ void TextureGL::Draw(const ui::TextureDrawParams& params) {
 }
 
 void TextureGL::Draw(const ui::TextureDrawParams& params,
-                     const gfx::Rect& clip_bounds) {
+                     const gfx::Rect& clip_bounds_in_texture) {
   DCHECK(compositor_->program_swizzle());
-  DrawInternal(*compositor_->program_swizzle(), params, clip_bounds);
+  DrawInternal(*compositor_->program_swizzle(), params, clip_bounds_in_texture);
 }
 void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
                              const ui::TextureDrawParams& params,
-                             const gfx::Rect& clip_bounds) {
+                             const gfx::Rect& clip_bounds_in_texture) {
+   // clip clip_bounds_in_layer to size of texture
+   gfx::Rect clip_bounds = clip_bounds_in_texture.Intersect(
+       gfx::Rect(gfx::Point(0, 0), size_));
+
   if (params.blend)
     glEnable(GL_BLEND);
   else

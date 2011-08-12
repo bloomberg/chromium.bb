@@ -58,7 +58,7 @@ class ViewTexture : public Texture {
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
   virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) OVERRIDE;
+                    const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
   ~ViewTexture();
@@ -273,7 +273,7 @@ void ViewTexture::Draw(const ui::TextureDrawParams& params) {
 }
 
 void ViewTexture::Draw(const ui::TextureDrawParams& params,
-                       const gfx::Rect& clip_bounds) {
+                       const gfx::Rect& clip_bounds_in_texture) {
   NOTIMPLEMENTED();
 }
 

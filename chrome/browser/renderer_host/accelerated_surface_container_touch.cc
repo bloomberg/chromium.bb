@@ -27,7 +27,7 @@ class AcceleratedSurfaceContainerTouchEGL
                                       uint64 surface_handle);
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) OVERRIDE;
+                    const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
   ~AcceleratedSurfaceContainerTouchEGL();
@@ -44,7 +44,7 @@ class AcceleratedSurfaceContainerTouchGLX
                                       uint64 surface_handle);
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
-                    const gfx::Rect& clip_bounds) OVERRIDE;
+                    const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
  private:
   ~AcceleratedSurfaceContainerTouchGLX();
@@ -90,7 +90,7 @@ AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
 
 void AcceleratedSurfaceContainerTouchEGL::Draw(
     const ui::TextureDrawParams& params,
-    const gfx::Rect& clip_bounds) {
+    const gfx::Rect& clip_bounds_in_texture) {
   DCHECK(compositor_->program_no_swizzle());
 
   ui::TextureDrawParams modified_params = params;
@@ -105,7 +105,7 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
 
   DrawInternal(*compositor_->program_no_swizzle(),
                modified_params,
-               clip_bounds);
+               clip_bounds_in_texture);
 }
 
 AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
@@ -205,7 +205,7 @@ AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
 
 void AcceleratedSurfaceContainerTouchGLX::Draw(
     const ui::TextureDrawParams& params,
-    const gfx::Rect& clip_bounds) {
+    const gfx::Rect& clip_bounds_in_texture) {
   DCHECK(compositor_->program_no_swizzle());
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
 
@@ -213,7 +213,7 @@ void AcceleratedSurfaceContainerTouchGLX::Draw(
   glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
   DrawInternal(*compositor_->program_no_swizzle(),
                params,
-               clip_bounds);
+               clip_bounds_in_texture);
   glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
