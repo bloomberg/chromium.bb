@@ -239,8 +239,8 @@ class BookmarkEditorView : public BookmarkEditor,
   // The label for the url text field.
   views::Label* url_label_;
 
-  // Used for editing the URL.
-  views::Textfield url_tf_;
+  // The text field used for editing the URL.
+  views::Textfield* url_tf_;
 
   // The label for the title text field.
   views::Label* title_label_;

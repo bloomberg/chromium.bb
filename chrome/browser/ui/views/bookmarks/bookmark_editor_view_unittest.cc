@@ -69,7 +69,8 @@ class BookmarkEditorViewTest : public TestingBrowserProcessTest {
   }
 
   void SetURLText(const std::wstring& text) {
-    editor_->url_tf_.SetText(text);
+    if (editor_->details_.type != BookmarkEditor::EditDetails::NEW_FOLDER)
+      editor_->url_tf_->SetText(text);
   }
 
   void ApplyEdits(BookmarkEditorView::EditorNode* node) {
@@ -82,7 +83,9 @@ class BookmarkEditorViewTest : public TestingBrowserProcessTest {
   }
 
   bool URLTFHasParent() {
-    return editor_->url_tf_.parent();
+    if (editor_->details_.type == BookmarkEditor::EditDetails::NEW_FOLDER)
+      return false;
+    return editor_->url_tf_->parent();
   }
 
   MessageLoopForUI message_loop_;
