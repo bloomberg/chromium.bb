@@ -1640,6 +1640,11 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (![NSColor respondsToSelector:@selector(_linenPatternImage)])
     return;
 
+  // Don't paint over-scroll areas if |contents_size| is empty, which indicates
+  // that the render widget is not a RenderView.
+  if (renderWidgetHostView_->render_widget_host_->contents_size().IsEmpty())
+    return;
+
   NSRect visibleContentRect = [self computeVisibleContentRect];
   NSSize frameSize = [self frame].size;
   bool hasHorizontalOverflow = (NSWidth(visibleContentRect) < frameSize.width);
