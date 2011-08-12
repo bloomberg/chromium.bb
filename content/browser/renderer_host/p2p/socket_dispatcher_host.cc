@@ -48,8 +48,10 @@ class P2PSocketDispatcherHost::DnsRequest {
       host_name_ = host_name_ + '.';
 
     net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
-    resolver_.Resolve(info, &addresses_, &completion_callback_,
-                      net::BoundNetLog());
+    int result = resolver_.Resolve(info, &addresses_, &completion_callback_,
+                                   net::BoundNetLog());
+    if (result != net::ERR_IO_PENDING)
+      OnDone(result);
   }
 
   int32 routing_id() { return routing_id_; }
@@ -199,10 +201,10 @@ void P2PSocketDispatcherHost::OnGetHostAddress(const IPC::Message& msg,
                                                int32 request_id) {
   DnsRequest* request = new DnsRequest(
       msg.routing_id(), request_id, resource_context_->host_resolver());
+  dns_requests_.insert(request);
   request->Resolve(host_name, base::Bind(
       &P2PSocketDispatcherHost::OnAddressResolved,
       base::Unretained(this), request));
-  dns_requests_.insert(request);
 }
 
 void P2PSocketDispatcherHost::OnAddressResolved(
