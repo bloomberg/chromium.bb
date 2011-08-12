@@ -38,6 +38,7 @@ bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
                     decoder->width(), decoder->height());
   bitmap_.allocPixels();
   bitmap_.eraseRGB(0x00, 0x00, 0x00);
+  bitmap_.setIsVolatile(true);
   return true;
 }
 
