@@ -192,29 +192,17 @@ function showNotificationBubble(event) {
   bubble.style.top = y + "px";
 
   // Move the arrow and shadow to the right location.
-  var arrow = $('arrow-contents');
-  var border = $('arrow-border');
-  var shadow = $('arrow-shadow');
+  var arrow_container = $('arrow-container');
   y += 26;
-  x -= arrow.style.width + 23;
-  arrow.style.left = x + "px";
-  arrow.style.top = y + "px";
-  x -= 1;
-  border.style.left = x + "px";
-  border.style.top = y + "px";
-  x -= 1;
-  shadow.style.left = x + "px";
-  shadow.style.top = y + "px";
+  x -= arrow_container.style.width + 25;
+  arrow_container.style.left = x + "px";
+  arrow_container.style.top = y + "px";
 
   // Animate the bubble into view.
   bubble.classList.add("notification-bubble-opened");
   bubble.classList.remove("notification-bubble-closed");
-  arrow.classList.add("notification-bubble-opened");
-  arrow.classList.remove("notification-bubble-closed");
-  border.classList.add("notification-bubble-opened");
-  border.classList.remove("notification-bubble-closed");
-  shadow.classList.add("notification-bubble-opened");
-  shadow.classList.remove("notification-bubble-closed");
+  arrow_container.classList.add("notification-bubble-opened");
+  arrow_container.classList.remove("notification-bubble-closed");
 
   bubble.focus();
 }
@@ -224,12 +212,8 @@ function hideNotificationBubble(event) {
   // This will fade the bubble out of existence.
   $('app-notification-bubble').classList.add("notification-bubble-closed");
   $('app-notification-bubble').classList.remove("notification-bubble-opened");
-  $('arrow-border').classList.add("notification-bubble-closed");
-  $('arrow-border').classList.remove("notification-bubble-opened");
-  $('arrow-shadow').classList.add("notification-bubble-closed");
-  $('arrow-shadow').classList.remove("notification-bubble-opened");
-  $('arrow-contents').classList.add("notification-bubble-closed");
-  $('arrow-contents').classList.remove("notification-bubble-opened");
+  $('arrow-container').classList.add("notification-bubble-closed");
+  $('arrow-container').classList.remove("notification-bubble-opened");
 }
 
 var apps = (function() {

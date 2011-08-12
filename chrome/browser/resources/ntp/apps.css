@@ -107,7 +107,7 @@ enough extra space in the small grid layout.
   color: Blue;
 }
 
-.app-notification-close {
+#app-notification-close {
   height: 14px;
   position: absolute;
   right: 6px;
@@ -223,7 +223,6 @@ html[dir=rtl] .app.web-store-entry.loner {
   font-family: Helvetica, Arial, sans-serif;
   font-size : 107%;
   min-height: 100px;
-  min-width: 200px;  
   opacity: 0;
   padding: 10px;
   position: absolute;
@@ -245,26 +244,35 @@ html[dir=rtl] .app.web-store-entry.loner {
   pointer-events: none;
 }
 
-/* A content-less div with this setting, will create an arrow when coupled
-   with the arrow_* styles below it. */
+div#arrow-container {
+  position: absolute;
+  -webkit-transition: opacity 0.2s linear;
+}
+/* The following arrow class (div.arrow) creates a triangle when used in
+   conjunction with the next three div styles below it (arrow-contents,
+   shadow and border). The border-color property determines which direction
+   the arrow is facing. */
 div.arrow {
   border-style: solid;
   border-width: 12px;
-  height: 0px;
-  width: 0px;
+  height: 0;
+  width: 0;
+}
+div#arrow-contents {
+  border-color: transparent white transparent transparent;
+  padding-left: 3px;
+  position: absolute;
+  z-index: 2;
+}
+div#arrow-shadow {
+  border-color: transparent #B5B5B5 transparent transparent;
+  opacity: 0.5;
+  padding-left: 1px;
   position: absolute;
 }
-div.arrow-contents {
-  border-color: transparent white transparent transparent;
-  z-index: 2;
-  -webkit-transition: opacity 0.2s linear;
-}
-div.arrow-shadow {
-  border-color: transparent gray transparent transparent;
-  -webkit-transition: opacity 0.2s linear;
-}
-div.arrow-border {
+div#arrow-border {
   border-color: transparent #B5B5B5 transparent transparent;
+  padding-left: 2px;
+  position: absolute;  
   z-index: 1;
-  -webkit-transition: opacity 0.2s linear;
 }

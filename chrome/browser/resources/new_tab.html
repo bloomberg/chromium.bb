@@ -171,18 +171,16 @@ if ('mode' in hashParams) {
     </div>
     <div id="apps-content"></div>
     <div id="app-notification-bubble" class="notification-bubble">
-      <img id="app-notification-close" src="chrome://theme/IDR_CLOSE_BAR"
-          class="app-notification-close">
+      <img id="app-notification-close" src="chrome://theme/IDR_CLOSE_BAR">
       <strong id="app-notification-title"></strong><br>
       <span id="app-notification-message"></span><br><br>
       <a id="app-notification-link"></a>
     </div>
-    <div id="arrow-contents"
-        class="arrow arrow-contents notification-bubble-closed"></div>
-    <div id="arrow-border"
-        class="arrow arrow-border notification-bubble-closed"></div>
-    <div id="arrow-shadow"
-        class="arrow arrow-shadow notification-bubble-closed"></div>
+    <div id="arrow-container" class="notification-bubble-closed">
+        <div id="arrow-contents" class="arrow"></div>
+        <div id="arrow-border" class="arrow"></div>
+        <div id="arrow-shadow" class="arrow"></div>
+    </div>
   </div>
   <div class="maxiview" id="most-visited-maxiview"></div>
 
