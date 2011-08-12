@@ -1957,10 +1957,10 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 static int on_term_signal(int signal_number, void *data)
 {
-	struct wlsc_compositor *ec = data;
+	struct wl_display *display = data;
 
 	fprintf(stderr, "caught signal %d\n", signal_number);
-	wl_display_terminate(ec->wl_display);
+	wl_display_terminate(display);
 
 	return 1;
 }
@@ -2055,9 +2055,9 @@ int main(int argc, char *argv[])
 	display = wl_display_create();
 
 	loop = wl_display_get_event_loop(display);
-	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
-	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
-	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, ec);
+	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, display);
+	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, display);
+	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, display);
 
 	wl_list_init(&child_process_list);
 	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
