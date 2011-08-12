@@ -838,6 +838,7 @@ everything-translator() {
   sdk
   install-translators srpc
   prune-translator-install srpc
+  track-translator-size ${SBTC_BUILD_WITH_PNACL}
 }
 
 glibc() {
@@ -3428,6 +3429,31 @@ DebugRun() {
   if ${UTMAN_DEBUG} || ${UTMAN_BUILDBOT}; then
     "$@"
   fi
+}
+
+######################################################################
+# Generate chromium perf bot logs for tracking the size of
+# translator binaries.
+
+track-translator-size() {
+  local platforms=$1
+  for platform in ${platforms}; do
+    print-size-of-sb-tool ${platform} llc
+    print-size-of-sb-tool ${platform} ld
+  done
+}
+
+print-size-of-sb-tool() {
+  local platform=$1
+  local tool=$2
+  local bin_dir="${PNACL_SB_ROOT}/${platform}/srpc/bin"
+  local tool_size_string=$(${PNACL_SIZE} -B "${bin_dir}/${tool}" | \
+    grep '[0-9]\+')
+  set -- ${tool_size_string}
+  echo "RESULT ${tool}_${platform}_size: text $1 bytes"
+  echo "RESULT ${tool}_${platform}_size: data $2 bytes"
+  echo "RESULT ${tool}_${platform}_size: bss $3 bytes"
+  echo "RESULT ${tool}_${platform}_size: total $4 bytes"
 }
 
 ######################################################################
