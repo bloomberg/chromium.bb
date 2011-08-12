@@ -22,6 +22,7 @@
             'nacl_cpuid.c',
             'ncinstbuffer.c',
             'x86_insts.c',
+            'nc_segment.c',
         ],
         'cflags!': [
           '-Wextra',

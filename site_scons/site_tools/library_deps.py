@@ -32,6 +32,10 @@ def _AddDefaultLibraryDependencies(dependencies):
 # of libraries.
 PLATFORM_LIBRARY_DEPENDENCIES = {
     'x86-32': _AddDefaultLibraryDependencies({
+        'nc_decoder_x86_32': [
+            'ncval_base_x86_32',
+            'nc_opcode_modeling_x86_32',
+            ],
         'ncdis_util_x86_32': [
             'ncval_reg_sfi_verbose_x86_32',
             'ncval_base_verbose_x86_32',
@@ -63,7 +67,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncval_reg_sfi_x86_32': [
             'nccopy_x86_32',
             'ncval_base_x86_32',
-            'nc_opcode_modeling_x86_32',
+            'nc_decoder_x86_32',
             ],
         'ncval_seg_sfi_verbose_x86_32': [
             'ncval_seg_sfi_x86_32',
@@ -75,6 +79,10 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             ],
         }),
     'x86-64': _AddDefaultLibraryDependencies({
+        'nc_decoder_x86_64': [
+            'ncval_base_x86_64',
+            'nc_opcode_modeling_x86_64',
+            ],
         'ncdis_util_x86_64': [
             'ncval_reg_sfi_verbose_x86_64',
             'ncval_base_verbose_x86_64',
@@ -106,7 +114,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'ncval_reg_sfi_x86_64': [
             'nccopy_x86_64',
             'ncval_base_x86_64',
-            'nc_opcode_modeling_x86_64',
+            'nc_decoder_x86_64',
             ],
         'ncval_seg_sfi_verbose_x86_64': [
             'ncval_seg_sfi_x86_64',

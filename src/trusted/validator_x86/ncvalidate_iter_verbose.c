@@ -17,15 +17,15 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator/x86/halt_trim.h"
 #include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
-#include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
-#include "native_client/src/trusted/validator_x86/nc_segment.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

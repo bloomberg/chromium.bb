@@ -35,11 +35,11 @@
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/x86_insts.h"
+#include "native_client/src/trusted/validator_x86/gen/nacl_disallows.h"
 #include "native_client/src/trusted/validator_x86/nacl_regsgen.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/nc_compress.h"
-#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

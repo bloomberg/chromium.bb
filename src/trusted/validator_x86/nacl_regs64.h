@@ -12,7 +12,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_REGS64_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_REGS64_H_
 
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
 /* Define the number of general purpose registers defined for the given
  * subarchitecture.

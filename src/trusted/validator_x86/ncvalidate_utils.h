@@ -9,7 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_UTILS_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_UTILS_H__
 
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
 struct NaClInstState;
 struct NaClExpVector;

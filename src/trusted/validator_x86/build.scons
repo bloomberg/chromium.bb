@@ -56,6 +56,11 @@ if generate:
   #
 
   # Get the directory in which we will generate checking in files.
+  header_prefix = env.subst('${MAIN_DIR}')
+  if header_prefix.endswith('/native_client'):
+    header_prefix = header_prefix[0:header_prefix.rfind('native_client')]
+  elif header_prefix.endswith('/native_client/'):
+    header_prefix = header_prefix[0:header_prefix.rfind('native_client/')]
   val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
 
   #------------------------------------------------------
@@ -66,14 +71,6 @@ if generate:
   enum_headers = []
   ncv_enum_pairs = {
       'nacl_disallows': '--name=NaClDisallowsFlag --add_size=1',
-      'ncopcode_prefix': '--name=NaClInstPrefix --add_size=1',
-      'ncopcode_insts':
-        '--name=NaClMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
-      'ncopcode_opcode_flags': '--name=NaClIFlag --add_size=1',
-      'ncopcode_operand_kind': '--name=NaClOpKind --add_size=1',
-      'ncopcode_operand_flag': '--name=NaClOpFlag --add_size=1',
-      'ncop_expr_node_flag': '--name=NaClExpFlag --add_size=1',
-      'ncop_expr_node_kind': '--name=NaClExpKind --add_size=1',
   }
 
   # Now code generate the enumerated types.
@@ -85,7 +82,7 @@ if generate:
 
     cmd_line = (
         '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
-        (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, val_src_dir,
+        (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, header_prefix,
          ncv_options, ncv_enum_file))
 
     env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)
@@ -176,7 +173,6 @@ if generate:
   gen_env.AlwaysBuild(
       gen_env.Alias('valclean', action=[Delete(x) for x in gen_list]))
 
-
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
@@ -237,34 +233,17 @@ ncdecode_table = env_decode_table.ComponentProgram(
 
 env.Requires(ncdecode_table, crt)
 
-# Instruction modeling for the decoder.
-env.ComponentLibrary(env.NaClTargetArchSuffix('nc_opcode_modeling'),
-                     ['ncopcode_desc.c',
-                      ])
-
-# Verbose routines for instruction modeling for the decoder.
-env.ComponentLibrary(env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
-                     ['ncopcode_desc_verbose.c',
-                      ])
-
 # SFI validator library.
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
                      ['ncvalidate_iter.c',
                       'ncvalidator_registry.c',
-                      'nc_opcode_histogram.c',
                       'nc_cpu_checks.c',
                       'nc_illegal.c',
-                      'nc_inst_iter.c',
                       'nc_jumps.c',
                       'nc_opcode_histogram.c',
                       'nc_protect_base.c',
                       'nc_memory_protect.c',
-                      'nc_segment.c',
-                      'nc_inst_state.c',
-                      'nc_inst_trans.c',
-                      'ncop_exps.c',
                       'ncvalidate_utils.c',
-                      'ncdis_decode_tables.c',
                       ])
 
 # Verbose routines of SFI validator library.
@@ -635,31 +614,3 @@ def __AddNegMaxErrors():
               ['small_tests', 'validator_tests'])
 
 __AddNegMaxErrors()
-
-#---------- UNIT TESTS ---------------------------------
-
-# Create an environment to run unit tests using Gtest.
-gtest_env = test_env.Clone();
-
-# gtest does not compile with our stringent settings.
-gtest_env.FilterOut(
-    CCFLAGS=['-pedantic'],
-    CXXFLAGS=['-fno-rtti', '-Weffc++'])
-gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
-
-# List of (unit) test file prefixes to run unit tests on.
-gtest_sources = ['nc_inst_state']
-
-for source in gtest_sources:
-  test_exe = gtest_env.ComponentProgram(
-    'x86_validator_tests_' + source,
-    [source+'_tests.cc'],
-    EXTRA_LIBS=['gtest',
-                gtest_env.NaClTargetArchSuffix('ncval_seg_sfi'),
-                gtest_env.NaClTargetArchSuffix('ncval_reg_sfi_verbose'),
-                ])
-  test_node = gtest_env.CommandTest(
-      source+'Tests.out',
-      command=[test_exe])
-  gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
-                               'run_x86_validator_tests')

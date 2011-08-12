@@ -17,7 +17,6 @@
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 #if NACL_TARGET_SUBARCH == 64

@@ -33,6 +33,7 @@ lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base'), [
     'nacl_cpuid.c',
     'ncinstbuffer.c',
     'x86_insts.c',
+    'nc_segment.c',
     ])
 
 lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base_verbose'), [

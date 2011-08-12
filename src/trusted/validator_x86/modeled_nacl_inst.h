@@ -12,7 +12,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H__
 
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
 /* Models metadata about an instruction, defining a pattern. Note: Since the
  * same sequence of opcode bytes may define more than one pattern (depending on

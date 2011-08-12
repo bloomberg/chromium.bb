@@ -15,10 +15,10 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
-#include "native_client/src/trusted/validator_x86/nc_segment.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 

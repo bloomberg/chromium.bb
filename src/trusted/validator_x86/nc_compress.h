@@ -12,7 +12,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_COMPRESS_H__
 
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
-#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
 
 /* Define the maximum number of instruction operands (over
  * all instructions) we will allow.  Note: before compression,
