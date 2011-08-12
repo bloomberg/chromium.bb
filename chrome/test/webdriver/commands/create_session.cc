@@ -76,7 +76,7 @@ void CreateSession::ExecutePost(Response* const response) {
   Automation::BrowserOptions browser_options;
   FilePath::StringType path;
   if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
-    browser_options.command = CommandLine(FilePath(path));
+    browser_options.cmdline = CommandLine(FilePath(path));
 
   ListValue* switches = NULL;
   const char* kCustomSwitchesKey = "chrome.switches";
@@ -97,11 +97,11 @@ void CreateSession::ExecutePost(Response* const response) {
               kBadRequest, "Custom switch is not a string"));
           return;
         }
-        browser_options.command.AppendSwitchNative(
+        browser_options.cmdline.AppendSwitchNative(
             switch_string.substr(0, separator_index),
             switch_string_native.substr(separator_index + 1));
       } else {
-        browser_options.command.AppendSwitch(switch_string);
+        browser_options.cmdline.AppendSwitch(switch_string);
       }
     }
   } else if (capabilities->HasKey(kCustomSwitchesKey)) {
@@ -130,6 +130,8 @@ void CreateSession::ExecutePost(Response* const response) {
       "chrome.channel", &browser_options.channel_id);
 
   ScopedTempDir temp_profile_dir;
+  FilePath temp_user_data_dir;
+
   std::string base64_profile;
   if (capabilities->GetStringWithoutPathExpansion("chrome.profile",
                                                   &base64_profile)) {
@@ -146,9 +148,8 @@ void CreateSession::ExecutePost(Response* const response) {
       return;
     }
 
-    browser_options.user_data_dir =
-        temp_profile_dir.path().AppendASCII("user_data_dir");
-    if (!Unzip(temp_profile_zip, browser_options.user_data_dir)) {
+    temp_user_data_dir = temp_profile_dir.path().AppendASCII("user_data_dir");
+    if (!Unzip(temp_profile_zip, temp_user_data_dir)) {
       response->SetError(new Error(
           kBadRequest, "Could not unarchive provided user profile"));
       return;

@@ -45,7 +45,7 @@ class Automation {
     BrowserOptions();
     ~BrowserOptions();
 
-    CommandLine command;
+    CommandLine cmdline;
     FilePath user_data_dir;
     std::string channel_id;
   };
