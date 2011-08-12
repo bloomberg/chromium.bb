@@ -8,6 +8,7 @@
 #include <list>
 #include <set>
 
+#include "base/time.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"

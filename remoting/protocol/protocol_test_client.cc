@@ -16,6 +16,7 @@ extern "C" {
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop_proxy.h"
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/time.h"
 #include "crypto/nss_util.h"
@@ -222,7 +223,8 @@ void ProtocolTestClient::Run(const std::string& username,
       new XmppSignalStrategy(&jingle_thread, username, auth_token,
                              auth_service));
   signal_strategy_->Init(this);
-  session_manager_.reset(JingleSessionManager::CreateNotSandboxed());
+  session_manager_.reset(JingleSessionManager::CreateNotSandboxed(
+      jingle_thread.message_loop_proxy()));
 
   host_jid_ = host_jid;
 

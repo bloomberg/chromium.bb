@@ -19,6 +19,10 @@
 
 class Task;
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace net {
 class Socket;
 }  // namespace net
@@ -33,7 +37,8 @@ class BufferedSocketWriter;
 // other thread.
 class ClientControlSender : public ClientStub {
  public:
-  explicit ClientControlSender(net::Socket* socket);
+  explicit ClientControlSender(base::MessageLoopProxy* message_loop,
+                               net::Socket* socket);
   virtual ~ClientControlSender();
 
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,

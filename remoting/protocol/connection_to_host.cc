@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/host_resolver.h"
 #include "remoting/jingle_glue/http_port_allocator.h"
@@ -26,7 +26,7 @@ namespace remoting {
 namespace protocol {
 
 ConnectionToHost::ConnectionToHost(
-    MessageLoop* message_loop,
+    base::MessageLoopProxy* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     HostResolverFactory* host_resolver_factory,
@@ -84,7 +84,7 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
-  if (MessageLoop::current() != message_loop_) {
+  if (!message_loop_->BelongsToCurrentThread()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&ConnectionToHost::Disconnect,
                               base::Unretained(this), shutdown_task));
@@ -106,12 +106,12 @@ void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
 }
 
 void ConnectionToHost::InitSession() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // Initialize chromotocol |session_manager_|.
   JingleSessionManager* session_manager =
       JingleSessionManager::CreateSandboxed(
-          network_manager_.release(), socket_factory_.release(),
+          message_loop_, network_manager_.release(), socket_factory_.release(),
           host_resolver_factory_.release(),
           port_allocator_session_factory_.release());
 
@@ -129,7 +129,7 @@ const SessionConfig* ConnectionToHost::config() {
 
 void ConnectionToHost::OnStateChange(
     SignalStrategy::StatusObserver::State state) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(event_callback_);
 
   if (state == SignalStrategy::StatusObserver::CONNECTED) {
@@ -142,12 +142,12 @@ void ConnectionToHost::OnStateChange(
 }
 
 void ConnectionToHost::OnJidChange(const std::string& full_jid) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   local_jid_ = full_jid;
 }
 
 void ConnectionToHost::OnSessionManagerInitialized() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // After SessionManager is initialized we can try to connect to the host.
   CandidateSessionConfig* candidate_config =
@@ -165,14 +165,14 @@ void ConnectionToHost::OnSessionManagerInitialized() {
 void ConnectionToHost::OnIncomingSession(
     Session* session,
     SessionManager::IncomingSessionResponse* response) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   // Client always rejects incoming sessions.
   *response = SessionManager::DECLINE;
 }
 
 void ConnectionToHost::OnSessionStateChange(
     Session::State state) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(event_callback_);
 
   switch (state) {
@@ -189,7 +189,8 @@ void ConnectionToHost::OnSessionStateChange(
 
     case Session::CONNECTED:
       // Initialize reader and writer.
-      video_reader_.reset(VideoReader::Create(session_->config()));
+      video_reader_.reset(
+          VideoReader::Create(message_loop_, session_->config()));
       video_reader_->Init(
           session_.get(), video_stub_,
           base::Bind(&ConnectionToHost::OnVideoChannelInitialized,
@@ -199,7 +200,7 @@ void ConnectionToHost::OnSessionStateChange(
     case Session::CONNECTED_CHANNELS:
       state_ = STATE_CONNECTED;
       host_control_sender_.reset(
-          new HostControlSender(session_->control_channel()));
+          new HostControlSender(message_loop_, session_->control_channel()));
       dispatcher_.reset(new ClientMessageDispatcher());
       dispatcher_->Initialize(session_.get(), client_stub_);
 
@@ -252,7 +253,8 @@ void ConnectionToHost::OnClientAuthenticated() {
   state_ = STATE_AUTHENTICATED;
 
   // Create and enable the input stub now that we're authenticated.
-  input_sender_.reset(new InputSender(session_->event_channel()));
+  input_sender_.reset(
+      new InputSender(message_loop_, session_->event_channel()));
 }
 
 ConnectionToHost::State ConnectionToHost::state() const {

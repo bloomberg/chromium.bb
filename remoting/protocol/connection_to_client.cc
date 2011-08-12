@@ -5,6 +5,7 @@
 #include "remoting/protocol/connection_to_client.h"
 
 #include "base/bind.h"
+#include "base/message_loop_proxy.h"
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
 #include "remoting/protocol/client_control_sender.h"
@@ -22,16 +23,16 @@ namespace protocol {
 // average update stream.
 static const size_t kAverageUpdateStream = 10;
 
-ConnectionToClient::ConnectionToClient(MessageLoop* message_loop,
+ConnectionToClient::ConnectionToClient(base::MessageLoopProxy* message_loop,
                                        EventHandler* handler)
-    : loop_(message_loop),
+    : message_loop_(message_loop),
       handler_(handler),
       host_stub_(NULL),
       input_stub_(NULL),
       control_connected_(false),
       input_connected_(false),
       video_connected_(false) {
-  DCHECK(loop_);
+  DCHECK(message_loop_);
   DCHECK(handler_);
 }
 
@@ -41,7 +42,7 @@ ConnectionToClient::~ConnectionToClient() {
 }
 
 void ConnectionToClient::Init(protocol::Session* session) {
-  DCHECK_EQ(loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   session_.reset(session);
   session_->SetStateChangeCallback(
       NewCallback(this, &ConnectionToClient::OnSessionStateChange));
@@ -53,8 +54,8 @@ protocol::Session* ConnectionToClient::session() {
 
 void ConnectionToClient::Disconnect() {
   // This method can be called from main thread so perform threading switching.
-  if (MessageLoop::current() != loop_) {
-    loop_->PostTask(
+  if (!message_loop_->BelongsToCurrentThread()) {
+    message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &ConnectionToClient::Disconnect));
     return;
@@ -89,7 +90,7 @@ void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
 }
 
 void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
-  DCHECK_EQ(loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   DCHECK(handler_);
   switch(state) {
@@ -98,7 +99,8 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
       break;
 
     case protocol::Session::CONNECTED:
-      video_writer_.reset(VideoWriter::Create(session_->config()));
+      video_writer_.reset(
+          VideoWriter::Create(message_loop_, session_->config()));
       video_writer_->Init(
           session_.get(), base::Bind(&ConnectionToClient::OnVideoInitialized,
                                      base::Unretained(this)));
@@ -106,7 +108,7 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
 
     case protocol::Session::CONNECTED_CHANNELS:
       client_control_sender_.reset(
-          new ClientControlSender(session_->control_channel()));
+          new ClientControlSender(message_loop_, session_->control_channel()));
       dispatcher_.reset(new HostMessageDispatcher());
       dispatcher_->Initialize(this, host_stub_, input_stub_);
 

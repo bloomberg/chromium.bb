@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/message_pump.h"
 #include "base/time.h"
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
@@ -153,6 +154,7 @@ void JingleThread::Start() {
 void JingleThread::Run() {
   JingleThreadMessageLoop message_loop(this);
   message_loop_ = &message_loop;
+  message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
 
   TaskPump task_pump;
   task_pump_ = &task_pump;
@@ -178,6 +180,10 @@ void JingleThread::Stop() {
 
 MessageLoop* JingleThread::message_loop() {
   return message_loop_;
+}
+
+base::MessageLoopProxy* JingleThread::message_loop_proxy() {
+  return message_loop_proxy_;
 }
 
 TaskPump* JingleThread::task_pump() {

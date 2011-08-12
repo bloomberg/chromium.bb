@@ -10,10 +10,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
+
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace remoting {
 namespace protocol {
@@ -54,7 +57,7 @@ class ConnectionToClient :
   // that this object runs on. A viewer object receives events and messages from
   // a libjingle channel, these events are delegated to |handler|.
   // It is guaranteed that |handler| is called only on the |message_loop|.
-  ConnectionToClient(MessageLoop* message_loop,
+  ConnectionToClient(base::MessageLoopProxy* message_loop,
                      EventHandler* handler);
 
   virtual void Init(Session* session);
@@ -101,7 +104,7 @@ class ConnectionToClient :
   void CloseChannels();
 
   // The message loop that this object runs on.
-  MessageLoop* loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   // Event handler for handling events sent from this object.
   EventHandler* handler_;

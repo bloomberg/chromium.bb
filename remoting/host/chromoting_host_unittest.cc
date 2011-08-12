@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/task.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -68,13 +69,14 @@ class ChromotingHostTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
     config_ = new InMemoryHostConfig();
     ON_CALL(context_, main_message_loop())
         .WillByDefault(Return(&message_loop_));
     ON_CALL(context_, encode_message_loop())
         .WillByDefault(Return(&message_loop_));
     ON_CALL(context_, network_message_loop())
-        .WillByDefault(Return(&message_loop_));
+        .WillByDefault(Return(message_loop_proxy_.get()));
     ON_CALL(context_, ui_message_loop())
         .WillByDefault(Return(&message_loop_));
     EXPECT_CALL(context_, main_message_loop())
@@ -111,9 +113,9 @@ class ChromotingHostTest : public testing::Test {
     credentials_.set_username("user");
     credentials_.set_credential("password");
     connection_ = new MockConnectionToClient(
-        &message_loop_, &handler_, &host_stub_, event_executor_);
+        &handler_, &host_stub_, event_executor_);
     connection2_ = new MockConnectionToClient(
-        &message_loop_, &handler_, &host_stub2_, &event_executor2_);
+        &handler_, &host_stub2_, &event_executor2_);
     session_.reset(new MockSession());
     session2_.reset(new MockSession());
     session_config_.reset(SessionConfig::CreateDefault());
@@ -212,6 +214,7 @@ class ChromotingHostTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockConnectionToClientEventHandler handler_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_refptr<ChromotingHost> host_;

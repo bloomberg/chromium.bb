@@ -16,8 +16,9 @@
 namespace remoting {
 namespace protocol {
 
-InputSender::InputSender(net::Socket* socket)
-    : buffered_writer_(new BufferedSocketWriter()) {
+InputSender::InputSender(base::MessageLoopProxy* message_loop,
+                         net::Socket* socket)
+    : buffered_writer_(new BufferedSocketWriter(message_loop)) {
   // TODO(garykac) Set write failed callback.
   DCHECK(socket);
   buffered_writer_->Init(socket, NULL);

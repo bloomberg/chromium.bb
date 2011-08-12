@@ -7,6 +7,10 @@
 
 #include "net/socket/socket.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 
 class CompoundBuffer;
@@ -18,7 +22,7 @@ struct RtcpReceiverReport;
 
 class RtcpWriter {
  public:
-  RtcpWriter();
+  RtcpWriter(base::MessageLoopProxy* message_loop);
   virtual ~RtcpWriter();
 
   // Initializes the writer. Must be called on the thread the socket

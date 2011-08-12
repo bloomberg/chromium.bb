@@ -49,8 +49,8 @@ MessageLoop* ChromotingHostContext::encode_message_loop() {
   return encode_thread_.message_loop();
 }
 
-MessageLoop* ChromotingHostContext::network_message_loop() {
-  return jingle_thread_.message_loop();
+base::MessageLoopProxy* ChromotingHostContext::network_message_loop() {
+  return jingle_thread_.message_loop_proxy();
 }
 
 MessageLoop* ChromotingHostContext::desktop_message_loop() {

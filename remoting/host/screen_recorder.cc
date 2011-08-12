@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -38,7 +39,7 @@ static const int kMaxRecordings = 2;
 ScreenRecorder::ScreenRecorder(
     MessageLoop* capture_loop,
     MessageLoop* encode_loop,
-    MessageLoop* network_loop,
+    base::MessageLoopProxy* network_loop,
     Capturer* capturer,
     Encoder* encoder)
     : capture_loop_(capture_loop),
@@ -262,7 +263,7 @@ void ScreenRecorder::DoInvalidateFullScreen() {
 // Network thread --------------------------------------------------------------
 
 void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
+  DCHECK(network_loop_->BelongsToCurrentThread());
 
   TraceContext::tracer()->PrintString("DoSendVideoPacket");
 
@@ -306,14 +307,14 @@ void ScreenRecorder::FrameSentCallback(VideoPacket* packet) {
 
 void ScreenRecorder::DoAddConnection(
     scoped_refptr<ConnectionToClient> connection) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
+  DCHECK(network_loop_->BelongsToCurrentThread());
 
   connections_.push_back(connection);
 }
 
 void ScreenRecorder::DoRemoveClient(
     scoped_refptr<ConnectionToClient> connection) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
+  DCHECK(network_loop_->BelongsToCurrentThread());
 
   ConnectionToClientList::iterator it =
       std::find(connections_.begin(), connections_.end(), connection);
@@ -323,14 +324,14 @@ void ScreenRecorder::DoRemoveClient(
 }
 
 void ScreenRecorder::DoRemoveAllClients() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
+  DCHECK(network_loop_->BelongsToCurrentThread());
 
   // Clear the list of connections.
   connections_.clear();
 }
 
 void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
+  DCHECK(network_loop_->BelongsToCurrentThread());
 
   // There could be tasks on the network thread when this method is being
   // executed. By setting the flag we'll not post anymore tasks from network

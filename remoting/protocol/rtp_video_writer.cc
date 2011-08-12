@@ -20,8 +20,9 @@ namespace {
 const int kMtu = 1200;
 }  // namespace
 
-RtpVideoWriter::RtpVideoWriter()
-    : initialized_(false) {
+RtpVideoWriter::RtpVideoWriter(base::MessageLoopProxy* message_loop)
+    : initialized_(false),
+      rtp_writer_(message_loop) {
 }
 
 RtpVideoWriter::~RtpVideoWriter() {

@@ -19,6 +19,10 @@
 
 class Task;
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace net {
 class Socket;
 }  // namespace net
@@ -34,7 +38,8 @@ class BufferedSocketWriter;
 class InputSender : public InputStub {
  public:
   // Create a stub using a socket.
-  explicit InputSender(net::Socket* socket);
+  explicit InputSender(base::MessageLoopProxy* message_loop,
+                       net::Socket* socket);
   virtual ~InputSender();
 
   // InputStub implementation.

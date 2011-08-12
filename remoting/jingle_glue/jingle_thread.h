@@ -12,9 +12,13 @@
 #include "third_party/libjingle/source/talk/base/taskrunner.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace buzz {
 class XmppClient;
-}
+}  // namespace buzz
 
 namespace remoting {
 
@@ -56,9 +60,8 @@ class JingleThread : public talk_base::Thread {
   virtual void Stop();
 
   // Returns Chromiums message loop for this thread.
-  // TODO(sergeyu): remove this method when we use base::Thread instead of
-  // talk_base::Thread
   MessageLoop* message_loop();
+  base::MessageLoopProxy* message_loop_proxy();
 
   // Returns task pump if the thread is running, otherwise NULL is returned.
   TaskPump* task_pump();
@@ -68,6 +71,7 @@ class JingleThread : public talk_base::Thread {
   base::WaitableEvent started_event_;
   base::WaitableEvent stopped_event_;
   MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleThread);
 };

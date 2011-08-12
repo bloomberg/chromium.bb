@@ -59,7 +59,8 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   EXPECT_CALL(*iq_request, set_callback(_)).Times(1);
 
   scoped_ptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
+      new HeartbeatSender(base::MessageLoopProxy::CreateForCurrentThread(),
+                          config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
   EXPECT_CALL(signal_strategy_, CreateIqRequest())
@@ -78,7 +79,8 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 // Validate format of the heartbeat stanza.
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
   scoped_ptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
+      new HeartbeatSender(base::MessageLoopProxy::CreateForCurrentThread(),
+                          config_));
   ASSERT_TRUE(heartbeat_sender->Init());
 
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
@@ -129,7 +131,8 @@ TEST_F(HeartbeatSenderTest, ProcessResponse) {
   set_interval->AddText(base::IntToString(kTestInterval));
 
   scoped_ptr<HeartbeatSender> heartbeat_sender(
-      new HeartbeatSender(&message_loop_, config_));
+      new HeartbeatSender(base::MessageLoopProxy::CreateForCurrentThread(),
+                          config_));
   heartbeat_sender->ProcessResponse(response.get());
 
   EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);

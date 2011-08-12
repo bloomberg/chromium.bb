@@ -14,6 +14,8 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/protocol/session.h"
 
+class MessageLoop;
+
 namespace remoting {
 namespace protocol {
 

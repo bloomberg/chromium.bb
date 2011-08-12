@@ -59,9 +59,6 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 
   net::Socket* socket_;
 
-  // The network message loop this object runs on.
-  MessageLoop* message_loop_;
-
   // Set to true, when we have a socket read pending, and expecting
   // OnRead() to be called when new data is received.
   bool read_pending_;

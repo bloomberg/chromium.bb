@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/message_reader.h"
 
-#include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -18,7 +17,6 @@ static const int kReadBufferSize = 4096;
 
 MessageReader::MessageReader()
     : socket_(NULL),
-      message_loop_(NULL),
       read_pending_(false),
       pending_messages_(0),
       closed_(false),
@@ -35,7 +33,6 @@ void MessageReader::Init(net::Socket* socket,
   message_received_callback_.reset(callback);
   DCHECK(socket);
   socket_ = socket;
-  message_loop_ = MessageLoop::current();
   DoRead();
 }
 
@@ -105,12 +102,6 @@ void MessageReader::OnMessageDone(CompoundBuffer* message) {
 }
 
 void MessageReader::ProcessDoneEvent() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &MessageReader::ProcessDoneEvent));
-    return;
-  }
-
   pending_messages_--;
   DCHECK_GE(pending_messages_, 0);
 

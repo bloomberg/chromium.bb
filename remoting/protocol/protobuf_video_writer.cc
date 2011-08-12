@@ -16,7 +16,9 @@
 namespace remoting {
 namespace protocol {
 
-ProtobufVideoWriter::ProtobufVideoWriter() { }
+ProtobufVideoWriter::ProtobufVideoWriter(base::MessageLoopProxy* message_loop)
+    : buffered_writer_(new BufferedSocketWriter(message_loop)) {
+}
 
 ProtobufVideoWriter::~ProtobufVideoWriter() { }
 
@@ -37,7 +39,6 @@ void ProtobufVideoWriter::OnChannelReady(net::StreamSocket* socket) {
 
   DCHECK(!channel_.get());
   channel_.reset(socket);
-  buffered_writer_ = new BufferedSocketWriter();
   // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
   buffered_writer_->Init(socket, NULL);
 

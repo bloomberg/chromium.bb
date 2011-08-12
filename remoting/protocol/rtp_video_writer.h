@@ -9,6 +9,10 @@
 #include "remoting/protocol/rtp_writer.h"
 #include "remoting/protocol/video_writer.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 namespace protocol {
 
@@ -16,7 +20,7 @@ class Session;
 
 class RtpVideoWriter : public VideoWriter {
  public:
-  RtpVideoWriter();
+  RtpVideoWriter(base::MessageLoopProxy* message_loop);
   virtual ~RtpVideoWriter();
 
   // VideoWriter interface.

@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "remoting/base/constants.h"
@@ -29,27 +29,31 @@ namespace remoting {
 namespace protocol {
 
 // static
-JingleSessionManager* JingleSessionManager::CreateNotSandboxed() {
-  return new JingleSessionManager(NULL, NULL, NULL, NULL);
+JingleSessionManager* JingleSessionManager::CreateNotSandboxed(
+    base::MessageLoopProxy* message_loop) {
+  return new JingleSessionManager(message_loop, NULL, NULL, NULL, NULL);
 }
 
 // static
 JingleSessionManager* JingleSessionManager::CreateSandboxed(
+    base::MessageLoopProxy* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* port_allocator_session_factory) {
-  return new JingleSessionManager(network_manager, socket_factory,
+  return new JingleSessionManager(message_loop, network_manager, socket_factory,
                                   host_resolver_factory,
                                   port_allocator_session_factory);
 }
 
 JingleSessionManager::JingleSessionManager(
+    base::MessageLoopProxy* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
     HostResolverFactory* host_resolver_factory,
     PortAllocatorSessionFactory* port_allocator_session_factory)
-    : network_manager_(network_manager),
+    : message_loop_(message_loop),
+      network_manager_(network_manager),
       socket_factory_(socket_factory),
       host_resolver_factory_(host_resolver_factory),
       port_allocator_session_factory_(port_allocator_session_factory),

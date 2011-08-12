@@ -13,7 +13,8 @@
 namespace remoting {
 namespace protocol {
 
-RtcpWriter::RtcpWriter() {
+RtcpWriter::RtcpWriter(base::MessageLoopProxy* message_loop)
+    : buffered_rtcp_writer_(new BufferedDatagramWriter(message_loop)) {
 }
 
 RtcpWriter::~RtcpWriter() {
@@ -26,7 +27,6 @@ void RtcpWriter::Close() {
 // Initializes the writer. Must be called on the thread the sockets
 // belong to.
 void RtcpWriter::Init(net::Socket* socket) {
-  buffered_rtcp_writer_ = new BufferedDatagramWriter();
   buffered_rtcp_writer_->Init(socket, NULL);
 }
 

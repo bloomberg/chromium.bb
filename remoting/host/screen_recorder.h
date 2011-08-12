@@ -18,6 +18,10 @@
 #include "remoting/host/capturer.h"
 #include "remoting/proto/video.pb.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 
 namespace protocol {
@@ -75,7 +79,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // This object does not own capturer but owns encoder.
   ScreenRecorder(MessageLoop* capture_loop,
                  MessageLoop* encode_loop,
-                 MessageLoop* network_loop,
+                 base::MessageLoopProxy* network_loop,
                  Capturer* capturer,
                  Encoder* encoder);
 
@@ -159,7 +163,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Message loops used by this class.
   MessageLoop* capture_loop_;
   MessageLoop* encode_loop_;
-  MessageLoop* network_loop_;
+  scoped_refptr<base::MessageLoopProxy> network_loop_;
 
   // Reference to the capturer. This member is always accessed on the capture
   // thread.

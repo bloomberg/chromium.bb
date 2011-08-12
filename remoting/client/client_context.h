@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 
 namespace remoting {
@@ -23,7 +24,7 @@ class ClientContext {
 
   MessageLoop* main_message_loop();
   MessageLoop* decode_message_loop();
-  MessageLoop* network_message_loop();
+  base::MessageLoopProxy* network_message_loop();
 
  private:
   // A thread that handles capture rate control and sending data to the
@@ -34,6 +35,9 @@ class ClientContext {
   base::Thread decode_thread_;
 
   // A thread that handles all network IO.
+  //
+  // TODO(sergeyu): Remove |network_thread_| and use main plugin
+  // message loop for network IO.
   base::Thread network_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientContext);

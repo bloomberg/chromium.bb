@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/threading/platform_thread.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/util.h"
@@ -318,7 +319,7 @@ void HostNPScriptObject::OnSignallingDisconnected() {
 }
 
 void HostNPScriptObject::OnAccessDenied() {
-  DCHECK_EQ(MessageLoop::current(), host_context_.network_message_loop());
+  DCHECK(host_context_.network_message_loop()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts)

@@ -44,7 +44,7 @@ class ChromotingHostContext {
 
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
-  virtual MessageLoop* network_message_loop();
+  virtual base::MessageLoopProxy* network_message_loop();
   virtual MessageLoop* desktop_message_loop();
 
   // Must be called from the main GUI thread.

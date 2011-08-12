@@ -38,8 +38,8 @@ MessageLoop* ClientContext::decode_message_loop() {
   return decode_thread_.message_loop();
 }
 
-MessageLoop* ClientContext::network_message_loop() {
-  return network_thread_.message_loop();
+base::MessageLoopProxy* ClientContext::network_message_loop() {
+  return network_thread_.message_loop_proxy();
 }
 
 }  // namespace remoting

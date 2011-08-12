@@ -5,8 +5,13 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_XMPP_PROXY_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
+
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace remoting {
 
@@ -16,7 +21,7 @@ class PepperXmppProxy : public XmppProxy {
  public:
   PepperXmppProxy(
       base::WeakPtr<ChromotingScriptableObject> scriptable_object,
-      MessageLoop* callback_message_loop);
+      base::MessageLoopProxy* callback_message_loop);
 
   // Registered the callback class with this object.
   //
@@ -38,7 +43,7 @@ class PepperXmppProxy : public XmppProxy {
 
   base::WeakPtr<ChromotingScriptableObject> scriptable_object_;
 
-  MessageLoop* callback_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> callback_message_loop_;
 
   // Must only be access on callback_message_loop_.
   base::WeakPtr<ResponseCallback> callback_;

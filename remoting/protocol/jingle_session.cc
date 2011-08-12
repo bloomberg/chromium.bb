@@ -5,7 +5,7 @@
 #include "remoting/protocol/jingle_session.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "crypto/hmac.h"
@@ -317,11 +317,11 @@ void JingleSession::OnInitiate() {
     // P2PTransportChannel is created only after we return from this
     // method.
     // TODO(sergeyu): Add set_incoming_only() in TransportChannelProxy.
-    MessageLoop::current()->PostTask(
+    jingle_session_manager_->message_loop_->PostTask(
         FROM_HERE, task_factory_.NewRunnableMethod(
             &JingleSession::SetState, CONNECTING));
   } else {
-    MessageLoop::current()->PostTask(
+    jingle_session_manager_->message_loop_->PostTask(
         FROM_HERE, task_factory_.NewRunnableMethod(
             &JingleSession::AcceptConnection));
   }

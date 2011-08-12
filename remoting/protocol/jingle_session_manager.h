@@ -39,8 +39,10 @@ class JingleSessionManager
  public:
   virtual ~JingleSessionManager();
 
-  static JingleSessionManager* CreateNotSandboxed();
+  static JingleSessionManager* CreateNotSandboxed(
+      base::MessageLoopProxy* message_loop);
   static JingleSessionManager* CreateSandboxed(
+      base::MessageLoopProxy* message_loop,
       talk_base::NetworkManager* network_manager,
       talk_base::PacketSocketFactory* socket_factory,
       HostResolverFactory* host_resolver_factory,
@@ -81,6 +83,7 @@ class JingleSessionManager
   friend class JingleSession;
 
   JingleSessionManager(
+      base::MessageLoopProxy* message_loop,
       talk_base::NetworkManager* network_manager,
       talk_base::PacketSocketFactory* socket_factory,
       HostResolverFactory* host_resolver_factory,
@@ -108,6 +111,8 @@ class JingleSessionManager
   static cricket::SessionDescription* CreateHostSessionDescription(
       const CandidateSessionConfig* candidate_config,
       const std::string& certificate);
+
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;

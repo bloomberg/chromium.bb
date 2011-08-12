@@ -16,8 +16,9 @@
 namespace remoting {
 namespace protocol {
 
-HostControlSender::HostControlSender(net::Socket* socket)
-    : buffered_writer_(new BufferedSocketWriter()) {
+HostControlSender::HostControlSender(base::MessageLoopProxy* message_loop,
+                                     net::Socket* socket)
+    : buffered_writer_(new BufferedSocketWriter(message_loop)) {
   buffered_writer_->Init(socket, NULL);
 }
 

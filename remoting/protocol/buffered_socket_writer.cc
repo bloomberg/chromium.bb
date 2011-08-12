@@ -4,7 +4,7 @@
 
 #include "remoting/protocol/buffered_socket_writer.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
 
@@ -33,10 +33,11 @@ class BufferedSocketWriterBase::PendingPacket {
   DISALLOW_COPY_AND_ASSIGN(PendingPacket);
 };
 
-BufferedSocketWriterBase::BufferedSocketWriterBase()
+BufferedSocketWriterBase::BufferedSocketWriterBase(
+    base::MessageLoopProxy* message_loop)
     : buffer_size_(0),
       socket_(NULL),
-      message_loop_(NULL),
+      message_loop_(message_loop),
       write_pending_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           written_callback_(this, &BufferedSocketWriterBase::OnWritten)),
@@ -49,7 +50,6 @@ void BufferedSocketWriterBase::Init(net::Socket* socket,
                                     WriteFailedCallback* callback) {
   // TODO(garykac) Save copy of WriteFailedCallback.
   base::AutoLock auto_lock(lock_);
-  message_loop_ = MessageLoop::current();
   socket_ = socket;
   DCHECK(socket_);
 }
@@ -67,7 +67,7 @@ bool BufferedSocketWriterBase::Write(
 }
 
 void BufferedSocketWriterBase::DoWrite() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(socket_);
 
   // Don't try to write if there is another write pending.
@@ -109,7 +109,7 @@ void BufferedSocketWriterBase::DoWrite() {
 }
 
 void BufferedSocketWriterBase::OnWritten(int result) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   write_pending_ = false;
 
   if (result < 0) {
@@ -130,7 +130,7 @@ void BufferedSocketWriterBase::OnWritten(int result) {
 }
 
 void BufferedSocketWriterBase::HandleError(int result) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   closed_ = true;
 
@@ -152,7 +152,7 @@ int BufferedSocketWriterBase::GetBufferChunks() {
 }
 
 void BufferedSocketWriterBase::Close() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   closed_ = true;
 }
 
@@ -162,7 +162,10 @@ void BufferedSocketWriterBase::PopQueue() {
   queue_.pop_front();
 }
 
-BufferedSocketWriter::BufferedSocketWriter() { }
+BufferedSocketWriter::BufferedSocketWriter(
+    base::MessageLoopProxy* message_loop)
+  : BufferedSocketWriterBase(message_loop) {
+}
 
 BufferedSocketWriter::~BufferedSocketWriter() {
   STLDeleteElements(&queue_);
@@ -197,7 +200,10 @@ void BufferedSocketWriter::OnError_Locked(int result) {
   current_buf_ = NULL;
 }
 
-BufferedDatagramWriter::BufferedDatagramWriter() { }
+BufferedDatagramWriter::BufferedDatagramWriter(
+    base::MessageLoopProxy* message_loop)
+    : BufferedSocketWriterBase(message_loop) {
+}
 BufferedDatagramWriter::~BufferedDatagramWriter() { }
 
 void BufferedDatagramWriter::GetNextPacket_Locked(

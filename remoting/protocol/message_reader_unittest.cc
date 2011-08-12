@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/message_loop.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/message_reader.h"
@@ -63,9 +62,6 @@ class MessageReaderTest : public testing::Test {
     task->Run();
     delete task;
   }
-
-  // MessageLoop must be first here, so that is is destroyed the last.
-  MessageLoop message_loop_;
 
   scoped_refptr<MessageReader> reader_;
   FakeSocket socket_;

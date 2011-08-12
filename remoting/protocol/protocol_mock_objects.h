@@ -21,8 +21,7 @@ class ChromotocolConnection;
 
 class MockConnectionToClient : public ConnectionToClient {
  public:
-  MockConnectionToClient(MessageLoop* message_loop,
-                         EventHandler* handler,
+  MockConnectionToClient(EventHandler* handler,
                          HostStub* host_stub,
                          InputStub* input_stub);
   virtual ~MockConnectionToClient();
@@ -120,7 +119,6 @@ class MockSession : public Session {
   MOCK_METHOD0(video_rtp_channel, net::Socket*());
   MOCK_METHOD0(video_rtcp_channel, net::Socket*());
   MOCK_METHOD0(jid, const std::string&());
-  MOCK_METHOD0(message_loop, MessageLoop*());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig*());
   MOCK_METHOD1(set_config, void(const SessionConfig* config));

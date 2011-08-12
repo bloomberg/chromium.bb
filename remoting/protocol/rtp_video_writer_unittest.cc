@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
@@ -56,6 +57,10 @@ class RtpVideoWriterTest : public testing::Test {
     Vp8Descriptor::FragmentationInfo fragmentation_info;
     bool last;
   };
+
+  RtpVideoWriterTest()
+      : writer_(base::MessageLoopProxy::CreateForCurrentThread()) {
+  }
 
   virtual void SetUp() {
     session_.reset(new FakeSession());

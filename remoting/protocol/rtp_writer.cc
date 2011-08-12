@@ -16,8 +16,9 @@ namespace {
 const uint8 kRtpPayloadTypePrivate = 96;
 }  // namespace
 
-RtpWriter::RtpWriter()
-    : last_packet_number_(0) {
+RtpWriter::RtpWriter(base::MessageLoopProxy* message_loop)
+    : last_packet_number_(0),
+      buffered_rtp_writer_(new BufferedDatagramWriter(message_loop)) {
 }
 
 RtpWriter::~RtpWriter() { }
@@ -25,7 +26,6 @@ RtpWriter::~RtpWriter() { }
 // Initializes the writer. Must be called on the thread the sockets belong
 // to.
 void RtpWriter::Init(net::Socket* rtp_socket) {
-  buffered_rtp_writer_ = new BufferedDatagramWriter();
   buffered_rtp_writer_->Init(rtp_socket, NULL);
 }
 

@@ -17,7 +17,7 @@ namespace protocol {
 
 class RtpWriter {
  public:
-  RtpWriter();
+  RtpWriter(base::MessageLoopProxy* message_loop);
   virtual ~RtpWriter();
 
   // Initializes the writer. Must be called on the thread the socket

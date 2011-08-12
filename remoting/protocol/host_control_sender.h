@@ -18,6 +18,10 @@
 
 class Task;
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace net {
 class Socket;
 }  // namespace net
@@ -32,7 +36,8 @@ class BufferedSocketWriter;
 // other thread.
 class HostControlSender : public HostStub {
  public:
-  explicit HostControlSender(net::Socket* socket);
+  explicit HostControlSender(base::MessageLoopProxy* message_loop,
+                             net::Socket* socket);
   virtual ~HostControlSender();
 
   virtual void BeginSessionRequest(

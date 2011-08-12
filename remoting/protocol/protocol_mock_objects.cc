@@ -4,14 +4,17 @@
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
+#include "base/message_loop_proxy.h"
+
 namespace remoting {
 namespace protocol {
 
-MockConnectionToClient::MockConnectionToClient(MessageLoop* message_loop,
-                                               EventHandler* handler,
-                                               HostStub* host_stub,
-                                               InputStub* input_stub)
-    : ConnectionToClient(message_loop, handler) {
+MockConnectionToClient::MockConnectionToClient(
+    EventHandler* handler,
+    HostStub* host_stub,
+    InputStub* input_stub)
+    : ConnectionToClient(base::MessageLoopProxy::CreateForCurrentThread(),
+                         handler) {
   set_host_stub(host_stub);
   set_input_stub(input_stub);
 }

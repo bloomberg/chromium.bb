@@ -81,7 +81,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
     Task* done;
   };
 
-  MessageLoop* message_loop();
+  base::MessageLoopProxy* message_loop();
 
   // Initializes connection.
   void Initialize();

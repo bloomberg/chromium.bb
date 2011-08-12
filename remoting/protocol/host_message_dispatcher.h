@@ -10,6 +10,10 @@
 #include "base/task.h"
 #include "remoting/protocol/message_reader.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 namespace protocol {
 

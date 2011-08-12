@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "remoting/proto/video.pb.h"
@@ -65,7 +66,8 @@ class RtpVideoReaderTest : public testing::Test,
 
   void Reset() {
     session_.reset(new FakeSession());
-    reader_.reset(new RtpVideoReader());
+    reader_.reset(new RtpVideoReader(
+        base::MessageLoopProxy::CreateForCurrentThread()));
     reader_->Init(session_.get(), this,
                   base::Bind(&RtpVideoReaderTest::OnReaderInitialized,
                              base::Unretained(this)));

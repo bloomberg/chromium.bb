@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "remoting/base/base_mock_objects.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
@@ -28,7 +29,8 @@ class ConnectionToClientTest : public testing::Test {
     session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_ = new ConnectionToClient(&message_loop_, &handler_);
+    viewer_ = new ConnectionToClient(
+        base::MessageLoopProxy::CreateForCurrentThread(), &handler_);
     viewer_->set_host_stub(&host_stub_);
     viewer_->set_input_stub(&input_stub_);
     viewer_->Init(session_);

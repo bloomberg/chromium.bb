@@ -78,11 +78,12 @@ class ScreenRecorderTest : public testing::Test {
     // Capturer and Encoder are owned by ScreenRecorder.
     encoder_ = new MockEncoder();
 
-    connection_ = new MockConnectionToClient(&message_loop_, &handler_,
-                                             &host_stub_, &event_executor_);
+    connection_ = new MockConnectionToClient(
+        &handler_, &host_stub_, &event_executor_);
 
     record_ = new ScreenRecorder(
-        &message_loop_, &message_loop_, &message_loop_,
+        &message_loop_, &message_loop_,
+        base::MessageLoopProxy::CreateForCurrentThread(),
         &capturer_, encoder_);
   }
 

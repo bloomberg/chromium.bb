@@ -17,7 +17,9 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace talk_base {
 class NetworkManager;
@@ -74,7 +76,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   // |network_manager| and |socket_factory| may be set to NULL.
   //
   // TODO(sergeyu): Constructor shouldn't need thread here.
-  ConnectionToHost(MessageLoop* network_message_loop,
+  ConnectionToHost(base::MessageLoopProxy* network_message_loop,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
                    HostResolverFactory* host_resolver_factory,
@@ -137,7 +139,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   // Stops writing in the channels.
   void CloseChannels();
 
-  MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<HostResolverFactory> host_resolver_factory_;

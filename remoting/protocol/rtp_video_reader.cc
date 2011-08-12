@@ -23,8 +23,9 @@ RtpVideoReader::PacketsQueueEntry::PacketsQueueEntry()
       packet(NULL) {
 }
 
-RtpVideoReader::RtpVideoReader()
+RtpVideoReader::RtpVideoReader(base::MessageLoopProxy* message_loop)
     : initialized_(false),
+      rtcp_writer_(message_loop),
       last_sequence_number_(0),
       video_stub_(NULL) {
 }

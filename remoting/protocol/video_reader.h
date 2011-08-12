@@ -12,6 +12,10 @@
 #include "base/callback.h"
 #include "remoting/protocol/video_stub.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 
 class ChromotocolConnection;
@@ -23,7 +27,8 @@ class SessionConfig;
 
 class VideoReader {
  public:
-  static VideoReader* Create(const SessionConfig* config);
+  static VideoReader* Create(base::MessageLoopProxy* message_loop,
+                             const SessionConfig* config);
 
   // The callback is called when initialization is finished. The
   // parameter is set to true on success.

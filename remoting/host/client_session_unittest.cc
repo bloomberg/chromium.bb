@@ -34,10 +34,8 @@ class ClientSessionTest : public testing::Test {
   ClientSessionTest() {}
 
   virtual void SetUp() {
-    connection_ = new MockConnectionToClient(&message_loop_,
-                                             &connection_event_handler_,
-                                             &host_stub_,
-                                             &input_stub_);
+    connection_ = new MockConnectionToClient(
+        &connection_event_handler_, &host_stub_, &input_stub_);
     user_authenticator_ = new MockUserAuthenticator();
     client_session_ = new ClientSession(
         &session_event_handler_,

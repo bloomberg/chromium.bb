@@ -12,8 +12,11 @@
 #include "net/base/io_buffer.h"
 #include "net/socket/socket.h"
 
-class MessageLoop;
 class Task;
+
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace net {
 class Socket;
@@ -36,7 +39,7 @@ class BufferedSocketWriterBase
  public:
   typedef Callback1<int>::Type WriteFailedCallback;
 
-  explicit BufferedSocketWriterBase();
+  explicit BufferedSocketWriterBase(base::MessageLoopProxy* message_loop);
   virtual ~BufferedSocketWriterBase();
 
   // Initializes the writer. Must be called on the thread that will be used
@@ -91,7 +94,7 @@ class BufferedSocketWriterBase
   base::Lock lock_;
 
   net::Socket* socket_;
-  MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<WriteFailedCallback> write_failed_callback_;
 
   bool write_pending_;
@@ -103,7 +106,7 @@ class BufferedSocketWriterBase
 
 class BufferedSocketWriter : public BufferedSocketWriterBase {
  public:
-  BufferedSocketWriter();
+  BufferedSocketWriter(base::MessageLoopProxy* message_loop);
   virtual ~BufferedSocketWriter();
 
  protected:
@@ -117,7 +120,7 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
 
 class BufferedDatagramWriter : public BufferedSocketWriterBase {
  public:
-  BufferedDatagramWriter();
+  BufferedDatagramWriter(base::MessageLoopProxy* message_loop);
   virtual ~BufferedDatagramWriter();
 
  protected:

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/encoder.h"
@@ -67,7 +68,7 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start() {
-  if (MessageLoop::current() != context_->network_message_loop()) {
+  if (!context_->network_message_loop()->BelongsToCurrentThread()) {
     context_->network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::Start, this));
     return;
@@ -153,7 +154,7 @@ void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ConnectionToClient::EventHandler implementations
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   VLOG(1) << "Connection to client established.";
   // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   if (is_it2me_) {
@@ -164,7 +165,7 @@ void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   VLOG(1) << "Connection to client closed.";
   context_->main_message_loop()->PostTask(
@@ -173,7 +174,7 @@ void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
 }
 
 void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   LOG(ERROR) << "Connection failed unexpectedly.";
   context_->main_message_loop()->PostTask(
@@ -199,14 +200,15 @@ void ChromotingHost::OnSequenceNumberUpdated(ConnectionToClient* connection,
 // SignalStrategy::StatusObserver implementations
 void ChromotingHost::OnStateChange(
     SignalStrategy::StatusObserver::State state) {
-  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   if (state == SignalStrategy::StatusObserver::CONNECTED) {
     LOG(INFO) << "Host connected as " << local_jid_;
 
     // Create and start session manager.
     protocol::JingleSessionManager* server =
-        protocol::JingleSessionManager::CreateNotSandboxed();
+        protocol::JingleSessionManager::CreateNotSandboxed(
+            context_->network_message_loop());
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
 
@@ -239,12 +241,12 @@ void ChromotingHost::OnStateChange(
 }
 
 void ChromotingHost::OnJidChange(const std::string& full_jid) {
-  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   local_jid_ = full_jid;
 }
 
 void ChromotingHost::OnSessionManagerInitialized() {
-  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming
   // connections.
 }
@@ -252,7 +254,7 @@ void ChromotingHost::OnSessionManagerInitialized() {
 void ChromotingHost::OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) {
-  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   if (state_ != kStarted) {
@@ -332,7 +334,7 @@ void ChromotingHost::set_protocol_config(
 }
 
 void ChromotingHost::LocalMouseMoved(const gfx::Point& new_pos) {
-  if (MessageLoop::current() != context_->network_message_loop()) {
+  if (!context_->network_message_loop()->BelongsToCurrentThread()) {
     context_->network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::LocalMouseMoved, this, new_pos));
     return;
@@ -567,7 +569,7 @@ void ChromotingHost::OnScreenRecorderStopped() {
 }
 
 void ChromotingHost::ShutdownNetwork() {
-  if (MessageLoop::current() != context_->network_message_loop()) {
+  if (!context_->network_message_loop()->BelongsToCurrentThread()) {
     context_->network_message_loop()->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::ShutdownNetwork, this));
     return;

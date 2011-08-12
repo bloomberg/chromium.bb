@@ -12,6 +12,10 @@
 #include "remoting/protocol/rtp_reader.h"
 #include "remoting/protocol/video_reader.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 namespace protocol {
 
@@ -21,7 +25,7 @@ class Session;
 
 class RtpVideoReader : public VideoReader {
  public:
-  RtpVideoReader();
+  RtpVideoReader(base::MessageLoopProxy* message_loop);
   virtual ~RtpVideoReader();
 
   // VideoReader interface.
