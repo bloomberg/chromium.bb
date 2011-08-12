@@ -899,7 +899,9 @@ void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
   tap_drag_timeout_prop_ = pp->create_real_fn(data, "Tap Drag Timeout",
     &tap_drag_timeout_, tap_drag_timeout_);
   tap_move_dist_prop_ = pp->create_real_fn(data, "Tap Move Distance",
-      &tap_move_dist_, tap_move_dist_);
+    &tap_move_dist_, tap_move_dist_);
+  palm_pressure_prop_ = pp->create_real_fn(data, "Palm Pressure",
+    &palm_pressure_, palm_pressure_);
   change_timeout_prop_ = pp->create_real_fn(data, "Change Timeout",
     &change_timeout_, change_timeout_);
   evaluation_timeout_prop_ = pp->create_real_fn(data, "Evaluation Timeout",
