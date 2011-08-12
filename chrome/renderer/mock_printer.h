@@ -129,6 +129,11 @@ class MockPrinter {
   // The output of a printing job.
   int number_pages_;
   int page_number_;
+
+  // Used only in the preview sequence.
+  bool is_first_request_;
+  int preview_request_id_;
+
   std::vector<scoped_refptr<MockPrinterPage> > pages_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinter);

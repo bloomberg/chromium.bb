@@ -8,6 +8,7 @@
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
+struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 
@@ -31,9 +32,8 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
 
   // Message handlers.
   void OnRequestPrintPreview();
-  void OnDidGetPreviewPageCount(int document_cookie,
-                                int page_count,
-                                bool is_modifiable);
+  void OnDidGetPreviewPageCount(
+      const PrintHostMsg_DidGetPreviewPageCount_Params& params);
   // |page_number| is 0-based.
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
   void OnPagesReadyForPreview(

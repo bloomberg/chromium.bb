@@ -14,6 +14,8 @@ cr.define('print_preview', function() {
     this.layoutOption_ = $('layout-option');
     this.portraitRadioButton_ = $('portrait');
     this.landscapeRadioButton_ = $('landscape');
+    this.wasLandscape_ = false;
+    this.updateState();
   }
 
   cr.addSingletonGetter(LayoutSettings);
@@ -44,18 +46,27 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @return {boolean} true if the chosen layout mode has changed since last
+     *     time the state was updated.
+     */
+    hasChanged_ : function() {
+      return this.isLandscape() !=  this.wasLandscape_;
+    },
+
+    /**
+     * Saves the currently selected layout mode. Used  in |this.hasChanged_|.
+     */
+    updateState : function() {
+      this.wasLandscape_ = this.isLandscape();
+    },
+
+    /**
      * Adding listeners to all layout related controls. The listeners take care
      * of altering their behavior depending on |hasPendingPreviewRequest|.
      */
     addEventListeners: function() {
-      this.landscapeRadioButton_.onclick = function() {
-        if (!hasPendingPreviewRequest)
-          this.onLayoutButtonClick_();
-      }.bind(this);
-      this.portraitRadioButton_.onclick = function() {
-        if (!hasPendingPreviewRequest)
-          this.onLayoutButtonClick_();
-      }.bind(this);
+      this.landscapeRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
+      this.portraitRadioButton_.onclick = this.onLayoutButtonClick_.bind(this);
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
       document.addEventListener('printerCapabilitiesUpdated',
                                 this.onPrinterCapabilitiesUpdated_.bind(this));
@@ -77,9 +88,8 @@ cr.define('print_preview', function() {
      */
     onLayoutButtonClick_: function() {
       // If the chosen layout is same as before, nothing needs to be done.
-      if (printSettings.isLandscape == this.isLandscape())
-        return;
-      setDefaultValuesAndRegeneratePreview();
+      if (this.hasChanged_())
+        setDefaultValuesAndRegeneratePreview();
     },
 
     /**
@@ -87,8 +97,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onPDFLoaded_: function() {
-      if (!previewModifiable)
-        fadeOutElement(this.layoutOption_);
+      this.fadeInOut_(!previewModifiable);
     },
 
     /**

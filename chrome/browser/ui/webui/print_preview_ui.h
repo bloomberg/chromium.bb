@@ -16,6 +16,7 @@
 
 class PrintPreviewDataService;
 class PrintPreviewHandler;
+struct PrintHostMsg_DidGetPreviewPageCount_Params;
 
 class PrintPreviewUI : public ChromeWebUI {
  public:
@@ -40,15 +41,13 @@ class PrintPreviewUI : public ChromeWebUI {
   // a matching call to OnPreviewDataIsAvailable() or OnPrintPreviewFailed().
   void OnPrintPreviewRequest();
 
-  // Notifies the Web UI that the print preview will have |page_count| pages.
-  // |is_modifiable| indicates if the preview can be rerendered with different
-  // print settings.
-  void OnDidGetPreviewPageCount(int document_cookie_,
-                                int page_count,
-                                bool is_modifiable);
+  // Notifies the Web UI about the page count of the request preview.
+  void OnDidGetPreviewPageCount(
+      const PrintHostMsg_DidGetPreviewPageCount_Params& params);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
-  void OnDidPreviewPage(int page_number);
+  // |preview_request_id| indicates wich request resulted in this response.
+  void OnDidPreviewPage(int page_number, int preview_request_id);
 
   // Notifies the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages. |job_title| is

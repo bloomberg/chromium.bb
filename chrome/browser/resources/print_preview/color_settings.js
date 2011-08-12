@@ -49,12 +49,10 @@ cr.define('print_preview', function() {
      */
     addEventListeners: function() {
       this.colorRadioButton_.onclick = function() {
-        if (!hasPendingPreviewRequest)
-          setColor(true);
+        setColor(true);
       };
       this.bwRadioButton_.onclick = function() {
-        if (!hasPendingPreviewRequest)
-          setColor(false);
+        setColor(false);
       };
       document.addEventListener('PDFLoaded', this.onPDFLoaded_.bind(this));
       document.addEventListener('printerCapabilitiesUpdated',

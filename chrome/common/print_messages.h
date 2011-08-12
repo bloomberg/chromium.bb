@@ -49,7 +49,11 @@ IPC_STRUCT_BEGIN(PrintMsg_Print_Params)
   // Does the printer support alpha blending?
   IPC_STRUCT_MEMBER(bool, supports_alpha_blend)
 
+  // The id of the preview request, used only for print preview.
   IPC_STRUCT_MEMBER(int, preview_request_id)
+
+  // True if this is the first preview request, used only for print preview.
+  IPC_STRUCT_MEMBER(bool, is_first_request)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
@@ -107,6 +111,24 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
   // |page_number| is zero-based and can be |printing::INVALID_PAGE_INDEX| if it
   // is just a check.
   IPC_STRUCT_MEMBER(int, page_number)
+
+  // The id of the preview request.
+  IPC_STRUCT_MEMBER(int, preview_request_id)
+IPC_STRUCT_END()
+
+// Parameters sent along with the page count.
+IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
+  // Cookie for the document to ensure correctness.
+  IPC_STRUCT_MEMBER(int, document_cookie)
+
+  // Total page count.
+  IPC_STRUCT_MEMBER(int, page_count)
+
+  // Indicates whether the previewed document is modifiable.
+  IPC_STRUCT_MEMBER(bool, is_modifiable)
+
+  // The id of the preview request.
+  IPC_STRUCT_MEMBER(int, preview_request_id)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered page.
@@ -259,10 +281,8 @@ IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
 IPC_MESSAGE_ROUTED0(PrintHostMsg_RequestPrintPreview)
 
 // Notify the browser the number of pages in the print preview document.
-IPC_MESSAGE_ROUTED3(PrintHostMsg_DidGetPreviewPageCount,
-                    int  /* document cookie */,
-                    int  /* page count */,
-                    bool /* is modifiable */)
+IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,
+                    PrintHostMsg_DidGetPreviewPageCount_Params /* params */)
 
 // Notify the browser a print preview page has been rendered.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,

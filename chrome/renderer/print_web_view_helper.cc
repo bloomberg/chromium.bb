@@ -319,7 +319,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
     return;
   }
 
-  if (print_pages_params_->params.preview_request_id != 0 &&
+  if (!print_pages_params_->params.is_first_request &&
       old_print_pages_params_.get() &&
       PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
                                     *print_pages_params_)) {
@@ -351,11 +351,12 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   const std::vector<int>& pages = print_pages_params_->pages;
   if (!print_preview_context_.CreatePreviewDocument(&print_params, pages))
     return false;
-  int page_count = print_preview_context_.total_page_count();
-  bool is_modifiable = print_preview_context_.IsModifiable();
-  int document_cookie = print_pages_params_->params.document_cookie;
-  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), document_cookie,
-                                               page_count, is_modifiable));
+  PrintHostMsg_DidGetPreviewPageCount_Params params;
+  params.page_count = print_preview_context_.total_page_count();
+  params.is_modifiable = print_preview_context_.IsModifiable();
+  params.document_cookie = print_pages_params_->params.document_cookie;
+  params.preview_request_id = print_pages_params_->params.preview_request_id;
+  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
   PreviewPageRendered(printing::INVALID_PAGE_INDEX, NULL);
   return true;
 }
@@ -773,6 +774,11 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   if (!UpdatePrintSettingsRequestId(job_settings, &(settings.params)))
     return false;
 
+  if (!job_settings.GetBoolean(printing::kIsFirstRequest,
+                               &(settings.params.is_first_request))) {
+    NOTREACHED();
+  }
+
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
@@ -931,6 +937,8 @@ void PrintWebViewHelper::PreviewPageRendered(int page_number,
   }
   preview_page_params.data_size = buf_size;
   preview_page_params.page_number = page_number;
+  preview_page_params.preview_request_id =
+      print_pages_params_->params.preview_request_id;
   Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params));
 }
 

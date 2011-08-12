@@ -82,10 +82,9 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
-void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
-                                                          int page_count,
-                                                          bool is_modifiable) {
-  if (page_count <= 0)
+void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
+    const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
+  if (params.page_count <= 0)
     return;
 
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -94,8 +93,7 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->OnDidGetPreviewPageCount(
-      document_cookie, page_count, is_modifiable);
+  print_preview_ui->OnDidGetPreviewPageCount(params);
 }
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
@@ -131,7 +129,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     DCHECK(data_bytes);
 
     print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
-    print_preview_ui->OnDidPreviewPage(page_number);
+    print_preview_ui->OnDidPreviewPage(page_number, params.preview_request_id);
     // TODO(kmadhusu): Query |PrintPreviewUI| and update
     // |requested_preview_page_index| accordingly.
   }
@@ -158,10 +156,12 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
-    print_preview_ui->OnDidGetPreviewPageCount(params.document_cookie,
-                                               params.expected_pages_count,
-                                               params.modifiable);
-
+    PrintHostMsg_DidGetPreviewPageCount_Params temp_params;
+    temp_params.page_count = params.expected_pages_count;
+    temp_params.document_cookie = params.document_cookie;
+    temp_params.is_modifiable = params.modifiable;
+    temp_params.preview_request_id = params.preview_request_id;
+    print_preview_ui->OnDidGetPreviewPageCount(temp_params);
     print_preview_ui->OnReusePreviewData(params.preview_request_id);
     return;
   }

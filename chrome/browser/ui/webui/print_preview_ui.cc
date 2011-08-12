@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
+#include "chrome/common/print_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
@@ -63,21 +64,24 @@ void PrintPreviewUI::OnPrintPreviewRequest() {
   request_count_++;
 }
 
-void PrintPreviewUI::OnDidGetPreviewPageCount(int document_cookie,
-                                              int page_count,
-                                              bool is_modifiable) {
-  DCHECK_GT(page_count, 0);
-  document_cookie_ = document_cookie;
-  base::FundamentalValue count(page_count);
-  base::FundamentalValue modifiable(is_modifiable);
-  CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable);
+void PrintPreviewUI::OnDidGetPreviewPageCount(
+    const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
+  DCHECK_GT(params.page_count, 0);
+  document_cookie_ = params.document_cookie;
+  base::FundamentalValue count(params.page_count);
+  base::FundamentalValue modifiable(params.is_modifiable);
+  base::FundamentalValue request_id(params.preview_request_id);
+  CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable,
+                         request_id);
 }
 
-void PrintPreviewUI::OnDidPreviewPage(int page_number) {
+void PrintPreviewUI::OnDidPreviewPage(int page_number,
+                                      int preview_request_id) {
   DCHECK_GE(page_number, 0);
   base::FundamentalValue number(page_number);
-  base::StringValue ui_identifier(preview_ui_addr_str_);
-  CallJavascriptFunction("onDidPreviewPage", number, ui_identifier);
+  StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue request_id(preview_request_id);
+  CallJavascriptFunction("onDidPreviewPage", number, ui_identifier, request_id);
 }
 
 void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {

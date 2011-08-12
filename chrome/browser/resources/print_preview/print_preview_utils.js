@@ -189,3 +189,17 @@ function pageSetToPageRanges(pageSet) {
 function getPageSrcURL(id, pageNumber) {
   return 'chrome://print/' + id + '/' + pageNumber + '/print.pdf';
 }
+
+
+/**
+ * Returns a random integer within the specified range, |endPointA| and
+ * |endPointB| are included.
+ * @param {number} endPointA One end of the desired range.
+ * @param {number} endPointB  The other end of the desired range.
+ * @return {number} The random integer.
+ */
+function randomInteger(endPointA, endPointB) {
+  from = Math.min(endPointA, endPointB);
+  to = Math.max(endPointA, endPointB);
+  return Math.floor(Math.random() * (to - from + 1) + from);
+}

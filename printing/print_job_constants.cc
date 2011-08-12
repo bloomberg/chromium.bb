@@ -6,6 +6,9 @@
 
 namespace printing {
 
+// True if this is the first preview request.
+const char kIsFirstRequest[] = "isFirstRequest";
+
 // Unique ID sent along every preview request.
 const char kPreviewRequestID[] = "requestID";
 

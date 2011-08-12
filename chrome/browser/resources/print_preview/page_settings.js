@@ -322,13 +322,12 @@ cr.define('print_preview', function() {
      * |this.selectedPagesTextfield|. Ensures that
      * |this.selectedPagesTextfield| is non-empty before checking
      * |this.selectedPagesRadioButton|.
+     * @private
      */
-    onSelectedPagesTextfieldInput: function() {
+    onSelectedPagesTextfieldInput_: function() {
       if (this.selectedPagesText.length)
         this.selectedPagesRadioButton.checked = true;
-      if (!hasPendingPreviewRequest) {
-        this.resetSelectedPagesTextfieldTimer_();
-      }
+      this.resetSelectedPagesTextfieldTimer_();
     },
 
     /**
@@ -336,25 +335,14 @@ cr.define('print_preview', function() {
      * of altering their behavior depending on |hasPendingPreviewRequest|.
      */
     addEventListeners: function() {
-      this.allPagesRadioButton.onclick = function() {
-        if (hasPendingPreviewRequest)
-          cr.dispatchSimpleEvent(document, 'updatePrintButton');
-        else
-          this.onSelectedPagesMayHaveChanged_();
-      }.bind(this);
-
-      this.selectedPagesRadioButton.onclick = function() {
-        if (!hasPendingPreviewRequest)
-          this.onSelectedPagesMayHaveChanged_();
-      }.bind(this);
-
+      this.allPagesRadioButton.onclick =
+          this.onSelectedPagesMayHaveChanged_.bind(this);
+      this.selectedPagesRadioButton.onclick =
+          this.onSelectedPagesMayHaveChanged_.bind(this);
       this.selectedPagesTextfield.oninput =
-          this.onSelectedPagesTextfieldInput.bind(this);
-
-      this.selectedPagesTextfield.onfocus = function() {
-        if (!hasPendingPreviewRequest)
-          this.addTimerToSelectedPagesTextfield_();
-      }.bind(this);
+          this.onSelectedPagesTextfieldInput_.bind(this);
+      this.selectedPagesTextfield.onfocus =
+          this.addTimerToSelectedPagesTextfield_.bind(this);
 
       // Handler for the blur event on |this.selectedPagesTextfield|. Un-checks
       // |this.selectedPagesRadioButton| if the input field is empty.
@@ -362,13 +350,8 @@ cr.define('print_preview', function() {
         if (!this.selectedPagesText.length)
           this.allPagesRadioButton_.checked = true;
 
-        if (hasPendingPreviewRequest) {
-          this.validateSelectedPages_();
-          cr.dispatchSimpleEvent(document, 'updatePrintButton');
-        } else {
-          clearTimeout(this.timerId_);
-          this.onSelectedPagesMayHaveChanged_();
-        }
+        clearTimeout(this.timerId_);
+        this.onSelectedPagesMayHaveChanged_();
       }.bind(this);
     }
   };

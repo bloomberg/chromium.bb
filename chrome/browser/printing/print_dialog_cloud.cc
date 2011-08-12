@@ -377,6 +377,8 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
   default_settings.desired_dpi = kDPI;
   default_settings.document_cookie = 0;
   default_settings.selection_only = false;
+  default_settings.preview_request_id = 0;
+  default_settings.is_first_request = true;
 
   if (!GetPageSetupParameters(json, default_settings)) {
     NOTREACHED();

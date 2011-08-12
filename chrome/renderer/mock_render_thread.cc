@@ -211,10 +211,9 @@ void MockRenderThread::OnDidPrintPage(
     printer_->PrintPage(params);
 }
 
-void MockRenderThread::OnDidGetPreviewPageCount(int document_cookie,
-                                                int number_pages,
-                                                bool is_modifiable) {
-  print_preview_pages_remaining_ = number_pages;
+void MockRenderThread::OnDidGetPreviewPageCount(
+    const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
+  print_preview_pages_remaining_ = params.page_count;
 }
 
 void MockRenderThread::OnDidPreviewPage(
@@ -235,9 +234,11 @@ void MockRenderThread::OnUpdatePrintSettings(
       !job_settings.GetBoolean(printing::kSettingCollate, NULL) ||
       !job_settings.GetBoolean(printing::kSettingColor, NULL) ||
       !job_settings.GetBoolean(printing::kSettingPrintToPDF, NULL) ||
+      !job_settings.GetBoolean(printing::kIsFirstRequest, NULL) ||
       !job_settings.GetString(printing::kSettingDeviceName, &dummy_string) ||
       !job_settings.GetInteger(printing::kSettingDuplexMode, NULL) ||
-      !job_settings.GetInteger(printing::kSettingCopies, NULL)) {
+      !job_settings.GetInteger(printing::kSettingCopies, NULL) ||
+      !job_settings.GetInteger(printing::kPreviewRequestID, NULL)) {
     return;
   }
 

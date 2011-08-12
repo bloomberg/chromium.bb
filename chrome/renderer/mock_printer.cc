@@ -35,7 +35,9 @@ MockPrinter::MockPrinter()
     current_document_cookie_(0),
     printer_status_(PRINTER_READY),
     number_pages_(0),
-    page_number_(0) {
+    page_number_(0),
+    is_first_request_(true),
+    preview_request_id_(0) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));
   printable_size_.SetSize(static_cast<int>((7.5 * dpi_)),
@@ -90,6 +92,8 @@ void MockPrinter::ScriptedPrint(int cookie,
   settings->params.document_cookie = document_cookie_;
   settings->params.page_size = page_size_;
   settings->params.printable_size = printable_size_;
+  settings->params.is_first_request = is_first_request_;
+  settings->params.preview_request_id = preview_request_id_;
   printer_status_ = PRINTER_PRINTING;
 }
 
@@ -230,4 +234,6 @@ void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {
   params->printable_size = printable_size_;
   params->margin_left = margin_left_;
   params->margin_top = margin_top_;
+  params->is_first_request = is_first_request_;
+  params->preview_request_id = preview_request_id_;
 }
