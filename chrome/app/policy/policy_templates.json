@@ -1218,7 +1218,7 @@
           'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.''',
         },
         {
-          'name': 'DefaultNotificationSetting',
+          'name': 'DefaultNotificationsSetting',
           'type': 'int-enum',
           'items': [
             {

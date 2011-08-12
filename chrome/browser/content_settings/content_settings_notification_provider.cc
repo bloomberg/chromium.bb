@@ -176,8 +176,6 @@ void NotificationProvider::Observe(int type,
 
 void NotificationProvider::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
-    prefs_registrar_.Add(prefs::kDesktopNotificationDefaultContentSetting,
-                         this);
     prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
 
