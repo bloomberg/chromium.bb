@@ -52,8 +52,8 @@ class FullscreenExitBubbleViews : public views::LinkListener,
   scoped_ptr<ui::SlideAnimation> size_animation_;
 
   // ui::AnimationDelegate:
-  void AnimationProgressed(const ui::Animation* animation);
-  void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // The contents of the popup.
   FullscreenExitView* view_;
