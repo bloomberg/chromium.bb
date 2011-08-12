@@ -45,14 +45,12 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_handler.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -63,7 +61,6 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/desktop_notification_messages.h"
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
@@ -80,69 +77,6 @@
 #endif
 
 namespace {
-
-void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
-  // Note that due to GetEffectiveURL(), even hosted apps will have a
-  // chrome-extension:// URL for their site, so we can ignore that wrinkle here.
-  SiteInstance* site_instance = render_view_host->site_instance();
-  const GURL& site = site_instance->site();
-
-  if (!site.SchemeIs(chrome::kExtensionScheme))
-    return;
-
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->browsing_instance()->browser_context());
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return;
-
-  ExtensionProcessManager* process_manager =
-      profile->GetExtensionProcessManager();
-  CHECK(process_manager);
-
-  // This can happen if somebody typos a chrome-extension:// URL.
-  const Extension* extension = service->GetExtensionByURL(site);
-  if (!extension)
-    return;
-
-  site_instance->GetProcess()->mark_is_extension_process();
-
-  // Register the association between extension and SiteInstance with
-  // ExtensionProcessManager.
-  // TODO(creis): Use this to replace SetInstalledAppForRenderer below.
-  process_manager->RegisterExtensionSiteInstance(site_instance->id(),
-                                                 extension->id());
-
-  RenderProcessHost* process = render_view_host->process();
-
-  if (extension->is_app()) {
-    render_view_host->Send(
-        new ExtensionMsg_ActivateApplication(extension->id()));
-    // Record which, if any, installed app is associated with this process.
-    // TODO(aa): Totally lame to store this state in a global map in extension
-    // service. Can we get it from EPM instead?
-    service->SetInstalledAppForRenderer(process->id(), extension);
-  }
-
-  // Some extensions use chrome:// URLs.
-  Extension::Type type = extension->GetType();
-  if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_PACKAGED_APP) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process->id(), chrome::kChromeUIScheme);
-  }
-
-  // Enable extension bindings for the renderer. Currently only extensions,
-  // packaged apps, and hosted component apps use extension bindings.
-  if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_USER_SCRIPT ||
-      type == Extension::TYPE_PACKAGED_APP ||
-      (type == Extension::TYPE_HOSTED_APP &&
-       extension->location() == Extension::COMPONENT)) {
-    render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
-    render_view_host->AllowBindings(BindingsPolicy::EXTENSION);
-  }
-}
 
 // Handles rewriting Web UI URLs.
 static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
@@ -170,8 +104,6 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new ChromeRenderViewHostObserver(render_view_host);
   new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);
-
-  InitRenderViewHostForExtensions(render_view_host);
 }
 
 void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(

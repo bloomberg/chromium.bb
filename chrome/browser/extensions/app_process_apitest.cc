@@ -338,3 +338,33 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   EXPECT_TRUE(last_active_browser->GetTabContentsAt(0)->render_view_host()->
       process()->is_extension_process());
 }
+
+IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
+
+  GURL base_url = GetTestBaseURL("app_process");
+
+  // Load the app, chrome.app.isInstalled should be true.
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
+  TabContents* contents = browser()->GetTabContentsAt(0);
+  EXPECT_TRUE(contents->render_view_host()->process()->is_extension_process());
+  bool is_installed = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      contents->render_view_host(), L"",
+      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      &is_installed));
+  ASSERT_TRUE(is_installed);
+
+  // Crash the tab and reload it, chrome.app.isInstalled should still be true.
+  ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  browser()->Reload(CURRENT_TAB);
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      contents->render_view_host(), L"",
+      L"window.domAutomationController.send(chrome.app.isInstalled)",
+      &is_installed));
+  ASSERT_TRUE(is_installed);
+}

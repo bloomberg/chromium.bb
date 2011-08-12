@@ -8,6 +8,8 @@
 
 #include "content/browser/renderer_host/render_view_host_observer.h"
 
+class Extension;
+
 // This class holds the Chrome specific parts of RenderViewHost, and has the
 // same lifetime.
 class ChromeRenderViewHostObserver : public RenderViewHostObserver {
@@ -16,10 +18,20 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
   virtual ~ChromeRenderViewHostObserver();
 
   // RenderViewHostObserver overrides.
+  virtual void RenderViewHostInitialized() OVERRIDE;
   virtual void Navigate(const ViewMsg_Navigate_Params& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
+   // Does extension-specific initialization when a new RenderViewHost is
+   // created.
+  void InitRenderViewHostForExtensions();
+   // Does extension-specific initialization when a new renderer process is
+   // created by a RenderViewHost.
+  void InitRenderViewForExtensions();
+  // Gets the extension or app (if any) that is associated with the RVH.
+  const Extension* GetExtension();
+
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
 
