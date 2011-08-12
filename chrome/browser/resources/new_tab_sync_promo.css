@@ -42,3 +42,26 @@
 #sync-setup-login-left-column {
   padding: 30px;
 }
+
+#sync-promo-login-status {
+  margin-bottom: 20px;
+  padding-right: 4px;
+  padding-top: 4px;
+  width: 100%;
+}
+
+#sync-promo-login-status-cell {
+  display: table-cell;
+  float: right;
+  margin-bottom: 4px;
+  margin-right: 4px;
+}
+
+#sync-promo-login-status-msg {
+  vertical-align: middle;
+}
+
+#login-status-avatar-icon {
+  height: 24px;
+  vertical-align: top;
+}

@@ -130,9 +130,10 @@ if ('mode' in hashParams) {
 
 <div id="sync-promo" class="collapsed" hidden>
   <div id="sync-promo-login-status">
-    <span id="sync-promo-user-name"></span>
-    <span id="sync-promo-not-connected"
-        i18n-content="statusNotConnected" hidden></span>
+    <div id="sync-promo-login-status-cell">
+      <span id="sync-promo-login-status-msg"></span>
+      <img id="login-status-avatar-icon" hidden>
+    </div>
   </div>
   <div id="sync-promo-contents">
     <include src="sync_setup_overlay.html">

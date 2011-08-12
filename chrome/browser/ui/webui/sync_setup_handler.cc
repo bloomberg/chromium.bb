@@ -268,7 +268,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptSensitiveOption", IDS_SYNC_ENCRYPT_SENSITIVE_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
-    { "statusNotConnected", IDS_SYNC_STATUS_NOT_CONNECTED }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

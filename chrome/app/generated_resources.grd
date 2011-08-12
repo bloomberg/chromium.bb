@@ -9619,7 +9619,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
       </message>
       <message name="IDS_SYNC_STATUS_NOT_CONNECTED" desc="Status shown in the new tab page when the user is not signed into sync">
-        not connected
+        not signed in
+      </message>
+      <message name="IDS_SYNC_STATUS_CONNECTED" desc="Status shown in the new tab page when the user is signed into sync">
+        Signed in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
       </message>
 
       <!-- Passphrase dialog strings -->

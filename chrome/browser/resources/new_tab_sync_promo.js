@@ -23,8 +23,35 @@ cr.define('new_tab', function() {
     // Variable to track if the promo is expanded or collapsed.
     isSyncPromoExpanded_: false,
 
+    // Variable to track if the login name should be clickable.
+    isLoginNameClickable_ : false,
+
+    // Variable to track if the user is signed into sync.
+    isUserSignedIntoSync_ : false,
+
+    // Override SyncSetupOverlay::showOverlay_ to expand the sync promo when the
+    // overlay is shown.
     showOverlay_: function() {
-      this.expandSyncPromo_(true);
+      this.isSyncPromoExpanded_ = true;
+      $('sync-promo-login-status').hidden = true;
+      $('sync-setup-overlay').hidden = false;
+      $('sync-promo').classList.remove('collapsed');
+      layoutSections();
+    },
+
+    // Override SyncSetupOverlay::closeOverlay_ to collapse the sync promo when
+    // the overlay is closed.
+    closeOverlay_: function() {
+      options.SyncSetupOverlay.prototype.closeOverlay_.call(this);
+      this.isSyncPromoExpanded_ = false;
+      $('sync-promo-login-status').hidden = false;
+      $('sync-setup-overlay').hidden = true;
+      $('sync-promo').classList.add('collapsed');
+      layoutSections();
+
+      // If the overlay is being closed because the user pressed cancelled
+      // then we need to ensure that chrome knows about it.
+      chrome.send('CollapseSyncPromo');
     },
 
     // Initializes the page.
@@ -34,46 +61,56 @@ cr.define('new_tab', function() {
       $('sync-promo-toggle-button').onclick = function() {
         self.onTogglePromo();
       }
+      $('sync-promo-login-status-cell').onclick = function() {
+        self.onLoginNameClicked();
+      }
       chrome.send('InitializeSyncPromo');
     },
 
     // Handler for the toggle button to show or hide the sync promo.
     onTogglePromo: function() {
       if (this.isSyncPromoExpanded_) {
-        this.expandSyncPromo_(false);
         chrome.send('CollapseSyncPromo');
+        this.closeOverlay_();
       } else {
         chrome.send('ExpandSyncPromo');
       }
     },
 
-    // Shows or hides the sync promo.
-    expandSyncPromo_: function(shouldExpand) {
-      this.isSyncPromoExpanded_ = shouldExpand;
-      if (shouldExpand) {
-        $('sync-promo-login-status').hidden = true;
-        $('sync-setup-overlay').hidden = false;
-        $('sync-promo').classList.remove('collapsed');
-      } else {
-        $('sync-promo-login-status').hidden = false;
-        $('sync-setup-overlay').hidden = true;
-        $('sync-promo').classList.add('collapsed');
-      }
-      layoutSections();
+    // Called when the user clicks the login name on the top right of the sync
+    // promo. If the user isn't signed in then we just expand the sync promo.
+    // If the user is signed in then we ask Chrome to show the profile menu.
+    onLoginNameClicked: function() {
+      if (!this.isLoginNameClickable_)
+        return;
+
+      if (this.isUserSignedIntoSync_)
+        chrome.send('ShowProfileMenu');
+      else
+        this.onTogglePromo();
     },
 
-    // Sets the sync login name. If there's no login name then makes the
-    // 'not connected' UI visible and shows the sync promo toggle button.
-    updateLogin_: function(user_name) {
-      if (user_name) {
-        $('sync-promo-toggle').hidden = true;
-        $('sync-promo-user-name').textContent = user_name;
-        $('sync-promo-not-connected').hidden = true;
+    // Updates the sync login status. If the user is not logged in then it
+    // shows the sync promo toggle button.
+    updateLogin_: function(login_status_msg, icon_url, is_signed_in,
+                           is_clickable) {
+      $('sync-promo-login-status-msg').textContent = login_status_msg;
+      this.isUserSignedIntoSync_ = is_signed_in;
+      $('sync-promo-toggle').hidden = is_signed_in;
+
+      if (icon_url == "") {
+        $('login-status-avatar-icon').hidden = true;
       } else {
-        $('sync-promo-toggle').hidden = false;
-        $('sync-promo-user-name').hidden = true;
-        $('sync-promo-not-connected').hidden = false;
+        $('login-status-avatar-icon').hidden = false;
+        $('login-status-avatar-icon').src = icon_url;
       }
+
+      this.isLoginNameClickable_ = is_clickable;
+      if (is_clickable)
+        $('sync-promo-login-status-cell').style.cursor = "pointer";
+      else
+        $('sync-promo-login-status-cell').style.cursor = "default";
+
       layoutSections();
     },
 
@@ -115,8 +152,10 @@ cr.define('new_tab', function() {
     NewTabSyncPromo.getInstance().showSyncPromo_();
   }
 
-  NewTabSyncPromo.updateLogin = function(user_name) {
-    NewTabSyncPromo.getInstance().updateLogin_(user_name);
+  NewTabSyncPromo.updateLogin = function(user_name, icon_url, is_signed_in,
+                                         is_clickable) {
+    NewTabSyncPromo.getInstance().updateLogin_(
+        user_name, icon_url, is_signed_in, is_clickable);
   }
 
   // Export
