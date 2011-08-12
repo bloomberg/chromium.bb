@@ -126,12 +126,16 @@ bool ConvertToAutofillFieldType(const AutofillField& field,
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("locality")) {
+  if (autocomplete_type == ASCIIToUTF16("locality") ||
+      autocomplete_type == ASCIIToUTF16("city")) {
     *autofill_type = ADDRESS_HOME_CITY;
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("administrative-area")) {
+  if (autocomplete_type == ASCIIToUTF16("administrative-area") ||
+      autocomplete_type == ASCIIToUTF16("state") ||
+      autocomplete_type == ASCIIToUTF16("province") ||
+      autocomplete_type == ASCIIToUTF16("region")) {
     *autofill_type = ADDRESS_HOME_STATE;
     return true;
   }
@@ -166,12 +170,21 @@ bool ConvertToAutofillFieldType(const AutofillField& field,
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("phone-city-code")) {
+  if (autocomplete_type == ASCIIToUTF16("phone-national")) {
+    *autofill_type = PHONE_HOME_CITY_AND_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-area-code")) {
     *autofill_type = PHONE_HOME_CITY_CODE;
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("phone-number")) {
+  // TODO(isherman): We should more fully support "phone-local-prefix" and
+  // "phone-local-suffix": http://crbug.com/92121
+  if (autocomplete_type == ASCIIToUTF16("phone-local") ||
+      autocomplete_type == ASCIIToUTF16("phone-local-prefix") ||
+      autocomplete_type == ASCIIToUTF16("phone-local-suffix")) {
     *autofill_type = PHONE_HOME_NUMBER;
     return true;
   }
@@ -186,12 +199,21 @@ bool ConvertToAutofillFieldType(const AutofillField& field,
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("fax-city-code")) {
+  if (autocomplete_type == ASCIIToUTF16("fax-national")) {
+    *autofill_type = PHONE_FAX_CITY_AND_NUMBER;
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-area-code")) {
     *autofill_type = PHONE_FAX_CITY_CODE;
     return true;
   }
 
-  if (autocomplete_type == ASCIIToUTF16("fax-number")) {
+  // TODO(isherman): We should more fully support "fax-local-prefix" and
+  // "fax-local-suffix": http://crbug.com/92121
+  if (autocomplete_type == ASCIIToUTF16("fax-local") ||
+      autocomplete_type == ASCIIToUTF16("fax-local-prefix") ||
+      autocomplete_type == ASCIIToUTF16("fax-local-suffix")) {
     *autofill_type = PHONE_FAX_NUMBER;
     return true;
   }
