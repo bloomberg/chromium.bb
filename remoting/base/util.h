@@ -6,6 +6,7 @@
 #define REMOTING_BASE_UTIL_H_
 
 #include "media/base/video_frame.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/rect.h"
 
 namespace remoting {
@@ -64,7 +65,7 @@ void CopyRect(const uint8* src_plane,
               uint8* dest_plane,
               int dest_plane_stride,
               int bytes_per_pixel,
-              const gfx::Rect& rect);
+              const SkIRect& rect);
 
 }  // namespace remoting
 

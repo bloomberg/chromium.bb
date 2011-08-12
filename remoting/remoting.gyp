@@ -274,6 +274,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../ui/ui.gyp:ui',
         '../net/net.gyp:net',
+        '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../media/media.gyp:yuv_convert',
@@ -286,6 +287,7 @@
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
+        '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
@@ -334,7 +336,6 @@
         'base/task_thread_proxy.h',
         'base/tracer.cc',
         'base/tracer.h',
-        'base/types.h',
         'base/util.cc',
         'base/util.h',
       ],
@@ -669,9 +670,6 @@
     {
       'target_name': 'differ_block',
       'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
       'dependencies': [
         '../media/media.gyp:cpu_features',
       ],
@@ -691,9 +689,6 @@
     {
       'target_name': 'differ_block_sse2',
       'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac"', {
           'cflags': [

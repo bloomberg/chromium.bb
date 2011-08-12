@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/rect.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
@@ -38,7 +38,7 @@ class XServerPixelBuffer {
   // call to CaptureRect.
   // In the case where the full-screen data is captured by Synchronize(), this
   // simply returns the pointer without doing any more work.
-  uint8* CaptureRect(const gfx::Rect& rect);
+  uint8* CaptureRect(const SkIRect& rect);
 
   // Return information about the most recent capture. This is only guaranteed
   // to be valid between CaptureRect calls.

@@ -161,11 +161,11 @@ void CopyRect(const uint8* src_plane,
               uint8* dest_plane,
               int dest_plane_stride,
               int bytes_per_pixel,
-              const gfx::Rect& rect) {
+              const SkIRect& rect) {
  // Get the address of the starting point.
-  const int src_y_offset = src_plane_stride * rect.y();
-  const int dest_y_offset = dest_plane_stride * rect.y();
-  const int x_offset = bytes_per_pixel * rect.x();
+  const int src_y_offset = src_plane_stride * rect.fTop;
+  const int dest_y_offset = dest_plane_stride * rect.fTop;
+  const int x_offset = bytes_per_pixel * rect.fLeft;
   src_plane += src_y_offset + x_offset;
   dest_plane += dest_y_offset + x_offset;
 

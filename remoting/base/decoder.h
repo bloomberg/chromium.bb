@@ -46,6 +46,8 @@ class Decoder {
   // Returns rects that were updated in the last frame. Can be called only
   // after DecodePacket returned DECODE_DONE. Caller keeps ownership of
   // |rects|. |rects| is kept empty if whole screen needs to be updated.
+  // TODO(dmaclach): Move this over to using SkRegion.
+  // http://crbug.com/92085
   virtual void GetUpdatedRects(UpdatedRects* rects) = 0;
 
   // Reset the decoder to an uninitialized state. Release all references to

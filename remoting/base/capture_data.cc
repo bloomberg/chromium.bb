@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ CaptureData::CaptureData(const DataPlanes &data_planes,
                          const gfx::Size& size,
                          media::VideoFrame::Format format)
     : data_planes_(data_planes),
-      dirty_rects_(),
       size_(size),
       pixel_format_(format),
       capture_time_ms_(0),
