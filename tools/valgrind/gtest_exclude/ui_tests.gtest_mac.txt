@@ -91,9 +91,10 @@ ResourceDispatcherTest.CrossSiteFailedRequest
 ResourceDispatcherTest.RespectNoSniffDirective
 
 # Valgrind internal error: received SIGSEGV. http://crbug.com/51716
-AutomatedUITestBase.IncognitoWindow
 AutomatedUITestBase.FindInPage
+AutomatedUITestBase.IncognitoWindow
 AutomatedUITestBase.Navigate
+AutomatedUITestBase.OpenNewTab
 AutomatedUITestBase.ShowDownloads
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
@@ -111,14 +112,16 @@ AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest2.GetTabTitle
 AutomationProxyTest4.NumberValueIsEchoedByDomAutomationController
 AutomationProxyTest4.StringValueIsEchoedByDomAutomationController
-AutomatedUITestBase.OpenNewTab
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
 DOMStorageTest.EventLayoutTests
 DOMStorageTest.SessionStorageLayoutTests
 ErrorPageTest.IFrameDNSError_Basic
 ExtensionProxyUITest.EnableDisable
 HistoryTester.ConsiderSlowRedirectAsUserInitiated
+HistoryTester.VerifyHistoryLength3
 IFrameTest.Crash
+IFrameTest.InEmptyFrame
+LocaleTestsDa.TestStart
 LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
@@ -141,7 +144,9 @@ PPAPITest.ImageData
 PPAPITest.Instance
 PPAPITest.PaintAggregator
 PPAPITest.Scrollbar
+PPAPITest.UMA
 PPAPITest.URLUtil
+PPAPITest.VarDeprecated
 PPAPITest.VideoDecoder
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 PrintPreviewUITest.LoadPrintPreviewByURL
@@ -150,8 +155,8 @@ RedirectTest.ServerReference
 RepostFormWarningTest.TestDoubleReload
 ResourceDispatcherTest.ContentDispositionEmpty
 ResourceDispatcherTest.ContentDispositionInline
-ResourceDispatcherTest.SyncXMLHttpRequest
 ResourceDispatcherTest.SniffNoContentTypeNoData
+ResourceDispatcherTest.SyncXMLHttpRequest
 SearchProviderTest.TestIsSearchProviderInstalledWithException
 SecurityTest.DisallowFileUrlUniversalAccessTest
 SessionHistoryTest.BasicBackForward
@@ -268,7 +273,7 @@ NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
 
 # Flaky on valgrind test. See http://crbug.com/84257.
 AutomatedUITestBase.RestoreTab
-AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController 
+AutomationProxyTest4.BooleanValueIsEchoedByDomAutomationController
 
 # http://crbug.com/87625
 PPAPITest.Var
