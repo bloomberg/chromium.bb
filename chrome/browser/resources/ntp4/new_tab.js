@@ -388,6 +388,8 @@ cr.define('ntp4', function() {
       cardSlider.selectCardByValue(mostVisitedPage);
     else if (shownPage == templateData['apps_page_id'])
       cardSlider.selectCardByValue(appsPages[shownPageIndex]);
+    else if (shownPage == templateData['bookmarks_page_id'])
+      cardSlider.selectCardByValue(bookmarksPage);
   }
 
   /**
