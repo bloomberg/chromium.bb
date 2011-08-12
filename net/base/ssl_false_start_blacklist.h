@@ -6,7 +6,7 @@
 #define NET_BASE_SSL_FALSE_START_BLACKLIST_H_
 
 #include "base/basictypes.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -18,7 +18,7 @@ class SSLFalseStartBlacklist {
  public:
   // IsMember returns true if the given host is in the blacklist.
   //   host: a DNS name in dotted form (i.e. "www.example.com")
-  NET_TEST static bool IsMember(const char* host);
+  NET_EXPORT_PRIVATE static bool IsMember(const char* host);
 
   // Hash returns the modified djb2 hash of the given string.
   static unsigned Hash(const char* str) {

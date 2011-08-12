@@ -16,11 +16,11 @@
 
 #include "base/basictypes.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
-class NET_API HttpAlternateProtocols {
+class NET_EXPORT HttpAlternateProtocols {
  public:
   enum Protocol {
     NPN_SPDY_1,
@@ -30,7 +30,7 @@ class NET_API HttpAlternateProtocols {
     UNINITIALIZED,
   };
 
-  struct NET_API PortProtocolPair {
+  struct NET_EXPORT PortProtocolPair {
     bool Equals(const PortProtocolPair& other) const {
       return port == other.port && protocol == other.protocol;
     }

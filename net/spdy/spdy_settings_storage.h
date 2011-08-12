@@ -9,14 +9,14 @@
 #include <map>
 #include "base/basictypes.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 #include "net/spdy/spdy_framer.h"
 
 namespace net {
 
 // SpdySettingsStorage stores SpdySettings which have been transmitted between
 // endpoints for the SPDY SETTINGS frame.
-class NET_TEST SpdySettingsStorage {
+class NET_EXPORT_PRIVATE SpdySettingsStorage {
  public:
   SpdySettingsStorage();
   ~SpdySettingsStorage();

@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "net/base/cookie_options.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 class GURL;
 
@@ -26,12 +26,12 @@ class CookieMonster;
 
 // An interface for storing and retrieving cookies. Implementations need to
 // be thread safe as its methods can be accessed from IO as well as UI threads.
-class NET_API CookieStore : public base::RefCountedThreadSafe<CookieStore> {
+class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
   // This struct contains additional consumer-specific information that might
   // be stored with cookies; currently just MAC information, see:
   // http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac
-  struct NET_API CookieInfo {
+  struct NET_EXPORT CookieInfo {
     CookieInfo();
     ~CookieInfo();
 

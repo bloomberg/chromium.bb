@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "crypto/hmac.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -22,7 +22,7 @@ namespace net {
 //
 //   http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token
 //
-class NET_TEST HttpMacSignature {
+class NET_EXPORT_PRIVATE HttpMacSignature {
  public:
   HttpMacSignature();
   ~HttpMacSignature();

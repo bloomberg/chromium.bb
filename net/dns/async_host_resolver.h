@@ -24,7 +24,7 @@ namespace net {
 class AddressesList;
 class ClientSocketFactory;
 
-class NET_API AsyncHostResolver
+class NET_EXPORT AsyncHostResolver
     : public HostResolver,
       public DnsTransaction::Delegate,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {

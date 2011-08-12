@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 #include "net/base/origin_bound_cert_store.h"
 
 class Task;
@@ -28,7 +28,7 @@ namespace net {
 //
 // This class can be accessed by multiple threads. For example, it can be used
 // by IO and origin bound cert management UI.
-class NET_API DefaultOriginBoundCertStore : public OriginBoundCertStore {
+class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
  public:
   class OriginBoundCert;
   class PersistentStore;
@@ -110,7 +110,7 @@ class NET_API DefaultOriginBoundCertStore : public OriginBoundCertStore {
 
 // The OriginBoundCert class contains a private key in addition to the origin
 // and the cert.
-class NET_API DefaultOriginBoundCertStore::OriginBoundCert {
+class NET_EXPORT DefaultOriginBoundCertStore::OriginBoundCert {
  public:
   OriginBoundCert();
   OriginBoundCert(const std::string& origin,
@@ -130,7 +130,7 @@ class NET_API DefaultOriginBoundCertStore::OriginBoundCert {
 typedef base::RefCountedThreadSafe<DefaultOriginBoundCertStore::PersistentStore>
     RefcountedPersistentStore;
 
-class NET_API DefaultOriginBoundCertStore::PersistentStore
+class NET_EXPORT DefaultOriginBoundCertStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
   virtual ~PersistentStore() {}

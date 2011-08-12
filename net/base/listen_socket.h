@@ -27,7 +27,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 #if defined(OS_POSIX)
 typedef int SOCKET;
@@ -36,11 +36,11 @@ typedef int SOCKET;
 namespace net {
 
 // Implements a raw socket interface
-class NET_API ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
+class NET_EXPORT ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 #if defined(OS_WIN)
-                             public base::win::ObjectWatcher::Delegate {
+                                public base::win::ObjectWatcher::Delegate {
 #elif defined(OS_POSIX)
-                             public MessageLoopForIO::Watcher {
+                                public MessageLoopForIO::Watcher {
 #endif
  public:
   // TODO(erikkay): this delegate should really be split into two parts

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 #include "net/socket/socket.h"
 
 namespace net {
@@ -55,8 +55,9 @@ class WebSocketServerSocket : public Socket {
 
 // Creates websocket server socket atop of already connected socket. This
 // created server socket will take ownership of |transport_socket|.
-NET_API WebSocketServerSocket* CreateWebSocketServerSocket(
-    Socket* transport_socket, WebSocketServerSocket::Delegate* delegate);
+NET_EXPORT WebSocketServerSocket* CreateWebSocketServerSocket(
+    Socket* transport_socket,
+    WebSocketServerSocket::Delegate* delegate);
 
 }  // namespace net
 

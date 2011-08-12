@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace disk_cache {
 
 // From http://www.azillionmonkeys.com/qed/hash.html
 // This is the hash used on WebCore/platform/stringhash
-NET_TEST uint32 SuperFastHash(const char * data, int len);
+NET_EXPORT_PRIVATE uint32 SuperFastHash(const char * data, int len);
 
 inline uint32 Hash(const char* key, size_t length) {
   return SuperFastHash(key, static_cast<int>(length));

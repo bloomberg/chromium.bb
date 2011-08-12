@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -24,7 +24,7 @@ class OriginBoundCertStore;
 // A class for creating and fetching origin bound certs.
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
-class NET_API OriginBoundCertService
+class NET_EXPORT OriginBoundCertService
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Opaque type used to cancel a request.

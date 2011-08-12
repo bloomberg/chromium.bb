@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/string_piece.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -17,9 +17,9 @@ class DnsRRResolver;
 
 // DnsCertProvenanceChecker is an interface for asynchronously checking HTTPS
 // certificates via a DNS side-channel.
-class NET_API DnsCertProvenanceChecker {
+class NET_EXPORT DnsCertProvenanceChecker {
  public:
-  class NET_API Delegate {
+  class NET_EXPORT Delegate {
    public:
     virtual ~Delegate();
 

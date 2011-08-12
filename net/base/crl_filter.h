@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -29,7 +29,7 @@ class GolombCompressedSet;
 // a firm "not revoked" answer or a probabilistic "revoked" answer.
 // Additionally, a CRLFilter can contain a list of blocked public keys and, in
 // that case, it can give a firm "revoked" answer.
-class NET_TEST CRLFilter : public base::RefCounted<CRLFilter> {
+class NET_EXPORT_PRIVATE CRLFilter : public base::RefCounted<CRLFilter> {
  public:
   enum Result {
     REVOKED,  // the certificate should be rejected.

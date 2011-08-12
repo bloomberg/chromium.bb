@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "net/base/net_api.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
@@ -19,7 +19,7 @@ namespace net {
 // Owned only by a single OriginBoundCertService object, which is responsible
 // for deleting it.
 
-class NET_API OriginBoundCertStore {
+class NET_EXPORT OriginBoundCertStore {
  public:
   virtual ~OriginBoundCertStore() {}
 
