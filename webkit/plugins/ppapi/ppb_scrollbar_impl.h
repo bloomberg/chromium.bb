@@ -63,8 +63,7 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
 
   // WebKit::WebScrollbarClient implementation.
   virtual void valueChanged(WebKit::WebScrollbar* scrollbar) OVERRIDE;
-  // TODO(jam): add OVERRIDE once WebKit is rolled
-  virtual void overlayChanged(WebKit::WebScrollbar* scrollbar);
+  virtual void overlayChanged(WebKit::WebScrollbar* scrollbar) OVERRIDE;
   virtual void invalidateScrollbarRect(WebKit::WebScrollbar* scrollbar,
                                        const WebKit::WebRect& rect) OVERRIDE;
   virtual void getTickmarks(

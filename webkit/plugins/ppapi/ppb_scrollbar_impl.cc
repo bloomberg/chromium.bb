@@ -125,16 +125,10 @@ PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
 }
 
 void PPB_Scrollbar_Impl::Init(bool vertical) {
-#if defined(WEBSCROLLBAR_SUPPORTS_OVERLAY)
   scrollbar_.reset(WebScrollbar::createForPlugin(
       vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal,
       instance()->container(),
       static_cast<WebKit::WebScrollbarClient*>(this)));
-#else
-  scrollbar_.reset(WebScrollbar::create(
-      static_cast<WebKit::WebScrollbarClient*>(this),
-      vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal));
-#endif
 }
 
 PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
@@ -156,12 +150,7 @@ uint32_t PPB_Scrollbar_Impl::GetThickness() {
 }
 
 bool PPB_Scrollbar_Impl::IsOverlay() {
-// TODO(jam): take this out once WebKit is rolled.
-#if defined(WEBSCROLLBAR_SUPPORTS_OVERLAY)
   return scrollbar_->isOverlay();
-#else
-  return false;
-#endif
 }
 
 uint32_t PPB_Scrollbar_Impl::GetValue() {
