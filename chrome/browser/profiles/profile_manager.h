@@ -215,6 +215,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Adds |profile| to the profile info cache if it's not already there.
   void AddProfileToCache(Profile* profile);
 
+  // For ChromeOS, determines if profile should be otr.
+  bool ShouldGoOffTheRecord();
+
   NotificationRegistrar registrar_;
 
   // Indicates that a user has logged in and that the profile specified

@@ -195,22 +195,14 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
 #if defined(OS_CHROMEOS)
   if (!logged_in_) {
-    Profile* profile;
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
+    Profile* profile = GetProfile(default_profile_dir);
     // For cros, return the OTR profile so we never accidentally keep
     // user data in an unencrypted profile. But doing this makes
     // many of the browser and ui tests fail. We do return the OTR profile
     // if the login-profile switch is passed so that we can test this.
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
-    if (!command_line.HasSwitch(switches::kTestType) ||
-        command_line.HasSwitch(switches::kLoginProfile)) {
-      // Don't init extensions for this profile
-      profile = GetProfile(default_profile_dir);
-      profile = profile->GetOffTheRecordProfile();
-    } else {
-      profile = GetProfile(default_profile_dir);
-    }
+    if (ShouldGoOffTheRecord())
+      return profile->GetOffTheRecordProfile();
     return profile;
   }
 #endif
@@ -312,7 +304,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
   }
 
   RegisterProfile(profile, true);
-  DoFinalInit(profile, false);
+  DoFinalInit(profile, ShouldGoOffTheRecord());
   return true;
 }
 
@@ -381,16 +373,8 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   std::vector<ProfileManagerObserver*> observers;
   info->observers.swap(observers);
 
-  bool go_off_the_record = false;
+  bool go_off_the_record = ShouldGoOffTheRecord();
   if (success) {
-#if defined(OS_CHROMEOS)
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (!logged_in_ &&
-        (!command_line.HasSwitch(switches::kTestType) ||
-         command_line.HasSwitch(switches::kLoginProfile))) {
-      go_off_the_record = true;
-    }
-#endif
     if (!go_off_the_record) {
       for (size_t i = 0; i < observers.size(); ++i) {
         observers[i]->OnProfileCreated(
@@ -547,6 +531,19 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
         cache.ChooseNameForNewProfile(),
         cache.ChooseAvatarIconIndexForNewProfile());
   }
+}
+
+bool ProfileManager::ShouldGoOffTheRecord() {
+  bool go_off_the_record = false;
+#if defined(OS_CHROMEOS)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!logged_in_ &&
+      (!command_line.HasSwitch(switches::kTestType) ||
+       command_line.HasSwitch(switches::kLoginProfile))) {
+    go_off_the_record = true;
+  }
+#endif
+  return go_off_the_record;
 }
 
 void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
