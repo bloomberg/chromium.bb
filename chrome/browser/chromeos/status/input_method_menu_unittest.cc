@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -111,6 +112,7 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
 
 // Test whether the function returns language name for non-ambiguous languages.
 TEST(InputMethodMenuTest, GetTextForMenuTest) {
+  ScopedTestingBrowserProcess browser_process;
   // For most languages input method or keyboard layout name is returned.
   // See below for exceptions.
   {

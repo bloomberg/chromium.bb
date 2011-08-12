@@ -111,7 +111,7 @@ void ChromeTestSuite::Initialize() {
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
   // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
   g_browser_process = new TestingBrowserProcess;
 #endif
@@ -160,7 +160,7 @@ void ChromeTestSuite::Shutdown() {
   base::mac::SetOverrideAppBundle(NULL);
 #endif
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
   // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
   delete g_browser_process;
   g_browser_process = NULL;

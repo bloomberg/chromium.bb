@@ -269,7 +269,7 @@ void TestingBrowserProcess::SetDevToolsManager(DevToolsManager* manager) {
 }
 
 ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // This is not really Windows-specific, the transition is just being done
   // in stages, and Windows is first. See below for more info.
   DCHECK(!g_browser_process);
@@ -289,7 +289,7 @@ ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
 ScopedTestingBrowserProcess::~ScopedTestingBrowserProcess() {
   DCHECK_EQ(browser_process_.get(), g_browser_process);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // This is not really Windows-specific, the transition is just being done
   // in stages, and Windows is first. See below for more info.
   g_browser_process = NULL;

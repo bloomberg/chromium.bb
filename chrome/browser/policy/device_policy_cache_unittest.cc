@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/mock_signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "policy/configuration_policy_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +70,7 @@ void CreateProxyPolicy(em::PolicyFetchResponse* policy,
 
 }  // namespace
 
-class DevicePolicyCacheTest : public testing::Test {
+class DevicePolicyCacheTest : public TestingBrowserProcessTest {
  protected:
   DevicePolicyCacheTest()
       : cryptohome_(chromeos::CryptohomeLibrary::GetImpl(true)),

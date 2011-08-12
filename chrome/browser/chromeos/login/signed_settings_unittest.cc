@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,7 +99,7 @@ class ProtoDelegate : public DummyDelegate<const em::PolicyFetchResponse&> {
 
 }  // anonymous namespace
 
-class SignedSettingsTest : public ::testing::Test {
+class SignedSettingsTest : public TestingBrowserProcessTest {
  public:
   SignedSettingsTest()
       : fake_email_("fakey@example.com"),

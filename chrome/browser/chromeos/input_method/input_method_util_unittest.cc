@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,7 +25,7 @@ InputMethodDescriptor GetDesc(const std::string& id,
 }
 }  // namespace
 
-class InputMethodUtilTest : public testing::Test {
+class InputMethodUtilTest : public TestingBrowserProcessTest {
  public:
   static void SetUpTestCase() {
     // Reload the internal maps before running tests, with the stub

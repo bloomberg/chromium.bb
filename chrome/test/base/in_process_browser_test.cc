@@ -94,7 +94,7 @@ void InProcessBrowserTest::SetUp() {
   ASSERT_TRUE(CreateUserDataDirectory())
       << "Could not create user data directory.";
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // This is not really Windows-specific, the transition is just being done
   // in stages, and Windows is first. See below for more info.
   DCHECK(!g_browser_process);
@@ -225,7 +225,7 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 }
 
 void InProcessBrowserTest::TearDown() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // This is not really Windows-specific, the transition is just being done
   // in stages, and Windows is first. See below for more info.
   DCHECK(!g_browser_process);

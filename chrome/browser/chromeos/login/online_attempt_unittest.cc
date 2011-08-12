@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -28,7 +29,7 @@ using ::testing::_;
 
 namespace chromeos {
 
-class OnlineAttemptTest : public ::testing::Test {
+class OnlineAttemptTest : public TestingBrowserProcessTest {
  public:
   OnlineAttemptTest()
       : message_loop_(MessageLoop::TYPE_UI),

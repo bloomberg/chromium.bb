@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
@@ -25,7 +26,7 @@ using ::testing::Invoke;
 using ::testing::Unused;
 using ::testing::_;
 
-class CookieFetcherTest : public ::testing::Test {
+class CookieFetcherTest : public TestingBrowserProcessTest {
  public:
   CookieFetcherTest()
       : iat_url_(GaiaUrls::GetInstance()->issue_auth_token_url()),

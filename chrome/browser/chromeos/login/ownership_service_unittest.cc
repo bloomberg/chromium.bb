@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
@@ -30,7 +31,7 @@ using ::testing::_;
 
 namespace chromeos {
 
-class OwnershipServiceTest : public ::testing::Test {
+class OwnershipServiceTest : public TestingBrowserProcessTest {
  public:
   OwnershipServiceTest()
       : message_loop_(MessageLoop::TYPE_UI),

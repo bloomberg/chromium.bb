@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
@@ -118,7 +119,7 @@ void MockSigner::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
 ////////////////////////////////////////////////////////////////////////////////
 // OwnerManagerTest
 
-class OwnerManagerTest : public ::testing::Test {
+class OwnerManagerTest : public TestingBrowserProcessTest {
  public:
   OwnerManagerTest()
       : message_loop_(MessageLoop::TYPE_UI),
