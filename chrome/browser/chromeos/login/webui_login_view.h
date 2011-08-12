@@ -110,8 +110,10 @@ class WebUILoginView : public views::View,
 
   // Overridden from TabContentsDelegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Window that contains status area.
   // TODO(nkostylev): Temporary solution till we have

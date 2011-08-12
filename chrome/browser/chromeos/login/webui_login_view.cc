@@ -248,6 +248,10 @@ bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
 #endif
 }
 
+bool WebUILoginView::IsPopupOrPanel(const TabContents* source) const {
+  return true;
+}
+
 bool WebUILoginView::TakeFocus(bool reverse) {
   // Forward the focus back to web contents.
   webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
