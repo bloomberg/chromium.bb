@@ -99,6 +99,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     base::FundamentalValue state(true);
     web_ui_->CallJavascriptFunction("ImportDataOverlay.setImportingState",
                                     state);
+    import_did_succeed_ = false;
 
     // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
     // so we will only use it on that platform since it is required. Remove this
@@ -155,11 +156,19 @@ void ImportDataHandler::ImportItemStarted(importer::ImportItem item) {
 
 void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
   // TODO(csilv): show progress detail in the web view.
+  import_did_succeed_ = true;
 }
 
 void ImportDataHandler::ImportEnded() {
   importer_host_->SetObserver(NULL);
   importer_host_ = NULL;
 
-  web_ui_->CallJavascriptFunction("ImportDataOverlay.confirmSuccess");
+  if (import_did_succeed_) {
+    web_ui_->CallJavascriptFunction("ImportDataOverlay.confirmSuccess");
+  } else {
+    base::FundamentalValue state(false);
+    web_ui_->CallJavascriptFunction("ImportDataOverlay.setImportingState",
+                                    state);
+    web_ui_->CallJavascriptFunction("ImportDataOverlay.dismiss");
+  }
 }

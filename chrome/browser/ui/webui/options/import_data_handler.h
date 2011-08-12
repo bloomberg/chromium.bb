@@ -50,6 +50,8 @@ class ImportDataHandler : public OptionsPageUIHandler,
   // of deleting itself when import is complete.
   ImporterHost* importer_host_;  // weak
 
+  bool import_did_succeed_;
+
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);
 };
 
