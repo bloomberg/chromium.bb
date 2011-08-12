@@ -17,6 +17,8 @@ include_rules = [
   "+chrome/common/extensions",
   "+chrome/common/chrome_notification_types.h",
 
+  "+chrome/common/chrome_switches.h",
+  "+chrome/common/net/gaia/gaia_constants.h",
   "+chrome/common/random.h",
 ]
 
