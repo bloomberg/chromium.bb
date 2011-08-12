@@ -135,6 +135,7 @@ podrow {
 }
 
 .remove-user-button {
+  -webkit-transition: width .1s ease-in-out, background .2s ease-in-out;
   -webkit-box-shadow: none;
   background: url('chrome://theme/IDR_CLOSE_BAR') center center no-repeat;
   border: 0;
@@ -151,4 +152,15 @@ podrow {
 .remove-user-button:hover {
   -webkit-box-shadow: none;
   background: url('chrome://theme/IDR_CLOSE_BAR_H') center center no-repeat;
+}
+
+.remove-user-button.active {
+  background-color: #e94949;
+  background-image: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 10px;
+  height: initial;
+  padding: 2px 4px;
+  width: initial;
 }

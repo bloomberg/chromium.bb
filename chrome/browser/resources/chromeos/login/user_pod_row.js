@@ -46,6 +46,8 @@ cr.define('login', function() {
 
       this.enterButtonElement.addEventListener('click',
           this.activate.bind(this));
+      this.removeUserButtonElement.addEventListener('mouseout',
+          this.handleRemoveButtonMouseOut_.bind(this));
     },
 
     /**
@@ -143,6 +145,27 @@ cr.define('login', function() {
     },
 
     /**
+     * Whether remove button is active state.
+     * @type {boolean}
+     */
+    get activeRemoveButton() {
+      return this.removeUserButtonElement.classList.contains('active');
+    },
+    set activeRemoveButton(active) {
+      if (active == this.activeRemoveButton)
+        return;
+
+      if (active) {
+        this.removeUserButtonElement.classList.add('active');
+        this.removeUserButtonElement.textContent =
+            localStrings.getString('removeUser');
+      } else {
+        this.removeUserButtonElement.classList.remove('active');
+        this.removeUserButtonElement.textContent = '';
+      }
+    },
+
+    /**
      * Focuses on input element.
      */
     focusInput: function() {
@@ -179,11 +202,28 @@ cr.define('login', function() {
     },
 
     /**
+     * Handles mouseout on remove button button.
+     */
+    handleRemoveButtonMouseOut_: function(e) {
+      this.activeRemoveButton = false;
+    },
+
+    /**
+     * Handles mousedown on remove user button.
+     */
+    handleRemoevButtonMouseDown_: function(e) {
+      if (this.activeRemoveButton)
+        chrome.send('removeUser', [this.user.emailAddress]);
+      else
+        this.activeRemoveButton = true;
+    },
+
+    /**
      * Handles mousedown event.
      */
     handleMouseDown_: function(e) {
       if (e.target == this.removeUserButtonElement) {
-        chrome.send('removeUser', [this.user.emailAddress]);
+        this.handleRemoevButtonMouseDown_(e);
 
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
@@ -338,6 +378,7 @@ cr.define('login', function() {
           // we are not using gaia ext for signin or
           // the user has a valid oauth token.
           for (var i = 0; i < this.pods.length; ++i) {
+            this.pods[i].activeRemoveButton = false;
             if (this.pods[i] == pod) {
               pod.classList.remove("faded");
               pod.classList.add("focused");
@@ -359,6 +400,7 @@ cr.define('login', function() {
         for (var i = 0; i < this.pods.length; ++i) {
           this.pods[i].classList.remove('focused');
           this.pods[i].classList.remove('faded');
+          this.pods[i].activeRemoveButton = false;
         }
         this.focusedPod_ = undefined;
       }

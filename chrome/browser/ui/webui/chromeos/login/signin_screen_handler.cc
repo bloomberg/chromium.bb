@@ -97,6 +97,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON));
   localized_strings->SetString("guestSignin",
       l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+  localized_strings->SetString("removeUser",
+      l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
 
   if (extension_driven_)
     localized_strings->SetString("authType", "ext");
