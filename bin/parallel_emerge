@@ -1309,11 +1309,15 @@ class EmergeQueue(object):
             print "Deadlock! Circular dependencies!"
           sys.exit(1)
 
-      try:
-        job = self._job_queue.get(timeout=5)
-      except Queue.Empty:
-        # Print an update.
-        self._ScheduleLoop()
+      for i in range(3):
+        try:
+          job = self._job_queue.get(timeout=5)
+          break
+        except Queue.Empty:
+          # Check if any more jobs can be scheduled.
+          self._ScheduleLoop()
+      else:
+        # Print an update every 15 seconds.
         self._Status()
         continue
 
