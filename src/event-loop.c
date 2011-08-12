@@ -162,8 +162,12 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 	struct wl_event_source_timer *timer_source =
 		(struct wl_event_source_timer *) source;
 	uint64_t expires;
+	int len;
 
-	read(timer_source->fd, &expires, sizeof expires);
+	len = read(timer_source->fd, &expires, sizeof expires);
+	if (len != sizeof expires)
+		/* Is there anything we can do here?  Will this ever happen? */
+		fprintf(stderr, "timerfd read error: %m\n");
 
 	return timer_source->func(timer_source->base.data);
 }
@@ -256,8 +260,12 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 	struct wl_event_source_signal *signal_source =
 		(struct wl_event_source_signal *) source;
 	struct signalfd_siginfo signal_info;
+	int len;
 
-	read(signal_source->fd, &signal_info, sizeof signal_info);
+	len = read(signal_source->fd, &signal_info, sizeof signal_info);
+	if (len != sizeof signal_info)
+		/* Is there anything we can do here?  Will this ever happen? */
+		fprintf(stderr, "signalfd read error: %m\n");
 
 	return signal_source->func(signal_source->signal_number,
 				   signal_source->base.data);
