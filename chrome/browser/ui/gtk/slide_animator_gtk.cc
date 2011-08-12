@@ -119,8 +119,10 @@ void SlideAnimatorGtk::AnimationProgressed(const ui::Animation* animation) {
   int showing_height = static_cast<int>(req.height *
                                         animation_->GetCurrentValue());
   if (direction_ == DOWN) {
-    gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
-                                child_, 0, showing_height - req.height);
+    if (widget_.get()->parent) {
+      gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
+                                  child_, 0, showing_height - req.height);
+    }
     child_needs_move_ = false;
   }
   gtk_widget_set_size_request(widget_.get(), -1, showing_height);

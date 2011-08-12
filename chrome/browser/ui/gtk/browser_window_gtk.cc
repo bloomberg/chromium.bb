@@ -1444,7 +1444,8 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
           CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
       if (!is_kiosk) {
         fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
-            GTK_FLOATING_CONTAINER(render_area_floating_container_)));
+            GTK_FLOATING_CONTAINER(render_area_floating_container_),
+            browser()));
       }
       gtk_widget_hide(toolbar_border_);
     } else {

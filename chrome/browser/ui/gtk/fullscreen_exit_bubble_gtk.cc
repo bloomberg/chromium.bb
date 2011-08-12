@@ -12,25 +12,13 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-// Padding around the link text.
-const int kPaddingPixels = 8;
-
-// Time before the link slides away. This is a bit longer than the Windows
-// timeout because we don't yet support reshowing when the mouse moves to the
-// of the screen.
-const int kInitialDelayMs = 3000;
-
-// How long the slide up animation takes when hiding the bubble.
-const int kSlideOutDurationMs = 700;
-
-}
-
 FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
-    GtkFloatingContainer* container)
-    : container_(container) {
+    GtkFloatingContainer* container,
+    CommandUpdater::CommandUpdaterDelegate* delegate)
+    : FullscreenExitBubble(delegate),
+      container_(container) {
   InitWidgets();
+  StartWatchingMouse();
 }
 
 FullscreenExitBubbleGtk::~FullscreenExitBubbleGtk() {
@@ -42,7 +30,8 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   // and put into a slide widget.
 
   // The Windows code actually looks up the accelerator key in the accelerator
-  // table and then converts the key to a string (in a switch statement).
+  // table and then converts the key to a string (in a switch statement). This
+  // doesn't seem to be implemented for Gtk, so we just use F11 directly.
   std::string exit_text_utf8("<span color=\"white\" size=\"large\">");
   exit_text_utf8.append(l10n_util::GetStringFUTF8(
       IDS_EXIT_FULLSCREEN_MODE, l10n_util::GetStringUTF16(IDS_APP_F11_KEY)));
@@ -53,24 +42,20 @@ void FullscreenExitBubbleGtk::InitWidgets() {
                                            FALSE);
   signals_.Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
 
-  GtkWidget* container = gtk_util::CreateGtkBorderBin(
+  link_container_.Own(gtk_util::CreateGtkBorderBin(
       link, &gtk_util::kGdkBlack,
-      kPaddingPixels, kPaddingPixels, kPaddingPixels, kPaddingPixels);
-  gtk_util::ActAsRoundedWindow(container, gtk_util::kGdkGreen, kPaddingPixels,
+      kPaddingPx, kPaddingPx, kPaddingPx, kPaddingPx));
+  gtk_util::ActAsRoundedWindow(link_container_.get(), gtk_util::kGdkGreen,
+      kPaddingPx,
       gtk_util::ROUNDED_BOTTOM_LEFT | gtk_util::ROUNDED_BOTTOM_RIGHT,
       gtk_util::BORDER_NONE);
 
-  slide_widget_.reset(new SlideAnimatorGtk(container,
+  slide_widget_.reset(new SlideAnimatorGtk(link_container_.get(),
       SlideAnimatorGtk::DOWN, kSlideOutDurationMs, false, false, NULL));
   gtk_widget_set_name(widget(), "exit-fullscreen-bubble");
-  gtk_widget_show_all(container);
+  gtk_widget_show_all(link_container_.get());
   gtk_widget_show(widget());
   slide_widget_->OpenWithoutAnimation();
-
-  // TODO(tc): Implement the more complex logic in the windows version for
-  // when to show/hide the exit bubble.
-  initial_delay_.Start(base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
-                       &FullscreenExitBubbleGtk::Hide);
 
   gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(container_),
                                       widget());
@@ -78,8 +63,56 @@ void FullscreenExitBubbleGtk::InitWidgets() {
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
 }
 
+gfx::Rect FullscreenExitBubbleGtk::GetPopupRect(
+    bool ignore_animation_state) const {
+  GtkRequisition bubble_size;
+  if (ignore_animation_state) {
+    gtk_widget_size_request(link_container_.get(), &bubble_size);
+  } else {
+    gtk_widget_size_request(widget(), &bubble_size);
+  }
+  return gfx::Rect(bubble_size.width, bubble_size.height);
+}
+
+gfx::Point FullscreenExitBubbleGtk::GetCursorScreenPoint() {
+  GdkDisplay* display = gtk_widget_get_display(widget());
+
+  // Get cursor position.
+  // TODO: this hits the X server, so we may want to consider decreasing
+  // kPositionCheckHz if we detect that we're running remotely.
+  int x, y;
+  gdk_display_get_pointer(display, NULL, &x, &y, NULL);
+
+  return gfx::Point(x, y);
+}
+
+bool FullscreenExitBubbleGtk::WindowContainsPoint(gfx::Point pos) {
+  GtkWindow* window = GTK_WINDOW(
+      gtk_widget_get_ancestor(widget(), GTK_TYPE_WINDOW));
+  int width, height, x, y;
+  gtk_window_get_size(window, &width, &height);
+  gtk_window_get_position(window, &x, &y);
+  return gfx::Rect(x, y, width, height).Contains(pos);
+}
+
+bool FullscreenExitBubbleGtk::IsWindowActive() {
+  if (!widget()->parent)
+    return false;
+  GtkWindow* window = GTK_WINDOW(
+      gtk_widget_get_ancestor(widget(), GTK_TYPE_WINDOW));
+  return gtk_window_is_active(window);
+}
+
 void FullscreenExitBubbleGtk::Hide() {
   slide_widget_->Close();
+}
+
+void FullscreenExitBubbleGtk::Show() {
+  slide_widget_->Open();
+}
+
+bool FullscreenExitBubbleGtk::IsAnimating() {
+  return slide_widget_->IsAnimating();
 }
 
 void FullscreenExitBubbleGtk::OnSetFloatingPosition(
@@ -102,6 +135,5 @@ void FullscreenExitBubbleGtk::OnSetFloatingPosition(
 }
 
 void FullscreenExitBubbleGtk::OnLinkClicked(GtkWidget* link) {
-  GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget()));
-  gtk_window_unfullscreen(window);
+  ToggleFullscreen();
 }

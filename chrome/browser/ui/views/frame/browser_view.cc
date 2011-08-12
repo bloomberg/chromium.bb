@@ -56,7 +56,7 @@
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
-#include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -2339,8 +2339,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     bool is_kiosk =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     if (!is_kiosk) {
-      fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
-                                                        browser_.get()));
+      fullscreen_bubble_.reset(new FullscreenExitBubbleViews(GetWidget(),
+                                                             browser_.get()));
     }
   } else {
 #if defined(OS_WIN)

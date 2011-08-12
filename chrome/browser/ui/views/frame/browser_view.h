@@ -50,7 +50,7 @@ class CompactNavigationBar;
 class CompactOptionsBar;
 class DownloadShelfView;
 class EncodingMenuModel;
-class FullscreenExitBubble;
+class FullscreenExitBubbleViews;
 class HtmlDialogUIDelegate;
 class InfoBarContainerView;
 class LocationBarView;
@@ -691,7 +691,7 @@ class BrowserView : public BrowserBubbleHost,
   // fullscreen mode on and off to reduce jankiness.
   bool ignore_layout_;
 
-  scoped_ptr<FullscreenExitBubble> fullscreen_bubble_;
+  scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
 
 #if defined(OS_WIN)
   // The additional items we insert into the system menu.

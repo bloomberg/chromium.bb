@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #pragma once
 
-#include "base/timer.h"
+#include "chrome/browser/ui/fullscreen_exit_bubble.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -16,21 +16,30 @@ typedef struct _GtkWidget GtkWidget;
 
 // FullscreenExitBubbleGTK is responsible for showing a bubble atop the screen
 // in fullscreen mode, telling users how to exit and providing a click target.
-class FullscreenExitBubbleGtk {
+class FullscreenExitBubbleGtk : public FullscreenExitBubble {
  public:
   // We place the bubble in |container|.
-  explicit FullscreenExitBubbleGtk(GtkFloatingContainer* container);
+  FullscreenExitBubbleGtk(
+      GtkFloatingContainer* container,
+      CommandUpdater::CommandUpdaterDelegate* delegate);
   virtual ~FullscreenExitBubbleGtk();
 
-  void InitWidgets();
+ protected:
+  // FullScreenExitBubble
+  virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const OVERRIDE;
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
+  virtual bool WindowContainsPoint(gfx::Point pos) OVERRIDE;
+  virtual bool IsWindowActive() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual bool IsAnimating() OVERRIDE;
 
  private:
+  void InitWidgets();
+
   GtkWidget* widget() const {
     return slide_widget_->widget();
   }
-
-  // Hide the exit bubble.
-  void Hide();
 
   CHROMEGTK_CALLBACK_1(FullscreenExitBubbleGtk, void, OnSetFloatingPosition,
                        GtkAllocation*);
@@ -38,6 +47,9 @@ class FullscreenExitBubbleGtk {
 
   // A pointer to the floating container that is our parent.
   GtkFloatingContainer* container_;
+
+  // The widget that contains the link.
+  OwnedWidgetGtk link_container_;
 
   // The widget that animates the slide-out of fullscreen exit bubble.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
