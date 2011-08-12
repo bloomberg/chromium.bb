@@ -217,450 +217,6 @@ class NetLog;
 }  // namespace net
 
 namespace {
-void SetSocketReusePolicy(int warmest_socket_trial_group,
-                          const int socket_policy[],
-                          int num_groups);
-}  // namespace
-
-// BrowserMainParts ------------------------------------------------------------
-
-BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
-    : parameters_(parameters),
-      parsed_command_line_(parameters.command_line_) {
-}
-
-BrowserMainParts::~BrowserMainParts() {
-}
-
-// BrowserMainParts: |EarlyInitialization()| and related -----------------------
-
-void BrowserMainParts::EarlyInitialization() {
-  PreEarlyInitialization();
-
-  if (parsed_command_line().HasSwitch(switches::kEnableBenchmarking))
-    base::FieldTrial::EnableBenchmarking();
-
-  InitializeSSL();
-
-  if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart))
-    net::SSLConfigService::DisableFalseStart();
-  if (parsed_command_line().HasSwitch(switches::kEnableSSLCachedInfo))
-    net::SSLConfigService::EnableCachedInfo();
-  if (parsed_command_line().HasSwitch(switches::kEnableOriginBoundCerts))
-    net::SSLConfigService::EnableOriginBoundCerts();
-  if (parsed_command_line().HasSwitch(
-          switches::kEnableDNSCertProvenanceChecking)) {
-    net::SSLConfigService::EnableDNSCertProvenanceChecking();
-  }
-
-  // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
-  // seem dependent on InitializeSSL().
-  if (parsed_command_line().HasSwitch(switches::kEnableTcpFastOpen))
-    net::set_tcp_fastopen_enabled(true);
-
-  PostEarlyInitialization();
-}
-
-// This will be called after the command-line has been mutated by about:flags
-MetricsService* BrowserMainParts::SetupMetricsAndFieldTrials(
-    const CommandLine& parsed_command_line,
-    PrefService* local_state) {
-  // Must initialize metrics after labs have been converted into switches,
-  // but before field trials are set up (so that client ID is available for
-  // one-time randomized field trials).
-  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
-
-  // Initialize FieldTrialList to support FieldTrials that use one-time
-  // randomization. The client ID will be empty if the user has not opted
-  // to send metrics.
-  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
-
-  SetupFieldTrials(metrics->recording_active(),
-                   local_state->IsManagedPreference(
-                       prefs::kMaxConnectionsPerProxy));
-
-  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
-  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
-  // scope. Even though NewRunnableMethod does AddRef and Release, the object
-  // will not be deleted after the Task is executed.
-  field_trial_synchronizer_ = new FieldTrialSynchronizer();
-
-  return metrics;
-}
-
-// This is an A/B test for the maximum number of persistent connections per
-// host. Currently Chrome, Firefox, and IE8 have this value set at 6. Safari
-// uses 4, and Fasterfox (a plugin for Firefox that supposedly configures it to
-// run faster) uses 8. We would like to see how much of an effect this value has
-// on browsing. Too large a value might cause us to run into SYN flood detection
-// mechanisms.
-void BrowserMainParts::ConnectionFieldTrial() {
-  const base::FieldTrial::Probability kConnectDivisor = 100;
-  const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
-
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> connect_trial(
-      new base::FieldTrial(
-          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30));
-
-  // This (6) is the current default value. Having this group declared here
-  // makes it straightforward to modify |kConnectProbability| such that the same
-  // probability value will be assigned to all the other groups, while
-  // preserving the remainder of the of probability space to the default value.
-  const int connect_6 = connect_trial->kDefaultGroupNumber;
-
-  const int connect_5 = connect_trial->AppendGroup("conn_count_5",
-                                                   kConnectProbability);
-  const int connect_7 = connect_trial->AppendGroup("conn_count_7",
-                                                   kConnectProbability);
-  const int connect_8 = connect_trial->AppendGroup("conn_count_8",
-                                                   kConnectProbability);
-  const int connect_9 = connect_trial->AppendGroup("conn_count_9",
-                                                   kConnectProbability);
-
-  const int connect_trial_group = connect_trial->group();
-
-  if (connect_trial_group == connect_5) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(5);
-  } else if (connect_trial_group == connect_6) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(6);
-  } else if (connect_trial_group == connect_7) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(7);
-  } else if (connect_trial_group == connect_8) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(8);
-  } else if (connect_trial_group == connect_9) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(9);
-  } else {
-    NOTREACHED();
-  }
-}
-
-// A/B test for determining a value for unused socket timeout. Currently the
-// timeout defaults to 10 seconds. Having this value set too low won't allow us
-// to take advantage of idle sockets. Setting it to too high could possibly
-// result in more ERR_CONNECTION_RESETs, since some servers will kill a socket
-// before we time it out. Since these are "unused" sockets, we won't retry the
-// connection and instead show an error to the user. So we need to be
-// conservative here. We've seen that some servers will close the socket after
-// as short as 10 seconds. See http://crbug.com/84313 for more details.
-void BrowserMainParts::SocketTimeoutFieldTrial() {
-  const base::FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
-  // 1% probability for all experimental settings.
-  const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
-
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> socket_timeout_trial(
-      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor,
-          "idle_timeout_10", 2011, 6, 30));
-  const int socket_timeout_10 = socket_timeout_trial->kDefaultGroupNumber;
-
-  const int socket_timeout_5 =
-      socket_timeout_trial->AppendGroup("idle_timeout_5",
-                                        kSocketTimeoutProbability);
-  const int socket_timeout_20 =
-      socket_timeout_trial->AppendGroup("idle_timeout_20",
-                                        kSocketTimeoutProbability);
-
-  const int idle_to_trial_group = socket_timeout_trial->group();
-
-  if (idle_to_trial_group == socket_timeout_5) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
-  } else if (idle_to_trial_group == socket_timeout_10) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
-  } else if (idle_to_trial_group == socket_timeout_20) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
-  } else {
-    NOTREACHED();
-  }
-}
-
-void BrowserMainParts::ProxyConnectionsFieldTrial() {
-  const base::FieldTrial::Probability kProxyConnectionsDivisor = 100;
-  // 25% probability
-  const base::FieldTrial::Probability kProxyConnectionProbability = 1;
-
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> proxy_connection_trial(
-      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor,
-          "proxy_connections_32", 2011, 6, 30));
-
-  // This (32 connections per proxy server) is the current default value.
-  // Declaring it here allows us to easily re-assign the probability space while
-  // maintaining that the default group always has the remainder of the "share",
-  // which allows for cleaner and quicker changes down the line if needed.
-  const int proxy_connections_32 = proxy_connection_trial->kDefaultGroupNumber;
-
-  // The number of max sockets per group cannot be greater than the max number
-  // of sockets per proxy server.  We tried using 8, and it can easily
-  // lead to total browser stalls.
-  const int proxy_connections_16 =
-      proxy_connection_trial->AppendGroup("proxy_connections_16",
-                                          kProxyConnectionProbability);
-  const int proxy_connections_64 =
-      proxy_connection_trial->AppendGroup("proxy_connections_64",
-                                          kProxyConnectionProbability);
-
-  const int proxy_connections_trial_group = proxy_connection_trial->group();
-
-  if (proxy_connections_trial_group == proxy_connections_16) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(16);
-  } else if (proxy_connections_trial_group == proxy_connections_32) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(32);
-  } else if (proxy_connections_trial_group == proxy_connections_64) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(64);
-  } else {
-    NOTREACHED();
-  }
-}
-
-// When --use-spdy not set, users will be in A/B test for spdy.
-// group A (npn_with_spdy): this means npn and spdy are enabled. In case server
-//                          supports spdy, browser will use spdy.
-// group B (npn_with_http): this means npn is enabled but spdy won't be used.
-//                          Http is still used for all requests.
-//           default group: no npn or spdy is involved. The "old" non-spdy
-//                          chrome behavior.
-void BrowserMainParts::SpdyFieldTrial() {
-  if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
-    std::string spdy_mode =
-        parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
-    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
-  } else {
-#if !defined(OS_CHROMEOS)
-    bool is_spdy_trial = false;
-    const base::FieldTrial::Probability kSpdyDivisor = 100;
-    base::FieldTrial::Probability npnhttp_probability = 5;
-
-    // After June 30, 2011 builds, it will always be in default group.
-    scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial(
-            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2011, 6, 30));
-
-    // npn with spdy support is the default.
-    int npn_spdy_grp = trial->kDefaultGroupNumber;
-
-    // npn with only http support, no spdy.
-    int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
-
-    int trial_grp = trial->group();
-    if (trial_grp == npn_http_grp) {
-      is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn-http");
-    } else if (trial_grp == npn_spdy_grp) {
-      is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn");
-    } else {
-      CHECK(!is_spdy_trial);
-    }
-#else
-    // Always enable SPDY on Chrome OS
-    net::HttpNetworkLayer::EnableSpdy("npn");
-#endif  // !defined(OS_CHROMEOS)
-  }
-
-  // Setup SPDY CWND Field trial.
-  const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
-  const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
-  const base::FieldTrial::Probability kSpdyCwnd10 = 20;     // fixed at 10
-  const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
-  const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
-
-  // After June 30, 2011 builds, it will always be in default group
-  // (cwndDynamic).
-  scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial(
-          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2011, 6, 30));
-
-  trial->AppendGroup("cwnd10", kSpdyCwnd10);
-  trial->AppendGroup("cwnd16", kSpdyCwnd16);
-  trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
-  trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
-
-  if (parsed_command_line().HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
-    int value = 0;
-    base::StringToInt(parsed_command_line().GetSwitchValueASCII(
-            switches::kMaxSpdyConcurrentStreams),
-        &value);
-    if (value > 0)
-      net::SpdySession::set_max_concurrent_streams(value);
-  }
-}
-
-// If --socket-reuse-policy is not specified, run an A/B test for choosing the
-// warmest socket.
-void BrowserMainParts::WarmConnectionFieldTrial() {
-  const CommandLine& command_line = parsed_command_line();
-  if (command_line.HasSwitch(switches::kSocketReusePolicy)) {
-    std::string socket_reuse_policy_str = command_line.GetSwitchValueASCII(
-        switches::kSocketReusePolicy);
-    int policy = -1;
-    base::StringToInt(socket_reuse_policy_str, &policy);
-
-    const int policy_list[] = { 0, 1, 2 };
-    VLOG(1) << "Setting socket_reuse_policy = " << policy;
-    SetSocketReusePolicy(policy, policy_list, arraysize(policy_list));
-    return;
-  }
-
-  const base::FieldTrial::Probability kWarmSocketDivisor = 100;
-  const base::FieldTrial::Probability kWarmSocketProbability = 33;
-
-  // After January 30, 2013 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> warmest_socket_trial(
-      new base::FieldTrial(
-          "WarmSocketImpact", kWarmSocketDivisor, "last_accessed_socket",
-          2013, 1, 30));
-
-  // Default value is USE_LAST_ACCESSED_SOCKET.
-  const int last_accessed_socket = warmest_socket_trial->kDefaultGroupNumber;
-  const int warmest_socket = warmest_socket_trial->AppendGroup(
-      "warmest_socket", kWarmSocketProbability);
-  const int warm_socket = warmest_socket_trial->AppendGroup(
-      "warm_socket", kWarmSocketProbability);
-
-  const int warmest_socket_trial_group = warmest_socket_trial->group();
-
-  const int policy_list[] = { warmest_socket, warm_socket,
-                              last_accessed_socket };
-  SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
-                       arraysize(policy_list));
-}
-
-// If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
-// specified, run an A/B test for automatically establishing backup TCP
-// connections when a certain timeout value is exceeded.
-void BrowserMainParts::ConnectBackupJobsFieldTrial() {
-  if (parsed_command_line().HasSwitch(switches::kEnableConnectBackupJobs)) {
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        true);
-  } else if (parsed_command_line().HasSwitch(
-        switches::kDisableConnectBackupJobs)) {
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        false);
-  } else {
-    const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
-    // 1% probability.
-    const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
-    // After June 30, 2011 builds, it will always be in default group.
-    scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("ConnnectBackupJobs",
-            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled", 2011, 6,
-                30));
-    const int connect_backup_jobs_enabled = trial->kDefaultGroupNumber;
-    trial->AppendGroup("ConnectBackupJobsDisabled",
-                       kConnectBackupJobsProbability);
-    const int trial_group = trial->group();
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        trial_group == connect_backup_jobs_enabled);
-  }
-}
-
-// Test the impact on subsequent Google searches of getting suggestions from
-// www.google.TLD instead of clients1.google.TLD.
-void BrowserMainParts::SuggestPrefixFieldTrial() {
-  const base::FieldTrial::Probability kSuggestPrefixDivisor = 100;
-  // 50% probability.
-  const base::FieldTrial::Probability kSuggestPrefixProbability = 50;
-  // After Jan 1, 2012, it will always be in default group.
-  scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("SuggestHostPrefix",
-          kSuggestPrefixDivisor, "Default_Prefix", 2012, 1, 1));
-  trial->AppendGroup("Www_Prefix", kSuggestPrefixProbability);
-  // The field trial is detected directly, so we don't need to call anything.
-}
-
-// BrowserMainParts: |MainMessageLoopStart()| and related ----------------------
-
-void BrowserMainParts::MainMessageLoopStart() {
-  PreMainMessageLoopStart();
-
-  main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
-
-  // TODO(viettrungluu): should these really go before setting the thread name?
-  system_monitor_.reset(new base::SystemMonitor);
-  hi_res_timer_manager_.reset(new HighResolutionTimerManager);
-
-  InitializeMainThread();
-
-  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
-
-  PostMainMessageLoopStart();
-  Profiling::MainMessageLoopStarted();
-}
-
-void BrowserMainParts::InitializeMainThread() {
-  const char* kThreadName = "CrBrowserMain";
-  base::PlatformThread::SetName(kThreadName);
-  main_message_loop().set_thread_name(kThreadName);
-
-  // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new BrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
-}
-
-// BrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------------
-
-// Initializes the metrics service with the configuration for this process,
-// returning the created service (guaranteed non-NULL).
-MetricsService* BrowserMainParts::InitializeMetrics(
-    const CommandLine& parsed_command_line,
-    const PrefService* local_state) {
-#if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
-    MetricsLog::set_version_extension("-F");
-#elif defined(ARCH_CPU_64_BITS)
-  MetricsLog::set_version_extension("-64");
-#endif  // defined(OS_WIN)
-
-  MetricsService* metrics = g_browser_process->metrics_service();
-
-  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingOnly();
-    return metrics;
-  }
-
-  // If the user permits metrics reporting with the checkbox in the
-  // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds.
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool enabled = chromeos::UserCrosSettingsProvider::cached_reporting_enabled();
-#else
-  bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-  if (enabled) {
-    metrics->Start();
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return metrics;
-}
-
-void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
-                                        bool proxy_policy_is_set) {
-  // Note: make sure to call ConnectionFieldTrial() before
-  // ProxyConnectionsFieldTrial().
-  ConnectionFieldTrial();
-  SocketTimeoutFieldTrial();
-  // If a policy is defining the number of active connections this field test
-  // shoud not be performed.
-  if (!proxy_policy_is_set)
-    ProxyConnectionsFieldTrial();
-  prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
-  InstantFieldTrial::Activate();
-  SpdyFieldTrial();
-  ConnectBackupJobsFieldTrial();
-  SuggestPrefixFieldTrial();
-  WarmConnectionFieldTrial();
-}
-
-// -----------------------------------------------------------------------------
-// TODO(viettrungluu): move more/rest of BrowserMain() into above structure
-
-namespace {
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -1273,6 +829,444 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 #endif  // #if defined(USE_LINUX_BREAKPAD)
 
 }  // namespace
+
+// BrowserMainParts ------------------------------------------------------------
+
+BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
+    : parameters_(parameters),
+      parsed_command_line_(parameters.command_line_) {
+}
+
+BrowserMainParts::~BrowserMainParts() {
+}
+
+// BrowserMainParts: |EarlyInitialization()| and related -----------------------
+
+void BrowserMainParts::EarlyInitialization() {
+  PreEarlyInitialization();
+
+  if (parsed_command_line().HasSwitch(switches::kEnableBenchmarking))
+    base::FieldTrial::EnableBenchmarking();
+
+  InitializeSSL();
+
+  if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart))
+    net::SSLConfigService::DisableFalseStart();
+  if (parsed_command_line().HasSwitch(switches::kEnableSSLCachedInfo))
+    net::SSLConfigService::EnableCachedInfo();
+  if (parsed_command_line().HasSwitch(switches::kEnableOriginBoundCerts))
+    net::SSLConfigService::EnableOriginBoundCerts();
+  if (parsed_command_line().HasSwitch(
+          switches::kEnableDNSCertProvenanceChecking)) {
+    net::SSLConfigService::EnableDNSCertProvenanceChecking();
+  }
+
+  // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
+  // seem dependent on InitializeSSL().
+  if (parsed_command_line().HasSwitch(switches::kEnableTcpFastOpen))
+    net::set_tcp_fastopen_enabled(true);
+
+  PostEarlyInitialization();
+}
+
+// This will be called after the command-line has been mutated by about:flags
+MetricsService* BrowserMainParts::SetupMetricsAndFieldTrials(
+    const CommandLine& parsed_command_line,
+    PrefService* local_state) {
+  // Must initialize metrics after labs have been converted into switches,
+  // but before field trials are set up (so that client ID is available for
+  // one-time randomized field trials).
+  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
+
+  // Initialize FieldTrialList to support FieldTrials that use one-time
+  // randomization. The client ID will be empty if the user has not opted
+  // to send metrics.
+  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
+
+  SetupFieldTrials(metrics->recording_active(),
+                   local_state->IsManagedPreference(
+                       prefs::kMaxConnectionsPerProxy));
+
+  // Initialize FieldTrialSynchronizer system. This is a singleton and is used
+  // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
+  // scope. Even though NewRunnableMethod does AddRef and Release, the object
+  // will not be deleted after the Task is executed.
+  field_trial_synchronizer_ = new FieldTrialSynchronizer();
+
+  return metrics;
+}
+
+// This is an A/B test for the maximum number of persistent connections per
+// host. Currently Chrome, Firefox, and IE8 have this value set at 6. Safari
+// uses 4, and Fasterfox (a plugin for Firefox that supposedly configures it to
+// run faster) uses 8. We would like to see how much of an effect this value has
+// on browsing. Too large a value might cause us to run into SYN flood detection
+// mechanisms.
+void BrowserMainParts::ConnectionFieldTrial() {
+  const base::FieldTrial::Probability kConnectDivisor = 100;
+  const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
+
+  // After June 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> connect_trial(
+      new base::FieldTrial(
+          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30));
+
+  // This (6) is the current default value. Having this group declared here
+  // makes it straightforward to modify |kConnectProbability| such that the same
+  // probability value will be assigned to all the other groups, while
+  // preserving the remainder of the of probability space to the default value.
+  const int connect_6 = connect_trial->kDefaultGroupNumber;
+
+  const int connect_5 = connect_trial->AppendGroup("conn_count_5",
+                                                   kConnectProbability);
+  const int connect_7 = connect_trial->AppendGroup("conn_count_7",
+                                                   kConnectProbability);
+  const int connect_8 = connect_trial->AppendGroup("conn_count_8",
+                                                   kConnectProbability);
+  const int connect_9 = connect_trial->AppendGroup("conn_count_9",
+                                                   kConnectProbability);
+
+  const int connect_trial_group = connect_trial->group();
+
+  if (connect_trial_group == connect_5) {
+    net::ClientSocketPoolManager::set_max_sockets_per_group(5);
+  } else if (connect_trial_group == connect_6) {
+    net::ClientSocketPoolManager::set_max_sockets_per_group(6);
+  } else if (connect_trial_group == connect_7) {
+    net::ClientSocketPoolManager::set_max_sockets_per_group(7);
+  } else if (connect_trial_group == connect_8) {
+    net::ClientSocketPoolManager::set_max_sockets_per_group(8);
+  } else if (connect_trial_group == connect_9) {
+    net::ClientSocketPoolManager::set_max_sockets_per_group(9);
+  } else {
+    NOTREACHED();
+  }
+}
+
+// A/B test for determining a value for unused socket timeout. Currently the
+// timeout defaults to 10 seconds. Having this value set too low won't allow us
+// to take advantage of idle sockets. Setting it to too high could possibly
+// result in more ERR_CONNECTION_RESETs, since some servers will kill a socket
+// before we time it out. Since these are "unused" sockets, we won't retry the
+// connection and instead show an error to the user. So we need to be
+// conservative here. We've seen that some servers will close the socket after
+// as short as 10 seconds. See http://crbug.com/84313 for more details.
+void BrowserMainParts::SocketTimeoutFieldTrial() {
+  const base::FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
+  // 1% probability for all experimental settings.
+  const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
+
+  // After June 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> socket_timeout_trial(
+      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor,
+          "idle_timeout_10", 2011, 6, 30));
+  const int socket_timeout_10 = socket_timeout_trial->kDefaultGroupNumber;
+
+  const int socket_timeout_5 =
+      socket_timeout_trial->AppendGroup("idle_timeout_5",
+                                        kSocketTimeoutProbability);
+  const int socket_timeout_20 =
+      socket_timeout_trial->AppendGroup("idle_timeout_20",
+                                        kSocketTimeoutProbability);
+
+  const int idle_to_trial_group = socket_timeout_trial->group();
+
+  if (idle_to_trial_group == socket_timeout_5) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
+  } else if (idle_to_trial_group == socket_timeout_10) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
+  } else if (idle_to_trial_group == socket_timeout_20) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
+  } else {
+    NOTREACHED();
+  }
+}
+
+void BrowserMainParts::ProxyConnectionsFieldTrial() {
+  const base::FieldTrial::Probability kProxyConnectionsDivisor = 100;
+  // 25% probability
+  const base::FieldTrial::Probability kProxyConnectionProbability = 1;
+
+  // After June 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> proxy_connection_trial(
+      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor,
+          "proxy_connections_32", 2011, 6, 30));
+
+  // This (32 connections per proxy server) is the current default value.
+  // Declaring it here allows us to easily re-assign the probability space while
+  // maintaining that the default group always has the remainder of the "share",
+  // which allows for cleaner and quicker changes down the line if needed.
+  const int proxy_connections_32 = proxy_connection_trial->kDefaultGroupNumber;
+
+  // The number of max sockets per group cannot be greater than the max number
+  // of sockets per proxy server.  We tried using 8, and it can easily
+  // lead to total browser stalls.
+  const int proxy_connections_16 =
+      proxy_connection_trial->AppendGroup("proxy_connections_16",
+                                          kProxyConnectionProbability);
+  const int proxy_connections_64 =
+      proxy_connection_trial->AppendGroup("proxy_connections_64",
+                                          kProxyConnectionProbability);
+
+  const int proxy_connections_trial_group = proxy_connection_trial->group();
+
+  if (proxy_connections_trial_group == proxy_connections_16) {
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(16);
+  } else if (proxy_connections_trial_group == proxy_connections_32) {
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(32);
+  } else if (proxy_connections_trial_group == proxy_connections_64) {
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(64);
+  } else {
+    NOTREACHED();
+  }
+}
+
+// When --use-spdy not set, users will be in A/B test for spdy.
+// group A (npn_with_spdy): this means npn and spdy are enabled. In case server
+//                          supports spdy, browser will use spdy.
+// group B (npn_with_http): this means npn is enabled but spdy won't be used.
+//                          Http is still used for all requests.
+//           default group: no npn or spdy is involved. The "old" non-spdy
+//                          chrome behavior.
+void BrowserMainParts::SpdyFieldTrial() {
+  if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+  } else {
+#if !defined(OS_CHROMEOS)
+    bool is_spdy_trial = false;
+    const base::FieldTrial::Probability kSpdyDivisor = 100;
+    base::FieldTrial::Probability npnhttp_probability = 5;
+
+    // After June 30, 2011 builds, it will always be in default group.
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial(
+            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2011, 6, 30));
+
+    // npn with spdy support is the default.
+    int npn_spdy_grp = trial->kDefaultGroupNumber;
+
+    // npn with only http support, no spdy.
+    int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
+
+    int trial_grp = trial->group();
+    if (trial_grp == npn_http_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn-http");
+    } else if (trial_grp == npn_spdy_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn");
+    } else {
+      CHECK(!is_spdy_trial);
+    }
+#else
+    // Always enable SPDY on Chrome OS
+    net::HttpNetworkLayer::EnableSpdy("npn");
+#endif  // !defined(OS_CHROMEOS)
+  }
+
+  // Setup SPDY CWND Field trial.
+  const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
+  const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
+  const base::FieldTrial::Probability kSpdyCwnd10 = 20;     // fixed at 10
+  const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
+  const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
+
+  // After June 30, 2011 builds, it will always be in default group
+  // (cwndDynamic).
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial(
+          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2011, 6, 30));
+
+  trial->AppendGroup("cwnd10", kSpdyCwnd10);
+  trial->AppendGroup("cwnd16", kSpdyCwnd16);
+  trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
+  trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
+
+  if (parsed_command_line().HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
+    int value = 0;
+    base::StringToInt(parsed_command_line().GetSwitchValueASCII(
+            switches::kMaxSpdyConcurrentStreams),
+        &value);
+    if (value > 0)
+      net::SpdySession::set_max_concurrent_streams(value);
+  }
+}
+
+// If --socket-reuse-policy is not specified, run an A/B test for choosing the
+// warmest socket.
+void BrowserMainParts::WarmConnectionFieldTrial() {
+  const CommandLine& command_line = parsed_command_line();
+  if (command_line.HasSwitch(switches::kSocketReusePolicy)) {
+    std::string socket_reuse_policy_str = command_line.GetSwitchValueASCII(
+        switches::kSocketReusePolicy);
+    int policy = -1;
+    base::StringToInt(socket_reuse_policy_str, &policy);
+
+    const int policy_list[] = { 0, 1, 2 };
+    VLOG(1) << "Setting socket_reuse_policy = " << policy;
+    SetSocketReusePolicy(policy, policy_list, arraysize(policy_list));
+    return;
+  }
+
+  const base::FieldTrial::Probability kWarmSocketDivisor = 100;
+  const base::FieldTrial::Probability kWarmSocketProbability = 33;
+
+  // After January 30, 2013 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> warmest_socket_trial(
+      new base::FieldTrial(
+          "WarmSocketImpact", kWarmSocketDivisor, "last_accessed_socket",
+          2013, 1, 30));
+
+  // Default value is USE_LAST_ACCESSED_SOCKET.
+  const int last_accessed_socket = warmest_socket_trial->kDefaultGroupNumber;
+  const int warmest_socket = warmest_socket_trial->AppendGroup(
+      "warmest_socket", kWarmSocketProbability);
+  const int warm_socket = warmest_socket_trial->AppendGroup(
+      "warm_socket", kWarmSocketProbability);
+
+  const int warmest_socket_trial_group = warmest_socket_trial->group();
+
+  const int policy_list[] = { warmest_socket, warm_socket,
+                              last_accessed_socket };
+  SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
+                       arraysize(policy_list));
+}
+
+// If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
+// specified, run an A/B test for automatically establishing backup TCP
+// connections when a certain timeout value is exceeded.
+void BrowserMainParts::ConnectBackupJobsFieldTrial() {
+  if (parsed_command_line().HasSwitch(switches::kEnableConnectBackupJobs)) {
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        true);
+  } else if (parsed_command_line().HasSwitch(
+        switches::kDisableConnectBackupJobs)) {
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        false);
+  } else {
+    const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
+    // 1% probability.
+    const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
+    // After June 30, 2011 builds, it will always be in default group.
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial("ConnnectBackupJobs",
+            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled", 2011, 6,
+                30));
+    const int connect_backup_jobs_enabled = trial->kDefaultGroupNumber;
+    trial->AppendGroup("ConnectBackupJobsDisabled",
+                       kConnectBackupJobsProbability);
+    const int trial_group = trial->group();
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        trial_group == connect_backup_jobs_enabled);
+  }
+}
+
+// Test the impact on subsequent Google searches of getting suggestions from
+// www.google.TLD instead of clients1.google.TLD.
+void BrowserMainParts::SuggestPrefixFieldTrial() {
+  const base::FieldTrial::Probability kSuggestPrefixDivisor = 100;
+  // 50% probability.
+  const base::FieldTrial::Probability kSuggestPrefixProbability = 50;
+  // After Jan 1, 2012, it will always be in default group.
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("SuggestHostPrefix",
+          kSuggestPrefixDivisor, "Default_Prefix", 2012, 1, 1));
+  trial->AppendGroup("Www_Prefix", kSuggestPrefixProbability);
+  // The field trial is detected directly, so we don't need to call anything.
+}
+
+// BrowserMainParts: |MainMessageLoopStart()| and related ----------------------
+
+void BrowserMainParts::MainMessageLoopStart() {
+  PreMainMessageLoopStart();
+
+  main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+
+  // TODO(viettrungluu): should these really go before setting the thread name?
+  system_monitor_.reset(new base::SystemMonitor);
+  hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+
+  InitializeMainThread();
+
+  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+  PostMainMessageLoopStart();
+  Profiling::MainMessageLoopStarted();
+}
+
+void BrowserMainParts::InitializeMainThread() {
+  const char* kThreadName = "CrBrowserMain";
+  base::PlatformThread::SetName(kThreadName);
+  main_message_loop().set_thread_name(kThreadName);
+
+  // Register the main thread by instantiating it, but don't call any methods.
+  main_thread_.reset(new BrowserThread(BrowserThread::UI,
+                                       MessageLoop::current()));
+}
+
+// BrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------------
+
+// Initializes the metrics service with the configuration for this process,
+// returning the created service (guaranteed non-NULL).
+MetricsService* BrowserMainParts::InitializeMetrics(
+    const CommandLine& parsed_command_line,
+    const PrefService* local_state) {
+#if defined(OS_WIN)
+  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
+    MetricsLog::set_version_extension("-F");
+#elif defined(ARCH_CPU_64_BITS)
+  MetricsLog::set_version_extension("-64");
+#endif  // defined(OS_WIN)
+
+  MetricsService* metrics = g_browser_process->metrics_service();
+
+  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    // If we're testing then we don't care what the user preference is, we turn
+    // on recording, but not reporting, otherwise tests fail.
+    metrics->StartRecordingOnly();
+    return metrics;
+  }
+
+  // If the user permits metrics reporting with the checkbox in the
+  // prefs, we turn on recording.  We disable metrics completely for
+  // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  bool enabled = chromeos::UserCrosSettingsProvider::cached_reporting_enabled();
+#else
+  bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+  if (enabled) {
+    metrics->Start();
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return metrics;
+}
+
+void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
+                                        bool proxy_policy_is_set) {
+  // Note: make sure to call ConnectionFieldTrial() before
+  // ProxyConnectionsFieldTrial().
+  ConnectionFieldTrial();
+  SocketTimeoutFieldTrial();
+  // If a policy is defining the number of active connections this field test
+  // shoud not be performed.
+  if (!proxy_policy_is_set)
+    ProxyConnectionsFieldTrial();
+  prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
+  InstantFieldTrial::Activate();
+  SpdyFieldTrial();
+  ConnectBackupJobsFieldTrial();
+  SuggestPrefixFieldTrial();
+  WarmConnectionFieldTrial();
+}
+
+// -----------------------------------------------------------------------------
+// TODO(viettrungluu): move more/rest of BrowserMain() into BrowserMainParts.
 
 #if defined(OS_CHROMEOS)
 // Allows authenticator to be invoked without adding refcounting. The instances
