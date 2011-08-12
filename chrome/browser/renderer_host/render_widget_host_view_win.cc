@@ -446,12 +446,33 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
   }
   DCHECK(window_class);
 
+  HWND orig_parent = ::GetParent(window);
   HWND parent = CreateWindowEx(
       WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
       MAKEINTATOM(window_class), 0,
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-      0, 0, 0, 0, ::GetParent(window), 0, GetModuleHandle(NULL), 0);
+      0, 0, 0, 0, orig_parent, 0, GetModuleHandle(NULL), 0);
   ui::CheckWindowCreated(parent);
+  // If UIPI is enabled we need to add message filters for parents with
+  // children that cross process boundaries.
+  if (::GetPropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp)) {
+    // Process-wide message filters required on Vista must be added to:
+    // chrome_content_client.cc ChromeContentClient::SandboxPlugin
+    typedef BOOL (WINAPI *ChangeWindowMessageFilterExFunction)(
+        HWND hwnd,
+        UINT message,
+        DWORD action,
+        PCHANGEFILTERSTRUCT change_filter_struct);
+    static ChangeWindowMessageFilterExFunction s_ChangeWindowMessageFilterEx =
+        reinterpret_cast<ChangeWindowMessageFilterExFunction>(
+            ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
+                             "ChangeWindowMessageFilterEx"));
+    // Process-wide message filters required on Vista must be added to:
+    // chrome_content_client.cc ChromeContentClient::SandboxPlugin
+    s_ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
+    s_ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
+    ::SetPropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp, NULL);
+  }
   ::SetParent(window, parent);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

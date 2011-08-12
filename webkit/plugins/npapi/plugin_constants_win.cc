@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@ namespace npapi {
 
 const char16 kNativeWindowClassName[] = L"NativeWindowClass";
 const char16 kWrapperNativeWindowClassName[] = L"WrapperNativeWindowClass";
+const char16 kNativeWindowClassFilterProp[] = L"NativeWindowClassFilterProp";
 const char16 kPaintMessageName[] = L"Chrome_CustomPaintil";
 const char16 kRegistryMozillaPlugins[] = L"SOFTWARE\\MozillaPlugins";
 const char16 kMozillaActiveXPlugin[] = L"npmozax.dll";
