@@ -30,7 +30,7 @@ SDK_VERSION_FILE = os.path.join(OVERLAY_DIR,
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
 MAKE_CHROOT = [os.path.join(OVERLAY_DIR, 'chromeos/scripts/make_chroot'),
                '--cros_sdk']
-ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/enter_chroot.sh')]
+ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 def GetHostArch():
   """Returns a string for the host architecture"""
