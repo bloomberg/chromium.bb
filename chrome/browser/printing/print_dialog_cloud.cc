@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
@@ -536,7 +537,10 @@ void CreateDialogImpl(const FilePath& path_to_file,
       job_title = browser->GetSelectedTabContents()->GetTitle();
     profile = browser->GetProfile();
   } else {
-    profile = ProfileManager::GetDefaultProfile();
+    std::vector<Profile*> loaded_profiles =
+        g_browser_process->profile_manager()->GetLoadedProfiles();
+    DCHECK_GT(loaded_profiles.size(), 0U);
+    profile = loaded_profiles[0];
   }
   DCHECK(profile);
   PrefService* pref_service = profile->GetPrefs();
