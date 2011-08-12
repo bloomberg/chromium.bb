@@ -1214,34 +1214,9 @@
    fun:sqlite3Step
    fun:sqlite3_step
    fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN7history11URLDatabase18CreateMainURLIndexEv
-}
-{
-   bug_19775_b
-   Memcheck:Leak
+   fun:_ZN3sql10Connection7Execute*
    ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3_malloc
-   fun:pcache1Create
-   fun:sqlite3PcacheFetch
-   fun:sqlite3PagerAcquire2
-   fun:sqlite3PagerAcquire
-   fun:btreeGetPage
-   fun:lockBtree
-   fun:sqlite3BtreeBeginTrans
-   fun:sqlite3InitOne
-   fun:sqlite3Init
-   fun:sqlite3ReadSchema
-   fun:sqlite3Pragma
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
+   fun:_ZN7history*Database*Create*
 }
 {
    bug_19775_c
@@ -1255,58 +1230,6 @@
    fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
 }
 {
-   bug_19775_e
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3DbMallocRaw
-   fun:sqlite3DbMallocZero
-   fun:sqlite3StartTable
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3_exec
-   fun:sqlite3InitOne
-   fun:sqlite3Init
-   fun:sqlite3ReadSchema
-   fun:sqlite3CreateIndex
-   fun:yy_reduce
-}
-{
-   bug_19775_f
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3ParserAlloc
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3InitOne
-   fun:sqlite3Init
-   fun:sqlite3ReadSchema
-   fun:sqlite3CreateIndex
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-}
-{
    bug_19775_g
    Memcheck:Leak
    fun:malloc
@@ -1318,6 +1241,17 @@
    fun:sqlite3Prepare
    fun:sqlite3LockAndPrepare
    fun:sqlite3_prepare_v2
+}
+{
+   bug_19775_h
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   ...
+   fun:yy_reduce
 }
 {
    bug_60556a
@@ -2538,16 +2472,6 @@
    fun:localtime_r
 }
 {
-   bug_51683
-   Memcheck:Leak
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   ...
-   fun:yy_reduce
-}
-{
    bug_51679
    Memcheck:Leak
    fun:_Znw*
@@ -2832,20 +2756,16 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
-
 {
    bug_58074
    Memcheck:Value4
    fun:modp_b64_encode
-   fun:_ZN4base12Base64EncodeERKSsPSs
+   fun:_ZN4base12Base64Encode*
    fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
    ...
-   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
+   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEPN4base15DictionaryValueE
+   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEPN4base15DictionaryValueEP20OptionsPageUIHandler
    fun:_ZN9OptionsUIC1EP11TabContents
-   fun:*NewWebUII9OptionsUIEEP5WebUIP11TabContentsRK4GURL
-   fun:_ZNK18ChromeWebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
-   fun:_ZN11TabContents27CreateWebUIForRenderManagerERK4GURL
 }
 {
    bug_58321
@@ -5010,7 +4930,6 @@
    fun:_ZN22ResourceDispatcherHost17OnResponseStartedEPN3net10URLRequestE
    fun:_ZN3net10URLRequest21NotifyResponseStartedEv
    fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
-   fun:_ZN3net17URLRequestFileJob10DidResolveEbRKN4base16PlatformFileInfoE
 }
 {
    bug_90496c
