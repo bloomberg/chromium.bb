@@ -318,7 +318,6 @@ void ExpectFilledForm(int page_id,
     form_size += kCreditCardFormSize;
   ASSERT_EQ(form_size, filled_form.fields.size());
 
-  FormField field;
   if (has_address_fields) {
     ExpectFilledField("First Name", "firstname", first, "text",
                       filled_form.fields[0]);
@@ -1841,6 +1840,166 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
       secondSection.fields[i].name = original_name;
     }
     ExpectFilledAddressFormElvis(page_id, secondSection, kPageID2, false);
+  }
+}
+
+// Test that we correctly fill a form that has author-specified sections, which
+// might not match our expected section breakdown.
+TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
+  // Create a form with a billing section and an unnamed section, interleaved.
+  // The billing section includes both address and credit card fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.user_submitted = true;
+
+  FormField field;
+
+  autofill_test::CreateTestFormField("", "country", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing country");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "firstname", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("given-name");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "lastname", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("surname");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "address", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing street-address");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "city", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing locality");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "state", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing administrative-area");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "zip", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing postal-code");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "ccname", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing cc-full-name");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "ccnumber", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing cc-number");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "ccexp", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("section-billing cc-exp");
+  form.fields.push_back(field);
+
+  autofill_test::CreateTestFormField("", "email", "", "text", &field);
+  field.autocomplete_type = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the unnamed section.
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
+  FillAutofillFormData(kDefaultPageID, form, form.fields[1],
+                       autofill_manager_->PackGUIDs(empty, guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  {
+    SCOPED_TRACE("Unnamed section");
+    EXPECT_EQ(kDefaultPageID, page_id);
+    EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+    EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+    EXPECT_EQ(GURL("https://myform.com/form.html"), results.origin);
+    EXPECT_EQ(GURL("https://myform.com/submit.html"), results.action);
+    EXPECT_TRUE(results.user_submitted);
+    ASSERT_EQ(11U, results.fields.size());
+
+    ExpectFilledField("", "country", "", "text", results.fields[0]);
+    ExpectFilledField("", "firstname", "Elvis", "text", results.fields[1]);
+    ExpectFilledField("", "lastname", "Presley", "text", results.fields[2]);
+    ExpectFilledField("", "address", "", "text", results.fields[3]);
+    ExpectFilledField("", "city", "", "text", results.fields[4]);
+    ExpectFilledField("", "state", "", "text", results.fields[5]);
+    ExpectFilledField("", "zip", "", "text", results.fields[6]);
+    ExpectFilledField("", "ccname", "", "text", results.fields[7]);
+    ExpectFilledField("", "ccnumber", "", "text", results.fields[8]);
+    ExpectFilledField("", "ccexp", "", "text", results.fields[9]);
+    ExpectFilledField("", "email", "theking@gmail.com", "text",
+                      results.fields[10]);
+  }
+
+  // Fill the address portion of the billing section.
+  const int kPageID2 = 2;
+  GUIDPair guid2("00000000-0000-0000-0000-000000000001", 0);
+  FillAutofillFormData(kPageID2, form, form.fields[0],
+                       autofill_manager_->PackGUIDs(empty, guid2));
+
+  page_id = 0;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  {
+    SCOPED_TRACE("Billing address");
+    EXPECT_EQ(kPageID2, page_id);
+    EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+    EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+    EXPECT_EQ(GURL("https://myform.com/form.html"), results.origin);
+    EXPECT_EQ(GURL("https://myform.com/submit.html"), results.action);
+    EXPECT_TRUE(results.user_submitted);
+    ASSERT_EQ(11U, results.fields.size());
+
+    ExpectFilledField("", "country", "United States", "text",
+                      results.fields[0]);
+    ExpectFilledField("", "firstname", "", "text", results.fields[1]);
+    ExpectFilledField("", "lastname", "", "text", results.fields[2]);
+    ExpectFilledField("", "address", "3734 Elvis Presley Blvd.", "text",
+                      results.fields[3]);
+    ExpectFilledField("", "city", "Memphis", "text", results.fields[4]);
+    ExpectFilledField("", "state", "Tennessee", "text", results.fields[5]);
+    ExpectFilledField("", "zip", "38116", "text", results.fields[6]);
+    ExpectFilledField("", "ccname", "", "text", results.fields[7]);
+    ExpectFilledField("", "ccnumber", "", "text", results.fields[8]);
+    ExpectFilledField("", "ccexp", "", "text", results.fields[9]);
+    ExpectFilledField("", "email", "", "text", results.fields[10]);
+  }
+
+  // Fill the credit card portion of the billing section.
+  const int kPageID3 = 3;
+  GUIDPair guid3("00000000-0000-0000-0000-000000000004", 0);
+  FillAutofillFormData(kPageID3, form, form.fields[form.fields.size() - 2],
+                       autofill_manager_->PackGUIDs(guid3, empty));
+
+  page_id = 0;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  {
+    SCOPED_TRACE("Credit card");
+    EXPECT_EQ(kPageID3, page_id);
+    EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
+    EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
+    EXPECT_EQ(GURL("https://myform.com/form.html"), results.origin);
+    EXPECT_EQ(GURL("https://myform.com/submit.html"), results.action);
+    EXPECT_TRUE(results.user_submitted);
+    ASSERT_EQ(11U, results.fields.size());
+
+    ExpectFilledField("", "country", "", "text", results.fields[0]);
+    ExpectFilledField("", "firstname", "", "text", results.fields[1]);
+    ExpectFilledField("", "lastname", "", "text", results.fields[2]);
+    ExpectFilledField("", "address", "", "text", results.fields[3]);
+    ExpectFilledField("", "city", "", "text", results.fields[4]);
+    ExpectFilledField("", "state", "", "text", results.fields[5]);
+    ExpectFilledField("", "zip", "", "text", results.fields[6]);
+    ExpectFilledField("", "ccname", "Elvis Presley", "text", results.fields[7]);
+    ExpectFilledField("", "ccnumber", "4234567890123456", "text",
+                      results.fields[8]);
+    ExpectFilledField("", "ccexp", "04/2012", "text", results.fields[9]);
+    ExpectFilledField("", "email", "", "text", results.fields[10]);
   }
 }
 

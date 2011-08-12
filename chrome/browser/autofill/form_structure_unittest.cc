@@ -339,7 +339,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(8)->heuristic_type());
 }
 
-// Verify that we can correctly process the 'autocompletetype' attribute.
+// Verify that we can correctly process the |autocompletetype| attribute.
 TEST(FormStructureTest, HeuristicsAutocompletetype) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
@@ -376,7 +376,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetype) {
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
 }
 
-// If at least one field includes the 'autocompletetype' attribute, we should
+// If at least one field includes the |autocompletetype| attribute, we should
 // not try to apply any other heuristics.
 TEST(FormStructureTest, AutocompletetypeOverridesOtherHeuristics) {
   scoped_ptr<FormStructure> form_structure;
@@ -426,8 +426,80 @@ TEST(FormStructureTest, AutocompletetypeOverridesOtherHeuristics) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
 }
 
+// Verify that we can correctly process sections listed in the |autocomplete|
+// attribute.
+TEST(FormStructureTest, HeuristicsAutocompletetypeWithSections) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  // We expect "shipping" and "billing" to be the most common sections.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field1");
+  field.autocomplete_type = ASCIIToUTF16("section-shipping given-name");
+  form.fields.push_back(field);
+
+  // Some field will have no section specified.  These fall into the default
+  // section, with an empty name.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field2");
+  field.autocomplete_type = ASCIIToUTF16("surname");
+  form.fields.push_back(field);
+
+  // We allow arbitrary section names.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field3");
+  field.autocomplete_type = ASCIIToUTF16("section-foo address-line1");
+  form.fields.push_back(field);
+
+  // Specifying "section-" is equivalent to not specifying a section.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field4");
+  field.autocomplete_type = ASCIIToUTF16("section- address-line2");
+  form.fields.push_back(field);
+
+  // We don't do anything clever to try to coalesce sections; it's up to site
+  // authors to avoid typos.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field5");
+  field.autocomplete_type = ASCIIToUTF16("section--shipping locality");
+  form.fields.push_back(field);
+
+  // Credit card fields are implicitly in a separate section from other fields.
+  field.label = string16();
+  field.name = ASCIIToUTF16("field6");
+  field.autocomplete_type = ASCIIToUTF16("section-shipping cc-number");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(6U, form_structure->field_count());
+  ASSERT_EQ(6U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("shipping-default"),
+            form_structure->field(0)->section());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("-default"), form_structure->field(1)->section());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("foo-default"), form_structure->field(2)->section());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(3)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("-default"), form_structure->field(3)->section());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("-shipping-default"),
+            form_structure->field(4)->section());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("shipping-cc"), form_structure->field(5)->section());
+}
+
 // Verify that we can correctly process fallback types listed in the
-// 'autocompletetype' attribute.
+// |autocompletetype| attribute.
 TEST(FormStructureTest, HeuristicsAutocompletetypeWithFallbacks) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
@@ -465,9 +537,15 @@ TEST(FormStructureTest, HeuristicsAutocompletetypeWithFallbacks) {
   ASSERT_EQ(3U, form_structure->autofill_count());
 
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("full-name-default"),
+            form_structure->field(0)->section());
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("full-name-default"),
+            form_structure->field(1)->section());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
             form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(ASCIIToUTF16("shipping-default"),
+            form_structure->field(2)->section());
 }
 
 TEST(FormStructureTest, HeuristicsSample8) {
