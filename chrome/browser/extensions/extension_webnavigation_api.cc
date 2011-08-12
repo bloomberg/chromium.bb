@@ -340,7 +340,7 @@ void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
                    content::NOTIFICATION_RETARGETING,
-                   Source<Profile>(profile_));
+                   Source<content::BrowserContext>(profile_));
     registrar_.Add(this,
                    content::NOTIFICATION_TAB_ADDED,
                    NotificationService::AllSources());

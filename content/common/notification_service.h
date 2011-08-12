@@ -49,7 +49,8 @@ class NotificationService {
   // Returns the same value as AllSources(). This function has semantic
   // differences to the programmer: We have checked that this AllSources()
   // usage is safe in the face of multiple profiles. Objects that were
-  // singletons now will always have multiple instances, one per profile.
+  // singletons now will always have multiple instances, one per browser
+  // context.
   //
   // Some usage is safe, where the Source is checked to see if it's a member of
   // a container before use. But, we want the number of AllSources() calls to

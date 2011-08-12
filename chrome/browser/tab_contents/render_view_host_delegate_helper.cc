@@ -244,11 +244,9 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     details.source_frame_id = params.opener_frame_id;
     details.target_url = params.target_url;
     details.target_tab_contents = new_contents;
-    Profile* profile =
-        Profile::FromBrowserContext(tab_contents->browser_context());
     NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
-        Source<Profile>(profile),
+        Source<content::BrowserContext>(tab_contents->browser_context()),
         Details<content::RetargetingDetails>(&details));
 
     if (tab_contents->delegate())

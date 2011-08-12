@@ -1808,11 +1808,10 @@ void RenderViewContextMenu::OpenURL(
     details.source_frame_id = frame_id;
     details.target_url = url;
     details.target_tab_contents = new_contents;
-    Profile* profile =
-        Profile::FromBrowserContext(source_tab_contents_->browser_context());
     NotificationService::current()->Notify(
         content::NOTIFICATION_RETARGETING,
-        Source<Profile>(profile),
+        Source<content::BrowserContext>(
+            source_tab_contents_->browser_context()),
         Details<content::RetargetingDetails>(&details));
   }
 }
