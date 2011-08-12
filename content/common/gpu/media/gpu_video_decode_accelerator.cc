@@ -88,6 +88,13 @@ void GpuVideoDecodeAccelerator::NotifyEndOfStream() {
 
 void GpuVideoDecodeAccelerator::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
+  if (init_done_msg_) {
+    // If we get an error while we're initializing, NotifyInitializeDone won't
+    // be called, so we need to send the reply (with an error) here.
+    init_done_msg_->set_reply_error();
+    Send(init_done_msg_);
+    init_done_msg_ = NULL;
+  }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ErrorNotification(
           host_route_id_, error))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ErrorNotification) "
@@ -112,6 +119,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_->Initialize(configs);
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
+  NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 #endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 }
 
