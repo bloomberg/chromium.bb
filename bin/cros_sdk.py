@@ -23,9 +23,14 @@ DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
-SDK_VERSION_FILE = os.path.join(SRC_ROOT,
-  'src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf')
+OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
+SDK_VERSION_FILE = os.path.join(OVERLAY_DIR,
+                                'chromeos/binhost/host/sdk_version.conf')
 
+# TODO(zbehan): Remove the dependency on these, reimplement them in python
+MAKE_CHROOT = [os.path.join(OVERLAY_DIR, 'chromeos/scripts/make_chroot'),
+               '--cros_sdk']
+ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/enter_chroot.sh')]
 
 def GetHostArch():
   """Returns a string for the host architecture"""
@@ -63,9 +68,10 @@ def FetchRemoteTarball(url):
 
 def BootstrapChroot(chroot_path, stage_path, stage_url, replace):
   """Builds a new chroot from source"""
-  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
-         '--chroot', chroot_path,
-         '--nousepkg']
+  cmd = MAKE_CHROOT + ['--chroot', chroot_path,
+                       '--nousepkg']
+
+  stage = None
   if stage_path:
     cros_build_lib.RunCommand(['cp', '-f', stage_path, SDK_DIR])
     stage = os.path.join(SDK_DIR, os.path.basename(stage_path))
@@ -73,7 +79,7 @@ def BootstrapChroot(chroot_path, stage_path, stage_url, replace):
     stage = FetchRemoteTarball(stage_url)
 
   if stage:
-    cmd.extend(['--stage3_path', stage_path])
+    cmd.extend(['--stage3_path', stage])
 
   if replace:
     cmd.append('--replace')
@@ -118,9 +124,8 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   # make_chroot provides a variety of hacks to make the chroot useable.
   # These should all be eliminated/minimised, after which, we can change
   # this to just unpacking the sdk.
-  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
-         '--stage3_path', sdk,
-         '--chroot', chroot_path]
+  cmd = MAKE_CHROOT + ['--stage3_path', sdk,
+                       '--chroot', chroot_path]
 
   if replace:
     cmd.append('--replace')
@@ -134,9 +139,8 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
 
 def DeleteChroot(chroot_path):
   """Deletes an existing chroot"""
-  cmd = [os.path.join(SRC_ROOT, 'src/scripts/make_chroot'),
-         '--chroot', chroot_path,
-         '--delete']
+  cmd = MAKE_CHROOT + ['--chroot', chroot_path,
+                       '--delete']
   try:
     cros_build_lib.RunCommand(cmd)
   except cros_build_lib.RunCommandError:
@@ -146,8 +150,7 @@ def DeleteChroot(chroot_path):
 
 def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   """Enters an existing SDK chroot"""
-  cmd = [os.path.join(SRC_ROOT, 'src/scripts/enter_chroot.sh'),
-         '--chroot', chroot_path]
+  cmd = ENTER_CHROOT + ['--chroot', chroot_path]
   if chrome_root:
     cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
