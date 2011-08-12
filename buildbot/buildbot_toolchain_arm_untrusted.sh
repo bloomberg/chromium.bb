@@ -39,6 +39,10 @@ echo "*** ARGUMENTS           : $*"
 UTMAN="tools/llvm/utman.sh"
 UTMAN_TEST="tools/llvm/utman-test.sh"
 
+# On some systems (e.g., windows 64-bit), we must build a 32-bit plugin
+# because the browser is 32-bit. Only sel_ldr and the nexes are 64-bit.
+BUILD_32BIT_PLUGIN=false
+
 case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
   linux-32-newlib)
     # Don't test arm + 64-bit on 32-bit builder.
@@ -83,6 +87,7 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     ;;
   win-64-newlib)
     TOOLCHAIN_LABEL=pnacl_windows_i686_newlib
+    BUILD_32BIT_PLUGIN=true
     RUN_TESTS="x86-64 x86-64-pic x86-64-browser"
     ;;
   *)
@@ -128,6 +133,11 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   ${gsutil} -h Cache-Control:no-cache cp -a public-read \
       pnacl-toolchain.tgz \
       ${GS_BASE}/latest/naclsdk_${TOOLCHAIN_LABEL}.tgz
+fi
+
+if ${BUILD_32BIT_PLUGIN}; then
+  echo @@@BUILD_STEP plugin compile 32@@@
+  ./scons --verbose -k -j8 --mode=opt-host,nacl platform=x86-32 plugin
 fi
 
 for arch in ${RUN_TESTS} ; do
