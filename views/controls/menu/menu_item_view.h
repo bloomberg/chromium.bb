@@ -334,7 +334,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
 
-  virtual std::string GetClassName() const;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   // Calculates all sizes that we can from the OS.

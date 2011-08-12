@@ -136,6 +136,12 @@ class VIEWS_EXPORT SubmenuView : public View {
     minimum_preferred_width_ = minimum_preferred_width;
   }
 
+  // Automatically resize menu if a subview's preferred size changes.
+  bool resize_open_menu() const { return resize_open_menu_; }
+  void set_resize_open_menu(bool resize_open_menu) {
+    resize_open_menu_ = resize_open_menu;
+  }
+
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;
 
@@ -147,6 +153,7 @@ class VIEWS_EXPORT SubmenuView : public View {
   // scrolling occurs, everything is repainted correctly.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
  private:
   // Paints the drop indicator. This is only invoked if item is non-NULL and
@@ -184,6 +191,9 @@ class VIEWS_EXPORT SubmenuView : public View {
 
   // Minimum width returned in GetPreferredSize().
   int minimum_preferred_width_;
+
+  // Reposition open menu when contained views change size.
+  bool resize_open_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };

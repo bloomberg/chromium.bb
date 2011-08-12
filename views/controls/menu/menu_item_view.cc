@@ -110,6 +110,11 @@ MenuItemView::~MenuItemView() {
   STLDeleteElements(&removed_items_);
 }
 
+void MenuItemView::ChildPreferredSizeChanged(View* child) {
+  pref_size_.SetSize(0, 0);
+  PreferredSizeChanged();
+}
+
 bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   *tooltip = UTF16ToWideHack(tooltip_);
   if (!tooltip->empty())
@@ -497,7 +502,7 @@ void MenuItemView::Layout() {
     // space.
     View* child = child_at(0);
     gfx::Size size = child->GetPreferredSize();
-    child->SetBounds(label_start_, GetTopMargin(), size.width(), size.height());
+    child->SetBounds(0, GetTopMargin(), size.width(), size.height());
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.

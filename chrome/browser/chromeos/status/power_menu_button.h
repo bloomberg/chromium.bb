@@ -37,12 +37,14 @@ class PowerMenuButton : public StatusAreaButton,
   virtual void PowerChanged(PowerLibrary* obj);
   virtual void SystemResumed() {}
 
-  int icon_id() const { return icon_id_; }
+  int battery_index() const { return battery_index_; }
 
  protected:
   virtual int icon_width();
 
  private:
+  class StatusView;
+
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
@@ -61,26 +63,20 @@ class PowerMenuButton : public StatusAreaButton,
   void UpdateBatteryTime(base::TimeDelta* previous,
                          const base::TimeDelta& current);
 
-  // Update the menu entries.
-  void UpdateMenu();
-
-  // The number of power images.
-  static const int kNumPowerImages;
-
   // Stored data gathered from CrosLibrary::PowerLibrary.
   bool battery_is_present_;
   bool line_power_on_;
-  bool battery_fully_charged_;
   double battery_percentage_;
+  string16 percentage_text_;
+  int battery_index_;
   base::TimeDelta battery_time_to_full_;
   base::TimeDelta battery_time_to_empty_;
 
-  // The currently showing icon bitmap id.
-  int icon_id_;
+  // The currently showing status view. NULL if menu is not being displayed.
+  StatusView* status_;
 
-  // The power menu. This needs to be initialized last since it calls into
-  // GetLabelAt() during construction.
-  scoped_ptr<views::MenuItemView> menu_;
+  // The currently showing menu. NULL if menu is not being displayed.
+  views::MenuItemView* menu_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };

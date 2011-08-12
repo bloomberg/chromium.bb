@@ -38,7 +38,8 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       drop_position_(MenuDelegate::DROP_NONE),
       scroll_view_container_(NULL),
       max_accelerator_width_(0),
-      minimum_preferred_width_(0) {
+      minimum_preferred_width_(0),
+      resize_open_menu_(false) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_parent_owned(false);
@@ -70,6 +71,20 @@ MenuItemView* SubmenuView::GetMenuItemAt(int index) {
   }
   NOTREACHED();
   return NULL;
+}
+
+void SubmenuView::ChildPreferredSizeChanged(View* child) {
+  if (!resize_open_menu_)
+    return;
+
+  MenuItemView *item = GetMenuItem();
+  MenuController* controller = item->GetMenuController();
+
+  if (controller) {
+    bool dir;
+    gfx::Rect bounds = controller->CalculateMenuBounds(item, false, &dir);
+    Reposition(bounds);
+  }
 }
 
 void SubmenuView::Layout() {

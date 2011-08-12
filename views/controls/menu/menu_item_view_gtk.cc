@@ -29,13 +29,19 @@ const int kMinTouchHeight = 46;
 #endif
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
+  gfx::Size child_size = GetChildPreferredSize();
+  if (child_count() == 1 && title_.size() == 0) {
+    return gfx::Size(
+        child_size.width(),
+        child_size.height() + GetBottomMargin() + GetTopMargin());
+  }
+
   const gfx::Font& font = GetFont();
 #if defined(TOUCH_UI)
   int height = std::max(font.GetHeight(), kMinTouchHeight);
 #else
   int height = font.GetHeight();
 #endif
-  gfx::Size child_size = GetChildPreferredSize();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ +
           item_right_margin_ + child_size.width(),

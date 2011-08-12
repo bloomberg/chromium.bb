@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/cros/chromeos_power.h"
@@ -162,29 +163,93 @@ class PowerLibraryImpl : public PowerLibrary {
   DISALLOW_COPY_AND_ASSIGN(PowerLibraryImpl);
 };
 
+// The stub implementation runs the battery up and down, pausing at the
+// fully charged and fully depleted states.
 class PowerLibraryStubImpl : public PowerLibrary {
  public:
-  PowerLibraryStubImpl() {}
+  PowerLibraryStubImpl()
+      : discharging_(true),
+        battery_percentage_(20),
+        pause_count_(0) {
+    timer_.Start(
+        base::TimeDelta::FromMilliseconds(100),
+        this,
+        &PowerLibraryStubImpl::Update);
+  }
+
   virtual ~PowerLibraryStubImpl() {}
 
   // Begin PowerLibrary implementation.
   virtual void Init() OVERRIDE {}
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual bool line_power_on() const OVERRIDE { return false; }
-  virtual bool battery_fully_charged() const OVERRIDE { return false; }
-  virtual double battery_percentage() const OVERRIDE { return 50.0; }
-  virtual bool battery_is_present() const OVERRIDE { return true; }
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+  virtual bool line_power_on() const OVERRIDE {
+    return !discharging_;
+  }
+
+  virtual bool battery_fully_charged() const OVERRIDE {
+    return battery_percentage_ == 100;
+  }
+
+  virtual double battery_percentage() const OVERRIDE {
+    return battery_percentage_;
+  }
+
+  virtual bool battery_is_present() const OVERRIDE {
+    return true;
+  }
+
   virtual base::TimeDelta battery_time_to_empty() const OVERRIDE {
-    return base::TimeDelta::FromSeconds(10 * 60);
+    if (battery_percentage_ == 0)
+      return base::TimeDelta::FromSeconds(1);
+    else
+      return (base::TimeDelta::FromHours(3) * battery_percentage_) / 100;
   }
+
   virtual base::TimeDelta battery_time_to_full() const OVERRIDE {
-    return base::TimeDelta::FromSeconds(0);
+    if (battery_percentage_ == 100)
+      return base::TimeDelta::FromSeconds(1);
+    else
+      return base::TimeDelta::FromHours(3) - battery_time_to_empty();
   }
+
   virtual void EnableScreenLock(bool enable) OVERRIDE {}
   virtual void RequestRestart() OVERRIDE {}
   virtual void RequestShutdown() OVERRIDE {}
   // End PowerLibrary implementation.
+
+ private:
+  void Update() {
+    // We pause at 0 and 100% so that it's easier to check those conditions.
+    if (pause_count_ > 1) {
+      pause_count_--;
+      return;
+    }
+
+    if (battery_percentage_ == 0 || battery_percentage_ == 100) {
+      if (pause_count_) {
+        pause_count_ = 0;
+        discharging_ = !discharging_;
+      } else {
+        pause_count_ = 20;
+        return;
+      }
+    }
+    battery_percentage_ += (discharging_ ? -1 : 1);
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
+  }
+
+  bool discharging_;
+  int battery_percentage_;
+  int pause_count_;
+  ObserverList<Observer> observers_;
+  base::RepeatingTimer<PowerLibraryStubImpl> timer_;
 };
 
 // static

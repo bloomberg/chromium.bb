@@ -41,6 +41,7 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
  public:
   friend class MenuHostRootView;
   friend class MenuItemView;
+  friend class SubmenuView;
 
   // Enumeration of how the menu should exit.
   enum ExitType {

@@ -22,7 +22,7 @@ static const SkColor kGrayEmbossedTextColor = 0xff4c4c4c;
 static const SkColor kGrayEmbossedShadowColor = 0x80ffffff;
 
 // Status area font is bigger.
-const int kFontSizeDelta = 1;
+const int kFontSizeDelta = 3;
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaButton
@@ -37,7 +37,7 @@ StatusAreaButton::StatusAreaButton(StatusAreaHost* host,
   set_use_menu_button_paint(true);
   gfx::Font font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  font = font.DeriveFont(3, gfx::Font::BOLD);
+  font = font.DeriveFont(kFontSizeDelta, gfx::Font::BOLD);
   SetFont(font);
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);

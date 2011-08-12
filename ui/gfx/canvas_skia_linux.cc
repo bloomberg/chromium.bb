@@ -129,6 +129,8 @@ void SetupPangoLayout(PangoLayout* layout,
     pango_layout_set_width(layout, width * PANGO_SCALE);
 
   if (flags & gfx::Canvas::TEXT_ALIGN_CENTER) {
+    // We don't support center aligned w/ eliding.
+    DCHECK(gfx::Canvas::NO_ELLIPSIS);
     pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
   } else if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT) {
     pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);

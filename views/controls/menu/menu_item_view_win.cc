@@ -19,6 +19,12 @@ namespace views {
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
   gfx::Size child_size = GetChildPreferredSize();
+  if (child_count() == 1 && title_.empty()) {
+    return gfx::Size(
+        child_size.width(),
+        child_size.height() + GetBottomMargin() + GetTopMargin());
+  }
+
   const gfx::Font& font = GetFont();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +

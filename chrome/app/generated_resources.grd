@@ -12107,8 +12107,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY" desc="In the power menu button, this is the message the shows when we are calculating time until empty.">
         Calculating remaining time
       </message>
+      <message name="IDS_STATUSBAR_BATTERY_DISCHARGING" desc="In the power menu popup, indicates that the battery is being used.">
+        Battery
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_CHARGING" desc="In the power menu popup, indicates that the battery is being charged.">
+        Charging
+      </message>
       <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
-        Battery is charged
+        Battery full
       </message>
       <message name="IDS_STATUSBAR_FEEDBACK_TOOLTIP" desc="Tooltip for the feedback status bar icon.">
         Report a bug
