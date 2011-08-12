@@ -78,6 +78,9 @@ class Observer : public NotificationObserver {
     [button_ setButtonType:NSMomentaryLightButton];
     [button_ setImagePosition:NSImageOnly];
     [[button_ cell] setImageScaling:NSImageScaleProportionallyDown];
+    [[button_ cell] setImagePosition:NSImageBelow];
+    // AppKit sets a title for some reason when using |-setImagePosition:|.
+    [button_ setTitle:nil];
     [[button_ cell] setImageDimsWhenDisabled:NO];
     [[button_ cell] setHighlightsBy:NSContentsCellMask];
     [[button_ cell] setShowsStateBy:NSContentsCellMask];

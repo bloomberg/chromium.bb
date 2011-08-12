@@ -371,8 +371,8 @@ willPositionSheet:(NSWindow*)sheet
 
   // Now lay out incognito badge together with the tab strip.
   if (avatarButton_.get()) {
-    CGFloat sizeSquare = tabStripHeight - 5.0;
-    [avatarButton_ setFrameSize:NSMakeSize(sizeSquare, sizeSquare)];
+    [avatarButton_ setFrameSize:NSMakeSize(tabStripHeight,
+                                           tabStripHeight - 5.0)];
 
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.  On
     // Lion or later, shift the badge left to move it away from the fullscreen
