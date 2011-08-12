@@ -59,7 +59,8 @@
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_JS" file="resources\gpu_internals.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_MEDIA_INTERNALS_HTML" file="resources\media_internals.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MEDIA_INTERNALS_HTML" file="resources\media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_MEDIA_INTERNALS_JS" file="resources\media_internals\media_internals.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history.js" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />

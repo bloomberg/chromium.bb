@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -16,53 +17,14 @@
 
 namespace {
 
-class MediaInternalsHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  MediaInternalsHTMLSource();
+ChromeWebUIDataSource* CreateMediaInternalsHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIMediaInternalsHost);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string& path) const;
-
- private:
-  virtual ~MediaInternalsHTMLSource() {}
-  DISALLOW_COPY_AND_ASSIGN(MediaInternalsHTMLSource);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// MediaInternalsHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-MediaInternalsHTMLSource::MediaInternalsHTMLSource()
-    : DataSource(chrome::kChromeUIMediaInternalsHost, MessageLoop::current()) {
-}
-
-void MediaInternalsHTMLSource::StartDataRequest(const std::string& path,
-                                                bool is_incognito,
-                                                int request_id) {
-  DictionaryValue localized_strings;
-  SetFontAndTextDirection(&localized_strings);
-
-  base::StringPiece html_template(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_MEDIA_INTERNALS_HTML));
-  std::string html(html_template.data(), html_template.size());
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&html);
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&html);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&html));
-}
-
-std::string MediaInternalsHTMLSource::GetMimeType(
-    const std::string& path) const {
-  return "text/html";
+  source->set_json_path("strings.js");
+  source->add_resource_path("media_internals.js", IDR_MEDIA_INTERNALS_JS);
+  source->set_default_resource(IDR_MEDIA_INTERNALS_HTML);
+  return source;
 }
 
 }  // namespace
@@ -79,5 +41,5 @@ MediaInternalsUI::MediaInternalsUI(TabContents* contents)
 
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
-      new MediaInternalsHTMLSource());
+      CreateMediaInternalsHTMLSource());
 }

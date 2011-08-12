@@ -6,13 +6,12 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
   <head>
+    <include src="content_security_policy.html"/>
     <link rel="stylesheet" href="webui.css" />
     <link rel="stylesheet" href="media_internals/media_internals.css" />
-    <script src="shared/js/cr.js"></script>
-    <script src="media_internals/cache_entry.js"></script>
-    <script src="media_internals/item_store.js"></script>
-    <script src="media_internals/media_internals.js"></script>
-    <script src="media_internals/disjoint_range_set.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://media-internals/media_internals.js"></script>
+    <script src="chrome://media-internals/strings.js"></script>
     <title>Media Internals</title>
   </head>
   <body>
@@ -20,5 +19,8 @@ found in the LICENSE file.
     <div id="audio-streams"></div>
     <h2>Cached resources:</h2>
     <div id="cache-entries"></div>
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/i18n_process.js"></script>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
   </body>
 </html>

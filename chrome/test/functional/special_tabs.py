@@ -50,7 +50,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://history2': { 'title': 'History' },
-    'chrome://media-internals': { 'title': 'Media Internals', 'CSP': False },
+    'chrome://media-internals': { 'title': 'Media Internals' },
     'chrome://memory-redirect': { 'title': 'About Memory' },
     'chrome://net-internals': {},
     'chrome://net-internals/help.html': {},

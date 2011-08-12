@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="cache_entry.js"/>
+<include src="item_store.js"/>
+<include src="disjoint_range_set.js"/>
+
 cr.define('media', function() {
 
   // Stores information on open audio streams, referenced by id.
@@ -48,9 +52,9 @@ cr.define('media', function() {
       out.className = 'audio-stream';
       out.setAttribute('status', stream.status);
 
-      out.innerHTML += 'Audio stream ' + stream.id.split('.')[1];
-      out.innerHTML += ' is ' + (stream.playing ? 'playing' : 'paused');
-      out.innerHTML += ' at ' + Math.round(stream.volume * 100) + '% volume.';
+      out.textContent += 'Audio stream ' + stream.id.split('.')[1];
+      out.textContent += ' is ' + (stream.playing ? 'playing' : 'paused');
+      out.textContent += ' at ' + Math.round(stream.volume * 100) + '% volume.';
       return out;
     };
 
