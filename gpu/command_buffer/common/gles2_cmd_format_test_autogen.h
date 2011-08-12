@@ -3437,14 +3437,14 @@ TEST(GLES2FormatTest, RegisterSharedIdsCHROMIUM) {
   EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
 }
 
-TEST(GLES2FormatTest, CommandBufferEnableCHROMIUM) {
-  CommandBufferEnableCHROMIUM cmd = { { 0 } };
+TEST(GLES2FormatTest, EnableFeatureCHROMIUM) {
+  EnableFeatureCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
       static_cast<uint32>(12),
       static_cast<uint32>(13));
-  EXPECT_EQ(static_cast<uint32>(CommandBufferEnableCHROMIUM::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(EnableFeatureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),

@@ -1253,7 +1253,7 @@ void DeleteSharedIdsCHROMIUM(
 void RegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids);
 
-GLboolean CommandBufferEnableCHROMIUM(const char* feature);
+GLboolean EnableFeatureCHROMIUM(const char* feature);
 
 void* MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);

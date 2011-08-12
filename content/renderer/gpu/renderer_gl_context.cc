@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #endif  // ENABLE_GPU
 
 namespace {
@@ -283,8 +282,7 @@ CommandBufferProxy* RendererGLContext::GetCommandBufferProxy() {
 
 // TODO(gman): Remove This
 void RendererGLContext::DisableShaderTranslation() {
-  gles2_implementation_->CommandBufferEnableCHROMIUM(
-      PEPPER3D_SKIP_GLSL_TRANSLATION);
+  NOTREACHED();
 }
 
 gpu::gles2::GLES2Implementation* RendererGLContext::GetImplementation() {

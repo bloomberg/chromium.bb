@@ -37,7 +37,6 @@
 #include "gpu/command_buffer/service/surface_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -6584,10 +6583,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(
-    uint32 immediate_data_size, const gles2::CommandBufferEnableCHROMIUM& c) {
+error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
+    uint32 immediate_data_size, const gles2::EnableFeatureCHROMIUM& c) {
   Bucket* bucket = GetBucket(c.bucket_id);
-  typedef gles2::CommandBufferEnableCHROMIUM::Result Result;
+  typedef gles2::EnableFeatureCHROMIUM::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
   if (!result) {
@@ -6603,9 +6602,9 @@ error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(
   }
 
   // TODO(gman): make this some kind of table to function pointer thingy.
-  if (feature_str.compare(PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS) == 0) {
+  if (feature_str.compare("pepper3d_allow_buffers_on_multiple_targets") == 0) {
     buffer_manager()->set_allow_buffers_on_multiple_targets(true);
-  } else if (feature_str.compare(PEPPER3D_SUPPORT_FIXED_ATTRIBS) == 0) {
+  } else if (feature_str.compare("pepper3d_support_fixed_attribs") == 0) {
     buffer_manager()->set_allow_buffers_on_multiple_targets(true);
     // TODO(gman): decide how to remove the need for this const_cast.
     // I could make validators_ non const but that seems bad as this is the only
@@ -6617,8 +6616,6 @@ error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(
     // needs to be done it seems like refactoring for one to one of those
     // methods is a very low priority.
     const_cast<Validators*>(validators_)->vertex_attrib_type.AddValue(GL_FIXED);
-  } else if (feature_str.compare(PEPPER3D_SKIP_GLSL_TRANSLATION) == 0) {
-    use_shader_translator_ = false;
   } else {
     return error::kNoError;
   }

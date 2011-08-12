@@ -208,7 +208,7 @@ GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer bu
 GL_APICALL void         GL_APIENTRY glGenSharedIdsCHROMIUM (GLuint namespace_id, GLuint id_offset, GLsizeiNotNegative n, GLuint* ids);
 GL_APICALL void         GL_APIENTRY glDeleteSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
-GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnableCHROMIUM (const char* feature);
+GL_APICALL GLboolean    GL_APIENTRY glEnableFeatureCHROMIUM (const char* feature);
 GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptrNotNegative offset, GLsizeiptr size, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
@@ -417,7 +417,7 @@ _CMD_ID_TABLE = {
   'GenSharedIdsCHROMIUM':                                      439,
   'DeleteSharedIdsCHROMIUM':                                   440,
   'RegisterSharedIdsCHROMIUM':                                 441,
-  'CommandBufferEnableCHROMIUM':                               442,
+  'EnableFeatureCHROMIUM':                                     442,
   'CompressedTexImage2DBucket':                                443,
   'CompressedTexSubImage2DBucket':                             444,
   'RenderbufferStorageMultisampleEXT':                         445,
@@ -1169,10 +1169,10 @@ _FUNCTION_INFO = {
   },
   'ColorMask': {'decoder_func': 'DoColorMask', 'expectation': False},
   'ClearStencil': {'decoder_func': 'DoClearStencil'},
-  'CommandBufferEnableCHROMIUM': {
+  'EnableFeatureCHROMIUM': {
     'type': 'Custom',
     'immediate': False,
-    'decoder_func': 'DoCommandBufferEnableCHROMIUM',
+    'decoder_func': 'DoEnableFeatureCHROMIUM',
     'expectation': False,
     'cmd_args': 'GLuint bucket_id, GLint* result',
     'result': ['GLint'],

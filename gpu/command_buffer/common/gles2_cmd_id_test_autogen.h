@@ -1,8 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is auto-generated. DO NOT EDIT!
+// This file is auto-generated from
+// gpu/command_buffer/build_gles2_cmd_buffer.py
+// DO NOT EDIT!
 
 // This file contains unit tests for gles2 commmand ids
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_
@@ -391,8 +393,26 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_DeleteSharedIdsCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(RegisterSharedIdsCHROMIUM::kCmdId == 441,
                  GLES2_RegisterSharedIdsCHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(CommandBufferEnableCHROMIUM::kCmdId == 442,
-                 GLES2_CommandBufferEnableCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(EnableFeatureCHROMIUM::kCmdId == 442,
+                 GLES2_EnableFeatureCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(ResizeCHROMIUM::kCmdId == 448,
+                 GLES2_ResizeCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(GetRequestableExtensionsCHROMIUM::kCmdId == 449,
+                 GLES2_GetRequestableExtensionsCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(RequestExtensionCHROMIUM::kCmdId == 450,
+                 GLES2_RequestExtensionCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(SetSurfaceCHROMIUM::kCmdId == 453,
+                 GLES2_SetSurfaceCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(GetMultipleIntegervCHROMIUM::kCmdId == 454,
+                 GLES2_GetMultipleIntegervCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(GetProgramInfoCHROMIUM::kCmdId == 455,
+                 GLES2_GetProgramInfoCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(Placeholder447CHROMIUM::kCmdId == 447,
+                 GLES2_Placeholder447CHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(Placeholder451CHROMIUM::kCmdId == 451,
+                 GLES2_Placeholder451CHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(Placeholder452CHROMIUM::kCmdId == 452,
+                 GLES2_Placeholder452CHROMIUM_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_

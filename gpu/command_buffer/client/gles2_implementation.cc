@@ -7,7 +7,6 @@
 #include "../client/gles2_implementation.h"
 
 #include <GLES2/gl2ext.h>
-#include <GLES2/gles2_command_buffer.h>
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"
 #include "../common/gles2_cmd_utils.h"
@@ -2148,16 +2147,16 @@ void GLES2Implementation::GetVertexAttribiv(
   });
 }
 
-GLboolean GLES2Implementation::CommandBufferEnableCHROMIUM(
+GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
     const char* feature) {
-  GPU_CLIENT_LOG("[" << this << "] glCommandBufferEnableCHROMIUM("
+  GPU_CLIENT_LOG("[" << this << "] glEnableFeatureCHROMIUM("
                  << feature << ")");
-  TRACE_EVENT0("gpu", "GLES2::CommandBufferEnableCHROMIUM");
-  typedef CommandBufferEnableCHROMIUM::Result Result;
+  TRACE_EVENT0("gpu", "GLES2::EnableFeatureCHROMIUM");
+  typedef EnableFeatureCHROMIUM::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
   SetBucketAsCString(kResultBucketId, feature);
-  helper_->CommandBufferEnableCHROMIUM(
+  helper_->EnableFeatureCHROMIUM(
       kResultBucketId, result_shm_id(), result_shm_offset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);

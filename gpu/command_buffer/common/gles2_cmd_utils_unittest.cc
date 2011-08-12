@@ -6,7 +6,6 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <GLES2/gles2_command_buffer.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 

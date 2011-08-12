@@ -10,7 +10,6 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 
@@ -163,10 +162,10 @@ EGLContext Display::CreateContext(EGLConfig config,
       transfer_buffer_id_,
       share_resources));
 
-  context_->CommandBufferEnableCHROMIUM(
-      PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS);
-  context_->CommandBufferEnableCHROMIUM(
-      PEPPER3D_SUPPORT_FIXED_ATTRIBS);
+  context_->EnableFeatureCHROMIUM(
+      "pepper3d_allow_buffers_on_multiple_targets");
+  context_->EnableFeatureCHROMIUM(
+      "pepper3d_support_fixed_attribs");
 
   return context_.get();
 }

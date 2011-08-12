@@ -1046,6 +1046,19 @@ typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUM) ();
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  0x83F3
 #endif
 
+/* GL_CHROMIUM_enable_feature */
+#ifndef GL_CHROMIUM_enable_feature
+#define GL_CHROMIUM_enable_feature 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glEnableFeatureCHROMIUM GLES2_GET_FUN(EnableFeatureCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glEnableFeatureCHROMIUM (const GLchar *feature);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLENABLEFEATURECHROMIUM) (const GLchar *feature);
+#endif
+#endif
+
 /* GL_ARB_robustness */
 /* This extension is subsetted for the moment, incorporating only the
  * enums necessary to describe the reasons that we might encounter for

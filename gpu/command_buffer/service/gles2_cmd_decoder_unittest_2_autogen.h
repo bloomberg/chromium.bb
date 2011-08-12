@@ -1704,7 +1704,7 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 
 // TODO(gman): RegisterSharedIdsCHROMIUM
 
-// TODO(gman): CommandBufferEnableCHROMIUM
+// TODO(gman): EnableFeatureCHROMIUM
 
 // TODO(gman): ResizeCHROMIUM
 // TODO(gman): GetRequestableExtensionsCHROMIUM

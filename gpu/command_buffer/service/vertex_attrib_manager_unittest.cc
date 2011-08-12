@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/test_helper.h"

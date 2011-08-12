@@ -1188,10 +1188,10 @@
     c.Init(namespace_id, n, ids_shm_id, ids_shm_offset);
   }
 
-  void CommandBufferEnableCHROMIUM(
+  void EnableFeatureCHROMIUM(
       GLuint bucket_id, uint32 result_shm_id, uint32 result_shm_offset) {
-    gles2::CommandBufferEnableCHROMIUM& c =
-        GetCmdSpace<gles2::CommandBufferEnableCHROMIUM>();
+    gles2::EnableFeatureCHROMIUM& c =
+        GetCmdSpace<gles2::EnableFeatureCHROMIUM>();
     c.Init(bucket_id, result_shm_id, result_shm_offset);
   }
 

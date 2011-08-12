@@ -6,7 +6,6 @@
 #include <string>
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
 namespace gpu {

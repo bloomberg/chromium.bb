@@ -8719,9 +8719,9 @@ COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, ids_shm_id) == 12,
 COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, ids_shm_offset) == 16,
                OffsetOf_RegisterSharedIdsCHROMIUM_ids_shm_offset_not_16);
 
-struct CommandBufferEnableCHROMIUM {
-  typedef CommandBufferEnableCHROMIUM ValueType;
-  static const CommandId kCmdId = kCommandBufferEnableCHROMIUM;
+struct EnableFeatureCHROMIUM {
+  typedef EnableFeatureCHROMIUM ValueType;
+  static const CommandId kCmdId = kEnableFeatureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   typedef GLint Result;
@@ -8756,16 +8756,16 @@ struct CommandBufferEnableCHROMIUM {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CommandBufferEnableCHROMIUM) == 16,
-               Sizeof_CommandBufferEnableCHROMIUM_is_not_16);
-COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, header) == 0,
-               OffsetOf_CommandBufferEnableCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, bucket_id) == 4,
-               OffsetOf_CommandBufferEnableCHROMIUM_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_id) == 8,
-               OffsetOf_CommandBufferEnableCHROMIUM_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_offset) == 12,
-               OffsetOf_CommandBufferEnableCHROMIUM_result_shm_offset_not_12);
+COMPILE_ASSERT(sizeof(EnableFeatureCHROMIUM) == 16,
+               Sizeof_EnableFeatureCHROMIUM_is_not_16);
+COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, header) == 0,
+               OffsetOf_EnableFeatureCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, bucket_id) == 4,
+               OffsetOf_EnableFeatureCHROMIUM_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, result_shm_id) == 8,
+               OffsetOf_EnableFeatureCHROMIUM_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(EnableFeatureCHROMIUM, result_shm_offset) == 12,
+               OffsetOf_EnableFeatureCHROMIUM_result_shm_offset_not_12);
 
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;

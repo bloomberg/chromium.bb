@@ -8,7 +8,6 @@
 
 #include <GLES2/gl2ext.h>
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
