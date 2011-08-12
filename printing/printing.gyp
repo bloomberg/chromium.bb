@@ -218,7 +218,7 @@
               }, {
                 'link_settings': {
                   'libraries': [
-                    '<!@(cups-config --libs)',
+                    '<!@(python cups_config_helper.py --libs)',
                   ],
                 },
               }],
