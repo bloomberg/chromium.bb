@@ -87,6 +87,7 @@ void ScalingFilterInterpreter::SetHardwareProperties(
     25.4,  // screen dpi x
     25.4,  // screen dpi y
     hw_props.max_finger_cnt,
+    hw_props.max_touch_cnt,
     hw_props.supports_t5r2,
     hw_props.support_semi_mt,
     hw_props.is_button_pad

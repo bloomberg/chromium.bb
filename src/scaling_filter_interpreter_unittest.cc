@@ -62,6 +62,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
     EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
+    EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
     EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
     EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props.support_semi_mt);
     EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props.is_button_pad);
@@ -84,10 +85,13 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
     133, 728, 10279, 5822,  // left, top, right, bottom
     (10279.0 - 133.0) / 100.0,  // x res (pixels/mm)
     (5822.0 - 728.0) / 60,  // y res (pixels/mm)
-    133, 133, 2, 0, 0, 0  // scrn DPI X, Y, max fingers, t5r2, semi, button pad
+    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    0, 0, 0  //t5r2, semi, button pad
   };
   HardwareProperties expected_hwprops = {
-    0, 0, 100, 60, 1.0, 1.0, 25.4, 25.4, 2, 0, 0, 0
+    0, 0, 100, 60,  // left, top, right, bottom
+    1.0, 1.0, 25.4, 25.4, // x res, y res, x DPI, y DPI
+    2, 5, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
   base_interpreter->expected_hwprops_ = expected_hwprops;
 
@@ -100,9 +104,9 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
     { 0, 0, 0, 0, 1, 0, 250, 3000, 1 }
   };
   HardwareState hs[] = {
-    { 10000, 0, 1, &fs[0] },
-    { 54000, 0, 1, &fs[1] },
-    { 98000, 0, 1, &fs[2] }
+    { 10000, 0, 1, 1, &fs[0] },
+    { 54000, 0, 1, 1, &fs[1] },
+    { 98000, 0, 1, 1, &fs[2] }
   };
 
   // Set up expected translated coordinates

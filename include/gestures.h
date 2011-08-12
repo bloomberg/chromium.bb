@@ -26,7 +26,8 @@ struct HardwareProperties {
   float res_y;  // pixels/mm
   float screen_x_dpi;  // read from X server and passed to library
   float screen_y_dpi;  // read from X server and passed to library
-  unsigned short max_finger_cnt;
+  unsigned short max_finger_cnt; // Max finger slots in one report
+  unsigned short max_touch_cnt;  // Max fingers that can be detected at once
   unsigned supports_t5r2:1;
   unsigned support_semi_mt:1;
   unsigned is_button_pad:1;
@@ -76,7 +77,8 @@ struct HardwareState {
 #endif  // __cplusplus
   stime_t timestamp;  // 64-bit Wall clock time in microseconds (10^-6 s)
   int buttons_down;  // bit field, use GESTURES_BUTTON_*
-  unsigned short finger_cnt;
+  unsigned short finger_cnt;  // Number of valid finger slots
+  unsigned short touch_cnt;  // Number of fingers touching pad
   struct FingerState* fingers;
 };
 

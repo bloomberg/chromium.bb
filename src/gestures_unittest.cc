@@ -72,7 +72,7 @@ TEST(GesturesTest, HardwareStateGetFingerStateTest) {
     { 0, 0, 0, 0, 1, 0, 550, 2000, 2 },
     { 0, 0, 0, 0, 1, 0, 250, 3000, 7 }
   };
-  HardwareState hs = { 10000, 0, 3, &fs[0] };
+  HardwareState hs = { 10000, 0, 3, 3, &fs[0] };
   EXPECT_EQ(&fs[0], hs.GetFingerState(4));
   EXPECT_EQ(&fs[1], hs.GetFingerState(2));
   EXPECT_EQ(&fs[2], hs.GetFingerState(7));

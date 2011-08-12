@@ -77,7 +77,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
       Gesture(kGestureScroll, 0, 0, -0.2, 0));
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1 };
-  HardwareState hs = { 10000, 0, 1, &fs };
+  HardwareState hs = { 10000, 0, 1, 1, &fs };
 
   GestureType expected_types[] = {
     kGestureTypeMove,
@@ -118,7 +118,8 @@ TEST(IntegralGestureFilterInterpreterTest, SetHwpropsTest) {
     0, 0, 1, 1,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    133, 133, 2, 0, 0, 0  // scrn DPI X, Y, max fingers, t5r2, semi, button pad
+    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch
+    0, 0, 0  // t5r2, semi_mt, button pad
   };
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
