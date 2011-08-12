@@ -253,14 +253,8 @@ const char kCrashReasonURL[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=95669";
 #endif
 
-// TODO: These are currently placeholders that point to the crash
-// docs.  See bug http://crosbug.com/10711
 const char kKillReasonURL[] =
-#if defined(OS_CHROMEOS)
-    "https://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
-#else
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95669";
-#endif
+    "http://www.google.com/support/chrome/bin/answer.py?answer=1270364";
 
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
