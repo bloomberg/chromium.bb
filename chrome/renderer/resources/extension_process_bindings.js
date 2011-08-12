@@ -23,6 +23,7 @@ var chrome = chrome || {};
   native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
   native function DecodeJPEG(jpeg_image);
+  native function Print();
 
   var chromeHidden = GetChromeHidden();
 
@@ -77,8 +78,6 @@ var chrome = chrome || {};
 
         throw new Error(message);
       } else if (!schemas[i].optional) {
-        console.log(chromeHidden.JSON.stringify(args));
-        console.log(chromeHidden.JSON.stringify(schemas));
         throw new Error("Parameter " + (i + 1) + " is required.");
       }
     }

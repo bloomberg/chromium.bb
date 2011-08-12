@@ -67,6 +67,10 @@ class ExtensionBase : public v8::Extension {
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
   ExtensionDispatcher* extension_dispatcher_;
+
+ private:
+  // Helper to print from bindings javascript.
+  static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 };
 
 const char* GetStringResource(int resource_id);

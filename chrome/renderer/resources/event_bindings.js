@@ -8,6 +8,7 @@ var chrome = chrome || {};
   native function AttachEvent(eventName);
   native function DetachEvent(eventName);
   native function GetExternalFileEntry(fileDefinition);
+  native function Print();
 
   var chromeHidden = GetChromeHidden();
 

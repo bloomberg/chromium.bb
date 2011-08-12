@@ -4,9 +4,11 @@
 
 #include "chrome/renderer/extensions/bindings_utils.h"
 
+#include "base/logging.h"
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -84,6 +86,10 @@ v8::Handle<v8::FunctionTemplate>
     return v8::FunctionTemplate::New(GetChromeHidden);
   }
 
+  if (name->Equals(v8::String::New("Print"))) {
+    return v8::FunctionTemplate::New(Print);
+  }
+
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -108,6 +114,18 @@ v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
 
   DCHECK(hidden->IsObject());
   return hidden;
+}
+
+v8::Handle<v8::Value> ExtensionBase::Print(const v8::Arguments& args) {
+  if (args.Length() < 1)
+    return v8::Undefined();
+
+  std::vector<std::string> components;
+  for (int i = 0; i < args.Length(); ++i)
+    components.push_back(*v8::String::Utf8Value(args[i]->ToString()));
+
+  LOG(ERROR) << JoinString(components, ',');
+  return v8::Undefined();
 }
 
 ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,

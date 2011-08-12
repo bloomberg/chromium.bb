@@ -17,6 +17,7 @@ var chrome = chrome || {};
   native function PostMessage(portId, msg);
   native function GetChromeHidden();
   native function GetL10nMessage();
+  native function Print();
 
   var chromeHidden = GetChromeHidden();
 
