@@ -18,6 +18,17 @@ var testing = {};
  **/
 var currentTestCase = null;
 
+/**
+ * @type {?string} The string representation of the currently running test
+ *     function.
+ */
+var currentTestFunction = null;
+
+/**
+ * @type {?Array} The arguments of the currently running test.
+ */
+var currentTestArguments = null;
+
 (function() {
   // Provide global objects for generation case.
   if (this['window'] === undefined)
@@ -202,16 +213,15 @@ var currentTestCase = null;
 
   /**
    * Overrides {@code chrome.send} for routing messages to javascript
-   * functions. Also fallsback to sending with the original chrome object.
+   * functions. Also falls back to sending with the original chrome object.
    * @param {string} messageName The message to route.
    **/
   function send(messageName) {
     var callback = sendCallbacks[messageName];
-    var args = Array.prototype.slice.call(arguments, 1);
     if (callback != undefined)
-      callback[1].apply(callback[0], args);
+      callback[1].apply(callback[0], Array.prototype.slice.call(arguments, 1));
     else
-      this.__proto__.send.apply(this.__proto__, args);
+      this.__proto__.send.apply(this.__proto__, arguments);
   }
 
   /**
@@ -309,10 +319,63 @@ var currentTestCase = null;
    **/
   var helper = new CallHelper();
 
+  /**
+   * true when testDone has been called.
+   * @type {boolean}
+   */
+  var testIsDone = false;
+
+  /**
+   * Holds the errors, if any, caught by expects so that the test case can
+   * fail. Cleared when results are reported from runTest() or testDone().
+   * @type {Array.<Error>}
+   **/
+  var errors = [];
+
+  /**
+   * Resets test state by clearing |errors| and |testIsDone| flags.
+   **/
+  function resetTestState() {
+    errors.splice(0, errors.length);
+    testIsDone = false;
+  }
+
+  /**
+   * Notifies the running browser test of the test results. Clears |errors|.
+   * @param {Array.<boolean, string>=} result When passed, this is used for the
+   *     testResult message.
+   **/
+  function testDone(result) {
+    if (!testIsDone) {
+      testIsDone = true;
+      chrome.send('testResult', result ? result : testResult());
+      errors.splice(0, errors.length);
+    } else {
+      console.warn('testIsDone already');
+    }
+  }
+
+  /**
+   * Returns [success, message] & clears |errors|.
+   * @return {Array.<boolean, string>}
+   **/
+  function testResult() {
+    var result = [true, ''];
+    if (errors.length) {
+      var message = '';
+      for (var i = 0; i < errors.length; ++i) {
+        message += 'Failed: ' + currentTestFunction + '(' +
+                   currentTestArguments.map(JSON.stringify) +
+                   ')\n' + errors[i].stack;
+      }
+      result = [false, message];
+    }
+    return result;
+  }
+
   // Asserts.
   // Use the following assertions to verify a condition within a test.
-  // If assertion fails, the C++ backend will be immediately notified.
-  // If assertion passes, no notification will be sent to the C++ backend.
+  // If assertion fails, throw an Error with information pertinent to the test.
 
   /**
    * When |test| !== true, aborts the current test.
@@ -445,16 +508,10 @@ var currentTestCase = null;
   }
 
   /**
-   * Holds the errors, if any, caught by expects so that the test case can fail.
-   * @type {Array.<Error>}
-   **/
-  var errors = [];
-
-  /**
    * Creates a function based upon a function that thows an exception on
    * failure. The new function stuffs any errors into the |errors| array for
    * checking by runTest. This allows tests to continue running other checks,
-   * while failing the overal test if any errors occurrred.
+   * while failing the overall test if any errors occurrred.
    * @param {Function} assertFunc The function which may throw an Error.
    * @return {Function} A function that applies its arguments to |assertFunc|.
    * @see errors
@@ -476,56 +533,53 @@ var currentTestCase = null;
   /**
    * This is the starting point for tests run by WebUIBrowserTest.  If an error
    * occurs, it reports a failure and a message created by joining individual
-   * error messages.
+   * error messages. This supports sync tests and async tests by calling
+   * testDone() when |isAsync| is not true, relying on async tests to call
+   * testDone() when they complete.
+   * @param {boolean} isAsync When false, call testDone() with the test result.
    * @param {string} testFunction The function name to call.
    * @param {Array} testArguments The arguments to call |testFunction| with.
-   * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
+   * @return {boolean} true always to signal successful execution (but not
+   *     necessarily successful results) of this test.
    * @see errors
    * @see runTestFunction
    **/
-  function runTest(testFunction, testArguments) {
+  function runTest(isAsync, testFunction, testArguments) {
     // Avoid eval() if at all possible, since it will not work on pages
     // that have enabled content-security-policy.
     var testBody = this[testFunction];    // global object -- not a method.
-    if (typeof testBody === "undefined")
+    var testName = testFunction;
+    if (typeof testBody === "undefined") {
       testBody = eval(testFunction);
+      testName = testBody.toString();
+    }
     if (testBody != RUN_TEST_F) {
-      var testName =
-          testFunction.name ? testFunction.name : testBody.toString();
       console.log('Running test ' + testName);
     }
-    return runTestFunction(testFunction, testBody, testArguments);
+    var result = runTestFunction(testFunction, testBody, testArguments);
+    if (!isAsync)
+      testDone(result);
+    return true;
   }
 
   /**
-   * This is the guts of WebUIBrowserTest. It clears |errors|, runs the
-   * test surrounded by an expect to catch Errors. If |errors| is
-   * non-empty, it reports a failure and a message by joining |errors|.
-   * Consumers can use this to use assert/expect functions asynchronously,
-   * but are then responsible for reporting errors to the browser themselves.
+   * This is the guts of WebUIBrowserTest. It runs the test surrounded by an
+   * expect to catch Errors. If |errors| is non-empty, it reports a failure and
+   * a message by joining |errors|. Consumers can use this to use assert/expect
+   * functions asynchronously, but are then responsible for reporting errors to
+   * the browser themselves through testDone().
    * @param {string} testFunction The function name to report on failure.
    * @param {Function} testBody The function to call.
    * @param {Array} testArguments The arguments to call |testBody| with.
    * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
-   * @see errors
    * @see createExpect
+   * @see testDone
    **/
   function runTestFunction(testFunction, testBody, testArguments) {
-    errors.splice(0, errors.length);
+    currentTestFunction = testFunction;
+    currentTestArguments = testArguments;
     createExpect(testBody).apply(null, testArguments);
-
-    var result = [true];
-    if (errors.length) {
-      var message = '';
-      for (var i = 0; i < errors.length; ++i) {
-        message += 'Failed: ' + testFunction + '(' +
-                   testArguments.map(JSON.stringify) +
-                   ')\n' + errors[i].stack;
-      }
-      errors.splice(0, errors.length);
-      result = [false, message];
-    }
-    return result;
+    return testResult();
   }
 
   /**
@@ -710,6 +764,7 @@ var currentTestCase = null;
 
   // Exports.
   testing.Test = Test;
+  window.testDone = testDone;
   window.assertTrue = assertTrue;
   window.assertFalse = assertFalse;
   window.assertGE = assertGE;
@@ -732,6 +787,7 @@ var currentTestCase = null;
   window.preloadJavascriptLibraries = preloadJavascriptLibraries;
   window.registerMessageCallback = registerMessageCallback;
   window.registerMockMessageCallbacks = registerMockMessageCallbacks;
+  window.resetTestState = resetTestState;
   window.runTest = runTest;
   window.runTestFunction = runTestFunction;
   window.SaveArgumentsMatcher = SaveArgumentsMatcher;

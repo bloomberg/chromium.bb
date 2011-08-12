@@ -13,12 +13,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -74,7 +76,7 @@ bool WebUIBrowserTest::RunJavascriptFunction(
     const std::string& function_name,
     const ConstValueVector& function_arguments) {
   return RunJavascriptUsingHandler(
-      function_name, function_arguments, false, NULL);
+      function_name, function_arguments, false, false, NULL);
 }
 
 bool WebUIBrowserTest::RunJavascriptTestF(const std::string& test_fixture,
@@ -108,7 +110,34 @@ bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
 bool WebUIBrowserTest::RunJavascriptTest(
     const std::string& test_name,
     const ConstValueVector& test_arguments) {
-  return RunJavascriptUsingHandler(test_name, test_arguments, true, NULL);
+  return RunJavascriptUsingHandler(
+      test_name, test_arguments, true, false, NULL);
+}
+
+bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name) {
+  return RunJavascriptAsyncTest(test_name, ConstValueVector());
+}
+
+bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                         const Value& arg) {
+  ConstValueVector args;
+  args.push_back(&arg);
+  return RunJavascriptAsyncTest(test_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                         const Value& arg1,
+                                         const Value& arg2) {
+  ConstValueVector args;
+  args.push_back(&arg1);
+  args.push_back(&arg2);
+  return RunJavascriptAsyncTest(test_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptAsyncTest(
+    const std::string& test_name,
+    const ConstValueVector& test_arguments) {
+  return RunJavascriptUsingHandler(test_name, test_arguments, true, true, NULL);
 }
 
 void WebUIBrowserTest::PreLoadJavascriptLibraries(
@@ -120,7 +149,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
   args.push_back(Value::CreateStringValue(preload_test_fixture));
   args.push_back(Value::CreateStringValue(preload_test_name));
   RunJavascriptUsingHandler(
-      "preloadJavascriptLibraries", args, false, preload_host);
+      "preloadJavascriptLibraries", args, false, false, preload_host);
   libraries_preloaded_ = true;
 }
 
@@ -208,11 +237,12 @@ void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
     std::string library_content;
     if (user_libraries_iterator->IsAbsolute()) {
       ASSERT_TRUE(file_util::ReadFileToString(*user_libraries_iterator,
-                                              &library_content));
+                                              &library_content))
+          << user_libraries_iterator->value();
     } else {
       ASSERT_TRUE(file_util::ReadFileToString(
           test_data_directory_.Append(*user_libraries_iterator),
-              &library_content));
+          &library_content)) << user_libraries_iterator->value();
     }
     utf8_content.append(library_content);
     utf8_content.append(";\n");
@@ -221,9 +251,12 @@ void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
 }
 
 string16 WebUIBrowserTest::BuildRunTestJSCall(
+    bool is_async,
     const std::string& function_name,
     const WebUIBrowserTest::ConstValueVector& test_func_args) {
   WebUIBrowserTest::ConstValueVector arguments;
+  base::FundamentalValue is_async_arg(is_async);
+  arguments.push_back(&is_async_arg);
   StringValue function_name_arg(function_name);
   arguments.push_back(&function_name_arg);
   ListValue baked_argument_list;
@@ -241,6 +274,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     const std::string& function_name,
     const ConstValueVector& function_arguments,
     bool is_test,
+    bool is_async,
     RenderViewHost* preload_host) {
 
   string16 content;
@@ -250,7 +284,8 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   if (!function_name.empty()) {
     string16 called_function;
     if (is_test) {
-      called_function = BuildRunTestJSCall(function_name, function_arguments);
+      called_function = BuildRunTestJSCall(
+          is_async, function_name, function_arguments);
     } else {
       called_function = WebUI::GetJavascriptCall(function_name,
                                                  function_arguments);
@@ -315,15 +350,226 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
     s_test_->RunJavascriptTest(testname);
   }
 
+  static void RunJavascriptAsyncTestNoReturn(const std::string& testname) {
+    EXPECT_TRUE(s_test_);
+    s_test_->RunJavascriptAsyncTest(testname);
+  }
+
  private:
   static WebUIBrowserTest* s_test_;
 };
 
 WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
 
+// Test that bogus javascript fails fast - no timeout waiting for result.
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
   AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("FAILS_BogusFunctionName"),
                        "WebUITestHandler::Observe");
+}
+
+// Test that bogus javascript fails async test fast as well - no timeout waiting
+// for result.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsAsyncFast) {
+  AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
+  EXPECT_FATAL_FAILURE(
+      RunJavascriptAsyncTestNoReturn("FAILS_BogusFunctionName"),
+      "WebUITestHandler::Observe");
+}
+
+// Tests that the async framework works.
+class WebUIBrowserAsyncTest : public WebUIBrowserTest {
+ public:
+  // Calls the testDone() function from test_api.js
+  void TestDone() {
+    RunJavascriptFunction("testDone");
+  }
+
+  // Starts a failing test.
+  void RunTestFailsAssert() {
+    RunJavascriptFunction("runAsync",
+                          *Value::CreateStringValue("testFailsAssert"));
+  }
+
+  // Starts a passing test.
+  void RunTestPasses() {
+    RunJavascriptFunction("runAsync", *Value::CreateStringValue("testPasses"));
+  }
+
+ protected:
+  WebUIBrowserAsyncTest() {}
+
+  static const char kDummyURL[];
+
+  // Class to synchronize asynchronous javascript activity with the tests.
+  class AsyncWebUIMessageHandler : public WebUIMessageHandler {
+   public:
+    AsyncWebUIMessageHandler() {}
+
+    MOCK_METHOD1(HandleTestContinues, void(const ListValue*));
+    MOCK_METHOD1(HandleTestFails, void(const ListValue*));
+    MOCK_METHOD1(HandleTestPasses, void(const ListValue*));
+
+   private:
+    virtual void RegisterMessages() OVERRIDE {
+      web_ui_->RegisterMessageCallback("startAsyncTest", NewCallback(
+          this, &AsyncWebUIMessageHandler::HandleStartAsyncTest));
+      web_ui_->RegisterMessageCallback("testContinues", NewCallback(
+          this, &AsyncWebUIMessageHandler::HandleTestContinues));
+      web_ui_->RegisterMessageCallback("testFails", NewCallback(
+          this, &AsyncWebUIMessageHandler::HandleTestFails));
+      web_ui_->RegisterMessageCallback("testPasses", NewCallback(
+          this, &AsyncWebUIMessageHandler::HandleTestPasses));
+    }
+
+    // Starts the test in |list_value|[0] with the runAsync wrapper.
+    void HandleStartAsyncTest(const ListValue* list_value) {
+      Value* test_name;
+      ASSERT_TRUE(list_value->Get(0, &test_name));
+      web_ui_->CallJavascriptFunction("runAsync", *test_name);
+    }
+
+    DISALLOW_COPY_AND_ASSIGN(AsyncWebUIMessageHandler);
+  };
+
+  // Handler for this object.
+  ::testing::StrictMock<AsyncWebUIMessageHandler> message_handler_;
+
+ private:
+  // Class to provide a ChromeWebUI for |kDummyURL|.
+  class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
+   public:
+    MockWebUIProvider() {}
+
+    // Returns a new ChromeWebUI
+    WebUI* NewWebUI(TabContents* tab_contents, const GURL& url) OVERRIDE {
+      return new ChromeWebUI(tab_contents);
+    }
+  };
+
+  // Provide this object's handler.
+  virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
+    return &message_handler_;
+  }
+
+  // Set up the kDummyURL to be a WebUI page.
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
+    TestChromeWebUIFactory::AddFactoryOverride(GURL(kDummyURL).host(),
+                                               &mock_provider_);
+  }
+
+  // Tear down the kDummyURL WebUI page.
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    WebUIBrowserTest::TearDownInProcessBrowserTestFixture();
+    TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
+  }
+
+  // Set up and browse to kDummyURL for all tests.
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WebUIBrowserTest::SetUpOnMainThread();
+    AddLibrary(FilePath(FILE_PATH_LITERAL("async.js")));
+    ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
+  }
+
+  // Provider for this object.
+  MockWebUIProvider mock_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebUIBrowserAsyncTest);
+};
+
+const char WebUIBrowserAsyncTest::kDummyURL[] = "chrome://Dummy";
+
+// Test that assertions fail immediately after assertion fails (no testContinues
+// message). (Sync version).
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestSyncOkTestFail) {
+  ASSERT_FALSE(RunJavascriptTest("testFailsAssert"));
+}
+
+// Test that assertions fail immediately after assertion fails (no testContinues
+// message). (Async version).
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncFailsAssert) {
+  EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
+  ASSERT_FALSE(RunJavascriptAsyncTest(
+      "startAsyncTest", *Value::CreateStringValue("testFailsAssert")));
+}
+
+// Test that expectations continue the function, but fail the test.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncFailsExpect) {
+  ::testing::InSequence s;
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
+  ASSERT_FALSE(RunJavascriptAsyncTest(
+      "startAsyncTest", *Value::CreateStringValue("testFailsExpect")));
+}
+
+// Test that test continues and passes. (Sync version).
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestSyncPasses) {
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  ASSERT_TRUE(RunJavascriptTest("testPasses"));
+}
+
+// Test that test continues and passes. (Async version).
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPasses) {
+  ::testing::InSequence s;
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestPasses(::testing::_))
+      .WillOnce(::testing::InvokeWithoutArgs(
+          this, &WebUIBrowserAsyncTest::TestDone));
+  ASSERT_TRUE(RunJavascriptAsyncTest(
+      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+}
+
+// Test that two tests pass.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPassPass) {
+  ::testing::InSequence s;
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestPasses(::testing::_))
+      .WillOnce(::testing::InvokeWithoutArgs(
+          this, &WebUIBrowserAsyncTest::RunTestPasses));
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestPasses(::testing::_))
+      .WillOnce(::testing::InvokeWithoutArgs(
+          this, &WebUIBrowserAsyncTest::TestDone));
+  ASSERT_TRUE(RunJavascriptAsyncTest(
+      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+}
+
+// Test that first test passes; second fails.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPassThenFail) {
+  ::testing::InSequence s;
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestPasses(::testing::_))
+      .WillOnce(::testing::InvokeWithoutArgs(
+          this, &WebUIBrowserAsyncTest::RunTestFailsAssert));
+  EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
+  ASSERT_FALSE(RunJavascriptAsyncTest(
+      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+}
+
+// Test that testDone() with failure first then sync pass still fails.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncDoneFailFirstSyncPass) {
+  ::testing::InSequence s;
+  EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
+  EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
+
+  // Call runAsync directly instead of deferring through startAsyncTest. It will
+  // call testDone() on failure, then return.
+  ASSERT_FALSE(RunJavascriptAsyncTest(
+      "runAsync", *Value::CreateStringValue("testAsyncDoneFailFirstSyncPass")));
+}
+
+// Test that calling testDone during RunJavascriptAsyncTest still completes
+// when waiting for async result. This is similar to the previous test, but call
+// testDone directly and expect pass result.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestTestDoneEarlyPassesAsync) {
+  ASSERT_TRUE(RunJavascriptAsyncTest("testDone"));
+}
+
+// Test that calling testDone during RunJavascriptTest still completes when
+// waiting for async result.
+IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestTestDoneEarlyPasses) {
+  ASSERT_TRUE(RunJavascriptTest("testDone"));
 }

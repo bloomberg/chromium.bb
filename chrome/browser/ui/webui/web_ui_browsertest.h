@@ -72,6 +72,17 @@ class WebUIBrowserTest
   bool RunJavascriptTest(const std::string& test_name,
                          const ConstValueVector& test_arguments);
 
+  // Runs a test that may include calls to functions in test_api.js, and waits
+  // for call to asyncTestDone().
+  bool RunJavascriptAsyncTest(const std::string& test_name);
+  bool RunJavascriptAsyncTest(const std::string& test_name,
+                              const base::Value& arg);
+  bool RunJavascriptAsyncTest(const std::string& test_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2);
+  bool RunJavascriptAsyncTest(const std::string& test_name,
+                              const ConstValueVector& test_arguments);
+
   // Sends message through |preload_host| to preload javascript libraries and
   // sets the |libraries_preloaded| flag to prevent re-loading at next
   // javascript invocation.
@@ -116,8 +127,9 @@ class WebUIBrowserTest
   void BuildJavascriptLibraries(string16* content);
 
   // Builds a string with a call to the runTest JS function, passing the
-  // given test and its arguments.
-  string16 BuildRunTestJSCall(const std::string& test_name,
+  // given |is_async|, |test_name| and its |args|.
+  string16 BuildRunTestJSCall(bool is_async,
+                              const std::string& test_name,
                               const WebUIBrowserTest::ConstValueVector& args);
 
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
@@ -126,10 +138,11 @@ class WebUIBrowserTest
   // logging an error message on failure, otherwise |function_name| is called
   // asynchronously. When |preload_host| is non-NULL, sends the javascript to
   // the RenderView for evaluation at the appropriate time before the onload
-  // call is made.
+  // call is made. Passes |is_async| along to runTest wrapper.
   bool RunJavascriptUsingHandler(const std::string& function_name,
                                  const ConstValueVector& function_arguments,
                                  bool is_test,
+                                 bool is_async,
                                  RenderViewHost* preload_host);
 
   // Attaches mock and test handlers.
