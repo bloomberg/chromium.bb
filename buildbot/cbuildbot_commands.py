@@ -213,7 +213,7 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
 
 
 def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
-          nowithdebug, extra_env=None):
+          extra_env=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./build_packages', '--board=%s' % board]
@@ -237,9 +237,6 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
     env[key] = (prev and prev + ' ' or '') + '--rebuilt-binaries'
   else:
     cmd.append('--nousepkg')
-
-  if nowithdebug:
-    cmd.append('--nowithdebug')
 
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=env)
 
