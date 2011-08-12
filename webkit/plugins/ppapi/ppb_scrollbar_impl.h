@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/task.h"
 #include "ppapi/thunk/ppb_scrollbar_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbarClient.h"
@@ -75,6 +76,9 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   gfx::Rect dirty_;
   std::vector<WebKit::WebRect> tickmarks_;
   scoped_ptr<WebKit::WebScrollbar> scrollbar_;
+
+  // Used so that the post task for Invalidate doesn't keep an extra reference.
+  ScopedRunnableMethodFactory<PPB_Scrollbar_Impl> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Scrollbar_Impl);
 };

@@ -117,7 +117,8 @@ PP_Resource PPB_Scrollbar_Impl::Create(PluginInstance* instance,
 }
 
 PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PluginInstance* instance)
-    : PPB_Widget_Impl(instance) {
+    : PPB_Widget_Impl(instance),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
@@ -282,9 +283,13 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // Can't call into the client to tell them about the invalidate right away,
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its
   // internal state.
+  // Note: we use a method factory here instead of NewRunnableMethod because the
+  // latter would modify the lifetime of this object. That might make
+  // WebKit::WebScrollbar outlive WebKit::WebPluginContainer, which is against
+  // its contract.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &PPB_Scrollbar_Impl::NotifyInvalidate));
+      method_factory_.NewRunnableMethod(&PPB_Scrollbar_Impl::NotifyInvalidate));
 }
 
 void PPB_Scrollbar_Impl::getTickmarks(
