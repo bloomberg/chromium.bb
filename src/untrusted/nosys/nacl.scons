@@ -82,5 +82,5 @@ if env.Bit('target_arm'):
   sources.append('raise.c')
 
 
-env.ComponentLibrary('libnosys', sources)
-env.AddLibraryToSdk(['libnosys'])
+libnosys = env.ComponentLibrary('libnosys', sources)
+env.AddLibraryToSdk(libnosys)

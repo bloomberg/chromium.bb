@@ -2859,7 +2859,7 @@ if not nacl_irt_env.Bit('bitcode'):
 
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes, is_platform=False):
-  return [env.File('${LIB_DIR}/%s.a' % x) for x in nodes]
+  return nodes
 nacl_irt_env.AddMethod(AddLibraryDummy, 'AddLibraryToSdk')
 
 def AddObjectInternal(env, nodes, is_platform=False):
@@ -2926,15 +2926,8 @@ def NaClAddHeader(env, nodes, subdir='nacl'):
 nacl_env.AddMethod(NaClAddHeader, 'AddHeaderToSdk')
 
 def NaClAddLibrary(env, nodes, is_platform=False):
-  # TODO(mcgrathr): remove this and make callers consistent wrt lib prefix.
-  def libname(name):
-    if not name.startswith('lib'):
-      name = 'lib' + name
-    return name + '.a'
-  lib_nodes = [env.File(os.path.join('${LIB_DIR}', libname(lib)))
-               for lib in nodes]
-  PublishLibrary(env, lib_nodes, is_platform)
-  return lib_nodes
+  PublishLibrary(env, nodes, is_platform)
+  return nodes
 nacl_env.AddMethod(NaClAddLibrary, 'AddLibraryToSdk')
 
 def NaClAddObject(env, nodes, is_platform=False):

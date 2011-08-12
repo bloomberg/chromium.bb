@@ -30,11 +30,10 @@ untrusted_only = [
     'nacl_srpc_ppapi_plugin_internal.c'
     ]
 
-env.NaClSdkLibrary('libsrpc',
-                   trusted_untrusted_shared + untrusted_only,
-                   LIBS=['imc_syscalls', 'pthread'])
+libsrpc = env.NaClSdkLibrary('libsrpc',
+                             trusted_untrusted_shared + untrusted_only,
+                             LIBS=['imc_syscalls', 'pthread'])
+env.AddLibraryToSdk(libsrpc)
 
-
-env.AddLibraryToSdk(['libsrpc'])
 header_install = env.AddHeaderToSdk(['nacl_srpc.h'])
-env.Requires('libsrpc', header_install)
+env.Requires(libsrpc, header_install)

@@ -5,10 +5,10 @@
 
 Import('env')
 
-env.NaClSdkLibrary('gio',
-                   ['gio.c',
-                    'gio_mem.c',
-                    'gprintf.c',
-                    'gio_mem_snapshot.c',
-                    ])
-env.AddLibraryToSdk(['gio'])
+libgio = env.NaClSdkLibrary('libgio',
+                            ['gio.c',
+                             'gio_mem.c',
+                             'gprintf.c',
+                             'gio_mem_snapshot.c'
+                             ])
+env.AddLibraryToSdk(libgio)

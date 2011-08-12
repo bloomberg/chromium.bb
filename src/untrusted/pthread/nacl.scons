@@ -24,8 +24,8 @@ nc_objs = [env.ComponentObject(module, module + '.c')
            ] + [valgrind]
 
 # The public library relies on the IRT for crucial system services.
-env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
-env.AddLibraryToSdk(['libpthread'])
+libpthread = env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
+env.AddLibraryToSdk(libpthread)
 
 # The private library rolls in those IRT components.
 nc_private_objs = nc_objs + ['nc_init_private.c'] + [

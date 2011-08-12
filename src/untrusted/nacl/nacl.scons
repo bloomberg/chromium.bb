@@ -58,14 +58,16 @@ if env.Bit('nacl_glibc'):
 else:
   sources = sources_for_nacl_extensions + sources_for_standard_interfaces
 
-env.NaClSdkLibrary('libnacl', sources)
+libnacl = env.NaClSdkLibrary('libnacl', sources)
 
-env.AddLibraryToSdk(['libnacl'])
+env.AddLibraryToSdk(libnacl)
 header_install = env.AddHeaderToSdk(['nacl_startup.h', 'nacl_thread.h'])
 env.Requires('libnacl', header_install)
 
-env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'], LIBS=['nacl'])
-env.AddLibraryToSdk(['libnacl_dyncode'])
+libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode',
+                                     ['dyncode.c'],
+                                     LIBS=['nacl'])
+env.AddLibraryToSdk(libnacl_dyncode)
 env.AddHeaderToSdk(['nacl_dyncode.h'])
 
 env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
@@ -81,8 +83,8 @@ imc_syscalls = [
     'nameservice.c',
     ]
 
-env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)
-env.AddLibraryToSdk(['libimc_syscalls'])
+libimc_syscalls = env.NaClSdkLibrary('libimc_syscalls', imc_syscalls)
+env.AddLibraryToSdk(libimc_syscalls)
 
 sys_private = [
     'null.c',

@@ -1065,6 +1065,7 @@ prune() {
   if ${LIBMODE_GLIBC}; then
     echo "remove pnacl_cache directory"
     rm -rf "${PNACL_LIB_ROOT}"/pnacl_cache
+    rm -rf "${PNACL_SDK_LIB}"/pnacl_cache
   fi
 
   echo "remove driver log"
@@ -2803,6 +2804,10 @@ sdk-verify() {
     verify-archive-llvm "$i"
   done
 
+  for i in ${PNACL_SDK_LIB}/*.pso ; do
+    verify-pso "$i"
+  done
+
   for platform in arm x86-32 x86-64; do
     # There are currently no platform libs in the glibc build.
     if ${LIBMODE_GLIBC}; then
@@ -3054,7 +3059,7 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  if ${LLVM_DIS} $1 -o - | grep asm ; then
+  if ${LLVM_DIS} "$1" -o - | grep asm ; then
     echo
     echo "ERROR asm in $1"
     echo
@@ -3110,6 +3115,15 @@ verify-object-x86-64() {
   check-elf-abi $1 "elf64-nacl"
 }
 
+#
+# verify-pso <psofile>
+#
+verify-pso() {
+  echo -n "verify $(basename "$1"): "
+  verify-object-llvm "$1"
+  echo "PASS"
+  # TODO(pdox): Add a call to pnacl-meta to check for the "shared" property.
+}
 
 #
 # verify-archive-llvm <archive>
