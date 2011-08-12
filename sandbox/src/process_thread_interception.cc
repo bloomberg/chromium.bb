@@ -407,7 +407,16 @@ HANDLE WINAPI TargetCreateThread(CreateThreadFunction orig_CreateThread,
                                  PVOID parameter,
                                  DWORD creation_flags,
                                  LPDWORD thread_id) {
+// Try the normal CreateThread; switch to RtlCreateUserThread if needed.
+  static bool use_create_thread = true;
   HANDLE thread;
+  if (use_create_thread) {
+    thread = orig_CreateThread(thread_attributes, stack_size, start_address,
+                               parameter, creation_flags, thread_id);
+    if (thread)
+      return thread;
+  }
+
   PSECURITY_DESCRIPTOR sd =
       thread_attributes ? thread_attributes->lpSecurityDescriptor : NULL;
   CLIENT_ID client_id;
@@ -419,6 +428,8 @@ HANDLE WINAPI TargetCreateThread(CreateThreadFunction orig_CreateThread,
   if (!NT_SUCCESS(result))
     return 0;
 
+  // CSRSS is closed if we got here, so use RtlCreateUserThread from here on.
+  use_create_thread = false;
   if (thread_id)
     *thread_id = HandleToUlong(client_id.UniqueThread);
   return thread;
