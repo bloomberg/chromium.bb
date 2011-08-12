@@ -64,15 +64,14 @@ function addSerialTest(tester, i) {
 
 
 function initTests(tester) {
-  var count = 100;
-  var serial = true;
-  for (var i = 0; i < count; i++) {
-    if (serial) {
-      // Slower, forces sequential load order.
-      addSerialTest(tester, i);
-    } else {
+  var args = getTestArguments({'count': '100', 'parallel': '0'});
+  for (var i = 0; i < args.count; i++) {
+    if (parseInt(args.parallel)) {
       // Faster, lets the browser determine load order and interleaving.
       addParallelTest(tester, i);
+    } else {
+      // Slower, forces sequential load order.
+      addSerialTest(tester, i);
     }
   }
 }

@@ -24,6 +24,47 @@ function createNaClEmbed(args) {
 }
 
 
+function decodeURIArgs(encoded) {
+  var args = {};
+  if (encoded.length > 0) {
+    var pairs = encoded.replace('+', ' ').split('&');
+    for (var p = 0; p < pairs.length; p++) {
+      var pair = pairs[p].split('=');
+      if (pair.length != 2) {
+        throw "Malformed argument key/value pair: '" + pairs[p] + "'";
+      }
+      args[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    }
+  }
+  return args;
+}
+
+
+function addDefaultsToArgs(defaults, args) {
+  for (var key in defaults) {
+    if (!(key in args)) {
+      args[key] = defaults[key];
+    }
+  }
+}
+
+
+// Return a dictionary of arguments for the test.  These arguments are passed
+// in the query string of the main page's URL.  Any time this function is used,
+// default values should be provided for every argument.  In some cases a test
+// may be run without an expected query string (manual testing, for example.)
+// Careful: all the keys and values in the dictionary are strings.  You will
+// need to manually parse any non-string values you wish to use.
+function getTestArguments(defaults) {
+  var encoded = window.location.search.substring(1);
+  var args = decodeURIArgs(encoded);
+  if (defaults !== undefined) {
+    addDefaultsToArgs(defaults, args);
+  }
+  return args;
+}
+
+
 function exceptionToLogText(e) {
   if (typeof e == 'object' && 'message' in e && 'stack' in e) {
     return e.message + '\n' + e.stack.toString();

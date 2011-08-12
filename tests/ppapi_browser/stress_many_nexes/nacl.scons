@@ -20,6 +20,7 @@ stress_files.extend([core, nmf])
 node = env.PPAPIBrowserTester(
     'stress_many_nexes_test.out',
     url='stress_many_nexes.html',
+    test_args=(('count', 100), ('parallel', 0)),
     timeout=200,
     files=stress_files)
 

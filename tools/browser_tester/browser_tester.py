@@ -3,12 +3,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import optparse
 import os.path
 import sys
 import thread
 import time
-import glob
+import urllib
 
 # Allow the import of third party modules
 script_dir = os.path.dirname(__file__)
@@ -37,6 +38,10 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add file SRC to be served from the HTTP server, '
                     'to be made visible under the path DEST.')
+  parser.add_option('--test_arg', dest='test_args', action='append',
+                    type='string', nargs=2, default=[],
+                    metavar='KEY VALUE',
+                    help='Parameterize the test with a key/value pair.')
   parser.add_option('--redirect_url', dest='map_redirects', action='append',
                     type='string', nargs=2, default=[],
                     metavar='DEST SRC',
@@ -156,7 +161,10 @@ def Run(url, options):
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
-  browser.Run('http://%s:%d/%s' % (host, port, url), port)
+  full_url = 'http://%s:%d/%s' % (host, port, url)
+  if len(options.test_args) > 0:
+    full_url += '?' + urllib.urlencode(options.test_args)
+  browser.Run(full_url, port)
   server.TestingBegun(0.125)
 
   # In Python 2.5, server.handle_request may block indefinitely.  Serving pages
