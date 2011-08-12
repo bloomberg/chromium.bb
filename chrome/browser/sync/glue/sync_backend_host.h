@@ -55,9 +55,13 @@ class SyncFrontend {
  public:
   SyncFrontend() {}
 
-  // The backend has completed initialization and it is now ready to accept and
-  // process changes.  If success is false, initialization wasn't able to be
-  // completed and should be retried.
+  // The backend has completed initialization and it is now ready to
+  // accept and process changes.  If success is false, initialization
+  // wasn't able to be completed and should be retried.
+  //
+  // |js_backend| is what about:sync interacts with; it's different
+  // from the 'Backend' in 'OnBackendInitialized' (unfortunately).  It
+  // is initialized only if |success| is true.
   virtual void OnBackendInitialized(
       const WeakHandle<JsBackend>& js_backend, bool success) = 0;
 

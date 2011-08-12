@@ -845,7 +845,8 @@ class SyncManager {
     // WARNING: Calling methods on the SyncManager before receiving this
     // message, unless otherwise specified, produces undefined behavior.
     //
-    // The given backend can emit the following events:
+    // |js_backend| is what about:sync interacts with.  It can emit
+    // the following events:
 
     /**
      * @param {{ enabled: boolean }} details A dictionary containing:
@@ -861,8 +862,8 @@ class SyncManager {
      */
     // function onIncomingNotification(details);
 
-    // The given backend responds to the following messages (all other
-    // messages are ignored):
+    // Also, it responds to the following messages (all other messages
+    // are ignored):
 
     /**
      * Gets the current notification state.
