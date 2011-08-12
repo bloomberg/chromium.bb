@@ -208,6 +208,12 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
     bool run_loop = true;
     if (!no_sandbox) {
+      // Cause advapi32 to load before the sandbox is turned on.
+      unsigned int dummy_rand;
+      rand_s(&dummy_rand);
+      // Warm up language subsystems before the sandbox is turned on.
+      ::GetUserDefaultLangID();
+      ::GetUserDefaultLCID();
       run_loop = platform.EnableSandbox();
     } else {
       LOG(ERROR) << "Running without renderer sandbox";
