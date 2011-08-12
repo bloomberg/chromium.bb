@@ -101,17 +101,17 @@ Font::Font(const HostResource& resource,
 
   WebKitForwarding* forwarding = GetDispatcher()->GetWebKitForwarding();
 
-  WebKitForwarding::Font* result = NULL;
-  RunOnWebKitThread(base::Bind(&WebKitForwarding::CreateFontForwarding,
+  RunOnWebKitThread(true,
+                    base::Bind(&WebKitForwarding::CreateFontForwarding,
                                base::Unretained(forwarding),
                                &webkit_event_, desc,
                                face.get() ? face->value() : std::string(),
                                GetDispatcher()->preferences(),
-                               &result));
-  font_forwarding_.reset(result);
+                               &font_forwarding_));
 }
 
 Font::~Font() {
+  RunOnWebKitThread(false, base::Bind(&DeleteFontForwarding, font_forwarding_));
 }
 
 ppapi::thunk::PPB_Font_API* Font::AsPPB_Font_API() {
@@ -127,8 +127,9 @@ PP_Bool Font::Describe(PP_FontDescription_Dev* description,
   TRACE_EVENT0("ppapi proxy", "Font::Describe");
   std::string face;
   PP_Bool result = PP_FALSE;
-  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::Describe,
-                               base::Unretained(font_forwarding_.get()),
+  RunOnWebKitThread(true,
+                    base::Bind(&WebKitForwarding::Font::Describe,
+                               base::Unretained(font_forwarding_),
                                &webkit_event_, description, &face, metrics,
                                &result));
 
@@ -168,12 +169,13 @@ PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
       image_data->Unmap();
     return PP_FALSE;
   }
-  RunOnWebKitThread(base::Bind(
-      &WebKitForwarding::Font::DrawTextAt,
-      base::Unretained(font_forwarding_.get()),
-      &webkit_event_,
-      WebKitForwarding::Font::DrawTextParams(canvas, run, position, color,
-                                             clip, image_data_is_opaque)));
+  RunOnWebKitThread(
+      true,
+      base::Bind(&WebKitForwarding::Font::DrawTextAt,
+                 base::Unretained(font_forwarding_), &webkit_event_,
+                 WebKitForwarding::Font::DrawTextParams(canvas, run, position,
+                                                        color, clip,
+                                                        image_data_is_opaque)));
 
   if (needs_unmapping)
     image_data->Unmap();
@@ -186,8 +188,9 @@ int32_t Font::MeasureText(const PP_TextRun_Dev* text) {
   if (!PPTextRunToTextRun(text, &run))
     return -1;
   int32_t result = -1;
-  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::MeasureText,
-                               base::Unretained(font_forwarding_.get()),
+  RunOnWebKitThread(true,
+                    base::Bind(&WebKitForwarding::Font::MeasureText,
+                               base::Unretained(font_forwarding_),
                                &webkit_event_, run, &result));
   return result;
 }
@@ -199,8 +202,9 @@ uint32_t Font::CharacterOffsetForPixel(const PP_TextRun_Dev* text,
   if (!PPTextRunToTextRun(text, &run))
     return -1;
   uint32_t result = -1;
-  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::CharacterOffsetForPixel,
-                               base::Unretained(font_forwarding_.get()),
+  RunOnWebKitThread(true,
+                    base::Bind(&WebKitForwarding::Font::CharacterOffsetForPixel,
+                               base::Unretained(font_forwarding_),
                                &webkit_event_, run, pixel_position, &result));
   return result;
 }
@@ -212,15 +216,23 @@ int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
   if (!PPTextRunToTextRun(text, &run))
     return -1;
   int32_t result = -1;
-  RunOnWebKitThread(base::Bind(&WebKitForwarding::Font::PixelOffsetForCharacter,
-                               base::Unretained(font_forwarding_.get()),
+  RunOnWebKitThread(true,
+                    base::Bind(&WebKitForwarding::Font::PixelOffsetForCharacter,
+                               base::Unretained(font_forwarding_),
                                &webkit_event_, run, char_offset, &result));
   return result;
 }
 
-void Font::RunOnWebKitThread(const base::Closure& task) {
+void Font::RunOnWebKitThread(bool blocking, const base::Closure& task) {
   GetDispatcher()->PostToWebKitThread(FROM_HERE, task);
-  webkit_event_.Wait();
+  if (blocking)
+    webkit_event_.Wait();
+}
+
+// static
+void Font::DeleteFontForwarding(
+    ppapi::WebKitForwarding::Font* font_forwarding) {
+  delete font_forwarding;
 }
 
 }  // namespace proxy

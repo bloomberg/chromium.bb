@@ -75,13 +75,20 @@ class Font : public PluginResource,
                                           uint32_t char_offset) OVERRIDE;
 
  private:
-  // Posts the given closure to the WebKit thread and waits on the
-  // webkit_event_ for the task to continue.
-  void RunOnWebKitThread(const base::Closure& task);
+  // Posts the given closure to the WebKit thread.
+  // If |blocking| is true, the method waits on |webkit_event_| for the task to
+  // continue.
+  void RunOnWebKitThread(bool blocking, const base::Closure& task);
+
+  static void DeleteFontForwarding(
+      ppapi::WebKitForwarding::Font* font_forwarding);
 
   base::WaitableEvent webkit_event_;
 
-  scoped_ptr<ppapi::WebKitForwarding::Font> font_forwarding_;
+  // This class owns |font_forwarding_|.
+  // |font_forwarding_| should always be used on the WebKit thread (including
+  // destruction).
+  ppapi::WebKitForwarding::Font* font_forwarding_;
 
   DISALLOW_COPY_AND_ASSIGN(Font);
 };
