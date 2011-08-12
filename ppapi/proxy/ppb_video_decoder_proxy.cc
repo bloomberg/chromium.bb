@@ -96,7 +96,8 @@ int32_t VideoDecoder::Decode(
   if (enter_buffer.failed())
     return PP_ERROR_BADRESOURCE;
 
-  SetBitstreamBufferCallback(bitstream_buffer->id, callback);
+  if (!SetBitstreamBufferCallback(bitstream_buffer->id, callback))
+    return PP_ERROR_BADARGUMENT;
 
   Buffer* ppb_buffer =
       static_cast<Buffer*>(enter_buffer.object());
@@ -127,7 +128,8 @@ void VideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
 }
 
 int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
-  SetFlushCallback(callback);
+  if (!SetFlushCallback(callback))
+    return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Flush(
@@ -136,7 +138,8 @@ int32_t VideoDecoder::Flush(PP_CompletionCallback callback) {
 }
 
 int32_t VideoDecoder::Reset(PP_CompletionCallback callback) {
-  SetResetCallback(callback);
+  if (!SetResetCallback(callback))
+    return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Reset(

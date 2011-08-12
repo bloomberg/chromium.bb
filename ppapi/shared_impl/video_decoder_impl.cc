@@ -44,22 +44,26 @@ void VideoDecoderImpl::Destroy() {
   UnrefResource(context3d_id_);
 }
 
-void VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {
+bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
-  DCHECK(!flush_callback_.func);
+  if (flush_callback_.func)
+    return false;
   flush_callback_ = callback;
+  return true;
 }
 
-void VideoDecoderImpl::SetResetCallback(PP_CompletionCallback callback) {
+bool VideoDecoderImpl::SetResetCallback(PP_CompletionCallback callback) {
   CHECK(callback.func);
-  DCHECK(!reset_callback_.func);
+  if (reset_callback_.func)
+    return false;
   reset_callback_ = callback;
+  return true;
 }
 
-void VideoDecoderImpl::SetBitstreamBufferCallback(
+bool VideoDecoderImpl::SetBitstreamBufferCallback(
     int32 bitstream_buffer_id, PP_CompletionCallback callback) {
-  CHECK(bitstream_buffer_callbacks_.insert(
-      std::make_pair(bitstream_buffer_id, callback)).second);
+  return bitstream_buffer_callbacks_.insert(
+      std::make_pair(bitstream_buffer_id, callback)).second;
 }
 
 void VideoDecoderImpl::RunFlushCallback(int32 result) {

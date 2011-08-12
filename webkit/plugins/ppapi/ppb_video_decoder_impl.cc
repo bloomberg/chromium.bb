@@ -104,7 +104,8 @@ int32_t PPB_VideoDecoder_Impl::Decode(
       bitstream_buffer->id,
       buffer->shared_memory()->handle(),
       static_cast<size_t>(bitstream_buffer->size));
-  SetBitstreamBufferCallback(bitstream_buffer->id, callback);
+  if (!SetBitstreamBufferCallback(bitstream_buffer->id, callback))
+    return PP_ERROR_BADARGUMENT;
 
   FlushCommandBuffer();
   platform_video_decoder_->Decode(decode_buffer);
@@ -143,7 +144,8 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
-  SetFlushCallback(callback);
+  if (!SetFlushCallback(callback))
+    return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
   platform_video_decoder_->Flush();
@@ -154,7 +156,8 @@ int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
   if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
-  SetResetCallback(callback);
+  if (!SetResetCallback(callback))
+    return PP_ERROR_INPROGRESS;
 
   FlushCommandBuffer();
   platform_video_decoder_->Reset();

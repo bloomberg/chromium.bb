@@ -44,9 +44,9 @@ class VideoDecoderImpl : public thunk::PPB_VideoDecoder_API {
       std::vector<PP_VideoConfigElement>* out_configs);
 
  protected:
-  void SetFlushCallback(PP_CompletionCallback callback);
-  void SetResetCallback(PP_CompletionCallback callback);
-  void SetBitstreamBufferCallback(
+  bool SetFlushCallback(PP_CompletionCallback callback);
+  bool SetResetCallback(PP_CompletionCallback callback);
+  bool SetBitstreamBufferCallback(
       int32 bitstream_buffer_id, PP_CompletionCallback callback);
 
   void RunFlushCallback(int32 result);
