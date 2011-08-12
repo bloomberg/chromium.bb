@@ -10,11 +10,13 @@
 #include "chrome/browser/media/media_internals_observer.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/webui/web_ui.h"
+#include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
 // The names of the javascript functions to call with updates.
-static const char kDeleteItemFunction[] = "media.onItemDeleted";
 static const char kAudioUpdateFunction[] = "media.addAudioStream";
+static const char kDeleteItemFunction[] = "media.onItemDeleted";
+static const char kMediaEventFunction[] = "media.onMediaEvent";
 static const char kSendEverythingFunction[] = "media.onReceiveEverything";
 
 MediaInternals::~MediaInternals() {}
@@ -50,8 +52,15 @@ void MediaInternals::OnSetAudioStreamVolume(
 void MediaInternals::OnMediaEvent(
     int render_process_id, const media::MediaLogEvent& event) {
   DCHECK(CalledOnValidThread());
-  // TODO(scottfr): Handle |event|. Record status information in data_ and pass
-  //                |event| along to observers.
+
+  // Notify observers that |event| has occured.
+  DictionaryValue dict;
+  dict.SetInteger("renderer", render_process_id);
+  dict.SetInteger("player", event.id);
+  dict.SetString("type", media::MediaLog::EventTypeToString(event.type));
+  dict.SetDouble("time", event.time.ToDoubleT());
+  dict.Set("params", event.params.DeepCopy());
+  SendUpdate(kMediaEventFunction, &dict);
 }
 
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
