@@ -700,6 +700,17 @@ bool BrowserList::IsOffTheRecordSessionActive() {
   }
   return false;
 }
+// static
+bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if ((*i)->profile()->IsSameProfile(profile) &&
+        (*i)->profile()->IsOffTheRecord()) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // static
 void BrowserList::RemoveBrowserFrom(Browser* browser,

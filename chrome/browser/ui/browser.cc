@@ -388,7 +388,7 @@ Browser::~Browser() {
   use_compact_navigation_bar_.Destroy();
 
   if (profile_->IsOffTheRecord() &&
-      !BrowserList::IsOffTheRecordSessionActive()) {
+      !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
     // An incognito profile is no longer needed, this indirectly
     // frees its cache and cookies.
     profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();

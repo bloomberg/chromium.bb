@@ -1087,7 +1087,7 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
 
     // If we have an incognito profile active, include the split-mode incognito
     // extensions.
-    if (BrowserList::IsOffTheRecordSessionActive()) {
+    if (BrowserList::IsOffTheRecordSessionActiveForProfile(profiles[i])) {
       ExtensionProcessManager* process_manager =
           profiles[i]->GetOffTheRecordProfile()->GetExtensionProcessManager();
       if (process_manager) {

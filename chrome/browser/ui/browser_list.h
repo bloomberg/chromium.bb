@@ -195,6 +195,9 @@ class BrowserList {
   // Returns true if at least one incognito session is active.
   static bool IsOffTheRecordSessionActive();
 
+  // Returns true if at least one incognito session is active for |profile|.
+  static bool IsOffTheRecordSessionActiveForProfile(Profile* profile);
+
   // Send out notifications.
   // For ChromeOS, also request session manager to end the session.
   static void NotifyAndTerminate(bool fast_path);
