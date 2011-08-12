@@ -1707,24 +1707,25 @@ TEST_F(CookieMonsterTest, InitializeFromCookieMonster) {
                                                "A3=F;",
                                                options));
 
+  CookieList cookies_1 = GetAllCookies(cm_1);
   scoped_refptr<CookieMonster> cm_2(new CookieMonster(NULL, NULL));
-  ASSERT_TRUE(cm_2->InitializeFrom(cm_1.get()));
-  CookieList cookies = cm_2->GetAllCookies();
+  ASSERT_TRUE(cm_2->InitializeFrom(cookies_1));
+  CookieList cookies_2 = GetAllCookies(cm_2);
 
   size_t expected_size = 3;
-  EXPECT_EQ(expected_size, cookies.size());
+  EXPECT_EQ(expected_size, cookies_2.size());
 
-  CookieList::iterator it = cookies.begin();
+  CookieList::iterator it = cookies_2.begin();
 
-  ASSERT_TRUE(it != cookies.end());
+  ASSERT_TRUE(it != cookies_2.end());
   EXPECT_EQ("A1", it->Name());
   EXPECT_EQ("/foo", it->Path());
 
-  ASSERT_TRUE(++it != cookies.end());
+  ASSERT_TRUE(++it != cookies_2.end());
   EXPECT_EQ("A2", it->Name());
   EXPECT_EQ("/bar", it->Path());
 
-  ASSERT_TRUE(++it != cookies.end());
+  ASSERT_TRUE(++it != cookies_2.end());
   EXPECT_EQ("A3", it->Name());
   EXPECT_EQ("/", it->Path());
 }

@@ -129,11 +129,19 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
         auth_context_->GetURLRequestContext()->cookie_store();
     net::CookieMonster* default_monster = default_store->GetCookieMonster();
     default_monster->SetKeepExpiredCookies();
-    net::CookieStore* new_store =
-        new_context_->GetURLRequestContext()->cookie_store();
-    net::CookieMonster* new_monster = new_store->GetCookieMonster();
+    default_monster->GetAllCookiesAsync(
+        base::Bind(
+            &TransferDefaultCookiesOnIOThreadTask::InitializeCookieMonster,
+            base::Unretained(this)));
+  }
 
-    if (!new_monster->InitializeFrom(default_monster)) {
+  void InitializeCookieMonster(const net::CookieList& cookies) {
+     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+     net::CookieStore* new_store =
+       new_context_->GetURLRequestContext()->cookie_store();
+     net::CookieMonster* new_monster = new_store->GetCookieMonster();
+
+    if (!new_monster->InitializeFrom(cookies)) {
       LOG(WARNING) << "Failed initial cookie transfer.";
     }
   }
