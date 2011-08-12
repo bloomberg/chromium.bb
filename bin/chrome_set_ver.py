@@ -9,9 +9,13 @@ import optparse
 import os
 import sys
 
+# Want to use correct version of libraries even when executed through symlink.
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
 
 
+_SUPPORTED_COMMANDS = ['runhooks']
 _CHROMIUM_SRC_ROOT = 'chromium/src'
 _CHROMIUM_CROS_DIR = 'chromium/src/third_party/cros'
 _PLATFORM_CROS_DIR = 'src/platform/cros'
@@ -102,11 +106,59 @@ def _RunHooks(chromium_root, hooks):
     cros_lib.RunCommand(hook['action'], cwd=chromium_root)
 
 
+def _ParseCommand(inputs):
+  """Get the command, and quit on erros.
+
+  Args:
+    inputs: A list of positional (non-option) arguments returned by optparse.
+  """
+  cmd = ''
+  if len(inputs) == 1:
+    cmd = inputs[0]
+    if cmd not in _SUPPORTED_COMMANDS:
+      cros_lib.Die('Unsupported command %s.  Use one of:\n%s' %
+                   (cmd, '\n'.join(_SUPPORTED_COMMANDS)))
+  elif len(inputs) > 1:
+    cros_lib.Die('More than one command specified')
+
+  return cmd
+
+
+def _GetParsedDeps(deps_file):
+  """Returns the full parsed DEPS file dictionary, and merged deps.
+
+  Arguments:
+    deps_file: Path to the .DEPS.git file
+
+  Returns:
+    An (x,y) tuple.  x is a dictionary containing the contents of the DEPS file,
+    and y is a dictionary containing the result of merging unix and common deps.
+  """
+  with open(deps_file, 'rU') as f:
+    deps = _LoadDEPS(f.read())
+
+  merged_deps = deps['deps']
+  unix_deps = deps['deps_os']['unix']
+  assert(not set(merged_deps.keys()).intersection(set(unix_deps)))
+  merged_deps.update(unix_deps)
+  return deps, merged_deps
+
+
 def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
 
-  parser = optparse.OptionParser(usage='usage: %prog -d .DEPS.git')
+  usage = ('usage: %prog [-d <DEPS.git file>] [command]\n'
+           '\n'
+           'commands:\n'
+           "  runhooks - Only run hooks.  Don't reset dependent repositories.")
+  epilog = ('\n'
+            'When no command is given, defaults to resetting dependent\n'
+            'repositories to revision specified in .DEPS.git file, and runs\n'
+            'the defined hooks.\n')
+
+  parser = optparse.OptionParser(usage=usage, epilog=epilog)
+
   # TODO(rcui): have -d accept a URL
   parser.add_option('-d', '--deps', default=None,
                     help=('DEPS file to use. Defaults to '
@@ -115,26 +167,30 @@ def main(argv=None):
                     default=True, help='Allow chrome-internal URLs')
   (options, inputs) = parser.parse_args(argv)
 
+  cmd = _ParseCommand(inputs)
+
+  run_reset = True
+  run_hooks = True
+  if cmd == 'runhooks':
+    # The command is currently used by the chromeos-chrome-9999 ebuild.
+    # TODO(rcui): update comment when chrome stable ebuilds also use runhooks.
+    run_reset = False
+
   repo_root = cros_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
   if not os.path.isdir(chromium_src_root):
-    sys.exit('chromium src/ dir not found')
+    cros_lib.Die('chromium src/ dir not found')
 
   deps_file = os.path.join(chromium_src_root, '.DEPS.git')
   if options.deps:
     deps_file = options.deps
 
-  deps = _LoadDEPS(open(deps_file, 'rU').read())
-
-  merged_deps = deps['deps']
-  unix_deps = deps['deps_os']['unix']
-  assert(not set(merged_deps.keys()).intersection(set(unix_deps)))
-  merged_deps.update(unix_deps)
+  deps, merged_deps = _GetParsedDeps(deps_file)
 
   chromium_root = os.path.dirname(chromium_src_root)
   _CreateCrosSymlink(repo_root)
-  _ResetGitCheckout(chromium_root, merged_deps)
-  _RunHooks(chromium_root, deps['hooks'])
+  if run_reset: _ResetGitCheckout(chromium_root, merged_deps)
+  if run_hooks: _RunHooks(chromium_root, deps['hooks'])
 
 
 if __name__ == '__main__':
