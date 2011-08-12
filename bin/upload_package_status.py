@@ -226,7 +226,7 @@ class Uploader(object):
           ss_val = _ScrubValFromSS(ss_row.custom[col].text)
           if col not in new_row:
             new_row[col] = ss_val
-          elif ss_val and new_row[col] and ss_val != new_row[col]:
+          elif (ss_val or new_row[col]) and ss_val != new_row[col]:
             changed.append("%s='%s'->'%s'" % (col, ss_val, new_row[col]))
           elif ss_row.custom[col].text != _PrepValForSS(ss_val):
             changed.append("%s=str'%s'" % (col, new_row[col]))
