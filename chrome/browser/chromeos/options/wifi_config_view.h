@@ -74,7 +74,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetSsid() const;
   std::string GetPassphrase() const;
   bool GetSaveCredentials() const;
-  bool GetShareNetwork() const;
+  bool GetShareNetwork(bool share_default) const;
 
   // Get various 802.1X EAP values from the widgets.
   EAPMethod GetEapMethod() const;

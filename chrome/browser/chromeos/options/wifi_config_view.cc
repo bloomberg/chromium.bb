@@ -535,6 +535,7 @@ void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
 bool WifiConfigView::Login() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (service_path_.empty()) {
+    const bool share_default = true;  // share networks by default
     if (!eap_method_combobox_) {
       // Hidden ordinary Wi-Fi connection.
       ConnectionSecurity security = SECURITY_UNKNOWN;
@@ -555,7 +556,7 @@ bool WifiConfigView::Login() {
           GetPassphrase(),
           NULL,
           GetSaveCredentials(),
-          GetShareNetwork());
+          GetShareNetwork(share_default));
     } else {
       // Hidden 802.1X EAP Wi-Fi connection.
       chromeos::NetworkLibrary::EAPConfigData config_data;
@@ -572,7 +573,7 @@ bool WifiConfigView::Login() {
           GetPassphrase(),
           &config_data,
           GetSaveCredentials(),
-          GetShareNetwork());
+          GetShareNetwork(share_default));
     }
   } else {
     WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
@@ -601,8 +602,8 @@ bool WifiConfigView::Login() {
       if (passphrase != wifi->passphrase())
         wifi->SetPassphrase(passphrase);
     }
-
-    cros->ConnectToWifiNetwork(wifi, GetShareNetwork());
+    bool share_default = (wifi->profile_type() == PROFILE_SHARED);
+    cros->ConnectToWifiNetwork(wifi, GetShareNetwork(share_default));
     // Connection failures are responsible for updating the UI, including
     // reopening dialogs.
   }
@@ -631,9 +632,9 @@ bool WifiConfigView::GetSaveCredentials() const {
   return save_credentials_checkbox_->checked();
 }
 
-bool WifiConfigView::GetShareNetwork() const {
-  if (!share_network_checkbox_)
-    return true;  // share networks by default (e.g. non secure network).
+bool WifiConfigView::GetShareNetwork(bool share_default) const {
+  if (!share_network_checkbox_ || !share_network_checkbox_->IsEnabled())
+    return share_default;
   return share_network_checkbox_->checked();
 }
 
