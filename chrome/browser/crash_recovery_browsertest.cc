@@ -4,7 +4,6 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -16,12 +15,12 @@
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED,
-      NotificationService::AllSources());
   browser->OpenURL(GURL(chrome::kChromeUICrashURL), GURL(), CURRENT_TAB,
                    PageTransition::TYPED);
-  observer.Wait();
+  LOG(ERROR) << "SimulateRendererCrash, before WaitForNotification";
+  ui_test_utils::WaitForNotification(
+      content::NOTIFICATION_TAB_CONTENTS_DISCONNECTED);
+  LOG(ERROR) << "SimulateRendererCrash, after WaitForNotification";
 }
 
 }  // namespace
@@ -43,12 +42,10 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
-  observer.Wait();
+  LOG(ERROR) << "Before WaitForNavigationInCurrentTab";
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  LOG(ERROR) << "After WaitForNavigationInCurrentTab";
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -72,12 +69,10 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
-  observer.Wait();
+  LOG(ERROR) << "Before WaitForNavigationInCurrentTab";
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  LOG(ERROR) << "After WaitForNavigationInCurrentTab";
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_EQ(title_before_crash, title_after_crash);

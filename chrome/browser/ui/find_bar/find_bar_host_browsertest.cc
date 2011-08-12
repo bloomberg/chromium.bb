@@ -581,12 +581,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
   EXPECT_TRUE(fully_visible);
 
   // Reload the tab and make sure Find window doesn't go away.
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
-  observer.Wait();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);
@@ -1052,10 +1048,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   incognito_browser->AddSelectedTabWithURL(url, PageTransition::START_PAGE);
-  observer.Wait();
+  ui_test_utils::WaitForNavigation(
+      &incognito_browser->GetSelectedTabContents()->controller());
   incognito_browser->window()->Show();
 
   // Open the find box and make sure that it is prepopulated with "page".
@@ -1098,11 +1093,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   EXPECT_EQ(ordinal, 1);
 
   // End the find session, click on the link.
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(&tab->controller()));
   tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
-  observer.Wait();
+  EXPECT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
 }
 
 // Tests that FindBar fits within a narrow browser window.
@@ -1110,12 +1102,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
   Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile());
   params.initial_bounds = gfx::Rect(0, 0, 250, 500);
   Browser* popup = Browser::CreateWithParams(params);
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   popup->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                PageTransition::LINK);
+
   // Wait for the page to finish loading.
-  observer.Wait();
+  ui_test_utils::WaitForNavigation(
+      &popup->GetSelectedTabContents()->controller());
   popup->window()->Show();
 
   // On GTK, bounds change is asynchronous.

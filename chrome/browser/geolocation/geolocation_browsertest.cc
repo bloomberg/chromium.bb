@@ -317,17 +317,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     size_t state_map_size = settings_state.state_map().size();
     ASSERT_TRUE(infobar_);
     LOG(WARNING) << "will set infobar response";
-    {
-      ui_test_utils::WindowedNotificationObserver observer(
-          content::NOTIFICATION_LOAD_STOP,
-          Source<NavigationController>(&tab_contents_wrapper->controller()));
-      if (allowed)
-        infobar_->AsConfirmInfoBarDelegate()->Accept();
-      else
-        infobar_->AsConfirmInfoBarDelegate()->Cancel();
-      observer.Wait();
-    }
-
+    if (allowed)
+      infobar_->AsConfirmInfoBarDelegate()->Accept();
+    else
+      infobar_->AsConfirmInfoBarDelegate()->Cancel();
+    WaitForNavigation();
     tab_contents_wrapper->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;

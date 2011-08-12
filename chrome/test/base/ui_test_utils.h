@@ -230,14 +230,10 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 void ClickOnView(const Browser* browser, ViewID vid);
 
 // Blocks until a notification for given |type| is received.
-// TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
 void WaitForNotification(int type);
 
 // Blocks until a notification for given |type| from the specified |source|
 // is received.
-// TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
 void WaitForNotificationFrom(int type,
                              const NotificationSource& source);
 
