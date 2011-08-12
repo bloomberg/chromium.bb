@@ -10,7 +10,9 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_QUOTA_INTERNALS_MAIN_HTML" file="quota_internals/main.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_QUOTA_INTERNALS_MAIN_HTML" file="quota_internals/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_QUOTA_INTERNALS_EVENT_HANDLER_JS" file="quota_internals/event_handler.js" type="BINDATA" />
+      <include name="IDR_QUOTA_INTERNALS_MESSAGE_DISPATCHER_JS" file="quota_internals/message_dispatcher.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

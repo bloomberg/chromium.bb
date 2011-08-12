@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/quota_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -16,38 +17,29 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+
+namespace {
+
+ChromeWebUIDataSource* CreateQuotaInternalsHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIQuotaInternalsHost);
+
+  source->set_json_path("strings.js");
+  source->add_resource_path(
+      "event_handler.js", IDR_QUOTA_INTERNALS_EVENT_HANDLER_JS);
+  source->add_resource_path(
+      "message_dispatcher.js", IDR_QUOTA_INTERNALS_MESSAGE_DISPATCHER_JS);
+  source->set_default_resource(IDR_QUOTA_INTERNALS_MAIN_HTML);
+  return source;
+}
+
+}  // namespace
+
 QuotaInternalsUI::QuotaInternalsUI(TabContents* contents)
     : ChromeWebUI(contents) {
   WebUIMessageHandler* handler = new quota_internals::QuotaInternalsHandler;
   AddMessageHandler(handler->Attach(this));
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(
-      new quota_internals::QuotaInternalsHTMLSource);
+      CreateQuotaInternalsHTMLSource());
 }
-
-namespace quota_internals {
-
-const char QuotaInternalsHTMLSource::kStringsJSPath[] = "strings.js";
-
-QuotaInternalsHTMLSource::QuotaInternalsHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIQuotaInternalsHost) {
-}
-
-void QuotaInternalsHTMLSource::StartDataRequest(const std::string& path,
-                                                bool is_incognito,
-                                                int request_id) {
-  if (path == kStringsJSPath)
-    SendLocalizedStringsAsJSON(request_id);
-  else
-    SendFromResourceBundle(request_id, IDR_QUOTA_INTERNALS_MAIN_HTML);
-}
-
-std::string QuotaInternalsHTMLSource::GetMimeType(
-    const std::string& path) const {
-  if (path == kStringsJSPath)
-    return "application/javascript";
-  else
-    return "text/html";
-}
-
-}  // namespace quota_internals
