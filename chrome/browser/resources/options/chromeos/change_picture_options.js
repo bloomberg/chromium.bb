@@ -37,9 +37,11 @@ cr.define('options', function() {
       // other buttons.
       this.addUserImage_(
           'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
+          localStrings.getString('takePhoto'),
           this.handleTakePhoto_);
       this.addUserImage_(
           'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE',
+          localStrings.getString('chooseFile'),
           this.handleChooseFile_);
       chrome.send('getAvailableImages');
     },
@@ -77,12 +79,15 @@ cr.define('options', function() {
     /**
      * Appends new image to the end of the image list.
      * @param {string} src A url for the user image.
+     * @param {string} title A tooltip for the image.
      * @param {function} clickHandler A handler for click on image.
      * @private
      */
-    addUserImage_: function(src, clickHandler) {
+    addUserImage_: function(src, title, clickHandler) {
       var imageElement = document.createElement('img');
       imageElement.src = src;
+      if (title)
+        imageElement.title = title;
       imageElement.addEventListener('click',
                                     clickHandler,
                                     false);
@@ -100,7 +105,7 @@ cr.define('options', function() {
     addUserImages_: function(images) {
       for (var i = 0; i < images.length; i++) {
         var imageUrl = images[i];
-        this.addUserImage_(imageUrl, this.handleImageClick_);
+        this.addUserImage_(imageUrl, "", this.handleImageClick_);
       }
     },
   };
