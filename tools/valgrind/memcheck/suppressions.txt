@@ -1225,9 +1225,6 @@
    fun:openDatabase
    fun:sqlite3_open
    fun:_ZN3sql10Connection12OpenInternalERKSs
-   fun:_ZN3sql10Connection12OpenInMemoryEv
-   fun:_ZN7history16InMemoryDatabase6InitDBEv
-   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
 }
 {
    bug_19775_g
@@ -1861,6 +1858,32 @@
    fun:PORT_Alloc_Util
    ...
    fun:PK11_InitPin
+}
+{
+   bug_32624_d
+   Memcheck:Leak
+   fun:malloc
+   fun:PR_Malloc
+   fun:PKIX_PL_Malloc
+   fun:PKIX_PL_NssContext_Create
+   fun:CERT_PKIXVerifyCert
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker3RunEv
+}
+{
+   bug_32624_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorI14CERTValInParamE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseI14CERTValInParamSaIS0_EE11_M_allocateEj
+   fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE20_M_allocate_and_copyIPS0_EES4_jT_S5_
+   fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE7reserveEj
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
   bug_34554_a
@@ -4769,10 +4792,11 @@
    bug_89304
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net20ClientSocketPoolBaseINS_21TransportSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net25TransportClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net18ClientSocketHandle4InitINS_21TransportSocketParamsENS_25TransportClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
-   fun:_ZN3net12*120InitSocketPoolHelperERK4GURLRKNS_18HttpRequestHeadersEiNS_15RequestPriorityEPNS_18HttpNetworkSessionERKNS_9ProxyInfoEbbRKNS_9SSLConfigESF_bRKNS_11BoundNetLogEiPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net20ClientSocketPoolBaseINS_21*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net20ClientSocketPoolBaseINS_15*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net19*SocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net18ClientSocketHandle4Init*
+   ...
    fun:_ZN3net23ClientSocketPoolManager30InitSocketHandleForHttpRequestERK4GURLRKNS_18HttpRequestHeadersEiNS_15RequestPriorityEPNS_18HttpNetworkSessionERKNS_9ProxyInfoEbbRKNS_9SSLConfigESF_RKNS_11BoundNetLogEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEE
    fun:_ZN3net21HttpStreamFactoryImpl3Job16DoInitConnectionEv
 }
@@ -5253,6 +5277,25 @@
    bug_92571
    Memcheck:Leak
    fun:_Znw*
+   fun:_ZN7history16TopSitesDatabase8CreateDBERK8FilePath
+   fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
+   fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
+   fun:_Z16DispatchToMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathE6Tuple1IS2_EE3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+}
+{
+   bug_92571b
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection18ExecuteWithTimeoutEPKcN4base9TimeDeltaE
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection4OpenERK8FilePath
    fun:_ZN7history16TopSitesDatabase8CreateDBERK8FilePath
    fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
    fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
