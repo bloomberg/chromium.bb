@@ -35,7 +35,9 @@ string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
     org = cert->subject().organization_names[0];
   if (org.empty())
     org = cert->subject().GetDisplayName();
-  string16 issued_by = UTF8ToUTF16(org);
+  string16 issued_by = UTF8ToUTF16(
+      x509_certificate_model::GetIssuerCommonName(cert->os_cert_handle(),
+                                                  org));  // alternative text
   string16 issued_to = UTF8ToUTF16(
       x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle()));
 
