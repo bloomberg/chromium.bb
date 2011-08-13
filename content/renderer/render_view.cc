@@ -263,6 +263,8 @@ static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
 static const char kBackForwardNavigationScheme[] = "history";
 
+static const float kScalingIncrement = 0.1f;
+
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
@@ -3377,7 +3379,7 @@ void RenderView::OnZoom(PageZoom::Function function) {
     return;
 
   webview()->hidePopups();
-
+#if !defined(TOUCH_UI)
   double old_zoom_level = webview()->zoomLevel();
   double zoom_level;
   if (function == PageZoom::RESET) {
@@ -3398,8 +3400,18 @@ void RenderView::OnZoom(PageZoom::Function function) {
       zoom_level = static_cast<int>(old_zoom_level);
     }
   }
-
   webview()->setZoomLevel(false, zoom_level);
+#else
+  double old_page_scale_factor = webview()->pageScaleFactor();
+  double page_scale_factor;
+  if (function == PageZoom::RESET) {
+    page_scale_factor = 1.0;
+  } else {
+    page_scale_factor = old_page_scale_factor +
+        (function > 0 ? kScalingIncrement : -kScalingIncrement);
+  }
+  webview()->scalePage(page_scale_factor, WebPoint(0, 0));
+#endif
   zoomLevelChanged();
 }
 
