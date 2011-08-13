@@ -110,6 +110,7 @@ void GpuVideoDecodeAcceleratorHost::Reset() {
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedVideoDecoderMsg_Destroy(command_buffer_route_id_));
+  client_ = NULL;
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
@@ -125,46 +126,56 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
     int32 bitstream_buffer_id) {
   DCHECK(CalledOnValidThread());
-  client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
+  if (client_)
+    client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32 num_requested_buffers,
     const gfx::Size& buffer_size) {
   DCHECK(CalledOnValidThread());
-  client_->ProvidePictureBuffers(num_requested_buffers, buffer_size);
+  if (client_)
+    client_->ProvidePictureBuffers(num_requested_buffers, buffer_size);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
-  client_->DismissPictureBuffer(picture_buffer_id);
+  if (client_)
+    client_->DismissPictureBuffer(picture_buffer_id);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(
     int32 picture_buffer_id, int32 bitstream_buffer_id) {
   DCHECK(CalledOnValidThread());
+  if (!client_)
+    return;
   media::Picture picture(picture_buffer_id, bitstream_buffer_id);
   client_->PictureReady(picture);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnFlushDone() {
   DCHECK(CalledOnValidThread());
-  client_->NotifyFlushDone();
+  if (client_)
+    client_->NotifyFlushDone();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnResetDone() {
   DCHECK(CalledOnValidThread());
-  client_->NotifyResetDone();
+  if (client_)
+    client_->NotifyResetDone();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnEndOfStream() {
   DCHECK(CalledOnValidThread());
-  client_->NotifyEndOfStream();
+  if (client_)
+    client_->NotifyEndOfStream();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnErrorNotification(uint32 error) {
   DCHECK(CalledOnValidThread());
+  if (!client_)
+    return;
   client_->NotifyError(
       static_cast<media::VideoDecodeAccelerator::Error>(error));
 }
