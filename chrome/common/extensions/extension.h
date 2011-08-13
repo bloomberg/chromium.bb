@@ -898,13 +898,7 @@ struct UninstalledExtensionInfo {
 };
 
 struct UnloadedExtensionInfo {
-  enum Reason {
-    DISABLE,    // The extension is being disabled.
-    UPDATE,     // The extension is being updated to a newer version.
-    UNINSTALL,  // The extension is being uninstalled.
-  };
-
-  Reason reason;
+  extension_misc::UnloadedExtensionReason reason;
 
   // Was the extension already disabled?
   bool already_disabled;
@@ -912,7 +906,9 @@ struct UnloadedExtensionInfo {
   // The extension being unloaded - this should always be non-NULL.
   const Extension* extension;
 
-  UnloadedExtensionInfo(const Extension* extension, Reason reason);
+  UnloadedExtensionInfo(
+      const Extension* extension,
+      extension_misc::UnloadedExtensionReason reason);
 };
 
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.

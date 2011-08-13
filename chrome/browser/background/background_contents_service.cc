@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -292,13 +293,14 @@ void BackgroundContentsService::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       switch (Details<UnloadedExtensionInfo>(details)->reason) {
-        case UnloadedExtensionInfo::DISABLE:  // Intentionally fall through.
-        case UnloadedExtensionInfo::UNINSTALL:
+        // Intentionally fall through.
+        case extension_misc::UNLOAD_REASON_DISABLE:
+        case extension_misc::UNLOAD_REASON_UNINSTALL:
           ShutdownAssociatedBackgroundContents(
               ASCIIToUTF16(
                   Details<UnloadedExtensionInfo>(details)->extension->id()));
           break;
-        case UnloadedExtensionInfo::UPDATE: {
+        case extension_misc::UNLOAD_REASON_UPDATE: {
           // If there is a manifest specified background page, then shut it down
           // here, since if the updated extension still has the background page,
           // then it will be loaded from LOADED callback. Otherwise, leave

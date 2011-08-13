@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -71,7 +72,7 @@ void ExtensionChangeProcessor::Observe(int type,
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const UnloadedExtensionInfo& info =
         *Details<UnloadedExtensionInfo>(details).ptr();
-    if (info.reason == UnloadedExtensionInfo::UNINSTALL) {
+    if (info.reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
       VLOG(1) << "Removing server data for uninstalled extension " << id
               << " of type " << info.extension->GetType();
       RemoveServerData(traits_, id, share_handle());

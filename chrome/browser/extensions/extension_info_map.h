@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 
 class Extension;
@@ -36,7 +36,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Callback for when an extension is unloaded.
   void RemoveExtension(const std::string& extension_id,
-                       const UnloadedExtensionInfo::Reason reason);
+                       const extension_misc::UnloadedExtensionReason reason);
 
   // Returns the time the extension was installed, or base::Time() if not found.
   base::Time GetInstallTime(const std::string& extension_id) const;

@@ -869,7 +869,7 @@ bool ExtensionService::UninstallExtension(
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
-  UnloadExtension(extension_id, UnloadedExtensionInfo::UNINSTALL);
+  UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
 
   extension_prefs_->OnExtensionUninstalled(extension_id, location,
                                            external_uninstall);
@@ -987,7 +987,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
     terminated_extensions_.erase(iter);
   }
 
-  NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
+  NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
 }
 
 void ExtensionService::GrantPermissions(const Extension* extension) {
@@ -1125,7 +1125,7 @@ void ExtensionService::UnloadComponentExtension(
     LOG(ERROR) << "Failed to get extension id";
     return;
   }
-  UnloadExtension(id, UnloadedExtensionInfo::DISABLE);
+  UnloadExtension(id, extension_misc::UNLOAD_REASON_DISABLE);
 }
 
 void ExtensionService::LoadAllExtensions() {
@@ -1481,7 +1481,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 }
 
 void ExtensionService::NotifyExtensionUnloaded(
-    const Extension* extension, UnloadedExtensionInfo::Reason reason) {
+    const Extension* extension,
+    extension_misc::UnloadedExtensionReason reason) {
   UnloadedExtensionInfo details(extension, reason);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1568,7 +1569,7 @@ void ExtensionService::UpdateExtensionBlacklist(
   // UnloadExtension will change the extensions_ list. So, we should
   // call it outside the iterator loop.
   for (unsigned int i = 0; i < to_be_removed.size(); ++i) {
-    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::DISABLE);
+    UnloadExtension(to_be_removed[i], extension_misc::UNLOAD_REASON_DISABLE);
   }
 }
 
@@ -1606,7 +1607,7 @@ void ExtensionService::CheckAdminBlacklist() {
   // UnloadExtension will change the extensions_ list. So, we should
   // call it outside the iterator loop.
   for (unsigned int i = 0; i < to_be_removed.size(); ++i)
-    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::DISABLE);
+    UnloadExtension(to_be_removed[i], extension_misc::UNLOAD_REASON_DISABLE);
 }
 
 void ExtensionService::CheckForUpdatesSoon() {
@@ -1750,7 +1751,8 @@ void ExtensionService::SetIsIncognitoEnabled(
   // reload it to update UI.
   const Extension* enabled_extension = GetExtensionById(extension_id, false);
   if (enabled_extension) {
-    NotifyExtensionUnloaded(enabled_extension, UnloadedExtensionInfo::DISABLE);
+    NotifyExtensionUnloaded(
+        enabled_extension, extension_misc::UNLOAD_REASON_DISABLE);
     NotifyExtensionLoaded(enabled_extension);
   }
 }
@@ -1874,7 +1876,7 @@ void ExtensionService::OnExternalProviderReady() {
 
 void ExtensionService::UnloadExtension(
     const std::string& extension_id,
-    UnloadedExtensionInfo::Reason reason) {
+    extension_misc::UnloadedExtensionReason reason) {
   // Make sure the extension gets deleted after we return from this function.
   scoped_refptr<const Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true, false));
@@ -2117,7 +2119,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
 
     // To upgrade an extension in place, unload the old one and
     // then load the new one.
-    UnloadExtension(old->id(), UnloadedExtensionInfo::UPDATE);
+    UnloadExtension(old->id(), extension_misc::UNLOAD_REASON_UPDATE);
     old = NULL;
   }
 
@@ -2268,7 +2270,7 @@ void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
   if (terminated_extension_ids_.insert(extension->id()).second)
     terminated_extensions_.push_back(make_scoped_refptr(extension));
 
-  UnloadExtension(extension->id(), UnloadedExtensionInfo::DISABLE);
+  UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_DISABLE);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {

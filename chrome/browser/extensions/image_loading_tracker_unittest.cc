@@ -162,7 +162,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
 
   // Send out notification the extension was uninstalled.
   UnloadedExtensionInfo details(extension.get(),
-                                UnloadedExtensionInfo::UNINSTALL);
+                                extension_misc::UNLOAD_REASON_UNINSTALL);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       NotificationService::AllSources(),

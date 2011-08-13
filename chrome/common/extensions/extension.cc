@@ -2865,7 +2865,7 @@ UninstalledExtensionInfo::~UninstalledExtensionInfo() {}
 
 UnloadedExtensionInfo::UnloadedExtensionInfo(
     const Extension* extension,
-    Reason reason)
+    extension_misc::UnloadedExtensionReason reason)
   : reason(reason),
     already_disabled(false),
     extension(extension) {}

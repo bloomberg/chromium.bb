@@ -993,7 +993,7 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
-    const UnloadedExtensionInfo::Reason reason) {
+    const extension_misc::UnloadedExtensionReason reason) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),

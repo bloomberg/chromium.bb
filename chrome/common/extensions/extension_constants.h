@@ -410,6 +410,12 @@ namespace extension_misc {
     INSTALL_CAUSE_AUTOMATION,
     NUM_INSTALL_CAUSES
   };
+
+  enum UnloadedExtensionReason {
+    UNLOAD_REASON_DISABLE,    // Extension is being disabled.
+    UNLOAD_REASON_UPDATE,     // Extension is being updated to a newer version.
+    UNLOAD_REASON_UNINSTALL,  // Extension is being uninstalled.
+  };
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

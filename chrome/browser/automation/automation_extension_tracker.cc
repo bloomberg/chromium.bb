@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/common/notification_service.h"
 
 AutomationExtensionTracker::AutomationExtensionTracker(
@@ -35,7 +36,7 @@ void AutomationExtensionTracker::Observe(int type,
   Profile* profile = Source<Profile>(source).ptr();
   if (profile) {
     ExtensionService* service = profile->GetExtensionService();
-    if (service && info->reason == UnloadedExtensionInfo::UNINSTALL) {
+    if (service && info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
       // Remove this extension only if it is uninstalled, not just disabled.
       CloseResource(extension);
     }

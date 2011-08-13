@@ -34,7 +34,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -358,7 +358,7 @@ class ExtensionService
 
   // Unload the specified extension.
   void UnloadExtension(const std::string& extension_id,
-                       UnloadedExtensionInfo::Reason reason);
+                       extension_misc::UnloadedExtensionReason reason);
 
   // Unload all extensions. This is currently only called on shutdown, and
   // does not send notifications.
@@ -613,7 +613,7 @@ class ExtensionService
 
   // Handles sending notification that |extension| was unloaded.
   void NotifyExtensionUnloaded(const Extension* extension,
-                               UnloadedExtensionInfo::Reason reason);
+                               extension_misc::UnloadedExtensionReason reason);
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();

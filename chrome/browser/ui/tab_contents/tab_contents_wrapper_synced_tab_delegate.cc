@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/extensions/extension.h"
 
 
 TabContentsWrapperSyncedTabDelegate::TabContentsWrapperSyncedTabDelegate(

@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/net/preconnect.h" // TODO: remove this.
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/browser/browser_context.h"
 
 namespace base {
@@ -382,7 +382,7 @@ class Profile : public content::BrowserContext {
   // EXTENSION_UNLOADED notification have finished running.
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const UnloadedExtensionInfo::Reason) {}
+      const extension_misc::UnloadedExtensionReason) {}
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;

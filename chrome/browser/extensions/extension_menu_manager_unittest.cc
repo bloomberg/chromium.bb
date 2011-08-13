@@ -331,7 +331,8 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
 
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
-  UnloadedExtensionInfo details(extension1, UnloadedExtensionInfo::DISABLE);
+  UnloadedExtensionInfo details(
+      extension1, extension_misc::UNLOAD_REASON_DISABLE);
   notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    Source<Profile>(NULL),
                    Details<UnloadedExtensionInfo>(&details));

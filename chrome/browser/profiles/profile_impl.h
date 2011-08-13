@@ -92,7 +92,7 @@ class ProfileImpl : public Profile,
   virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const UnloadedExtensionInfo::Reason reason);
+      const extension_misc::UnloadedExtensionReason reason);
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();
