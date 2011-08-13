@@ -77,7 +77,7 @@ IDENTIFIER(NaClSyscallSeg):
          * pthread_getspecific(), which we check for in NaClTlsInit().
          */
         movl    _nacl_thread_index_tls_offset(%rip), %eax
-        movl    %gs:(%eax), %eax
+        movl    %gs:(%rax), %eax
 #elif NACL_WINDOWS
        /*
         * The Windows linker won't insert the correct offset for
