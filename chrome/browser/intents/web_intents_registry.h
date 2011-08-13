@@ -47,6 +47,9 @@ class WebIntentsRegistry
   // |consumer| must not be NULL.
   QueryID GetIntentProviders(const string16& action, Consumer* consumer);
 
+  // Requests all intent providers. |consumer| must not be NULL
+  QueryID GetAllIntentProviders(Consumer* consumer);
+
  protected:
   // Make sure that only WebIntentsRegistryFactory can create an instance of
   // WebIntentsRegistry.

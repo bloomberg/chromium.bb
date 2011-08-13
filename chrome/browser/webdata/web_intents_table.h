@@ -46,6 +46,9 @@ class WebIntentsTable : public WebDatabaseTable {
   bool GetWebIntents(const string16& action,
                      std::vector<WebIntentData>* intents);
 
+  // Retrieve all intents from WebIntents table.
+  bool GetAllWebIntents(std::vector<WebIntentData>* intents);
+
   // Removes intent from WebIntents table - must match all parameters exactly.
   bool RemoveWebIntent(const WebIntentData& intent);
 

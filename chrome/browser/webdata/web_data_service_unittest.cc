@@ -638,3 +638,27 @@ TEST_F(WebDataServiceTest, WebIntents) {
   EXPECT_EQ(intent.type, consumer.intents[0].type);
 }
 
+TEST_F(WebDataServiceTest, WebIntentsGetAll) {
+  WebIntentsConsumer consumer;
+
+  WebIntentData intent;
+  intent.service_url = GURL("http://google.com");
+  intent.action = ASCIIToUTF16("share");
+  intent.type = ASCIIToUTF16("image/*");
+  wds_->AddWebIntent(intent);
+
+  intent.action = ASCIIToUTF16("edit");
+  wds_->AddWebIntent(intent);
+
+  wds_->GetAllWebIntents(&consumer);
+  WebIntentsConsumer::WaitUntilCalled();
+  ASSERT_EQ(2U, consumer.intents.size());
+
+  if (consumer.intents[0].action != ASCIIToUTF16("edit"))
+    std::swap(consumer.intents[0],consumer.intents[1]);
+
+  EXPECT_EQ(intent, consumer.intents[0]);
+  intent.action = ASCIIToUTF16("share");
+  EXPECT_EQ(intent, consumer.intents[1]);
+}
+

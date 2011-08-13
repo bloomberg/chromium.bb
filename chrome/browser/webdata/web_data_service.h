@@ -351,6 +351,9 @@ class WebDataService
   Handle GetWebIntents(const string16& action,
                        WebDataServiceConsumer* consumer);
 
+  // Get all web intent providers registered. |consumer| must not be NULL.
+  Handle GetAllWebIntents(WebDataServiceConsumer* consumer);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Token Service
@@ -581,6 +584,7 @@ class WebDataService
   void AddWebIntentImpl(GenericRequest<WebIntentData>* request);
   void RemoveWebIntentImpl(GenericRequest<WebIntentData>* request);
   void GetWebIntentsImpl(GenericRequest<string16>* request);
+  void GetAllWebIntentsImpl(GenericRequest<std::string>* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //

@@ -250,6 +250,18 @@ WebDataService::Handle WebDataService::GetWebIntents(const string16& action,
   return request->GetHandle();
 }
 
+WebDataService::Handle WebDataService::GetAllWebIntents(
+    WebDataServiceConsumer* consumer) {
+  DCHECK(consumer);
+  GenericRequest<std::string>* request = new GenericRequest<std::string>(
+      this, GetNextRequestHandle(), consumer, std::string());
+  RegisterRequest(request);
+  ScheduleTask(
+      NewRunnableMethod(this,
+                        &WebDataService::GetAllWebIntentsImpl,
+                        request));
+  return request->GetHandle();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -855,6 +867,18 @@ void WebDataService::GetWebIntentsImpl(GenericRequest<string16>* request) {
   if (db_ && !request->IsCancelled()) {
     std::vector<WebIntentData> result;
     db_->GetWebIntentsTable()->GetWebIntents(request->arg(), &result);
+    request->SetResult(
+        new WDResult<std::vector<WebIntentData> >(WEB_INTENTS_RESULT, result));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::GetAllWebIntentsImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::vector<WebIntentData> result;
+    db_->GetWebIntentsTable()->GetAllWebIntents(&result);
     request->SetResult(
         new WDResult<std::vector<WebIntentData> >(WEB_INTENTS_RESULT, result));
   }

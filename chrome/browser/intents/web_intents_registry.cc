@@ -70,6 +70,20 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentProviders(
   return query->query_id_;
 }
 
+WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentProviders(
+    Consumer* consumer) {
+  DCHECK(consumer);
+  DCHECK(wds_.get());
+
+  IntentsQuery* query = new IntentsQuery;
+  query->query_id_ = next_query_id_++;
+  query->consumer_ = consumer;
+  query->pending_query_ = wds_->GetAllWebIntents(this);
+  queries_[query->pending_query_] = query;
+
+  return query->query_id_;
+}
+
 void WebIntentsRegistry::RegisterIntentProvider(const WebIntentData& intent) {
   DCHECK(wds_.get());
   wds_->AddWebIntent(intent);

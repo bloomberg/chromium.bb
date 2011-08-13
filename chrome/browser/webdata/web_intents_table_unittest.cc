@@ -18,6 +18,7 @@ namespace {
 
 GURL test_url("http://google.com/");
 string16 test_action = ASCIIToUTF16("http://webintents.org/intents/share");
+string16 test_action_2 = ASCIIToUTF16("http://webintents.org/intents/view");
 string16 mime_image = ASCIIToUTF16("image/*");
 string16 mime_video = ASCIIToUTF16("video/*");
 
@@ -90,6 +91,33 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   EXPECT_EQ(intent, intents[1]);
 
   intent.type = mime_image;
+  EXPECT_EQ(intent, intents[0]);
+}
+
+// Test we support getting all intents independent of action.
+TEST_F(WebIntentsTableTest, GetAllIntents) {
+  std::vector<WebIntentData> intents;
+
+  WebIntentData intent;
+  intent.service_url = test_url;
+  intent.action = test_action;
+  intent.type = mime_image;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+
+  intent.action = test_action_2;
+  EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
+
+  // Recover stored intents from DB.
+  EXPECT_TRUE(IntentsTable()->GetAllWebIntents(&intents));
+  ASSERT_EQ(2U, intents.size());
+
+  // WebIntentsTable does not guarantee order, so ensure order here.
+  if (intents[0].type == test_action_2)
+    std::swap(intents[0], intents[1]);
+
+  EXPECT_EQ(intent, intents[1]);
+
+  intent.action = test_action;
   EXPECT_EQ(intent, intents[0]);
 }
 } // namespace

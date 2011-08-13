@@ -102,3 +102,29 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.intents_.size());
 }
+
+TEST_F(WebIntentsRegistryTest, GetAllIntents) {
+  WebIntentData intent;
+  intent.service_url = GURL("http://google.com");
+  intent.action = ASCIIToUTF16("share");
+  intent.type = ASCIIToUTF16("image/*");
+  intent.title = ASCIIToUTF16("Google's Sharing Service");
+  registry_.RegisterIntentProvider(intent);
+
+  intent.action = ASCIIToUTF16("search");
+  registry_.RegisterIntentProvider(intent);
+
+  TestConsumer consumer;
+  consumer.expected_id_ = registry_.GetAllIntentProviders(&consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(2U, consumer.intents_.size());
+
+  if (consumer.intents_[0].action != ASCIIToUTF16("share"))
+    std::swap(consumer.intents_[0],consumer.intents_[1]);
+
+  intent.action = ASCIIToUTF16("share");
+  EXPECT_EQ(intent, consumer.intents_[0]);
+
+  intent.action = ASCIIToUTF16("search");
+  EXPECT_EQ(intent, consumer.intents_[1]);
+}
