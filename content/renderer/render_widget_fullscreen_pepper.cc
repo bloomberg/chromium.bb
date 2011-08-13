@@ -462,10 +462,10 @@ bool RenderWidgetFullscreenPepper::InitContext() {
 }
 
 bool RenderWidgetFullscreenPepper::CheckCompositing() {
-  bool compositing = webwidget_->isAcceleratedCompositingActive();
-  if (compositing != is_accelerated_compositing_active_) {
+  bool compositing =
+      webwidget_ && webwidget_->isAcceleratedCompositingActive();
+  if (compositing != is_accelerated_compositing_active_)
     didActivateAcceleratedCompositing(compositing);
-  }
   return compositing;
 }
 
@@ -489,6 +489,7 @@ void RenderWidgetFullscreenPepper::OnLostContext(
   program_ = 0;
   buffer_ = 0;
   OnSwapBuffersAborted();
+  CheckCompositing();
 }
 
 void RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext() {
