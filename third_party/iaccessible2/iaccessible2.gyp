@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,7 +21,6 @@
         'ia2_api_all.idl',
         '<(INTERMEDIATE_DIR)/ia2_api_all.h',
         '<(INTERMEDIATE_DIR)/ia2_api_all_i.c',
-        '<(INTERMEDIATE_DIR)/ia2_api_all_p.c',
       ],
       'hard_dependency': 1,
       'direct_dependent_settings': {
