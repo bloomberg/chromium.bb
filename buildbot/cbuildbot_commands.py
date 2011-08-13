@@ -264,7 +264,7 @@ def BuildVMImageForTesting(buildroot, board, extra_env=None):
                       ], cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
-def RunUnitTests(buildroot, board, full):
+def RunUnitTests(buildroot, board, full, extra_env=None):
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
@@ -276,7 +276,7 @@ def RunUnitTests(buildroot, board, full):
             cros_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
                                               {'buildroot': buildroot})]
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
+  cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
 def RunChromeSuite(buildroot, board, image_dir, results_dir):
