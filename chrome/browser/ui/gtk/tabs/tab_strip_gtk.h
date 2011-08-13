@@ -110,6 +110,10 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
+  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
+                                int index,
+                                bool user_gesture);
   virtual void TabSelectionChanged(const TabStripSelectionModel& old_model);
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
@@ -228,6 +232,11 @@ class TabStripGtk : public TabStripModelObserver,
     DISALLOW_COPY_AND_ASSIGN(DropInfo);
   };
 
+  // Map signal handler that sets initial z-ordering. The widgets need to be
+  // realized before we can set the stacking. We use the "map" signal since the
+  // "realize" signal is called before the child widgets get realized.
+  CHROMEGTK_CALLBACK_0(TabStripGtk, void, OnMap);
+
   // expose-event handler that redraws the tabstrip
   CHROMEGTK_CALLBACK_1(TabStripGtk, gboolean, OnExpose, GdkEventExpose*);
 
@@ -320,6 +329,9 @@ class TabStripGtk : public TabStripModelObserver,
   // Returns whether or not the cursor is currently in the "tab strip zone"
   // which is defined as the region above the TabStrip and a bit below it.
   bool IsCursorInTabStripZone() const;
+
+  // Reset the Z-ordering of tabs.
+  void ReStack();
 
   // Ensure that the message loop observer used for event spying is added and
   // removed appropriately so we can tell when to resize layout the tab strip.
