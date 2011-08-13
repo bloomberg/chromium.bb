@@ -479,10 +479,10 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   if (bitmap->bmiHeader.biBitCount < 32) {
     const SkBitmap& device_bitmap = canvas.getDevice()->accessBitmap(true);
     SkAutoLockPixels lock(device_bitmap);
-    for (int i = 0; i < device_bitmap.height(); ++i) {
-      for (int j = 0; j < device_bitmap.width(); ++j) {
-        *device_bitmap.getAddr32(i, j) =
-            SkColorSetA(*device_bitmap.getAddr32(i, j), 0xFF);
+    for (int x = 0; x < device_bitmap.width(); ++x) {
+      for (int y = 0; y < device_bitmap.height(); ++y) {
+        *device_bitmap.getAddr32(x, y) =
+            SkColorSetA(*device_bitmap.getAddr32(x, y), 0xFF);
       }
     }
   }
