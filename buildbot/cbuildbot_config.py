@@ -263,7 +263,6 @@ release = {
   'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
-  'useflags' : ['chrome_internal', 'chrome_pdf', '-cros_debug'],
   # --official
   # --officialversion
 }
@@ -273,6 +272,8 @@ official = {
   # Typical matching cbuild command line
   # master --official --chromeos --clean --upload-board-prebuilt
   #   --ctest --unittests --bvt
+
+  'useflags' : ['chrome_internal', 'chrome_pdf'],
   'chromeos_official' : True,
 
   # cbuild --official

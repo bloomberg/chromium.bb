@@ -647,14 +647,9 @@ class TestStage(BuilderStage):
 
   def _PerformStage(self):
     if self._build_config['unittests']:
-      env = {}
-      if self._build_config.get('useflags'):
-        env['USE'] = ' '.join(self._build_config['useflags'])
-
       commands.RunUnitTests(self._build_root,
                             self._build_config['board'],
-                            full=(not self._build_config['quick_unit']),
-                            extra_env=env)
+                            full=(not self._build_config['quick_unit']))
 
     if self._build_config['vm_tests']:
       test_results_dir = self._CreateTestRoot()
