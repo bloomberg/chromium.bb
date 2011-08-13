@@ -1122,13 +1122,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
 //
 // Flaky on interactive tests (dbg), http://crbug.com/69433
-// Disabled on OSX interactive ui tests 10.6, http://crbug.com/92563
-#if defined(OS_MACOSX)
-#define MAYBE_BrowserAccelerators DISABLED_BrowserAccelerators
-#else
-#define MAYBE_BrowserAccelerators FLAKY_BrowserAccelerators
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BrowserAccelerators) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_BrowserAccelerators) {
   BrowserAcceleratorsTest();
 }
 

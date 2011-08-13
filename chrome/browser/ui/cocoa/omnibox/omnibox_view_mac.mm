@@ -846,7 +846,9 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   // behavior with the proper WindowOpenDisposition.
   NSEvent* event = [NSApp currentEvent];
   if (cmd == @selector(insertNewline:) ||
-     (cmd == @selector(noop:) && [event keyCode] == kVK_Return)) {
+     (cmd == @selector(noop:) &&
+      ([event type] == NSKeyDown || [event type] == NSKeyUp) &&
+      [event keyCode] == kVK_Return)) {
     WindowOpenDisposition disposition =
         event_utils::WindowOpenDispositionFromNSEvent(event);
     model_->AcceptInput(disposition, false);
