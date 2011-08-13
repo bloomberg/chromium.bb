@@ -8,7 +8,6 @@
 
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/syncable/syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class Profile;

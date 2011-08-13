@@ -3,10 +3,16 @@ include_rules = [
   "+chrome/test/base",
   "+chrome/test/sync",
 
-  # TODO(tim): Restrict this further.
-  "+chrome/browser/sync",
-  "-chrome/browser/sync/api",
-  "-chrome/browser/sync/glue",
+  "+chrome/browser/sync/engine",
+  "+chrome/browser/sync/js",
+  "+chrome/browser/sync/notifier",
+  "+chrome/browser/sync/protocol",
+  "+chrome/browser/sync/sessions",
+  "+chrome/browser/sync/syncable",
+  "+chrome/browser/sync/util",
+
+  # this should live in base
+  "+chrome/browser/sync/weak_handle.h",
 
   # unittests need this for mac osx keychain overriding
   "+chrome/browser/password_manager/encryptor.h",

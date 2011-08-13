@@ -1,8 +1,17 @@
 include_rules = [
-  # sync_notifier depends on cacheinvalidation.
+  "-chrome",
+
+  "+chrome/test/base",
+
+  "+chrome/browser/sync/notifier",
+  "+chrome/browser/sync/syncable/model_type.h",
+  "+chrome/browser/sync/syncable/model_type_payload_map.h",
+  "+chrome/browser/sync/protocol/service_constants.h",
+
+  "+chrome/common/chrome_switches.h",
   "+google/cacheinvalidation",
-  # sync_notifier depends on the common jingle notifier classes.
   "+jingle/notifier",
+
   # unit tests depend on talk/base.
   "+talk/base",
   # sync_notifier depends on the xmpp part of libjingle.
