@@ -362,19 +362,6 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                           sandbox::USER_INTERACTIVE);
-    // Allow the Flash plugin to forward some messages back to Chrome.
-    if (base::win::GetVersion() == base::win::VERSION_VISTA) {
-      typedef BOOL (WINAPI *ChangeWindowMessageFilterFunction)(
-          UINT message,
-          DWORD flag);
-      static ChangeWindowMessageFilterFunction s_ChangeWindowMessageFilter =
-          reinterpret_cast<ChangeWindowMessageFilterFunction>(
-              ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
-                               "ChangeWindowMessageFilter"));
-      // Per-window message filters required on Win7 or later must be added to:
-      // render_widget_host_view_win.cc RenderWidgetHostViewWin::ReparentWindow
-      s_ChangeWindowMessageFilter(WM_MOUSEWHEEL, MSGFLT_ADD);
-    }
     policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   } else {
     // Could not start the broker, use a very weak policy instead.
