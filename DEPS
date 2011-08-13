@@ -143,10 +143,8 @@ deps = {
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
-  # TODO(cira): Replace http://v8-i18n.googlecode.com/svn with
-  # Var("googlecode_url") once the golo-mirror is setup.
   "src/third_party/v8-i18n":
-    "http://v8-i18n.googlecode.com/svn" + "/trunk@4",
+    (Var("googlecode_url") % "v8-i18n") + "/trunk@4",
 
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@93490",
@@ -321,7 +319,7 @@ deps_os = {
     # Binary level profile guided optimizations.  This points to the
     # latest release binaries for the toolchain.
     "src/third_party/syzygy/binaries":
-      "https://sawbuck.googlecode.com/svn/trunk/syzygy/binaries@396",
+      (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@396",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
