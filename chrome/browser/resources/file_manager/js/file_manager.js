@@ -1516,6 +1516,7 @@ FileManager.prototype = {
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       // Since unmount task cannot be defined in terms of file patterns,
       // we manually include it here, if all selected items are mount points.
+      this.taskButtons_.innerHTML = '';
       chrome.fileBrowserPrivate.getFileTasks(
           selection.urls,
           this.onTasksFound_.bind(this,
@@ -1594,8 +1595,6 @@ FileManager.prototype = {
           title: ''
       });
     }
-
-    this.taskButtons_.innerHTML = '';
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
@@ -1631,20 +1630,79 @@ FileManager.prototype = {
           task.title = str('UNMOUNT_ARCHIVE');
         }
       }
-
-      var button = this.document_.createElement('button');
-      button.addEventListener('click', this.onTaskButtonClicked_.bind(this));
-      button.className = 'task-button';
-      button.task = task;
-
-      var img = this.document_.createElement('img');
-      img.src = task.iconUrl;
-
-      button.appendChild(img);
-      button.appendChild(this.document_.createTextNode(task.title));
-
-      this.taskButtons_.appendChild(button);
+      this.renderTaskButton_(task);
     }
+    // This needs to be done in sparate function, as check requires
+    // asynchronous function calls.
+    this.maybeRenderFormattingTask_();
+  };
+
+  FileManager.prototype.renderTaskButton_ = function(task) {
+    var button = this.document_.createElement('button');
+    button.addEventListener('click', this.onTaskButtonClicked_.bind(this));
+    button.className = 'task-button';
+    button.task = task;
+
+    var img = this.document_.createElement('img');
+    img.src = task.iconUrl;
+
+    button.appendChild(img);
+    button.appendChild(this.document_.createTextNode(task.title));
+
+    this.taskButtons_.appendChild(button);
+  };
+
+  /**
+   * Checks whether formatting task should be displayed and if the answer is
+   * affirmative renders it. Includes asynchronous calls, so it's splitted into
+   * three parts.
+   */
+  FileManager.prototype.maybeRenderFormattingTask_ = function() {
+    // Not to make unnecesary getMountPoints() call we doublecheck if there is
+    // only one selected entry.
+    if (this.selection.entries.length != 1)
+      return;
+    var self = this;
+    function onMountPointsFound(mountPoints) {
+      self.mountPoints_ = mountPoints;
+
+      function normalize(x) {
+        if (x[0] == '/')
+          return x.slice(1);
+        else
+          return x;
+      }
+
+      function onVolumeMetadataFound(volumeMetadata) {
+        if (volumeMetadata.deviceType == "flash") {
+          if (self.selection.entries.length != 1 ||
+              normalize(self.selection.entries[0].fullPath) !=
+              normalize(volumeMetadata.mountPath)) {
+            return;
+          }
+          var task = {
+            taskId: self.getExtensionId_() + '|format-device',
+            iconUrl: chrome.extension.getURL('images/filetype_generic.png'),
+            title: str('FORMAT_DEVICE')
+          };
+          self.renderTaskButton_(task);
+        }
+      }
+
+      if (self.selection.entries.length != 1)
+        return;
+      var selectedPath = self.selection.entries[0].fullPath;
+      for (var i = 0; i < mountPoints.length; i++) {
+        if (mountPoints[i].mountType == "device" &&
+            normalize(mountPoints[i].mountPath) == normalize(selectedPath)) {
+          chrome.fileBrowserPrivate.getVolumeMetadata(mountPoints[i].sourceUrl,
+              onVolumeMetadataFound);
+          return;
+        }
+      }
+    }
+
+    chrome.fileBrowserPrivate.getMountPoints(onMountPointsFound);
   };
 
   FileManager.prototype.getExtensionId_ = function() {
@@ -1720,6 +1778,10 @@ FileManager.prototype = {
       for (var index = 0; index < urls.length; ++index) {
         chrome.fileBrowserPrivate.removeMount(urls[index]);
       }
+    } else if (id == 'format-device') {
+      this.confirm.show(str('FORMATTING_WARNING'), function() {
+        chrome.fileBrowserPrivate.formatDevice(urls[0]);
+      });
     }
   };
 

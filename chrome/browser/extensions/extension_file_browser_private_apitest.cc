@@ -49,7 +49,7 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
         std::pair<std::string, chromeos::MountLibrary::Disk*>(
             "device_path1",
             new chromeos::MountLibrary::Disk("device_path1",
-                                             "mount_path1",
+                                             "/media/removable/mount_path1",
                                              "system_path1",
                                              "file_path1",
                                              "device_label1",
@@ -65,7 +65,7 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
         std::pair<std::string, chromeos::MountLibrary::Disk*>(
             "device_path2",
             new chromeos::MountLibrary::Disk("device_path2",
-                                             "mount_path2",
+                                             "/media/removable/mount_path2",
                                              "system_path2",
                                              "file_path2",
                                              "device_label2",
@@ -81,7 +81,7 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
         std::pair<std::string, chromeos::MountLibrary::Disk*>(
             "device_path3",
             new chromeos::MountLibrary::Disk("device_path3",
-                                             "mount_path3",
+                                             "/media/removable/mount_path3",
                                              "system_path3",
                                              "file_path3",
                                              "device_label3",

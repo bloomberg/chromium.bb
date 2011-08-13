@@ -180,9 +180,8 @@ class MountLibraryImpl : public MountLibrary {
         break;
       }
     }
-
     if (!disk) {
-      OnFormatDevice(disk->device_path().c_str(),
+      OnFormatDevice(mount_path,
                      false,
                      MOUNT_METHOD_ERROR_LOCAL,
                      "Device with this mount path not found.");
@@ -190,7 +189,7 @@ class MountLibraryImpl : public MountLibrary {
     }
     if (formatting_pending_.find(disk->device_path()) !=
         formatting_pending_.end()) {
-      OnFormatDevice(disk->device_path().c_str(),
+      OnFormatDevice(mount_path,
                      false,
                      MOUNT_METHOD_ERROR_LOCAL,
                      "Formatting is already pending.");
@@ -297,12 +296,18 @@ class MountLibraryImpl : public MountLibrary {
 
   // Callback for FormatRemovableDevice method.
   static void FormatDeviceCallback(void* object,
-                                   const char* device_path,
+                                   const char* file_path,
                                    bool success,
                                    MountMethodErrorType error,
                                    const char* error_message) {
     DCHECK(object);
     MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
+    const char* device_path = self->FilePathToDevicePath(file_path);
+    if (!device_path) {
+          LOG(ERROR) << "Error while handling disks metadata. Cannot find "
+                     << "device that is being formatted.";
+      return;
+    }
     self->OnFormatDevice(device_path, success, error, error_message);
   }
 
@@ -615,6 +620,14 @@ class MountLibraryImpl : public MountLibrary {
         break;
       }
       case FORMATTING_FINISHED: {
+        // FORMATTING_FINISHED actually returns file path instead of device
+        // path.
+        device_path = FilePathToDevicePath(device_path);
+        if (!device_path) {
+          LOG(ERROR) << "Error while handling disks metadata. Cannot find "
+                     << "device that is being formatted.";
+          return;
+        }
         type = MOUNT_FORMATTING_FINISHED;
         break;
       }
@@ -656,6 +669,15 @@ class MountLibraryImpl : public MountLibrary {
         Observer, observers_, MountCompleted(event_type,
                                              error_code,
                                              mount_info));
+  }
+
+  const char* FilePathToDevicePath(const char* file_path) {
+    for (MountLibrary::DiskMap::iterator it = disks_.begin();
+         it != disks_.end(); ++it) {
+      if (it->second->file_path().compare(file_path) == 0)
+        return it->second->device_path().c_str();
+    }
+    return NULL;
   }
 
   // Mount event change observers.

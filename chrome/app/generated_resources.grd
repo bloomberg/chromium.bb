@@ -8956,6 +8956,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_UNMOUNT_ARCHIVE" desc="Title of the action for unmounting the archive file.">
         Close archive
       </message>
+      <message name="IDS_FILE_BROWSER_FORMAT_DEVICE" desc="Title of the action for formatting removable device.">
+        Format device
+      </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
         A file named "$1" already exists. Do you want to replace it?

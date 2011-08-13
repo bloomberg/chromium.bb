@@ -650,7 +650,6 @@ class ExecuteTasksFileSystemCallbackDispatcher
   // handler (target) extension and its renderer process.
   bool SetupFileAccessPermissions(const GURL& origin_file_url,
      GURL* target_file_url, FilePath* file_path, bool* is_directory) {
-
     if (!extension_.get())
       return false;
 
@@ -1283,19 +1282,38 @@ bool FormatDeviceFunction::RunImpl() {
     return false;
   }
 
-  std::string volume_mount_path;
-  if (!args_->GetString(0, &volume_mount_path)) {
+  std::string volume_file_url;
+  if (!args_->GetString(0, &volume_file_url)) {
     NOTREACHED();
     return false;
   }
 
+  UrlList file_paths;
+  file_paths.push_back(GURL(volume_file_url));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &FormatDeviceFunction::GetLocalPathsOnFileThread,
+          file_paths, reinterpret_cast<void*>(NULL)));
+  return true;
+}
+
+void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files, void* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (files.size() != 1) {
+    SendResponse(false);
+    return;
+  }
+
 #ifdef OS_CHROMEOS
   chromeos::CrosLibrary::Get()->GetMountLibrary()->FormatMountedDevice(
-      volume_mount_path.c_str());
+      files[0].value().c_str());
 #endif
 
   SendResponse(true);
-  return true;
 }
 
 GetVolumeMetadataFunction::GetVolumeMetadataFunction() {
@@ -1325,8 +1343,13 @@ bool GetVolumeMetadataFunction::RunImpl() {
     chromeos::MountLibrary::Disk* volume = volume_it->second;
     DictionaryValue* volume_info = new DictionaryValue();
     result_.reset(volume_info);
+    // Localising mount path.
+    FilePath relative_mount_path;
+    FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
+        FilePath(volume->mount_path()), &relative_mount_path);
+
     volume_info->SetString("devicePath", volume->device_path());
-    volume_info->SetString("mountPath", volume->mount_path());
+    volume_info->SetString("mountPath", relative_mount_path.value());
     volume_info->SetString("systemPath", volume->system_path());
     volume_info->SetString("filePath", volume->file_path());
     volume_info->SetString("deviceLabel", volume->device_label());
@@ -1405,6 +1428,7 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, ARCHIVE_MOUNT_FAILED);
   SET_STRING(IDS_FILE_BROWSER, MOUNT_ARCHIVE);
   SET_STRING(IDS_FILE_BROWSER, UNMOUNT_ARCHIVE);
+  SET_STRING(IDS_FILE_BROWSER, FORMAT_DEVICE);
 
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_OVERWRITE_FILE);
   SET_STRING(IDS_FILE_BROWSER, FILE_ALREADY_EXISTS);
@@ -1469,29 +1493,29 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, PLAYBACK_ERROR);
 
   // MP3 metadata extractor plugin
-  SET_STRING(IDS_FILE_BROWSER, ID3_ALBUM); // TALB
-  SET_STRING(IDS_FILE_BROWSER, ID3_BPM); // TBPM
-  SET_STRING(IDS_FILE_BROWSER, ID3_COMPOSER); // TCOM
-  SET_STRING(IDS_FILE_BROWSER, ID3_COPYRIGHT_MESSAGE); // TCOP
-  SET_STRING(IDS_FILE_BROWSER, ID3_DATE); // TDAT
-  SET_STRING(IDS_FILE_BROWSER, ID3_PLAYLIST_DELAY); // TDLY
-  SET_STRING(IDS_FILE_BROWSER, ID3_ENCODED_BY); // TENC
-  SET_STRING(IDS_FILE_BROWSER, ID3_LYRICIST); // TEXT
-  SET_STRING(IDS_FILE_BROWSER, ID3_FILE_TYPE); // TFLT
-  SET_STRING(IDS_FILE_BROWSER, ID3_TIME); // TIME
-  SET_STRING(IDS_FILE_BROWSER, ID3_TITLE); // TIT2
-  SET_STRING(IDS_FILE_BROWSER, ID3_LENGTH); // TLEN
-  SET_STRING(IDS_FILE_BROWSER, ID3_FILE_OWNER); // TOWN
-  SET_STRING(IDS_FILE_BROWSER, ID3_LEAD_PERFORMER); // TPE1
-  SET_STRING(IDS_FILE_BROWSER, ID3_BAND); // TPE2
-  SET_STRING(IDS_FILE_BROWSER, ID3_TRACK_NUMBER); // TRCK
-  SET_STRING(IDS_FILE_BROWSER, ID3_YEAR); // TYER
-  SET_STRING(IDS_FILE_BROWSER, ID3_COPYRIGHT); // WCOP
-  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_AUDIO_FILE_WEBPAGE); // WOAF
-  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_ARTIST); // WOAR
-  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_AUDIO_SOURCE_WEBPAGE); // WOAS
-  SET_STRING(IDS_FILE_BROWSER, ID3_PUBLISHERS_OFFICIAL_WEBPAGE); // WPUB
-  SET_STRING(IDS_FILE_BROWSER, ID3_USER_DEFINED_URL_LINK_FRAME); // WXXX
+  SET_STRING(IDS_FILE_BROWSER, ID3_ALBUM);  // TALB
+  SET_STRING(IDS_FILE_BROWSER, ID3_BPM);  // TBPM
+  SET_STRING(IDS_FILE_BROWSER, ID3_COMPOSER);  // TCOM
+  SET_STRING(IDS_FILE_BROWSER, ID3_COPYRIGHT_MESSAGE);  // TCOP
+  SET_STRING(IDS_FILE_BROWSER, ID3_DATE);  // TDAT
+  SET_STRING(IDS_FILE_BROWSER, ID3_PLAYLIST_DELAY);  // TDLY
+  SET_STRING(IDS_FILE_BROWSER, ID3_ENCODED_BY);  // TENC
+  SET_STRING(IDS_FILE_BROWSER, ID3_LYRICIST);  // TEXT
+  SET_STRING(IDS_FILE_BROWSER, ID3_FILE_TYPE);  // TFLT
+  SET_STRING(IDS_FILE_BROWSER, ID3_TIME);  // TIME
+  SET_STRING(IDS_FILE_BROWSER, ID3_TITLE);  // TIT2
+  SET_STRING(IDS_FILE_BROWSER, ID3_LENGTH);  // TLEN
+  SET_STRING(IDS_FILE_BROWSER, ID3_FILE_OWNER);  // TOWN
+  SET_STRING(IDS_FILE_BROWSER, ID3_LEAD_PERFORMER);  // TPE1
+  SET_STRING(IDS_FILE_BROWSER, ID3_BAND);  // TPE2
+  SET_STRING(IDS_FILE_BROWSER, ID3_TRACK_NUMBER);  // TRCK
+  SET_STRING(IDS_FILE_BROWSER, ID3_YEAR);  // TYER
+  SET_STRING(IDS_FILE_BROWSER, ID3_COPYRIGHT);  // WCOP
+  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_AUDIO_FILE_WEBPAGE);  // WOAF
+  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_ARTIST);  // WOAR
+  SET_STRING(IDS_FILE_BROWSER, ID3_OFFICIAL_AUDIO_SOURCE_WEBPAGE);  // WOAS
+  SET_STRING(IDS_FILE_BROWSER, ID3_PUBLISHERS_OFFICIAL_WEBPAGE);  // WPUB
+  SET_STRING(IDS_FILE_BROWSER, ID3_USER_DEFINED_URL_LINK_FRAME);  // WXXX
 
   SET_STRING(IDS_FILEBROWSER, ENQUEUE);
 #undef SET_STRING
