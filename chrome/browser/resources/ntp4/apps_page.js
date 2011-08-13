@@ -181,22 +181,28 @@ cr.define('ntp4', function() {
       var appContents = this.ownerDocument.createElement('div');
       appContents.className = 'app-contents';
 
+      var appImgContainer = this.ownerDocument.createElement('div');
+      appImgContainer.className = 'app-img-container';
+      this.appImgContainer_ = appImgContainer;
+
       if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
         this.useSmallIcon_ = true;
 
       var appImg = this.ownerDocument.createElement('img');
       appImg.src = this.useSmallIcon_ ? this.appData_.icon_small :
                                         this.appData_.icon_big;
+      appImgContainer.appendChild(appImg);
+
       if (this.useSmallIcon_) {
         var imgDiv = this.ownerDocument.createElement('div');
         imgDiv.className = 'app-icon-div';
-        imgDiv.appendChild(appImg);
+        imgDiv.appendChild(appImgContainer);
         imgDiv.addEventListener('click', this.onClick_.bind(this));
         this.imgDiv_ = imgDiv;
         appContents.appendChild(imgDiv);
       } else {
-        appImg.addEventListener('click', this.onClick_.bind(this));
-        appContents.appendChild(appImg);
+        appImgContainer.addEventListener('click', this.onClick_.bind(this));
+        appContents.appendChild(appImgContainer);
       }
       this.appImg_ = appImg;
 
@@ -205,6 +211,7 @@ cr.define('ntp4', function() {
       appSpan.addEventListener('click', this.onClick_.bind(this));
       appContents.appendChild(appSpan);
       this.appendChild(appContents);
+      this.appContents_ = appContents;
 
       this.addEventListener('keydown', cr.ui.contextMenuHandler);
       this.addEventListener('keyup', cr.ui.contextMenuHandler);
@@ -239,12 +246,15 @@ cr.define('ntp4', function() {
       this.appsPromoHide_ =
           this.appsPromoExtras_.querySelector('.apps-promo-hide');
 
+      this.appsPromoLogo_ = this.ownerDocument.createElement('img');
+      this.appsPromoLogo_.className = 'apps-promo-logo';
+      this.appImgContainer_.appendChild(this.appsPromoLogo_);
+
       this.appsPromoHide_.addEventListener('click',
                                            this.onHidePromoClicked_.bind(this));
 
       this.appendChild(this.appsPromoExtras_);
       this.appsPromoExtras_.hidden = false;
-      // TODO(estade): A ping url needs to be set for the app icon.
     },
 
     /**
@@ -274,6 +284,7 @@ cr.define('ntp4', function() {
       this.appsPromoLink_.href = data.promoLink;
       this.appsPromoLink_.textContent = data.promoButton;
       this.appsPromoHide_.textContent = data.promoExpire;
+      this.appsPromoLogo_.src = data.promoLogo;
     },
 
     /**
@@ -285,9 +296,8 @@ cr.define('ntp4', function() {
      */
     setBounds: function(size, x, y) {
       var imgSize = size * APP_IMG_SIZE_FRACTION;
-      this.appImg_.style.width = this.appImg_.style.height =
+      this.appImgContainer_.style.width = this.appImgContainer_.style.height =
           this.useSmallIcon_ ? '32px' : imgSize + 'px';
-
 
       this.style.width = this.style.height = size + 'px';
       if (this.isStore_)

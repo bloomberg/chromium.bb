@@ -901,8 +901,9 @@ cr.define('ntp4', function() {
               this.tileElements_[adjustedIndex]);
           this.tileMoved(currentlyDraggingTile);
         } else {
+          var originalPage = currentlyDraggingTile.tilePage;
           this.addDragData(e.dataTransfer, adjustedIndex);
-          currentlyDraggingTile.tilePage.cleanupDrag();
+          originalPage.cleanupDrag();
         }
 
         // Dropping the icon may cause topMargin to change, but changing it
@@ -924,7 +925,7 @@ cr.define('ntp4', function() {
       if (originalPage == this)
         return;
 
-      this.addDragData(null, this.tileElements_.length - 1);
+      this.addDragData(null, this.tileElements_.length);
       originalPage.cleanupDrag();
     },
 

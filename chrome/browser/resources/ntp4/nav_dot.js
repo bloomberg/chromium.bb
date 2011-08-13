@@ -198,8 +198,10 @@ cr.define('ntp4', function() {
      */
     doDrop: function(e) {
       e.stopPropagation();
-      if (ntp4.getCurrentlyDraggingTile)
+      if (ntp4.getCurrentlyDraggingTile) {
         this.page_.appendDraggingTile();
+        this.page_.cleanupDrag();
+      }
       // TODO(estade): handle non-tile drags.
 
       this.cancelDelayedSwitch_();

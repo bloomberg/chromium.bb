@@ -26,13 +26,17 @@
   white-space: nowrap;
 }
 
-.app-contents > img {
+.app-img-container {
   cursor: pointer;
-  display: block;
   margin-left: auto;
   margin-right: auto;
   /* -webkit-mask-image set by JavaScript to the image source */
   -webkit-mask-size: 100% 100%;
+}
+
+.app-img-container > * {
+  height: 100%;
+  width: 100%;
 }
 
 .app-icon-div {
@@ -66,6 +70,22 @@
  */
 .tile:only-of-type > .has-promo > .app-contents > span {
   display: none;
+}
+
+.tile:only-of-type > .has-promo .app-img-container > .apps-promo-logo {
+  display: block;
+}
+
+.apps-promo-logo {
+  display: none;
+}
+
+.tile:only-of-type > .has-promo .app-img-container > img:first-child {
+  display: none;
+}
+
+.app-img-container > img:first-child {
+  display: block;
 }
 
 /* TODO(estade): animation? */
