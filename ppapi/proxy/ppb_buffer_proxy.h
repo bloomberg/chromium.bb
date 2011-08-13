@@ -13,15 +13,17 @@
 
 struct PPB_Buffer_Dev;
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class Buffer : public ppapi::thunk::PPB_Buffer_API,
                public PluginResource {
  public:
-  Buffer(const HostResource& resource,
+  Buffer(const ppapi::HostResource& resource,
          const base::SharedMemoryHandle& shm_handle,
          uint32_t size);
   virtual ~Buffer();
@@ -53,7 +55,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          uint32_t size);
-  static PP_Resource AddProxyResource(const HostResource& resource,
+  static PP_Resource AddProxyResource(const ppapi::HostResource& resource,
                                       base::SharedMemoryHandle shm_handle,
                                       uint32_t size);
 
@@ -68,7 +70,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgCreate(PP_Instance instance,
                    uint32_t size,
-                   HostResource* result_resource,
+                   ppapi::HostResource* result_resource,
                    base::SharedMemoryHandle* result_shm_handle);
 };
 

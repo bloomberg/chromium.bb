@@ -18,10 +18,12 @@
 
 struct PPB_FileSystem_Dev;
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class PPB_FileSystem_Proxy : public InterfaceProxy {
  public:
@@ -40,14 +42,15 @@ class PPB_FileSystem_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgCreate(PP_Instance instance,
                    int type,
-                   HostResource* result);
-  void OnMsgOpen(const HostResource& filesystem,
+                   ppapi::HostResource* result);
+  void OnMsgOpen(const ppapi::HostResource& filesystem,
                  int64_t expected_size);
 
-  void OnMsgOpenComplete(const HostResource& filesystem,
+  void OnMsgOpenComplete(const ppapi::HostResource& filesystem,
                          int32_t result);
 
-  void OpenCompleteInHost(int32_t result, const HostResource& host_resource);
+  void OpenCompleteInHost(int32_t result,
+                          const ppapi::HostResource& host_resource);
 
   CompletionCallbackFactory<PPB_FileSystem_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

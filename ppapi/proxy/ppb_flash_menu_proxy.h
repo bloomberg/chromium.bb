@@ -36,10 +36,10 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
 
   void OnMsgCreate(PP_Instance instance_id,
                    const SerializedFlashMenu& menu_data,
-                   HostResource* resource);
-  void OnMsgShow(const HostResource& menu,
+                   ppapi::HostResource* resource);
+  void OnMsgShow(const ppapi::HostResource& menu,
                  const PP_Point& location);
-  void OnMsgShowACK(const HostResource& menu,
+  void OnMsgShowACK(const ppapi::HostResource& menu,
                     int32_t selected_id,
                     int32_t result);
   void SendShowACKToPlugin(int32_t result, ShowRequest* request);

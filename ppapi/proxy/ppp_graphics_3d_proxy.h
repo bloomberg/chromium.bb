@@ -6,7 +6,6 @@
 #define PPAPI_PROXY_PPP_GRAPHICS_3D_PROXY_H_
 
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PPP_Graphics3D_Dev;

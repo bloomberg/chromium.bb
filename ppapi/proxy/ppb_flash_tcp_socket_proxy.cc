@@ -20,6 +20,7 @@
 #include "ppapi/thunk/ppb_flash_tcp_socket_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
 using ppapi::thunk::PPB_Flash_TCPSocket_API;
 
 namespace pp {

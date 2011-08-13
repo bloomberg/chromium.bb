@@ -21,14 +21,16 @@
 struct PPB_ImageData;
 class TransportDIB;
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace skia {
 class PlatformCanvas;
 }
 
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class PPB_ImageData_Proxy : public InterfaceProxy {
  public:
@@ -49,7 +51,7 @@ class ImageData : public PluginResource,
                   public ::ppapi::thunk::PPB_ImageData_API,
                   public ppapi::ImageDataImpl {
  public:
-  ImageData(const HostResource& resource,
+  ImageData(const ppapi::HostResource& resource,
             const PP_ImageDataDesc& desc,
             ImageHandle handle);
   virtual ~ImageData();

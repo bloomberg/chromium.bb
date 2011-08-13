@@ -15,6 +15,7 @@
 #include "ppapi/thunk/ppb_url_response_info_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
 using ppapi::thunk::PPB_URLResponseInfo_API;
 
 namespace pp {

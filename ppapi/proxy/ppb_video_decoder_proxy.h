@@ -37,37 +37,38 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
  private:
   // Message handlers in the renderer process to receive messages from the
   // plugin process.
-  void OnMsgCreate(PP_Instance instance, const HostResource& context3d_id,
+  void OnMsgCreate(PP_Instance instance,
+                   const ppapi::HostResource& context3d_id,
                    const std::vector<PP_VideoConfigElement>& config,
-                   HostResource* result);
+                   ppapi::HostResource* result);
   void OnMsgDecode(
-      const HostResource& decoder,
-      const HostResource& buffer, int32 id, int32 size);
+      const ppapi::HostResource& decoder,
+      const ppapi::HostResource& buffer, int32 id, int32 size);
   void OnMsgAssignPictureBuffers(
-      const HostResource& decoder,
+      const ppapi::HostResource& decoder,
       const std::vector<PP_PictureBuffer_Dev>& buffers);
   void OnMsgReusePictureBuffer(
-      const HostResource& decoder,
+      const ppapi::HostResource& decoder,
       int32 picture_buffer_id);
-  void OnMsgFlush(const HostResource& decoder);
-  void OnMsgReset(const HostResource& decoder);
-  void OnMsgDestroy(const HostResource& decoder);
+  void OnMsgFlush(const ppapi::HostResource& decoder);
+  void OnMsgReset(const ppapi::HostResource& decoder);
+  void OnMsgDestroy(const ppapi::HostResource& decoder);
 
   // Send a message from the renderer process to the plugin process to tell it
   // to run its callback.
   void SendMsgEndOfBitstreamACKToPlugin(
-      int32_t result, const HostResource& decoder, int32 id);
+      int32_t result, const ppapi::HostResource& decoder, int32 id);
   void SendMsgFlushACKToPlugin(
-      int32_t result, const HostResource& decoder);
+      int32_t result, const ppapi::HostResource& decoder);
   void SendMsgResetACKToPlugin(
-      int32_t result, const HostResource& decoder);
+      int32_t result, const ppapi::HostResource& decoder);
 
   // Message handlers in the plugin process to receive messages from the
   // renderer process.
-  void OnMsgEndOfBitstreamACK(const HostResource& decoder,
+  void OnMsgEndOfBitstreamACK(const ppapi::HostResource& decoder,
                               int32_t id, int32_t result);
-  void OnMsgFlushACK(const HostResource& decoder, int32_t result);
-  void OnMsgResetACK(const HostResource& decoder, int32_t result);
+  void OnMsgFlushACK(const ppapi::HostResource& decoder, int32_t result);
+  void OnMsgResetACK(const ppapi::HostResource& decoder, int32_t result);
 
   CompletionCallbackFactory<PPB_VideoDecoder_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

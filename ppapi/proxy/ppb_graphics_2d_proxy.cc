@@ -20,7 +20,8 @@
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ::ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::HostResource;
+using ppapi::thunk::PPB_Graphics2D_API;
 
 namespace pp {
 namespace proxy {

@@ -14,8 +14,8 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/tracker_base.h"
 
 template<typename T> struct DefaultSingletonTraits;
@@ -59,7 +59,7 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
   // Given a host resource, maps it to an existing plugin resource ID if it
   // exists, or returns 0 on failure.
   PP_Resource PluginResourceForHostResource(
-      const HostResource& resource) const;
+      const ppapi::HostResource& resource) const;
 
   PluginVarTracker& var_tracker() {
     return var_tracker_test_override_ ? *var_tracker_test_override_
@@ -118,7 +118,7 @@ class PluginResourceTracker : public ::ppapi::TrackerBase {
   ResourceMap resource_map_;
 
   // Map of host instance/resource pairs to a plugin resource ID.
-  typedef std::map<HostResource, PP_Resource> HostResourceMap;
+  typedef std::map<ppapi::HostResource, PP_Resource> HostResourceMap;
   HostResourceMap host_resource_map_;
 
   // Tracks the last ID we've sent out as a plugin resource so we don't send

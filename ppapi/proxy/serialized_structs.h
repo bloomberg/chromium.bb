@@ -15,8 +15,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PP_FontDescription_Dev;
 
@@ -75,7 +75,7 @@ struct SerializedDirEntry {
 struct PPBFileRef_CreateInfo {
   PPBFileRef_CreateInfo();  // Initializes to 0.
 
-  HostResource resource;
+  ppapi::HostResource resource;
   int file_system_type;  // One of PP_FileSystemType values.
   SerializedVar path;
   SerializedVar name;
@@ -86,7 +86,7 @@ struct PPBFlash_DrawGlyphs_Params {
   ~PPBFlash_DrawGlyphs_Params();
 
   PP_Instance instance;
-  HostResource image_data;
+  ppapi::HostResource image_data;
   SerializedFontDescription font_desc;
   uint32_t color;
   PP_Point position;
@@ -97,7 +97,7 @@ struct PPBFlash_DrawGlyphs_Params {
 };
 
 struct PPBAudio_NotifyAudioStreamCreated_Params {
-  pp::proxy::HostResource audio_id;
+  ppapi::HostResource audio_id;
   int32_t result_code;  // Will be != PP_OK on failure
   IPC::PlatformFileForTransit socket_handle;
   base::SharedMemoryHandle handle;
@@ -106,7 +106,7 @@ struct PPBAudio_NotifyAudioStreamCreated_Params {
 
 struct PPBURLLoader_UpdateProgress_Params {
   PP_Instance instance;
-  pp::proxy::HostResource resource;
+  ppapi::HostResource resource;
   int64_t bytes_sent;
   int64_t total_bytes_to_be_sent;
   int64_t bytes_received;
@@ -114,7 +114,7 @@ struct PPBURLLoader_UpdateProgress_Params {
 };
 
 struct PPPVideoCapture_Buffer {
-  pp::proxy::HostResource resource;
+  ppapi::HostResource resource;
   uint32_t size;
   base::SharedMemoryHandle handle;
 };

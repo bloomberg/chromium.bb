@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PROXY_HOST_RESOURCE_H_
-#define PPAPI_PROXY_HOST_RESOURCE_H_
+#ifndef PPAPI_SHARED_IMPL_HOST_RESOURCE_H_
+#define PPAPI_SHARED_IMPL_HOST_RESOURCE_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-namespace pp {
-namespace proxy {
+namespace ppapi {
 
 // Represents a PP_Resource sent over the wire. This just wraps a PP_Resource.
 // The point is to prevent mistakes where the wrong resource value is sent.
@@ -64,7 +63,6 @@ class HostResource {
   PP_Resource host_resource_;
 };
 
-}  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
-#endif  // PPAPI_PROXY_HOST_RESOURCE_H_
+#endif  // PPAPI_SHARED_IMPL_HOST_RESOURCE_H_

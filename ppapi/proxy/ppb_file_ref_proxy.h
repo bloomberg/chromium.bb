@@ -15,10 +15,13 @@
 
 struct PPB_FileRef_Dev;
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace pp {
 namespace proxy {
 
-class HostResource;
 struct PPBFileRef_CreateInfo;
 
 class PPB_FileRef_Proxy : public InterfaceProxy {
@@ -58,22 +61,22 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(const HostResource& file_system,
+  void OnMsgCreate(const ppapi::HostResource& file_system,
                    const std::string& path,
                    PPBFileRef_CreateInfo* result);
-  void OnMsgGetParent(const HostResource& host_resource,
+  void OnMsgGetParent(const ppapi::HostResource& host_resource,
                       PPBFileRef_CreateInfo* result);
-  void OnMsgMakeDirectory(const HostResource& host_resource,
+  void OnMsgMakeDirectory(const ppapi::HostResource& host_resource,
                           PP_Bool make_ancestors,
                           uint32_t serialized_callback);
-  void OnMsgTouch(const HostResource& host_resource,
+  void OnMsgTouch(const ppapi::HostResource& host_resource,
                   PP_Time last_access,
                   PP_Time last_modified,
                   uint32_t serialized_callback);
-  void OnMsgDelete(const HostResource& host_resource,
+  void OnMsgDelete(const ppapi::HostResource& host_resource,
                    uint32_t serialized_callback);
-  void OnMsgRename(const HostResource& file_ref,
-                   const HostResource& new_file_ref,
+  void OnMsgRename(const ppapi::HostResource& file_ref,
+                   const ppapi::HostResource& new_file_ref,
                    uint32_t serialized_callback);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileRef_Proxy);

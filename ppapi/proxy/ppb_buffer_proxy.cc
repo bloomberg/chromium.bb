@@ -19,6 +19,8 @@
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

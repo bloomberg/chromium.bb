@@ -38,6 +38,7 @@
         'shared_impl/function_group_base.h',
         'shared_impl/graphics_3d_impl.cc',
         'shared_impl/graphics_3d_impl.h',
+        'shared_impl/host_resource.h',
         'shared_impl/id_assignment.cc',
         'shared_impl/id_assignment.h',
         'shared_impl/image_data_impl.cc',

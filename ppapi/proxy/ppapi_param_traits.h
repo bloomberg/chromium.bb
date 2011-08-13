@@ -19,10 +19,15 @@ struct PP_ObjectProperty;
 struct PP_Flash_Menu;
 struct PP_Flash_NetAddress;
 
+namespace ppapi {
+
+class HostResource;
+
+}  // namespace ppapi
+
 namespace pp {
 namespace proxy {
 
-class HostResource;
 struct PPBFileRef_CreateInfo;
 struct PPBFlash_DrawGlyphs_Params;
 struct PPBURLLoader_UpdateProgress_Params;
@@ -109,8 +114,8 @@ struct ParamTraits<pp::proxy::SerializedFontDescription> {
 };
 
 template<>
-struct ParamTraits<pp::proxy::HostResource> {
-  typedef pp::proxy::HostResource param_type;
+struct ParamTraits<ppapi::HostResource> {
+  typedef ppapi::HostResource param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

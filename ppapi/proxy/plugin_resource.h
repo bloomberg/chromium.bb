@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_object_base.h"
 
 namespace pp {
@@ -17,13 +17,13 @@ namespace proxy {
 
 class PluginResource : public ::ppapi::ResourceObjectBase {
  public:
-  PluginResource(const HostResource& resource);
+  PluginResource(const ppapi::HostResource& resource);
   virtual ~PluginResource();
 
   PP_Instance instance() const { return host_resource_.instance(); }
 
   // Returns the host resource ID for sending to the host process.
-  const HostResource& host_resource() const {
+  const ppapi::HostResource& host_resource() const {
     return host_resource_;
   }
 
@@ -34,7 +34,7 @@ class PluginResource : public ::ppapi::ResourceObjectBase {
   // plugin we'll remap the resource IDs so we can have many host processes
   // each independently generating resources (which may conflict) but the IDs
   // in the plugin will all be unique.
-  HostResource host_resource_;
+  ppapi::HostResource host_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
 };

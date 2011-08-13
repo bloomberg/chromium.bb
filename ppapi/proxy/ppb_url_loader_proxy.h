@@ -12,9 +12,9 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PPB_URLLoader;
 struct PPB_URLLoaderTrusted;
@@ -39,7 +39,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // function allows the proxy for DocumentLoad to create the correct plugin
   // proxied info for the given browser-supplied URLLoader resource ID.
   static PP_Resource TrackPluginResource(
-      const HostResource& url_loader_resource);
+      const ppapi::HostResource& url_loader_resource);
 
   const PPB_URLLoader* ppb_url_loader_target() const {
     return reinterpret_cast<const PPB_URLLoader*>(target_interface());
@@ -60,25 +60,25 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
 
   // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Instance instance,
-                   HostResource* result);
-  void OnMsgOpen(const HostResource& loader,
-                 const HostResource& request_info,
+                   ppapi::HostResource* result);
+  void OnMsgOpen(const ppapi::HostResource& loader,
+                 const ppapi::HostResource& request_info,
                  uint32_t serialized_callback);
-  void OnMsgFollowRedirect(const HostResource& loader,
+  void OnMsgFollowRedirect(const ppapi::HostResource& loader,
                            uint32_t serialized_callback);
-  void OnMsgGetResponseInfo(const HostResource& loader,
-                            HostResource* result);
-  void OnMsgReadResponseBody(const HostResource& loader,
+  void OnMsgGetResponseInfo(const ppapi::HostResource& loader,
+                            ppapi::HostResource* result);
+  void OnMsgReadResponseBody(const ppapi::HostResource& loader,
                              int32_t bytes_to_read);
-  void OnMsgFinishStreamingToFile(const HostResource& loader,
+  void OnMsgFinishStreamingToFile(const ppapi::HostResource& loader,
                                   uint32_t serialized_callback);
-  void OnMsgClose(const HostResource& loader);
-  void OnMsgGrantUniversalAccess(const HostResource& loader);
+  void OnMsgClose(const ppapi::HostResource& loader);
+  void OnMsgGrantUniversalAccess(const ppapi::HostResource& loader);
 
   // Renderer->plugin message handlers.
   void OnMsgUpdateProgress(
       const PPBURLLoader_UpdateProgress_Params& params);
-  void OnMsgReadResponseBodyAck(const HostResource& pp_resource,
+  void OnMsgReadResponseBodyAck(const ppapi::HostResource& pp_resource,
                                 int32_t result,
                                 const std::string& data);
 

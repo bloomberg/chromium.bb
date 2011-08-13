@@ -14,6 +14,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
 using ppapi::thunk::PPB_Broker_API;
 
 namespace pp {

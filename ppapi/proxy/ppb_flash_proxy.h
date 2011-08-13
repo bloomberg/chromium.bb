@@ -12,8 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_time.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PP_FileInfo;
 struct PPB_Flash;
@@ -47,7 +47,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
-  void OnMsgNavigate(const HostResource& request_info,
+  void OnMsgNavigate(const ppapi::HostResource& request_info,
                      const std::string& target,
                      bool from_user_action,
                      int32_t* result);

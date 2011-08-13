@@ -13,6 +13,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_CursorControl_FunctionAPI;
 
@@ -128,7 +129,7 @@ bool PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_CursorControl_Proxy::OnMsgSetCursor(PP_Instance instance,
                                              int32_t type,
-                                             HostResource custom_image,
+                                             const HostResource& custom_image,
                                              const PP_Point& hot_spot,
                                              PP_Bool* result) {
   EnterFunctionNoLock<PPB_CursorControl_FunctionAPI> enter(instance, true);

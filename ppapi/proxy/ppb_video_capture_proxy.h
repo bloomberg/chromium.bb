@@ -13,10 +13,12 @@ struct PPB_VideoCapture_Dev;
 struct PPP_VideoCapture_Dev;
 struct PP_VideoCaptureDeviceInfo_Dev;
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class PPB_VideoCapture_Proxy : public InterfaceProxy {
  public:
@@ -36,13 +38,13 @@ class PPB_VideoCapture_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(PP_Instance instance, HostResource* result_resource);
-  void OnMsgStartCapture(const HostResource& resource,
+  void OnMsgCreate(PP_Instance instance, ppapi::HostResource* result_resource);
+  void OnMsgStartCapture(const ppapi::HostResource& resource,
                          const PP_VideoCaptureDeviceInfo_Dev& info,
                          uint32_t buffers);
-  void OnMsgReuseBuffer(const HostResource& resource,
+  void OnMsgReuseBuffer(const ppapi::HostResource& resource,
                         uint32_t buffer);
-  void OnMsgStopCapture(const HostResource& resource);
+  void OnMsgStopCapture(const ppapi::HostResource& resource);
 };
 
 class PPP_VideoCapture_Proxy : public InterfaceProxy {
@@ -61,14 +63,14 @@ class PPP_VideoCapture_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgOnDeviceInfo(const HostResource& video_capture,
+  void OnMsgOnDeviceInfo(const ppapi::HostResource& video_capture,
                          const PP_VideoCaptureDeviceInfo_Dev& info,
                          const std::vector<PPPVideoCapture_Buffer>& buffers);
-  void OnMsgOnStatus(const HostResource& video_capture,
+  void OnMsgOnStatus(const ppapi::HostResource& video_capture,
                      uint32_t status);
-  void OnMsgOnError(const HostResource& video_capture,
+  void OnMsgOnError(const ppapi::HostResource& video_capture,
                     uint32_t error_code);
-  void OnMsgOnBufferReady(const HostResource& video_capture,
+  void OnMsgOnBufferReady(const ppapi::HostResource& video_capture,
                           uint32_t buffer);
 };
 

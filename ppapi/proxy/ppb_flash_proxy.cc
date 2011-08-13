@@ -19,6 +19,8 @@
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

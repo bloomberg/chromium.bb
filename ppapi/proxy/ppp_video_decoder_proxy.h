@@ -7,8 +7,8 @@
 
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PP_Picture_Dev;
 struct PP_Size;
@@ -32,15 +32,15 @@ class PPP_VideoDecoder_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgProvidePictureBuffers(const HostResource& decoder,
+  void OnMsgProvidePictureBuffers(const ppapi::HostResource& decoder,
                                   uint32_t req_num_of_buffers,
                                   const PP_Size& dimensions);
-  void OnMsgDismissPictureBuffer(const HostResource& decoder,
+  void OnMsgDismissPictureBuffer(const ppapi::HostResource& decoder,
                                  int32_t picture_id);
-  void OnMsgPictureReady(
-      const HostResource& decoder, const PP_Picture_Dev& picture_buffer);
-  void OnMsgNotifyEndOfStream(const HostResource& decoder);
-  void OnMsgNotifyError(const HostResource& decoder,
+  void OnMsgPictureReady(const ppapi::HostResource& decoder,
+                         const PP_Picture_Dev& picture_buffer);
+  void OnMsgNotifyEndOfStream(const ppapi::HostResource& decoder);
+  void OnMsgNotifyError(const ppapi::HostResource& decoder,
                         PP_VideoDecodeError_Dev error);
 
   DISALLOW_COPY_AND_ASSIGN(PPP_VideoDecoder_Proxy);

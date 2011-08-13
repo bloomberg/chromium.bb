@@ -13,6 +13,8 @@
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

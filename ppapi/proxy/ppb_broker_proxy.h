@@ -12,13 +12,14 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
-
 struct PPB_BrokerTrusted;
+
+namespace ppapi {
+class HostResource;
+}
 
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class PPB_Broker_Proxy : public InterfaceProxy {
  public:
@@ -38,13 +39,14 @@ class PPB_Broker_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(PP_Instance instance, HostResource* result_resource);
-  void OnMsgConnect(const HostResource& broker);
-  void OnMsgConnectComplete(const HostResource& broker,
+  void OnMsgCreate(PP_Instance instance, ppapi::HostResource* result_resource);
+  void OnMsgConnect(const ppapi::HostResource& broker);
+  void OnMsgConnectComplete(const ppapi::HostResource& broker,
                             IPC::PlatformFileForTransit foreign_socket_handle,
                             int32_t result);
 
-  void ConnectCompleteInHost(int32_t result, const HostResource& host_resource);
+  void ConnectCompleteInHost(int32_t result,
+                             const ppapi::HostResource& host_resource);
 
   CompletionCallbackFactory<PPB_Broker_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

@@ -6,8 +6,8 @@
 #define PPAPI_PPB_PDF_PROXY_H_
 
 #include "ppapi/c/pp_module.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PPB_PDF;
 
@@ -35,8 +35,8 @@ class PPB_PDF_Proxy : public InterfaceProxy {
   void OnMsgGetFontFileWithFallback(PP_Module module,
                                     const SerializedFontDescription& desc,
                                     int32_t charset,
-                                    HostResource* result);
-  void OnMsgGetFontTableForPrivateFontFile(const HostResource& font_file,
+                                    ppapi::HostResource* result);
+  void OnMsgGetFontTableForPrivateFontFile(const ppapi::HostResource& font_file,
                                            uint32_t table,
                                            std::string* result);
 };

@@ -26,7 +26,7 @@ class Context3D;
 class Surface3D : public PluginResource,
                   public ppapi::thunk::PPB_Surface3D_API {
  public:
-  explicit Surface3D(const HostResource& host_resource);
+  explicit Surface3D(const ppapi::HostResource& host_resource);
   virtual ~Surface3D();
 
   // ResourceObjectBase overrides.
@@ -84,13 +84,14 @@ class PPB_Surface3D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    PP_Config3D_Dev config,
                    const std::vector<int32_t>& attribs,
-                   HostResource* result);
-  void OnMsgSwapBuffers(const HostResource& surface);
+                   ppapi::HostResource* result);
+  void OnMsgSwapBuffers(const ppapi::HostResource& surface);
   // Renderer->plugin message handlers.
-  void OnMsgSwapBuffersACK(const HostResource& surface, int32_t pp_error);
+  void OnMsgSwapBuffersACK(const ppapi::HostResource& surface,
+                           int32_t pp_error);
 
   void SendSwapBuffersACKToPlugin(int32_t result,
-                                  const HostResource& surface_3d);
+                                  const ppapi::HostResource& surface_3d);
 
   CompletionCallbackFactory<PPB_Surface3D_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

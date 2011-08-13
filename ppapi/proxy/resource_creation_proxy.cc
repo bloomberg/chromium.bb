@@ -6,7 +6,6 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
@@ -35,11 +34,13 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
+using ppapi::HostResource;
 using ppapi::InputEventData;
 using ppapi::StringVar;
 using ppapi::thunk::ResourceCreationAPI;

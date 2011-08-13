@@ -33,7 +33,6 @@
         'proxy/dispatcher.h',
         'proxy/host_dispatcher.cc',
         'proxy/host_dispatcher.h',
-        'proxy/host_resource.h',
         'proxy/host_var_serialization_rules.cc',
         'proxy/host_var_serialization_rules.h',
         'proxy/interface_proxy.cc',

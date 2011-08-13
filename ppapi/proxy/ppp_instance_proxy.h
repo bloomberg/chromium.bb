@@ -12,8 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 
 struct PP_Rect;
@@ -57,7 +57,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                           PP_Bool fullscreen);
   void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
-                               const HostResource& url_loader,
+                               const ppapi::HostResource& url_loader,
                                PP_Bool* result);
   scoped_ptr< ::ppapi::PPP_Instance_Combined> combined_interface_;
 };

@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PPB_URLResponseInfo;
 
@@ -33,17 +33,18 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // HostResource representing a response info to a properly tracked
   // URLReponseInfo PluginResource. Returns the plugin resource ID for the
   // new resource.
-  static PP_Resource CreateResponseForResource(const HostResource& resource);
+  static PP_Resource CreateResponseForResource(
+      const ppapi::HostResource& resource);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
   // Message handlers.
-  void OnMsgGetProperty(const HostResource& response,
+  void OnMsgGetProperty(const ppapi::HostResource& response,
                         int32_t property,
                         SerializedVarReturnValue result);
-  void OnMsgGetBodyAsFileRef(const HostResource& response,
+  void OnMsgGetBodyAsFileRef(const ppapi::HostResource& response,
                              PPBFileRef_CreateInfo* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLResponseInfo_Proxy);

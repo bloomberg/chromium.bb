@@ -32,6 +32,7 @@
 #include <sys/shm.h>
 #endif
 
+using ppapi::HostResource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;

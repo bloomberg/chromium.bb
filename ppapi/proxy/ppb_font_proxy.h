@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/waitable_event.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/webkit_forwarding.h"
 #include "ppapi/thunk/ppb_font_api.h"
 
@@ -50,7 +50,7 @@ class Font : public PluginResource,
   // resource should be 0. However, various code assumes the instance in the
   // host resource is valid (this is how resources are associated with
   // instances), so that should be set.
-  Font(const HostResource& resource, const PP_FontDescription_Dev& desc);
+  Font(const ppapi::HostResource& resource, const PP_FontDescription_Dev& desc);
   virtual ~Font();
 
   // ResourceObjectBase.

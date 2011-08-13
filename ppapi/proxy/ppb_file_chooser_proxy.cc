@@ -18,7 +18,8 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/thunk.h"
 
-using ::ppapi::thunk::PPB_FileChooser_API;
+using ppapi::HostResource;
+using ppapi::thunk::PPB_FileChooser_API;
 
 namespace pp {
 namespace proxy {

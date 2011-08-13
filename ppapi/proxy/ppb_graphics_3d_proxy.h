@@ -17,15 +17,17 @@
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/graphics_3d_impl.h"
 
+namespace ppapi {
+class HostResource;
+}
+
 namespace pp {
 namespace proxy {
-
-class HostResource;
 
 class Graphics3D : public PluginResource,
                    public ppapi::Graphics3DImpl {
  public:
-  explicit Graphics3D(const HostResource& resource);
+  explicit Graphics3D(const ppapi::HostResource& resource);
   virtual ~Graphics3D();
 
   bool Init();
@@ -84,33 +86,34 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    PP_Config3D_Dev config,
                    const std::vector<int32_t>& attribs,
-                   HostResource* result);
-  void OnMsgInitCommandBuffer(const HostResource& context,
+                   ppapi::HostResource* result);
+  void OnMsgInitCommandBuffer(const ppapi::HostResource& context,
                               int32 size,
                               base::SharedMemoryHandle* ring_buffer);
-  void OnMsgGetState(const HostResource& context,
+  void OnMsgGetState(const ppapi::HostResource& context,
                      gpu::CommandBuffer::State* state);
-  void OnMsgFlush(const HostResource& context,
+  void OnMsgFlush(const ppapi::HostResource& context,
                   int32 put_offset,
                   int32 last_known_get,
                   gpu::CommandBuffer::State* state);
-  void OnMsgAsyncFlush(const HostResource& context,
+  void OnMsgAsyncFlush(const ppapi::HostResource& context,
                        int32 put_offset);
-  void OnMsgCreateTransferBuffer(const HostResource& context,
+  void OnMsgCreateTransferBuffer(const ppapi::HostResource& context,
                                  int32 size,
                                  int32* id);
-  void OnMsgDestroyTransferBuffer(const HostResource& context,
+  void OnMsgDestroyTransferBuffer(const ppapi::HostResource& context,
                                   int32 id);
-  void OnMsgGetTransferBuffer(const HostResource& context,
+  void OnMsgGetTransferBuffer(const ppapi::HostResource& context,
                               int32 id,
                               base::SharedMemoryHandle* transfer_buffer,
                               uint32* size);
-  void OnMsgSwapBuffers(const HostResource& context);
+  void OnMsgSwapBuffers(const ppapi::HostResource& context);
   // Renderer->plugin message handlers.
-  void OnMsgSwapBuffersACK(const HostResource& context, int32_t pp_error);
+  void OnMsgSwapBuffersACK(const ppapi::HostResource& context,
+                           int32_t pp_error);
 
   void SendSwapBuffersACKToPlugin(int32_t result,
-                                  const HostResource& context);
+                                  const ppapi::HostResource& context);
 
   CompletionCallbackFactory<PPB_Graphics3D_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

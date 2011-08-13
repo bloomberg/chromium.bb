@@ -11,7 +11,8 @@
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ::ppapi::thunk::PPB_VideoDecoder_API;
+using ppapi::HostResource;
+using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace pp {
 namespace proxy {

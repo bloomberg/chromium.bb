@@ -22,6 +22,7 @@
 #undef PostMessage
 #endif
 
+using ppapi::HostResource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
@@ -290,7 +291,7 @@ void PPB_Instance_Proxy::OnMsgGetOwnerElementObject(
 }
 
 void PPB_Instance_Proxy::OnMsgBindGraphics(PP_Instance instance,
-                                           HostResource device,
+                                           const HostResource& device,
                                            PP_Bool* result) {
   EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
   if (enter.succeeded()) {

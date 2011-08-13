@@ -19,6 +19,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/time_conversion.h"
 
+using ppapi::HostResource;
 using ppapi::TimeToPPTime;
 using ppapi::TimeTicksToPPTimeTicks;
 
@@ -118,11 +119,11 @@ bool PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Core_Proxy::OnMsgAddRefResource(HostResource resource) {
+void PPB_Core_Proxy::OnMsgAddRefResource(const HostResource& resource) {
   ppb_core_target()->AddRefResource(resource.host_resource());
 }
 
-void PPB_Core_Proxy::OnMsgReleaseResource(HostResource resource) {
+void PPB_Core_Proxy::OnMsgReleaseResource(const HostResource& resource) {
   ppb_core_target()->ReleaseResource(resource.host_resource());
 }
 

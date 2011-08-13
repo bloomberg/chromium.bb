@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PPB_URLRequestInfo;
 
@@ -33,14 +33,14 @@ class PPB_URLRequestInfo_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(PP_Instance instance, HostResource* result);
-  void OnMsgSetProperty(HostResource request,
+  void OnMsgCreate(PP_Instance instance, ppapi::HostResource* result);
+  void OnMsgSetProperty(ppapi::HostResource request,
                         int32_t property,
                         SerializedVarReceiveInput value);
-  void OnMsgAppendDataToBody(HostResource request,
+  void OnMsgAppendDataToBody(ppapi::HostResource request,
                              const std::string& data);
-  void OnMsgAppendFileToBody(HostResource request,
-                             HostResource file_ref,
+  void OnMsgAppendFileToBody(ppapi::HostResource request,
+                             ppapi::HostResource file_ref,
                              int64_t start_offset,
                              int64_t number_of_bytes,
                              double expected_last_modified_time);

@@ -16,8 +16,6 @@ struct PPB_AudioConfig;
 namespace pp {
 namespace proxy {
 
-class HostResource;
-
 class PPB_AudioConfig_Proxy : public InterfaceProxy {
  public:
   PPB_AudioConfig_Proxy(Dispatcher* dispatcher, const void* target_interface);

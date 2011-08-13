@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_resource.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

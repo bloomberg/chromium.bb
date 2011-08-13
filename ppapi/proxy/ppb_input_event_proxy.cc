@@ -13,6 +13,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
 using ppapi::InputEventData;
 using ppapi::InputEventImpl;
 using ppapi::thunk::PPB_InputEvent_API;

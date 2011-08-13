@@ -19,6 +19,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_pdf_api.h"
 
+using ppapi::HostResource;
 using ppapi::thunk::PPB_PDFFont_API;
 using ppapi::thunk::EnterResource;
 

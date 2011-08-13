@@ -11,6 +11,8 @@
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

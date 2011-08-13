@@ -23,6 +23,8 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
+using ppapi::HostResource;
+
 namespace pp {
 namespace proxy {
 

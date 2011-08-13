@@ -37,7 +37,7 @@ class Surface3D;
 class Context3D : public PluginResource,
                   public ppapi::thunk::PPB_Context3D_API {
  public:
-  explicit Context3D(const HostResource& resource);
+  explicit Context3D(const ppapi::HostResource& resource);
   virtual ~Context3D();
 
   // ResourceObjectBase overrides.
@@ -112,28 +112,28 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    PP_Config3D_Dev config,
                    const std::vector<int32_t>& attribs,
-                   HostResource* result);
-  void OnMsgBindSurfaces(const HostResource& context,
-                         const HostResource& draw,
-                         const HostResource& read,
+                   ppapi::HostResource* result);
+  void OnMsgBindSurfaces(const ppapi::HostResource& context,
+                         const ppapi::HostResource& draw,
+                         const ppapi::HostResource& read,
                          int32_t* result);
-  void OnMsgInitialize(const HostResource& context,
+  void OnMsgInitialize(const ppapi::HostResource& context,
                        int32 size,
                        base::SharedMemoryHandle* ring_buffer);
-  void OnMsgGetState(const HostResource& context,
+  void OnMsgGetState(const ppapi::HostResource& context,
                      gpu::CommandBuffer::State* state);
-  void OnMsgFlush(const HostResource& context,
+  void OnMsgFlush(const ppapi::HostResource& context,
                   int32 put_offset,
                   int32 last_known_get,
                   gpu::CommandBuffer::State* state);
-  void OnMsgAsyncFlush(const HostResource& context,
+  void OnMsgAsyncFlush(const ppapi::HostResource& context,
                        int32 put_offset);
-  void OnMsgCreateTransferBuffer(const HostResource& context,
+  void OnMsgCreateTransferBuffer(const ppapi::HostResource& context,
                                  int32 size,
                                  int32* id);
-  void OnMsgDestroyTransferBuffer(const HostResource& context,
+  void OnMsgDestroyTransferBuffer(const ppapi::HostResource& context,
                                   int32 id);
-  void OnMsgGetTransferBuffer(const HostResource& context,
+  void OnMsgGetTransferBuffer(const ppapi::HostResource& context,
                               int32 id,
                               base::SharedMemoryHandle* transfer_buffer,
                               uint32* size);

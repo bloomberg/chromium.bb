@@ -13,7 +13,7 @@ namespace proxy {
 
 class MockResource : public PluginResource {
  public:
-  MockResource(const HostResource& resource);
+  MockResource(const ppapi::HostResource& resource);
   virtual ~MockResource();
 
  private:

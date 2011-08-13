@@ -25,7 +25,7 @@ template<typename ResourceT>
 class EnterPluginFromHostResource
     : public ::ppapi::thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterPluginFromHostResource(const HostResource& host_resource)
+  EnterPluginFromHostResource(const ppapi::HostResource& host_resource)
       : ::ppapi::thunk::EnterResourceNoLock<ResourceT>(
             PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
                 host_resource),
@@ -42,7 +42,7 @@ template<typename ResourceT>
 class EnterHostFromHostResource
     : public ::ppapi::thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterHostFromHostResource(const HostResource& host_resource)
+  EnterHostFromHostResource(const ppapi::HostResource& host_resource)
       : ::ppapi::thunk::EnterResourceNoLock<ResourceT>(
             host_resource.host_resource(), false) {
     // Validate that we're in the host rather than the plugin. Otherwise this
@@ -90,9 +90,10 @@ class EnterHostFromHostResourceForceCallback
   // For callbacks that take no parameters except the "int32_t result". Most
   // implementations will use the 1-extra-argument constructor below.
   template<class CallbackFactory, typename Method>
-  EnterHostFromHostResourceForceCallback(const HostResource& host_resource,
-                                         CallbackFactory& factory,
-                                         Method method)
+  EnterHostFromHostResourceForceCallback(
+      const ppapi::HostResource& host_resource,
+      CallbackFactory& factory,
+      Method method)
       : EnterHostFromHostResource<ResourceT>(host_resource),
         needs_running_(true),
         callback_(factory.NewOptionalCallback(method)) {
@@ -102,10 +103,11 @@ class EnterHostFromHostResourceForceCallback
 
   // For callbacks that take an extra parameter as a closure.
   template<class CallbackFactory, typename Method, typename A>
-  EnterHostFromHostResourceForceCallback(const HostResource& host_resource,
-                                         CallbackFactory& factory,
-                                         Method method,
-                                         const A& a)
+  EnterHostFromHostResourceForceCallback(
+      const ppapi::HostResource& host_resource,
+      CallbackFactory& factory,
+      Method method,
+      const A& a)
       : EnterHostFromHostResource<ResourceT>(host_resource),
         needs_running_(true),
         callback_(factory.NewOptionalCallback(method, a)) {

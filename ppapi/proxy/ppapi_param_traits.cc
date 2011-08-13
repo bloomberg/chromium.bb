@@ -9,11 +9,11 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 namespace IPC {
 
@@ -197,7 +197,7 @@ void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
     const param_type& p) {
   ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.image_data);
+  ParamTraits<ppapi::HostResource>::Write(m, p.image_data);
   ParamTraits<pp::proxy::SerializedFontDescription>::Write(m, p.font_desc);
   ParamTraits<uint32_t>::Write(m, p.color);
   ParamTraits<PP_Point>::Write(m, p.position);
@@ -222,8 +222,7 @@ bool ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Read(
     param_type* r) {
   return
       ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter,
-                                                       &r->image_data) &&
+      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->image_data) &&
       ParamTraits<pp::proxy::SerializedFontDescription>::Read(m, iter,
                                                               &r->font_desc) &&
       ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
@@ -255,7 +254,7 @@ void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Log(
 void ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.resource);
+  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
   ParamTraits<int>::Write(m, p.file_system_type);
   ParamTraits<pp::proxy::SerializedVar>::Write(m, p.path);
   ParamTraits<pp::proxy::SerializedVar>::Write(m, p.name);
@@ -266,7 +265,7 @@ bool ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Read(const Message* m,
                                                          void** iter,
                                                          param_type* r) {
   return
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
       ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
       ParamTraits<pp::proxy::SerializedVar>::Read(m, iter, &r->path) &&
       ParamTraits<pp::proxy::SerializedVar>::Read(m, iter, &r->name);
@@ -285,7 +284,7 @@ void ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params>::Write(
     Message* m,
     const param_type& p) {
   ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.resource);
+  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
   ParamTraits<int64_t>::Write(m, p.bytes_sent);
   ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_sent);
   ParamTraits<int64_t>::Write(m, p.bytes_received);
@@ -299,7 +298,7 @@ bool ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params>::Read(
     param_type* r) {
   return
       ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
       ParamTraits<int64_t>::Read(m, iter, &r->bytes_sent) &&
       ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_sent) &&
       ParamTraits<int64_t>::Read(m, iter, &r->bytes_received) &&
@@ -372,17 +371,17 @@ void ParamTraits<pp::proxy::SerializedFontDescription>::Log(
     std::string* l) {
 }
 
-// HostResource ----------------------------------------------------------
+// HostResource ----------------------------------------------------------------
 
 // static
-void ParamTraits<pp::proxy::HostResource>::Write(Message* m,
+void ParamTraits<ppapi::HostResource>::Write(Message* m,
                                                  const param_type& p) {
   ParamTraits<PP_Instance>::Write(m, p.instance());
   ParamTraits<PP_Resource>::Write(m, p.host_resource());
 }
 
 // static
-bool ParamTraits<pp::proxy::HostResource>::Read(const Message* m,
+bool ParamTraits<ppapi::HostResource>::Read(const Message* m,
                                                 void** iter,
                                                 param_type* r) {
   PP_Instance instance;
@@ -395,8 +394,8 @@ bool ParamTraits<pp::proxy::HostResource>::Read(const Message* m,
 }
 
 // static
-void ParamTraits<pp::proxy::HostResource>::Log(const param_type& p,
-                                               std::string* l) {
+void ParamTraits<ppapi::HostResource>::Log(const param_type& p,
+                                           std::string* l) {
 }
 
 // SerializedVar ---------------------------------------------------------------
