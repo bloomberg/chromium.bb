@@ -208,6 +208,70 @@ TEST_F(RenderViewTest, StaleNavigationsIgnored) {
   EXPECT_EQ(3, view_->history_page_ids_[1]);
 }
 
+// Test that we do not ignore navigations after the entry limit is reached,
+// in which case the browser starts dropping entries from the front.  In this
+// case, we'll see a page_id mismatch but the RenderView's id will be older,
+// not newer, than params.page_id.  Use this as a cue that we should update the
+// state and not treat it like a navigation to a cropped forward history item.
+// See http://crbug.com/89798.
+TEST_F(RenderViewTest, DontIgnoreBackAfterNavEntryLimit) {
+  // Load page A.
+  LoadHTML("<div>Page A</div>");
+  EXPECT_EQ(1, view_->history_list_length_);
+  EXPECT_EQ(0, view_->history_list_offset_);
+  EXPECT_EQ(1, view_->history_page_ids_[0]);
+
+  // Load page B, which will trigger an UpdateState message for page A.
+  LoadHTML("<div>Page B</div>");
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(1, view_->history_list_offset_);
+  EXPECT_EQ(2, view_->history_page_ids_[1]);
+
+  // Check for a valid UpdateState message for page A.
+  const IPC::Message* msg_A = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_UpdateState::ID);
+  ASSERT_TRUE(msg_A);
+  int page_id_A;
+  std::string state_A;
+  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  EXPECT_EQ(1, page_id_A);
+  render_thread_.sink().ClearMessages();
+
+  // Load page C, which will trigger an UpdateState message for page B.
+  LoadHTML("<div>Page C</div>");
+  EXPECT_EQ(3, view_->history_list_length_);
+  EXPECT_EQ(2, view_->history_list_offset_);
+  EXPECT_EQ(3, view_->history_page_ids_[2]);
+
+  // Check for a valid UpdateState message for page B.
+  const IPC::Message* msg_B = render_thread_.sink().GetUniqueMessageMatching(
+      ViewHostMsg_UpdateState::ID);
+  ASSERT_TRUE(msg_B);
+  int page_id_B;
+  std::string state_B;
+  ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
+  EXPECT_EQ(2, page_id_B);
+  render_thread_.sink().ClearMessages();
+
+  // Suppose the browser has limited the number of NavigationEntries to 2.
+  // It has now dropped the first entry, but the renderer isn't notified.
+  // Ensure that going back to page B (page_id 2) at offset 0 is successful.
+  ViewMsg_Navigate_Params params_B;
+  params_B.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  params_B.transition = PageTransition::FORWARD_BACK;
+  params_B.current_history_list_length = 2;
+  params_B.current_history_list_offset = 1;
+  params_B.pending_history_list_offset = 0;
+  params_B.page_id = 2;
+  params_B.state = state_B;
+  view_->OnNavigate(params_B);
+  ProcessPendingMessages();
+
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(0, view_->history_list_offset_);
+  EXPECT_EQ(2, view_->history_page_ids_[0]);
+}
+
 // Test that our IME backend sends a notification message when the input focus
 // changes.
 TEST_F(RenderViewTest, OnImeStateChanged) {

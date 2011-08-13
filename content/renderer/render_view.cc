@@ -858,8 +858,16 @@ bool RenderView::IsBackForwardToStaleEntry(
   // Check for whether this entry has been replaced with a new one.
   int expected_page_id =
       history_page_ids_[params.pending_history_list_offset];
-  if (expected_page_id > 0 && params.page_id != expected_page_id)
-    return true;
+  if (expected_page_id > 0 && params.page_id != expected_page_id) {
+    if (params.page_id < expected_page_id)
+      return true;
+
+    // Otherwise we've removed an earlier entry and should have shifted all
+    // entries left.  For now, it's ok to lazily update the list.
+    // TODO(creis): Notify all live renderers when we remove entries from
+    // the front of the list, so that we don't hit this case.
+    history_page_ids_[params.pending_history_list_offset] = params.page_id;
+  }
 
   return false;
 }
