@@ -110,6 +110,14 @@ cr.define('ntp4', function() {
   var highlightAppId = null;
 
   /**
+   * If non-null, an info bubble for showing messages to the user. It points at
+   * the Most Visited label, and is used to draw more attention to the
+   * navigation dot UI.
+   * @type {!Element|undefined}
+   */
+  var infoBubble;
+
+  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -186,6 +194,15 @@ cr.define('ntp4', function() {
     mostVisitedPage = new ntp4.MostVisitedPage();
     appendTilePage(mostVisitedPage, localStrings.getString('mostvisited'));
     chrome.send('getMostVisited');
+
+    if (localStrings.getString('ntp4_intro_message')) {
+      infoBubble = new cr.ui.Bubble;
+      infoBubble.anchorNode = mostVisitedPage.navigationDot;
+      infoBubble.text = localStrings.getString('ntp4_intro_message');
+      infoBubble.show();
+
+      chrome.send('introMessageSeen');
+    }
 
     bookmarksPage = new ntp4.BookmarksPage();
     appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
@@ -406,6 +423,8 @@ cr.define('ntp4', function() {
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
+    if (infoBubble)
+      window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
     eventTracker.add(page, 'pagelayout', onPageLayout);
   }
@@ -590,9 +609,6 @@ cr.define('ntp4', function() {
       shownPageIndex = getAppsPageIndex(page);
     } else if (page.classList.contains('most-visited-page')) {
       shownPage = templateData['most_visited_page_id'];
-      shownPageIndex = 0;
-    } else if (page.classList.contains('bookmarks-page')) {
-      shownPage = templateData['bookmarks_page_id'];
       shownPageIndex = 0;
     } else if (page.classList.contains('bookmarks-page')) {
       shownPage = templateData['bookmarks_page_id'];

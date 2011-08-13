@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+
+static const int kIntroDisplayMax = 10;
 
 void NewTabPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("closePromo", NewCallback(
@@ -19,6 +23,10 @@ void NewTabPageHandler::RegisterMessages() {
       this, &NewTabPageHandler::HandleCloseSyncNotification));
   web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
       this, &NewTabPageHandler::HandlePageSelected));
+  web_ui_->RegisterMessageCallback("navigationDotUsed", NewCallback(
+      this, &NewTabPageHandler::HandleNavDotUsed));
+  web_ui_->RegisterMessageCallback("introMessageSeen", NewCallback(
+      this, &NewTabPageHandler::HandleIntroMessageSeen));
 }
 
 void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
@@ -50,10 +58,23 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   prefs->SetInteger(prefs::kNTPShownPage, page_id | index);
 }
 
+void NewTabPageHandler::HandleNavDotUsed(const ListValue* args) {
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
+}
+
+void NewTabPageHandler::HandleIntroMessageSeen(const ListValue* args) {
+  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  int intro_displays = prefs->GetInteger(prefs::kNTP4IntroDisplayCount);
+  prefs->SetInteger(prefs::kNTP4IntroDisplayCount, intro_displays + 1);
+}
+
 // static
 void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
   // TODO(estade): should be syncable.
   prefs->RegisterIntegerPref(prefs::kNTPShownPage, APPS_PAGE_ID,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTP4IntroDisplayCount, 0,
                              PrefService::UNSYNCABLE_PREF);
 }
 
@@ -71,4 +92,10 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
   int shown_page = prefs->GetInteger(prefs::kNTPShownPage);
   values->SetInteger("shown_page_type", shown_page & ~INDEX_MASK);
   values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
+
+  int intro_displays = prefs->GetInteger(prefs::kNTP4IntroDisplayCount);
+  if (intro_displays <= kIntroDisplayMax) {
+    values->SetString("ntp4_intro_message",
+                      l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
+  }
 }

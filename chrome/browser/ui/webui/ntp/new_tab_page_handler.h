@@ -30,6 +30,15 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // Callback for "pageSelected".
   void HandlePageSelected(const ListValue* args);
 
+  // Callback for "navigationDotUsed". This is called when a navigation dot is
+  // clicked, whereas pageSelected might be called after any page-switching user
+  // action.
+  void HandleNavDotUsed(const ListValue* args);
+
+  // Callback for "handleIntroMessageSeen". No arguments. Called when the intro
+  // message is displayed.
+  void HandleIntroMessageSeen(const ListValue* args);
+
   // Register NTP preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 

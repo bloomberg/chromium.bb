@@ -1,0 +1,67 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.bubble {
+  /* These margins correlate to the difference between the tip of the arrow
+   * and the bottom left of the bubble. */
+  margin-left: -30px;
+  margin-top: -8px;
+  position: absolute;
+  /* Height is dynamic, width fixed. */
+  width: 200px;
+  z-index: 9999;
+}
+
+.bubble-contents {
+  left: 1px;
+  padding: 10px;
+  position: relative;
+  text-align: left;
+  top: 1px;
+  width: 198px;
+  z-index: 3;
+}
+
+.bubble-shadow {
+  bottom: -2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.bubble-arrow {
+  /* The tip of the arrow.  */
+  border-bottom-right-radius: 1px;
+  /* No border on the right or top (inner sides of the rotated square) because
+   * it would overlap/darken the content shadow. */
+  border-right: none;
+  border-top: none;
+  height: 15px;
+  left: 22px;
+  position: absolute;
+  bottom: -9px;
+  width: 15px;
+  z-index: 2;
+  -webkit-transform: rotate(45deg);
+}
+
+.bubble-contents,
+.bubble-arrow {
+  background: white;
+}
+
+.bubble-shadow,
+.bubble-arrow {
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bubble-shadow,
+.bubble-contents {
+  border-radius: 6px;
+  box-sizing: border-box;
+}

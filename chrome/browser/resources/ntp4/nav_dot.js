@@ -96,6 +96,8 @@ cr.define('ntp4', function() {
       // handling in onInputMouseDown_.
       if (this.ownerDocument.activeElement != this.input_)
         this.focus();
+
+      chrome.send('navigationDotUsed');
       e.stopPropagation();
     },
 
