@@ -108,17 +108,28 @@ body {
 
 #attribution {
   bottom: 0;
-  position: absolute;
+  left: auto;
+  margin-left: 8px;
   /* Leave room for the scrollbar. */
-  right: 13px;
+  margin-right: 13px;
+  position: absolute;
+  right: 0;
+  text-align: left;
   z-index: -5;
+}
+
+/* For themes that right-align their images, we flip the attribution to the
+ * left to avoid conflicts.  */
+html[themegravity='right'] #attribution,
+html[dir='rtl'] #attribution {
+  left: 0;
+  right: auto;
+  text-align: right;
 }
 
 #attribution > span {
   display: block;
   font-size: 84%;
-  /* Text should be left aligned regardless of diretionality. */
-  text-align: left;
 }
 
 #footer {
