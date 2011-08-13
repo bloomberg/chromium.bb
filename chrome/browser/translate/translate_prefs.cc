@@ -255,7 +255,7 @@ void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
       return;
     }
     StringValue string_value(value);
-    schedule_save = blacklist->Remove(string_value) != -1;
+    schedule_save = blacklist->Remove(string_value, NULL);
   }
   if (schedule_save)
     prefs_->ScheduleSavePersistentPrefs();

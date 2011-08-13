@@ -281,7 +281,7 @@ void NotificationProvider::PersistPermissionChange(
     // Remove from one list and add to the other.
     if (is_allowed) {
       // Remove from the denied list.
-      if (denied_sites->Remove(*value) != -1)
+      if (denied_sites->Remove(*value, NULL))
         denied_changed = true;
 
       // Add to the allowed list.
@@ -289,7 +289,7 @@ void NotificationProvider::PersistPermissionChange(
         allowed_changed = true;
     } else {
       // Remove from the allowed list.
-      if (allowed_sites->Remove(*value) != -1)
+      if (allowed_sites->Remove(*value, NULL))
         allowed_changed = true;
 
       // Add to the denied list.
@@ -336,8 +336,8 @@ void NotificationProvider::ResetAllowedOrigin(const GURL& origin) {
     ListPrefUpdate update(prefs, prefs::kDesktopNotificationAllowedOrigins);
     ListValue* allowed_sites = update.Get();
     StringValue value(origin.spec());
-    int removed_index = allowed_sites->Remove(value);
-    DCHECK_NE(-1, removed_index) << origin << " was not allowed";
+    bool removed = allowed_sites->Remove(value, NULL);
+    DCHECK_NE(false, removed) << origin << " was not allowed";
   }
   prefs->ScheduleSavePersistentPrefs();
 }
@@ -353,8 +353,8 @@ void NotificationProvider::ResetBlockedOrigin(const GURL& origin) {
     ListPrefUpdate update(prefs, prefs::kDesktopNotificationDeniedOrigins);
     ListValue* denied_sites = update.Get();
     StringValue value(origin.spec());
-    int removed_index = denied_sites->Remove(value);
-    DCHECK_NE(-1, removed_index) << origin << " was not blocked";
+    bool removed = denied_sites->Remove(value, NULL);
+    DCHECK_NE(false, removed) << origin << " was not blocked";
   }
   prefs->ScheduleSavePersistentPrefs();
 }

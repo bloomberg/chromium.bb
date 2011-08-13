@@ -332,9 +332,12 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
 
 // static
 void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
-    Profile* profile, ListValue* list, Value* override) {
-  int index = list->Remove(*override);
-  if (index == 0) {
+                                                  Profile* profile,
+                                                  ListValue* list,
+                                                  Value* override) {
+  size_t index = 0;
+  bool found = list->Remove(*override, &index);
+  if (found && index == 0) {
     // This is the active override, so we need to find all existing
     // tabs for this override and get them to reload the original URL.
     for (TabContentsIterator iterator; !iterator.done(); ++iterator) {

@@ -661,7 +661,7 @@ void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
   PrefService* prefs = g_browser_process->local_state();
   ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
   StringValue email_value(email);
-  if (cached_whitelist_update->Remove(email_value) != -1)
+  if (cached_whitelist_update->Remove(email_value, NULL))
     prefs->ScheduleSavePersistentPrefs();
 }
 
