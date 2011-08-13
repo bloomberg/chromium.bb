@@ -34,9 +34,11 @@ namespace chromeos {
 namespace input_method {
 
 VirtualKeyboard::VirtualKeyboard(const GURL& url,
+                                 const std::string& name,
                                  const std::set<std::string>& supported_layouts,
                                  bool is_system)
     : url_(url),
+      name_(name),
       supported_layouts_(supported_layouts),
       is_system_(is_system) {
 }
@@ -71,12 +73,14 @@ VirtualKeyboardSelector::~VirtualKeyboardSelector() {
 
 bool VirtualKeyboardSelector::AddVirtualKeyboard(
     const GURL& url,
+    const std::string& name,
     const std::set<std::string>& supported_layouts,
     bool is_system) {
   if (url_to_keyboard_.count(url))
     return false;  // the URL is already in use.
 
   const VirtualKeyboard* new_keyboard = new VirtualKeyboard(url,
+                                                            name,
                                                             supported_layouts,
                                                             is_system);
   if (is_system) {
@@ -86,6 +90,14 @@ bool VirtualKeyboardSelector::AddVirtualKeyboard(
   }
 
   url_to_keyboard_.insert(std::make_pair(url, new_keyboard));
+  std::set<std::string>::const_iterator layout_iter;
+  for (layout_iter = new_keyboard->supported_layouts().begin();
+       layout_iter != new_keyboard->supported_layouts().end();
+       ++layout_iter) {
+    const std::string& layout = *layout_iter;
+    layout_to_keyboard_.insert(std::make_pair(layout, new_keyboard));
+  }
+
   return true;
 }
 

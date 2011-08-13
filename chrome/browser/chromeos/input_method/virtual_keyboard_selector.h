@@ -22,6 +22,7 @@ namespace input_method {
 class VirtualKeyboard {
  public:
   VirtualKeyboard(const GURL& url,
+                  const std::string& name,
                   const std::set<std::string>& supported_layouts,
                   bool is_system);
   ~VirtualKeyboard();
@@ -37,6 +38,7 @@ class VirtualKeyboard {
   bool IsLayoutSupported(const std::string& layout) const;
 
   const GURL& url() const { return url_; }
+  const std::string& name() const { return name_; }
   const std::set<std::string>& supported_layouts() const {
     return supported_layouts_;
   }
@@ -44,6 +46,7 @@ class VirtualKeyboard {
 
  private:
   const GURL url_;
+  const std::string name_;
   const std::set<std::string> supported_layouts_;
   const bool is_system_;
 
@@ -62,6 +65,7 @@ class VirtualKeyboardSelector {
   // specified by the |url| is already added.
   // TODO(yusukes): Add RemoveVirtualKeyboard() as well.
   bool AddVirtualKeyboard(const GURL& url,
+                          const std::string& name,
                           const std::set<std::string>& supported_layouts,
                           bool is_system);
 
@@ -95,6 +99,15 @@ class VirtualKeyboardSelector {
   // Removes all preferences added by SetUserPreference.
   void ClearAllUserPreferences();
 
+  const std::map<GURL, const VirtualKeyboard*>& url_to_keyboard() const {
+    return url_to_keyboard_;
+  }
+
+  const std::multimap<
+    std::string, const VirtualKeyboard*>& layout_to_keyboard() const {
+    return layout_to_keyboard_;
+  }
+
  protected:
   // Selects and returns the most suitable virtual keyboard extension for the
   // |layout|. Unlike SelectVirtualKeyboard(), this function only scans
@@ -126,6 +139,12 @@ class VirtualKeyboardSelector {
   // A map from URL to virtual keyboard extension. The map is for making
   // SetUserPreference() faster.
   std::map<GURL, const VirtualKeyboard*> url_to_keyboard_;
+
+  // A *multi* map from layout name to virtual keyboard extension. An example
+  // value of the variable would be: { "us": extension1,
+  //                                   "us(dvorak)": extension1,
+  //                                   "us": extension2 }
+  std::multimap<std::string, const VirtualKeyboard*> layout_to_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardSelector);
 };

@@ -1471,9 +1471,11 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
         !component->layouts.empty()) {
       const bool is_system =
           !Extension::IsExternalLocation(extension->location());
-      input_method_manager->RegisterVirtualKeyboard(extension->url(),
-                                                    component->layouts,
-                                                    is_system);
+      input_method_manager->RegisterVirtualKeyboard(
+          extension->url(),
+          component->name,  // human-readable name of the keyboard extension.
+          component->layouts,
+          is_system);
     }
 #endif
   }

@@ -303,11 +303,23 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   virtual void RegisterVirtualKeyboard(const GURL& launch_url,
+                                       const std::string& name,
                                        const std::set<std::string>& layouts,
                                        bool is_system) {
     virtual_keyboard_selector_.AddVirtualKeyboard(launch_url,
+                                                  name,
                                                   layouts,
                                                   is_system);
+  }
+
+  virtual const std::map<GURL, const VirtualKeyboard*>&
+  GetUrlToKeyboardMapping() const {
+    return virtual_keyboard_selector_.url_to_keyboard();
+  }
+
+  virtual const std::multimap<std::string, const VirtualKeyboard*>&
+  GetLayoutNameToKeyboardMapping() const {
+    return virtual_keyboard_selector_.layout_to_keyboard();
   }
 
   virtual bool SetVirtualKeyboardPreference(const std::string& input_method_id,
