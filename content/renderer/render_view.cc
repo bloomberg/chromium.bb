@@ -353,6 +353,10 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       history_list_offset_(-1),
       history_list_length_(0),
       target_url_status_(TARGET_NONE),
+      cached_is_main_frame_pinned_to_left_(false),
+      cached_is_main_frame_pinned_to_right_(false),
+      cached_has_main_frame_horizontal_scrollbar_(false),
+      cached_has_main_frame_vertical_scrollbar_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
@@ -2884,8 +2888,53 @@ void RenderView::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
+void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
+  if (webview()->mainFrame() != frame)
+    return;
+  WebView* frameView = frame->view();
+  if (!frameView)
+    return;
+
+  bool has_horizontal_scrollbar = frame->hasHorizontalScrollbar();
+  bool has_vertical_scrollbar = frame->hasVerticalScrollbar();
+
+  if (has_horizontal_scrollbar != cached_has_main_frame_horizontal_scrollbar_ ||
+      has_vertical_scrollbar != cached_has_main_frame_vertical_scrollbar_) {
+    Send(new ViewHostMsg_DidChangeScrollbarsForMainFrame(
+          routing_id_, has_horizontal_scrollbar, has_vertical_scrollbar));
+
+    cached_has_main_frame_horizontal_scrollbar_ = has_horizontal_scrollbar;
+    cached_has_main_frame_vertical_scrollbar_ = has_vertical_scrollbar;
+  }
+}
+
+void RenderView::UpdateScrollState(WebFrame* frame) {
+  WebSize offset = frame->scrollOffset();
+  WebSize minimum_offset = frame->minimumScrollOffset();
+  WebSize maximum_offset = frame->maximumScrollOffset();
+
+  bool is_pinned_to_left = offset.width <= minimum_offset.width;
+  bool is_pinned_to_right = offset.width >= maximum_offset.width;
+
+  if (is_pinned_to_left != cached_is_main_frame_pinned_to_left_ ||
+      is_pinned_to_right != cached_is_main_frame_pinned_to_right_) {
+    Send(new ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame(
+          routing_id_, is_pinned_to_left, is_pinned_to_right));
+
+    cached_is_main_frame_pinned_to_left_ = is_pinned_to_left;
+    cached_is_main_frame_pinned_to_right_ = is_pinned_to_right;
+  }
+}
+
 void RenderView::didChangeScrollOffset(WebFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
+
+  if (webview()->mainFrame() == frame)
+    UpdateScrollState(frame);
+}
+
+void RenderView::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
+  Send(new ViewHostMsg_DidChangeNumWheelEvents(routing_id_, num_handlers));
 }
 
 void RenderView::reportFindInPageMatchCount(int request_id, int count,
@@ -3879,6 +3928,7 @@ void RenderView::OnResize(const gfx::Size& new_size,
       webview()->mainFrame()->setCanHaveScrollbars(
           should_display_scrollbars(new_size.width(), new_size.height()));
     }
+    UpdateScrollState(webview()->mainFrame());
   }
 
   RenderWidget::OnResize(new_size, resizer_rect);

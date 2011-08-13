@@ -692,6 +692,12 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnMsgDidContentsPreferredSizeChange)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollbarsForMainFrame,
+                        OnMsgDidChangeScrollbarsForMainFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
+                        OnMsgDidChangeScrollOffsetPinningForMainFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumWheelEvents,
+                        OnMsgDidChangeNumWheelEvents)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
@@ -999,6 +1005,20 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
   if (!view)
     return;
   view->UpdatePreferredSize(new_size);
+}
+
+void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(
+    bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
+  // TODO(thakis): Implement, http://crbug.com/90228
+}
+
+void RenderViewHost::OnMsgDidChangeScrollOffsetPinningForMainFrame(
+    bool is_pinned_to_left, bool is_pinned_to_right) {
+  // TODO(thakis): Implement, http://crbug.com/90228
+}
+
+void RenderViewHost::OnMsgDidChangeNumWheelEvents(int count) {
+  // TODO(thakis): Implement, http://crbug.com/90228
 }
 
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text,

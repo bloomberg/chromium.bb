@@ -559,6 +559,9 @@ class RenderView : public RenderWidget,
       unsigned long long event_id);
   virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
+  virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
+  virtual void didChangeContentsSize(WebKit::WebFrame* frame,
+                                     const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
                                           bool final_update);
@@ -731,6 +734,9 @@ class RenderView : public RenderWidget,
 
   // Send queued accessibility notifications from the renderer to the browser.
   void SendPendingAccessibilityNotifications();
+
+  // Called when the "pinned to left/right edge" state needs to be updated.
+  void UpdateScrollState(WebKit::WebFrame* frame);
 
   // IPC message handlers ------------------------------------------------------
   //
@@ -1083,6 +1089,15 @@ class RenderView : public RenderWidget,
   // Used to delay determining the preferred size (to avoid intermediate
   // states for the sizes).
   base::OneShotTimer<RenderView> check_preferred_size_timer_;
+
+  // These store the "is main frame is scrolled all the way to the left
+  // or right" state that was last sent to the browser.
+  bool cached_is_main_frame_pinned_to_left_;
+  bool cached_is_main_frame_pinned_to_right_;
+
+  // These store the "has scrollbars" state last sent to the browser.
+  bool cached_has_main_frame_horizontal_scrollbar_;
+  bool cached_has_main_frame_vertical_scrollbar_;
 
 #if defined(OS_MACOSX)
   // Track the fake plugin window handles allocated on the browser side for

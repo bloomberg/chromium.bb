@@ -430,6 +430,11 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgOpenURL(const GURL& url, const GURL& referrer,
                     WindowOpenDisposition disposition);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
+  void OnMsgDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
+                                            bool has_vertical_scrollbar);
+  void OnMsgDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
+                                                     bool is_pinned_to_right);
+  void OnMsgDidChangeNumWheelEvents(int count);
   void OnMsgSelectionChanged(const std::string& text, const ui::Range& range,
                              const gfx::Point& start, const gfx::Point& end);
   void OnMsgPasteFromSelectionClipboard();
