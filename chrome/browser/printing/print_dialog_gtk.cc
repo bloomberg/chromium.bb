@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -133,7 +132,6 @@ PrintDialogGtk::~PrintDialogGtk() {
 }
 
 void PrintDialogGtk::UseDefaultSettings() {
-  DCHECK(!save_document_event_.get());
   DCHECK(!page_setup_);
 
   // |gtk_settings_| is a new object.
@@ -216,8 +214,6 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
 
 void PrintDialogGtk::ShowDialog(
     PrintingContextCairo::PrintSettingsCallback* callback) {
-  DCHECK(!save_document_event_.get());
-
   callback_ = callback;
 
   GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
@@ -256,17 +252,30 @@ void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
   // The document printing tasks can outlive the PrintingContext that created
   // this dialog.
   AddRef();
-  DCHECK(!save_document_event_.get());
-  save_document_event_.reset(new base::WaitableEvent(false, false));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PrintDialogGtk::SaveDocumentToDisk,
-                        metafile,
-                        document_name));
-  // Wait for SaveDocumentToDisk() to finish.
-  save_document_event_->Wait();
+  bool error = false;
+  if (!file_util::CreateTemporaryFile(&path_to_pdf_)) {
+    LOG(ERROR) << "Creating temporary file failed";
+    error = true;
+  }
+
+  if (!error && !metafile->SaveTo(path_to_pdf_)) {
+    LOG(ERROR) << "Saving metafile failed";
+    file_util::Delete(path_to_pdf_, false);
+    error = true;
+  }
+
+  if (error) {
+    // Matches AddRef() above.
+    Release();
+  } else {
+    // No errors, continue printing.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &PrintDialogGtk::SendDocumentToPrinter,
+                          document_name));
+  }
 }
 
 void PrintDialogGtk::AddRefToDialog() {
@@ -332,38 +341,6 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
     default: {
       NOTREACHED();
     }
-  }
-}
-
-void PrintDialogGtk::SaveDocumentToDisk(const printing::Metafile* metafile,
-                                        const string16& document_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  bool error = false;
-  if (!file_util::CreateTemporaryFile(&path_to_pdf_)) {
-    LOG(ERROR) << "Creating temporary file failed";
-    error = true;
-  }
-
-  if (!error && !metafile->SaveTo(path_to_pdf_)) {
-    LOG(ERROR) << "Saving metafile failed";
-    file_util::Delete(path_to_pdf_, false);
-    error = true;
-  }
-
-  // Done saving, let PrintDialogGtk::PrintDocument() continue.
-  save_document_event_->Signal();
-
-  if (error) {
-    // Matches AddRef() in PrintDocument();
-    Release();
-  } else {
-    // No errors, continue printing.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrintDialogGtk::SendDocumentToPrinter,
-                          document_name));
   }
 }
 

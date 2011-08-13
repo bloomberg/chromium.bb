@@ -17,10 +17,6 @@
 #include "printing/printing_context_cairo.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace printing {
 class Metafile;
 }
@@ -58,10 +54,6 @@ class PrintDialogGtk
   // Handles dialog response.
   CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
 
-  // Saves data in |metafile| to disk for document named |document_name|.
-  void SaveDocumentToDisk(const printing::Metafile* metafile,
-                          const string16& document_name);
-
   // Prints document named |document_name|.
   void SendDocumentToPrinter(const string16& document_name);
 
@@ -85,9 +77,6 @@ class PrintDialogGtk
   GtkPrintSettings* gtk_settings_;
   GtkPageSetup* page_setup_;
   GtkPrinter* printer_;
-
-  // Event to signal when save document finishes.
-  scoped_ptr<base::WaitableEvent> save_document_event_;
 
   FilePath path_to_pdf_;
 
