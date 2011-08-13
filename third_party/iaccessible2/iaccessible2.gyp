@@ -38,6 +38,7 @@
       'sources': [
         'IAccessible2Proxy.def',
         '<(INTERMEDIATE_DIR)/../iaccessible2/dlldata.c',
+        '<(INTERMEDIATE_DIR)/../iaccessible2/ia2_api_all_p.c',
       ],
       'link_settings': {
         'libraries': [
