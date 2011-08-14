@@ -19,12 +19,6 @@ class PageLoadHistograms : public RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   virtual void FrameWillClose(WebKit::WebFrame* frame);
-  virtual void LogCrossFramePropertyAccess(
-      WebKit::WebFrame* frame,
-      WebKit::WebFrame* target,
-      bool cross_origin,
-      const WebKit::WebString& property_name,
-      unsigned long long event_id);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Dump all page load histograms appropriate for the given frame.

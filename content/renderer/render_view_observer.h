@@ -62,12 +62,6 @@ class RenderViewObserver : public IPC::Channel::Listener,
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) {}
   virtual void PrintPage(WebKit::WebFrame* frame) {}
-  virtual void LogCrossFramePropertyAccess(
-      WebKit::WebFrame* frame,
-      WebKit::WebFrame* target,
-      bool cross_origin,
-      const WebKit::WebString& property_name,
-      unsigned long long event_id) {}
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) {}
 
   // These match the RenderView methods.

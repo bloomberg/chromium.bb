@@ -771,19 +771,6 @@ void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
   Dump(frame);
 }
 
-void PageLoadHistograms::LogCrossFramePropertyAccess(
-      WebFrame* frame,
-      WebFrame* target,
-      bool cross_origin,
-      const WebString& property_name,
-      unsigned long long event_id) {
-  // TODO(johnnyg): track the individual properties and repeat event_ids.
-  if (cross_origin)
-    cross_origin_access_count_++;
-  else
-    same_origin_access_count_++;
-}
-
 bool PageLoadHistograms::OnMessageReceived(const IPC::Message& message) {
   if (message.type() == ViewMsg_ClosePage::ID) {
     // TODO(davemoore) This code should be removed once willClose() gets

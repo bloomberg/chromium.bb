@@ -551,12 +551,6 @@ class RenderView : public RenderWidget,
   virtual void didCreateScriptContext(WebKit::WebFrame* frame);
   virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
   virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
-  virtual void logCrossFramePropertyAccess(
-      WebKit::WebFrame* frame,
-      WebKit::WebFrame* target,
-      bool cross_origin,
-      const WebKit::WebString& property_name,
-      unsigned long long event_id);
   virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
