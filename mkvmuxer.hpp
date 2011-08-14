@@ -335,8 +335,10 @@ class Tracks {
   ~Tracks();
 
   // Adds a Track element to the Tracks object. |track| will be owned and
-  // deleted by the Tracks object. Returns true on success.
-  bool AddTrack(Track* track);
+  // deleted by the Tracks object. Returns true on success. |number| is the
+  // number to use for the track. |number| must be >= 0. If |number| == 0
+  // then the muxer will decide on the track number.
+  bool AddTrack(Track* track, int32 number);
 
   // Returns the track by index. Returns NULL if there is no track match.
   const Track* GetTrackByIndex(uint32 idx) const;
@@ -525,12 +527,20 @@ class Segment {
     kFile = 0x2
   };
 
+  const static uint64 kDefaultMaxClusterDuration = 30000000000ULL;
+
   explicit Segment(IMkvWriter* writer);
   virtual ~Segment();
 
   // Adds an audio track to the segment. Returns the number of the track on
   // success, 0 on error.
   uint64 AddAudioTrack(int32 sample_rate, int32 channels);
+
+  // Adds an audio track to the segment. Returns the number of the track on
+  // success, 0 on error. |number| is the number to use for the audio track.
+  // |number| must be >= 0. If |number| == 0 then the muxer will decide on
+  // the track number.
+  uint64 AddAudioTrack(int32 sample_rate, int32 channels, int32 number);
 
   // Adds a frame to be output in the file. Returns true on success.
   // Inputs:
@@ -549,6 +559,12 @@ class Segment {
   // Adds a video track to the segment. Returns the number of the track on
   // success, 0 on error.
   uint64 AddVideoTrack(int32 width, int32 height);
+
+  // Adds a video track to the segment. Returns the number of the track on
+  // success, 0 on error. |number| is the number to use for the video track.
+  // |number| must be >= 0. If |number| == 0 then the muxer will decide on
+  // the track number.
+  uint64 AddVideoTrack(int32 width, int32 height, int32 number);
 
   // Sets which track to use for the Cues element. Must have added the track
   // before calling this function. Returns true on success. |track_number| is

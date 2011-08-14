@@ -36,6 +36,8 @@ void Usage() {
   printf("  -max_cluster_duration <double> in seconds\n");
   printf("  -max_cluster_size <int>     in bytes\n");
   printf("  -switch_tracks <int>        >0 switches tracks in output\n");
+  printf("  -audio_track_number <int>   >0 Changes the audio track number\n");
+  printf("  -video_track_number <int>   >0 Changes the video track number\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -64,6 +66,8 @@ int main(int argc, char* argv[]) {
   uint64 max_cluster_duration = 0;
   uint64 max_cluster_size = 0;
   bool switch_tracks = false;
+  int audio_track_number = 0; // 0 tells muxer to decide.
+  int video_track_number = 0; // 0 tells muxer to decide.
 
   bool output_cues_block_number = true;
 
@@ -101,6 +105,10 @@ int main(int argc, char* argv[]) {
       max_cluster_size = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-switch_tracks", argv[i])) {
       switch_tracks = strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (!strcmp("-audio_track_number", argv[i])) {
+      audio_track_number = strtol(argv[++i], &end, 10);
+    } else if (!strcmp("-video_track_number", argv[i])) {
+      video_track_number = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_width", argv[i])) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i])) {
@@ -206,7 +214,8 @@ int main(int argc, char* argv[]) {
 
       // Add the video track to the muxer
       vid_track = muxer_segment.AddVideoTrack(static_cast<int>(width),
-                                              static_cast<int>(height));
+                                              static_cast<int>(height),
+                                              video_track_number);
       if (!vid_track) {
         printf("\n Could not add video track.\n");
         return -1;
@@ -243,7 +252,8 @@ int main(int argc, char* argv[]) {
 
       // Add the audio track to the muxer
       aud_track = muxer_segment.AddAudioTrack(static_cast<int>(sample_rate),
-                                              static_cast<int>(channels));
+                                              static_cast<int>(channels),
+                                              audio_track_number);
       if (!aud_track) {
         printf("\n Could not add audio track.\n");
         return -1;
@@ -279,14 +289,10 @@ int main(int argc, char* argv[]) {
   // Set Cues element attributes
   mkvmuxer::Cues* const cues = muxer_segment.GetCues();
   cues->set_output_block_number(output_cues_block_number);
-  if (cues_on_video_track) {
-    if (vid_track)
-      muxer_segment.CuesTrack(vid_track);
-  }
-  if (cues_on_audio_track) {
-    if (aud_track)
-      muxer_segment.CuesTrack(aud_track);
-  }
+  if (cues_on_video_track && vid_track)
+    muxer_segment.CuesTrack(vid_track);
+  if (cues_on_audio_track && aud_track)
+    muxer_segment.CuesTrack(aud_track);
 
   // Write clusters
   unsigned char* data = NULL;

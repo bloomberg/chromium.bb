@@ -662,7 +662,18 @@ Tracks::~Tracks() {
   }
 }
 
-bool Tracks::AddTrack(Track* track) {
+bool Tracks::AddTrack(Track* track, int32 number) {
+  if (number < 0)
+    return false;
+
+  int32 track_num = number;
+
+  // Check to make sure a track does not already have |track_num|.
+  for (uint32 i = 0; i < track_entries_size_; ++i) {
+    if (track_entries_[i]->number() == track_num)
+      return false;
+  }
+
   const uint32 count = track_entries_size_ + 1;
 
   Track** const track_entries = new (std::nothrow) Track*[count];
@@ -675,7 +686,24 @@ bool Tracks::AddTrack(Track* track) {
 
   delete [] track_entries_;
 
-  track->set_number(count);
+  // Find the lowest availible track number > 0.
+  if (track_num == 0) {
+    track_num = count;
+
+    // Check to make sure a track does not already have |track_num|.
+    bool exit = false;
+    do {
+      exit = true;
+      for (uint32 i = 0; i < track_entries_size_; ++i) {
+        if (track_entries[i]->number() == track_num) {
+          track_num++;
+          exit = false;
+          break;
+        }
+      }
+    } while (!exit);
+  }
+  track->set_number(track_num);
 
   track_entries_ = track_entries;
   track_entries_[track_entries_size_] = track;
@@ -1128,7 +1156,7 @@ Segment::Segment(IMkvWriter* writer)
       has_video_(false),
       header_written_(false),
       last_timestamp_(0),
-      max_cluster_duration_(30000000000),
+      max_cluster_duration_(kDefaultMaxClusterDuration),
       max_cluster_size_(0),
       mode_(kFile),
       new_cluster_(true),
@@ -1215,6 +1243,10 @@ bool Segment::Finalize() {
 }
 
 uint64 Segment::AddVideoTrack(int32 width, int32 height) {
+  return AddVideoTrack(width, height, 0);
+}
+
+uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
   VideoTrack* const vid_track = new (std::nothrow) VideoTrack();
   if (!vid_track)
     return 0;
@@ -1224,13 +1256,19 @@ uint64 Segment::AddVideoTrack(int32 width, int32 height) {
   vid_track->set_width(width);
   vid_track->set_height(height);
 
-  tracks_.AddTrack(vid_track);
+  tracks_.AddTrack(vid_track, number);
   has_video_ = true;
 
   return vid_track->number();
 }
 
 uint64 Segment::AddAudioTrack(int32 sample_rate, int32 channels) {
+  return AddAudioTrack(sample_rate, channels, 0);
+}
+
+uint64 Segment::AddAudioTrack(int32 sample_rate,
+                              int32 channels,
+                              int32 number) {
   AudioTrack* const aud_track = new (std::nothrow) AudioTrack();
   if (!aud_track)
     return 0;
@@ -1240,7 +1278,7 @@ uint64 Segment::AddAudioTrack(int32 sample_rate, int32 channels) {
   aud_track->set_sample_rate(sample_rate);
   aud_track->set_channels(channels);
 
-  tracks_.AddTrack(aud_track);
+  tracks_.AddTrack(aud_track, number);
 
   return aud_track->number();
 }
