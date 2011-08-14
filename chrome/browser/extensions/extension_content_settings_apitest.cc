@@ -206,15 +206,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   webkit::npapi::MockPluginList plugin_list(kPluginDefinitions,
                                             arraysize(kPluginDefinitions));
   plugin_list.AddPluginToLoad(
-      webkit::npapi::WebPluginInfo(ASCIIToUTF16(kFooName),
-                                   FilePath(kFooPath),
-                                   ASCIIToUTF16("1.2.3"),
-                                   ASCIIToUTF16("foo")));
+      webkit::WebPluginInfo(ASCIIToUTF16(kFooName),
+                            FilePath(kFooPath),
+                            ASCIIToUTF16("1.2.3"),
+                            ASCIIToUTF16("foo")));
   plugin_list.AddPluginToLoad(
-      webkit::npapi::WebPluginInfo(ASCIIToUTF16(kBarName),
-                                   FilePath(kBarPath),
-                                   ASCIIToUTF16("2.3.4"),
-                                   ASCIIToUTF16("bar")));
+      webkit::WebPluginInfo(ASCIIToUTF16(kBarName),
+                            FilePath(kBarPath),
+                            ASCIIToUTF16("2.3.4"),
+                            ASCIIToUTF16("bar")));
   GetResourceIdentifiersFunction::SetPluginListForTesting(&plugin_list);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))

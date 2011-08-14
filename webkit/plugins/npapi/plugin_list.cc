@@ -210,7 +210,7 @@ void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
 #endif
 }
 
-void PluginList::RegisterInternalPlugin(const WebPluginInfo& info) {
+void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info) {
   PluginEntryPoints entry_points = {0};
   InternalPlugin plugin = { info, entry_points };
 
@@ -230,9 +230,9 @@ void PluginList::RegisterInternalPlugin(const FilePath& filename,
   plugin.info.name = ASCIIToUTF16(name);
   plugin.info.version = ASCIIToUTF16("1");
   plugin.info.desc = ASCIIToUTF16(description);
-  plugin.info.enabled = WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+  plugin.info.enabled = webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
-  WebPluginMimeType mime_type;
+  webkit::WebPluginMimeType mime_type;
   mime_type.mime_type = mime_type_str;
   plugin.info.mime_types.push_back(mime_type);
 
@@ -256,7 +256,7 @@ void PluginList::UnregisterInternalPlugin(const FilePath& path) {
 }
 
 bool PluginList::ReadPluginInfo(const FilePath& filename,
-                                WebPluginInfo* info,
+                                webkit::WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
   {
     base::AutoLock lock(lock_);
@@ -280,7 +280,7 @@ bool PluginList::ParseMimeTypes(
     const std::string& mime_types_str,
     const std::string& file_extensions_str,
     const string16& mime_type_descriptions_str,
-    std::vector<WebPluginMimeType>* parsed_mime_types) {
+    std::vector<webkit::WebPluginMimeType>* parsed_mime_types) {
   std::vector<std::string> mime_types, file_extensions;
   std::vector<string16> descriptions;
   base::SplitString(mime_types_str, '|', &mime_types);
@@ -411,9 +411,9 @@ void PluginList::LoadPlugins() {
 
   base::AutoLock lock(lock_);
   // Grab all plugins that were found before to copy enabled statuses.
-  std::vector<WebPluginInfo> old_plugins;
+  std::vector<webkit::WebPluginInfo> old_plugins;
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<WebPluginInfo>& gr_plugins =
+    const std::vector<webkit::WebPluginInfo>& gr_plugins =
         plugin_groups_[i]->web_plugins_info();
     old_plugins.insert(old_plugins.end(), gr_plugins.begin(), gr_plugins.end());
   }
@@ -422,7 +422,8 @@ void PluginList::LoadPlugins() {
     PluginGroup* group = new_plugin_groups[i];
     string16 group_name = group->GetGroupName();
 
-    std::vector<WebPluginInfo>& gr_plugins = group->GetPluginsContainer();
+    std::vector<webkit::WebPluginInfo>& gr_plugins =
+        group->GetPluginsContainer();
     for (size_t j = 0; j < gr_plugins.size(); ++j) {
       int plugin_found = -1;
       for (size_t k = 0; k < old_plugins.size(); ++k) {
@@ -495,7 +496,7 @@ void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
   LoadPlugins();
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<WebPluginInfo>& gr_plugins =
+    const std::vector<webkit::WebPluginInfo>& gr_plugins =
         plugin_groups_[i]->web_plugins_info();
     plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
   }
@@ -506,7 +507,7 @@ void PluginList::GetPluginInfoArray(
     const std::string& mime_type,
     bool allow_wildcard,
     bool* use_stale,
-    std::vector<WebPluginInfo>* info,
+    std::vector<webkit::WebPluginInfo>* info,
     std::vector<std::string>* actual_mime_types) {
   DCHECK(mime_type == StringToLowerASCII(mime_type));
   DCHECK(info);
@@ -524,7 +525,7 @@ void PluginList::GetPluginInfoArray(
 
   // Add in enabled plugins by mime type.
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<WebPluginInfo>& plugins =
+    const std::vector<webkit::WebPluginInfo>& plugins =
         plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (IsPluginEnabled(plugins[i]) && SupportsType(plugins[i],
@@ -547,7 +548,7 @@ void PluginList::GetPluginInfoArray(
     std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
     std::string actual_mime_type;
     for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-      const std::vector<WebPluginInfo>& plugins =
+      const std::vector<webkit::WebPluginInfo>& plugins =
           plugin_groups_[i]->web_plugins_info();
       for (size_t i = 0; i < plugins.size(); ++i) {
         if (IsPluginEnabled(plugins[i]) &&
@@ -566,7 +567,7 @@ void PluginList::GetPluginInfoArray(
 
   // Add in disabled plugins by mime type.
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<WebPluginInfo>& plugins =
+    const std::vector<webkit::WebPluginInfo>& plugins =
         plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (!IsPluginEnabled(plugins[i]) &&
@@ -593,7 +594,7 @@ void PluginList::GetPluginInfoArray(
         kDefaultPluginLibraryName) == 0) {
 #endif
       DCHECK_NE(0U, plugin_groups_[i]->web_plugins_info().size());
-      const WebPluginInfo& default_info =
+      const webkit::WebPluginInfo& default_info =
           plugin_groups_[i]->web_plugins_info()[0];
       if (SupportsType(default_info, mime_type, allow_wildcard)) {
         info->push_back(default_info);
@@ -605,11 +606,11 @@ void PluginList::GetPluginInfoArray(
 }
 
 bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
-                                     WebPluginInfo* info) {
+                                     webkit::WebPluginInfo* info) {
   LoadPlugins();
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<WebPluginInfo>& plugins =
+    const std::vector<webkit::WebPluginInfo>& plugins =
         plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
       if (plugins[i].path == plugin_path) {
@@ -638,7 +639,7 @@ void PluginList::GetPluginGroups(
 }
 
 const PluginGroup* PluginList::GetPluginGroup(
-    const WebPluginInfo& web_plugin_info) {
+    const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
   return AddToPluginGroups(web_plugin_info, &plugin_groups_);
 }
@@ -652,7 +653,7 @@ string16 PluginList::GetPluginGroupName(const std::string& identifier) {
 }
 
 std::string PluginList::GetPluginGroupIdentifier(
-    const WebPluginInfo& web_plugin_info) {
+    const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
   PluginGroup* group = AddToPluginGroups(web_plugin_info, &plugin_groups_);
   return group->identifier();
@@ -666,7 +667,7 @@ void PluginList::AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups) {
 }
 
 PluginGroup* PluginList::AddToPluginGroups(
-    const WebPluginInfo& web_plugin_info,
+    const webkit::WebPluginInfo& web_plugin_info,
     ScopedVector<PluginGroup>* plugin_groups) {
   PluginGroup* group = NULL;
   for (size_t i = 0; i < plugin_groups->size(); ++i) {
@@ -747,7 +748,7 @@ bool PluginList::EnableGroup(bool enable, const string16& group_name) {
   return group->EnableGroup(enable);
 }
 
-bool PluginList::SupportsType(const WebPluginInfo& plugin,
+bool PluginList::SupportsType(const webkit::WebPluginInfo& plugin,
                               const std::string& mime_type,
                               bool allow_wildcard) {
   // Webkit will ask for a plugin to handle empty mime types.
@@ -755,7 +756,7 @@ bool PluginList::SupportsType(const WebPluginInfo& plugin,
     return false;
 
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_info = plugin.mime_types[i];
+    const webkit::WebPluginMimeType& mime_info = plugin.mime_types[i];
     if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
       if (!allow_wildcard && mime_info.mime_type == "*")
         continue;
@@ -765,11 +766,11 @@ bool PluginList::SupportsType(const WebPluginInfo& plugin,
   return false;
 }
 
-bool PluginList::SupportsExtension(const WebPluginInfo& plugin,
+bool PluginList::SupportsExtension(const webkit::WebPluginInfo& plugin,
                                    const std::string& extension,
                                    std::string* actual_mime_type) {
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_type = plugin.mime_types[i];
+    const webkit::WebPluginMimeType& mime_type = plugin.mime_types[i];
     for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
       if (mime_type.file_extensions[j] == extension) {
         if (actual_mime_type)

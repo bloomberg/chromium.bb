@@ -28,7 +28,7 @@
 #include "content/common/view_messages.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 using ::base::files::FilePathWatcher;
@@ -211,7 +211,7 @@ PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
   if (plugin_host)
     return plugin_host;
 
-  webkit::npapi::WebPluginInfo info;
+  webkit::WebPluginInfo info;
   if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
           plugin_path, &info)) {
     return NULL;
@@ -319,7 +319,7 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  webkit::npapi::WebPluginInfo info;
+  webkit::WebPluginInfo info;
   bool found = GetPluginInfo(
       render_process_id, render_view_id, url, mime_type, &info, NULL);
   FilePath plugin_path;
@@ -350,7 +350,7 @@ bool PluginService::GetPluginInfo(int render_process_id,
                                   int render_view_id,
                                   const GURL& url,
                                   const std::string& mime_type,
-                                  webkit::npapi::WebPluginInfo* info,
+                                  webkit::WebPluginInfo* info,
                                   std::string* actual_mime_type) {
   // GetPluginInfoArray may need to load the plugins, so we need to be
   // on the FILE thread.
@@ -369,12 +369,12 @@ bool PluginService::GetPluginInfo(int render_process_id,
     }
   }
   bool allow_wildcard = true;
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, NULL, &plugins, &mime_types);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (webkit::npapi::IsPluginEnabled(plugins[i])) {
+    if (webkit::IsPluginEnabled(plugins[i])) {
       *info = plugins[i];
       if (actual_mime_type)
         *actual_mime_type = mime_types[i];

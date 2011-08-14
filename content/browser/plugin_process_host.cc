@@ -152,7 +152,7 @@ PluginProcessHost::~PluginProcessHost() {
   CancelRequests();
 }
 
-bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
+bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
                              const std::string& locale) {
   info_ = info;
   set_name(info_.name);

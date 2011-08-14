@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGININFO_H_
-#define WEBKIT_PLUGINS_NPAPI_WEBPLUGININFO_H_
+#ifndef WEBKIT_PLUGINS_WEBPLUGININFO_H_
+#define WEBKIT_PLUGINS_WEBPLUGININFO_H_
 
 #include <string>
 #include <vector>
@@ -12,10 +12,7 @@
 #include "base/file_path.h"
 
 namespace webkit {
-namespace npapi {
 
-// Describes a mime type entry for a plugin.
-// TODO(viettrungluu): This isn't NPAPI-specific. Move this somewhere else.
 struct WebPluginMimeType {
   WebPluginMimeType();
   // A constructor for the common case of a single file extension and an ASCII
@@ -39,7 +36,7 @@ struct WebPluginMimeType {
   std::vector<string16> additional_param_values;
 };
 
-// Describes an available NPAPI plugin.
+// Describes an available NPAPI or Pepper plugin.
 struct WebPluginInfo {
   // Defines the possible enabled state a plugin can have.
   // The enum values actually represent a 3-bit bitfield :
@@ -65,6 +62,12 @@ struct WebPluginInfo {
     USER_MASK = USER_DISABLED,
     MANAGED_MASK = POLICY_DISABLED | POLICY_ENABLED,
     POLICY_UNMANAGED = -1
+  };
+
+  enum PluginType {
+    PLUGIN_TYPE_NPAPI,
+    PLUGIN_TYPE_PEPPER_IN_PROCESS,
+    PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS
   };
 
   WebPluginInfo();
@@ -95,12 +98,14 @@ struct WebPluginInfo {
 
   // Enabled state of the plugin. See the EnabledStates enum.
   int enabled;
+  
+  // Plugin type. See the PluginType enum.
+  int type;
 };
 
 // Checks whether a plugin is enabled either by the user or by policy.
 bool IsPluginEnabled(const WebPluginInfo& plugin);
 
-}  // namespace npapi
 }  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_NPAPI_WEBPLUGININFO_H_
+#endif  // WEBKIT_PLUGINS_WEBPLUGININFO_H_

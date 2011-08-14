@@ -65,11 +65,11 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   // redirect PDF files to Google Document Viewer.
   if (mime_type == kPdfMimeType) {
     FilePath pdf_path;
-    webkit::npapi::WebPluginInfo info;
+    webkit::WebPluginInfo info;
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
     if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
             pdf_path, &info) &&
-            webkit::npapi::IsPluginEnabled(info))
+            webkit::IsPluginEnabled(info))
       return NULL;
   }
   // If supported, build the URL to the Google Document Viewer

@@ -26,7 +26,7 @@
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/memory/scoped_ptr.h"
@@ -50,7 +50,7 @@ class PluginService
     int render_process_id;
     int render_view_id;
     GURL url;
-    webkit::npapi::WebPluginInfo plugin;
+    webkit::WebPluginInfo plugin;
   };
 
   // Returns the PluginService singleton.
@@ -97,7 +97,7 @@ class PluginService
                      int render_view_id,
                      const GURL& url,
                      const std::string& mime_type,
-                     webkit::npapi::WebPluginInfo* info,
+                     webkit::WebPluginInfo* info,
                      std::string* actual_mime_type);
 
   // Safe to be called from any thread.

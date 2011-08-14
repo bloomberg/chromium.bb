@@ -59,9 +59,7 @@ class URLRequestContextGetter;
 }
 
 namespace webkit {
-namespace npapi {
 struct WebPluginInfo;
-}
 }
 
 namespace webkit_glue {
@@ -149,13 +147,13 @@ class RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
   void OnGetPlugins(bool refresh,
-                    std::vector<webkit::npapi::WebPluginInfo>* plugins);
+                    std::vector<webkit::WebPluginInfo>* plugins);
   void OnGetPluginInfo(int routing_id,
                        const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
                        bool* found,
-                       webkit::npapi::WebPluginInfo* info,
+                       webkit::WebPluginInfo* info,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(int routing_id,
                              const GURL& url,

@@ -72,9 +72,9 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   void RegisterPDFPlugin() {
-    webkit::npapi::WebPluginInfo info;
+    webkit::WebPluginInfo info;
     info.path = pdf_path_;
-    info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+    info.enabled = webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
@@ -85,7 +85,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   void SetPDFPluginLoadedState(bool want_loaded, bool* out_is_enabled) {
-    webkit::npapi::WebPluginInfo info;
+    webkit::WebPluginInfo info;
     bool is_loaded =
         webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
             pdf_path_, &info);
@@ -102,7 +102,7 @@ class GViewRequestInterceptorTest : public testing::Test {
           pdf_path_, &info);
     }
     EXPECT_EQ(want_loaded, is_loaded);
-    *out_is_enabled = webkit::npapi::IsPluginEnabled(info);
+    *out_is_enabled = webkit::IsPluginEnabled(info);
   }
 
  protected:

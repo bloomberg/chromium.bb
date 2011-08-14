@@ -40,11 +40,8 @@ class ListValue;
 }
 
 namespace webkit {
-namespace npapi {
 struct WebPluginInfo;
 }
-}
-
 
 class MetricsService : public NotificationObserver,
                        public URLFetcher::Delegate,
@@ -156,7 +153,7 @@ class MetricsService : public NotificationObserver,
   // Callback to let us know that the init task is done.
   void OnInitTaskComplete(
       const std::string& hardware_class,
-      const std::vector<webkit::npapi::WebPluginInfo>& plugins);
+      const std::vector<webkit::WebPluginInfo>& plugins);
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.
@@ -356,7 +353,7 @@ class MetricsService : public NotificationObserver,
   std::string hardware_class_;
 
   // The list of plugins which was retrieved on the file thread.
-  std::vector<webkit::npapi::WebPluginInfo> plugins_;
+  std::vector<webkit::WebPluginInfo> plugins_;
 
   // The outstanding transmission appears as a URL Fetch operation.
   scoped_ptr<URLFetcher> current_fetch_;

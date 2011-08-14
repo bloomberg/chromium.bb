@@ -47,7 +47,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   // PluginProcessHost::Client methods.
   virtual int ID();
   virtual bool OffTheRecord();
-  virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info);
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info);
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle);
   virtual void OnError();
 

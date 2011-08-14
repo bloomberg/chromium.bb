@@ -87,7 +87,7 @@ bool PluginDataRemover::OffTheRecord() {
 }
 
 void PluginDataRemover::SetPluginInfo(
-    const webkit::npapi::WebPluginInfo& info) {
+    const webkit::WebPluginInfo& info) {
 }
 
 void PluginDataRemover::OnChannelOpened(const IPC::ChannelHandle& handle) {
@@ -168,10 +168,10 @@ void PluginDataRemover::SignalDone() {
 bool PluginDataRemover::IsSupported() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = false;
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       GURL(), kFlashMimeType, allow_wildcard, NULL, &plugins, NULL);
-  std::vector<webkit::npapi::WebPluginInfo>::iterator plugin = plugins.begin();
+  std::vector<webkit::WebPluginInfo>::iterator plugin = plugins.begin();
   if (plugin == plugins.end())
     return false;
   scoped_ptr<Version> version(
@@ -181,7 +181,7 @@ bool PluginDataRemover::IsSupported() {
           switches::kMinClearSiteDataFlashVersion)));
   if (!min_version.get())
     min_version.reset(Version::GetVersionFromString(kMinFlashVersion));
-  return webkit::npapi::IsPluginEnabled(*plugin) &&
+  return webkit::IsPluginEnabled(*plugin) &&
          version.get() &&
          min_version->CompareTo(*version) == -1;
 }

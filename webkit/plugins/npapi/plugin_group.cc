@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace webkit {
 namespace npapi {

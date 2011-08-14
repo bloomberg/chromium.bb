@@ -25,9 +25,9 @@ class ListValue;
 }
 
 namespace webkit {
+struct WebPluginInfo;
 namespace npapi {
 class PluginGroup;
-struct WebPluginInfo;
 }
 }
 
@@ -73,7 +73,7 @@ class PluginUpdater : public NotificationObserver {
   // Called on the UI thread with the plugin data to save the preferences.
   static void OnUpdatePreferences(
       Profile* profile,
-      const std::vector<webkit::npapi::WebPluginInfo>& plugins,
+      const std::vector<webkit::WebPluginInfo>& plugins,
       const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Queues sending the notification that plugin data has changed.  This is done
@@ -84,7 +84,7 @@ class PluginUpdater : public NotificationObserver {
   static void OnNotifyPluginStatusChanged();
 
   static base::DictionaryValue* CreatePluginFileSummary(
-      const webkit::npapi::WebPluginInfo& plugin);
+      const webkit::WebPluginInfo& plugin);
 
   // Force plugins to be enabled or disabled due to policy.
   // |disabled_list| contains the list of StringValues of the names of the

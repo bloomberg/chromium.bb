@@ -18,8 +18,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "base/hash_tables.h"
@@ -264,7 +264,7 @@ class WebPluginDelegateProxy
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
   int instance_id_;
-  webkit::npapi::WebPluginInfo info_;
+  webkit::WebPluginInfo info_;
 
   gfx::Rect plugin_rect_;
   gfx::Rect clip_rect_;

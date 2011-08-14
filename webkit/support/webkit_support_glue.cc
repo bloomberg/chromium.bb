@@ -15,7 +15,7 @@
 namespace webkit_glue {
 
 void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+                std::vector<webkit::WebPluginInfo>* plugins) {
   if (refresh)
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
@@ -27,7 +27,7 @@ void GetPlugins(bool refresh,
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
   };
   for (int i = plugins->size() - 1; i >= 0; --i) {
-    webkit::npapi::WebPluginInfo plugin_info = plugins->at(i);
+    webkit::WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
       if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
         webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_info.path);

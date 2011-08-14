@@ -82,11 +82,11 @@ static BOOL IsSupportedFileURL(const GURL& url) {
   // TODO(bauerb): This possibly uses stale information, but it's guaranteed not
   // to do disk access.
   bool stale = false;
-  std::vector<webkit::npapi::WebPluginInfo> info_array;
+  std::vector<webkit::WebPluginInfo> info_array;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       url, mime_type, false, &stale, &info_array, NULL);
   for (size_t i = 0; i < info_array.size(); ++i) {
-    if (webkit::npapi::IsPluginEnabled(info_array[i]))
+    if (webkit::IsPluginEnabled(info_array[i]))
       return true;
   }
 

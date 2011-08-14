@@ -191,7 +191,7 @@ uint64 ClipboardGetSequenceNumber() {
 }
 
 void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+                std::vector<webkit::WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;
   RenderThread::current()->Send(new ViewHostMsg_GetPlugins(refresh, plugins));

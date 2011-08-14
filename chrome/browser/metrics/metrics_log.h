@@ -22,9 +22,7 @@ class DictionaryValue;
 }
 
 namespace webkit {
-namespace npapi {
 struct WebPluginInfo;
-}
 }
 
 class MetricsLog : public MetricsLogBase {
@@ -44,7 +42,7 @@ class MetricsLog : public MetricsLogBase {
   // that are to be recorded. Each value in profile_metrics should be a
   // dictionary giving the metrics for the profile.
   void RecordEnvironment(
-      const std::vector<webkit::npapi::WebPluginInfo>& plugin_list,
+      const std::vector<webkit::WebPluginInfo>& plugin_list,
       const base::DictionaryValue* profile_metrics);
 
   // Records the input text, available choices, and selected entry when the
@@ -92,7 +90,7 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes the list of installed plugins.
   void WritePluginList(
-      const std::vector<webkit::npapi::WebPluginInfo>& plugin_list);
+      const std::vector<webkit::WebPluginInfo>& plugin_list);
 
   // Within the profile group, write basic install info including appversion.
   void WriteInstallElement();

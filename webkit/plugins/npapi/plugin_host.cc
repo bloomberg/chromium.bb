@@ -27,7 +27,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_stream_url.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -601,7 +601,7 @@ const char* NPN_UserAgent(NPP id) {
   if (id)
     plugin = FindInstance(id);
   if (plugin.get()) {
-    webkit::npapi::WebPluginInfo plugin_info =
+    webkit::WebPluginInfo plugin_info =
         plugin->plugin_lib()->plugin_info();
     if (plugin_info.name == ASCIIToUTF16("Silverlight Plug-In") &&
         StartsWith(plugin_info.version, ASCIIToUTF16("4."), false)) {

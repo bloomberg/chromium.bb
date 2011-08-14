@@ -15,8 +15,6 @@
 #include "content/common/notification_observer.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
-struct WebPluginInfo;
-
 class PluginExceptionsTableModel : public RemoveRowsTableModel,
                                    public NotificationObserver {
  public:

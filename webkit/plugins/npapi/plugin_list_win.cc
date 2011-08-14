@@ -313,8 +313,8 @@ void PluginList::LoadPluginsFromRegistry(
 // Returns true if the given plugins share at least one mime type.  This is used
 // to differentiate newer versions of a plugin vs two plugins which happen to
 // have the same filename.
-bool HaveSharedMimeType(const WebPluginInfo& plugin1,
-                        const WebPluginInfo& plugin2) {
+bool HaveSharedMimeType(const webkit::WebPluginInfo& plugin1,
+                        const webkit::WebPluginInfo& plugin2) {
   for (size_t i = 0; i < plugin1.mime_types.size(); ++i) {
     for (size_t j = 0; j < plugin2.mime_types.size(); ++j) {
       if (plugin1.mime_types[i].mime_type == plugin2.mime_types[j].mime_type)
@@ -352,12 +352,12 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   return false;
 }
 
-bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
                                   ScopedVector<PluginGroup>* plugin_groups) {
   // Version check
 
   for (size_t i = 0; i < plugin_groups->size(); ++i) {
-    const std::vector<WebPluginInfo>& plugins =
+    const std::vector<webkit::WebPluginInfo>& plugins =
         (*plugin_groups)[i]->web_plugins_info();
     for (size_t j = 0; j < plugins.size(); ++j) {
       std::wstring plugin1 =
@@ -419,7 +419,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
       return false;
 
     for (size_t i = 0; i < plugin_groups->size(); ++i) {
-      const std::vector<WebPluginInfo>& plugins =
+      const std::vector<webkit::WebPluginInfo>& plugins =
           (*plugin_groups)[i]->web_plugins_info();
       for (size_t j = 0; j < plugins.size(); ++j) {
         if (plugins[j].path.BaseName().value() == kOldWMPPlugin) {
@@ -430,7 +430,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     }
   } else if (filename == kOldWMPPlugin) {
     for (size_t i = 0; i < plugin_groups->size(); ++i) {
-      const std::vector<WebPluginInfo>& plugins =
+      const std::vector<webkit::WebPluginInfo>& plugins =
           (*plugin_groups)[i]->web_plugins_info();
       for (size_t j = 0; j < plugins.size(); ++j) {
         if (plugins[j].path.BaseName().value() == kNewWMPPlugin)

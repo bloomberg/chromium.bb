@@ -27,11 +27,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 using webkit::npapi::PluginGroup;
 using webkit::npapi::PluginList;
-using webkit::npapi::WebPluginInfo;
+using webkit::WebPluginInfo;
 
 namespace {
 

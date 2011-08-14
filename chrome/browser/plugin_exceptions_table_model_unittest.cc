@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 // Can't be an internal namespace because PluginExceptionsTableModel declares
 // as a friend.
@@ -91,20 +91,20 @@ class PluginExceptionsTableModelTest : public TestingBrowserProcessTest {
     table_model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
     std::vector<webkit::npapi::PluginGroup> plugins;
-    webkit::npapi::WebPluginInfo foo_plugin;
+    webkit::WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
     foo_plugin.enabled =
-        webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+        webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     scoped_ptr<webkit::npapi::PluginGroup> foo_group(
         webkit::npapi::PluginGroup::FromWebPluginInfo(foo_plugin));
     plugins.push_back(*foo_group);
 
-    webkit::npapi::WebPluginInfo bar_plugin;
+    webkit::WebPluginInfo bar_plugin;
     bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
     bar_plugin.enabled =
-        webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+        webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     scoped_ptr<webkit::npapi::PluginGroup> bar_group(
         webkit::npapi::PluginGroup::FromWebPluginInfo(bar_plugin));
     plugins.push_back(*bar_group);

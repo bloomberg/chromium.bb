@@ -16,7 +16,6 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 class FilePath;
-struct WebPluginInfo;
 
 namespace webkit {
 namespace npapi {
@@ -32,18 +31,19 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
-  static bool ReadWebPluginInfo(const FilePath& filename, WebPluginInfo* info);
+  static bool ReadWebPluginInfo(const FilePath& filename,
+                                webkit::WebPluginInfo* info);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Parse the result of an NP_GetMIMEDescription() call.
   // This API is only used on Unixes, and is exposed here for testing.
   static void ParseMIMEDescription(const std::string& description,
-                                   std::vector<WebPluginMimeType>* mime_types);
+      std::vector<webkit::WebPluginMimeType>* mime_types);
 
   // Extract a version number from a description string.
   // This API is only used on Unixes, and is exposed here for testing.
   static void ExtractVersionString(const std::string& version,
-                                   WebPluginInfo* info);
+                                   webkit::WebPluginInfo* info);
 #endif
 
   // Unloads all the loaded plugin libraries and cleans up the plugin map.
@@ -63,7 +63,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
   // Gets information about this plugin and the mime types that it
   // supports.
-  const WebPluginInfo& plugin_info() { return web_plugin_info_; }
+  const webkit::WebPluginInfo& plugin_info() { return web_plugin_info_; }
 
   bool internal() { return internal_; }
 
@@ -102,7 +102,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
   // Creates a new PluginLib.
   // |entry_points| is non-NULL for internal plugins.
-  PluginLib(const WebPluginInfo& info,
+  PluginLib(const webkit::WebPluginInfo& info,
             const PluginEntryPoints* entry_points);
 
   virtual ~PluginLib();
@@ -119,7 +119,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
  private:
   bool internal_;  // True for plugins that are built-in into chrome binaries.
-  WebPluginInfo web_plugin_info_;  // Supported mime types, description
+  webkit::WebPluginInfo web_plugin_info_;  // Supported mime types, description
   base::NativeLibrary library_;  // The opened library reference.
   NPPluginFuncs plugin_funcs_;  // The struct of plugin side functions.
   bool initialized_;  // Is the plugin initialized?

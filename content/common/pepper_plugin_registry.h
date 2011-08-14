@@ -13,15 +13,15 @@
 
 #include "base/file_path.h"
 #include "ppapi/proxy/proxy_channel.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/webplugininfo.h"
 
 struct PepperPluginInfo {
   PepperPluginInfo();
   ~PepperPluginInfo();
 
-  webkit::npapi::WebPluginInfo ToWebPluginInfo() const;
+  webkit::WebPluginInfo ToWebPluginInfo() const;
 
   // Indicates internal plugins for which there's not actually a library.
   // These plugins are implemented in the Chrome binary using a separate set
@@ -39,7 +39,7 @@ struct PepperPluginInfo {
   std::string name;
   std::string description;
   std::string version;
-  std::vector<webkit::npapi::WebPluginMimeType> mime_types;
+  std::vector<webkit::WebPluginMimeType> mime_types;
 
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.

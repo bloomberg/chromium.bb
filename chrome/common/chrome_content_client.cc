@@ -85,10 +85,10 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
       PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = kPDFPluginName;
-      webkit::npapi::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
-                                                     kPDFPluginExtension,
-                                                     kPDFPluginDescription);
-      webkit::npapi::WebPluginMimeType print_preview_pdf_mime_type(
+      webkit::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
+                                              kPDFPluginExtension,
+                                              kPDFPluginDescription);
+      webkit::WebPluginMimeType print_preview_pdf_mime_type(
           kPDFPluginPrintPreviewMimeType,
           kPDFPluginExtension,
           kPDFPluginDescription);
@@ -110,9 +110,9 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
       PepperPluginInfo nacl;
       nacl.path = path;
       nacl.name = kNaClPluginName;
-      webkit::npapi::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
-                                                      kNaClPluginExtension,
-                                                      kNaClPluginDescription);
+      webkit::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
+                                               kNaClPluginExtension,
+                                               kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
       plugins->push_back(nacl);
 
@@ -126,12 +126,12 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
   info.is_internal = true;
   info.name = kRemotingViewerPluginName;
   info.path = FilePath(kRemotingViewerPluginPath);
-  webkit::npapi::WebPluginMimeType remoting_mime_type(
+  webkit::WebPluginMimeType remoting_mime_type(
       kRemotingViewerPluginMimeType,
       std::string(),
       std::string());
   info.mime_types.push_back(remoting_mime_type);
-  webkit::npapi::WebPluginMimeType old_remoting_mime_type(
+  webkit::WebPluginMimeType old_remoting_mime_type(
       kRemotingViewerPluginOldMimeType,
       std::string(),
       std::string());
@@ -183,13 +183,13 @@ void AddOutOfProcessFlash(std::vector<PepperPluginInfo>* plugins) {
   plugin.description = plugin.name + " " + flash_version_numbers[0] + "." +
       flash_version_numbers[1] + " r" + flash_version_numbers[2];
   plugin.version = JoinString(flash_version_numbers, '.');
-  webkit::npapi::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
-                                                 kFlashPluginSwfExtension,
-                                                 kFlashPluginSwfDescription);
+  webkit::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
+                                          kFlashPluginSwfExtension,
+                                          kFlashPluginSwfDescription);
   plugin.mime_types.push_back(swf_mime_type);
-  webkit::npapi::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
-                                                 kFlashPluginSplExtension,
-                                                 kFlashPluginSplDescription);
+  webkit::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
+                                          kFlashPluginSplExtension,
+                                          kFlashPluginSplDescription);
   plugin.mime_types.push_back(spl_mime_type);
   plugins->push_back(plugin);
 }

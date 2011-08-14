@@ -24,7 +24,7 @@
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace {
 
@@ -335,7 +335,7 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
   DCHECK(!plugin_path.value().empty());
 
   string16 plugin_name = plugin_path.LossyDisplayName();
-  webkit::npapi::WebPluginInfo plugin_info;
+  webkit::WebPluginInfo plugin_info;
   if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
           plugin_path, &plugin_info) &&
       !plugin_info.name.empty()) {

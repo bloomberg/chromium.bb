@@ -39,9 +39,7 @@ class WebView;
 }
 
 namespace webkit {
-namespace npapi {
 struct WebPluginInfo;
-}
 }
 
 namespace webkit_glue {
@@ -210,7 +208,7 @@ bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
 
 // Embedders implement this function to return the list of plugins to Webkit.
 void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins);
+                std::vector<webkit::WebPluginInfo>* plugins);
 
 // Returns true if the protocol implemented to serve |url| supports features
 // required by the media engine.

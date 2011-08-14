@@ -56,7 +56,7 @@
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/font_descriptor_mac.h"
@@ -133,7 +133,7 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
     return filter()->OffTheRecord();
   }
 
-  virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) {
     info_ = info;
   }
 
@@ -152,7 +152,7 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
     SendReplyAndDeleteThis();
   }
 
-  webkit::npapi::WebPluginInfo info_;
+  webkit::WebPluginInfo info_;
 };
 
 class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
@@ -518,7 +518,7 @@ void RenderMessageFilter::OnPreCacheFont(const LOGFONT& font) {
 
 void RenderMessageFilter::OnGetPlugins(
     bool refresh,
-    std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+    std::vector<webkit::WebPluginInfo>* plugins) {
   // Don't refresh if the specified threshold has not been passed.  Note that
   // this check is performed before off-loading to the file thread.  The reason
   // we do this is that some pages tend to request that the list of plugins be
@@ -536,10 +536,10 @@ void RenderMessageFilter::OnGetPlugins(
     }
   }
 
-  std::vector<webkit::npapi::WebPluginInfo> all_plugins;
+  std::vector<webkit::WebPluginInfo> all_plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(&all_plugins);
   for (size_t i = 0; i < all_plugins.size(); ++i) {
-    if (webkit::npapi::IsPluginEnabled(all_plugins[i]))
+    if (webkit::IsPluginEnabled(all_plugins[i]))
       plugins->push_back(all_plugins[i]);
   }
 }
@@ -550,14 +550,14 @@ void RenderMessageFilter::OnGetPluginInfo(
     const GURL& policy_url,
     const std::string& mime_type,
     bool* found,
-    webkit::npapi::WebPluginInfo* info,
+    webkit::WebPluginInfo* info,
     std::string* actual_mime_type) {
   *found = plugin_service_->GetPluginInfo(
       render_process_id_, routing_id, url, mime_type, info, actual_mime_type);
 
   if (*found) {
     if (!plugin_service_->PluginAllowedForURL(info->path, policy_url))
-      info->enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
+      info->enabled |= webkit::WebPluginInfo::POLICY_DISABLED;
   }
 }
 

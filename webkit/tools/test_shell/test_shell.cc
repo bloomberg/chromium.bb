@@ -48,7 +48,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -684,7 +684,7 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
 #endif
 
 void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+                std::vector<webkit::WebPluginInfo>* plugins) {
   if (refresh)
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
@@ -696,7 +696,7 @@ void GetPlugins(bool refresh,
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
   };
   for (int i = plugins->size() - 1; i >= 0; --i) {
-    webkit::npapi::WebPluginInfo plugin_info = plugins->at(i);
+    webkit::WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
       if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
         webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_info.path);

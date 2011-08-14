@@ -22,7 +22,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 // How long to wait to save the plugin enabled information, which might need to
 // go to disk.
@@ -33,12 +33,12 @@ PluginUpdater::PluginUpdater()
 }
 
 DictionaryValue* PluginUpdater::CreatePluginFileSummary(
-    const webkit::npapi::WebPluginInfo& plugin) {
+    const webkit::WebPluginInfo& plugin) {
   DictionaryValue* data = new DictionaryValue();
   data->SetString("path", plugin.path.value());
   data->SetString("name", plugin.name);
   data->SetString("version", plugin.version);
-  data->SetBoolean("enabled", webkit::npapi::IsPluginEnabled(plugin));
+  data->SetBoolean("enabled", webkit::IsPluginEnabled(plugin));
   return data;
 }
 
@@ -263,7 +263,7 @@ void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
 }
 
 void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
 
   std::vector<webkit::npapi::PluginGroup> groups;
@@ -279,7 +279,7 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
 
 void PluginUpdater::OnUpdatePreferences(
     Profile* profile,
-    const std::vector<webkit::npapi::WebPluginInfo>& plugins,
+    const std::vector<webkit::WebPluginInfo>& plugins,
     const std::vector<webkit::npapi::PluginGroup>& groups) {
   ListPrefUpdate update(profile->GetPrefs(), prefs::kPluginsPluginsList);
   ListValue* plugins_list = update.Get();
@@ -295,10 +295,10 @@ void PluginUpdater::OnUpdatePreferences(
     DictionaryValue* summary = CreatePluginFileSummary(plugins[i]);
     // If the plugin is managed by policy, store the user preferred state
     // instead.
-    if (plugins[i].enabled & webkit::npapi::WebPluginInfo::MANAGED_MASK) {
+    if (plugins[i].enabled & webkit::WebPluginInfo::MANAGED_MASK) {
       bool user_enabled =
-          (plugins[i].enabled & webkit::npapi::WebPluginInfo::USER_MASK) ==
-              webkit::npapi::WebPluginInfo::USER_ENABLED;
+          (plugins[i].enabled & webkit::WebPluginInfo::USER_MASK) ==
+              webkit::WebPluginInfo::USER_ENABLED;
       summary->SetBoolean("enabled", user_enabled);
     }
     plugins_list->Append(summary);

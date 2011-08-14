@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 
 namespace webkit {
-namespace npapi {
 
 WebPluginMimeType::WebPluginMimeType() {}
 
@@ -24,7 +23,7 @@ WebPluginMimeType::WebPluginMimeType(const std::string& m,
 WebPluginMimeType::~WebPluginMimeType() {}
 
 WebPluginInfo::WebPluginInfo()
-    : enabled(USER_DISABLED_POLICY_UNMANAGED) {
+    : enabled(USER_DISABLED_POLICY_UNMANAGED), type(PLUGIN_TYPE_NPAPI) {
 }
 
 WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
@@ -33,7 +32,8 @@ WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
       version(rhs.version),
       desc(rhs.desc),
       mime_types(rhs.mime_types),
-      enabled(rhs.enabled) {
+      enabled(rhs.enabled),
+      type(rhs.type) {
 }
 
 WebPluginInfo::~WebPluginInfo() {}
@@ -45,6 +45,7 @@ WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
   desc = rhs.desc;
   mime_types = rhs.mime_types;
   enabled = rhs.enabled;
+  type = rhs.type;
   return *this;
 }
 
@@ -57,7 +58,8 @@ WebPluginInfo::WebPluginInfo(const string16& fake_name,
       version(fake_version),
       desc(fake_desc),
       mime_types(),
-      enabled(USER_ENABLED_POLICY_UNMANAGED) {
+      enabled(USER_ENABLED_POLICY_UNMANAGED),
+      type(PLUGIN_TYPE_NPAPI) {
 }
 
 bool IsPluginEnabled(const WebPluginInfo& plugin) {
@@ -65,5 +67,4 @@ bool IsPluginEnabled(const WebPluginInfo& plugin) {
           plugin.enabled == WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED);
 }
 
-}  // namespace npapi
 }  // namespace webkit

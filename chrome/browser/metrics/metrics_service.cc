@@ -191,7 +191,7 @@
 #include "content/common/child_process_info.h"
 #include "content/common/notification_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 // TODO(port): port browser_distribution.h.
 #if !defined(OS_POSIX)
@@ -321,7 +321,7 @@ class MetricsService::InitTaskComplete : public Task {
  public:
   explicit InitTaskComplete(
       const std::string& hardware_class,
-      const std::vector<webkit::npapi::WebPluginInfo>& plugins)
+      const std::vector<webkit::WebPluginInfo>& plugins)
       : hardware_class_(hardware_class), plugins_(plugins) {}
 
   virtual void Run() {
@@ -331,7 +331,7 @@ class MetricsService::InitTaskComplete : public Task {
 
  private:
   std::string hardware_class_;
-  std::vector<webkit::npapi::WebPluginInfo> plugins_;
+  std::vector<webkit::WebPluginInfo> plugins_;
 };
 
 class MetricsService::InitTask : public Task {
@@ -340,7 +340,7 @@ class MetricsService::InitTask : public Task {
       : callback_loop_(callback_loop) {}
 
   virtual void Run() {
-    std::vector<webkit::npapi::WebPluginInfo> plugins;
+    std::vector<webkit::WebPluginInfo> plugins;
     webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
     std::string hardware_class;  // Empty string by default.
 #if defined(OS_CHROMEOS)
@@ -794,7 +794,7 @@ void MetricsService::InitializeMetricsState() {
 
 void MetricsService::OnInitTaskComplete(
     const std::string& hardware_class,
-    const std::vector<webkit::npapi::WebPluginInfo>& plugins) {
+    const std::vector<webkit::WebPluginInfo>& plugins) {
   DCHECK(state_ == INIT_TASK_SCHEDULED);
   hardware_class_ = hardware_class;
   plugins_ = plugins;

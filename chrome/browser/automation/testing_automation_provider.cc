@@ -3401,10 +3401,10 @@ void TestingAutomationProvider::GetPluginsInfo(
                    this, browser, args, reply_message));
     return;
   }
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
   ListValue* items = new ListValue;
-  for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator it =
+  for (std::vector<webkit::WebPluginInfo>::const_iterator it =
            plugins.begin();
        it != plugins.end();
        ++it) {
@@ -3413,10 +3413,10 @@ void TestingAutomationProvider::GetPluginsInfo(
     item->SetString("path", it->path.value());
     item->SetString("version", it->version);
     item->SetString("desc", it->desc);
-    item->SetBoolean("enabled", webkit::npapi::IsPluginEnabled(*it));
+    item->SetBoolean("enabled", webkit::IsPluginEnabled(*it));
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
-    for (std::vector<webkit::npapi::WebPluginMimeType>::const_iterator type_it =
+    for (std::vector<webkit::WebPluginMimeType>::const_iterator type_it =
              it->mime_types.begin();
          type_it != it->mime_types.end();
          ++type_it) {

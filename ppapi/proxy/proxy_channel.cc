@@ -26,7 +26,7 @@ bool ProxyChannel::InitWithChannel(Delegate* delegate,
   IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
                                       : IPC::Channel::MODE_SERVER;
   channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
-                                      delegate->GetIPCMessageLoop(), false,
+                                      delegate->GetIPCMessageLoop(), true,
                                       delegate->GetShutdownEvent()));
   return true;
 }

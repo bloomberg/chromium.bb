@@ -33,7 +33,6 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   //    <file-path> +
   //    ["#" + <name> + ["#" + <description> + ["#" + <version>]]] +
   //    *1( LWS + ";" + LWS + <mime-type> )
-
   std::vector<std::string> modules;
   base::SplitString(value, ',', &modules);
   for (size_t i = 0; i < modules.size(); ++i) {
@@ -64,9 +63,9 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     if (name_parts.size() > 3)
       plugin.version = name_parts[3];
     for (size_t j = 1; j < parts.size(); ++j) {
-      webkit::npapi::WebPluginMimeType mime_type(parts[j],
-                                                 std::string(),
-                                                 plugin.description);
+      webkit::WebPluginMimeType mime_type(parts[j],
+                                          std::string(),
+                                          plugin.description);
       plugin.mime_types.push_back(mime_type);
     }
 
@@ -76,8 +75,8 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
 }  // namespace
 
-webkit::npapi::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
-  webkit::npapi::WebPluginInfo info;
+webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
+  webkit::WebPluginInfo info;
 
   info.name = name.empty() ? path.BaseName().LossyDisplayName() :
       ASCIIToUTF16(name);
@@ -86,12 +85,12 @@ webkit::npapi::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
   info.desc = ASCIIToUTF16(description);
   info.mime_types = mime_types;
 
-  webkit::npapi::WebPluginInfo::EnabledStates enabled_state =
-      webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
+  webkit::WebPluginInfo::EnabledStates enabled_state =
+      webkit::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
   if (!enabled) {
     enabled_state =
-        webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+        webkit::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
   }
 
   info.enabled = enabled_state;

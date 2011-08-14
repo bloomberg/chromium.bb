@@ -552,13 +552,13 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
 
 WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
-  webkit::npapi::WebPluginInfo info;
+  webkit::WebPluginInfo info;
   bool found;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
       routing_id_, params.url, frame->top()->document().url(),
       params.mimeType.utf8(), &found, &info, &mime_type));
-  if (!found || !webkit::npapi::IsPluginEnabled(info))
+  if (!found || !webkit::IsPluginEnabled(info))
     return NULL;
 
   bool pepper_plugin_was_registered = false;

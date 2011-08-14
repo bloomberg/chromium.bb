@@ -389,7 +389,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   // Finally, check the plugin list.
   bool allow_wildcard = false;
   bool stale = false;
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       request_->url(), type, allow_wildcard, &stale, &plugins, NULL);
   if (need_plugin_list) {
@@ -402,7 +402,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   }
 
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (webkit::npapi::IsPluginEnabled(plugins[i]))
+    if (webkit::IsPluginEnabled(plugins[i]))
       return false;
   }
   return true;
@@ -440,7 +440,7 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
 }
 
 void BufferedResourceHandler::LoadPlugins() {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
 
   BrowserThread::PostTask(

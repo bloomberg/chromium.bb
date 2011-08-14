@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace webkit {
 namespace npapi {
@@ -150,7 +150,7 @@ TEST_F(PluginGroupTest, PluginGroupDescription) {
     {
       // Disable the second plugin.
       plugin3045.enabled =
-          webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
+          webkit::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
       scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
           plugindefs[i]));
       EXPECT_TRUE(group->Match(plugin3043));

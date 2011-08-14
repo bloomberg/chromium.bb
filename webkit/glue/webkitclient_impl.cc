@@ -38,7 +38,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/media/audio_decoder.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -233,18 +233,18 @@ WebString WebKitClientImpl::userAgent(const WebURL& url) {
 
 void WebKitClientImpl::getPluginList(bool refresh,
                                      WebPluginListBuilder* builder) {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   GetPlugins(refresh, &plugins);
 
   for (size_t i = 0; i < plugins.size(); ++i) {
-    const webkit::npapi::WebPluginInfo& plugin = plugins[i];
+    const webkit::WebPluginInfo& plugin = plugins[i];
 
     builder->addPlugin(
         plugin.name, plugin.desc,
         FilePathStringToWebString(plugin.path.BaseName().value()));
 
     for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
-      const webkit::npapi::WebPluginMimeType& mime_type = plugin.mime_types[j];
+      const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
           WebString::fromUTF8(mime_type.mime_type), mime_type.description);

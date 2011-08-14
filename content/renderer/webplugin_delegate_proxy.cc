@@ -1376,7 +1376,7 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
 
   // The move networks plugin needs to be informed of geometry updates
   // synchronously.
-  std::vector<webkit::npapi::WebPluginMimeType>::iterator index;
+  std::vector<webkit::WebPluginMimeType>::iterator index;
   for (index = info_.mime_types.begin(); index != info_.mime_types.end();
        index++) {
     if (index->mime_type == "application/x-vnd.moveplayer.qm" ||

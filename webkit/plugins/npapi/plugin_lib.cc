@@ -34,7 +34,7 @@ PluginLib* PluginLib::CreatePluginLib(const FilePath& filename) {
       return (*g_loaded_libs)[i];
   }
 
-  WebPluginInfo info;
+  webkit::WebPluginInfo info;
   const PluginEntryPoints* entry_points = NULL;
   if (!PluginList::Singleton()->ReadPluginInfo(filename, &info, &entry_points))
     return NULL;
@@ -65,7 +65,7 @@ void PluginLib::ShutdownAllPlugins() {
   }
 }
 
-PluginLib::PluginLib(const WebPluginInfo& info,
+PluginLib::PluginLib(const webkit::WebPluginInfo& info,
                      const PluginEntryPoints* entry_points)
     : web_plugin_info_(info),
       library_(NULL),

@@ -44,7 +44,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     ASSERT_TRUE(channel_->Connect());
   }
 
-  void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
+  void SetPluginInfo(const webkit::WebPluginInfo& info) {
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);
     set_plugin_info_called_ = true;

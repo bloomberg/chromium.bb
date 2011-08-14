@@ -49,7 +49,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
@@ -282,7 +282,7 @@ WebKit::WebKitClient* GetWebKitClient() {
 WebPlugin* CreateWebPlugin(WebFrame* frame,
                            const WebPluginParams& params) {
   const bool kAllowWildcard = true;
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       params.url, params.mimeType.utf8(), kAllowWildcard,

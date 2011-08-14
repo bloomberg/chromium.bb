@@ -593,7 +593,7 @@ WebScreenInfo TestWebViewDelegate::screenInfo() {
 WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
                                              const WebPluginParams& params) {
   bool allow_wildcard = true;
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
       params.url, params.mimeType.utf8(), allow_wildcard,

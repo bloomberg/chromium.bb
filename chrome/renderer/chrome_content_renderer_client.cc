@@ -282,7 +282,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
   bool found = false;
   *is_default_plugin = false;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  webkit::npapi::WebPluginInfo info;
+  webkit::WebPluginInfo info;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
   std::string actual_mime_type;
@@ -292,7 +292,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
   if (!found)
     return NULL;
-  if (!webkit::npapi::IsPluginEnabled(info))
+  if (!webkit::IsPluginEnabled(info))
     return NULL;
 
   *is_default_plugin =
@@ -410,7 +410,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
           string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
           for (size_t i = 0; i < info.mime_types.size(); ++i) {
             if (info.mime_types[i].mime_type == actual_mime_type) {
-              const webkit::npapi::WebPluginMimeType& content_type =
+              const webkit::WebPluginMimeType& content_type =
                   info.mime_types[i];
               for (size_t i = 0;
                   i < content_type.additional_param_names.size(); ++i) {

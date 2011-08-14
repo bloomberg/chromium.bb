@@ -35,7 +35,7 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/font_descriptor_mac.h"
@@ -393,7 +393,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginGeometry)
   IPC_STRUCT_TRAITS_MEMBER(visible)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginMimeType)
+IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginMimeType)
   IPC_STRUCT_TRAITS_MEMBER(mime_type)
   IPC_STRUCT_TRAITS_MEMBER(file_extensions)
   IPC_STRUCT_TRAITS_MEMBER(description)
@@ -401,13 +401,14 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginMimeType)
   IPC_STRUCT_TRAITS_MEMBER(additional_param_values)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginInfo)
+IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(version)
   IPC_STRUCT_TRAITS_MEMBER(desc)
   IPC_STRUCT_TRAITS_MEMBER(mime_types)
   IPC_STRUCT_TRAITS_MEMBER(enabled)
+  IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
@@ -1557,7 +1558,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CookiesEnabled,
 // Used to get the list of plugins
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
     bool /* refresh*/,
-    std::vector<webkit::npapi::WebPluginInfo> /* plugins */)
+    std::vector<webkit::WebPluginInfo> /* plugins */)
 
 // Return information about a plugin for the given URL and MIME
 // type. If there is no matching plugin, |found| is false.  If
@@ -1572,7 +1573,7 @@ IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
                             GURL /* policy_url */,
                             std::string /* mime_type */,
                             bool /* found */,
-                            webkit::npapi::WebPluginInfo /* plugin info */,
+                            webkit::WebPluginInfo /* plugin info */,
                             std::string /* actual_mime_type */)
 
 // A renderer sends this to the browser process when it wants to
@@ -1584,7 +1585,7 @@ IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
                             GURL /* url */,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
-                            webkit::npapi::WebPluginInfo /* info */)
+                            webkit::WebPluginInfo /* info */)
 
 // A renderer sends this to the browser process when it wants to create a
 // worker.  The browser will create the worker process if necessary, and
