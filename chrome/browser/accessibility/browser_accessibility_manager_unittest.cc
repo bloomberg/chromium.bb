@@ -554,12 +554,12 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
 TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   // Try creating an empty document with busy state.
-  BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::CreateEmptyDocument(
-          NULL,
-          WebAccessibility::STATE_BUSY,
-          NULL,
-          new CountedBrowserAccessibilityFactory());
+  scoped_ptr<BrowserAccessibilityManager> manager;
+  manager.reset(BrowserAccessibilityManager::CreateEmptyDocument(
+      NULL,
+      WebAccessibility::STATE_BUSY,
+      NULL,
+      new CountedBrowserAccessibilityFactory()));
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
@@ -625,4 +625,8 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
 
   // Verify we don't reuse objects that have changed roles.
   EXPECT_NE(acc1_2, acc2_2);
+
+  // Ensure we properly cleaned up.
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }

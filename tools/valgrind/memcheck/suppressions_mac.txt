@@ -1031,22 +1031,6 @@
    fun:_ZN13PluginUpdater30GetPreferencesDataOnFileThreadEPv
 }
 {
-   bug_59243_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN20BrowserAccessibility6CreateEv
-   fun:_ZN24BrowserAccessibilityTest5SetUpEv
-}
-{
-   bug_59243_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNSt3mapIiSbItN4base20string16_char_traitsESaItEESt4lessIiESaISt4pairIKiS3_EEEaSERKSA_
-   fun:_ZN20BrowserAccessibility10InitializeEP27BrowserAccessibilityManagerPS_iiRKN11webkit_glue16WebAccessibilityE
-   fun:_ZN24BrowserAccessibilityTest5SetUpEv
-}
-{
    bug_51682a
    Memcheck:Leak
    fun:malloc
