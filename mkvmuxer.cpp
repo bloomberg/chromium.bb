@@ -1128,7 +1128,7 @@ Segment::Segment(IMkvWriter* writer)
       has_video_(false),
       header_written_(false),
       last_timestamp_(0),
-      max_cluster_duration_(0),
+      max_cluster_duration_(30000000000),
       max_cluster_size_(0),
       mode_(kFile),
       new_cluster_(true),
@@ -1252,34 +1252,8 @@ bool Segment::AddFrame(uint8* frame,
                        bool is_key) {
   assert(frame);
 
-  if (!header_written_) {
-    if (!WriteSegmentHeader())
-      return false;
-
-    if (!seek_head_.AddSeekEntry(kMkvCluster,
-                                 writer_->Position() - payload_pos_))
-      return false;
-
-    if (output_cues_ && cues_track_ == 0) {
-      // Check for a video track
-      for (uint32 i = 0; i < tracks_.track_entries_size(); ++i) {
-        const Track* const track = tracks_.GetTrackByIndex(i);
-        assert(track);
-
-        if (tracks_.TrackIsVideo(track->number())) {
-          cues_track_ = track->number();
-          break;
-        }
-      }
-
-      // Set first track found
-      if (cues_track_ == 0) {
-        const Track* const track = tracks_.GetTrackByIndex(0);
-        assert(track);
-        cues_track_ = track->number();
-      }
-    }
-  }
+  if (!CheckHeaderInfo())
+    return false;
 
   // If the segment has a video track hold onto audio frames to make sure the
   // audio that is associated with the start time of a video key-frame is
@@ -1469,6 +1443,38 @@ bool Segment::WriteSegmentHeader() {
     return false;
   header_written_ = true;
 
+  return true;
+}
+
+bool Segment::CheckHeaderInfo() {
+  if (!header_written_) {
+    if (!WriteSegmentHeader())
+      return false;
+
+    if (!seek_head_.AddSeekEntry(kMkvCluster,
+                                 writer_->Position() - payload_pos_))
+      return false;
+
+    if (output_cues_ && cues_track_ == 0) {
+      // Check for a video track
+      for (uint32 i = 0; i < tracks_.track_entries_size(); ++i) {
+        const Track* const track = tracks_.GetTrackByIndex(i);
+        assert(track);
+
+        if (tracks_.TrackIsVideo(track->number())) {
+          cues_track_ = track->number();
+          break;
+        }
+      }
+
+      // Set first track found
+      if (cues_track_ == 0) {
+        const Track* const track = tracks_.GetTrackByIndex(0);
+        assert(track);
+        cues_track_ = track->number();
+      }
+    }
+  }
   return true;
 }
 

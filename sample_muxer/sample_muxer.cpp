@@ -31,6 +31,7 @@ void Usage() {
   printf("                              0 puts the muxer into file mode\n");
   printf("  -output_cues <int>          >0 outputs cues element\n");
   printf("  -cues_on_video_track <int>  >0 outputs cues on video track\n");
+  printf("  -cues_on_audio_track <int>  >0 outputs cues on audio track\n");
   printf("                              0 outputs cues on audio track\n");
   printf("  -max_cluster_duration <double> in seconds\n");
   printf("  -max_cluster_size <int>     in bytes\n");
@@ -59,6 +60,7 @@ int main(int argc, char* argv[]) {
   bool live_mode = false;
   bool output_cues = true;
   bool cues_on_video_track = true;
+  bool cues_on_audio_track = true;
   uint64 max_cluster_duration = 0;
   uint64 max_cluster_size = 0;
   bool switch_tracks = false;
@@ -89,6 +91,8 @@ int main(int argc, char* argv[]) {
       output_cues = strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-cues_on_video_track", argv[i])) {
       cues_on_video_track = strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (!strcmp("-cues_on_audio_track", argv[i])) {
+      cues_on_audio_track = strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-max_cluster_duration", argv[i])) {
       const double seconds = strtod(argv[++i], &end);
       max_cluster_duration =
@@ -278,7 +282,8 @@ int main(int argc, char* argv[]) {
   if (cues_on_video_track) {
     if (vid_track)
       muxer_segment.CuesTrack(vid_track);
-  } else {
+  }
+  if (cues_on_audio_track) {
     if (aud_track)
       muxer_segment.CuesTrack(aud_track);
   }

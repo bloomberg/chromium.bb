@@ -592,6 +592,11 @@ class Segment {
   // nanoseconds of the cue's time. Returns true on success.
   bool AddCuePoint(uint64 timestamp);
 
+  // Checks if header information has been output and initialized. If not it
+  // will output the Segment element and initialize the SeekHead elment and
+  // Cues elements.
+  bool CheckHeaderInfo();
+
   // Adds the frame to our frame array.
   bool QueueFrame(Frame* frame);
 
@@ -648,8 +653,8 @@ class Segment {
   uint64 last_timestamp_;
 
   // Maximum time in nanoseconds for a cluster duration. This variable is a
-  // guideline and some clusters may have a longer duration. Default is 0
-  // which signifies that the muxer will decide.
+  // guideline and some clusters may have a longer duration. Default is 30
+  // seconds.
   uint64 max_cluster_duration_;
 
   // Maximum size in bytes for a cluster. This variable is a guideline and
