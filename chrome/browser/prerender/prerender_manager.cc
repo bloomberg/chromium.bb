@@ -452,6 +452,14 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
     return false;
   }
 
+  // If the prerendered page is in the middle of a cross-site navigation,
+  // don't swap it in because there isn't a good way to merge histories.
+  if (prerender_contents->IsCrossSiteNavigationPending()) {
+    prerender_contents.release()->Destroy(
+        FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
+    return false;
+  }
+
   int child_id, route_id;
   CHECK(prerender_contents->GetChildId(&child_id));
   CHECK(prerender_contents->GetRouteId(&route_id));

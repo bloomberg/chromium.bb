@@ -88,15 +88,25 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
-  bool CanDownload(TabContents* source, int request_id) OVERRIDE {
+  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
     return false;
   }
 
-  void OnStartDownload(TabContents* source, DownloadItem* download) OVERRIDE {
+  virtual void OnStartDownload(TabContents* source,
+                               DownloadItem* download) OVERRIDE {
     // Prerendered pages should never be able to download files.
     NOTREACHED();
+  }
+
+  virtual bool OnGoToEntryOffset(int offset) OVERRIDE {
+    // This isn't allowed because the history merge operation
+    // does not work if there are renderer issued challenges.
+    // TODO(cbentzel): Cancel in this case? May not need to do
+    // since render-issued offset navigations are not guaranteed,
+    // but indicates that the page cares about the history.
+    return false;
   }
 
   // Commits the History of Pages to the given TabContents.
@@ -603,5 +613,14 @@ Value* PrerenderContents::GetAsValue() const {
   dict_value->SetInteger("duration", duration.InSeconds());
   return dict_value;
 }
+
+bool PrerenderContents::IsCrossSiteNavigationPending() const {
+  if (!prerender_contents_.get() || !prerender_contents_->tab_contents())
+    return false;
+  const TabContents* tab_contents = prerender_contents_->tab_contents();
+  return (tab_contents->GetSiteInstance() !=
+          tab_contents->GetPendingSiteInstance());
+}
+
 
 }  // namespace prerender

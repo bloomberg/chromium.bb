@@ -161,6 +161,11 @@ class PrerenderContents : public NotificationObserver,
 
   base::Value* GetAsValue() const;
 
+  // Returns whether a pending cross-site navigation is happening.
+  // This could happen with renderer-issued navigations, such as a
+  // MouseEvent being dispatched by a link to a website installed as an app.
+  bool IsCrossSiteNavigationPending() const;
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     PrerenderTracker* prerender_tracker,

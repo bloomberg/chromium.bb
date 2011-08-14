@@ -914,3 +914,163 @@ TEST_F(RenderViewTest, UpdateTargetURLWithInvalidURL) {
   view_->setMouseOverURL(WebKit::WebURL(invalid_gurl));
   EXPECT_EQ(invalid_gurl, view_->target_url_);
 }
+
+TEST_F(RenderViewTest, SetHistoryLengthAndPrune) {
+  int expected_page_id = -1;
+
+  // No history to merge and no committed pages.
+  view_->OnSetHistoryLengthAndPrune(0, -1);
+  EXPECT_EQ(0, view_->history_list_length_);
+  EXPECT_EQ(-1, view_->history_list_offset_);
+
+  // History to merge and no committed pages.
+  view_->OnSetHistoryLengthAndPrune(2, -1);
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(1, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  ClearHistory();
+
+  // No history to merge and a committed page to be kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(0, expected_page_id);
+  EXPECT_EQ(1, view_->history_list_length_);
+  EXPECT_EQ(0, view_->history_list_offset_);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[0]);
+  ClearHistory();
+
+  // No history to merge and a committed page to be pruned.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(0, expected_page_id + 1);
+  EXPECT_EQ(0, view_->history_list_length_);
+  EXPECT_EQ(-1, view_->history_list_offset_);
+  ClearHistory();
+
+  // No history to merge and a committed page that the browser was unaware of.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(0, -1);
+  EXPECT_EQ(1, view_->history_list_length_);
+  EXPECT_EQ(0, view_->history_list_offset_);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[0]);
+  ClearHistory();
+
+  // History to merge and a committed page to be kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(2, expected_page_id);
+  EXPECT_EQ(3, view_->history_list_length_);
+  EXPECT_EQ(2, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[2]);
+  ClearHistory();
+
+  // History to merge and a committed page to be pruned.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(2, expected_page_id + 1);
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(1, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  ClearHistory();
+
+  // History to merge and a committed page that the browser was unaware of.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->OnSetHistoryLengthAndPrune(2, -1);
+  EXPECT_EQ(3, view_->history_list_length_);
+  EXPECT_EQ(2, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[2]);
+  ClearHistory();
+
+  int expected_page_id_2 = -1;
+
+  // No history to merge and two committed pages, both to be kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(0, expected_page_id);
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(1, view_->history_list_offset_);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[0]);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[1]);
+  ClearHistory();
+
+  // No history to merge and two committed pages, and only the second is kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(0, expected_page_id_2);
+  EXPECT_EQ(1, view_->history_list_length_);
+  EXPECT_EQ(0, view_->history_list_offset_);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[0]);
+  ClearHistory();
+
+  // No history to merge and two committed pages, both of which the browser was
+  // unaware of.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(0, -1);
+  EXPECT_EQ(2, view_->history_list_length_);
+  EXPECT_EQ(1, view_->history_list_offset_);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[0]);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[1]);
+  ClearHistory();
+
+  // History to merge and two committed pages, both to be kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(2, expected_page_id);
+  EXPECT_EQ(4, view_->history_list_length_);
+  EXPECT_EQ(3, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[2]);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[3]);
+  ClearHistory();
+
+  // History to merge and two committed pages, and only the second is kept.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(2, expected_page_id_2);
+  EXPECT_EQ(3, view_->history_list_length_);
+  EXPECT_EQ(2, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[2]);
+  ClearHistory();
+
+  // History to merge and two committed pages, both of which the browser was
+  // unaware of.
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id = view_->page_id_;
+  view_->didCommitProvisionalLoad(GetMainFrame(), true);
+  expected_page_id_2 = view_->page_id_;
+  EXPECT_GT(expected_page_id_2, expected_page_id);
+  view_->OnSetHistoryLengthAndPrune(2, -1);
+  EXPECT_EQ(4, view_->history_list_length_);
+  EXPECT_EQ(3, view_->history_list_offset_);
+  EXPECT_EQ(-1, view_->history_page_ids_[0]);
+  EXPECT_EQ(-1, view_->history_page_ids_[1]);
+  EXPECT_EQ(expected_page_id, view_->history_page_ids_[2]);
+  EXPECT_EQ(expected_page_id_2, view_->history_page_ids_[3]);
+}

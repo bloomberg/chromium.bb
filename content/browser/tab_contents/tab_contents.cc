@@ -596,12 +596,29 @@ bool TabContents::NavigateToEntry(
   return true;
 }
 
-void TabContents::SetHistoryLengthAndClear(int history_length) {
-  RenderViewHost* rvh = render_view_host();
-  if (!rvh)
+void TabContents::SetHistoryLengthAndPrune(const SiteInstance* site_instance,
+                                           int history_length,
+                                           int32 minimum_page_id) {
+  // SetHistoryLengthAndPrune doesn't handle pending cross-site navigations
+  // cleanly. Since it's only used when swapping in instant and prerendered
+  // TabContents, checks are done at a higher level to ensure that the pages
+  // are not swapped in during this case.
+  if (render_manager_.pending_render_view_host()) {
+    NOTREACHED();
     return;
-  rvh->Send(new ViewMsg_SetHistoryLengthAndClear(rvh->routing_id(),
-                                                 history_length));
+  }
+  RenderViewHost* rvh = render_view_host();
+  if (!rvh) {
+    NOTREACHED();
+    return;
+  }
+  if (site_instance && rvh->site_instance() != site_instance) {
+    NOTREACHED();
+    return;
+  }
+  rvh->Send(new ViewMsg_SetHistoryLengthAndPrune(rvh->routing_id(),
+                                                 history_length,
+                                                 minimum_page_id));
 }
 
 void TabContents::Stop() {

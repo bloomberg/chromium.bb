@@ -883,6 +883,14 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
 
 void NavigationController::CopyStateFromAndPrune(NavigationController* source,
                                                  bool remove_first_entry) {
+  // The SiteInstance and page_id of the last committed entry needs to be
+  // remembered at this point, in case there is only one committed entry
+  // and it is pruned.
+  NavigationEntry* last_committed = GetLastCommittedEntry();
+  SiteInstance* site_instance =
+      last_committed ? last_committed->site_instance() : NULL;
+  int32 minimum_page_id = last_committed ? last_committed->page_id() : -1;
+
   // This code is intended for use when the last entry is the active entry.
   DCHECK((transient_entry_index_ != -1 &&
           transient_entry_index_ == entry_count() - 1) ||
@@ -891,6 +899,16 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source,
          (!pending_entry_ && last_committed_entry_index_ == entry_count() - 1));
 
   if (remove_first_entry && entry_count()) {
+    // If there is only one committed entry and |remove_first_entry| is true,
+    // it needs to be pruned. This is accomplished by specifying a larger
+    // |minimum_page_id| than the committed entry's page_id in the
+    // ViewMsg_SetHistoryLengthAndPrune message. However, any pages which are
+    // committed between now and when the RenderView handles the message will
+    // need to be retained. Both constraints can be met by incrementing the
+    // |minimum_page_id| by 1.
+    DCHECK(minimum_page_id >= 0);
+    if (entry_count() == 1)
+      ++minimum_page_id;
     // Save then restore the pending entry (RemoveEntryAtIndexInternal chucks
     // the pending entry).
     NavigationEntry* pending_entry = pending_entry_;
@@ -932,8 +950,9 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source,
       last_committed_entry_index_--;
   }
 
-  // Update the history in the RenderView.
-  tab_contents_->SetHistoryLengthAndClear(max_source_index);
+  tab_contents_->SetHistoryLengthAndPrune(site_instance,
+                                          max_source_index,
+                                          minimum_page_id);
 }
 
 void NavigationController::PruneAllButActive() {

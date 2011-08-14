@@ -17,7 +17,14 @@ TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
     : TabContents(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL),
       transition_cross_site(false),
-      delegate_view_override_(NULL) {
+      delegate_view_override_(NULL),
+      expect_set_history_length_and_prune_(false),
+      expect_set_history_length_and_prune_site_instance_(NULL),
+      expect_set_history_length_and_prune_history_length_(0),
+      expect_set_history_length_and_prune_min_page_id_(-1) {
+}
+
+TestTabContents::~TestTabContents() {
 }
 
 TestRenderViewHost* TestTabContents::pending_rvh() const {
@@ -89,4 +96,24 @@ RenderViewHostDelegate::View* TestTabContents::GetViewDelegate() {
   if (delegate_view_override_)
     return delegate_view_override_;
   return TabContents::GetViewDelegate();
+}
+
+void TestTabContents::ExpectSetHistoryLengthAndPrune(
+    const SiteInstance* site_instance,
+    int history_length,
+    int32 min_page_id) {
+  expect_set_history_length_and_prune_ = true;
+  expect_set_history_length_and_prune_site_instance_ = site_instance;
+  expect_set_history_length_and_prune_history_length_ = history_length;
+  expect_set_history_length_and_prune_min_page_id_ = min_page_id;
+}
+
+void TestTabContents::SetHistoryLengthAndPrune(
+    const SiteInstance* site_instance, int history_length, int32 min_page_id) {
+  EXPECT_TRUE(expect_set_history_length_and_prune_);
+  expect_set_history_length_and_prune_ = false;
+  EXPECT_EQ(expect_set_history_length_and_prune_site_instance_, site_instance);
+  EXPECT_EQ(expect_set_history_length_and_prune_history_length_,
+            history_length);
+  EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }

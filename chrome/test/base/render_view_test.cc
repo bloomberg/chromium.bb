@@ -319,3 +319,10 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   view_->OnMessageReceived(*input_message);
   return true;
 }
+
+void RenderViewTest::ClearHistory() {
+  view_->page_id_ = -1;
+  view_->history_list_offset_ = -1;
+  view_->history_list_length_ = 0;
+  view_->history_page_ids_.clear();
+}

@@ -84,6 +84,9 @@ class RenderViewTest : public testing::Test {
   // the element was not found).
   bool SimulateElementClick(const std::string& element_id);
 
+  // Clears anything associated with the browsing history.
+  void ClearHistory();
+
   // testing::Test
   virtual void SetUp();
 

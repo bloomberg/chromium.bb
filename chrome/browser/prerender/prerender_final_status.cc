@@ -45,6 +45,7 @@ const char* kFinalStatusNames[] = {
   "Cache or History Cleared",
   "Cancelled",
   "SSL Error",
+  "Cross-Site Navigation Pending",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

@@ -708,8 +708,9 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRemoteAccessClientFirewallTraversal,
                         OnUpdateRemoteAccessClientFirewallTraversal)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndClear,
-                        OnSetHistoryLengthAndClear)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
+                        OnSetHistoryLengthAndPrune)
+
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
@@ -1005,6 +1006,27 @@ void RenderView::OnSelectRange(const gfx::Point& start, const gfx::Point& end) {
   handling_select_range_ = false;
 }
 
+void RenderView::OnSetHistoryLengthAndPrune(int history_length,
+                                            int32 minimum_page_id) {
+  DCHECK(history_length >= 0);
+  DCHECK(history_list_offset_ == history_list_length_ - 1);
+  DCHECK(minimum_page_id >= -1);
+
+  // Generate the new list.
+  std::vector<int32> new_history_page_ids(history_length, -1);
+  for (size_t i = 0; i < history_page_ids_.size(); ++i) {
+    if (minimum_page_id >= 0 && history_page_ids_[i] < minimum_page_id)
+      continue;
+    new_history_page_ids.push_back(history_page_ids_[i]);
+  }
+  new_history_page_ids.swap(history_page_ids_);
+
+  // Update indexes.
+  history_list_length_ = history_page_ids_.size();
+  history_list_offset_ = history_list_length_ - 1;
+}
+
+
 void RenderView::OnSetInitialFocus(bool reverse) {
   if (!webview())
     return;
@@ -1030,32 +1052,6 @@ void RenderView::OnScrollFocusedEditableNodeIntoView() {
       // view and use that API here instead.
       webview()->scrollFocusedNodeIntoView();
   }
-}
-
-void RenderView::OnSetHistoryLengthAndClear(int history_length) {
-  DCHECK(history_length >= 0);
-
-  // history_list_length_ may be 0 if this is called between
-  // a navigate and a commit of the provisional load. Otherwise,
-  // only add one entry, regardless of how long the current history is.
-  // TODO(cbentzel): Investigate what happens if a prerendered page
-  //   navigates to several entries before it is swapped in. Cropping
-  //   those may be a bad idea.
-  int new_history_list_length = history_length;
-  if (history_list_length_ > 0)
-    ++new_history_list_length;
-
-  DCHECK(page_id_ == -1 ||
-         (history_list_offset_ >= 0 &&
-          page_id_ == history_page_ids_[history_list_offset_]));
-
-  // Generate the new list.
-  std::vector<int32> new_history_page_ids(new_history_list_length, -1);
-  if (page_id_ != -1)
-    new_history_page_ids[new_history_list_length - 1] = page_id_;
-  new_history_page_ids.swap(history_page_ids_);
-  history_list_offset_ = new_history_list_length - 1;
-  history_list_length_ = new_history_list_length;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

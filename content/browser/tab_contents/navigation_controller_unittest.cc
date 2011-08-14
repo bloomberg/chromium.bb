@@ -1923,6 +1923,9 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url3);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      other_controller.GetEntryAtIndex(0)->site_instance(), 2,
+      other_controller.GetEntryAtIndex(0)->page_id());
   other_controller.CopyStateFromAndPrune(&controller(), false);
 
   // other_controller should now contain the 3 urls: url1, url2 and url3.
@@ -1949,6 +1952,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
+  other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller(), false);
 
   // other_controller should now contain the 1 url: url1.
@@ -1974,6 +1978,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
   other_controller.LoadURL(url3, GURL(), PageTransition::TYPED);
+  other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller(), false);
 
   // other_controller should now contain 1 entry for url1, and a pending entry
@@ -2000,6 +2005,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune4) {
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
+  other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller(), true);
 
   // other_controller should now contain 1 entry for url1.
@@ -2025,6 +2031,10 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune5) {
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url2);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      other_controller.GetEntryAtIndex(0)->site_instance(),
+      1,
+      other_controller.GetEntryAtIndex(0)->page_id() + 1);
   other_controller.CopyStateFromAndPrune(&controller(), true);
 
   // other_controller should now contain 1 entry, url1.
@@ -2050,6 +2060,10 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune6) {
   NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url2);
   other_controller.LoadURL(url3, GURL(), PageTransition::TYPED);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      other_controller.GetEntryAtIndex(0)->site_instance(),
+      1,
+      other_controller.GetEntryAtIndex(0)->page_id() + 1);
   other_controller.CopyStateFromAndPrune(&controller(), true);
 
   // other_controller should now contain 2 entries: url1, and url3.
