@@ -621,7 +621,7 @@ class XcodeSettings(object):
     assert self._IsBundle()
     return self.GetPerTargetSetting('FRAMEWORK_VERSION', default='A')
 
-  def _GetBundleExtension(self):
+  def GetWrapperExtension(self):
     """Returns the bundle extension (.app, .framework, .plugin, etc).  Only
     valid for bundles."""
     assert self._IsBundle()
@@ -635,12 +635,15 @@ class XcodeSettings(object):
       assert False, "Don't know extension for '%s', target '%s'" % (
           self.spec['type'], self.spec['target_name'])
 
-  def GetBundleName(self):
+  def GetProductName(self):
+    """Returns PRODUCT_NAME."""
+    return self.spec.get('product_name', self.spec['target_name'])
+
+  def GetWrapperName(self):
     """Returns the directory name of the bundle represented by this target.
     Only valid for bundles."""
     assert self._IsBundle()
-    return self.spec.get('product_name',
-                         self.spec['target_name']) + self._GetBundleExtension()
+    return self.GetProductName() + self.GetWrapperExtension()
 
   def GetBundleContentsFolderPath(self):
     """Returns the qualified path to the bundle's contents folder. E.g.
@@ -648,10 +651,10 @@ class XcodeSettings(object):
     assert self._IsBundle()
     if self.spec['type'] == 'shared_library':
       return os.path.join(
-          self.GetBundleName(), 'Versions', self.GetFrameworkVersion())
+          self.GetWrapperName(), 'Versions', self.GetFrameworkVersion())
     else:
       # loadable_modules have a 'Contents' folder like executables.
-      return os.path.join(self.GetBundleName(), 'Contents')
+      return os.path.join(self.GetWrapperName(), 'Contents')
 
   def GetBundleResourceFolder(self):
     """Returns the qualified path to the bundle's resource folder. E.g.
@@ -747,10 +750,8 @@ class XcodeSettings(object):
     self._WarnUnimplemented('ARCHS')
     self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('DEPLOYMENT_POSTPROCESSING')
-    self._WarnUnimplemented('DYLIB_INSTALL_NAME_BASE')
     self._WarnUnimplemented('INFOPLIST_PREPROCESS')
     self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
-    self._WarnUnimplemented('LD_DYLIB_INSTALL_NAME')
     self._WarnUnimplemented('STRIPFLAGS')
     self._WarnUnimplemented('STRIP_INSTALLED_PRODUCT')
 
@@ -852,6 +853,39 @@ class XcodeSettings(object):
     ldflags.append('-L' + generator_default_variables['LIB_DIR'])
     ldflags.append('-L' + generator_default_variables['PRODUCT_DIR'])
 
+    install_name = self.GetPerTargetSetting('LD_DYLIB_INSTALL_NAME')
+    if install_name:
+      # Hardcode support for the variables used in chromium for now, to unblock
+      # people using the make build.
+      if '$' in install_name:
+        assert install_name == ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
+            '$(WRAPPER_NAME)/$(PRODUCT_NAME)'), (
+            'Variables in LD_DYLIB_INSTALL_NAME are not generally supported yet'
+            ' in target \'%s\' (got \'%s\')' %
+                (self.spec['target_name'], install_name))
+        install_base = self.GetPerTargetSetting('DYLIB_INSTALL_NAME_BASE')
+        # I'm not quite sure what :standardizepath does. Just call normpath(),
+        # but don't let @executable_path/../foo collapse to foo
+        prefix, rest = '', install_base
+        if install_base.startswith('@'):
+          prefix, rest = install_base.split('/', 1)
+        rest = os.path.normpath(rest)  # :standardizepath
+        install_base = os.path.join(prefix, rest)
+
+        install_name = install_name.replace(
+            '$(DYLIB_INSTALL_NAME_BASE:standardizepath)', install_base)
+        install_name = install_name.replace(
+            '$(WRAPPER_NAME)', self.GetWrapperName())
+        install_name = install_name.replace(
+            '$(PRODUCT_NAME)', self.GetProductName())
+
+      install_name = QuoteSpaces(install_name)
+      ldflags.append('-install_name ' + install_name)
+    elif self.GetPerTargetSetting('DYLIB_INSTALL_NAME_BASE'):
+      # LD_DYLIB_INSTALL_NAME defaults to
+      # $(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH).
+      print 'Warning: DYLIB_INSTALL_NAME_BASE is not fully implemented.'
+
     self.configname = None
     return ldflags
 
@@ -867,7 +901,7 @@ class XcodeSettings(object):
       else:
         assert result == self.xcode_settings[configname].get(setting, None), (
             "Expected per-target setting for '%s', got per-config setting "
-            "(target %s" % (setting, spec['target_name']))
+            "(target %s)" % (setting, spec['target_name']))
     if result is None:
       return default
     return result
@@ -1615,7 +1649,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """Return the 'output' (full output path) to a bundle output directory."""
     assert self.is_mac_bundle
     path = generator_default_variables['PRODUCT_DIR']
-    return os.path.join(path, self.xcode_settings.GetBundleName())
+    return os.path.join(path, self.xcode_settings.GetWrapperName())
 
 
   def ComputeMacBundleBinaryOutput(self, spec):
