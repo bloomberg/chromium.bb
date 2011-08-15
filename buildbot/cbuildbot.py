@@ -168,6 +168,15 @@ def _LaunchSudoKeepAliveProcess():
   return queue
 
 
+def _RunStages(stagelist, version):
+  """Run the stages in |stagelist|, do a Results.Report, then return Success."""
+  for stage in stagelist:
+    stage.Run()
+
+  results_lib.Results.Report(sys.stdout, current_version=version)
+  return results_lib.Results.Success()
+
+
 def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
@@ -241,10 +250,14 @@ def RunBuildStages(bot_id, options, build_config):
       stages.BuildBoardStage(bot_id, options, build_config).Run()
 
     if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
-      stages.TestSDKStage(bot_id, options, build_config).Run()
-      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
-      results_lib.Results.Report(sys.stdout, current_version=version)
-      return results_lib.Results.Success()
+      stagelist = [stages.TestSDKStage(bot_id, options, build_config),
+                   stages.UploadPrebuiltsStage(bot_id, options, build_config)]
+      return _RunStages(stagelist, version)
+
+    if build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
+      stagelist = [stages.RefreshPackageStatusStage(bot_id, options,
+                                                    build_config)]
+      return _RunStages(stagelist, version)
 
     if options.uprev:
       stages.UprevStage(bot_id, options, build_config).Run()

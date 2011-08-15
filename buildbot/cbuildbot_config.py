@@ -308,6 +308,11 @@ add_config('chromiumos-sdk', [full, {
   'usepkg_chroot' : False,
 }])
 
+add_config('refresh-packages', [default, {
+  'board' : ['x86-generic', 'arm-generic'],
+  'build_type' : constants.REFRESH_PACKAGES_TYPE,
+}])
+
 add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,

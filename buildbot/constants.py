@@ -71,9 +71,12 @@ BUILD_FROM_SOURCE_TYPE = 'full'
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
 
-VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
-                     BUILD_FROM_SOURCE_TYPE, CHROOT_BUILDER_TYPE]
+# Build that refreshes the online Portage package status spreadsheet.
+REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
+VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
+                     BUILD_FROM_SOURCE_TYPE, CHROOT_BUILDER_TYPE,
+                     REFRESH_PACKAGES_TYPE]
 
 VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')

@@ -544,7 +544,7 @@ class Upgrader(object):
         upgraded_ver = '(emerge fails)' + upstream_ver
 
     depslist = sorted(self._deps_graph[cpv]['needs'].keys()) # dependencies
-    usedset = self._deps_graph[cpv]['provides'].keys() # used by
+    usedset = self._deps_graph[cpv]['provides'] # used by
     usedlist = sorted([p for p in usedset])
     stable_up_ver = Upgrader._GetVerRevFromCpv(info['stable_upstream_cpv'])
     if not stable_up_ver:
