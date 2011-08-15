@@ -120,7 +120,8 @@ void TouchLoginView::Layout() {
 }
 
 void TouchLoginView::InitStatusArea() {
-  DCHECK(status_area_ == NULL);
+  if (status_area_)
+    return;
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
   AddChildView(status_area_);
