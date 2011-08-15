@@ -35,7 +35,7 @@ void ConvertRGB32ToYUV_C(const uint8* rgbframe,
         uplane[j / 2] = clip_byte(((pixel[2] * -38 + pixel[1] * -74 +
                                    pixel[0] * 112 + 128) >> 8) + 128);
         vplane[j / 2] = clip_byte(((pixel[2] * 112 + pixel[1] * -94 +
-                                    pixel[1] * -18 + 128) >> 8) + 128);
+                                    pixel[0] * -18 + 128) >> 8) + 128);
       }
     }
 
@@ -67,7 +67,7 @@ void ConvertRGB24ToYUV_C(const uint8* rgbframe,
         uplane[j / 2] = clip_byte(((pixel[2] * -38 + pixel[1] * -74 +
                                     pixel[0] * 112 + 128) >> 8) + 128);
         vplane[j / 2] = clip_byte(((pixel[2] * 112 + pixel[1] * -94 +
-                                    pixel[1] * -18 + 128) >> 8) + 128);
+                                    pixel[0] * -18 + 128) >> 8) + 128);
       }
     }
 
