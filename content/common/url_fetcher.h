@@ -220,6 +220,9 @@ class URLFetcher {
   void StartWithRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter);
 
+  // Return the URL that we were asked to fetch.
+  virtual const GURL& original_url() const;
+
   // Return the URL that this fetcher is processing.
   virtual const GURL& url() const;
 

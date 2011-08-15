@@ -330,7 +330,7 @@ void SigninManager::Observe(int type,
                                               profile_->GetRequestContext()));
     }
 
-    client_login_->StartTokenAuth(tok_details->token());
+    client_login_->StartMergeSession(tok_details->token());
 
     // We only want to do this once per sign-in.
     CleanupNotificationRegistration();

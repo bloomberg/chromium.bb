@@ -49,6 +49,9 @@ class GaiaAuthConsumer {
 
   virtual void OnTokenAuthSuccess(const std::string& data) {}
   virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) {}
+
+  virtual void OnMergeSessionSuccess(const std::string& data) {}
+  virtual void OnMergeSessionFailure(const GoogleServiceAuthError& error) {}
 };
 
 #endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_CONSUMER_H_

@@ -54,6 +54,11 @@ const char GaiaAuthFetcher::kTokenAuthFormat[] =
     "auth=%s&"
     "continue=%s&"
     "source=%s";
+// static
+const char GaiaAuthFetcher::kMergeSessionFormat[] =
+    "uberauth=%s&"
+    "continue=%s&"
+    "source=%s";
 
 // static
 const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
@@ -104,6 +109,7 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       token_auth_gurl_(GaiaUrls::GetInstance()->token_auth_url()),
+      merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -122,6 +128,7 @@ URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     net::URLRequestContextGetter* getter,
     const std::string& body,
     const GURL& gaia_gurl,
+    bool send_cookies,
     URLFetcher::Delegate* delegate) {
 
   URLFetcher* to_return =
@@ -130,8 +137,16 @@ URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
                          URLFetcher::POST,
                          delegate);
   to_return->set_request_context(getter);
-  to_return->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   to_return->set_upload_data("application/x-www-form-urlencoded", body);
+
+  // The Gaia token exchange requests do not require any cookie-based
+  // identification as part of requests.  We suppress sending any cookies to
+  // maintain a separation between the user's browsing and Chrome's internal
+  // services.  Where such mixing is desired (MergeSession), it will be done
+  // explicitly.
+  if (!send_cookies)
+    to_return->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
+
   return to_return;
 }
 
@@ -213,6 +228,20 @@ std::string GaiaAuthFetcher::MakeTokenAuthBody(const std::string& auth_token,
                             encoded_source.c_str());
 }
 
+// static
+std::string GaiaAuthFetcher::MakeMergeSessionBody(
+    const std::string& auth_token,
+    const std::string& continue_url,
+    const std::string& source) {
+  std::string encoded_auth_token = EscapeUrlEncodedData(auth_token, true);
+  std::string encoded_continue_url = EscapeUrlEncodedData(continue_url, true);
+  std::string encoded_source = EscapeUrlEncodedData(source, true);
+  return base::StringPrintf(kMergeSessionFormat,
+                            encoded_auth_token.c_str(),
+                            encoded_continue_url.c_str(),
+                            encoded_source.c_str());
+}
+
 // Helper method that extracts tokens from a successful reply.
 // static
 void GaiaAuthFetcher::ParseClientLoginResponse(const std::string& data,
@@ -288,6 +317,7 @@ void GaiaAuthFetcher::StartClientLogin(
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    client_login_gurl_,
+                                   false,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -304,6 +334,7 @@ void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    issue_auth_token_gurl_,
+                                   false,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -318,6 +349,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    get_user_info_gurl_,
+                                   false,
                                    this));
   fetch_pending_ = true;
   requested_info_key_ = info_key;
@@ -337,6 +369,31 @@ void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    token_auth_gurl_,
+                                   false,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+void GaiaAuthFetcher::StartMergeSession(const std::string& auth_token) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  VLOG(1) << "Starting MergeSession with auth_token=" << auth_token;
+
+  // The continue URL is a required parameter of the MergeSession API, but in
+  // this case we don't actually need or want to navigate to it.  Setting it to
+  // an arbitrary Google URL.
+  //
+  // In order for the new session to be merged correctly, the server needs to
+  // know what sessions already exist in the browser.  The fetcher needs to be
+  // created such that it sends the cookies with the request, which is
+  // different from all other requests the fetcher can make.
+  std::string continue_url("http://www.google.com");
+  request_body_ = MakeMergeSessionBody(auth_token, continue_url, source_);
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   merge_session_gurl_,
+                                   true,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -512,6 +569,16 @@ void GaiaAuthFetcher::OnTokenAuthFetched(const std::string& data,
   }
 }
 
+void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
+                                            const net::URLRequestStatus& status,
+                                            int response_code) {
+  if (status.is_success() && response_code == RC_REQUEST_OK) {
+    consumer_->OnMergeSessionSuccess(data);
+  } else {
+    consumer_->OnMergeSessionFailure(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
                                          const net::URLRequestStatus& status,
@@ -527,6 +594,10 @@ void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
     OnGetUserInfoFetched(data, status, response_code);
   } else if (url == token_auth_gurl_) {
     OnTokenAuthFetched(data, status, response_code);
+  } else if (url == merge_session_gurl_ ||
+      (source && source->original_url() == merge_session_gurl_)) {
+    // MergeSession may redirect, so check the original URL of the fetcher.
+    OnMergeSessionFetched(data, status, response_code);
   } else {
     NOTREACHED();
   }

@@ -65,7 +65,8 @@ class TestURLFetcher : public URLFetcher {
 
   // Overriden to cache the chunks uploaded. Caller can read back the uploaded
   // chunks with the upload_data() accessor.
-  virtual void AppendChunkToUpload(const std::string& data, bool is_last_chunk);
+  virtual void AppendChunkToUpload(const std::string& data, bool is_last_chunk)
+      OVERRIDE;
 
   // Unique ID in our factory.
   int id() const { return id_; }
@@ -73,7 +74,7 @@ class TestURLFetcher : public URLFetcher {
   // URL we were created with. Because of how we're using URLFetcher url()
   // always returns an empty URL. Chances are you'll want to use original_url()
   // in your tests.
-  const GURL& original_url() const { return original_url_; }
+  virtual const GURL& original_url() const OVERRIDE;
 
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return URLFetcher::upload_data(); }
@@ -85,15 +86,15 @@ class TestURLFetcher : public URLFetcher {
   Delegate* delegate() const { return URLFetcher::delegate(); }
 
   void set_url(const GURL& url) { fake_url_ = url; }
-  virtual const GURL& url() const;
+  virtual const GURL& url() const OVERRIDE;
 
   void set_status(const net::URLRequestStatus& status);
-  virtual const net::URLRequestStatus& status() const;
+  virtual const net::URLRequestStatus& status() const OVERRIDE;
 
   void set_response_code(int response_code) {
     fake_response_code_ = response_code;
   }
-  virtual int response_code() const;
+  virtual int response_code() const OVERRIDE;
 
   // Set string data.
   void SetResponseString(const std::string& response);
@@ -102,9 +103,11 @@ class TestURLFetcher : public URLFetcher {
   void SetResponseFilePath(const FilePath& path);
 
   // Override response access functions to return fake data.
-  virtual bool GetResponseAsString(std::string* out_response_string) const;
+  virtual bool GetResponseAsString(std::string* out_response_string) const
+      OVERRIDE;
   virtual bool GetResponseAsFilePath(bool take_ownership,
-                                     FilePath* out_response_path) const;
+                                     FilePath* out_response_path) const
+      OVERRIDE;
 
  private:
   const int id_;
@@ -136,7 +139,7 @@ class TestURLFetcherFactory : public URLFetcher::Factory,
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d);
+                                       URLFetcher::Delegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
 
@@ -197,7 +200,7 @@ class FakeURLFetcherFactory : public URLFetcher::Factory,
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d);
+                                       URLFetcher::Delegate* d) OVERRIDE;
 
   // Sets the fake response for a given URL.  If success is true we will serve
   // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
@@ -230,7 +233,7 @@ class URLFetcherFactory : public URLFetcher::Factory {
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
                                        URLFetcher::RequestType request_type,
-                                       URLFetcher::Delegate* d);
+                                       URLFetcher::Delegate* d) OVERRIDE;
 
 };
 

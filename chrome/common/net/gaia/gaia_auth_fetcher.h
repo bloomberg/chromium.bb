@@ -71,6 +71,11 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   // Start a TokenAuth request to pre-login the user with the given credentials.
   void StartTokenAuth(const std::string& auth_token);
 
+  // Start a MergeSession request to pre-login the user with the given
+  // credentials.  Unlike TokenAuth above, MergeSession will not sign out any
+  // existing accounts.
+  void StartMergeSession(const std::string& auth_token);
+
   // Implementation of URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
@@ -108,6 +113,8 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   static const char kGetUserInfoFormat[];
   // The format of the POST body for TokenAuth.
   static const char kTokenAuthFormat[];
+  // The format of the POST body for MergeSession.
+  static const char kMergeSessionFormat[];
 
   // Constants for parsing ClientLogin errors.
   static const char kAccountDeletedError[];
@@ -141,6 +148,10 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   void OnTokenAuthFetched(const std::string& data,
                           const net::URLRequestStatus& status,
                           int response_code);
+
+  void OnMergeSessionFetched(const std::string& data,
+                             const net::URLRequestStatus& status,
+                             int response_code);
 
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
@@ -180,10 +191,16 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
                                        const std::string& continue_url,
                                        const std::string& source);
 
+  // Supply the authentication token returned from StartIssueAuthToken.
+  static std::string MakeMergeSessionBody(const std::string& auth_token,
+                                       const std::string& continue_url,
+                                       const std::string& source);
+
   // Create a fetcher useable for making any Gaia request.
   static URLFetcher* CreateGaiaFetcher(net::URLRequestContextGetter* getter,
                                        const std::string& body,
-                                       const GURL& gaia_gurl_,
+                                       const GURL& gaia_gurl,
+                                       bool send_cookies,
                                        URLFetcher::Delegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
@@ -201,6 +218,7 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
   const GURL issue_auth_token_gurl_;
   const GURL get_user_info_gurl_;
   const GURL token_auth_gurl_;
+  const GURL merge_session_gurl_;
 
   // While a fetch is going on:
   scoped_ptr<URLFetcher> fetcher_;

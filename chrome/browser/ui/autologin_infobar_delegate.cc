@@ -52,9 +52,9 @@ class AutoLoginRedirector : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Redirect tab to TokenAuth URL, logging the user in and navigating
+  // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.
-  void RedirectToTokenAuth(const std::string& token);
+  void RedirectToMergeSession(const std::string& token);
 
   TabContentsWrapper* tab_contents_wrapper_;
   const std::string args_;
@@ -95,7 +95,7 @@ void AutoLoginRedirector::Observe(int type,
         Details<TokenService::TokenAvailableDetails>(details).ptr();
 
     if (tok_details->service() == GaiaConstants::kGaiaService) {
-      RedirectToTokenAuth(tok_details->token());
+      RedirectToMergeSession(tok_details->token());
       delete this;
       return;
     }
@@ -111,7 +111,7 @@ void AutoLoginRedirector::Observe(int type,
   }
 }
 
-void AutoLoginRedirector::RedirectToTokenAuth(const std::string& token) {
+void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
   // The args are URL encoded, so we need to decode them before use.
   url_canon::RawCanonOutputT<char16> output;
   url_util::DecodeURLEscapeSequences(args_.c_str(), args_.length(), &output);
@@ -120,9 +120,9 @@ void AutoLoginRedirector::RedirectToTokenAuth(const std::string& token) {
 
   const char kUrlFormat[] = "%s?"
                             "source=chrome&"
-                            "auth=%s&"
+                            "uberauth=%s&"
                             "%s";
-  const std::string url_string = GaiaUrls::GetInstance()->token_auth_url();
+  const std::string url_string = GaiaUrls::GetInstance()->merge_session_url();
   std::string url = base::StringPrintf(kUrlFormat,
                                        url_string.c_str(),
                                        token.c_str(),

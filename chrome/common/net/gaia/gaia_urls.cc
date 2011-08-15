@@ -15,6 +15,7 @@ const char kClientLoginUrlSuffix[] = "/accounts/ClientLogin";
 const char kIssueAuthTokenUrlSuffix[] = "/accounts/IssueAuthToken";
 const char kGetUserInfoUrlSuffix[] = "/accounts/GetUserInfo";
 const char kTokenAuthUrlSuffix[] = "/accounts/TokenAuth";
+const char kMergeSessionUrlSuffix[] = "/accounts/MergeSession";
 
 }  // namespacce
 
@@ -35,6 +36,7 @@ GaiaUrls::GaiaUrls() {
   issue_auth_token_url_ = "https://" + host_base_ + kIssueAuthTokenUrlSuffix;
   get_user_info_url_ = "https://" + host_base_ + kGetUserInfoUrlSuffix;
   token_auth_url_ = "https://" + host_base_ + kTokenAuthUrlSuffix;
+  merge_session_url_ = "https://" + host_base_ + kMergeSessionUrlSuffix;
 }
 
 GaiaUrls::~GaiaUrls() {
@@ -58,4 +60,8 @@ const std::string& GaiaUrls::get_user_info_url() {
 
 const std::string& GaiaUrls::token_auth_url() {
   return token_auth_url_;
+}
+
+const std::string& GaiaUrls::merge_session_url() {
+  return merge_session_url_;
 }

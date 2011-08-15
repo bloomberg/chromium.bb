@@ -21,6 +21,7 @@ class GaiaUrls {
   const std::string& issue_auth_token_url();
   const std::string& get_user_info_url();
   const std::string& token_auth_url();
+  const std::string& merge_session_url();
 
  private:
   GaiaUrls();
@@ -34,6 +35,7 @@ class GaiaUrls {
   std::string issue_auth_token_url_;
   std::string get_user_info_url_;
   std::string token_auth_url_;
+  std::string merge_session_url_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaUrls);
 };

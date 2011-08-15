@@ -40,6 +40,10 @@ void TestURLFetcher::AppendChunkToUpload(const std::string& data,
   chunks_.push_back(data);
 }
 
+const GURL& TestURLFetcher::original_url() const {
+  return original_url_;
+}
+
 void TestURLFetcher::set_status(const net::URLRequestStatus& status) {
   fake_status_ = status;
 }
