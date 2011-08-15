@@ -20,7 +20,7 @@ vars = {
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
   "libjingle_revision": "77",
   "libvpx_revision": "96377",
-  "ffmpeg_revision": "96373",
+  "ffmpeg_revision": "96828",
   "sfntly_revision": "43",
   "skia_revision": "2114",
   "v8_revision": "8933",
