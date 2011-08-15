@@ -640,7 +640,11 @@ FileManager.prototype = {
     this.dataModel_.setCompareFunction('name', function(a, b) {
       return collator.compare(a.name, b.name);
     });
-    this.dataModel_.sort('name');
+    this.dataModel_.setCompareFunction('cachedMtime_',
+                                       this.compareMtime_.bind(this));
+    this.dataModel_.setCompareFunction('cachedSize_',
+                                       this.compareSize_.bind(this));
+    this.dataModel_.sort('cachedMtime_');
     this.dataModel_.prepareSort = this.prepareSort_.bind(this);
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
@@ -660,6 +664,32 @@ FileManager.prototype = {
     this.dialogDom_.style.opacity = '1';
 
     this.textSearchState_ = {text: '', date: new Date()};
+  };
+
+  /**
+   * Compare by mtime first, then by name.
+   */
+  FileManager.prototype.compareMtime_ = function(a, b) {
+    if (a.cachedMtime_ > b.cachedMtime)
+      return 1;
+
+    if (a.cachedMtime_ < b.cachedMtime)
+      return -1;
+
+    return this.collator_.compare(a.name, b.name);
+  };
+
+  /**
+   * Compare by size first, then by name.
+   */
+  FileManager.prototype.compareSize_ = function(a, b) {
+    if (a.cachedSize_ > b.cachedSize)
+      return 1;
+
+    if (a.cachedSize_ < b.cachedSize)
+      return -1;
+
+    return this.collator_.compare(a.name, b.name);
   };
 
   FileManager.prototype.refocus = function() {
@@ -1215,7 +1245,9 @@ FileManager.prototype = {
   FileManager.prototype.prepareSort_ = function(field, callback) {
     var cacheFunction;
 
-    if (field == 'cachedMtime_') {
+    if (field == 'name' || field == 'cachedMtime_') {
+      // Mtime is the tie-breaker for a name sort, so we need to resolve
+      // it for both mtime and name sorts.
       cacheFunction = cacheEntryDate;
     } else if (field == 'cachedSize_') {
       cacheFunction = cacheEntrySize;
