@@ -7,10 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 
 class SkBitmap;
 
@@ -20,13 +19,13 @@ class SettingLevelBubbleView;
 
 // Singleton class controlling a bubble displaying a level-based setting like
 // volume or brightness.
-class SettingLevelBubble : public BubbleDelegate,
-                           public ui::AnimationDelegate {
+class SettingLevelBubble : public BubbleDelegate {
  public:
-  void ShowBubble(int percent, bool enabled);
+  // Shows the bubble.  |percent| should be in the range [0.0, 100.0].
+  void ShowBubble(double percent, bool enabled);
   void HideBubble();
 
-  // Update the bubble's current level without showing the bubble onscreen.
+  // Updates the bubble's current level without showing the bubble onscreen.
   // We _do_ still animate the level moving to |percent| in case the bubble is
   // still visible from a previous call to ShowBubble().
   //
@@ -41,7 +40,7 @@ class SettingLevelBubble : public BubbleDelegate,
   // If we didn't update our internal state to 25% after 2), then the animation
   // displayed in response to 3) would show the bubble animating from 50% down
   // to 30%, rather than from 25% up to 30%.
-  void UpdateWithoutShowingBubble(int percent, bool enabled);
+  void UpdateWithoutShowingBubble(double percent, bool enabled);
 
  protected:
   SettingLevelBubble(SkBitmap* increase_icon,
@@ -50,20 +49,40 @@ class SettingLevelBubble : public BubbleDelegate,
   virtual ~SettingLevelBubble();
 
  private:
-  void OnTimeout();
-
   // Overridden from BubbleDelegate.
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // Callback for |hide_timer_|.  Closes the bubble.
+  void OnHideTimeout();
 
-  // Previous and current percentages, or -1 if not yet shown.
-  int previous_percent_;
-  int current_percent_;
+  // Callback for |animation_timer_|.  Updates the level displayed by the view,
+  // also stopping the animation if we've reached the target.
+  void OnAnimationTimeout();
+
+  // Animates towards |percent|.  Updates |target_percent_| and starts
+  // |animation_timer_| if it's not already running.  If this is the first time
+  // that the level is being set, we just update |view_| immediately and don't
+  // animate.
+  void UpdateTargetPercent(double percent);
+
+  // Stops |animation_timer_| if it's running.
+  void StopAnimation();
+
+  // Current and target percentages for the progress bar.  In the range
+  // [0.0, 100.0], or -1.0 if not yet shown.
+  double current_percent_;
+  double target_percent_;
+
+  // Time at which we'll reach |target_percent_|.
+  base::TimeTicks target_time_;
+
+  // Time at which we last updated |current_percent_|.
+  base::TimeTicks last_animation_update_time_;
+
+  // Time at which |target_percent_| was last updated.
+  base::TimeTicks last_target_update_time_;
 
   // Icons displayed in the bubble when increasing or decreasing the level or
   // when it's disabled.  Not owned by us.
@@ -74,11 +93,20 @@ class SettingLevelBubble : public BubbleDelegate,
   // Currently shown bubble or NULL.
   Bubble* bubble_;
 
-  // Its contents view, owned by Bubble.
+  // Contents view owned by Bubble.
   SettingLevelBubbleView* view_;
 
-  ui::SlideAnimation animation_;
-  base::OneShotTimer<SettingLevelBubble> timeout_timer_;
+  // Timer to hide the bubble.
+  base::OneShotTimer<SettingLevelBubble> hide_timer_;
+
+  // Timer to animate the currently-shown percent.  We use a timer instead of
+  // ui::Animation since our animations are frequently interrupted by additional
+  // changes to the level, and ui::Animation doesn't provide much control over
+  // in-progress animations, leading to mega-jank.
+  base::RepeatingTimer<SettingLevelBubble> animation_timer_;
+
+  // Is |animation_timer_| currently running?
+  bool is_animating_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingLevelBubble);
 };

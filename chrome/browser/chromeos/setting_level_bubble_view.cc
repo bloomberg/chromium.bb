@@ -32,17 +32,15 @@ SettingLevelBubbleView::SettingLevelBubbleView()
       icon_(NULL) {
 }
 
-void SettingLevelBubbleView::Init(SkBitmap* icon,
-                                  int level_percent,
-                                  bool enabled) {
+void SettingLevelBubbleView::Init(SkBitmap* icon, double level, bool enabled) {
   DCHECK(icon);
-  DCHECK(level_percent >= 0 && level_percent <= 100);
   icon_ = icon;
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
+  progress_bar_->SetDisplayRange(0.0, 100.0);
   progress_bar_->EnableCanvasFlippingForRTLUI(true);
   EnableCanvasFlippingForRTLUI(true);
-  SetLevel(level_percent);
+  SetLevel(level);
   SetEnabled(enabled);
 }
 
@@ -52,9 +50,8 @@ void SettingLevelBubbleView::SetIcon(SkBitmap* icon) {
   SchedulePaint();
 }
 
-void SettingLevelBubbleView::SetLevel(int level_percent) {
-  DCHECK(level_percent >= 0 && level_percent <= 100);
-  progress_bar_->SetProgress(level_percent);
+void SettingLevelBubbleView::SetLevel(double level) {
+  progress_bar_->SetValue(level);
 }
 
 void SettingLevelBubbleView::SetEnabled(bool enabled) {

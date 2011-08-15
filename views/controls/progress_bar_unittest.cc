@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,30 +9,6 @@
 #include "views/controls/progress_bar.h"
 
 namespace views {
-
-TEST(ProgressBarTest, ProgressProperty) {
-  ProgressBar bar;
-  bar.SetProgress(-1);
-  int progress = bar.GetProgress();
-  EXPECT_EQ(0, progress);
-  bar.SetProgress(300);
-  progress = bar.GetProgress();
-  EXPECT_EQ(100, progress);
-  bar.SetProgress(62);
-  progress = bar.GetProgress();
-  EXPECT_EQ(62, progress);
-}
-
-TEST(ProgressBarTest, AddProgressMethod) {
-  ProgressBar bar;
-  bar.SetProgress(10);
-  bar.AddProgress(22);
-  int progress = bar.GetProgress();
-  EXPECT_EQ(32, progress);
-  bar.AddProgress(200);
-  progress = bar.GetProgress();
-  EXPECT_EQ(100, progress);
-}
 
 TEST(ProgressBarTest, TooltipTextProperty) {
   ProgressBar bar;
@@ -47,7 +23,7 @@ TEST(ProgressBarTest, TooltipTextProperty) {
 
 TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
-  bar.SetProgress(62);
+  bar.SetValue(62);
 
   ui::AccessibleViewState state;
   bar.GetAccessibleState(&state);

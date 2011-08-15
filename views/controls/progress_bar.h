@@ -28,51 +28,47 @@ namespace views {
 
 class VIEWS_EXPORT ProgressBar : public View {
  public:
+  // The value range defaults to [0.0, 1.0].
   ProgressBar();
   virtual ~ProgressBar();
 
-  // Overridden to return preferred size of the progress bar.
-  virtual gfx::Size GetPreferredSize();
+  double current_value() const { return current_value_; }
 
-  // Returns views/ProgressBar.
-  virtual std::string GetClassName() const;
-
-  // Overridden to paint
-  virtual void OnPaint(gfx::Canvas* canvas);
-
-  // Set and get the progress bar progress in range [0, kMaxProgress].
-  virtual void SetProgress(int progress);
-  virtual int GetProgress() const;
-  // Add progress to current.
-  virtual void AddProgress(int tick);
-
-  // Sets the tooltip text.  Default behavior for a progress bar is to show
-  // no tooltip on mouse hover. Calling this lets you set a custom tooltip.
-  // To revert to default behavior, call this with an empty string.
-  virtual void SetTooltipText(const std::wstring& tooltip_text);
-
-  // Gets the tooltip text if has been specified with SetTooltipText().
+  // View implementation.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip)
       OVERRIDE;
 
-  // Sets the enabled state.
-  virtual void OnEnabledChanged() OVERRIDE;
+  // Sets the inclusive range of values to be displayed.  Values outside of the
+  // range will be capped when displayed.
+  virtual void SetDisplayRange(double min_display_value,
+                               double max_display_value);
 
-  // Accessibility accessors, overridden from View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  // Sets the current value.  Values outside of the range [min_display_value_,
+  // max_display_value_] will be stored unmodified and capped for display.
+  virtual void SetValue(double value);
 
-  // Maximum value of progress.
-  static const int kMaxProgress;
+  // Sets the tooltip text.  Default behavior for a progress bar is to show no
+  // tooltip on mouse hover. Calling this lets you set a custom tooltip.  To
+  // revert to default behavior, call this with an empty string.
+  virtual void SetTooltipText(const std::wstring& tooltip_text);
+
 
  private:
-  // Progress in range [0, kMaxProgress].
-  int progress_;
+  static const char kViewClassName[];
+
+  // Inclusive range used when displaying values.
+  double min_display_value_;
+  double max_display_value_;
+
+  // Current value.  May be outside of [min_display_value_, max_display_value_].
+  double current_value_;
 
   // Tooltip text.
   string16 tooltip_text_;
-
-  // The view class name.
-  static const char kViewClassName[];
 
   DISALLOW_COPY_AND_ASSIGN(ProgressBar);
 };

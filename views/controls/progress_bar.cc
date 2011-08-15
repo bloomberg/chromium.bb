@@ -4,6 +4,7 @@
 
 #include "views/controls/progress_bar.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/logging.h"
@@ -20,6 +21,9 @@
 #include "views/border.h"
 #include "views/painter.h"
 
+using std::max;
+using std::min;
+
 namespace {
 
 // Corner radius for the progress bar's border.
@@ -28,11 +32,11 @@ const int kCornerRadius = 3;
 // Progress bar's border width
 const int kBorderWidth = 1;
 
-static void AddRoundRectPathWithPadding(int x, int y,
-                                        int w, int h,
-                                        int corner_radius,
-                                        SkScalar padding,
-                                        SkPath* path) {
+void AddRoundRectPathWithPadding(int x, int y,
+                                 int w, int h,
+                                 int corner_radius,
+                                 SkScalar padding,
+                                 SkPath* path) {
   DCHECK(path);
   if (path == NULL)
     return;
@@ -46,22 +50,22 @@ static void AddRoundRectPathWithPadding(int x, int y,
       SkIntToScalar(corner_radius) - padding);
 }
 
-static void AddRoundRectPath(int x, int y,
-                             int w, int h,
-                             int corner_radius,
-                             SkPath* path) {
+void AddRoundRectPath(int x, int y,
+                      int w, int h,
+                      int corner_radius,
+                      SkPath* path) {
   static const SkScalar half = SkIntToScalar(1) / 2;
   AddRoundRectPathWithPadding(x, y, w, h, corner_radius, half, path);
 }
 
-static void FillRoundRect(gfx::Canvas* canvas,
-                          int x, int y,
-                          int w, int h,
-                          int corner_radius,
-                          const SkColor colors[],
-                          const SkScalar points[],
-                          int count,
-                          bool gradient_horizontal) {
+void FillRoundRect(gfx::Canvas* canvas,
+                   int x, int y,
+                   int w, int h,
+                   int corner_radius,
+                   const SkColor colors[],
+                   const SkScalar points[],
+                   int count,
+                   bool gradient_horizontal) {
   SkPath path;
   AddRoundRectPath(x, y, w, h, corner_radius, &path);
   SkPaint paint;
@@ -84,13 +88,13 @@ static void FillRoundRect(gfx::Canvas* canvas,
   canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
-static void FillRoundRect(gfx::Canvas* canvas,
-                          int x, int y,
-                          int w, int h,
-                          int corner_radius,
-                          SkColor gradient_start_color,
-                          SkColor gradient_end_color,
-                          bool gradient_horizontal) {
+void FillRoundRect(gfx::Canvas* canvas,
+                   int x, int y,
+                   int w, int h,
+                   int corner_radius,
+                   SkColor gradient_start_color,
+                   SkColor gradient_end_color,
+                   bool gradient_horizontal) {
   if (gradient_start_color != gradient_end_color) {
     SkColor colors[2] = { gradient_start_color, gradient_end_color };
     FillRoundRect(canvas, x, y, w, h, corner_radius,
@@ -106,12 +110,12 @@ static void FillRoundRect(gfx::Canvas* canvas,
   }
 }
 
-static void StrokeRoundRect(gfx::Canvas* canvas,
-                            int x, int y,
-                            int w, int h,
-                            int corner_radius,
-                            SkColor stroke_color,
-                            int stroke_width) {
+void StrokeRoundRect(gfx::Canvas* canvas,
+                     int x, int y,
+                     int w, int h,
+                     int corner_radius,
+                     SkColor stroke_color,
+                     int stroke_width) {
   SkPath path;
   AddRoundRectPath(x, y, w, h, corner_radius, &path);
   SkPaint paint;
@@ -129,11 +133,11 @@ namespace views {
 
 // static
 const char ProgressBar::kViewClassName[] = "views/ProgressBar";
-// static: progress bar's maximum value.
-const int ProgressBar::kMaxProgress = 100;
 
-
-ProgressBar::ProgressBar(): progress_(0) {
+ProgressBar::ProgressBar()
+    : min_display_value_(0.0),
+      max_display_value_(1.0),
+      current_value_(0.0) {
 }
 
 ProgressBar::~ProgressBar() {
@@ -143,7 +147,23 @@ gfx::Size ProgressBar::GetPreferredSize() {
   return gfx::Size(100, 16);
 }
 
+std::string ProgressBar::GetClassName() const {
+  return kViewClassName;
+}
+
+void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PROGRESSBAR;
+  state->state = ui::AccessibilityTypes::STATE_READONLY;
+}
+
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
+  const double capped_value =
+      min(max(current_value_, min_display_value_), max_display_value_);
+  const double capped_fraction =
+      (capped_value - min_display_value_) /
+      (max_display_value_ - min_display_value_);
+  const int progress_width = static_cast<int>(width() * capped_fraction + 0.5);
+
 #if defined(OS_CHROMEOS)
   const SkColor background_colors[] = {
     SkColorSetRGB(0xBB, 0xBB, 0xBB),
@@ -173,10 +193,8 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                   background_border_color,
                   kBorderWidth);
 
-  if (progress_ * width() > 1) {
-    int progress_width = progress_ * width() / kMaxProgress;
-
-    bool enabled = IsEnabled();
+  if (progress_width > 1) {
+    const bool enabled = IsEnabled();
 
     const SkColor bar_color_start = enabled ?
         SkColorSetRGB(100, 116, 147) :
@@ -253,10 +271,10 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                 background_color_start,
                 background_color_end,
                 false);
-  if (progress_ * width() > 1) {
+  if (progress_width > 1) {
     FillRoundRect(canvas,
                   0, 0,
-                  progress_ * width() / kMaxProgress, height(),
+                  progress_width, height(),
                   kCornerRadius,
                   bar_color_start,
                   bar_color_end,
@@ -271,31 +289,6 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 #endif
 }
 
-std::string ProgressBar::GetClassName() const {
-  return kViewClassName;
-}
-
-void ProgressBar::SetProgress(int progress) {
-  progress_ = progress;
-  if (progress_ < 0)
-    progress_ = 0;
-  else if (progress_ > kMaxProgress)
-    progress_ = kMaxProgress;
-  SchedulePaint();
-}
-
-int ProgressBar::GetProgress() const {
-  return progress_;
-}
-
-void ProgressBar::AddProgress(int tick) {
-  SetProgress(progress_ + tick);
-}
-
-void ProgressBar::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = WideToUTF16Hack(tooltip_text);
-}
-
 bool ProgressBar::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   DCHECK(tooltip);
   if (tooltip == NULL)
@@ -304,14 +297,26 @@ bool ProgressBar::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return !tooltip_text_.empty();
 }
 
-void ProgressBar::OnEnabledChanged() {
-  View::OnEnabledChanged();
-  // TODO(denisromanov): Need to switch progress bar color here?
+void ProgressBar::SetDisplayRange(double min_display_value,
+                                  double max_display_value) {
+  if (min_display_value != min_display_value_ ||
+      max_display_value != max_display_value_) {
+    DCHECK(min_display_value < max_display_value);
+    min_display_value_ = min_display_value;
+    max_display_value_ = max_display_value;
+    SchedulePaint();
+  }
 }
 
-void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PROGRESSBAR;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
+void ProgressBar::SetValue(double value) {
+  if (value != current_value_) {
+    current_value_ = value;
+    SchedulePaint();
+  }
+}
+
+void ProgressBar::SetTooltipText(const std::wstring& tooltip_text) {
+  tooltip_text_ = WideToUTF16Hack(tooltip_text);
 }
 
 }  // namespace views

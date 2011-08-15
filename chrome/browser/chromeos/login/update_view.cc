@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/update_view.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
+using std::max;
 using views::Background;
 using views::Label;
 using views::View;
@@ -88,6 +90,7 @@ void UpdateView::Init() {
 
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
+  progress_bar_->SetDisplayRange(0.0, 100.0);
 
   // Curtain view.
   InitLabel(&checking_label_);
@@ -106,7 +109,7 @@ void UpdateView::Init() {
 }
 
 void UpdateView::Reset() {
-  progress_bar_->SetProgress(0);
+  progress_bar_->SetValue(0.0);
 }
 
 void UpdateView::UpdateLocalizedStrings() {
@@ -124,11 +127,12 @@ void UpdateView::UpdateLocalizedStrings() {
 }
 
 void UpdateView::AddProgress(int ticks) {
-  progress_bar_->AddProgress(ticks);
+  progress_bar_->SetValue(
+      max(progress_bar_->current_value() + ticks, 100.0));
 }
 
 void UpdateView::SetProgress(int progress) {
-  progress_bar_->SetProgress(progress);
+  progress_bar_->SetValue(progress);
 }
 
 void UpdateView::ShowManualRebootInfo() {
