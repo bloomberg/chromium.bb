@@ -169,6 +169,11 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
+        # Hack for NPAPI policy support. REMOVE ASAP.
+        # Bug: http://crbug.com/92576
+        '../content/common/json_value_serializer.cc',
+        '../content/common/json_value_serializer.h',
+
         'host/plugin/host_plugin.cc',
         'host/plugin/host_plugin.def',
         'host/plugin/host_plugin.rc',
@@ -177,6 +182,10 @@
         'host/plugin/host_plugin_utils.h',
         'host/plugin/host_script_object.cc',
         'host/plugin/host_script_object.h',
+        'host/plugin/policy_hack/nat_policy.h',
+        'host/plugin/policy_hack/nat_policy_linux.cc',
+        'host/plugin/policy_hack/nat_policy_mac.mm',
+        'host/plugin/policy_hack/nat_policy_win.cc',
       ],
       'conditions': [
         ['OS=="mac"', {

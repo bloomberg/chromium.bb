@@ -1,4 +1,8 @@
 include_rules = [
+  # Hack for NPAPI policy support. REMOVE ASAP.
+  # Bug: http://crbug.com/92576
+  "+content/common",
+
   "+crypto",
   "+media/base",
 

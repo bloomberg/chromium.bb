@@ -57,13 +57,20 @@ void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
         int port;
         if (!base::StringToInt(port_str, &port)) {
           LOG(WARNING) << "Unable to parse port in stanza" << stanza->Str();
-        } else {
+          continue;
+        }
+
+        if (host_resolver_factory_) {
           net::IPAddressNumber ip_number;
           HostResolver* resolver = host_resolver_factory_->CreateHostResolver();
           stun_dns_requests_.insert(resolver);
           resolver->SignalDone.connect(
               this, &JingleInfoRequest::OnStunAddressResponse);
           resolver->Resolve(talk_base::SocketAddress(host, port));
+        } else {
+          // If there is no |host_resolver_factory_|, we're not sandboxed, so
+          // we can let libjingle itself do the DNS resolution.
+          stun_hosts_.push_back(talk_base::SocketAddress(host, port));
         }
       }
     }

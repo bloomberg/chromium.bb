@@ -17,6 +17,7 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
+#include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
 
@@ -83,7 +84,9 @@ HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
       on_state_changed_func_(NULL),
       np_thread_id_(base::PlatformThread::CurrentId()),
       failed_login_attempts_(0),
-      disconnected_event_(true, false) {
+      disconnected_event_(true, false),
+      nat_traversal_enabled_(false),
+      policy_received_(false) {
   // Set up log message handler.
   // Note that this approach doesn't quite support having multiple instances
   // of Chromoting running. In that case, the most recently opened tab will
@@ -113,6 +116,14 @@ HostNPScriptObject::~HostNPScriptObject() {
   g_logging_old_handler = NULL;
   g_logging_scriptable_object = NULL;
 
+  // Stop listening for policy updates.
+  if (nat_policy_.get()) {
+    base::WaitableEvent nat_policy_stopped_(true, false);
+    nat_policy_->StopWatching(&nat_policy_stopped_);
+    nat_policy_stopped_.Wait();
+    nat_policy_.reset();
+  }
+
   // Disconnect synchronously. We cannot disconnect asynchronously
   // here because |host_context_| needs to be stopped on the plugin
   // thread, but the plugin thread may not exist after the instance
@@ -137,6 +148,11 @@ bool HostNPScriptObject::Init() {
   VLOG(2) << "Init";
   // TODO(wez): This starts a bunch of threads, which might fail.
   host_context_.Start();
+  nat_policy_.reset(
+      policy_hack::NatPolicy::Create(host_context_.network_message_loop()));
+  nat_policy_->StartWatching(
+      base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
+                 base::Unretained(this)));
   return true;
 }
 
@@ -378,19 +394,42 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  ConnectInternal(uid, auth_token, auth_service);
+  ReadPolicyAndConnect(uid, auth_token, auth_service);
 
   return true;
 }
 
-void HostNPScriptObject::ConnectInternal(
+void HostNPScriptObject::ReadPolicyAndConnect(const std::string& uid,
+                                              const std::string& auth_token,
+                                              const std::string& auth_service) {
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::ReadPolicyAndConnect, base::Unretained(this),
+            uid, auth_token, auth_service));
+    return;
+  }
+
+  // Only proceed to FinishConnect() if at least one policy update has been
+  // received.
+  if (policy_received_) {
+    FinishConnect(uid, auth_token, auth_service);
+  } else {
+    // Otherwise, create the policy watcher, and thunk the connect.
+    pending_connect_ =
+        base::Bind(&HostNPScriptObject::FinishConnect,
+                   base::Unretained(this), uid, auth_token, auth_service);
+  }
+}
+
+void HostNPScriptObject::FinishConnect(
     const std::string& uid,
     const std::string& auth_token,
     const std::string& auth_service) {
   if (MessageLoop::current() != host_context_.main_message_loop()) {
     host_context_.main_message_loop()->PostTask(
         FROM_HERE, base::Bind(
-            &HostNPScriptObject::ConnectInternal, base::Unretained(this),
+            &HostNPScriptObject::FinishConnect, base::Unretained(this),
             uid, auth_token, auth_service));
     return;
   }
@@ -430,10 +469,10 @@ void HostNPScriptObject::ConnectInternal(
   desktop_environment_.reset(DesktopEnvironment::Create(&host_context_));
 
   // Create the Host.
-  // TODO(sergeyu): Use firewall traversal policy settings here.
+  LOG(INFO) << "Connecting with NAT state: " << nat_traversal_enabled_;
   host_ = ChromotingHost::Create(
       &host_context_, host_config_, desktop_environment_.get(),
-      access_verifier.release(), false);
+      access_verifier.release(), nat_traversal_enabled_);
   host_->AddStatusObserver(this);
   host_->AddStatusObserver(register_request_.get());
   host_->set_it2me(true);
@@ -483,6 +522,32 @@ void HostNPScriptObject::OnShutdownFinished() {
   register_request_.reset();
   host_config_ = NULL;
   disconnected_event_.Signal();
+}
+
+void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
+  if (MessageLoop::current() != host_context_.main_message_loop()) {
+    host_context_.main_message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostNPScriptObject::OnNatPolicyUpdate,
+                   base::Unretained(this), nat_traversal_enabled));
+    return;
+  }
+
+  VLOG(2) << "OnNatPolicyUpdate: " << nat_traversal_enabled;
+
+  // When transitioning from enabled to disabled, force disconnect any
+  // existing session.
+  if (nat_traversal_enabled_ && !nat_traversal_enabled) {
+    DisconnectInternal();
+  }
+
+  policy_received_ = true;
+  nat_traversal_enabled_ = nat_traversal_enabled;
+
+  if (!pending_connect_.is_null()) {
+    pending_connect_.Run();
+    pending_connect_.Reset();
+  }
 }
 
 void HostNPScriptObject::OnReceivedSupportID(

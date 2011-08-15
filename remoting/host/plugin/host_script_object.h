@@ -34,6 +34,10 @@ class RegisterSupportHostRequest;
 class SignalStrategy;
 class SupportAccessVerifier;
 
+namespace policy_hack {
+class NatPolicy;
+}  // namespace policy_hack
+
 // NPAPI plugin implementation for remoting host script object.
 // HostNPScriptObject creates threads that are required to run
 // ChromotingHost and starts/stops the host on those threads. When
@@ -107,13 +111,19 @@ class HostNPScriptObject : public HostStatusObserver {
 
   // Helper functions that run on main thread. Can be called on any
   // other thread.
-  void ConnectInternal(const std::string& uid,
+  void ReadPolicyAndConnect(const std::string& uid,
+                            const std::string& auth_token,
+                            const std::string& auth_service);
+  void FinishConnect(const std::string& uid,
                        const std::string& auth_token,
                        const std::string& auth_service);
   void DisconnectInternal();
 
   // Callback for ChromotingHost::Shutdown().
   void OnShutdownFinished();
+
+  // Called when the nat traversal policy is updated.
+  void OnNatPolicyUpdate(bool nat_traversal_enabled);
 
   // Helper function for executing InvokeDefault on an NPObject, and ignoring
   // the return value.
@@ -151,6 +161,22 @@ class HostNPScriptObject : public HostStatusObserver {
 
   base::WaitableEvent disconnected_event_;
   base::CancellationFlag destructing_;
+
+  scoped_ptr<policy_hack::NatPolicy> nat_policy_;
+
+  // Host the current nat traversal policy setting.
+  bool nat_traversal_enabled_;
+
+  // Indiciates whether or not a policy has ever been read. This is to ensure
+  // that on startup, we do not accidentally start a connection before we have
+  // queried our policy restrictions.
+  bool policy_received_;
+
+  // On startup, it is possible to have Connect() called before the policy read
+  // is completed.  Rather than just failing, we thunk the connection call so
+  // it can be executed after at least one successful policy read. This
+  // variable contains the thunk if it is necessary.
+  base::Closure pending_connect_;
 };
 
 }  // namespace remoting
