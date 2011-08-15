@@ -25,6 +25,9 @@ def CheckChange(input_api, output_api):
         continue
 
       if skip_next_line:
+        if 'insert_a_suppression_name_here' in line:
+          errors.append('"insert_a_suppression_name_here" is not a valid '
+                        'suppression name')
         if suppressions.has_key(line):
           errors.append('suppression with name "%s" at %s line %s has already '
                         'been defined at line %s' % (line, f.LocalPath(),

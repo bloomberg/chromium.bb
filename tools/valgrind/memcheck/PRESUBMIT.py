@@ -30,6 +30,9 @@ def CheckChange(input_api, output_api):
 
       if skip_next_line:
         if skip_next_line == 'skip_suppression_name':
+          if 'insert_a_suppression_name_here' in line:
+            errors.append('"insert_a_suppression_name_here" is not a valid '
+                          'suppression name')
           if suppressions.has_key(line):
             if f.LocalPath() == suppressions[line][1]:
               errors.append('suppression with name "%s" at %s line %s '
