@@ -8,11 +8,11 @@
 
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "content/browser/download/download_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

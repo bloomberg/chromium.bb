@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_file.h"
+#include "content/browser/download/download_file.h"
 
 #include <string>
 
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/download/download_create_info.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_manager.h"
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info,
                            DownloadManager* download_manager)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
 #pragma once
 
 #include <string>
@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/time.h"
-#include "chrome/browser/download/download_file.h"
-#include "chrome/browser/download/download_request_handle.h"
+#include "content/browser/download/download_file.h"
+#include "content/browser/download/download_request_handle.h"
 #include "googleurl/src/gurl.h"
 
 // Used for informing the download manager of a new download, since we don't
@@ -106,4 +106,4 @@ struct DownloadCreateInfo {
   DownloadSaveInfo save_info;
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_

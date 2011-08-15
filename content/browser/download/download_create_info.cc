@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_create_info.h"
+#include "content/browser/download/download_create_info.h"
 
 #include <string>
 

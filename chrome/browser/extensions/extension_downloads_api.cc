@@ -12,9 +12,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_file_manager.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_downloads_api_constants.h"
 #include "chrome/browser/icon_loader.h"
@@ -22,6 +19,8 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_item.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 

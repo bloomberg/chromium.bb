@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_status_updater.h"
+#include "content/browser/download/download_status_updater.h"
 
 #include "base/logging.h"
-#include "chrome/browser/download/download_status_updater_delegate.h"
 #include "chrome/browser/download/download_util.h"
+#include "content/browser/download/download_status_updater_delegate.h"
 
 DownloadStatusUpdater::DownloadStatusUpdater() {
 }

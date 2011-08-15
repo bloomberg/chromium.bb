@@ -11,11 +11,11 @@
 #include "base/metrics/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_create_info.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 // TODO(lzheng): Get rid of the AddRef and Release after

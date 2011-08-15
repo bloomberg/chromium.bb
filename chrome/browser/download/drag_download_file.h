@@ -8,9 +8,9 @@
 
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/download/download_file.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_manager.h"
+#include "content/browser/download/download_file.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 

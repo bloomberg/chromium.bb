@@ -14,8 +14,8 @@
 // Use AddObserver() / RemoveObserver() on the appropriate download object to
 // receive state updates.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
 #pragma once
 
 #include <string>
@@ -25,8 +25,8 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/download/download_request_handle.h"
-#include "chrome/browser/download/download_state_info.h"
+#include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_state_info.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -490,4 +490,4 @@ class DownloadItem : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_

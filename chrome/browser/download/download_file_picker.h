@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_PICKER_H_
 #pragma once
 
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "content/browser/download/download_manager.h"
 
 class FilePath;
 class TabContents;

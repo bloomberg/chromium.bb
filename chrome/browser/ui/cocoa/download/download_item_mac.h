@@ -10,10 +10,10 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "content/browser/cancelable_request.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
 
 class BaseDownloadItemModel;
 @class DownloadItemController;

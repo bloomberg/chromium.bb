@@ -36,8 +36,8 @@
 // appropriate DownloadManager. In progress downloads are cancelled for a
 // DownloadManager that exits (such as when closing a profile).
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
 #pragma once
 
 #include <map>
@@ -47,7 +47,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
-#include "chrome/browser/download/download_request_handle.h"
+#include "content/browser/download/download_request_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct DownloadBuffer;
@@ -170,4 +170,4 @@ class DownloadFileManager
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_

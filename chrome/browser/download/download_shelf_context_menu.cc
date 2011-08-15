@@ -4,8 +4,8 @@
 
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
-#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "content/browser/download/download_item.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

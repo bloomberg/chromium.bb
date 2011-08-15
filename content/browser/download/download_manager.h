@@ -24,8 +24,8 @@
 // DownloadManager is constructed, we query the history service for the state of
 // all persisted downloads.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
 #pragma once
 
 #include <map>
@@ -42,10 +42,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_request_handle.h"
-#include "chrome/browser/download/download_status_updater_delegate.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_status_updater_delegate.h"
 
 class DownloadFileManager;
 class DownloadHistory;
@@ -415,4 +415,4 @@ class DownloadManager
   DISALLOW_COPY_AND_ASSIGN(DownloadManager);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_

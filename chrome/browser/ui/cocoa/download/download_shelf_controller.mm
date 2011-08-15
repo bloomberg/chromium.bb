@@ -6,8 +6,6 @@
 
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -20,6 +18,8 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
 #import "chrome/browser/ui/cocoa/hover_button.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/l10n/l10n_util.h"
 

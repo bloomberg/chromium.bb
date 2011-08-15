@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_file_manager.h"
+#include "content/browser/download/download_file_manager.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -10,15 +10,14 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_create_info.h"
-#include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"

@@ -4,13 +4,13 @@
 //
 // Download code which handles CRX files (extensions, themes, apps, ...).
 
-#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/download/download_item.h"
 #include "content/common/notification_service.h"
 
 namespace download_crx_util {

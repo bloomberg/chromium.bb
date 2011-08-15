@@ -7,10 +7,10 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/browser/download/download_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_types.h"
 
 namespace imageburner {
 

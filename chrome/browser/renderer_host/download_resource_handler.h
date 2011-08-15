@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/download/download_file.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_handler.h"
 

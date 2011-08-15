@@ -7,9 +7,9 @@
 #include "chrome/browser/ui/cocoa/download/download_util_mac.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/download/download_item.h"
-#include "chrome/browser/download/download_manager.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/history/download_history_info.h"
 
-#include "chrome/browser/download/download_item.h"
+#include "content/browser/download/download_item.h"
 
 DownloadHistoryInfo::DownloadHistoryInfo()
     : received_bytes(0),

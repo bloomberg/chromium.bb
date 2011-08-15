@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_state_info.h"
+#include "content/browser/download/download_state_info.h"
 
-#include "chrome/browser/download/download_item.h"
+#include "content/browser/download/download_item.h"
 
 DownloadStateInfo::DownloadStateInfo()
     : path_uniquifier(0),

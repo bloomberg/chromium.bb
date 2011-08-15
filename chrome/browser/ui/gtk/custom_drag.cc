@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/custom_drag.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
+#include "content/browser/download/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"

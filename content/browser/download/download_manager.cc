@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_manager.h"
+#include "content/browser/download/download_manager.h"
 
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -12,18 +12,17 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_create_info.h"
-#include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_request_handle.h"
-#include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_status_updater.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

@@ -6,11 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/download/download_file.h"
-#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_item.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/file_stream.h"
 

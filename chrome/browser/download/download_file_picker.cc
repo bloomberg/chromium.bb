@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_file_picker.h"
 
-#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"

@@ -4,8 +4,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/download/download_status_updater.h"
-#include "chrome/browser/download/download_status_updater_delegate.h"
+#include "content/browser/download/download_status_updater.h"
+#include "content/browser/download/download_status_updater_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
