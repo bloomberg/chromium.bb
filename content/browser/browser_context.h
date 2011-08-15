@@ -23,7 +23,6 @@ class DatabaseTracker;
 class ChromeBlobStorageContext;
 class DownloadManager;
 class FilePath;
-class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;
 class HostZoomMap;
 class SSLHostState;
@@ -81,9 +80,6 @@ class BrowserContext {
 
   // Returns the Hostname <-> Zoom Level map for this context.
   virtual HostZoomMap* GetHostZoomMap() = 0;
-
-  // Returns the geolocation settings map for this context.
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() = 0;
 
   // Returns the geolocation permission context for this context.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;

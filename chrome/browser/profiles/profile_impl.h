@@ -96,7 +96,6 @@ class ProfileImpl : public Profile,
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
@@ -225,8 +224,6 @@ class ProfileImpl : public Profile,
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  scoped_refptr<GeolocationContentSettingsMap>
-      geolocation_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;

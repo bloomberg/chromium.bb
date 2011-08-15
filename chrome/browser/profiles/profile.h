@@ -201,7 +201,6 @@ class Profile : public content::BrowserContext {
   virtual net::URLRequestContextGetter* GetRequestContextForMedia() = 0;
   virtual const content::ResourceContext& GetResourceContext() = 0;
   virtual HostZoomMap* GetHostZoomMap() = 0;
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() = 0;
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
   virtual WebKitContext* GetWebKitContext() = 0;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;

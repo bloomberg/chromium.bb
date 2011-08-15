@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -386,8 +386,12 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
 
   ContentSetting content_setting =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  profile_->GetGeolocationContentSettingsMap()->SetContentSetting(
-      requesting_frame.GetOrigin(), embedder.GetOrigin(), content_setting);
+  profile_->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(requesting_frame.GetOrigin()),
+      ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      content_setting);
 
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
@@ -558,8 +562,11 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   }
 
   ContentSetting content_setting =
-      profile_->GetGeolocationContentSettingsMap()->GetContentSetting(
-          requesting_frame, embedder);
+     profile_->GetHostContentSettingsMap()->GetContentSetting(
+          requesting_frame,
+          embedder,
+          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+          std::string());
   if (content_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
                         requesting_frame, false);

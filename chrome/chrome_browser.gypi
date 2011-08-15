@@ -1220,8 +1220,6 @@
         'browser/geolocation/access_token_store.cc',
         'browser/geolocation/chrome_geolocation_permission_context.cc',
         'browser/geolocation/chrome_geolocation_permission_context.h',
-        'browser/geolocation/geolocation_content_settings_map.cc',
-        'browser/geolocation/geolocation_content_settings_map.h',
         'browser/geolocation/geolocation_prefs.cc',
         'browser/geolocation/geolocation_prefs.h',
         'browser/geolocation/geolocation_settings_state.cc',

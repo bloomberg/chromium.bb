@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/dom_operation_notification_details.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -427,8 +430,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
 #endif
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  current_browser_->profile()->GetGeolocationContentSettingsMap()->
-      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
+  current_browser_->profile()->GetHostContentSettingsMap()->
+      SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(current_url_),
+                        ContentSettingsPattern::FromURLNoWildcard(current_url_),
+                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                        std::string(),
+                        CONTENT_SETTING_BLOCK);
   AddGeolocationWatch(false);
   // Checks we have an error for this denied origin.
   CheckStringValueFromJavascript("1", "geoGetLastError()");
@@ -440,8 +447,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  current_browser_->profile()->GetGeolocationContentSettingsMap()->
-      SetContentSetting(current_url_, current_url_, CONTENT_SETTING_ALLOW);
+  current_browser_->profile()->GetHostContentSettingsMap()->
+      SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(current_url_),
+                        ContentSettingsPattern::FromURLNoWildcard(current_url_),
+                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                        std::string(),
+                        CONTENT_SETTING_ALLOW);
   // Checks no infobar will be created and there's no error callback.
   AddGeolocationWatch(false);
   CheckGeoposition(MockLocationProvider::instance_->position_);

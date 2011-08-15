@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/top_sites.h"
@@ -630,15 +629,6 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
         GetPrefs(), GetExtensionService(), false);
   }
   return host_content_settings_map_.get();
-}
-
-GeolocationContentSettingsMap*
-TestingProfile::GetGeolocationContentSettingsMap() {
-  if (!geolocation_content_settings_map_.get()) {
-    geolocation_content_settings_map_ =
-        new GeolocationContentSettingsMap(this);
-  }
-  return geolocation_content_settings_map_.get();
 }
 
 GeolocationPermissionContext*

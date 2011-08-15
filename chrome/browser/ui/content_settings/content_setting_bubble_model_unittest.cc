@@ -7,7 +7,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
@@ -184,9 +183,14 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(1, false, true);
 
   // Add it to the content map, should now have a clear link.
-  GeolocationContentSettingsMap* setting_map =
-      profile_->GetGeolocationContentSettingsMap();
-  setting_map->SetContentSetting(frame1_url, page_url, CONTENT_SETTING_ALLOW);
+  HostContentSettingsMap* setting_map =
+      profile_->GetHostContentSettingsMap();
+  setting_map->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(frame1_url),
+      ContentSettingsPattern::FromURLNoWildcard(page_url),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
   CheckGeolocationBubble(1, true, false);
 
   // Change the default to allow: no message needed.

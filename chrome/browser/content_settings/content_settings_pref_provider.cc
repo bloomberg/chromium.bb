@@ -42,7 +42,7 @@ const char* kResourceTypeNames[] = {
   NULL,
   "per_plugin",
   NULL,
-  NULL,  // Not used for Geolocation
+  NULL,
   NULL,  // Not used for Notifications
 };
 COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
@@ -68,9 +68,9 @@ const char* kTypeNames[] = {
   "javascript",
   "plugins",
   "popups",
+  "geolocation",
   // TODO(markusheintz): Refactoring in progress. Content settings exceptions
-  // for notifications and geolocation will be added next.
-  "geolocation",  // Only used for default Geolocation settings
+  // for notifications added next.
   "notifications",  // Only used for default Notifications settings.
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
@@ -361,6 +361,8 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::SYNCABLE_PREF);
 
   // Obsolete prefs, for migration:
+  prefs->RegisterDictionaryPref(prefs::kGeolocationContentSettings,
+                                PrefService::SYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns,
                                 PrefService::SYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPopupWhitelistedHosts,
@@ -380,6 +382,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
     MigrateObsoletePerhostPref();
     MigrateObsoletePopupsPref();
     MigrateObsoleteContentSettingsPatternPref();
+    MigrateObsoleteGeolocationPref();
   }
 
   // Verify preferences version.
@@ -403,6 +406,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
   pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
+  pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
 
 ContentSetting PrefProvider::GetContentSetting(
@@ -469,7 +473,7 @@ void PrefProvider::SetContentSetting(
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
-  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
+  DCHECK(kTypeNames[content_type] != NULL);
 
   // Update in memory value map.
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -553,18 +557,20 @@ void PrefProvider::Observe(
     if (updating_preferences_)
       return;
 
+    AutoReset<bool> auto_reset(&updating_preferences_, true);
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kContentSettingsPatternPairs) {
-      SyncObsoletePref();
-      ReadContentSettingsFromPref(true);
+      SyncObsoletePatternPref();
+      SyncObsoleteGeolocationPref();
     } else if (*name == prefs::kContentSettingsPatterns) {
-      AutoReset<bool> auto_reset(&updating_preferences_, true);
       MigrateObsoleteContentSettingsPatternPref();
-      ReadContentSettingsFromPref(true);
+    } else if (*name == prefs::kGeolocationContentSettings) {
+      MigrateObsoleteGeolocationPref();
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
     }
+    ReadContentSettingsFromPref(true);
 
     NotifyObservers(ContentSettingsPattern(),
                     ContentSettingsPattern(),
@@ -594,11 +600,17 @@ void PrefProvider::UpdatePref(
                          content_type,
                          resource_identifier,
                          setting);
-  UpdatePatternsPref(primary_pattern,
-                     secondary_pattern,
-                     content_type,
-                     resource_identifier,
-                     setting);
+  if (content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
+      content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    UpdateObsoletePatternsPref(primary_pattern,
+                               secondary_pattern,
+                               content_type,
+                               resource_identifier,
+                               setting);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    UpdateObsoleteGeolocationPref(primary_pattern, secondary_pattern, setting);
+  }
 }
 
 void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
@@ -693,7 +705,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
   }
 }
 
-void PrefProvider::UpdatePatternsPref(
+void PrefProvider::UpdateObsoletePatternsPref(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
@@ -823,6 +835,43 @@ void PrefProvider::UpdatePatternPairsPref(
       all_settings_dictionary->RemoveWithoutPathExpansion(
           pattern_str, NULL);
     }
+  }
+}
+
+void PrefProvider::UpdateObsoleteGeolocationPref(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSetting setting) {
+  if (!prefs_)
+    return;
+
+  const GURL requesting_origin(primary_pattern.ToString());
+  const GURL embedding_origin(secondary_pattern.ToString());
+  DCHECK(requesting_origin.is_valid() && embedding_origin.is_valid());
+
+  DictionaryPrefUpdate update(prefs_, prefs::kGeolocationContentSettings);
+  DictionaryValue* obsolete_geolocation_settings = update.Get();
+  DictionaryValue* requesting_origin_settings_dictionary = NULL;
+  obsolete_geolocation_settings->GetDictionaryWithoutPathExpansion(
+      requesting_origin.spec(), &requesting_origin_settings_dictionary);
+  if (setting == CONTENT_SETTING_DEFAULT) {
+    if (requesting_origin_settings_dictionary) {
+      requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
+          embedding_origin.spec(), NULL);
+      if (requesting_origin_settings_dictionary->empty()) {
+        obsolete_geolocation_settings->RemoveWithoutPathExpansion(
+            requesting_origin.spec(), NULL);
+      }
+    }
+  } else {
+    if (!requesting_origin_settings_dictionary) {
+      requesting_origin_settings_dictionary = new DictionaryValue;
+      obsolete_geolocation_settings->SetWithoutPathExpansion(
+          requesting_origin.spec(), requesting_origin_settings_dictionary);
+    }
+    DCHECK(requesting_origin_settings_dictionary);
+    requesting_origin_settings_dictionary->SetWithoutPathExpansion(
+        embedding_origin.spec(), Value::CreateIntegerValue(setting));
   }
 }
 
@@ -969,12 +1018,11 @@ void PrefProvider::MigrateObsoletePopupsPref() {
 void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatterns) && !is_incognito_) {
     const DictionaryValue* patterns_dictionary =
-      prefs_->GetDictionary(prefs::kContentSettingsPatterns);
+        prefs_->GetDictionary(prefs::kContentSettingsPatterns);
 
     // A map with an old key, new key mapping. If the new key is empty then the
     // value for the old key will be removed.
     StringMap keys_to_change;
-
     {
       DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
       DictionaryValue* pattern_pairs_dictionary = update.Get();
@@ -1046,8 +1094,7 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
   }
 }
 
-void PrefProvider::SyncObsoletePref() {
-  AutoReset<bool> auto_reset(&updating_preferences_, true);
+void PrefProvider::SyncObsoletePatternPref() {
   if (prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs) &&
       !is_incognito_) {
     const DictionaryValue* pattern_pairs_dictionary =
@@ -1069,15 +1116,117 @@ void PrefProvider::SyncObsoletePref() {
         continue;
       }
 
-      // Copy dictionary
-      DictionaryValue* dictionary = NULL;
+      DictionaryValue* settings_dictionary = NULL;
       bool found = pattern_pairs_dictionary->GetDictionaryWithoutPathExpansion(
-          key, &dictionary);
+          key, &settings_dictionary);
       DCHECK(found);
-      std::string new_key = pattern_pair.first.ToString();
-      // Existing values are overwritten.
-      obsolete_settings_dictionary->SetWithoutPathExpansion(
-          new_key, dictionary->DeepCopy());
+      scoped_ptr<DictionaryValue> settings_dictionary_copy(
+          new DictionaryValue());
+      for (size_t i = CONTENT_SETTINGS_TYPE_COOKIES;
+           i <= CONTENT_SETTINGS_TYPE_POPUPS;
+           ++i) {
+        DCHECK(kTypeNames[i]);
+        std::string type_name(kTypeNames[i]);
+        if (settings_dictionary->HasKey(type_name)) {
+          Value* value = NULL;
+          bool found = settings_dictionary->GetWithoutPathExpansion(
+              type_name, &value);
+          DCHECK(found);
+          settings_dictionary_copy->SetWithoutPathExpansion(
+              type_name, value->DeepCopy());
+        }
+      }
+
+      // Ignore empty dictionaryies.
+      if (!settings_dictionary_copy->empty()) {
+        std::string new_key = pattern_pair.first.ToString();
+        // Existing values are overwritten.
+        obsolete_settings_dictionary->SetWithoutPathExpansion(
+            new_key, settings_dictionary_copy.release());
+      }
+    }
+  }
+}
+
+void PrefProvider::MigrateObsoleteGeolocationPref() {
+  if (!prefs_->HasPrefPath(prefs::kGeolocationContentSettings))
+    return;
+
+  const DictionaryValue* geolocation_settings =
+      prefs_->GetDictionary(prefs::kGeolocationContentSettings);
+  for (DictionaryValue::key_iterator i =
+           geolocation_settings->begin_keys();
+       i != geolocation_settings->end_keys();
+       ++i) {
+    const std::string& primary_key(*i);
+    GURL primary_url(primary_key);
+    DCHECK(primary_url.is_valid());
+
+    DictionaryValue* requesting_origin_settings = NULL;
+    bool found = geolocation_settings->GetDictionaryWithoutPathExpansion(
+        primary_key, &requesting_origin_settings);
+    DCHECK(found);
+
+    for (DictionaryValue::key_iterator j =
+             requesting_origin_settings->begin_keys();
+         j != requesting_origin_settings->end_keys();
+         ++j) {
+      const std::string& secondary_key(*j);
+      GURL secondary_url(secondary_key);
+      DCHECK(secondary_url.is_valid());
+
+      int setting_value;
+      found = requesting_origin_settings->GetIntegerWithoutPathExpansion(
+          secondary_key, &setting_value);
+      DCHECK(found);
+
+      ContentSettingsPattern primary_pattern =
+          ContentSettingsPattern::FromURLNoWildcard(primary_url);
+      ContentSettingsPattern secondary_pattern =
+          ContentSettingsPattern::FromURLNoWildcard(secondary_url);
+      DCHECK(primary_pattern.IsValid() && secondary_pattern.IsValid());
+
+      SetContentSetting(primary_pattern,
+                        secondary_pattern,
+                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                        std::string(),
+                        IntToContentSetting(setting_value));
+    }
+  }
+}
+
+void PrefProvider::SyncObsoleteGeolocationPref() {
+  DCHECK(prefs_);
+  DCHECK(prefs_->HasPrefPath(prefs::kContentSettingsPatternPairs));
+
+  // Clear the obsolete preference for geolocation settings. Then copy all
+  // geolocation settings from the new preference to the obsolete one.
+  prefs_->ClearPref(prefs::kGeolocationContentSettings);
+  const DictionaryValue* pattern_pairs_dictionary =
+      prefs_->GetDictionary(prefs::kContentSettingsPatternPairs);
+  for (DictionaryValue::key_iterator i =
+           pattern_pairs_dictionary->begin_keys();
+       i != pattern_pairs_dictionary->end_keys();
+       ++i) {
+    const std::string& key(*i);
+    std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
+        ParsePatternString(key);
+    DCHECK(pattern_pair.first.IsValid() && pattern_pair.second.IsValid());
+
+    DictionaryValue* settings_dictionary = NULL;
+    bool found = pattern_pairs_dictionary->GetDictionaryWithoutPathExpansion(
+        key, &settings_dictionary);
+    DCHECK(found);
+
+    if (settings_dictionary->HasKey(
+            kTypeNames[CONTENT_SETTINGS_TYPE_GEOLOCATION])) {
+      int setting_value;
+      settings_dictionary->GetInteger(
+          kTypeNames[CONTENT_SETTINGS_TYPE_GEOLOCATION], &setting_value);
+
+      UpdateObsoleteGeolocationPref(pattern_pair.first,
+                                    pattern_pair.second,
+                                    ContentSetting(setting_value));
     }
   }
 }

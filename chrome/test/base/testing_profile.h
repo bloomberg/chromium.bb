@@ -6,6 +6,8 @@
 #define CHROME_TEST_BASE_TESTING_PROFILE_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
@@ -39,7 +41,6 @@ class ExtensionPrefValueMap;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class FindBarState;
-class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
@@ -215,7 +216,6 @@ class TestingProfile : public Profile {
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual HostZoomMap* GetHostZoomMap();
   virtual bool HasProfileSyncService() const;
@@ -352,8 +352,6 @@ class TestingProfile : public Profile {
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<GeolocationContentSettingsMap>
-      geolocation_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
 
   // Find bar state.  Created lazily by GetFindBarState().

@@ -58,6 +58,8 @@ typedef std::vector<ProviderPtr>::const_iterator ConstProviderIterator;
 
 typedef content_settings::ProviderInterface::Rules Rules;
 
+typedef std::pair<std::string, std::string> StringPair;
+
 const char* kProviderNames[] = {
   "policy",
   "extension",
@@ -311,14 +313,14 @@ void HostContentSettingsMap::GetSettingsForOneType(
     content_settings_providers_[i]->GetAllContentSettingsRules(
         content_type, resource_identifier, &rules);
 
-    // Sort rules according to their primary pattern string using a map.
-    std::map<std::string, PatternSettingSourceTuple> settings_map;
+    // Sort rules according to their primary-secondary pattern string pairs
+    // using a map.
+    std::map<StringPair, PatternSettingSourceTuple> settings_map;
     for (Rules::iterator rule = rules.begin();
          rule != rules.end();
          ++rule) {
-      // We do not support pattern pairs in the UI, so we only display the
-      // primary pattern.
-      std::string sort_key = rule->primary_pattern.ToString();
+      StringPair sort_key(rule->primary_pattern.ToString(),
+                          rule->secondary_pattern.ToString());
       settings_map[sort_key] = PatternSettingSourceTuple(
           rule->primary_pattern,
           rule->secondary_pattern,
@@ -327,7 +329,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
     }
 
     // TODO(markusheintz): Only the rules that are applied should be added.
-    for (std::map<std::string, PatternSettingSourceTuple>::iterator i(
+    for (std::map<StringPair, PatternSettingSourceTuple>::iterator i(
              settings_map.begin());
          i != settings_map.end();
          ++i) {

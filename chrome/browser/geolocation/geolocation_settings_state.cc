@@ -9,7 +9,6 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -87,8 +86,11 @@ void GeolocationSettingsState::GetDetailedInfo(
     }
 
     const ContentSetting saved_setting =
-        profile_->GetGeolocationContentSettingsMap()->GetContentSetting(
-            i->first, embedder_url_);
+        profile_->GetHostContentSettingsMap()->GetContentSetting(
+            i->first,
+            embedder_url_,
+            CONTENT_SETTINGS_TYPE_GEOLOCATION,
+            std::string());
     if (saved_setting != default_setting)
       *tab_state_flags |= TABSTATE_HAS_EXCEPTION;
     if (saved_setting != i->second)

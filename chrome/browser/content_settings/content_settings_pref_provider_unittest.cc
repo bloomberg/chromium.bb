@@ -26,6 +26,25 @@
 
 using ::testing::_;
 
+namespace {
+
+void ExpectObsoleteGeolocationSetting(
+    const DictionaryValue& geo_settings_dictionary,
+    const GURL& primary_origin,
+    const GURL& secondary_origin,
+    ContentSetting expected_setting) {
+
+  DictionaryValue* one_origin_settings;
+  ASSERT_TRUE(geo_settings_dictionary.GetDictionaryWithoutPathExpansion(
+      std::string(primary_origin.spec()), &one_origin_settings));
+  int setting_value;
+  ASSERT_TRUE(one_origin_settings->GetIntegerWithoutPathExpansion(
+      std::string(secondary_origin.spec()), &setting_value));
+  EXPECT_EQ(expected_setting, setting_value);
+}
+
+}  // namespace
+
 namespace content_settings {
 
 class PrefDefaultProviderTest : public TestingBrowserProcessTest {
@@ -401,25 +420,14 @@ TEST_F(PrefProviderTest, MigrateObsoleteContentSettingsPatternPref) {
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_POPUPS,
       ""));
-
-  // Change obsolete preference. This can happen if a user has enabled sync
-  // while using an old version of chrome.
-  {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
-    DictionaryValue* mutable_patterns = update.Get();
-    DictionaryValue* mutable_settings = NULL;
-    std::string key = pattern.ToString();
-    mutable_patterns->GetDictionaryWithoutPathExpansion(key, &mutable_settings);
-    ASSERT_TRUE(mutable_settings != NULL) << "Dictionary has no key: " << key;
-    mutable_settings->SetInteger("javascript", CONTENT_SETTING_BLOCK);
-  }
-
-  // Test if the changed single pattern setting was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
-      GURL("http://www.example.com"),
-      GURL("http://www.foo.com"),
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      ""));
+  // Test if single pattern settings are properly migrated.
+  const_all_settings_dictionary = prefs->GetDictionary(
+      prefs::kContentSettingsPatternPairs);
+  EXPECT_EQ(1U, const_all_settings_dictionary->size());
+  EXPECT_FALSE(const_all_settings_dictionary->HasKey(pattern.ToString()));
+  EXPECT_TRUE(const_all_settings_dictionary->HasKey(
+      pattern.ToString() + "," +
+      ContentSettingsPattern::Wildcard().ToString()));
 
   provider.ShutdownOnUIThread();
 }
@@ -551,6 +559,131 @@ TEST_F(PrefProviderTest, FixOrRemoveMalformedPatternKeysFromObsoletePref) {
   EXPECT_FALSE(patterns_dictionary->HasKey("http://www.example2.com,*"));
 
   EXPECT_FALSE(patterns_dictionary->HasKey("http://www.broken.com*"));
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+  GURL secondary_url("http://www.foo.com");
+  GURL primary_url("http://www.bar.com");
+
+  // Set obsolete preference.
+  DictionaryValue* secondary_patterns_dictionary = new DictionaryValue();
+  secondary_patterns_dictionary->SetWithoutPathExpansion(
+      secondary_url.spec(),
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  scoped_ptr<DictionaryValue> geolocation_settings_dictionary(
+      new DictionaryValue());
+  geolocation_settings_dictionary->SetWithoutPathExpansion(
+      primary_url.spec(), secondary_patterns_dictionary);
+  prefs->Set(prefs::kGeolocationContentSettings,
+             *geolocation_settings_dictionary);
+
+
+  content_settings::PrefProvider provider(prefs, false);
+
+  // Test if the migrated settings are loaded and available.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
+      primary_url,
+      secondary_url,
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      ""));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
+      GURL("http://www.example.com"),
+      secondary_url,
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      ""));
+  // Check if the settings where migrated correctly.
+  const DictionaryValue* const_all_settings_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
+  EXPECT_EQ(1U, const_all_settings_dictionary->size());
+  EXPECT_TRUE(const_all_settings_dictionary->HasKey(
+      ContentSettingsPattern::FromURLNoWildcard(primary_url).ToString() + "," +
+      ContentSettingsPattern::FromURLNoWildcard(secondary_url).ToString()));
+  // Check that geolocation settings were not synced to the obsolete content
+  // settings pattern preference.
+  const DictionaryValue* const_obsolete_patterns_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
+
+  // Change obsolete preference. This could be triggered by sync if sync is used
+  // with an old version of chrome.
+  secondary_patterns_dictionary = new DictionaryValue();
+  secondary_patterns_dictionary->SetWithoutPathExpansion(
+      secondary_url.spec(),
+      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  geolocation_settings_dictionary.reset(new DictionaryValue());
+  geolocation_settings_dictionary->SetWithoutPathExpansion(
+      primary_url.spec(), secondary_patterns_dictionary);
+  prefs->Set(prefs::kGeolocationContentSettings,
+             *geolocation_settings_dictionary);
+
+  // Test if the changed obsolete preference was migrated correctly.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
+      primary_url,
+      secondary_url,
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      ""));
+  // Check that geolocation settings were not synced to the obsolete content
+  // settings pattern preference.
+  const_obsolete_patterns_dictionary =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, SyncObsoleteGeolocationPref) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  content_settings::PrefProvider provider(prefs, false);
+
+  // Changing the preferences prefs::kContentSettingsPatternPairs.
+  ContentSettingsPattern primary_pattern=
+      ContentSettingsPattern::FromString("http://www.bar.com");
+  ContentSettingsPattern primary_pattern_2 =
+      ContentSettingsPattern::FromString("http://www.example.com");
+  ContentSettingsPattern secondary_pattern =
+      ContentSettingsPattern::FromString("http://www.foo.com");
+  scoped_ptr<DictionaryValue> settings_dictionary(new DictionaryValue());
+  settings_dictionary->SetInteger("geolocation", CONTENT_SETTING_BLOCK);
+  {
+    DictionaryPrefUpdate update(prefs,
+                                prefs::kContentSettingsPatternPairs);
+    DictionaryValue* all_settings_dictionary = update.Get();
+    std::string key(
+        primary_pattern.ToString()+ "," +
+        secondary_pattern.ToString());
+    all_settings_dictionary->SetWithoutPathExpansion(
+        key, settings_dictionary->DeepCopy());
+
+    key = std::string(
+        primary_pattern_2.ToString()+ "," +
+        secondary_pattern.ToString());
+    all_settings_dictionary->SetWithoutPathExpansion(
+        key, settings_dictionary->DeepCopy());
+  }
+
+  // Test if the obsolete geolocation preference is kept in sync if the new
+  // preference is changed by a sync.
+  GURL primary_url("http://www.bar.com");
+  GURL primary_url_2("http://www.example.com");
+  GURL secondary_url("http://www.foo.com");
+
+  const DictionaryValue* geo_settings_dictionary =
+      prefs->GetDictionary(prefs::kGeolocationContentSettings);
+  EXPECT_EQ(2U, geo_settings_dictionary->size());
+  ExpectObsoleteGeolocationSetting(*geo_settings_dictionary,
+                                   primary_url,
+                                   secondary_url,
+                                   CONTENT_SETTING_BLOCK);
+  ExpectObsoleteGeolocationSetting(*geo_settings_dictionary,
+                                   primary_url_2,
+                                   secondary_url,
+                                   CONTENT_SETTING_BLOCK);
 
   provider.ShutdownOnUIThread();
 }

@@ -1,8 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include <string>
+
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -15,7 +17,7 @@ namespace {
 
 class GeolocationSettingsStateTests : public TestingBrowserProcessTest {
  public:
-   GeolocationSettingsStateTests()
+  GeolocationSettingsStateTests()
     : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -35,13 +37,21 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);
 
-  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
-      url_0, url_0, CONTENT_SETTING_ALLOW);
+  profile.GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("http://www.example1.com");
-  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
-    url_1, url_0, CONTENT_SETTING_BLOCK);
+  profile.GetHostContentSettingsMap()->SetContentSetting(
+    ContentSettingsPattern::FromURLNoWildcard(url_1),
+    ContentSettingsPattern::FromURLNoWildcard(url_0),
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    std::string(),
+    CONTENT_SETTING_BLOCK);
   state.OnGeolocationPermissionSet(url_1, false);
 
   GeolocationSettingsState::StateMap state_map =
@@ -132,18 +142,30 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   load_committed_details.entry = &entry;
   state.DidNavigate(load_committed_details);
 
-  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
-      url_0, url_0, CONTENT_SETTING_ALLOW);
+  profile.GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("https://www.example.com");
-  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
-      url_1, url_0, CONTENT_SETTING_ALLOW);
+  profile.GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url_1),
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_1, true);
 
   GURL url_2("http://www.example1.com");
-  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
-  url_2, url_0, CONTENT_SETTING_ALLOW);
+  profile.GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url_2),
+      ContentSettingsPattern::FromURLNoWildcard(url_0),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_2, true);
 
   GeolocationSettingsState::StateMap state_map =

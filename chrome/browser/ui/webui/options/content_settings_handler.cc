@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -13,10 +14,10 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,6 +41,10 @@ struct ContentSettingsTypeNameEntry {
   ContentSettingsType type;
   const char* name;
 };
+
+typedef std::map<ContentSettingsPattern, ContentSetting> OnePatternSettings;
+typedef std::map<ContentSettingsPattern, OnePatternSettings>
+    AllPatternsSettings;
 
 const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
@@ -100,14 +105,16 @@ ContentSetting ContentSettingFromString(const std::string& name) {
   return CONTENT_SETTING_DEFAULT;
 }
 
-std::string GeolocationExceptionToString(const GURL& origin,
-                                         const GURL& embedding_origin) {
+std::string GeolocationExceptionToString(
+    const ContentSettingsPattern& origin,
+    const ContentSettingsPattern& embedding_origin) {
   if (origin == embedding_origin)
-    return content_settings_helper::OriginToString(origin);
+    return origin.ToString();
 
   // TODO(estade): the page needs to use CSS to indent the string.
   std::string indent(" ");
-  if (embedding_origin.is_empty()) {
+
+  if (embedding_origin == ContentSettingsPattern::Wildcard()) {
     // NOTE: As long as the user cannot add/edit entries from the exceptions
     // dialog, it's impossible to actually have a non-default setting for some
     // origin "embedded on any other site", so this row will never appear.  If
@@ -119,7 +126,7 @@ std::string GeolocationExceptionToString(const GURL& origin,
 
   return indent + l10n_util::GetStringFUTF8(
       IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
-      UTF8ToUTF16(content_settings_helper::OriginToString(embedding_origin)));
+      UTF8ToUTF16(embedding_origin.ToString()));
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
@@ -130,37 +137,25 @@ DictionaryValue* GetExceptionForPage(
     ContentSetting setting,
     std::string provider_name) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->Set(
-      kDisplayPattern,
-      new StringValue(pattern.ToString()));
-  exception->Set(
-      kSetting,
-      new StringValue(ContentSettingToString(setting)));
-  exception->Set(
-      kSource,
-      new StringValue(provider_name));
+  exception->SetString(kDisplayPattern, pattern.ToString());
+  exception->SetString(kSetting, ContentSettingToString(setting));
+  exception->SetString(kSource, provider_name);
   return exception;
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
 // in the Geolocation exceptions table. Ownership of the pointer is passed to
 // the caller.
-DictionaryValue* GetGeolocationExceptionForPage(const GURL& origin,
-                                                const GURL& embedding_origin,
-                                                ContentSetting setting) {
+DictionaryValue* GetGeolocationExceptionForPage(
+    const ContentSettingsPattern& origin,
+    const ContentSettingsPattern& embedding_origin,
+    ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->Set(
-      kDisplayPattern,
-      new StringValue(GeolocationExceptionToString(origin, embedding_origin)));
-  exception->Set(
-      kSetting,
-      new StringValue(ContentSettingToString(setting)));
-  exception->Set(
-      kOrigin,
-      new StringValue(origin.spec()));
-  exception->Set(
-      kEmbeddingOrigin,
-      new StringValue(embedding_origin.spec()));
+  exception->SetString(kDisplayPattern,
+                       GeolocationExceptionToString(origin, embedding_origin));
+  exception->SetString(kSetting, ContentSettingToString(setting));
+  exception->SetString(kOrigin, origin.ToString());
+  exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
   return exception;
 }
 
@@ -171,15 +166,10 @@ DictionaryValue* GetNotificationExceptionForPage(
     const GURL& url,
     ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->Set(
-      kDisplayPattern,
-      new StringValue(content_settings_helper::OriginToString(url)));
-  exception->Set(
-      kSetting,
-      new StringValue(ContentSettingToString(setting)));
-  exception->Set(
-      kOrigin,
-      new StringValue(url.spec()));
+  exception->SetString(kDisplayPattern,
+                       content_settings_helper::OriginToString(url));
+  exception->SetString(kSetting, ContentSettingToString(setting));
+  exception->SetString(kOrigin, url.spec());
   return exception;
 }
 
@@ -438,36 +428,51 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
 }
 
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
-  GeolocationContentSettingsMap* map = web_ui_->tab_contents()->
-      browser_context()->GetGeolocationContentSettingsMap();
-  GeolocationContentSettingsMap::AllOriginsSettings all_settings =
-      map->GetAllOriginsSettings();
-  GeolocationContentSettingsMap::AllOriginsSettings::const_iterator i;
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+
+  HostContentSettingsMap::SettingsForOneType all_settings;
+  map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      &all_settings);
+
+  // Group geolocation settings by primary_pattern.
+  AllPatternsSettings all_patterns_settings;
+  for (HostContentSettingsMap::SettingsForOneType::iterator i =
+           all_settings.begin();
+       i != all_settings.end();
+       ++i) {
+    all_patterns_settings[i->a][i->b] = i->c;
+  }
 
   ListValue exceptions;
-  for (i = all_settings.begin(); i != all_settings.end(); ++i) {
-    const GURL& origin = i->first;
-    const GeolocationContentSettingsMap::OneOriginSettings& one_settings =
-        i->second;
+  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
+       i != all_patterns_settings.end();
+       ++i) {
+    const ContentSettingsPattern& primary_pattern = i->first;
+    const OnePatternSettings& one_settings = i->second;
 
-    GeolocationContentSettingsMap::OneOriginSettings::const_iterator parent =
-        one_settings.find(origin);
+    OnePatternSettings::const_iterator parent =
+        one_settings.find(primary_pattern);
 
     // Add the "parent" entry for the non-embedded setting.
     ContentSetting parent_setting =
         parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
-    exceptions.Append(
-        GetGeolocationExceptionForPage(origin, origin, parent_setting));
+    exceptions.Append(GetGeolocationExceptionForPage(primary_pattern,
+                                                     primary_pattern,
+                                                     parent_setting));
 
     // Add the "children" for any embedded settings.
-    GeolocationContentSettingsMap::OneOriginSettings::const_iterator j;
-    for (j = one_settings.begin(); j != one_settings.end(); ++j) {
+    for (OnePatternSettings::const_iterator j = one_settings.begin();
+         j != one_settings.end();
+         ++j) {
       // Skip the non-embedded setting which we already added above.
       if (j == parent)
         continue;
 
       exceptions.Append(
-          GetGeolocationExceptionForPage(origin, j->first, j->second));
+          GetGeolocationExceptionForPage(primary_pattern, j->first, j->second));
     }
   }
 
@@ -516,8 +521,18 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
-    exceptions.Append(
-        GetExceptionForPage(entries[i].a, entries[i].c, entries[i].d));
+    // The content settings UI does not support secondary content settings
+    // pattern yet. For content settings set through the content settings UI the
+    // secondary pattern is by default a wildcard pattern. Hence users are not
+    // able to modify content settings with a secondary pattern other than the
+    // wildcard pattern. So only show settings that the user is able to modify.
+    if (entries[i].b == ContentSettingsPattern::Wildcard()) {
+      exceptions.Append(
+          GetExceptionForPage(entries[i].a, entries[i].c, entries[i].d));
+    } else {
+      LOG(DFATAL) << "Secondary content settings patterns are not"
+                  << "supported by the content settings UI";
+    }
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
@@ -603,9 +618,11 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     rv = args->GetString(arg_i++, &embedding_origin);
     DCHECK(rv);
 
-    profile->GetGeolocationContentSettingsMap()->
-        SetContentSetting(GURL(origin),
-                          GURL(embedding_origin),
+   profile->GetHostContentSettingsMap()->
+        SetContentSetting(ContentSettingsPattern::FromString(origin),
+                          ContentSettingsPattern::FromString(embedding_origin),
+                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                          std::string(),
                           CONTENT_SETTING_DEFAULT);
   } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     std::string origin;

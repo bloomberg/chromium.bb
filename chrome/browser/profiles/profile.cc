@@ -550,10 +550,6 @@ class OffTheRecordProfileImpl : public Profile,
     return host_zoom_map_.get();
   }
 
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
-    return profile_->GetGeolocationContentSettingsMap();
-  }
-
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() {
     return profile_->GetGeolocationPermissionContext();
   }
