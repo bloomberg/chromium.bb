@@ -214,6 +214,11 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
       string16 workFax = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
       profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, workFax);
+    } else if ([phoneLabelRaw isEqualToString:kABPhoneMobileLabel] ||
+               [phoneLabelRaw isEqualToString:kABPhoneMainLabel]) {
+      string16 phone = base::SysNSStringToUTF16(
+          [phoneNumbers valueAtIndex:reverseK]);
+      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
     }
   }
 }
