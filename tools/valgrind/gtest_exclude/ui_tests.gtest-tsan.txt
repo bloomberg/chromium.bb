@@ -29,5 +29,5 @@ OptionsUITest.LoadOptionsByURL
 OptionsUITest.CommandOpensOptionsTab
 
 # Tests timing out, see http://crbug.com/92717
-NewTabUIProcessPerTabTest.NavBeforeNTPCommit
+NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 NewTabUITest.ChromeHangInNTP
