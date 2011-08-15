@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<head>
+  <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="nacltest.js"></script>
+  <script type="text/javascript" src="ppapi_bad.js"></script>
+  <title>PNACL bad pexe/libraries Test</title>
+  <style type="text/css">
+  .naclModule { background-color: gray; margin: 2px 2px; }
+  </style>
+</head>
+<body id="body">
+<script type="text/javascript">
+//<![CDATA[
+
+function declareTests(tester) {
+  // 'bad_pexe' loads a manifest, then loads a pexe that is invalid.
+  badLoadTest(
+      tester,
+      'bad_pexe',
+      'pnacl_bad_pexe.nmf',
+      'NaCl module load failed: PnaclCoordinator compile failed.');
+
+  // 'bad_pexe' loads a manifest, then loads a pexe that is truncated.
+  badLoadTest(
+      tester,
+      'bad2_pexe',
+      'pnacl_bad2_pexe.nmf',
+      'NaCl module load failed: PnaclCoordinator compile failed.');
+
+  // 'bad_pexe_undefined' loads a manifest, then loads a pexe that compiles
+  // but will result in undefined symbols, causing the link to fail.
+  badLoadTest(
+      tester,
+      'bad_pexe_undefined_syms',
+      'pnacl_bad_pexe_undefined_syms.nmf',
+      'NaCl module load failed: PnaclCoordinator link failed.');
+
+  // 'nonexistent_pexe loads a manifest, then tries to load a nonexistent pexe,
+  // given both a nexe and a portable program to choose from.
+  badLoadTest(
+      tester,
+      'nonexistent_pexe',
+      'pnacl_bad_doesnotexist.nmf',
+      'NaCl module load failed: PNaCl pexe load failed.');
+
+  // 'nonexistent_pexe_only' loads a manifest, then tries to load a nonexistent
+  // pexe, given only a pexe to choose from.
+  badLoadTest(
+      tester,
+      'nonexistent_pexe_only',
+      'pnacl_bad_doesnotexist_pexe_only.nmf',
+      'NaCl module load failed: PNaCl pexe load failed.');
+
+  // 'nonexistent_llc' loads a manifest, then tries to load a nonexistent llc.
+  badLoadTest(
+      tester,
+      'missing_llc',
+      'pnacl_bad_missing_llc.nmf',
+      'NaCl module load failed: PNaCl llc load failed.');
+
+  // 'nonexistent_ld' loads a manifest, then tries to load a nonexistent ld.
+  badLoadTest(
+      tester,
+      'missing_ld',
+      'pnacl_bad_missing_ld.nmf',
+      'NaCl module load failed: PNaCl ld load failed.');
+}
+
+
+// The driver invoked when the body has finished loading.
+function runTests() {
+  var tester = new Tester($('body'));
+  tester.loadErrorsAreOK();
+  declareTests(tester);
+  tester.run();
+}
+//]]>
+</script>
+
+<!-- The tests will create and remove embeds from this div. -->
+<div id="embeds"></div>
+
+<script type="text/javascript">
+//<![CDATA[
+runTests();
+//]]>
+</script>
+</body>
+</html>

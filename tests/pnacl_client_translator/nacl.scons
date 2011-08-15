@@ -114,7 +114,7 @@ def LayoutPageAssetsOnServer(files):
   return (map_files, replicates)
 
 #----------------------------------------------------------------------
-# SRPC
+# Test pexe translation.
 
 # Usually the scons link step produces a nexe. We massage the commandline
 # here to generate pexes, i.e. fully linked bitcode files.
@@ -172,5 +172,49 @@ env.Depends(node, replicates_toolchain + replicates_page)
 bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
                                'run_pnacl_example_browser_test',
+                               is_broken=(
+                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
+
+#### Test error handling.
+
+# We should add more cases, e.g., try a bad library to crash ld,
+# try a more malicious bitcode, try to exhaust resources, etc.
+# The current llc tests, don't actually crash LLC, they only
+# make llc exit w/ an abnormal status.
+
+(map_files_bad_page, replicates_bad_page) = LayoutPageAssetsOnServer(
+    ['pnacl_bad_doesnotexist.nmf',
+     'pnacl_bad_doesnotexist_pexe_only.nmf',
+     'pnacl_bad_missing_llc.nmf',
+     'pnacl_bad_missing_ld.nmf',
+     # This one is just a text file that begins with "BC".
+     'bad.pexe',
+     'pnacl_bad_pexe.nmf',
+     # This one is the hello world bitcode .ll w/ a missing instruction.
+     'bad2.pexe',
+     'pnacl_bad2_pexe.nmf',
+     # Borrow the bitcode file from the test above and treat it as a
+     # pexe so that the compile succeeds but linking fails.
+     'pnacl_test_example_obj.bc',
+     'pnacl_bad_pexe_undefined_syms.nmf',
+     'pnacl_bad_test.html',
+     ])
+
+# Borrow bad load test harness.
+borrowed_file = '${STAGING_DIR}/ppapi_bad.js',
+
+node = bitcode_env.PPAPIBrowserTester(
+    'pnacl_bad_test.out',
+    url='pnacl_bad_test.html',
+    files=[borrowed_file], # the rest are in "map_files"
+    map_files=map_files_toolchain + map_files_bad_page,
+    args=['--allow_404', '--prefer_portable_in_manifest'])
+
+# Make sure the files are actually staged when this test runs.
+env.Depends(node, replicates_toolchain + replicates_bad_page)
+
+bitcode_env.AddNodeToTestSuite(node,
+                               ['chrome_browser_tests'],
+                               'run_pnacl_bad_browser_test',
                                is_broken=(
                                    bitcode_env.PPAPIBrowserTesterIsBroken()))

@@ -110,7 +110,9 @@ class PnaclCoordinator {
                          const nacl::string& url,
                          DelayedCallback* delayed_callback);
 
-  int32_t GetLoadedFileDesc(int32_t pp_error, const nacl::string& url);
+  int32_t GetLoadedFileDesc(int32_t pp_error,
+                            const nacl::string& url,
+                            const nacl::string& component);
 
   // Helper for starting helper nexes after they are downloaded.
   NaClSubprocessId HelperNexeDidLoad(int32_t fd, ErrorInfo* error_info);

@@ -114,7 +114,8 @@ void PnaclCoordinator::SetTranslatedFile(NaClSrpcImcDescType fd) {
 }
 
 int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
-                                            const nacl::string& url) {
+                                            const nacl::string& url,
+                                            const nacl::string& component) {
   ErrorInfo error_info;
   int32_t file_desc = instance_->GetPOSIXFileDesc(url);
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
@@ -123,8 +124,7 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
     } else {
       // TODO(jvoung): Make a generic load error, or just use ERROR_UNKNOWN?
       error_info.SetReport(ERROR_UNKNOWN,
-                           "PNaCl module load failed: could not load url: " +
-                           url);
+                           "PNaCl " + component + " load failed.");
       ReportLoadError(error_info);
     }
     return -1;
@@ -133,8 +133,8 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
     // TODO(jvoung): Make a generic load error, or just use ERROR_UNKNOWN?
     error_info.SetReport(ERROR_UNKNOWN,
-                         "PNaCl module load failed: could not dup fd for: " +
-                         url);
+                         "PNaCl " + component + " load failed: "
+                         "could not dup fd.");
     ReportLoadError(error_info);
     return -1;
   }
@@ -161,7 +161,7 @@ void PnaclCoordinator::LLCReady(int32_t pp_error,
                                 const nacl::string& llc_url,
                                 DelayedCallback* delayed_callback) {
   // pp_error is checked by GetLoadedFileDesc.
-  int32_t file_desc_ok_to_close = GetLoadedFileDesc(pp_error, llc_url);
+  int32_t file_desc_ok_to_close = GetLoadedFileDesc(pp_error, llc_url, "llc");
   ErrorInfo error_info;
   if (file_desc_ok_to_close < 0) {
     PnaclPpapiError(pp_error);
@@ -189,7 +189,7 @@ void PnaclCoordinator::LDReady(int32_t pp_error,
                                const nacl::string& ld_url,
                                DelayedCallback* delayed_callback) {
   // pp_error is checked by GetLoadedFileDesc.
-  int32_t file_desc_ok_to_close = GetLoadedFileDesc(pp_error, ld_url);
+  int32_t file_desc_ok_to_close = GetLoadedFileDesc(pp_error, ld_url, "ld");
   ErrorInfo error_info;
   if (file_desc_ok_to_close < 0) {
     PnaclPpapiError(pp_error);
@@ -219,7 +219,7 @@ void PnaclCoordinator::PexeReady(int32_t pp_error,
   PLUGIN_PRINTF(("PnaclCoordinator::PexeReady (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   // pp_error is checked by GetLoadedFileDesc.
-  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url);
+  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url, "pexe");
   if (fd < 0) {
     PnaclPpapiError(pp_error);
   } else {
@@ -234,7 +234,7 @@ void PnaclCoordinator::LinkResourceReady(int32_t pp_error,
   PLUGIN_PRINTF(("PnaclCoordinator::LinkResourceReady (pp_error=%"
                  NACL_PRId32", url=%s)\n", pp_error, url.c_str()));
   // pp_error is checked by GetLoadedFileDesc.
-  int32_t fd = GetLoadedFileDesc(pp_error, url);
+  int32_t fd = GetLoadedFileDesc(pp_error, url, "linker resource " + url);
   if (fd < 0) {
     PnaclPpapiError(pp_error);
   } else {
@@ -300,8 +300,8 @@ void WINAPI DoTranslateThread(void* arg) {
     num_args = NACL_ARRAY_SIZE(llc_args_arm);
   } else {
     AbortTranslateThread(p,
-                         "PnaclCoordinator::TranslateThread unhandled ISA " +
-                         sandbox_isa + "\n");
+                         "PnaclCoordinator compiler unhandled ISA " +
+                         sandbox_isa + ".");
     return;
   }
 
@@ -317,8 +317,8 @@ void WINAPI DoTranslateThread(void* arg) {
                                         &dummy_params,
                                         llc_args[i])) {
       AbortTranslateThread(p,
-                           "PnaclCoordinator::TranslateThread AddArg(" +
-                           nacl::string(llc_args[i]) + ") failed\n");
+                           "PnaclCoordinator compiler AddArg(" +
+                           nacl::string(llc_args[i]) + ") failed.");
     }
   }
 
@@ -333,8 +333,7 @@ void WINAPI DoTranslateThread(void* arg) {
                                       &params,
                                       p->pexe_fd->desc())) {
     AbortTranslateThread(p,
-                         "PnaclCoordinator::TranslateThread "
-                         "InvokeTranslate failed\n");
+                         "PnaclCoordinator compile failed.");
   } else {
     // Grab the outparams.
     p->obj_fd = params.outs()[0]->u.hval;
@@ -466,8 +465,8 @@ void WINAPI DoLinkThread(void* arg) {
     flags.push_back("armelf_nacl");
   } else {
     AbortLinkThread(p,
-                    "PnaclCoordinator::LinkThread unhandled ISA " +
-                    sandbox_isa + "\n");
+                    "PnaclCoordinator linker unhandled ISA " +
+                    sandbox_isa + ".");
   }
 
   for (string_vector::iterator i = flags.begin(), e = flags.end();
@@ -484,8 +483,8 @@ void WINAPI DoLinkThread(void* arg) {
                                         &dummy_params,
                                         flag.c_str())) {
       AbortLinkThread(p,
-                      "PnaclCoordinator::LinkThread AddArg(" + flag +
-                      ") failed\n");
+                      "PnaclCoordinator linker AddArg(" + flag +
+                      ") failed.");
     }
   }
 
@@ -507,8 +506,8 @@ void WINAPI DoLinkThread(void* arg) {
                                         &dummy_params,
                                         link_file.c_str())) {
       AbortLinkThread(p,
-                      "PnaclCoordinator::LinkThread AddArg(" +
-                      link_file + ") failed\n");
+                      "PnaclCoordinator linker AddArg(" +
+                      link_file + ") failed.");
     }
     // Also map the file name to descriptor.
     if (i->compare(kGeneratedObjectFileName) == 0) {
@@ -522,8 +521,8 @@ void WINAPI DoLinkThread(void* arg) {
                                           p->obj_fd->desc(),
                                           p->obj_len)) {
         AbortLinkThread(p,
-                        "PnaclCoordinator::LinkThread AddFileWithSize"
-                        "(" + link_file + ") failed\n");
+                        "PnaclCoordinator linker AddFileWithSize"
+                        "(" + link_file + ") failed.");
       }
     } else {
       SrpcParams dummy_params2;
@@ -536,8 +535,8 @@ void WINAPI DoLinkThread(void* arg) {
                                           pnacl->GetLinkerResourceFD(
                                             link_file))) {
         AbortLinkThread(p,
-                        "PnaclCoordinator::LinkThread AddFile(" + link_file +
-                        ") failed\n");
+                        "PnaclCoordinator linker AddFile(" + link_file +
+                        ") failed.");
       }
     }
   }
@@ -553,7 +552,7 @@ void WINAPI DoLinkThread(void* arg) {
                                       "Link",
                                       "",
                                       &params)) {
-    AbortLinkThread(p, "PnaclCoordinator::LinkThread InvokeLink failed\n");
+    AbortLinkThread(p, "PnaclCoordinator link failed.");
   } else {
     // Grab the outparams.
     p->nexe_fd = params.outs()[0]->u.hval;

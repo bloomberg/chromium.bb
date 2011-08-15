@@ -1,0 +1,36 @@
+;; For now, we are using a .ll file as a "pexe". This is only a bad pexe
+;; in the sense that it shouldn't compile (missing instruction),
+;; not that it will crash LLC. Eventually we should make this into
+;; a bitcode file w/ the proper pexe metadata.
+
+;; To actually crash LLC (and do so reliably), perhaps we could add
+;; an SRPC method to LLC to ask it to crash itself.
+;; That seems much more reliable than trying to find a bitcode file that
+;; for version X will crash LLC, but for version Y it has been fixed.
+
+@.str = private unnamed_addr constant [12 x i8] c"Hello world\00", align 4
+
+define i32 @main(i32 %argc, i8** %argv) nounwind {
+entry:
+  %argc_addr = alloca i32, align 4
+  %argv_addr = alloca i8**, align 4
+  %retval = alloca i32
+  %0 = alloca i32
+  %"alloca point" = bitcast i32 0 to i32
+  store i32 %argc, i32* %argc_addr
+  store i8** %argv, i8*** %argv_addr
+  %1 = call i32 @puts(i8* getelementptr inbounds ([12 x i8]* @.str, i32 0, i32 0)) nounwind
+  store i32 0, i32* %0, align 4
+
+;; Intentionally comment this line out to make it fail to compile.
+;;  %2 = load i32* %0, align 4
+
+  store i32 %2, i32* %retval, align 4
+  br label %return
+
+return:                                           ; preds = %entry
+  %retval1 = load i32* %retval
+  ret i32 %retval1
+}
+
+declare i32 @puts(i8*)

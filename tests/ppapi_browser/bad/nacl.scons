@@ -21,6 +21,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 
 ppapi_bad_files = [
   'ppapi_bad.html',
+  'ppapi_bad.js',
   'ppapi_bad_crossorigin.nmf',
   'ppapi_bad_doesnotexist.nmf',
   'ppapi_bad_doesnotexist_nexe_only.nmf',
