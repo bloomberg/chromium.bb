@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-TEST(UserControllerTest, GetNameTooltip) {
+// See http://crbug.com/92871 for details.
+TEST(UserControllerTest, DISABLED_GetNameTooltip) {
   UserController guest_user_controller(NULL, false);
   EXPECT_EQ(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER)),
             guest_user_controller.GetNameTooltip());
