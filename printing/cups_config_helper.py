@@ -32,7 +32,7 @@ def run_cups_config(mode):
     flags = cups.communicate()[0].strip()
 
     flags_subset = []
-    for flag in flags.split(' '):
+    for flag in flags.split():
         flag_mode = None
         if flag.startswith('-l'):
             flag_mode = '--libs'
