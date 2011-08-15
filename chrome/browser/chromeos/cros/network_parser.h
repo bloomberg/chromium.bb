@@ -12,7 +12,10 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
+namespace base {
+class DictionaryValue;
 class Value;
+}
 
 namespace chromeos {
 

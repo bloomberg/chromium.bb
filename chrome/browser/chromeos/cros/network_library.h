@@ -413,9 +413,9 @@ class NetworkDevice {
   // |value|.  Returns false on failure.  Upon success, returns the
   // PropertyIndex that was updated in |index|.  |index| may be NULL
   // if not needed.
-  virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
-                            PropertyIndex *index);
+  bool UpdateStatus(const std::string& key,
+                    const Value& value,
+                    PropertyIndex *index);
 
   NativeNetworkDeviceParser* device_parser() { return device_parser_.get(); }
 
