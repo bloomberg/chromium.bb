@@ -633,6 +633,13 @@
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    fun:_ZNSs4_Rep8_M_cloneERKSaIcE*
 }
+{
+   bug_76386c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createE*RKSaIcE
+   fun:_ZNSs9_M_mutateEjjj
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -877,7 +884,7 @@
 {
    bug_87500_a
    Memcheck:Leak
-   fun:_Znw*
+   fun:_Zn*
    ...
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
@@ -5213,18 +5220,6 @@
    fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
    fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
-}
-{
-   bug_92554
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs9_M_mutateEjjj
-   fun:_ZNSs12_M_leak_hardEv
-   fun:_ZNSsixEj
-   fun:_ZN3net13TrimEndingDotERKSs
-   fun:_ZN3net20GetHostOrSpecFromURLERK4GURL
-   fun:_ZN20AsyncResourceHandler17OnResponseStartedEiP16ResourceResponse
 }
 {
    bug_92571
