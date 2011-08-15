@@ -306,6 +306,7 @@ var chrome = chrome || {};
       "experimental.bookmarkManager",
       "experimental.contentSettings",
       "experimental.debugger",
+      "experimental.downloads",
       "experimental.extension",
       "experimental.infobars",
       "experimental.input",

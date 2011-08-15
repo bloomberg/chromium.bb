@@ -1052,4 +1052,7 @@ var chrome = chrome || {};
 
   if (!chrome.ttsEngine)
     chrome.ttsEngine = {};
+
+  if (!chrome.experimental.downloads)
+    chrome.experimental.downloads = {};
 })();

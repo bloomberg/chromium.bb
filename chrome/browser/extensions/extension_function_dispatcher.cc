@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
+#include "chrome/browser/extensions/extension_downloads_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -421,6 +422,18 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetAllPermissionsFunction>();
   RegisterFunction<RemovePermissionsFunction>();
   RegisterFunction<RequestPermissionsFunction>();
+
+  // Downloads
+  RegisterFunction<DownloadsDownloadFunction>();
+  RegisterFunction<DownloadsSearchFunction>();
+  RegisterFunction<DownloadsPauseFunction>();
+  RegisterFunction<DownloadsResumeFunction>();
+  RegisterFunction<DownloadsCancelFunction>();
+  RegisterFunction<DownloadsEraseFunction>();
+  RegisterFunction<DownloadsSetDestinationFunction>();
+  RegisterFunction<DownloadsAcceptDangerFunction>();
+  RegisterFunction<DownloadsShowFunction>();
+  RegisterFunction<DownloadsDragFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

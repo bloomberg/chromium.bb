@@ -3818,6 +3818,537 @@
     ]
   },
   {
+    "namespace": "experimental.downloads",
+    "nodoc": "true",
+    "events": [
+      {
+        "name": "onCreated",
+        "type": "function",
+        "unprivileged": true,
+        "description": "This event fires with the DownloadItem object when a download begins.",
+        "parameters": [
+          {"$ref": "DownloadItem"}
+        ]
+      },
+      {
+        "name": "onChanged",
+        "type": "function",
+        "unprivileged": true,
+        "description": "When any of a DownloadItem's properties except |bytesReceived| changes, this event fires with the download id and an object containing the properties that changed.",
+        "parameters": [
+          {"$ref": "DownloadDelta"}
+        ]
+      },
+      {
+        "name": "onErased",
+        "type": "function",
+        "unprivileged": true,
+        "description": "Fires with the download id when a download is erased from history.",
+        "parameters": [
+          {"type": "integer", "name": "downloadId"}
+        ]
+      }
+    ],
+    "properties": {
+      "STATE_IN_PROGRESS": {
+        "type": "string",
+        "value": "in_progress",
+        "description": "The download is currently receiving data from the server."
+      },
+      "STATE_INTERRUPTED": {
+        "type": "string",
+        "value": "interrupted",
+        "description": "An error broke the connection with the file host."
+      },
+      "STATE_COMPLETE": {
+        "type": "string",
+        "value": "complete",
+        "description": "The download has completed."
+      },
+      "DANGER_SAFE": {
+        "type": "string",
+        "value": "safe",
+        "description": "The file has been determined to present no known danger to the user's computer."
+      },
+      "DANGER_FILE": {
+        "type": "string",
+        "value": "file",
+        "description": "The download's filename is suspicious."
+      },
+      "DANGER_URL": {
+        "type": "string",
+        "value": "url",
+        "description": "The download's URL is suspicious."
+      }
+    },
+    "types": [
+      {
+        "id": "DownloadItem",
+        "type": "object",
+        "description": "The state of a file as it is downloaded from the internet.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "An identifier that is persistent across browser sessions."
+          },
+          "url": {
+            "type": "string",
+            "description": "absolute URL"
+          },
+          "filename": {
+            "type": "string",
+            "description": "absolute local path"
+          },
+          "danger": {
+            "type": "string",
+            "description": "Indication of whether this download is thought to be safe or known to be suspicious.",
+            "enum": ["safe", "file", "url"],
+            "optional": true
+          },
+          "dangerAccepted": {
+            "type": "boolean",
+            "description": "true if the user has accepted the download's danger."
+          },
+          "mime": {
+            "type": "string",
+            "description": "The file's MIME type."
+          },
+          "startTime": {
+            "type": "integer",
+            "description": "Number of milliseconds between the unix epoch and when this download began."
+          },
+          "endTime": {
+            "type": "integer",
+            "description": "Number of milliseconds between the unix epoch and when this download ended.",
+            "optional": true
+          },
+          "state": {
+            "type": "string",
+            "description": "Indicates whether the download is progressing, interrupted, or complete.",
+            "enum": ["in_progress", "complete", "interrupted"]
+          },
+          "paused": {
+            "type": "boolean",
+            "description": "true if the download has stopped reading data from the host, but kept the connection open."
+          },
+          "error": {
+            "type": "integer",
+            "description": "Number indicating why a download was interrupted.",
+            "optional": true
+          },
+          "bytesReceived": {
+            "type": "integer",
+            "description": "Number of bytes received so far from the host, without considering file compression."
+          },
+          "totalBytes": {
+            "type": "integer",
+            "description": "Number of bytes in the whole file, without considering file compression, or -1 if unknown."
+          },
+          "fileSize": {
+            "type": "integer",
+            "description": "Number of bytes in the whole file post-decompression, or -1 if unknown."
+          }
+        }
+      },
+      {
+        "id": "DownloadOptions",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to download.",
+            "minLength": 1
+          },
+          "filename": {
+            "type": "string",
+            "description": "A file path relative to the Downloads directory to contain the downloaded file.",
+            "optional": true
+          },
+          "saveAs": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Use a file-chooser to allow the user to select a filename."
+          },
+          "method": {
+            "type": "string",
+            "description": "The HTTP method to use if the URL uses the HTTP[S] protocol.",
+            "optional": true,
+            "enum": ["GET", "POST"]
+          },
+          "headers": {
+            "$ref": "HttpHeaders",
+            "description": "Extra HTTP headers to send with the request if the URL uses the HTTP[s] protocol, restricted to those allowed by XMLHttpRequest.",
+            "optional": true
+          },
+          "body": {
+            "type": "string",
+            "description": "post body",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "DownloadQuery",
+        "type": "object",
+        "description": "",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "This space-separated string of search terms that may be grouped using quotation marks limits results to downloads whose filename or url contain all of the search terms that do not begin with a dash ‘-’ and none of the search terms that do begin with a dash.",
+            "optional": true
+          },
+          "startedBefore": {
+            "type": "integer",
+            "description": "Limits results to downloads that started before the given ms since the epoch.",
+            "optional": true
+          },
+          "startedAfter": {
+            "type": "integer",
+            "description": "Limits results to downloads that started after the given ms since the epoch.",
+            "optional": true
+          },
+          "endedBefore": {
+            "type": "integer",
+            "description": "Limits results to downloads that ended before the given ms since the epoch.",
+            "optional": true
+          },
+          "endedAfter": {
+            "type": "integer",
+            "description": "Limits results to downloads that ended after the given ms since the epoch.",
+            "optional": true
+          },
+          "totalBytesGreater": {
+            "type": "integer",
+            "description": "Limits results to downloads whose totalBytes is greater than the given integer.",
+            "optional": true
+          },
+          "totalBytesLess": {
+            "type": "integer",
+            "description": "Limits results to downloads whose totalBytes is less than the given integer.",
+            "optional": true
+          },
+          "filenameRegex": {
+            "type": "string",
+            "description": "Limits results to downloads whose filename matches the given regular expression.",
+            "optional": true
+          },
+          "urlRegex": {
+            "type": "string",
+            "description": "Limits results to downloads whose url matches the given regular expression.",
+            "optional": true
+          },
+          "limit": {
+            "type": "integer",
+            "optional": true,
+            "description": "Setting this integer limits the number of results. Otherwise, all matching DownloadItems will be returned."
+          },
+          "orderBy": {
+            "type": "string",
+            "optional": true,
+            "description": "Setting this string to a DownloadItem property sorts the DownloadItems prior to applying the above filters. For example, setting |orderBy|=”startTime” sorts the DownloadItems by their start time in ascending order. To specify descending order, prefix |orderBy| with a hyphen: “-startTime”."
+          },
+          "id": {
+            "type": "integer",
+            "optional": true,
+            "description": "An identifier that is persistent across browser sessions."
+          },
+          "url": {
+            "type": "string",
+            "optional": true,
+            "description": "absolute URL"
+          },
+          "filename": {
+            "type": "string",
+            "optional": true,
+            "description": "absolute local path"
+          },
+          "danger": {
+            "type": "string",
+            "description": "Indication of whether this download is thought to be safe or known to be suspicious.",
+            "enum": ["safe", "file", "url"],
+            "optional": true
+          },
+          "dangerAccepted": {
+            "type": "boolean",
+            "optional": true,
+            "description": "true if the user has accepted the download's danger."
+          },
+          "mime": {
+            "type": "string",
+            "optional": true,
+            "description": "The file's MIME type."
+          },
+          "startTime": {
+            "type": "integer",
+            "optional": true,
+            "description": "Number of milliseconds between the unix epoch and when this download began."
+          },
+          "endTime": {
+            "type": "integer",
+            "description": "Number of milliseconds between the unix epoch and when this download ended.",
+            "optional": true
+          },
+          "state": {
+            "type": "string",
+            "optional": true,
+            "description": "Indicates whether the download is progressing, interrupted, or complete.",
+            "enum": ["in_progress", "complete", "interrupted"]
+          },
+          "paused": {
+            "type": "boolean",
+            "optional": true,
+            "description": "true if the download has stopped reading data from the host, but kept the connection open."
+          },
+          "error": {
+            "type": "integer",
+            "description": "Number indicating why a download was interrupted.",
+            "optional": true
+          },
+          "bytesReceived": {
+            "type": "integer",
+            "optional": true,
+            "description": "Number of bytes received so far from the host, without considering file compression."
+          },
+          "totalBytes": {
+            "type": "integer",
+            "optional": true,
+            "description": "Number of bytes in the whole file, without considering file compression, or -1 if unknown."
+          },
+          "fileSize": {
+            "type": "integer",
+            "optional": true,
+            "description": "Number of bytes in the whole file post-decompression, or -1 if unknown."
+          }
+        }
+      },
+      {
+        "id": "DownloadBooleanDiff",
+        "type": "object",
+        "description": "Encapsulates a change in a boolean DownloadItem field.",
+        "properties": {
+          "old": {
+            "type": "boolean",
+            "optional": true
+          },
+          "new": {
+            "type": "boolean",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "DownloadIntegerDiff",
+        "type": "object",
+        "description": "Encapsulates a change in an integer DownloadItem field.",
+        "properties": {
+          "old": {
+            "type": "integer",
+            "optional": true
+          },
+          "new": {
+            "type": "integer",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "DownloadStringDiff",
+        "type": "object",
+        "description": "Encapsulates a change in a string DownloadItem field.",
+        "properties": {
+          "old": {
+            "type": "string",
+            "optional": true
+          },
+          "new": {
+            "type": "string",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "DownloadDelta",
+        "type": "object",
+        "description": "Encapsulates a change in a DownloadItem.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "An identifier that is persistent across browser sessions."
+          },
+          "url": {
+            "$ref": "DownloadStringDiff",
+            "optional": true
+          },
+          "filename": {
+            "$ref": "DownloadStringDiff",
+            "optional": true
+          },
+          "danger": {
+            "$ref": "DownloadStringDiff",
+            "optional": true
+          },
+          "dangerAccepted": {
+            "$ref": "DownloadBooleanDiff",
+            "optional": true
+          },
+          "mime": {
+            "$ref": "DownloadStringDiff",
+            "optional": true
+          },
+          "startTime": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          },
+          "endTime": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          },
+          "state": {
+            "$ref": "DownloadStringDiff",
+            "optional": true
+          },
+          "paused": {
+            "$ref": "DownloadBooleanDiff",
+            "optional": true
+          },
+          "error": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          },
+          "bytesReceived": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          },
+          "totalBytes": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          },
+          "fileSize": {
+            "$ref": "DownloadIntegerDiff",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "DownloadResponse",
+        "type": "object",
+        "nodoc": true,
+        "description": "This object is transformed into two callback parameters for the callback to download().",
+        "properties": {
+          "id": {"type": "integer", "optional": true},
+          "error": {"type": "integer", "optional": true}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "download",
+        "type": "function",
+        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, |callback| will be called with the new DownloadItem’s |id| and |error|=undefined. If there was an error starting the download, then |callback| will be called with |downloadId|=undefined and an |error| code integer. If the URL’s hostname is not specified in the |permissions| section of the extension’s manifest, then the |error| object will indicate that the extension does not have permission to access that hostname.",
+        "parameters": [
+          {"$ref": "DownloadOptions"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {"$ref": "DownloadResponse"}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "search",
+        "type": "function",
+        "description": "Find DownloadItems. Set |query| to the empty object to get all DownloadItems. To get a specific DownloadItem, set only the |id| field.",
+        "parameters": [
+          {"$ref": "DownloadQuery"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {"name": "items", "type": "array"}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "erase",
+        "type": "function",
+        "description": "Erase matching DownloadItems from history",
+        "parameters": [
+          {"$ref": "DownloadQuery"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {"name": "ids", "type": "array"}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setDestination",
+        "type": "function",
+        "description": "Move the file to Downloads/relativePath instead of the Downloads directory if it has completed and pass true to callback. If |relativePath| specifies a directory that does not exist then it will be created. If it has not completed, store |relativePath| such that the file will be moved there when it completes and pass true to callback without waiting for the download to complete. Does nothing if the download is cancelled or if |downloadId| does not reference an existing DownloadItem, but pass false to callback. If the file could not be moved, then the DownloadItem will transition to STATE_INTERRUPTED, its |error| property will be set accordingly, false will be passed to callback, and the OnChanged event will fire.",
+        "parameters": [
+          {"name": "id", "type": "integer"},
+          {"name": "relativePath", "type": "string"}
+        ]
+      },
+      {
+        "name": "acceptDanger",
+        "type": "function",
+        "description": "Accept a dangerous download. If a download is dangerous, then it will not transition to the completed state until this function is called.",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      },
+      {
+        "name": "show",
+        "type": "function",
+        "description": "Show the downloaded file in its folder.",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      },
+      {
+        "name": "drag",
+        "type": "function",
+        "description": "Drag the file to another application",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      },
+      {
+        "name": "pause",
+        "type": "function",
+        "description": "Pause the download.",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      },
+      {
+        "name": "resume",
+        "type": "function",
+        "description": "Resume a paused download.",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      },
+      {
+        "name": "cancel",
+        "type": "function",
+        "description": "Cancel a download.",
+        "parameters": [
+          {"name": "id", "type": "integer"}
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "devtools",
     "nodoc": "true",
     "types": [],
