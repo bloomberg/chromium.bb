@@ -59,6 +59,7 @@ BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
 HOST_TOOLCHAIN_BITS=32
 
 include REVISIONS
+export NACL_FAKE_SONAME=$(shell commit=$(NACL_GLIBC_COMMIT);echo $${commit:0:8})
 
 # Toplevel installation directory.
 # MUST be an absolute pathname, for configure --prefix=$(PREFIX)

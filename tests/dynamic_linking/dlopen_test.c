@@ -23,10 +23,10 @@ int main() {
   void *handle;
   dl_union f;
 
-  handle = dlopen("libc.so.6", RTLD_LAZY);
+  handle = dlopen("libm.so", RTLD_LAZY);
   assert(NULL != handle);
   dlerror();
-  f.pvoid = dlsym(handle, "time");
+  f.pvoid = dlsym(handle, "sin");
   assert(NULL == dlerror());
   assert(-1 != (*f.pfunc)(NULL));
   assert(0 == dlclose(handle));
