@@ -86,7 +86,7 @@ NoOpUnused(void)
 #define KEYWORD2 GLAPIENTRY
 #define NAME(func)  NoOp##func
 #define DISPATCH(func, args, msg)  Warn(#func);
-#define RETURN_DISPATCH(func, args, msg)  Warn(#func); return 0
+#define RETURN_DISPATCH(type, func, args, msg)  Warn(#func); return (type)0
 
 
 /*
@@ -96,7 +96,7 @@ NoOpUnused(void)
 
 #else
 
-static int
+void
 NoOpGeneric(void)
 {
 #if !defined(_WIN32_WCE)
@@ -104,7 +104,6 @@ NoOpGeneric(void)
       fprintf(stderr, "GL User Error: calling GL function without a rendering context\n");
    }
 #endif
-   return 0;
 }
 
 /**
@@ -113,7 +112,8 @@ NoOpGeneric(void)
 static GLint
 NoOpUnused(void)
 {
-   return NoOpGeneric();
+   NoOpGeneric();
+   return 0;
 }
 
 /*
@@ -127,7 +127,7 @@ NoOpUnused(void)
 #define KEYWORD2 GLAPIENTRY
 #define NAME(func)  NoOp##func
 #define DISPATCH(func, args, msg)  NoOpGeneric();
-#define RETURN_DISPATCH(func, args, msg)  return NoOpGeneric();
+#define RETURN_DISPATCH(type, func, args, msg)  NoOpGeneric(); return (type)0
 
 /*
  * Defines for the table of no-op entry points.

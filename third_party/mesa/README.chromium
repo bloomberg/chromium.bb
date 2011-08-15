@@ -88,3 +88,8 @@ Later modifications (see chromium.patch):
   if width > 0 && height > 0 && depth > 0, instead of checking
   width > 0 && height > 0 && height > 0 . See
   https://bugs.freedesktop.org/show_bug.cgi?id=37648
+
+- Suppressed (accurate) compiler warnings about return type conflicts
+  from gl_apinop.c.
+  http://code.google.com/p/chromium/issues/detail?id=92568
+  https://bugs.freedesktop.org/show_bug.cgi?id=40028

@@ -65,7 +65,7 @@
    fprintf MESSAGE;				\
    CALL_ ## FUNC(GET_DISPATCH(), ARGS);
 
-#define RETURN_DISPATCH(FUNC, ARGS, MESSAGE) 	\
+#define RETURN_DISPATCH(TYPE, FUNC, ARGS, MESSAGE) 	\
    fprintf MESSAGE;				\
    return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
 
@@ -74,7 +74,7 @@
 #define DISPATCH(FUNC, ARGS, MESSAGE)		\
    CALL_ ## FUNC(GET_DISPATCH(), ARGS);
 
-#define RETURN_DISPATCH(FUNC, ARGS, MESSAGE) 	\
+#define RETURN_DISPATCH(TYPE, FUNC, ARGS, MESSAGE) 	\
    return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
 
 #endif /* logging */

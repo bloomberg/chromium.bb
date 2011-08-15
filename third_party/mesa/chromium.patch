@@ -1914,3 +1914,194 @@ diff -c -r Mesa-7.9/src/mesa/swrast/s_texcombine.c MesaLib/src/mesa/swrast/s_tex
   
   /**
    * Pointer to array of float[4]
+diff -c -r Mesa-7.9/src/mapi/glapi/gen/gl_apitemp.py MesaLib/src/mapi/glapi/gen/gl_apitemp.py
+*** Mesa-7.9/src/mapi/glapi/gen/gl_apitemp.py	Mon Aug 15 09:14:29 2011
+--- MesaLib/src/mapi/glapi/gen/gl_apitemp.py	Thu Aug 11 21:23:47 2011
+***************
+*** 79,89 ****
+  			comma = ", "
+  
+  
+- 		if f.return_type != 'void':
+- 			dispatch = "RETURN_DISPATCH"
+- 		else:
+- 			dispatch = "DISPATCH"
+- 
+  		need_proto = False
+  		if not f.is_static_entry_point(name):
+  			need_proto = True
+--- 79,84 ----
+***************
+*** 97,108 ****
+  
+  		print '%s %s KEYWORD2 NAME(%s)(%s)' % (keyword, f.return_type, n, f.get_parameter_string(name))
+  		print '{'
+! 		if p_string == "":
+! 			print '   %s(%s, (), (F, "gl%s();\\n"));' \
+! 				% (dispatch, f.name, name)
+  		else:
+! 			print '   %s(%s, (%s), (F, "gl%s(%s);\\n", %s));' \
+! 				% (dispatch, f.name, p_string, name, t_string, o_string)
+  		print '}'
+  		print ''
+  		return
+--- 92,113 ----
+  
+  		print '%s %s KEYWORD2 NAME(%s)(%s)' % (keyword, f.return_type, n, f.get_parameter_string(name))
+  		print '{'
+! 		if f.return_type != 'void':
+! 			dispatch = "RETURN_DISPATCH"
+! 			if p_string == "":
+! 				print '   %s(%s, %s, (), (F, "gl%s();\\n"));' \
+! 					% (dispatch, f.return_type, f.name, name)
+! 			else:
+! 				print '   %s(%s, %s, (%s), (F, "gl%s(%s);\\n", %s));' \
+! 					% (dispatch, f.return_type, f.name, p_string, name, t_string, o_string)
+  		else:
+! 			dispatch = "DISPATCH"
+! 			if p_string == "":
+! 				print '   %s(%s, (), (F, "gl%s();\\n"));' \
+! 					% (dispatch, f.name, name)
+! 			else:
+! 				print '   %s(%s, (%s), (F, "gl%s(%s);\\n", %s));' \
+! 					% (dispatch, f.name, p_string, name, t_string, o_string)
+  		print '}'
+  		print ''
+  		return
+***************
+*** 120,126 ****
+   *   NAME(n)  - builds the final function name (usually add "gl" prefix)
+   *   DISPATCH(func, args, msg) - code to do dispatch of named function.
+   *                               msg is a printf-style debug message.
+!  *   RETURN_DISPATCH(func, args, msg) - code to do dispatch with a return value
+   *
+   * Here is an example which generates the usual OpenGL functions:
+   *   #define KEYWORD1
+--- 125,132 ----
+   *   NAME(n)  - builds the final function name (usually add "gl" prefix)
+   *   DISPATCH(func, args, msg) - code to do dispatch of named function.
+   *                               msg is a printf-style debug message.
+!  *   RETURN_DISPATCH(type, func, args, msg) - code to do dispatch with a
+!  *                                            return value of type.
+   *
+   * Here is an example which generates the usual OpenGL functions:
+   *   #define KEYWORD1
+diff -c -r Mesa-7.9/src/mapi/glapi/glapi_dispatch.c MesaLib/src/mapi/glapi/glapi_dispatch.c
+*** Mesa-7.9/src/mapi/glapi/glapi_dispatch.c	Mon Aug 15 09:14:30 2011
+--- MesaLib/src/mapi/glapi/glapi_dispatch.c	Thu Aug 11 21:25:55 2011
+***************
+*** 65,71 ****
+     fprintf MESSAGE;				\
+     CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+! #define RETURN_DISPATCH(FUNC, ARGS, MESSAGE) 	\
+     fprintf MESSAGE;				\
+     return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+--- 65,71 ----
+     fprintf MESSAGE;				\
+     CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+! #define RETURN_DISPATCH(TYPE, FUNC, ARGS, MESSAGE) 	\
+     fprintf MESSAGE;				\
+     return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+***************
+*** 74,80 ****
+  #define DISPATCH(FUNC, ARGS, MESSAGE)		\
+     CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+! #define RETURN_DISPATCH(FUNC, ARGS, MESSAGE) 	\
+     return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+  #endif /* logging */
+--- 74,80 ----
+  #define DISPATCH(FUNC, ARGS, MESSAGE)		\
+     CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+! #define RETURN_DISPATCH(TYPE, FUNC, ARGS, MESSAGE) 	\
+     return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+  
+  #endif /* logging */
+diff -c -r Mesa-7.9/src/mapi/glapi/glapi_nop.c MesaLib/src/mapi/glapi/glapi_nop.c
+*** Mesa-7.9/src/mapi/glapi/glapi_nop.c	Mon Aug 15 09:14:30 2011
+--- MesaLib/src/mapi/glapi/glapi_nop.c	Thu Aug 11 21:29:46 2011
+***************
+*** 86,92 ****
+  #define KEYWORD2 GLAPIENTRY
+  #define NAME(func)  NoOp##func
+  #define DISPATCH(func, args, msg)  Warn(#func);
+! #define RETURN_DISPATCH(func, args, msg)  Warn(#func); return 0
+  
+  
+  /*
+--- 86,92 ----
+  #define KEYWORD2 GLAPIENTRY
+  #define NAME(func)  NoOp##func
+  #define DISPATCH(func, args, msg)  Warn(#func);
+! #define RETURN_DISPATCH(type, func, args, msg)  Warn(#func); return (type)0
+  
+  
+  /*
+***************
+*** 96,102 ****
+  
+  #else
+  
+! static int
+  NoOpGeneric(void)
+  {
+  #if !defined(_WIN32_WCE)
+--- 96,102 ----
+  
+  #else
+  
+! void
+  NoOpGeneric(void)
+  {
+  #if !defined(_WIN32_WCE)
+***************
+*** 104,110 ****
+        fprintf(stderr, "GL User Error: calling GL function without a rendering context\n");
+     }
+  #endif
+-    return 0;
+  }
+  
+  /**
+--- 104,109 ----
+***************
+*** 113,119 ****
+  static GLint
+  NoOpUnused(void)
+  {
+!    return NoOpGeneric();
+  }
+  
+  /*
+--- 112,119 ----
+  static GLint
+  NoOpUnused(void)
+  {
+!    NoOpGeneric();
+!    return 0;
+  }
+  
+  /*
+***************
+*** 127,133 ****
+  #define KEYWORD2 GLAPIENTRY
+  #define NAME(func)  NoOp##func
+  #define DISPATCH(func, args, msg)  NoOpGeneric();
+! #define RETURN_DISPATCH(func, args, msg)  return NoOpGeneric();
+  
+  /*
+   * Defines for the table of no-op entry points.
+--- 127,133 ----
+  #define KEYWORD2 GLAPIENTRY
+  #define NAME(func)  NoOp##func
+  #define DISPATCH(func, args, msg)  NoOpGeneric();
+! #define RETURN_DISPATCH(type, func, args, msg)  NoOpGeneric(); return (type)0
+  
+  /*
+   * Defines for the table of no-op entry points.

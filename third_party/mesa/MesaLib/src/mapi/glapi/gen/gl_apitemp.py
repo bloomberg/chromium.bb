@@ -79,11 +79,6 @@ class PrintGlOffsets(gl_XML.gl_print_base):
 			comma = ", "
 
 
-		if f.return_type != 'void':
-			dispatch = "RETURN_DISPATCH"
-		else:
-			dispatch = "DISPATCH"
-
 		need_proto = False
 		if not f.is_static_entry_point(name):
 			need_proto = True
@@ -97,12 +92,22 @@ class PrintGlOffsets(gl_XML.gl_print_base):
 
 		print '%s %s KEYWORD2 NAME(%s)(%s)' % (keyword, f.return_type, n, f.get_parameter_string(name))
 		print '{'
-		if p_string == "":
-			print '   %s(%s, (), (F, "gl%s();\\n"));' \
-				% (dispatch, f.name, name)
+		if f.return_type != 'void':
+			dispatch = "RETURN_DISPATCH"
+			if p_string == "":
+				print '   %s(%s, %s, (), (F, "gl%s();\\n"));' \
+					% (dispatch, f.return_type, f.name, name)
+			else:
+				print '   %s(%s, %s, (%s), (F, "gl%s(%s);\\n", %s));' \
+					% (dispatch, f.return_type, f.name, p_string, name, t_string, o_string)
 		else:
-			print '   %s(%s, (%s), (F, "gl%s(%s);\\n", %s));' \
-				% (dispatch, f.name, p_string, name, t_string, o_string)
+			dispatch = "DISPATCH"
+			if p_string == "":
+				print '   %s(%s, (), (F, "gl%s();\\n"));' \
+					% (dispatch, f.name, name)
+			else:
+				print '   %s(%s, (%s), (F, "gl%s(%s);\\n", %s));' \
+					% (dispatch, f.name, p_string, name, t_string, o_string)
 		print '}'
 		print ''
 		return
@@ -120,7 +125,8 @@ class PrintGlOffsets(gl_XML.gl_print_base):
  *   NAME(n)  - builds the final function name (usually add "gl" prefix)
  *   DISPATCH(func, args, msg) - code to do dispatch of named function.
  *                               msg is a printf-style debug message.
- *   RETURN_DISPATCH(func, args, msg) - code to do dispatch with a return value
+ *   RETURN_DISPATCH(type, func, args, msg) - code to do dispatch with a
+ *                                            return value of type.
  *
  * Here is an example which generates the usual OpenGL functions:
  *   #define KEYWORD1

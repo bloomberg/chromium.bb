@@ -42,7 +42,8 @@
  *   NAME(n)  - builds the final function name (usually add "gl" prefix)
  *   DISPATCH(func, args, msg) - code to do dispatch of named function.
  *                               msg is a printf-style debug message.
- *   RETURN_DISPATCH(func, args, msg) - code to do dispatch with a return value
+ *   RETURN_DISPATCH(type, func, args, msg) - code to do dispatch with a
+ *                                            return value of type.
  *
  * Here is an example which generates the usual OpenGL functions:
  *   #define KEYWORD1
@@ -109,7 +110,7 @@ KEYWORD1 void KEYWORD2 NAME(DeleteLists)(GLuint list, GLsizei range)
 
 KEYWORD1 GLuint KEYWORD2 NAME(GenLists)(GLsizei range)
 {
-   RETURN_DISPATCH(GenLists, (range), (F, "glGenLists(%d);\n", range));
+   RETURN_DISPATCH(GLuint, GenLists, (range), (F, "glGenLists(%d);\n", range));
 }
 
 KEYWORD1 void KEYWORD2 NAME(ListBase)(GLuint base)
@@ -1064,7 +1065,7 @@ KEYWORD1 void KEYWORD2 NAME(SelectBuffer)(GLsizei size, GLuint * buffer)
 
 KEYWORD1 GLint KEYWORD2 NAME(RenderMode)(GLenum mode)
 {
-   RETURN_DISPATCH(RenderMode, (mode), (F, "glRenderMode(0x%x);\n", mode));
+   RETURN_DISPATCH(GLint, RenderMode, (mode), (F, "glRenderMode(0x%x);\n", mode));
 }
 
 KEYWORD1 void KEYWORD2 NAME(InitNames)(void)
@@ -1389,7 +1390,7 @@ KEYWORD1 void KEYWORD2 NAME(GetDoublev)(GLenum pname, GLdouble * params)
 
 KEYWORD1 GLenum KEYWORD2 NAME(GetError)(void)
 {
-   RETURN_DISPATCH(GetError, (), (F, "glGetError();\n"));
+   RETURN_DISPATCH(GLenum, GetError, (), (F, "glGetError();\n"));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetFloatv)(GLenum pname, GLfloat * params)
@@ -1459,7 +1460,7 @@ KEYWORD1 void KEYWORD2 NAME(GetPolygonStipple)(GLubyte * mask)
 
 KEYWORD1 const GLubyte * KEYWORD2 NAME(GetString)(GLenum name)
 {
-   RETURN_DISPATCH(GetString, (name), (F, "glGetString(0x%x);\n", name));
+   RETURN_DISPATCH(const GLubyte *, GetString, (name), (F, "glGetString(0x%x);\n", name));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetTexEnvfv)(GLenum target, GLenum pname, GLfloat * params)
@@ -1514,12 +1515,12 @@ KEYWORD1 void KEYWORD2 NAME(GetTexLevelParameteriv)(GLenum target, GLint level, 
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsEnabled)(GLenum cap)
 {
-   RETURN_DISPATCH(IsEnabled, (cap), (F, "glIsEnabled(0x%x);\n", cap));
+   RETURN_DISPATCH(GLboolean, IsEnabled, (cap), (F, "glIsEnabled(0x%x);\n", cap));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsList)(GLuint list)
 {
-   RETURN_DISPATCH(IsList, (list), (F, "glIsList(%d);\n", list));
+   RETURN_DISPATCH(GLboolean, IsList, (list), (F, "glIsList(%d);\n", list));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DepthRange)(GLclampd zNear, GLclampd zFar)
@@ -1709,7 +1710,7 @@ KEYWORD1 void KEYWORD2 NAME(VertexPointer)(GLint size, GLenum type, GLsizei stri
 
 KEYWORD1 GLboolean KEYWORD2 NAME(AreTexturesResident)(GLsizei n, const GLuint * textures, GLboolean * residences)
 {
-   RETURN_DISPATCH(AreTexturesResident, (n, textures, residences), (F, "glAreTexturesResident(%d, %p, %p);\n", n, (const void *) textures, (const void *) residences));
+   RETURN_DISPATCH(GLboolean, AreTexturesResident, (n, textures, residences), (F, "glAreTexturesResident(%d, %p, %p);\n", n, (const void *) textures, (const void *) residences));
 }
 
 KEYWORD1 void KEYWORD2 NAME(CopyTexImage1D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border)
@@ -1774,7 +1775,7 @@ KEYWORD1 void KEYWORD2 NAME(GetPointervEXT)(GLenum pname, GLvoid ** params)
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsTexture)(GLuint texture)
 {
-   RETURN_DISPATCH(IsTexture, (texture), (F, "glIsTexture(%d);\n", texture));
+   RETURN_DISPATCH(GLboolean, IsTexture, (texture), (F, "glIsTexture(%d);\n", texture));
 }
 
 KEYWORD1 void KEYWORD2 NAME(PrioritizeTextures)(GLsizei n, const GLuint * textures, const GLclampf * priorities)
@@ -2522,12 +2523,12 @@ KEYWORD1 void KEYWORD2 NAME(AttachShader)(GLuint program, GLuint shader)
 
 KEYWORD1 GLuint KEYWORD2 NAME(CreateProgram)(void)
 {
-   RETURN_DISPATCH(CreateProgram, (), (F, "glCreateProgram();\n"));
+   RETURN_DISPATCH(GLuint, CreateProgram, (), (F, "glCreateProgram();\n"));
 }
 
 KEYWORD1 GLuint KEYWORD2 NAME(CreateShader)(GLenum type)
 {
-   RETURN_DISPATCH(CreateShader, (type), (F, "glCreateShader(0x%x);\n", type));
+   RETURN_DISPATCH(GLuint, CreateShader, (type), (F, "glCreateShader(0x%x);\n", type));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DeleteProgram)(GLuint program)
@@ -2572,12 +2573,12 @@ KEYWORD1 void KEYWORD2 NAME(GetShaderiv)(GLuint shader, GLenum pname, GLint * pa
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsProgram)(GLuint program)
 {
-   RETURN_DISPATCH(IsProgram, (program), (F, "glIsProgram(%d);\n", program));
+   RETURN_DISPATCH(GLboolean, IsProgram, (program), (F, "glIsProgram(%d);\n", program));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsShader)(GLuint shader)
 {
-   RETURN_DISPATCH(IsShader, (shader), (F, "glIsShader(%d);\n", shader));
+   RETURN_DISPATCH(GLboolean, IsShader, (shader), (F, "glIsShader(%d);\n", shader));
 }
 
 KEYWORD1 void KEYWORD2 NAME(StencilFuncSeparate)(GLenum face, GLenum func, GLint ref, GLuint mask)
@@ -3379,32 +3380,32 @@ KEYWORD1 void KEYWORD2 NAME(GetBufferSubDataARB)(GLenum target, GLintptrARB offs
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsBuffer)(GLuint buffer)
 {
-   RETURN_DISPATCH(IsBufferARB, (buffer), (F, "glIsBuffer(%d);\n", buffer));
+   RETURN_DISPATCH(GLboolean, IsBufferARB, (buffer), (F, "glIsBuffer(%d);\n", buffer));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsBufferARB)(GLuint buffer)
 {
-   RETURN_DISPATCH(IsBufferARB, (buffer), (F, "glIsBufferARB(%d);\n", buffer));
+   RETURN_DISPATCH(GLboolean, IsBufferARB, (buffer), (F, "glIsBufferARB(%d);\n", buffer));
 }
 
 KEYWORD1 GLvoid * KEYWORD2 NAME(MapBuffer)(GLenum target, GLenum access)
 {
-   RETURN_DISPATCH(MapBufferARB, (target, access), (F, "glMapBuffer(0x%x, 0x%x);\n", target, access));
+   RETURN_DISPATCH(GLvoid *, MapBufferARB, (target, access), (F, "glMapBuffer(0x%x, 0x%x);\n", target, access));
 }
 
 KEYWORD1 GLvoid * KEYWORD2 NAME(MapBufferARB)(GLenum target, GLenum access)
 {
-   RETURN_DISPATCH(MapBufferARB, (target, access), (F, "glMapBufferARB(0x%x, 0x%x);\n", target, access));
+   RETURN_DISPATCH(GLvoid *, MapBufferARB, (target, access), (F, "glMapBufferARB(0x%x, 0x%x);\n", target, access));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(UnmapBuffer)(GLenum target)
 {
-   RETURN_DISPATCH(UnmapBufferARB, (target), (F, "glUnmapBuffer(0x%x);\n", target));
+   RETURN_DISPATCH(GLboolean, UnmapBufferARB, (target), (F, "glUnmapBuffer(0x%x);\n", target));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(UnmapBufferARB)(GLenum target)
 {
-   RETURN_DISPATCH(UnmapBufferARB, (target), (F, "glUnmapBufferARB(0x%x);\n", target));
+   RETURN_DISPATCH(GLboolean, UnmapBufferARB, (target), (F, "glUnmapBufferARB(0x%x);\n", target));
 }
 
 KEYWORD1 void KEYWORD2 NAME(BeginQuery)(GLenum target, GLuint id)
@@ -3479,12 +3480,12 @@ KEYWORD1 void KEYWORD2 NAME(GetQueryivARB)(GLenum target, GLenum pname, GLint * 
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsQuery)(GLuint id)
 {
-   RETURN_DISPATCH(IsQueryARB, (id), (F, "glIsQuery(%d);\n", id));
+   RETURN_DISPATCH(GLboolean, IsQueryARB, (id), (F, "glIsQuery(%d);\n", id));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsQueryARB)(GLuint id)
 {
-   RETURN_DISPATCH(IsQueryARB, (id), (F, "glIsQueryARB(%d);\n", id));
+   RETURN_DISPATCH(GLboolean, IsQueryARB, (id), (F, "glIsQueryARB(%d);\n", id));
 }
 
 KEYWORD1 void KEYWORD2 NAME(AttachObjectARB)(GLhandleARB containerObj, GLhandleARB obj)
@@ -3504,12 +3505,12 @@ KEYWORD1 void KEYWORD2 NAME(CompileShaderARB)(GLhandleARB shader)
 
 KEYWORD1 GLhandleARB KEYWORD2 NAME(CreateProgramObjectARB)(void)
 {
-   RETURN_DISPATCH(CreateProgramObjectARB, (), (F, "glCreateProgramObjectARB();\n"));
+   RETURN_DISPATCH(GLhandleARB, CreateProgramObjectARB, (), (F, "glCreateProgramObjectARB();\n"));
 }
 
 KEYWORD1 GLhandleARB KEYWORD2 NAME(CreateShaderObjectARB)(GLenum shaderType)
 {
-   RETURN_DISPATCH(CreateShaderObjectARB, (shaderType), (F, "glCreateShaderObjectARB(0x%x);\n", shaderType));
+   RETURN_DISPATCH(GLhandleARB, CreateShaderObjectARB, (shaderType), (F, "glCreateShaderObjectARB(0x%x);\n", shaderType));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DeleteObjectARB)(GLhandleARB obj)
@@ -3539,7 +3540,7 @@ KEYWORD1 void KEYWORD2 NAME(GetAttachedObjectsARB)(GLhandleARB containerObj, GLs
 
 KEYWORD1 GLhandleARB KEYWORD2 NAME(GetHandleARB)(GLenum pname)
 {
-   RETURN_DISPATCH(GetHandleARB, (pname), (F, "glGetHandleARB(0x%x);\n", pname));
+   RETURN_DISPATCH(GLhandleARB, GetHandleARB, (pname), (F, "glGetHandleARB(0x%x);\n", pname));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetInfoLogARB)(GLhandleARB obj, GLsizei maxLength, GLsizei * length, GLcharARB * infoLog)
@@ -3569,12 +3570,12 @@ KEYWORD1 void KEYWORD2 NAME(GetShaderSourceARB)(GLhandleARB shader, GLsizei bufS
 
 KEYWORD1 GLint KEYWORD2 NAME(GetUniformLocation)(GLuint program, const GLchar * name)
 {
-   RETURN_DISPATCH(GetUniformLocationARB, (program, name), (F, "glGetUniformLocation(%d, %p);\n", program, (const void *) name));
+   RETURN_DISPATCH(GLint, GetUniformLocationARB, (program, name), (F, "glGetUniformLocation(%d, %p);\n", program, (const void *) name));
 }
 
 KEYWORD1 GLint KEYWORD2 NAME(GetUniformLocationARB)(GLhandleARB program, const GLcharARB * name)
 {
-   RETURN_DISPATCH(GetUniformLocationARB, (program, name), (F, "glGetUniformLocationARB(%d, %p);\n", program, (const void *) name));
+   RETURN_DISPATCH(GLint, GetUniformLocationARB, (program, name), (F, "glGetUniformLocationARB(%d, %p);\n", program, (const void *) name));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetUniformfv)(GLuint program, GLint location, GLfloat * params)
@@ -3849,12 +3850,12 @@ KEYWORD1 void KEYWORD2 NAME(GetActiveAttribARB)(GLhandleARB program, GLuint inde
 
 KEYWORD1 GLint KEYWORD2 NAME(GetAttribLocation)(GLuint program, const GLchar * name)
 {
-   RETURN_DISPATCH(GetAttribLocationARB, (program, name), (F, "glGetAttribLocation(%d, %p);\n", program, (const void *) name));
+   RETURN_DISPATCH(GLint, GetAttribLocationARB, (program, name), (F, "glGetAttribLocation(%d, %p);\n", program, (const void *) name));
 }
 
 KEYWORD1 GLint KEYWORD2 NAME(GetAttribLocationARB)(GLhandleARB program, const GLcharARB * name)
 {
-   RETURN_DISPATCH(GetAttribLocationARB, (program, name), (F, "glGetAttribLocationARB(%d, %p);\n", program, (const void *) name));
+   RETURN_DISPATCH(GLint, GetAttribLocationARB, (program, name), (F, "glGetAttribLocationARB(%d, %p);\n", program, (const void *) name));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DrawBuffers)(GLsizei n, const GLenum * bufs)
@@ -3904,7 +3905,7 @@ KEYWORD1 void KEYWORD2 NAME(FlushMappedBufferRange)(GLenum target, GLintptr offs
 
 KEYWORD1 GLvoid * KEYWORD2 NAME(MapBufferRange)(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
-   RETURN_DISPATCH(MapBufferRange, (target, offset, length, access), (F, "glMapBufferRange(0x%x, %d, %d, %d);\n", target, offset, length, access));
+   RETURN_DISPATCH(GLvoid *, MapBufferRange, (target, offset, length, access), (F, "glMapBufferRange(0x%x, %d, %d, %d);\n", target, offset, length, access));
 }
 
 KEYWORD1 void KEYWORD2 NAME(BindVertexArray)(GLuint array)
@@ -3924,7 +3925,7 @@ KEYWORD1 void KEYWORD2 NAME(CopyBufferSubData)(GLenum readTarget, GLenum writeTa
 
 KEYWORD1 GLenum KEYWORD2 NAME(ClientWaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout)
 {
-   RETURN_DISPATCH(ClientWaitSync, (sync, flags, timeout), (F, "glClientWaitSync(%d, %d, %d);\n", sync, flags, timeout));
+   RETURN_DISPATCH(GLenum, ClientWaitSync, (sync, flags, timeout), (F, "glClientWaitSync(%d, %d, %d);\n", sync, flags, timeout));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DeleteSync)(GLsync sync)
@@ -3934,7 +3935,7 @@ KEYWORD1 void KEYWORD2 NAME(DeleteSync)(GLsync sync)
 
 KEYWORD1 GLsync KEYWORD2 NAME(FenceSync)(GLenum condition, GLbitfield flags)
 {
-   RETURN_DISPATCH(FenceSync, (condition, flags), (F, "glFenceSync(0x%x, %d);\n", condition, flags));
+   RETURN_DISPATCH(GLsync, FenceSync, (condition, flags), (F, "glFenceSync(0x%x, %d);\n", condition, flags));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetInteger64v)(GLenum pname, GLint64 * params)
@@ -3949,7 +3950,7 @@ KEYWORD1 void KEYWORD2 NAME(GetSynciv)(GLsync sync, GLenum pname, GLsizei bufSiz
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsSync)(GLsync sync)
 {
-   RETURN_DISPATCH(IsSync, (sync), (F, "glIsSync(%d);\n", sync));
+   RETURN_DISPATCH(GLboolean, IsSync, (sync), (F, "glIsSync(%d);\n", sync));
 }
 
 KEYWORD1 void KEYWORD2 NAME(WaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout)
@@ -3994,7 +3995,7 @@ KEYWORD1 void KEYWORD2 NAME(GenTransformFeedbacks)(GLsizei n, GLuint * ids)
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsTransformFeedback)(GLuint id)
 {
-   RETURN_DISPATCH(IsTransformFeedback, (id), (F, "glIsTransformFeedback(%d);\n", id));
+   RETURN_DISPATCH(GLboolean, IsTransformFeedback, (id), (F, "glIsTransformFeedback(%d);\n", id));
 }
 
 KEYWORD1 void KEYWORD2 NAME(PauseTransformFeedback)(void)
@@ -4836,7 +4837,7 @@ KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_682)(GLuint fence);
 
 KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_682)(GLuint fence)
 {
-   RETURN_DISPATCH(IsFenceNV, (fence), (F, "glIsFenceNV(%d);\n", fence));
+   RETURN_DISPATCH(GLboolean, IsFenceNV, (fence), (F, "glIsFenceNV(%d);\n", fence));
 }
 
 KEYWORD1_ALT void KEYWORD2 NAME(_dispatch_stub_683)(GLuint fence, GLenum condition);
@@ -4850,12 +4851,12 @@ KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_684)(GLuint fence);
 
 KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_684)(GLuint fence)
 {
-   RETURN_DISPATCH(TestFenceNV, (fence), (F, "glTestFenceNV(%d);\n", fence));
+   RETURN_DISPATCH(GLboolean, TestFenceNV, (fence), (F, "glTestFenceNV(%d);\n", fence));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(AreProgramsResidentNV)(GLsizei n, const GLuint * ids, GLboolean * residences)
 {
-   RETURN_DISPATCH(AreProgramsResidentNV, (n, ids, residences), (F, "glAreProgramsResidentNV(%d, %p, %p);\n", n, (const void *) ids, (const void *) residences));
+   RETURN_DISPATCH(GLboolean, AreProgramsResidentNV, (n, ids, residences), (F, "glAreProgramsResidentNV(%d, %p, %p);\n", n, (const void *) ids, (const void *) residences));
 }
 
 KEYWORD1 void KEYWORD2 NAME(BindProgramARB)(GLenum target, GLuint program)
@@ -4950,12 +4951,12 @@ KEYWORD1 void KEYWORD2 NAME(GetVertexAttribivNV)(GLuint index, GLenum pname, GLi
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsProgramARB)(GLuint program)
 {
-   RETURN_DISPATCH(IsProgramNV, (program), (F, "glIsProgramARB(%d);\n", program));
+   RETURN_DISPATCH(GLboolean, IsProgramNV, (program), (F, "glIsProgramARB(%d);\n", program));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsProgramNV)(GLuint program)
 {
-   RETURN_DISPATCH(IsProgramNV, (program), (F, "glIsProgramNV(%d);\n", program));
+   RETURN_DISPATCH(GLboolean, IsProgramNV, (program), (F, "glIsProgramNV(%d);\n", program));
 }
 
 KEYWORD1 void KEYWORD2 NAME(LoadProgramNV)(GLenum target, GLuint id, GLsizei len, const GLubyte * program)
@@ -5255,7 +5256,7 @@ KEYWORD1 void KEYWORD2 NAME(EndFragmentShaderATI)(void)
 
 KEYWORD1 GLuint KEYWORD2 NAME(GenFragmentShadersATI)(GLuint range)
 {
-   RETURN_DISPATCH(GenFragmentShadersATI, (range), (F, "glGenFragmentShadersATI(%d);\n", range));
+   RETURN_DISPATCH(GLuint, GenFragmentShadersATI, (range), (F, "glGenFragmentShadersATI(%d);\n", range));
 }
 
 KEYWORD1 void KEYWORD2 NAME(PassTexCoordATI)(GLuint dst, GLuint coord, GLenum swizzle)
@@ -5328,14 +5329,14 @@ KEYWORD1_ALT void KEYWORD2 NAME(_dispatch_stub_768)(GLsizei n, GLuint * arrays)
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsVertexArray)(GLuint array)
 {
-   RETURN_DISPATCH(IsVertexArrayAPPLE, (array), (F, "glIsVertexArray(%d);\n", array));
+   RETURN_DISPATCH(GLboolean, IsVertexArrayAPPLE, (array), (F, "glIsVertexArray(%d);\n", array));
 }
 
 KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_769)(GLuint array);
 
 KEYWORD1_ALT GLboolean KEYWORD2 NAME(_dispatch_stub_769)(GLuint array)
 {
-   RETURN_DISPATCH(IsVertexArrayAPPLE, (array), (F, "glIsVertexArrayAPPLE(%d);\n", array));
+   RETURN_DISPATCH(GLboolean, IsVertexArrayAPPLE, (array), (F, "glIsVertexArrayAPPLE(%d);\n", array));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetProgramNamedParameterdvNV)(GLuint id, GLsizei len, const GLubyte * name, GLdouble * params)
@@ -5409,12 +5410,12 @@ KEYWORD1 void KEYWORD2 NAME(BindRenderbufferEXT)(GLenum target, GLuint renderbuf
 
 KEYWORD1 GLenum KEYWORD2 NAME(CheckFramebufferStatus)(GLenum target)
 {
-   RETURN_DISPATCH(CheckFramebufferStatusEXT, (target), (F, "glCheckFramebufferStatus(0x%x);\n", target));
+   RETURN_DISPATCH(GLenum, CheckFramebufferStatusEXT, (target), (F, "glCheckFramebufferStatus(0x%x);\n", target));
 }
 
 KEYWORD1 GLenum KEYWORD2 NAME(CheckFramebufferStatusEXT)(GLenum target)
 {
-   RETURN_DISPATCH(CheckFramebufferStatusEXT, (target), (F, "glCheckFramebufferStatusEXT(0x%x);\n", target));
+   RETURN_DISPATCH(GLenum, CheckFramebufferStatusEXT, (target), (F, "glCheckFramebufferStatusEXT(0x%x);\n", target));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DeleteFramebuffers)(GLsizei n, const GLuint * framebuffers)
@@ -5529,22 +5530,22 @@ KEYWORD1 void KEYWORD2 NAME(GetRenderbufferParameterivEXT)(GLenum target, GLenum
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsFramebuffer)(GLuint framebuffer)
 {
-   RETURN_DISPATCH(IsFramebufferEXT, (framebuffer), (F, "glIsFramebuffer(%d);\n", framebuffer));
+   RETURN_DISPATCH(GLboolean, IsFramebufferEXT, (framebuffer), (F, "glIsFramebuffer(%d);\n", framebuffer));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsFramebufferEXT)(GLuint framebuffer)
 {
-   RETURN_DISPATCH(IsFramebufferEXT, (framebuffer), (F, "glIsFramebufferEXT(%d);\n", framebuffer));
+   RETURN_DISPATCH(GLboolean, IsFramebufferEXT, (framebuffer), (F, "glIsFramebufferEXT(%d);\n", framebuffer));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsRenderbuffer)(GLuint renderbuffer)
 {
-   RETURN_DISPATCH(IsRenderbufferEXT, (renderbuffer), (F, "glIsRenderbuffer(%d);\n", renderbuffer));
+   RETURN_DISPATCH(GLboolean, IsRenderbufferEXT, (renderbuffer), (F, "glIsRenderbuffer(%d);\n", renderbuffer));
 }
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsRenderbufferEXT)(GLuint renderbuffer)
 {
-   RETURN_DISPATCH(IsRenderbufferEXT, (renderbuffer), (F, "glIsRenderbufferEXT(%d);\n", renderbuffer));
+   RETURN_DISPATCH(GLboolean, IsRenderbufferEXT, (renderbuffer), (F, "glIsRenderbufferEXT(%d);\n", renderbuffer));
 }
 
 KEYWORD1 void KEYWORD2 NAME(RenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
@@ -5620,7 +5621,7 @@ KEYWORD1 void KEYWORD2 NAME(GetIntegerIndexedvEXT)(GLenum value, GLuint index, G
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsEnabledIndexedEXT)(GLenum target, GLuint index)
 {
-   RETURN_DISPATCH(IsEnabledIndexedEXT, (target, index), (F, "glIsEnabledIndexedEXT(0x%x, %d);\n", target, index));
+   RETURN_DISPATCH(GLboolean, IsEnabledIndexedEXT, (target, index), (F, "glIsEnabledIndexedEXT(0x%x, %d);\n", target, index));
 }
 
 KEYWORD1 void KEYWORD2 NAME(BeginConditionalRenderNV)(GLuint query, GLenum mode)
@@ -5729,12 +5730,12 @@ KEYWORD1 void KEYWORD2 NAME(GetObjectParameterivAPPLE)(GLenum objectType, GLuint
 
 KEYWORD1 GLenum KEYWORD2 NAME(ObjectPurgeableAPPLE)(GLenum objectType, GLuint name, GLenum option)
 {
-   RETURN_DISPATCH(ObjectPurgeableAPPLE, (objectType, name, option), (F, "glObjectPurgeableAPPLE(0x%x, %d, 0x%x);\n", objectType, name, option));
+   RETURN_DISPATCH(GLenum, ObjectPurgeableAPPLE, (objectType, name, option), (F, "glObjectPurgeableAPPLE(0x%x, %d, 0x%x);\n", objectType, name, option));
 }
 
 KEYWORD1 GLenum KEYWORD2 NAME(ObjectUnpurgeableAPPLE)(GLenum objectType, GLuint name, GLenum option)
 {
-   RETURN_DISPATCH(ObjectUnpurgeableAPPLE, (objectType, name, option), (F, "glObjectUnpurgeableAPPLE(0x%x, %d, 0x%x);\n", objectType, name, option));
+   RETURN_DISPATCH(GLenum, ObjectUnpurgeableAPPLE, (objectType, name, option), (F, "glObjectUnpurgeableAPPLE(0x%x, %d, 0x%x);\n", objectType, name, option));
 }
 
 KEYWORD1_ALT void KEYWORD2 NAME(_dispatch_stub_820)(GLenum frontfunc, GLenum backfunc, GLint ref, GLuint mask);
@@ -5790,7 +5791,7 @@ KEYWORD1 void KEYWORD2 NAME(EGLImageTargetTexture2DOES)(GLenum target, GLvoid * 
 
 KEYWORD1 GLboolean KEYWORD2 NAME(AreTexturesResidentEXT)(GLsizei n, const GLuint * textures, GLboolean * residences)
 {
-   RETURN_DISPATCH(AreTexturesResident, (n, textures, residences), (F, "glAreTexturesResidentEXT(%d, %p, %p);\n", n, (const void *) textures, (const void *) residences));
+   RETURN_DISPATCH(GLboolean, AreTexturesResident, (n, textures, residences), (F, "glAreTexturesResidentEXT(%d, %p, %p);\n", n, (const void *) textures, (const void *) residences));
 }
 
 KEYWORD1 void KEYWORD2 NAME(DeleteTexturesEXT)(GLsizei n, const GLuint * textures)
@@ -5805,7 +5806,7 @@ KEYWORD1 void KEYWORD2 NAME(GenTexturesEXT)(GLsizei n, GLuint * textures)
 
 KEYWORD1 GLboolean KEYWORD2 NAME(IsTextureEXT)(GLuint texture)
 {
-   RETURN_DISPATCH(IsTexture, (texture), (F, "glIsTextureEXT(%d);\n", texture));
+   RETURN_DISPATCH(GLboolean, IsTexture, (texture), (F, "glIsTextureEXT(%d);\n", texture));
 }
 
 KEYWORD1 void KEYWORD2 NAME(GetColorTableEXT)(GLenum target, GLenum format, GLenum type, GLvoid * table)
