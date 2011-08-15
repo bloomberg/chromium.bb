@@ -111,7 +111,13 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
 
 }  // namespace
 
-// We're matching Safari's cursor choices; see platform/mac/CursorMac.mm
+// We're (mostly) matching Safari's cursor choices; see
+// platform/mac/CursorMac.mm . Note that Safari uses some magic in wkCursor to
+// access private system cursors. A sample implementation using the same
+// technique can be found attached to http://crbug.com/92892 . However, it's not
+// clear that accessing system cursors this way is enough of a gain to risk
+// using SPIs. Until the benefits more clearly outweigh the risks, API is all
+// that will be used.
 NSCursor* WebCursor::GetCursor() const {
   switch (type_) {
     case WebCursorInfo::TypePointer:
