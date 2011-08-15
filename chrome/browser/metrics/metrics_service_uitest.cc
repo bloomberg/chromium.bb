@@ -39,6 +39,11 @@ class MetricsServiceTest : public UITest {
     scoped_refptr<BrowserProxy> window = automation()->GetBrowserWindow(0);
     ASSERT_TRUE(window.get());
 
+    // The Instant field trial causes a preload of the default search engine,
+    // which messes up the expected page load count. Setting this preference
+    // disables the field trial.
+    ASSERT_TRUE(window->SetBooleanPreference(prefs::kInstantEnabledOnce, true));
+
     FilePath page1_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &page1_path));
     page1_path = page1_path.AppendASCII("title2.html");
@@ -66,14 +71,7 @@ class MetricsServiceTest : public UITest {
 #endif
 };
 
-#if defined(OS_MACOSX)
-// Flaky across all Mac bots: http://crbug.com/92635
-#define MAYBE_CloseRenderersNormally FLAKY_CloseRenderersNormally
-#else
-#define MAYBE_CloseRenderersNormally CloseRenderersNormally
-#endif
-
-TEST_F(MetricsServiceTest, MAYBE_CloseRenderersNormally) {
+TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   OpenTabs();
   QuitBrowser();
 
