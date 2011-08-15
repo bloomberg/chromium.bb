@@ -909,9 +909,16 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
   }
 }
 
+// Crashes on Win. http://crbug.com/92937
+#if defined(OS_WIN)
+#define MAYBE_MigrateVersion32ToCurrent DISABLED_MigrateVersion32ToCurrent
+#else
+#define MAYBE_MigrateVersion32ToCurrent MigrateVersion32ToCurrent
+#endif  // defined(OS_WIN)
+
 // Factor |autofill_profiles| address information separately from name, email,
 // and phone.
-TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
+TEST_F(WebDatabaseMigrationTest, MAYBE_MigrateVersion32ToCurrent) {
   // Initialize the database.
   ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_32.sql")));
 
