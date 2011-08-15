@@ -25,7 +25,7 @@
   "HomepageLocation": "http://chromium.org",
   "IncognitoEnabled": false,
   "InstantEnabled": false,
-  "JavascriptEnabled": false,
+  "JavascriptEnabled": true,
   "MetricsReportingEnabled": false,
   "PasswordManagerAllowShowPasswords": true,
   "PasswordManagerEnabled": false,

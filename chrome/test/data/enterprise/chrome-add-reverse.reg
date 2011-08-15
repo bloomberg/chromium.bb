@@ -16,6 +16,7 @@ Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\Software\Policies\Google\Chrome]
 "DefaultCookiesSetting"=dword:0
+"DefaultPopupsSetting"=dword:1
 "ClearSiteDataOnExit"=dword:0
 "BlockThirdPartyCookies"=dword:0
 
@@ -26,7 +27,7 @@ Windows Registry Editor Version 5.00
 "DnsPrefetchingEnabled"=dword:0
 "IncognitoEnabled"=dword:0
 "InstantEnabled"=dword:0
-"JavascriptEnabled"=dword:0
+"JavascriptEnabled"=dword:1
 "MetricsReportingEnabled"=dword:0
 "PrintingEnabled"=dword:0
 "SafeBrowsingEnabled"=dword:0
