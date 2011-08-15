@@ -38,7 +38,7 @@ namespace {
 class TestURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   TestURLRequestContextGetter()
-      : message_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()) {
+      : message_loop_proxy_(base::MessageLoopProxy::current()) {
   }
   virtual ~TestURLRequestContextGetter() { }
 

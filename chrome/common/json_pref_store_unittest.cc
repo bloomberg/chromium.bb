@@ -38,7 +38,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 class JsonPrefStoreTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    message_loop_proxy_ = base::MessageLoopProxy::current();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

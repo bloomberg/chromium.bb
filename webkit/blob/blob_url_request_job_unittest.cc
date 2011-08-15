@@ -254,7 +254,7 @@ class BlobURLRequestJobTest : public testing::Test {
     blob_url_request_job_ = new BlobURLRequestJob(
         request_.get(),
         blob_data,
-        base::MessageLoopProxy::CreateForCurrentThread());
+        base::MessageLoopProxy::current());
 
     // Start the request.
     if (!extra_headers.IsEmpty())

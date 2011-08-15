@@ -35,7 +35,7 @@ const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
   explicit MockFileSystemPathManager(const FilePath& filesystem_path)
-      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
+      : FileSystemPathManager(base::MessageLoopProxy::current(),
                               filesystem_path, NULL, false, true) {}
 };
 
@@ -53,8 +53,8 @@ class FileSystemQuotaClientTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::CreateForCurrentThread(),
-            base::MessageLoopProxy::CreateForCurrentThread(),
+            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current(),
             NULL, NULL,
             FilePath(), false /* is_incognito */,
             false, true,
@@ -72,7 +72,7 @@ class FileSystemQuotaClientTest : public testing::Test {
  protected:
   FileSystemQuotaClient* NewQuotaClient(bool is_incognito) {
     return new FileSystemQuotaClient(
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
         file_system_context_, is_incognito);
   }
 

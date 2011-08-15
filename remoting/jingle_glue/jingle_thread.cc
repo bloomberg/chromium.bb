@@ -154,7 +154,7 @@ void JingleThread::Start() {
 void JingleThread::Run() {
   JingleThreadMessageLoop message_loop(this);
   message_loop_ = &message_loop;
-  message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+  message_loop_proxy_ = base::MessageLoopProxy::current();
 
   TaskPump task_pump;
   task_pump_ = &task_pump;

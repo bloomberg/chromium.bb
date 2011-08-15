@@ -169,7 +169,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // as manual reset.
   ReceivedSyncMsgQueue() :
       dispatch_event_(true, false),
-      listener_message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+      listener_message_loop_(base::MessageLoopProxy::current()),
       task_pending_(false),
       listener_count_(0),
       top_send_done_watcher_(NULL) {

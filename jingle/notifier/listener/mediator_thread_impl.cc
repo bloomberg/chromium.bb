@@ -213,7 +213,7 @@ void MediatorThreadImpl::Core::OnDisconnect() {
 MediatorThreadImpl::MediatorThreadImpl(const NotifierOptions& notifier_options)
     : core_(new Core(notifier_options)),
       parent_message_loop_proxy_(
-          base::MessageLoopProxy::CreateForCurrentThread()),
+          base::MessageLoopProxy::current()),
       io_message_loop_proxy_(
           notifier_options.request_context_getter->GetIOMessageLoopProxy()) {
 }

@@ -533,7 +533,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       request_type_(request_type),
       delegate_(d),
       delegate_loop_proxy_(
-          base::MessageLoopProxy::CreateForCurrentThread()),
+          base::MessageLoopProxy::current()),
       request_(NULL),
       load_flags_(net::LOAD_NORMAL),
       response_code_(URLFetcher::kInvalidHttpResponseCode),

@@ -71,7 +71,7 @@ class MockDatabaseTracker : public DatabaseTracker {
       net::CompletionCallback* callback) {
     ++delete_called_count_;
     if (async_delete()) {
-      base::MessageLoopProxy::CreateForCurrentThread()->PostTask(FROM_HERE,
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
           NewRunnableMethod(this,
               &MockDatabaseTracker::AsyncDeleteDataForOrigin, callback));
       return net::ERR_IO_PENDING;
@@ -205,7 +205,7 @@ class DatabaseQuotaClientTest : public testing::Test {
 
 TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
   DatabaseQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       mock_tracker());
 
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
@@ -221,7 +221,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
   DatabaseQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       mock_tracker());
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
@@ -247,7 +247,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
   DatabaseQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       mock_tracker());
 
   EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
@@ -263,7 +263,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
 
 TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
   DatabaseQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       mock_tracker());
 
   // Perm deletions are short circuited in the Client and

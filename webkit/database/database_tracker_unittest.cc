@@ -540,7 +540,7 @@ class DatabaseTracker_TestHelper_Test {
               temp_dir.path(), false, true,
               new TestSpecialStoragePolicy,
               NULL,
-              base::MessageLoopProxy::CreateForCurrentThread()));
+              base::MessageLoopProxy::current()));
 
       // Open three new databases.
       tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,

@@ -92,13 +92,13 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // TODO(adamk): Run this on the FILE thread we've created as well.
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::CreateForCurrentThread(),
-            base::MessageLoopProxy::CreateForCurrentThread(),
+            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current(),
             special_storage_policy_, NULL,
             FilePath(), false /* is_incognito */,
             false, true,
             new FileSystemPathManager(
-                base::MessageLoopProxy::CreateForCurrentThread(),
+                base::MessageLoopProxy::current(),
                 temp_dir_.path(), NULL, false, false));
 
     file_system_context_->path_manager()->ValidateFileSystemRootAndGetURL(
@@ -134,7 +134,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     job_ = new FileSystemURLRequestJob(
         request_.get(),
         file_system_context_.get(),
-        base::MessageLoopProxy::CreateForCurrentThread());
+        base::MessageLoopProxy::current());
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async

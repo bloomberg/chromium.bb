@@ -9,7 +9,7 @@
 #include "content/renderer/render_thread.h"
 
 RenderMediaLog::RenderMediaLog()
-    : render_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {
+    : render_loop_(base::MessageLoopProxy::current()) {
   DCHECK(RenderThread::current()) <<
       "RenderMediaLog must be constructed on the render thread";
 }

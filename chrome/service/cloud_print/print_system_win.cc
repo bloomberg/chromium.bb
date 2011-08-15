@@ -531,7 +531,7 @@ class PrintSystemWin : public PrintSystem {
                 render_area,
                 printer_dpi,
                 page_ranges,
-                base::MessageLoopProxy::CreateForCurrentThread()));
+                base::MessageLoopProxy::current()));
       }
       // Called on the service process IO thread.
       void RenderPDFPagesInSandbox(
@@ -649,7 +649,7 @@ class PrintSystemWin : public PrintSystem {
           NewRunnableMethod(
               this,
               &PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl,
-              base::MessageLoopProxy::CreateForCurrentThread()));
+              base::MessageLoopProxy::current()));
     }
 
     virtual void OnChildDied() {

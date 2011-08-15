@@ -83,7 +83,7 @@ class ScreenRecorderTest : public testing::Test {
 
     record_ = new ScreenRecorder(
         &message_loop_, &message_loop_,
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
         &capturer_, encoder_);
   }
 

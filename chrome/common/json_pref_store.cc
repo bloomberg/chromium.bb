@@ -30,7 +30,7 @@ class FileThreadDeserializer
         error_(PersistentPrefStore::PREF_READ_ERROR_NONE),
         delegate_(delegate),
         file_loop_proxy_(file_loop_proxy),
-        origin_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()) {
+        origin_loop_proxy_(base::MessageLoopProxy::current()) {
   }
 
   void Start(const FilePath& path) {

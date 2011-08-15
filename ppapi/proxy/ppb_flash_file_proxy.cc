@@ -190,7 +190,7 @@ bool ModuleLocalThreadAdapter::Filter::OnMessageReceived(
 }
 
 ModuleLocalThreadAdapter::ModuleLocalThreadAdapter()
-    : main_thread_(base::MessageLoopProxy::CreateForCurrentThread()) {
+    : main_thread_(base::MessageLoopProxy::current()) {
 }
 
 void ModuleLocalThreadAdapter::AddInstanceRouting(PP_Instance instance,

@@ -30,7 +30,7 @@ namespace {
 
 base::MessageLoopProxy* GetMainThreadMessageLoop() {
   static scoped_refptr<base::MessageLoopProxy> proxy(
-      base::MessageLoopProxy::CreateForCurrentThread());
+      base::MessageLoopProxy::current());
   return proxy.get();
 }
 

@@ -13,7 +13,7 @@ MockConnectionToClient::MockConnectionToClient(
     EventHandler* handler,
     HostStub* host_stub,
     InputStub* input_stub)
-    : ConnectionToClient(base::MessageLoopProxy::CreateForCurrentThread(),
+    : ConnectionToClient(base::MessageLoopProxy::current(),
                          handler) {
   set_host_stub(host_stub);
   set_input_stub(input_stub);

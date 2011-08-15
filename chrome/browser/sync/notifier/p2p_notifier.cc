@@ -27,7 +27,7 @@ P2PNotifier::P2PNotifier(
       logged_in_(false),
       notifications_enabled_(false),
       parent_message_loop_proxy_(
-          base::MessageLoopProxy::CreateForCurrentThread()) {
+          base::MessageLoopProxy::current()) {
   talk_mediator_->SetDelegate(this);
 }
 

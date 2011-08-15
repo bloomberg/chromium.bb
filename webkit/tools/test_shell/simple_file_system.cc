@@ -132,8 +132,8 @@ class SimpleFileSystemCallbackDispatcher
 SimpleFileSystem::SimpleFileSystem() {
   if (file_system_dir_.CreateUniqueTempDir()) {
     file_system_context_ = new FileSystemContext(
-        base::MessageLoopProxy::CreateForCurrentThread(),
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         NULL /* special storage policy */,
         NULL /* quota manager */,
         file_system_dir_.path(),
@@ -298,7 +298,7 @@ FileSystemOperation* SimpleFileSystem::GetNewOperation(
   SimpleFileSystemCallbackDispatcher* dispatcher =
       new SimpleFileSystemCallbackDispatcher(AsWeakPtr(), callbacks);
   FileSystemOperation* operation = new FileSystemOperation(
-      dispatcher, base::MessageLoopProxy::CreateForCurrentThread(),
+      dispatcher, base::MessageLoopProxy::current(),
       file_system_context_.get(), NULL);
   return operation;
 }

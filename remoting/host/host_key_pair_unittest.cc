@@ -36,7 +36,7 @@ class HostKeyPairTest : public testing::Test {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
     FilePath config_path = test_dir_.path().AppendASCII("test_config.json");
     config_ = new JsonHostConfig(
-        config_path, base::MessageLoopProxy::CreateForCurrentThread());
+        config_path, base::MessageLoopProxy::current());
   }
 
   MessageLoop message_loop_;

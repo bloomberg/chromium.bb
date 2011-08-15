@@ -18,7 +18,7 @@ class MessageLoopRelay
   // File thread.
   explicit MessageLoopRelay(const fileapi::FileSystemOperationContext& context)
       : origin_message_loop_proxy_(
-            base::MessageLoopProxy::CreateForCurrentThread()),
+            base::MessageLoopProxy::current()),
         error_code_(base::PLATFORM_FILE_OK),
         context_(context),
         file_system_file_util_(NULL) {

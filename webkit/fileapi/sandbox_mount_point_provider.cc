@@ -313,7 +313,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
       FileSystemPathManager::GetRootPathCallback* callback)
       : file_message_loop_(file_message_loop),
         origin_message_loop_proxy_(
-            base::MessageLoopProxy::CreateForCurrentThread()),
+            base::MessageLoopProxy::current()),
         origin_url_(origin_url),
         type_(type),
         file_util_(file_util),

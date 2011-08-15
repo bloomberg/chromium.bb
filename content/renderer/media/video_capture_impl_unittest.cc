@@ -67,7 +67,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   VideoCaptureImplTest() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     message_loop_proxy_ =
-        base::MessageLoopProxy::CreateForCurrentThread().get();
+        base::MessageLoopProxy::current().get();
 
     message_filter_ = new MockVideoCaptureMessageFilter;
     session_id_ = 1;

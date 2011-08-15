@@ -3146,7 +3146,7 @@
    bug_64804
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN4base16MessageLoopProxy22currentEv
    ...
    fun:_ZN10URLFetcher4CoreC1EPS_RK4GURLNS_11RequestTypeEPNS_8DelegateE
    fun:_ZN10URLFetcherC*ERK4GURLNS_11RequestTypeEPNS_8DelegateE
@@ -4305,7 +4305,7 @@
    bug_81438
    Memcheck:Leak
    ...
-   fun:*base16MessageLoopProxy22CreateForCurrentThread*
+   fun:*base16MessageLoopProxy22current*
    ...
    fun:*BrowserInit*
 }
@@ -4383,14 +4383,14 @@
    bug_82716a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN4base16MessageLoopProxy22currentEv
    fun:_ZN3IPC12ChannelProxy7ContextC2EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
 }
 {
    bug_82716b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN4base16MessageLoopProxy22currentEv
    ...
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueueC1Ev
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue10AddContextEv
@@ -4781,7 +4781,7 @@
    bug_81796
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN4base16MessageLoopProxy22currentEv
    fun:_ZN3IPC12ChannelProxy7ContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
    fun:_ZN3IPC12ChannelProxyC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyE
 }

@@ -18,7 +18,7 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 
 GeolocationProvider::GeolocationProvider()
     : base::Thread("Geolocation"),
-      client_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+      client_loop_(base::MessageLoopProxy::current()),
       arbitrator_(NULL) {
 }
 

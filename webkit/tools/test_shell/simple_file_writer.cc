@@ -39,7 +39,7 @@ class SimpleFileWriter::IOThreadProxy
     // The IO thread needs to be running for this class to work.
     SimpleResourceLoaderBridge::EnsureIOThread();
     io_thread_ = SimpleResourceLoaderBridge::GetIoThread();
-    main_thread_ = base::MessageLoopProxy::CreateForCurrentThread();
+    main_thread_ = base::MessageLoopProxy::current();
   }
 
   virtual ~IOThreadProxy() {

@@ -104,7 +104,7 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   bool finished() const { return finished_; }
 
   virtual void WillRunCallback() {
-    base::MessageLoopProxy::CreateForCurrentThread()->PostTask(
+    base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, runnable_factory_.NewRunnableMethod(
             &WriteOperation::RunCallback));
   }

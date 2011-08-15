@@ -40,8 +40,8 @@ class MockQuotaManager : public QuotaManager {
                    const GURL& origin,
                    StorageType type)
     : QuotaManager(false /* is_incognito */, base_dir,
-                   base::MessageLoopProxy::CreateForCurrentThread(),
-                   base::MessageLoopProxy::CreateForCurrentThread(),
+                   base::MessageLoopProxy::current(),
+                   base::MessageLoopProxy::current(),
                    NULL),
       origin_(origin),
       type_(type),
@@ -89,7 +89,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
  public:
   explicit MockQuotaManagerProxy(QuotaManager* quota_manager)
       : QuotaManagerProxy(quota_manager,
-                          base::MessageLoopProxy::CreateForCurrentThread()),
+                          base::MessageLoopProxy::current()),
         registered_client_(NULL) {
   }
 

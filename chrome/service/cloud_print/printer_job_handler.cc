@@ -47,7 +47,7 @@ PrinterJobHandler::PrinterJobHandler(
       server_error_count_(0),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
       job_handler_message_loop_proxy_(
-          base::MessageLoopProxy::CreateForCurrentThread()),
+          base::MessageLoopProxy::current()),
       shutting_down_(false),
       job_check_pending_(false),
       printer_update_pending_(true),

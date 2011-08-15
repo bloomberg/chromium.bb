@@ -240,7 +240,7 @@ class FileSystemPathManagerTest : public testing::Test {
       bool incognito,
       bool allow_file_access) {
     FileSystemPathManager* manager = new FileSystemPathManager(
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
         data_dir_.path(),
         scoped_refptr<quota::SpecialStoragePolicy>(
             new TestSpecialStoragePolicy()),

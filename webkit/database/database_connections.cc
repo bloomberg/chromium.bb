@@ -120,7 +120,7 @@ bool DatabaseConnections::RemoveConnectionsHelper(
 
 DatabaseConnectionsWrapper::DatabaseConnectionsWrapper()
     : waiting_for_dbs_to_close_(false),
-      main_thread_(base::MessageLoopProxy::CreateForCurrentThread()) {
+      main_thread_(base::MessageLoopProxy::current()) {
 }
 
 DatabaseConnectionsWrapper::~DatabaseConnectionsWrapper() {

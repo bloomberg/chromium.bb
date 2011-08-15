@@ -43,8 +43,8 @@ scoped_refptr<FileSystemContext> NewFileSystemContext(
     bool allow_file_access,
     bool unlimited_quota,
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
-  return new FileSystemContext(base::MessageLoopProxy::CreateForCurrentThread(),
-                               base::MessageLoopProxy::CreateForCurrentThread(),
+  return new FileSystemContext(base::MessageLoopProxy::current(),
+                               base::MessageLoopProxy::current(),
                                special_storage_policy,
                                NULL /* quota manager */,
                                FilePath(), false /* is_incognito */,

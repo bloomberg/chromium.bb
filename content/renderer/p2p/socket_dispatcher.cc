@@ -11,7 +11,7 @@
 
 P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view),
-      message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+      message_loop_(base::MessageLoopProxy::current()),
       network_notifications_started_(false),
       network_list_observers_(
           new ObserverListThreadSafe<NetworkListObserver>()) {

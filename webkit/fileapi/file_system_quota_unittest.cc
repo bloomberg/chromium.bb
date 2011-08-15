@@ -213,8 +213,8 @@ void FileSystemQuotaTest::SetUp() {
   quota_manager_ = new quota::QuotaManager(
       false /* is_incognito */,
       filesystem_dir_path,
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current(),
       NULL);
 
   test_helper_.SetUp(filesystem_dir_path,
@@ -384,13 +384,13 @@ void FileSystemObfuscatedQuotaTest::SetUp() {
   quota_manager_ = new quota::QuotaManager(
       false /* is_incognito */,
       filesystem_dir_path,
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current(),
       NULL);
 
   file_system_context_ = new FileSystemContext(
-      base::MessageLoopProxy::CreateForCurrentThread(),
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current(),
       new quota::MockSpecialStoragePolicy(),
       quota_manager_->proxy(),
       filesystem_dir_path,

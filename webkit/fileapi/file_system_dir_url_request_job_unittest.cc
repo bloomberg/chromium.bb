@@ -68,13 +68,13 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_thread_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    file_thread_proxy_ = base::MessageLoopProxy::current();
 
     special_storage_policy_ = new TestSpecialStoragePolicy();
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::CreateForCurrentThread(),
-            base::MessageLoopProxy::CreateForCurrentThread(),
+            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current(),
             special_storage_policy_, NULL,
             FilePath(), false /* is_incognito */,
             false, true,

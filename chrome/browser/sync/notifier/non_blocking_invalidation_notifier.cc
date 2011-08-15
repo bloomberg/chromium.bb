@@ -141,7 +141,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const std::string& client_info)
         : core_(new Core),
           parent_message_loop_proxy_(
-              base::MessageLoopProxy::CreateForCurrentThread()),
+              base::MessageLoopProxy::current()),
           io_message_loop_proxy_(notifier_options.request_context_getter->
               GetIOMessageLoopProxy()) {
   if (!io_message_loop_proxy_->PostTask(

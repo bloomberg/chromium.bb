@@ -312,7 +312,7 @@ class RequestProxy : public net::URLRequest::Delegate,
       FilePath path;
       if (file_util::CreateTemporaryFile(&path)) {
         downloaded_file_ = DeletableFileReference::GetOrCreate(
-            path, base::MessageLoopProxy::CreateForCurrentThread());
+            path, base::MessageLoopProxy::current());
         file_stream_.Open(
             path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE);
       }

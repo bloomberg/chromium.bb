@@ -69,7 +69,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    message_loop_proxy_ = base::MessageLoopProxy::current();
     config_ = new InMemoryHostConfig();
     ON_CALL(context_, main_message_loop())
         .WillByDefault(Return(&message_loop_));

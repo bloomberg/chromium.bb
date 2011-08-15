@@ -29,7 +29,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
   QuotaMockPluginDelegate()
       : available_space_(0),
         will_update_count_(0),
-        file_thread_(MessageLoopProxy::CreateForCurrentThread()),
+        file_thread_(MessageLoopProxy::current()),
         runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
   virtual ~QuotaMockPluginDelegate() {}
@@ -43,7 +43,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
       quota::StorageType type,
       Callback* callback) OVERRIDE {
     DCHECK(callback);
-    MessageLoopProxy::CreateForCurrentThread()->PostTask(
+    MessageLoopProxy::current()->PostTask(
         FROM_HERE, runnable_factory_.NewRunnableMethod(
             &QuotaMockPluginDelegate::RunAvailableSpaceCallback, callback));
   }

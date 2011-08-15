@@ -27,7 +27,7 @@ void QuotaTask::Start() {
 
 QuotaTask::QuotaTask(QuotaTaskObserver* observer)
     : observer_(observer),
-      original_message_loop_(MessageLoopProxy::CreateForCurrentThread()) {
+      original_message_loop_(MessageLoopProxy::current()) {
 }
 
 void QuotaTask::CallCompleted() {

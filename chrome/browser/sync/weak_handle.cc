@@ -15,7 +15,7 @@ namespace internal {
 
 WeakHandleCoreBase::WeakHandleCoreBase()
     : owner_loop_(MessageLoop::current()),
-      owner_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()),
+      owner_loop_proxy_(base::MessageLoopProxy::current()),
       destroyed_on_owner_thread_(false) {
   owner_loop_->AddDestructionObserver(this);
 }

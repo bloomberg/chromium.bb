@@ -154,7 +154,7 @@ class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
   IndexedDBQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       idb_context());
 
   AddFakeIndexedDB(kOriginA, 6);
@@ -173,7 +173,7 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
   IndexedDBQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       idb_context());
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
@@ -199,7 +199,7 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
   IndexedDBQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       idb_context());
 
   EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
@@ -215,7 +215,7 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
 
 TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   IndexedDBQuotaClient client(
-      base::MessageLoopProxy::CreateForCurrentThread(),
+      base::MessageLoopProxy::current(),
       idb_context());
 
   AddFakeIndexedDB(kOriginA, 1000);

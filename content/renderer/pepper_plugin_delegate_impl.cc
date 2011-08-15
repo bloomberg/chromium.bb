@@ -381,7 +381,7 @@ class PlatformVideoCaptureImpl
  public:
   PlatformVideoCaptureImpl(media::VideoCapture::EventHandler* handler)
       : handler_proxy_(new media::VideoCaptureHandlerProxy(
-            handler, base::MessageLoopProxy::CreateForCurrentThread())) {
+            handler, base::MessageLoopProxy::current())) {
     VideoCaptureImplManager* manager =
         RenderThread::current()->video_capture_impl_manager();
     // 1 means the "default" video capture device.

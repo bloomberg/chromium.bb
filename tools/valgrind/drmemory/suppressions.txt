@@ -775,7 +775,7 @@ LEAK
 # http://crbug.com/81522
 LEAK
 *!operator new
-*!base::MessageLoopProxy::CreateForCurrentThread
+*!base::MessageLoopProxy::current
 *!IPC::ChannelProxy::Context::Context
 *!IPC::ChannelProxy::ChannelProxy
 *!IPCChannelTest_ChannelProxyTest_Test::TestBody
@@ -801,7 +801,7 @@ UNINITIALIZED READ
 LEAK
 *!generic_cpp_alloc
 *!operator new
-*!base::MessageLoopProxy::CreateForCurrentThread
+*!base::MessageLoopProxy::current
 *!IPC::SyncChannel::ReceivedSyncMsgQueue::ReceivedSyncMsgQueue
 *!IPC::SyncChannel::ReceivedSyncMsgQueue::AddContext
 *!IPC::SyncChannel::SyncContext::SyncContext

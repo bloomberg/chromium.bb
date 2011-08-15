@@ -27,7 +27,7 @@ const char* kTestConfig =
 class JsonHostConfigTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    message_loop_proxy_ = base::MessageLoopProxy::current();
   }
 
   static void WriteTestFile(const FilePath& filename) {

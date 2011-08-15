@@ -11,7 +11,7 @@
 P2PSocketClient::P2PSocketClient(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_message_loop_(dispatcher->message_loop()),
-      delegate_message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+      delegate_message_loop_(base::MessageLoopProxy::current()),
       socket_id_(0), delegate_(NULL),
       state_(STATE_UNINITIALIZED) {
 }

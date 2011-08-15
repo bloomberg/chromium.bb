@@ -39,8 +39,8 @@ class MockQuotaManagerTest : public testing::Test {
     manager_ = new MockQuotaManager(
         false /* is_incognito */,
         data_dir_.path(),
-        base::MessageLoopProxy::CreateForCurrentThread(),
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         policy_);
   }
 

@@ -60,7 +60,7 @@ void ChannelProxy::MessageFilter::OnDestruct() const {
 
 ChannelProxy::Context::Context(Channel::Listener* listener,
                                base::MessageLoopProxy* ipc_message_loop)
-    : listener_message_loop_(base::MessageLoopProxy::CreateForCurrentThread()),
+    : listener_message_loop_(base::MessageLoopProxy::current()),
       listener_(listener),
       ipc_message_loop_(ipc_message_loop),
       peer_pid_(0),

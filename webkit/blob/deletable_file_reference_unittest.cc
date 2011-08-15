@@ -14,7 +14,7 @@ namespace webkit_blob {
 
 TEST(DeletableFileReferenceTest, TestReferences) {
   scoped_refptr<base::MessageLoopProxy> loop_proxy =
-      base::MessageLoopProxy::CreateForCurrentThread();
+      base::MessageLoopProxy::current();
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

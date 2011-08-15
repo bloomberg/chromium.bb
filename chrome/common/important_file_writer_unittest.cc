@@ -58,7 +58,7 @@ class ImportantFileWriterTest : public testing::Test {
 
 TEST_F(ImportantFileWriterTest, Basic) {
   ImportantFileWriter writer(file_,
-                             base::MessageLoopProxy::CreateForCurrentThread());
+                             base::MessageLoopProxy::current());
   EXPECT_FALSE(file_util::PathExists(writer.path()));
   writer.WriteNow("foo");
   loop_.RunAllPending();
@@ -69,7 +69,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
 
 TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   ImportantFileWriter writer(file_,
-                             base::MessageLoopProxy::CreateForCurrentThread());
+                             base::MessageLoopProxy::current());
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
@@ -85,7 +85,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
   ImportantFileWriter writer(file_,
-                             base::MessageLoopProxy::CreateForCurrentThread());
+                             base::MessageLoopProxy::current());
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
   writer.ScheduleWrite(&serializer);
@@ -101,7 +101,7 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
 
 TEST_F(ImportantFileWriterTest, BatchingWrites) {
   ImportantFileWriter writer(file_,
-                             base::MessageLoopProxy::CreateForCurrentThread());
+                             base::MessageLoopProxy::current());
   writer.set_commit_interval(base::TimeDelta::FromMilliseconds(25));
   DataSerializer foo("foo"), bar("bar"), baz("baz");
   writer.ScheduleWrite(&foo);

@@ -95,7 +95,7 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
   virtual void SetUp() {
     testing::Test::SetUp();
 
-    io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    io_message_loop_proxy_ = base::MessageLoopProxy::current();
 
 #if defined(USE_NSS)
     crypto::EnsureNSSInit();

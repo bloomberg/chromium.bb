@@ -52,8 +52,8 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_ = new QuotaManager(
         false /* is_incognito */,
         data_dir_.path(),
-        MessageLoopProxy::CreateForCurrentThread(),
-        MessageLoopProxy::CreateForCurrentThread(),
+        MessageLoopProxy::current(),
+        MessageLoopProxy::current(),
         mock_special_storage_policy_);
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;

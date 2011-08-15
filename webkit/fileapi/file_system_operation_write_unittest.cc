@@ -42,8 +42,8 @@ class MockQuotaManager : public QuotaManager {
  public:
   MockQuotaManager(const FilePath& base_dir, int64 quota)
       : QuotaManager(false /* is_incognito */, base_dir,
-                     base::MessageLoopProxy::CreateForCurrentThread(),
-                     base::MessageLoopProxy::CreateForCurrentThread(),
+                     base::MessageLoopProxy::current(),
+                     base::MessageLoopProxy::current(),
                      NULL /* special_storage_policy */),
         usage_(0),
         quota_(quota) {}
@@ -144,7 +144,7 @@ static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
   return new webkit_blob::BlobURLRequestJob(
       request,
       blob_storage_controller->GetBlobDataFromUrl(request->url()),
-      base::MessageLoopProxy::CreateForCurrentThread());
+      base::MessageLoopProxy::current());
 }
 
 class MockDispatcher : public FileSystemCallbackDispatcher {

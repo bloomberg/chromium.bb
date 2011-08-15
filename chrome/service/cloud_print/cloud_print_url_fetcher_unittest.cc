@@ -96,7 +96,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
   virtual void SetUp() {
     testing::Test::SetUp();
 
-    io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
+    io_message_loop_proxy_ = base::MessageLoopProxy::current();
   }
 
   virtual void TearDown() {

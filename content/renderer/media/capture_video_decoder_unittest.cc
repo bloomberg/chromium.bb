@@ -87,7 +87,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   CaptureVideoDecoderTest() {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     message_loop_proxy_ =
-        base::MessageLoopProxy::CreateForCurrentThread().get();
+        base::MessageLoopProxy::current().get();
     vc_manager_ = new MockVideoCaptureImplManager();
     media::VideoCapture::VideoCaptureCapability capability;
     capability.width = 176;

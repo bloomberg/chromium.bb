@@ -30,7 +30,7 @@ class ConnectionToClientTest : public testing::Test {
 
     // Allocate a ClientConnection object with the mock objects.
     viewer_ = new ConnectionToClient(
-        base::MessageLoopProxy::CreateForCurrentThread(), &handler_);
+        base::MessageLoopProxy::current(), &handler_);
     viewer_->set_host_stub(&host_stub_);
     viewer_->set_input_stub(&input_stub_);
     viewer_->Init(session_);

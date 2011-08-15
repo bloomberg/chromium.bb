@@ -28,7 +28,7 @@ namespace fileapi {
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
   explicit MockFileSystemPathManager(const FilePath& profile_path)
-      : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
+      : FileSystemPathManager(base::MessageLoopProxy::current(),
                               profile_path, NULL, false, true) {}
 };
 
@@ -161,8 +161,8 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     path_manager_ = new MockFileSystemPathManager(data_dir_.path());
 
     file_system_context_ = new FileSystemContext(
-        base::MessageLoopProxy::CreateForCurrentThread(),
-        base::MessageLoopProxy::CreateForCurrentThread(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         new TestSpecialStoragePolicy(true /* unlimited quota */),
         NULL,
         data_dir_.path(),
