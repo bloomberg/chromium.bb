@@ -1,8 +1,10 @@
 vars = {
-  "chromium_git": "http://git.chromium.org/git",
+  "chromiumos_git": "http://git.chromium.org/chromiumos",
 }
 
 deps = {
   "src/third_party/cros":
-    Var("chromium_git") + "/cros.git@56c93050",
+    Var("chromiumos_git") + "/platform/cros.git@56c93050",
+  "src/third_party/cros_system_api":
+    Var("chromiumos_git") + "/platform/system_api.git@d56d4785",
 }
