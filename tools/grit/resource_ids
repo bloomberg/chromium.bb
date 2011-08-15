@@ -154,11 +154,4 @@
   "chrome/browser/resources/workers_resources.grd": {
     "includes": [23500],
   },
-  # All standard and large theme resources should have the same IDs.
-  "ui/resources/ui_resources_standard.grd": {
-    "includes": [24000],
-  },
-  "ui/resources/ui_resources_large.grd": {
-    "includes": [24000],
-  },
 }

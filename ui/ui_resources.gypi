@@ -21,39 +21,5 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
-    {
-      'target_name': 'ui_resources_large',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_large',
-      },
-      'actions': [
-        {
-          'action_name': 'ui_resources_large',
-          'variables': {
-            'grit_grd_file': 'resources/ui_resources_large.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-    {
-      'target_name': 'ui_resources_standard',
-      'type': 'none',
-      'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard',
-      },
-      'actions': [
-        {
-          'action_name': 'ui_resources_standard',
-          'variables': {
-            'grit_grd_file': 'resources/ui_resources_standard.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
   ],
 }

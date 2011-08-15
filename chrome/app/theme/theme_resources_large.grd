@@ -40,6 +40,18 @@
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_win_h.png" type="BINDATA" />
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
       </if>
+      <include name="IDR_BUBBLE_B" file="large_bubble_b.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_BL" file="large_bubble_bl.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_BR" file="large_bubble_br.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_B_ARROW" file="large_bubble_pointer_b.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_L" file="large_bubble_l.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_L_ARROW" file="large_bubble_pointer_l.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_R" file="large_bubble_r.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_R_ARROW" file="large_bubble_pointer_r.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T" file="large_bubble_t.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_TL" file="large_bubble_tl.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_TR" file="large_bubble_tr.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T_ARROW" file="large_bubble_pointer_t.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR" file="large_close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="large_close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="large_close_bar_mask.png" type="BINDATA" />
