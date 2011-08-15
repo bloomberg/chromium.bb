@@ -110,7 +110,7 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   file_util::FileEnumerator file_enum(
-      file_path, false, static_cast<file_util::FileEnumerator::FILE_TYPE>(
+      file_path, false, static_cast<file_util::FileEnumerator::FileType>(
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::DIRECTORIES));
   FilePath current;
@@ -521,7 +521,7 @@ class FileSystemFileEnumerator
  public:
   FileSystemFileEnumerator(const FilePath& root_path,
                            bool recursive,
-                           file_util::FileEnumerator::FILE_TYPE file_type)
+                           file_util::FileEnumerator::FileType file_type)
     : file_enum_(root_path, recursive, file_type) {
   }
 
@@ -549,7 +549,7 @@ FileSystemFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* unused,
     const FilePath& root_path) {
   return new FileSystemFileEnumerator(
-      root_path, true, static_cast<file_util::FileEnumerator::FILE_TYPE>(
+      root_path, true, static_cast<file_util::FileEnumerator::FileType>(
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::DIRECTORIES));
 }

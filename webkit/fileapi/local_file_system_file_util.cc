@@ -233,7 +233,7 @@ class LocalFileSystemFileEnumerator
   LocalFileSystemFileEnumerator(const FilePath& platform_root_path,
                                 const FilePath& virtual_root_path,
                                 bool recursive,
-                                file_util::FileEnumerator::FILE_TYPE file_type)
+                                file_util::FileEnumerator::FileType file_type)
       : file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {
@@ -277,7 +277,7 @@ LocalFileSystemFileUtil::CreateFileEnumerator(
     return new EmptyFileEnumerator();
   return new LocalFileSystemFileEnumerator(
       local_path, root_path, true,
-      static_cast<file_util::FileEnumerator::FILE_TYPE>(
+      static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES |
           file_util::FileEnumerator::DIRECTORIES));
 }

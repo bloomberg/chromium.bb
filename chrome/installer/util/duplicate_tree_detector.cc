@@ -31,7 +31,7 @@ bool IsIdenticalFileHierarchy(const FilePath& src_path,
       FileEnumerator path_enum(
           src_path,
           false,  // Not recursive
-          static_cast<FileEnumerator::FILE_TYPE>(
+          static_cast<FileEnumerator::FileType>(
               FileEnumerator::FILES | FileEnumerator::DIRECTORIES));
       for (FilePath path = path_enum.Next(); is_identical && !path.empty();
            path = path_enum.Next()) {

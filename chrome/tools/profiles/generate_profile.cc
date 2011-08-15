@@ -266,7 +266,7 @@ int main(int argc, const char* argv[]) {
 
   file_util::FileEnumerator file_iterator(
       profile.GetPath(), false,
-      static_cast<file_util::FileEnumerator::FILE_TYPE>(
+      static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES));
   FilePath path = file_iterator.Next();
   while (!path.empty()) {

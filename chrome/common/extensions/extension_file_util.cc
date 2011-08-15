@@ -497,7 +497,7 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
   file_util::FileEnumerator all_files(
     extension_path,
     false,
-    static_cast<file_util::FileEnumerator::FILE_TYPE>(
+    static_cast<file_util::FileEnumerator::FileType>(
         file_util::FileEnumerator::DIRECTORIES |
           file_util::FileEnumerator::FILES));
 
