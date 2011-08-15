@@ -367,8 +367,6 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  */
 remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
   if (shouldScale) {
-    remoting.debug.log('scale to fit is turned on.');
-
     if (this.plugin.desktopWidth == 0 ||
         this.plugin.desktopHeight == 0) {
       remoting.debug.log('desktop size is not known yet.');
@@ -383,27 +381,24 @@ remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
     if (height % 2 == 1)
       --height;
 
-    var scale = 1.0;
-    if (width < height)
-      scale = 1.0 * height / this.plugin.desktopHeight;
-    else
-      scale = 1.0 * width / this.plugin.desktopWidth;
-
+    var scaleFitHeight = 1.0 * height / this.plugin.desktopHeight;
+    var scaleFitWidth = 1.0 * width / this.plugin.desktopWidth;
+    var scale = Math.min(scaleFitHeight, scaleFitWidth);
     if (scale > 1.0) {
       remoting.debug.log('scale up is not supported');
-      return;
+      scale = 1.0;
     }
 
     this.plugin.width = this.plugin.desktopWidth * scale;
     this.plugin.height = this.plugin.desktopHeight * scale;
   } else {
-    remoting.debug.log('scale to fit is turned off.');
     this.plugin.width = this.plugin.desktopWidth;
     this.plugin.height = this.plugin.desktopHeight;
   }
   remoting.debug.log('plugin size is now: ' +
                      this.plugin.width + ' x ' + this.plugin.height + '.');
   this.plugin.setScaleToFit(shouldScale);
+  remoting.debug.log('scale to fit is now: ' + shouldScale);
 };
 
 /**
