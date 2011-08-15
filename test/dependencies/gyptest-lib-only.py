@@ -17,9 +17,7 @@ test.run_gyp('lib_only.gyp')
 
 test.build('lib_only.gyp', test.ALL)
 
-# Make doesn't put static libs in a common 'lib' directory, like it does with
-# shared libs, so check in the obj path corresponding to the source path.
-test.built_file_must_exist('a', type=test.STATIC_LIB, libdir='obj.target')
+test.built_file_must_exist('a', type=test.STATIC_LIB)
 
 # TODO(bradnelson/mark):
 # On linux and windows a library target will at least pull its link dependencies
@@ -28,6 +26,8 @@ test.built_file_must_exist('a', type=test.STATIC_LIB, libdir='obj.target')
 if test.format == 'xcode':
   test.built_file_must_not_exist('b', type=test.STATIC_LIB)
 else:
-  test.built_file_must_exist('b', type=test.STATIC_LIB, libdir='obj.target/b')
+  # Make puts the resulting library in a directory matching the input gyp file;
+  # for the 'b' library, that is in the 'b' subdirectory.
+  test.built_file_must_exist('b', type=test.STATIC_LIB, subdir='b')
 
 test.pass_test()

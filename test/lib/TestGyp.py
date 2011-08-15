@@ -380,8 +380,8 @@ class TestGypMake(TestGypBase):
     "type" values of STATIC_LIB or SHARED_LIB append the necessary
     prefixes and suffixes to a platform-independent library base name.
 
-    A libdir= keyword argument specifies a library subdirectory other
-    than the default 'obj.target'.
+    A subdir= keyword argument specifies a library subdirectory within
+    the default 'obj.target'.
     """
     result = []
     chdir = kw.get('chdir')
@@ -390,9 +390,12 @@ class TestGypMake(TestGypBase):
     configuration = self.configuration_dirname()
     result.extend(['out', configuration])
     if type == self.STATIC_LIB:
-      result.append(kw.get('libdir', 'obj.target'))
+      result.append('obj.target')
     elif type == self.SHARED_LIB and sys.platform != 'darwin':
-      result.append(kw.get('libdir', 'lib.target'))
+      result.append('lib.target')
+    subdir = kw.get('subdir')
+    if subdir:
+      result.append(subdir)
     result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
 
