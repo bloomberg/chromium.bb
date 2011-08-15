@@ -196,6 +196,82 @@ class CBuildBotTest(mox.MoxTestBase):
                    extra_env=extra)
     self.mox.VerifyAll()
 
+  def testLegacyArchiveBuildMinimal(self):
+    """Test Legacy Archive Command, with minimal values."""
+    buildroot = '/bob'
+
+    buildconfig = {}
+    buildconfig['board'] = 'config_board'
+    buildconfig['gs_path'] = None
+    buildconfig['factory_test_mod'] = False
+    buildconfig['test_mod'] = False
+    buildconfig['factory_install_mod'] = False
+    buildconfig['useflags'] = None
+    buildconfig['archive_build_debug'] = False
+
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(socket, 'gethostname')
+
+    cros_lib.RunCommand(['./archive_build.sh',
+                         '--set_version', 'myversion',
+                         '--to', '/var/www/archive/bot_id',
+                         '--keep_max', '3',
+                         '--board', buildconfig['board'],
+                         '--noarchive_debug',
+                         '--notest_mod'],
+                        cwd='/bob/src/scripts')
+
+    self.mox.ReplayAll()
+    commands.LegacyArchiveBuild(buildroot,
+                                'bot_id',
+                                buildconfig,
+                                None,
+                                'myversion',
+                                '/var/www/archive',
+                                debug=False)
+    self.mox.VerifyAll()
+
+  def testLegacyArchiveBuildMaximum(self):
+    """Test Legacy Archive Command, with all values."""
+    buildroot = '/bob'
+
+    buildconfig = {}
+    buildconfig['board'] = 'config_board'
+    buildconfig['gs_path'] = 'gs://gs/path'
+    buildconfig['factory_test_mod'] = True
+    buildconfig['test_mod'] = True
+    buildconfig['factory_install_mod'] = True
+    buildconfig['useflags'] = ['use_a', 'use_b']
+    buildconfig['archive_build_debug'] = True
+
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(socket, 'gethostname')
+
+    cros_lib.RunCommand(['./archive_build.sh',
+                         '--set_version', 'myversion',
+                         '--to', '/var/www/archive/bot_id',
+                         '--keep_max', '3',
+                         '--board', 'config_board',
+                         '--gsutil_archive', 'gs://gs/path',
+                         '--acl', '/home/chrome-bot/slave_archive_acl',
+                         '--gsutil', '/b/scripts/slave/gsutil',
+                         '--factory_test_mod',
+                         '--noarchive_debug',
+                         '--debug',
+                         '--factory_install_mod',
+                         '--useflags', 'use_a use_b'],
+                        cwd='/bob/src/scripts')
+
+    self.mox.ReplayAll()
+    commands.LegacyArchiveBuild(buildroot,
+                                'bot_id',
+                                buildconfig,
+                                buildconfig['gs_path'],
+                                'myversion',
+                                '/var/www/archive',
+                                debug=True)
+    self.mox.VerifyAll()
+
   def testUploadSymbols(self):
     """Test UploadSymbols Command."""
     buildroot = '/bob'
