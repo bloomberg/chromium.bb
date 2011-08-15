@@ -386,6 +386,9 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # Disable pyauto+webdriver tests on 'Google Chrome' bots until next
+      # build is generated. 8/15/2011. Remove tomorrow.
+      '-pyauto_webdriver',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
