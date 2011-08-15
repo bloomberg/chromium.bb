@@ -119,6 +119,7 @@ ErrorPageTest.IFrameDNSError_Basic
 ExtensionProxyUITest.EnableDisable
 HistoryTester.ConsiderSlowRedirectAsUserInitiated
 HistoryTester.VerifyHistoryLength3
+HostRulesTest.TestMap
 IFrameTest.Crash
 IFrameTest.InEmptyFrame
 LocaleTestsDa.TestStart
@@ -169,6 +170,7 @@ V8BenchmarkTest.Perf
 ViewSourceTest.DoesBrowserConsumeViewSourcePrefix
 WorkerFileSystemTest.FileEntryToURISync
 WorkerFileSystemTest.FileFromFileEntry
+WorkerFileSystemTest.FileFromFileEntrySync
 WorkerFileSystemTest.FileWriterSyncTruncateExtend
 WorkerFileSystemTest.FileWriterTruncateExtend
 
