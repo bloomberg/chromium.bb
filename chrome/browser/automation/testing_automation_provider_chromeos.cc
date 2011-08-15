@@ -149,13 +149,13 @@ void UpdateCheckCallback(void* user_data, chromeos::UpdateResult result,
 }
 
 const std::string VPNProviderTypeToString(
-    chromeos::VirtualNetwork::ProviderType provider_type) {
+    chromeos::ProviderType provider_type) {
   switch (provider_type) {
-    case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
+    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK:
       return std::string("L2TP_IPSEC_PSK");
-    case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
       return std::string("L2TP_IPSEC_USER_CERT");
-    case chromeos::VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
+    case chromeos::PROVIDER_TYPE_OPEN_VPN:
       return std::string("OPEN_VPN");
     default:
       return std::string("UNSUPPORTED_PROVIDER_TYPE");
@@ -713,7 +713,7 @@ void TestingAutomationProvider::AddPrivateNetwork(
 
   // Attempt to connect to the VPN based on the provider type.
   if (provider_type == VPNProviderTypeToString(
-      chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK)) {
+      chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK)) {
     if (!args->GetString("key", &key)) {
       AutomationJSONReply(this, reply_message)
           .SendError("Missing key arg.");
@@ -727,7 +727,7 @@ void TestingAutomationProvider::AddPrivateNetwork(
                                                 username,
                                                 password);
   } else if (provider_type == VPNProviderTypeToString(
-      chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT)) {
+      chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT)) {
     if (!args->GetString("cert_id", &cert_id) ||
         !args->GetString("cert_nss", &cert_nss)) {
       AutomationJSONReply(this, reply_message)
@@ -743,7 +743,7 @@ void TestingAutomationProvider::AddPrivateNetwork(
                                                  username,
                                                  password);
   } else if (provider_type == VPNProviderTypeToString(
-      chromeos::VirtualNetwork::PROVIDER_TYPE_OPEN_VPN)) {
+      chromeos::PROVIDER_TYPE_OPEN_VPN)) {
     // Connect using OPEN_VPN. Not yet supported by the VPN implementation.
     AutomationJSONReply(this, reply_message)
       .SendError("Provider type OPEN_VPN is not yet supported.");

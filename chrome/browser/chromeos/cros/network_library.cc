@@ -21,6 +21,8 @@
 #include "base/utf_string_conversion_utils.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/native_network_constants.h"
+#include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -37,10 +39,10 @@
 // and services:
 //
 // NetworkDevice: e.g. ethernet, wifi modem, cellular modem
-//  device_map_: canonical map<path,NetworkDevice*> for devices
+//  device_map_: canonical map<path, NetworkDevice*> for devices
 //
 // Network: a network service ("network").
-//  network_map_: canonical map<path,Network*> for all visible networks.
+//  network_map_: canonical map<path, Network*> for all visible networks.
 //  EthernetNetwork
 //   ethernet_: EthernetNetwork* to the active ethernet network in network_map_.
 //  WirelessNetwork: a WiFi or Cellular Network.
@@ -51,8 +53,8 @@
 //  CellularNetwork
 //   active_cellular_: Cellular version of wifi_.
 //   cellular_networks_: Cellular version of wifi_.
-// network_unique_id_map_: map<unique_id,Network*> for visible networks.
-// remembered_network_map_: a canonical map<path,Network*> for all networks
+// network_unique_id_map_: map<unique_id, Network*> for visible networks.
+// remembered_network_map_: a canonical map<path, Network*> for all networks
 //     remembered in the active Profile ("favorites").
 // remembered_wifi_networks_: ordered vector of WifiNetwork* entries in
 //     remembered_network_map_, in descending order of preference.
@@ -100,813 +102,6 @@ const int kRecentPlanPaymentHours = 6;
 // retries count once cellular device with SIM card is initialized.
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
-
-// Format of the Carrier ID: <carrier name> (<carrier country>).
-const char kCarrierIdFormat[] = "%s (%s)";
-
-// Path of the default (shared) flimflam profile.
-const char kSharedProfilePath[] = "/profile/default";
-
-// Type of a pending SIM operation.
-enum SimOperationType {
-  SIM_OPERATION_NONE               = 0,
-  SIM_OPERATION_CHANGE_PIN         = 1,
-  SIM_OPERATION_CHANGE_REQUIRE_PIN = 2,
-  SIM_OPERATION_ENTER_PIN          = 3,
-  SIM_OPERATION_UNBLOCK_PIN        = 4,
-};
-
-// D-Bus interface string constants.
-
-// Flimflam manager properties.
-const char kAvailableTechnologiesProperty[] = "AvailableTechnologies";
-const char kEnabledTechnologiesProperty[] = "EnabledTechnologies";
-const char kConnectedTechnologiesProperty[] = "ConnectedTechnologies";
-const char kDefaultTechnologyProperty[] = "DefaultTechnology";
-const char kOfflineModeProperty[] = "OfflineMode";
-const char kActiveProfileProperty[] = "ActiveProfile";
-const char kProfilesProperty[] = "Profiles";
-const char kServicesProperty[] = "Services";
-const char kServiceWatchListProperty[] = "ServiceWatchList";
-const char kDevicesProperty[] = "Devices";
-const char kPortalURLProperty[] = "PortalURL";
-const char kCheckPortalListProperty[] = "CheckPortalList";
-
-// Flimflam service properties.
-const char kSecurityProperty[] = "Security";
-const char kPassphraseProperty[] = "Passphrase";
-const char kIdentityProperty[] = "Identity";
-const char kPassphraseRequiredProperty[] = "PassphraseRequired";
-const char kSaveCredentialsProperty[] = "SaveCredentials";
-const char kSignalStrengthProperty[] = "Strength";
-const char kNameProperty[] = "Name";
-const char kStateProperty[] = "State";
-const char kTypeProperty[] = "Type";
-const char kDeviceProperty[] = "Device";
-const char kProfileProperty[] = "Profile";
-const char kTechnologyFamilyProperty[] = "Cellular.Family";
-const char kActivationStateProperty[] = "Cellular.ActivationState";
-const char kNetworkTechnologyProperty[] = "Cellular.NetworkTechnology";
-const char kRoamingStateProperty[] = "Cellular.RoamingState";
-const char kOperatorNameProperty[] = "Cellular.OperatorName";
-const char kOperatorCodeProperty[] = "Cellular.OperatorCode";
-const char kServingOperatorProperty[] = "Cellular.ServingOperator";
-const char kPaymentURLProperty[] = "Cellular.OlpUrl";
-const char kUsageURLProperty[] = "Cellular.UsageUrl";
-const char kCellularApnProperty[] = "Cellular.APN";
-const char kCellularLastGoodApnProperty[] = "Cellular.LastGoodAPN";
-const char kCellularApnListProperty[] = "Cellular.APNList";
-const char kWifiHexSsid[] = "WiFi.HexSSID";
-const char kWifiFrequency[] = "WiFi.Frequency";
-const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
-const char kWifiPhyMode[] = "WiFi.PhyMode";
-const char kWifiAuthMode[] = "WiFi.AuthMode";
-const char kFavoriteProperty[] = "Favorite";
-const char kConnectableProperty[] = "Connectable";
-const char kPriorityProperty[] = "Priority";
-const char kAutoConnectProperty[] = "AutoConnect";
-const char kIsActiveProperty[] = "IsActive";
-const char kModeProperty[] = "Mode";
-const char kErrorProperty[] = "Error";
-const char kEntriesProperty[] = "Entries";
-const char kProviderProperty[] = "Provider";
-const char kHostProperty[] = "Host";
-const char kProxyConfigProperty[] = "ProxyConfig";
-
-// Flimflam property names for SIMLock status.
-const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
-const char kSIMLockTypeProperty[] = "LockType";
-const char kSIMLockRetriesLeftProperty[] = "RetriesLeft";
-
-// Flimflam property names for Cellular.FoundNetworks.
-const char kLongNameProperty[] = "long_name";
-const char kStatusProperty[] = "status";
-const char kShortNameProperty[] = "short_name";
-const char kTechnologyProperty[] = "technology";
-const char kNetworkIdProperty[] = "network_id";
-
-// Flimflam SIMLock status types.
-const char kSIMLockPin[] = "sim-pin";
-const char kSIMLockPuk[] = "sim-puk";
-
-// APN info property names.
-const char kApnProperty[] = "apn";
-const char kApnNetworkIdProperty[] = "network_id";
-const char kApnUsernameProperty[] = "username";
-const char kApnPasswordProperty[] = "password";
-const char kApnNameProperty[] = "name";
-const char kApnLocalizedNameProperty[] = "localized_name";
-const char kApnLanguageProperty[] = "language";
-
-// Operator info property names.
-const char kOperatorNameKey[] = "name";
-const char kOperatorCodeKey[] = "code";
-const char kOperatorCountryKey[] = "country";
-
-// Flimflam device info property names.
-const char kScanningProperty[] = "Scanning";
-const char kPoweredProperty[] = "Powered";
-const char kNetworksProperty[] = "Networks";
-const char kCarrierProperty[] = "Cellular.Carrier";
-const char kCellularAllowRoamingProperty[] = "Cellular.AllowRoaming";
-const char kHomeProviderProperty[] = "Cellular.HomeProvider";
-const char kMeidProperty[] = "Cellular.MEID";
-const char kImeiProperty[] = "Cellular.IMEI";
-const char kImsiProperty[] = "Cellular.IMSI";
-const char kEsnProperty[] = "Cellular.ESN";
-const char kMdnProperty[] = "Cellular.MDN";
-const char kMinProperty[] = "Cellular.MIN";
-const char kModelIDProperty[] = "Cellular.ModelID";
-const char kManufacturerProperty[] = "Cellular.Manufacturer";
-const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
-const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
-const char kPRLVersionProperty[] = "Cellular.PRLVersion"; // (INT16)
-const char kSelectedNetworkProperty[] = "Cellular.SelectedNetwork";
-const char kSupportNetworkScanProperty[] = "Cellular.SupportNetworkScan";
-const char kFoundNetworksProperty[] = "Cellular.FoundNetworks";
-
-// Flimflam ip config property names.
-const char kAddressProperty[] = "Address";
-const char kPrefixlenProperty[] = "Prefixlen";
-const char kGatewayProperty[] = "Gateway";
-const char kNameServersProperty[] = "NameServers";
-
-// Flimflam type options.
-const char kTypeEthernet[] = "ethernet";
-const char kTypeWifi[] = "wifi";
-const char kTypeWimax[] = "wimax";
-const char kTypeBluetooth[] = "bluetooth";
-const char kTypeCellular[] = "cellular";
-const char kTypeVPN[] = "vpn";
-
-// Flimflam mode options.
-const char kModeManaged[] = "managed";
-const char kModeAdhoc[] = "adhoc";
-
-// Flimflam security options.
-const char kSecurityWpa[] = "wpa";
-const char kSecurityWep[] = "wep";
-const char kSecurityRsn[] = "rsn";
-const char kSecurity8021x[] = "802_1x";
-const char kSecurityPsk[] = "psk";
-const char kSecurityNone[] = "none";
-
-// Flimflam L2TPIPsec property names.
-const char kL2TPIPSecCACertNSSProperty[] = "L2TPIPsec.CACertNSS";
-const char kL2TPIPSecClientCertIDProperty[] = "L2TPIPsec.ClientCertID";
-const char kL2TPIPSecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
-const char kL2TPIPSecPINProperty[] = "L2TPIPsec.PIN";
-const char kL2TPIPSecPSKProperty[] = "L2TPIPsec.PSK";
-const char kL2TPIPSecUserProperty[] = "L2TPIPsec.User";
-const char kL2TPIPSecPasswordProperty[] = "L2TPIPsec.Password";
-
-// Flimflam EAP property names.
-// See src/third_party/flimflam/doc/service-api.txt.
-const char kEapIdentityProperty[] = "EAP.Identity";
-const char kEapMethodProperty[] = "EAP.EAP";
-const char kEapPhase2AuthProperty[] = "EAP.InnerEAP";
-const char kEapAnonymousIdentityProperty[] = "EAP.AnonymousIdentity";
-const char kEapClientCertProperty[] = "EAP.ClientCert";  // path
-const char kEapCertIDProperty[] = "EAP.CertID";  // PKCS#11 ID
-const char kEapClientCertNssProperty[] = "EAP.ClientCertNSS";  // NSS nickname
-const char kEapPrivateKeyProperty[] = "EAP.PrivateKey";
-const char kEapPrivateKeyPasswordProperty[] = "EAP.PrivateKeyPassword";
-const char kEapKeyIDProperty[] = "EAP.KeyID";
-const char kEapCaCertProperty[] = "EAP.CACert";  // server CA cert path
-const char kEapCaCertIDProperty[] = "EAP.CACertID";  // server CA PKCS#11 ID
-const char kEapCaCertNssProperty[] = "EAP.CACertNSS";  // server CA NSS nickname
-const char kEapUseSystemCAsProperty[] = "EAP.UseSystemCAs";
-const char kEapPinProperty[] = "EAP.PIN";
-const char kEapPasswordProperty[] = "EAP.Password";
-const char kEapKeyMgmtProperty[] = "EAP.KeyMgmt";
-
-// Flimflam EAP method options.
-const char kEapMethodPEAP[] = "PEAP";
-const char kEapMethodTLS[] = "TLS";
-const char kEapMethodTTLS[] = "TTLS";
-const char kEapMethodLEAP[] = "LEAP";
-
-// Flimflam EAP phase 2 auth options.
-const char kEapPhase2AuthPEAPMD5[] = "auth=MD5";
-const char kEapPhase2AuthPEAPMSCHAPV2[] = "auth=MSCHAPV2";
-const char kEapPhase2AuthTTLSMD5[] = "autheap=MD5";
-const char kEapPhase2AuthTTLSMSCHAPV2[] = "autheap=MSCHAPV2";
-const char kEapPhase2AuthTTLSMSCHAP[] = "autheap=MSCHAP";
-const char kEapPhase2AuthTTLSPAP[] = "autheap=PAP";
-const char kEapPhase2AuthTTLSCHAP[] = "autheap=CHAP";
-
-// Flimflam VPN provider types.
-const char kProviderL2tpIpsec[] = "l2tpipsec";
-const char kProviderOpenVpn[] = "openvpn";
-
-
-// Flimflam state options.
-const char kStateIdle[] = "idle";
-const char kStateCarrier[] = "carrier";
-const char kStateAssociation[] = "association";
-const char kStateConfiguration[] = "configuration";
-const char kStateReady[] = "ready";
-const char kStatePortal[] = "portal";
-const char kStateOnline[] = "online";
-const char kStateDisconnect[] = "disconnect";
-const char kStateFailure[] = "failure";
-const char kStateActivationFailure[] = "activation-failure";
-
-// Flimflam network technology options.
-const char kNetworkTechnology1Xrtt[] = "1xRTT";
-const char kNetworkTechnologyEvdo[] = "EVDO";
-const char kNetworkTechnologyGprs[] = "GPRS";
-const char kNetworkTechnologyEdge[] = "EDGE";
-const char kNetworkTechnologyUmts[] = "UMTS";
-const char kNetworkTechnologyHspa[] = "HSPA";
-const char kNetworkTechnologyHspaPlus[] = "HSPA+";
-const char kNetworkTechnologyLte[] = "LTE";
-const char kNetworkTechnologyLteAdvanced[] = "LTE Advanced";
-const char kNetworkTechnologyGsm[] = "GSM";
-
-// Flimflam roaming state options
-const char kRoamingStateHome[] = "home";
-const char kRoamingStateRoaming[] = "roaming";
-const char kRoamingStateUnknown[] = "unknown";
-
-// Flimflam activation state options
-const char kActivationStateActivated[] = "activated";
-const char kActivationStateActivating[] = "activating";
-const char kActivationStateNotActivated[] = "not-activated";
-const char kActivationStatePartiallyActivated[] = "partially-activated";
-const char kActivationStateUnknown[] = "unknown";
-
-// FlimFlam technology family options
-const char kTechnologyFamilyCdma[] = "CDMA";
-const char kTechnologyFamilyGsm[] = "GSM";
-
-// Flimflam error options.
-const char kErrorOutOfRange[] = "out-of-range";
-const char kErrorPinMissing[] = "pin-missing";
-const char kErrorDhcpFailed[] = "dhcp-failed";
-const char kErrorConnectFailed[] = "connect-failed";
-const char kErrorBadPassphrase[] = "bad-passphrase";
-const char kErrorBadWEPKey[] = "bad-wepkey";
-const char kErrorActivationFailed[] = "activation-failed";
-const char kErrorNeedEvdo[] = "need-evdo";
-const char kErrorNeedHomeNetwork[] = "need-home-network";
-const char kErrorOtaspFailed[] = "otasp-failed";
-const char kErrorAaaFailed[] = "aaa-failed";
-const char kErrorInternal[] = "internal-error";
-const char kErrorDNSLookupFailed[] = "dns-lookup-failed";
-const char kErrorHTTPGetFailed[] = "http-get-failed";
-
-// Flimflam error messages.
-const char kErrorPassphraseRequiredMsg[] = "Passphrase required";
-const char kErrorIncorrectPinMsg[] = "org.chromium.flimflam.Error.IncorrectPin";
-const char kErrorPinBlockedMsg[] = "org.chromium.flimflam.Error.PinBlocked";
-const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
-
-const char kUnknownString[] = "UNKNOWN";
-
-////////////////////////////////////////////////////////////////////////////
-
-static const char* ConnectionTypeToString(ConnectionType type) {
-  switch (type) {
-    case TYPE_UNKNOWN:
-      break;
-    case TYPE_ETHERNET:
-      return kTypeEthernet;
-    case TYPE_WIFI:
-      return kTypeWifi;
-    case TYPE_WIMAX:
-      return kTypeWimax;
-    case TYPE_BLUETOOTH:
-      return kTypeBluetooth;
-    case TYPE_CELLULAR:
-      return kTypeCellular;
-    case TYPE_VPN:
-      return kTypeVPN;
-  }
-  LOG(ERROR) << "ConnectionTypeToString called with unknown type: " << type;
-  return kUnknownString;
-}
-
-static const char* SecurityToString(ConnectionSecurity security) {
-  switch (security) {
-    case SECURITY_NONE:
-      return kSecurityNone;
-    case SECURITY_WEP:
-      return kSecurityWep;
-    case SECURITY_WPA:
-      return kSecurityWpa;
-    case SECURITY_RSN:
-      return kSecurityRsn;
-    case SECURITY_8021X:
-      return kSecurity8021x;
-    case SECURITY_PSK:
-      return kSecurityPsk;
-    case SECURITY_UNKNOWN:
-      break;
-  }
-  LOG(ERROR) << "SecurityToString called with unknown type: " << security;
-  return kUnknownString;
-}
-
-static const char* ProviderTypeToString(VirtualNetwork::ProviderType type) {
-  switch (type) {
-    case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
-    case VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
-      return kProviderL2tpIpsec;
-    case VirtualNetwork::PROVIDER_TYPE_OPEN_VPN:
-      return kProviderOpenVpn;
-    case VirtualNetwork::PROVIDER_TYPE_MAX:
-      break;
-  }
-  LOG(ERROR) << "ProviderTypeToString called with unknown type: " << type;
-  return kUnknownString;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-// Helper class to cache maps of strings to enums.
-template <typename Type>
-class StringToEnum {
- public:
-  struct Pair {
-    const char* key;
-    const Type value;
-  };
-
-  StringToEnum(const Pair* list, size_t num_entries, Type unknown)
-      : unknown_value_(unknown) {
-    for (size_t i = 0; i < num_entries; ++i, ++list)
-      enum_map_[list->key] = list->value;
-  }
-
-  Type Get(const std::string& type) const {
-    EnumMapConstIter iter = enum_map_.find(type);
-    if (iter != enum_map_.end())
-      return iter->second;
-    return unknown_value_;
-  }
-
- private:
-  typedef typename std::map<std::string, Type> EnumMap;
-  typedef typename std::map<std::string, Type>::const_iterator EnumMapConstIter;
-  EnumMap enum_map_;
-  Type unknown_value_;
-  DISALLOW_COPY_AND_ASSIGN(StringToEnum);
-};
-
-////////////////////////////////////////////////////////////////////////////
-
-enum PropertyIndex {
-  PROPERTY_INDEX_ACTIVATION_STATE,
-  PROPERTY_INDEX_ACTIVE_PROFILE,
-  PROPERTY_INDEX_AUTO_CONNECT,
-  PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES,
-  PROPERTY_INDEX_CARRIER,
-  PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING,
-  PROPERTY_INDEX_CELLULAR_APN,
-  PROPERTY_INDEX_CELLULAR_APN_LIST,
-  PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
-  PROPERTY_INDEX_CHECK_PORTAL_LIST,
-  PROPERTY_INDEX_CONNECTABLE,
-  PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
-  PROPERTY_INDEX_CONNECTIVITY_STATE,
-  PROPERTY_INDEX_DEFAULT_TECHNOLOGY,
-  PROPERTY_INDEX_DEVICE,
-  PROPERTY_INDEX_DEVICES,
-  PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
-  PROPERTY_INDEX_EAP_CA_CERT,
-  PROPERTY_INDEX_EAP_CA_CERT_ID,
-  PROPERTY_INDEX_EAP_CA_CERT_NSS,
-  PROPERTY_INDEX_EAP_CERT_ID,
-  PROPERTY_INDEX_EAP_CLIENT_CERT,
-  PROPERTY_INDEX_EAP_CLIENT_CERT_NSS,
-  PROPERTY_INDEX_EAP_IDENTITY,
-  PROPERTY_INDEX_EAP_KEY_ID,
-  PROPERTY_INDEX_EAP_KEY_MGMT,
-  PROPERTY_INDEX_EAP_METHOD,
-  PROPERTY_INDEX_EAP_PASSWORD,
-  PROPERTY_INDEX_EAP_PHASE_2_AUTH,
-  PROPERTY_INDEX_EAP_PIN,
-  PROPERTY_INDEX_EAP_PRIVATE_KEY,
-  PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD,
-  PROPERTY_INDEX_EAP_USE_SYSTEM_CAS,
-  PROPERTY_INDEX_ENABLED_TECHNOLOGIES,
-  PROPERTY_INDEX_ERROR,
-  PROPERTY_INDEX_ESN,
-  PROPERTY_INDEX_FAVORITE,
-  PROPERTY_INDEX_FIRMWARE_REVISION,
-  PROPERTY_INDEX_FOUND_NETWORKS,
-  PROPERTY_INDEX_HARDWARE_REVISION,
-  PROPERTY_INDEX_HOME_PROVIDER,
-  PROPERTY_INDEX_HOST,
-  PROPERTY_INDEX_IDENTITY,
-  PROPERTY_INDEX_IMEI,
-  PROPERTY_INDEX_IMSI,
-  PROPERTY_INDEX_IS_ACTIVE,
-  PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS,
-  PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID,
-  PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT,
-  PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
-  PROPERTY_INDEX_L2TPIPSEC_PIN,
-  PROPERTY_INDEX_L2TPIPSEC_PSK,
-  PROPERTY_INDEX_L2TPIPSEC_USER,
-  PROPERTY_INDEX_MANUFACTURER,
-  PROPERTY_INDEX_MDN,
-  PROPERTY_INDEX_MEID,
-  PROPERTY_INDEX_MIN,
-  PROPERTY_INDEX_MODE,
-  PROPERTY_INDEX_MODEL_ID,
-  PROPERTY_INDEX_NAME,
-  PROPERTY_INDEX_NETWORKS,
-  PROPERTY_INDEX_NETWORK_TECHNOLOGY,
-  PROPERTY_INDEX_OFFLINE_MODE,
-  PROPERTY_INDEX_OPERATOR_CODE,
-  PROPERTY_INDEX_OPERATOR_NAME,
-  PROPERTY_INDEX_PASSPHRASE,
-  PROPERTY_INDEX_PASSPHRASE_REQUIRED,
-  PROPERTY_INDEX_PAYMENT_URL,
-  PROPERTY_INDEX_PORTAL_URL,
-  PROPERTY_INDEX_POWERED,
-  PROPERTY_INDEX_PRIORITY,
-  PROPERTY_INDEX_PRL_VERSION,
-  PROPERTY_INDEX_PROFILE,
-  PROPERTY_INDEX_PROFILES,
-  PROPERTY_INDEX_PROVIDER,
-  PROPERTY_INDEX_PROXY_CONFIG,
-  PROPERTY_INDEX_ROAMING_STATE,
-  PROPERTY_INDEX_SAVE_CREDENTIALS,
-  PROPERTY_INDEX_SCANNING,
-  PROPERTY_INDEX_SECURITY,
-  PROPERTY_INDEX_SELECTED_NETWORK,
-  PROPERTY_INDEX_SERVICES,
-  PROPERTY_INDEX_SERVICE_WATCH_LIST,
-  PROPERTY_INDEX_SERVING_OPERATOR,
-  PROPERTY_INDEX_SIGNAL_STRENGTH,
-  PROPERTY_INDEX_SIM_LOCK,
-  PROPERTY_INDEX_STATE,
-  PROPERTY_INDEX_SUPPORT_NETWORK_SCAN,
-  PROPERTY_INDEX_TECHNOLOGY_FAMILY,
-  PROPERTY_INDEX_TYPE,
-  PROPERTY_INDEX_UNKNOWN,
-  PROPERTY_INDEX_USAGE_URL,
-  PROPERTY_INDEX_WIFI_AUTH_MODE,
-  PROPERTY_INDEX_WIFI_FREQUENCY,
-  PROPERTY_INDEX_WIFI_HEX_SSID,
-  PROPERTY_INDEX_WIFI_HIDDEN_SSID,
-  PROPERTY_INDEX_WIFI_PHY_MODE,
-};
-
-StringToEnum<PropertyIndex>::Pair property_index_table[] =  {
-  { kActivationStateProperty, PROPERTY_INDEX_ACTIVATION_STATE },
-  { kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
-  { kAutoConnectProperty, PROPERTY_INDEX_AUTO_CONNECT },
-  { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
-  { kCarrierProperty, PROPERTY_INDEX_CARRIER },
-  { kCellularAllowRoamingProperty, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING },
-  { kCellularApnListProperty, PROPERTY_INDEX_CELLULAR_APN_LIST },
-  { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
-  { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
-  { kCheckPortalListProperty, PROPERTY_INDEX_CHECK_PORTAL_LIST },
-  { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
-  { kConnectedTechnologiesProperty, PROPERTY_INDEX_CONNECTED_TECHNOLOGIES },
-  { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
-  { kDeviceProperty, PROPERTY_INDEX_DEVICE },
-  { kDevicesProperty, PROPERTY_INDEX_DEVICES },
-  { kEapAnonymousIdentityProperty, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY },
-  { kEapCaCertIDProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
-  { kEapCaCertNssProperty, PROPERTY_INDEX_EAP_CA_CERT_NSS },
-  { kEapCaCertProperty, PROPERTY_INDEX_EAP_CA_CERT },
-  { kEapCertIDProperty, PROPERTY_INDEX_EAP_CERT_ID },
-  { kEapClientCertNssProperty, PROPERTY_INDEX_EAP_CLIENT_CERT_NSS },
-  { kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
-  { kEapIdentityProperty, PROPERTY_INDEX_EAP_IDENTITY },
-  { kEapKeyIDProperty, PROPERTY_INDEX_EAP_KEY_ID },
-  { kEapKeyMgmtProperty, PROPERTY_INDEX_EAP_KEY_MGMT },
-  { kEapMethodProperty, PROPERTY_INDEX_EAP_METHOD },
-  { kEapPasswordProperty, PROPERTY_INDEX_EAP_PASSWORD },
-  { kEapPhase2AuthProperty, PROPERTY_INDEX_EAP_PHASE_2_AUTH },
-  { kEapPinProperty, PROPERTY_INDEX_EAP_PIN },
-  { kEapPrivateKeyPasswordProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD },
-  { kEapPrivateKeyProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY },
-  { kEapUseSystemCAsProperty, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS },
-  { kEnabledTechnologiesProperty, PROPERTY_INDEX_ENABLED_TECHNOLOGIES },
-  { kErrorProperty, PROPERTY_INDEX_ERROR },
-  { kEsnProperty, PROPERTY_INDEX_ESN },
-  { kFavoriteProperty, PROPERTY_INDEX_FAVORITE },
-  { kFirmwareRevisionProperty, PROPERTY_INDEX_FIRMWARE_REVISION },
-  { kFoundNetworksProperty, PROPERTY_INDEX_FOUND_NETWORKS },
-  { kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
-  { kHomeProviderProperty, PROPERTY_INDEX_HOME_PROVIDER },
-  { kHostProperty, PROPERTY_INDEX_HOST },
-  { kIdentityProperty, PROPERTY_INDEX_IDENTITY },
-  { kImeiProperty, PROPERTY_INDEX_IMEI },
-  { kImsiProperty, PROPERTY_INDEX_IMSI },
-  { kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
-  { kL2TPIPSecCACertNSSProperty, PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS },
-  { kL2TPIPSecClientCertIDProperty, PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID },
-  { kL2TPIPSecClientCertSlotProp, PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT },
-  { kL2TPIPSecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
-  { kL2TPIPSecPINProperty, PROPERTY_INDEX_L2TPIPSEC_PIN },
-  { kL2TPIPSecPSKProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
-  { kL2TPIPSecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
-  { kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
-  { kMdnProperty, PROPERTY_INDEX_MDN },
-  { kMeidProperty, PROPERTY_INDEX_MEID },
-  { kMinProperty, PROPERTY_INDEX_MIN },
-  { kModeProperty, PROPERTY_INDEX_MODE },
-  { kModelIDProperty, PROPERTY_INDEX_MODEL_ID },
-  { kNameProperty, PROPERTY_INDEX_NAME },
-  { kNetworkTechnologyProperty, PROPERTY_INDEX_NETWORK_TECHNOLOGY },
-  { kNetworksProperty, PROPERTY_INDEX_NETWORKS },
-  { kOfflineModeProperty, PROPERTY_INDEX_OFFLINE_MODE },
-  { kOperatorCodeProperty, PROPERTY_INDEX_OPERATOR_CODE },
-  { kOperatorNameProperty, PROPERTY_INDEX_OPERATOR_NAME },
-  { kPRLVersionProperty, PROPERTY_INDEX_PRL_VERSION },
-  { kPassphraseProperty, PROPERTY_INDEX_PASSPHRASE },
-  { kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
-  { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
-  { kPortalURLProperty, PROPERTY_INDEX_PORTAL_URL },
-  { kPoweredProperty, PROPERTY_INDEX_POWERED },
-  { kPriorityProperty, PROPERTY_INDEX_PRIORITY },
-  { kProfileProperty, PROPERTY_INDEX_PROFILE },
-  { kProfilesProperty, PROPERTY_INDEX_PROFILES },
-  { kProviderProperty, PROPERTY_INDEX_PROVIDER },
-  { kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
-  { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
-  { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
-  { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
-  { kScanningProperty, PROPERTY_INDEX_SCANNING },
-  { kSecurityProperty, PROPERTY_INDEX_SECURITY },
-  { kSelectedNetworkProperty, PROPERTY_INDEX_SELECTED_NETWORK },
-  { kServiceWatchListProperty, PROPERTY_INDEX_SERVICE_WATCH_LIST },
-  { kServicesProperty, PROPERTY_INDEX_SERVICES },
-  { kServingOperatorProperty, PROPERTY_INDEX_SERVING_OPERATOR },
-  { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
-  { kStateProperty, PROPERTY_INDEX_STATE },
-  { kSupportNetworkScanProperty, PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
-  { kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
-  { kTypeProperty, PROPERTY_INDEX_TYPE },
-  { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
-  { kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
-  { kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
-  { kWifiHexSsid, PROPERTY_INDEX_WIFI_HEX_SSID },
-  { kWifiHiddenSsid, PROPERTY_INDEX_WIFI_HIDDEN_SSID },
-  { kWifiPhyMode, PROPERTY_INDEX_WIFI_PHY_MODE },
-};
-
-StringToEnum<PropertyIndex>& property_index_parser() {
-  static StringToEnum<PropertyIndex> parser(property_index_table,
-                                            arraysize(property_index_table),
-                                            PROPERTY_INDEX_UNKNOWN);
-  return parser;
-}
-
-////////////////////////////////////////////////////////////////////////////
-// Parse strings from libcros.
-
-// Network.
-static ConnectionType ParseType(const std::string& type) {
-  static StringToEnum<ConnectionType>::Pair table[] = {
-    { kTypeEthernet, TYPE_ETHERNET },
-    { kTypeWifi, TYPE_WIFI },
-    { kTypeWimax, TYPE_WIMAX },
-    { kTypeBluetooth, TYPE_BLUETOOTH },
-    { kTypeCellular, TYPE_CELLULAR },
-    { kTypeVPN, TYPE_VPN },
-  };
-  static StringToEnum<ConnectionType> parser(
-      table, arraysize(table), TYPE_UNKNOWN);
-  return parser.Get(type);
-}
-
-ConnectionType ParseTypeFromDictionary(const DictionaryValue* info) {
-  std::string type_string;
-  info->GetString(kTypeProperty, &type_string);
-  return ParseType(type_string);
-}
-
-static ConnectionMode ParseMode(const std::string& mode) {
-  static StringToEnum<ConnectionMode>::Pair table[] = {
-    { kModeManaged, MODE_MANAGED },
-    { kModeAdhoc, MODE_ADHOC },
-  };
-  static StringToEnum<ConnectionMode> parser(
-      table, arraysize(table), MODE_UNKNOWN);
-  return parser.Get(mode);
-}
-
-static ConnectionState ParseState(const std::string& state) {
-  static StringToEnum<ConnectionState>::Pair table[] = {
-    { kStateIdle, STATE_IDLE },
-    { kStateCarrier, STATE_CARRIER },
-    { kStateAssociation, STATE_ASSOCIATION },
-    { kStateConfiguration, STATE_CONFIGURATION },
-    { kStateReady, STATE_READY },
-    { kStateDisconnect, STATE_DISCONNECT },
-    { kStateFailure, STATE_FAILURE },
-    { kStateActivationFailure, STATE_ACTIVATION_FAILURE },
-    { kStatePortal, STATE_PORTAL },
-    { kStateOnline, STATE_ONLINE },
-  };
-  static StringToEnum<ConnectionState> parser(
-      table, arraysize(table), STATE_UNKNOWN);
-  return parser.Get(state);
-}
-
-static ConnectionError ParseError(const std::string& error) {
-  static StringToEnum<ConnectionError>::Pair table[] = {
-    { kErrorOutOfRange, ERROR_OUT_OF_RANGE },
-    { kErrorPinMissing, ERROR_PIN_MISSING },
-    { kErrorDhcpFailed, ERROR_DHCP_FAILED },
-    { kErrorConnectFailed, ERROR_CONNECT_FAILED },
-    { kErrorBadPassphrase, ERROR_BAD_PASSPHRASE },
-    { kErrorBadWEPKey, ERROR_BAD_WEPKEY },
-    { kErrorActivationFailed, ERROR_ACTIVATION_FAILED },
-    { kErrorNeedEvdo, ERROR_NEED_EVDO },
-    { kErrorNeedHomeNetwork, ERROR_NEED_HOME_NETWORK },
-    { kErrorOtaspFailed, ERROR_OTASP_FAILED },
-    { kErrorAaaFailed, ERROR_AAA_FAILED },
-    { kErrorInternal, ERROR_INTERNAL },
-    { kErrorDNSLookupFailed, ERROR_DNS_LOOKUP_FAILED },
-    { kErrorHTTPGetFailed, ERROR_HTTP_GET_FAILED },
-  };
-  static StringToEnum<ConnectionError> parser(
-      table, arraysize(table), ERROR_NO_ERROR);
-  return parser.Get(error);
-}
-
-// VirtualNetwork
-static VirtualNetwork::ProviderType ParseProviderType(const std::string& mode) {
-  static StringToEnum<VirtualNetwork::ProviderType>::Pair table[] = {
-    { kProviderL2tpIpsec, VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK },
-    { kProviderOpenVpn, VirtualNetwork::PROVIDER_TYPE_OPEN_VPN },
-  };
-  static StringToEnum<VirtualNetwork::ProviderType> parser(
-      table, arraysize(table), VirtualNetwork::PROVIDER_TYPE_MAX);
-  return parser.Get(mode);
-}
-
-// CellularNetwork.
-static ActivationState ParseActivationState(const std::string& state) {
-  static StringToEnum<ActivationState>::Pair table[] = {
-    { kActivationStateActivated, ACTIVATION_STATE_ACTIVATED },
-    { kActivationStateActivating, ACTIVATION_STATE_ACTIVATING },
-    { kActivationStateNotActivated, ACTIVATION_STATE_NOT_ACTIVATED },
-    { kActivationStatePartiallyActivated, ACTIVATION_STATE_PARTIALLY_ACTIVATED},
-    { kActivationStateUnknown, ACTIVATION_STATE_UNKNOWN},
-  };
-  static StringToEnum<ActivationState> parser(
-      table, arraysize(table), ACTIVATION_STATE_UNKNOWN);
-  return parser.Get(state);
-}
-
-static NetworkTechnology ParseNetworkTechnology(const std::string& technology) {
-  static StringToEnum<NetworkTechnology>::Pair table[] = {
-    { kNetworkTechnology1Xrtt, NETWORK_TECHNOLOGY_1XRTT },
-    { kNetworkTechnologyEvdo, NETWORK_TECHNOLOGY_EVDO },
-    { kNetworkTechnologyGprs, NETWORK_TECHNOLOGY_GPRS },
-    { kNetworkTechnologyEdge, NETWORK_TECHNOLOGY_EDGE },
-    { kNetworkTechnologyUmts, NETWORK_TECHNOLOGY_UMTS },
-    { kNetworkTechnologyHspa, NETWORK_TECHNOLOGY_HSPA },
-    { kNetworkTechnologyHspaPlus, NETWORK_TECHNOLOGY_HSPA_PLUS },
-    { kNetworkTechnologyLte, NETWORK_TECHNOLOGY_LTE },
-    { kNetworkTechnologyLteAdvanced, NETWORK_TECHNOLOGY_LTE_ADVANCED },
-    { kNetworkTechnologyGsm, NETWORK_TECHNOLOGY_GSM },
-  };
-  static StringToEnum<NetworkTechnology> parser(
-      table, arraysize(table), NETWORK_TECHNOLOGY_UNKNOWN);
-  return parser.Get(technology);
-}
-
-static SIMLockState ParseSimLockState(const std::string& state) {
-  static StringToEnum<SIMLockState>::Pair table[] = {
-    { "", SIM_UNLOCKED },
-    { kSIMLockPin, SIM_LOCKED_PIN },
-    { kSIMLockPuk, SIM_LOCKED_PUK },
-  };
-  static StringToEnum<SIMLockState> parser(
-      table, arraysize(table), SIM_UNKNOWN);
-  SIMLockState parsed_state = parser.Get(state);
-  DCHECK_NE(parsed_state, SIM_UNKNOWN) << "Unknown SIMLock state encountered";
-  return parsed_state;
-}
-
-static bool ParseSimLockStateFromDictionary(const DictionaryValue* info,
-                                            SIMLockState* out_state,
-                                            int* out_retries) {
-  std::string state_string;
-  if (!info->GetString(kSIMLockTypeProperty, &state_string) ||
-      !info->GetInteger(kSIMLockRetriesLeftProperty, out_retries)) {
-    LOG(ERROR) << "Error parsing SIMLock state";
-    return false;
-  }
-  *out_state = ParseSimLockState(state_string);
-  return true;
-}
-
-static bool ParseFoundNetworksFromList(const ListValue* list,
-                                       CellularNetworkList* found_networks_) {
-  found_networks_->clear();
-  found_networks_->reserve(list->GetSize());
-  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
-    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
-      found_networks_->resize(found_networks_->size() + 1);
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
-      dict->GetStringWithoutPathExpansion(
-          kStatusProperty, &found_networks_->back().status);
-      dict->GetStringWithoutPathExpansion(
-          kNetworkIdProperty, &found_networks_->back().network_id);
-      dict->GetStringWithoutPathExpansion(
-          kShortNameProperty, &found_networks_->back().short_name);
-      dict->GetStringWithoutPathExpansion(
-          kLongNameProperty, &found_networks_->back().long_name);
-      dict->GetStringWithoutPathExpansion(
-          kTechnologyProperty, &found_networks_->back().technology);
-    } else {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool ParseApnList(const ListValue* list,
-                         CellularApnList* apn_list) {
-  apn_list->clear();
-  apn_list->reserve(list->GetSize());
-  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
-    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
-      apn_list->resize(apn_list->size() + 1);
-      apn_list->back().Set(*static_cast<const DictionaryValue*>(*it));
-    } else {
-      return false;
-    }
-  }
-  return true;
-}
-
-static NetworkRoamingState ParseRoamingState(const std::string& roaming_state) {
-  static StringToEnum<NetworkRoamingState>::Pair table[] = {
-    { kRoamingStateHome, ROAMING_STATE_HOME },
-    { kRoamingStateRoaming, ROAMING_STATE_ROAMING },
-    { kRoamingStateUnknown, ROAMING_STATE_UNKNOWN },
-  };
-  static StringToEnum<NetworkRoamingState> parser(
-      table, arraysize(table), ROAMING_STATE_UNKNOWN);
-  return parser.Get(roaming_state);
-}
-
-// WifiNetwork
-static ConnectionSecurity ParseSecurity(const std::string& security) {
-  static StringToEnum<ConnectionSecurity>::Pair table[] = {
-    { kSecurityNone, SECURITY_NONE },
-    { kSecurityWep, SECURITY_WEP },
-    { kSecurityWpa, SECURITY_WPA },
-    { kSecurityRsn, SECURITY_RSN },
-    { kSecurityPsk, SECURITY_PSK },
-    { kSecurity8021x, SECURITY_8021X },
-  };
-  static StringToEnum<ConnectionSecurity> parser(
-      table, arraysize(table), SECURITY_UNKNOWN);
-  return parser.Get(security);
-}
-
-static EAPMethod ParseEAPMethod(const std::string& method) {
-  static StringToEnum<EAPMethod>::Pair table[] = {
-    { kEapMethodPEAP, EAP_METHOD_PEAP },
-    { kEapMethodTLS, EAP_METHOD_TLS },
-    { kEapMethodTTLS, EAP_METHOD_TTLS },
-    { kEapMethodLEAP, EAP_METHOD_LEAP },
-  };
-  static StringToEnum<EAPMethod> parser(
-      table, arraysize(table), EAP_METHOD_UNKNOWN);
-  return parser.Get(method);
-}
-
-static EAPPhase2Auth ParseEAPPhase2Auth(const std::string& auth) {
-  static StringToEnum<EAPPhase2Auth>::Pair table[] = {
-    { kEapPhase2AuthPEAPMD5, EAP_PHASE_2_AUTH_MD5 },
-    { kEapPhase2AuthPEAPMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
-    { kEapPhase2AuthTTLSMD5, EAP_PHASE_2_AUTH_MD5 },
-    { kEapPhase2AuthTTLSMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
-    { kEapPhase2AuthTTLSMSCHAP, EAP_PHASE_2_AUTH_MSCHAP },
-    { kEapPhase2AuthTTLSPAP, EAP_PHASE_2_AUTH_PAP },
-    { kEapPhase2AuthTTLSCHAP, EAP_PHASE_2_AUTH_CHAP },
-  };
-  static StringToEnum<EAPPhase2Auth> parser(
-      table, arraysize(table), EAP_PHASE_2_AUTH_AUTO);
-  return parser.Get(auth);
-}
-
-// NetworkDevice
-static TechnologyFamily ParseTechnologyFamily(const std::string& family) {
-  static StringToEnum<TechnologyFamily>::Pair table[] = {
-    { kTechnologyFamilyCdma, TECHNOLOGY_FAMILY_CDMA },
-    { kTechnologyFamilyGsm, TECHNOLOGY_FAMILY_GSM },
-  };
-  static StringToEnum<TechnologyFamily> parser(
-      table, arraysize(table), TECHNOLOGY_FAMILY_UNKNOWN);
-  return parser.Get(family);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
@@ -968,158 +163,33 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       sim_lock_state_(SIM_UNKNOWN),
       sim_retries_left_(kDefaultSimUnlockRetriesCount),
       sim_pin_required_(SIM_PIN_REQUIRE_UNKNOWN),
-      PRL_version_(0),
+      prl_version_(0),
       data_roaming_allowed_(false),
-      support_network_scan_(false) {
+      support_network_scan_(false),
+      device_parser_(new NativeNetworkDeviceParser) {
 }
 
 NetworkDevice::~NetworkDevice() {}
 
-bool NetworkDevice::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_TYPE: {
-      std::string type_string;
-      if (value->GetAsString(&type_string)) {
-        type_ = ParseType(type_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_NAME:
-      return value->GetAsString(&name_);
-    case PROPERTY_INDEX_CARRIER:
-      return value->GetAsString(&carrier_);
-    case PROPERTY_INDEX_SCANNING:
-      return value->GetAsBoolean(&scanning_);
-    case PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING:
-      return value->GetAsBoolean(&data_roaming_allowed_);
-    case PROPERTY_INDEX_CELLULAR_APN_LIST:
-      if (value->IsType(Value::TYPE_LIST)) {
-        return ParseApnList(static_cast<const ListValue*>(value),
-                            &provider_apn_list_);
-      }
-      break;
-    case PROPERTY_INDEX_NETWORKS:
-      if (value->IsType(Value::TYPE_LIST)) {
-        // Ignored.
-        return true;
-      }
-      break;
-    case PROPERTY_INDEX_FOUND_NETWORKS:
-      if (value->IsType(Value::TYPE_LIST)) {
-        return ParseFoundNetworksFromList(
-            static_cast<const ListValue*>(value),
-            &found_cellular_networks_);
-      }
-      break;
-    case PROPERTY_INDEX_HOME_PROVIDER: {
-      if (value->IsType(Value::TYPE_DICTIONARY)) {
-        const DictionaryValue* dict =
-            static_cast<const DictionaryValue*>(value);
-        home_provider_code_.clear();
-        home_provider_country_.clear();
-        home_provider_name_.clear();
-        dict->GetStringWithoutPathExpansion(kOperatorCodeKey,
-                                            &home_provider_code_);
-        dict->GetStringWithoutPathExpansion(kOperatorCountryKey,
-                                            &home_provider_country_);
-        dict->GetStringWithoutPathExpansion(kOperatorNameKey,
-                                            &home_provider_name_);
-        if (!home_provider_name_.empty() && !home_provider_country_.empty()) {
-          home_provider_id_ = base::StringPrintf(
-              kCarrierIdFormat,
-              home_provider_name_.c_str(),
-              home_provider_country_.c_str());
-        } else {
-          home_provider_id_ = home_provider_code_;
-          LOG(WARNING) << "Carrier ID not defined, using code instead: "
-                       << home_provider_id_;
-        }
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_MEID:
-      return value->GetAsString(&MEID_);
-    case PROPERTY_INDEX_IMEI:
-      return value->GetAsString(&IMEI_);
-    case PROPERTY_INDEX_IMSI:
-      return value->GetAsString(&IMSI_);
-    case PROPERTY_INDEX_ESN:
-      return value->GetAsString(&ESN_);
-    case PROPERTY_INDEX_MDN:
-      return value->GetAsString(&MDN_);
-    case PROPERTY_INDEX_MIN:
-      return value->GetAsString(&MIN_);
-    case PROPERTY_INDEX_MODEL_ID:
-      return value->GetAsString(&model_id_);
-    case PROPERTY_INDEX_MANUFACTURER:
-      return value->GetAsString(&manufacturer_);
-    case PROPERTY_INDEX_SIM_LOCK:
-      if (value->IsType(Value::TYPE_DICTIONARY)) {
-        bool result = ParseSimLockStateFromDictionary(
-            static_cast<const DictionaryValue*>(value),
-            &sim_lock_state_,
-            &sim_retries_left_);
-        // Initialize PinRequired value only once.
-        // See SIMPinRequire enum comments.
-        if (sim_pin_required_ == SIM_PIN_REQUIRE_UNKNOWN) {
-          if (sim_lock_state_ == SIM_UNLOCKED) {
-            sim_pin_required_ = SIM_PIN_NOT_REQUIRED;
-          } else if (sim_lock_state_ == SIM_LOCKED_PIN ||
-                     sim_lock_state_ == SIM_LOCKED_PUK) {
-            sim_pin_required_ = SIM_PIN_REQUIRED;
-          }
-        }
-        return result;
-      }
-      break;
-    case PROPERTY_INDEX_FIRMWARE_REVISION:
-      return value->GetAsString(&firmware_revision_);
-    case PROPERTY_INDEX_HARDWARE_REVISION:
-      return value->GetAsString(&hardware_revision_);
-    case PROPERTY_INDEX_POWERED:
-      // we don't care about the value, just the fact that it changed
-      return true;
-    case PROPERTY_INDEX_PRL_VERSION:
-      return value->GetAsInteger(&PRL_version_);
-    case PROPERTY_INDEX_SELECTED_NETWORK:
-      return value->GetAsString(&selected_cellular_network_);
-    case PROPERTY_INDEX_SUPPORT_NETWORK_SCAN:
-      return value->GetAsBoolean(&support_network_scan_);
-    case PROPERTY_INDEX_TECHNOLOGY_FAMILY: {
-      std::string technology_family_string;
-      if (value->GetAsString(&technology_family_string)) {
-        technology_family_ = ParseTechnologyFamily(technology_family_string);
-        return true;
-      }
-      break;
-    }
-    default:
-      break;
-  }
-  return false;
+void NetworkDevice::ParseInfo(const DictionaryValue& info) {
+  if (device_parser_.get())
+    device_parser_->UpdateDeviceFromInfo(info, this);
 }
 
-void NetworkDevice::ParseInfo(const DictionaryValue* info) {
-  for (DictionaryValue::key_iterator iter = info->begin_keys();
-       iter != info->end_keys(); ++iter) {
-    const std::string& key = *iter;
-    Value* value;
-    bool res = info->GetWithoutPathExpansion(key, &value);
-    DCHECK(res);
-    if (res) {
-      int index = property_index_parser().Get(key);
-      if (!ParseValue(index, value))
-        VLOG(1) << "NetworkDevice: Unhandled key: " << key;
-    }
-  }
+bool NetworkDevice::UpdateStatus(const std::string& key,
+                                 const Value& value,
+                                 PropertyIndex* index) {
+  if (device_parser_.get())
+    return device_parser_->UpdateStatus(key, value, this, index);
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
-Network::Network(const std::string& service_path, ConnectionType type)
+Network::Network(const std::string& service_path,
+                 ConnectionType type,
+                 NativeNetworkParser* parser)
     : state_(STATE_UNKNOWN),
       error_(ERROR_NO_ERROR),
       connectable_(true),
@@ -1132,7 +202,8 @@ Network::Network(const std::string& service_path, ConnectionType type)
       notify_failure_(false),
       profile_type_(PROFILE_NONE),
       service_path_(service_path),
-      type_(type) {
+      type_(type),
+      network_parser_(parser) {
 }
 
 Network::~Network() {}
@@ -1161,96 +232,9 @@ void Network::SetName(const std::string& name) {
   set_name(name_utf8);
 }
 
-bool Network::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_TYPE: {
-      std::string type_string;
-      if (value->GetAsString(&type_string)) {
-        ConnectionType type = ParseType(type_string);
-        LOG_IF(ERROR, type != type_)
-            << "Network with mismatched type: " << service_path_
-            << " " << type << " != " << type_;
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_DEVICE:
-      return value->GetAsString(&device_path_);
-    case PROPERTY_INDEX_NAME: {
-      std::string name;
-      if (value->GetAsString(&name)) {
-        SetName(name);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_PROFILE:
-      // Note: currently this is only provided for non remembered networks.
-      return value->GetAsString(&profile_path_);
-    case PROPERTY_INDEX_STATE: {
-      std::string state_string;
-      if (value->GetAsString(&state_string)) {
-        SetState(ParseState(state_string));
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_MODE: {
-      std::string mode_string;
-      if (value->GetAsString(&mode_string)) {
-        mode_ = ParseMode(mode_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_ERROR: {
-      std::string error_string;
-      if (value->GetAsString(&error_string)) {
-        error_ = ParseError(error_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_CONNECTABLE:
-      return value->GetAsBoolean(&connectable_);
-    case PROPERTY_INDEX_IS_ACTIVE:
-      return value->GetAsBoolean(&is_active_);
-    case PROPERTY_INDEX_FAVORITE:
-      // Not used currently.
-      return true;
-    case PROPERTY_INDEX_PRIORITY:
-      return value->GetAsInteger(&priority_);
-    case PROPERTY_INDEX_AUTO_CONNECT:
-      return value->GetAsBoolean(&auto_connect_);
-    case PROPERTY_INDEX_SAVE_CREDENTIALS:
-      return value->GetAsBoolean(&save_credentials_);
-    case PROPERTY_INDEX_PROXY_CONFIG:
-      return value->GetAsString(&proxy_config_);
-    default:
-      break;
-  }
-  return false;
-}
-
-void Network::ParseInfo(const DictionaryValue* info) {
-  // Set default values for properties that may not exist in the dictionary.
-  priority_ = kPriorityNotSet;
-
-  for (DictionaryValue::key_iterator iter = info->begin_keys();
-       iter != info->end_keys(); ++iter) {
-    const std::string& key = *iter;
-    Value* value;
-    bool res = info->GetWithoutPathExpansion(key, &value);
-    DCHECK(res);
-    if (res) {
-      int index = property_index_parser().Get(key);
-      if (!ParseValue(index, value))  // virtual.
-        VLOG(1) << "Network: " << name()
-                << " Type: " << ConnectionTypeToString(type())
-                << " Unhandled key: " << key;
-    }
-  }
-  CalculateUniqueId();
+void Network::ParseInfo(const DictionaryValue& info) {
+  if (network_parser_.get())
+    network_parser_->UpdateNetworkFromInfo(info, this);
 }
 
 void Network::EraseCredentials() {
@@ -1436,90 +420,30 @@ void Network::InitIPAddress() {
   }
 }
 
+bool Network::UpdateStatus(const std::string& key,
+                           const Value& value,
+                           PropertyIndex* index) {
+  if (network_parser_.get())
+    return network_parser_->UpdateStatus(key, value, this, index);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EthernetNetwork
+
+EthernetNetwork::EthernetNetwork(const std::string& service_path)
+    : Network(service_path, TYPE_ETHERNET, new NativeEthernetNetworkParser) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // VirtualNetwork
 
 VirtualNetwork::VirtualNetwork(const std::string& service_path)
-    : Network(service_path, TYPE_VPN),
+    : Network(service_path, TYPE_VPN, new NativeVirtualNetworkParser),
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
 }
 
 VirtualNetwork::~VirtualNetwork() {}
-
-bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_HOST:
-      return value->GetAsString(&server_hostname_);
-    case PROPERTY_INDEX_NAME:
-      // Note: shadows Network::name_ property.
-      return value->GetAsString(&name_);
-    case PROPERTY_INDEX_TYPE: {
-      std::string provider_type_string;
-      if (value->GetAsString(&provider_type_string)) {
-        provider_type_ = ParseProviderType(provider_type_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS:
-      return value->GetAsString(&ca_cert_nss_);
-    case PROPERTY_INDEX_L2TPIPSEC_PIN:
-      // Ignore PIN property.
-      return true;
-    case PROPERTY_INDEX_L2TPIPSEC_PSK:
-      return value->GetAsString(&psk_passphrase_);
-    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:
-      return value->GetAsString(&client_cert_id_);
-    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT:
-      // Ignore ClientCertSlot property.
-      return true;
-    case PROPERTY_INDEX_L2TPIPSEC_USER:
-      return value->GetAsString(&username_);
-    case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
-      return value->GetAsString(&user_passphrase_);
-    default:
-      break;
-  }
-  return false;
-}
-
-bool VirtualNetwork::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_PROVIDER: {
-      DCHECK_EQ(value->GetType(), Value::TYPE_DICTIONARY);
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
-      for (DictionaryValue::key_iterator iter = dict->begin_keys();
-           iter != dict->end_keys(); ++iter) {
-        const std::string& key = *iter;
-        Value* v;
-        bool res = dict->GetWithoutPathExpansion(key, &v);
-        DCHECK(res);
-        if (res) {
-          int index = property_index_parser().Get(key);
-          if (!ParseProviderValue(index, v))
-            VLOG(1) << name() << ": Provider unhandled key: " << key
-                    << " Type: " << v->GetType();
-        }
-      }
-      return true;
-    }
-    default:
-      return Network::ParseValue(index, value);
-      break;
-  }
-  return false;
-}
-
-void VirtualNetwork::ParseInfo(const DictionaryValue* info) {
-  Network::ParseInfo(info);
-  VLOG(1) << "VPN: " << name()
-          << " Server: " << server_hostname()
-          << " Type: " << ProviderTypeToString(provider_type());
-  if (provider_type_ == PROVIDER_TYPE_L2TP_IPSEC_PSK) {
-    if (!client_cert_id_.empty())
-      provider_type_ = PROVIDER_TYPE_L2TP_IPSEC_USER_CERT;
-  }
-}
 
 void VirtualNetwork::EraseCredentials() {
   WipeString(&ca_cert_nss_);
@@ -1530,7 +454,7 @@ void VirtualNetwork::EraseCredentials() {
 
 void VirtualNetwork::CalculateUniqueId() {
   std::string provider_type(ProviderTypeToString(provider_type_));
-  unique_id_ = provider_type + "|" + server_hostname_;
+  set_unique_id(provider_type + "|" + server_hostname_);
 }
 
 bool VirtualNetwork::RequiresUserProfile() const {
@@ -1595,46 +519,35 @@ std::string VirtualNetwork::GetProviderTypeString() const {
 }
 
 void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
-  SetStringProperty(kL2TPIPSecCACertNSSProperty, ca_cert_nss, &ca_cert_nss_);
+  SetStringProperty(kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
 }
 
 void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
-  SetStringProperty(kL2TPIPSecPSKProperty, psk_passphrase,
+  SetStringProperty(kL2tpIpsecPskProperty, psk_passphrase,
                            &psk_passphrase_);
 }
 
 void VirtualNetwork::SetClientCertID(const std::string& cert_id) {
-  SetStringProperty(kL2TPIPSecClientCertIDProperty, cert_id, &client_cert_id_);
+  SetStringProperty(kL2tpIpsecClientCertIdProperty, cert_id, &client_cert_id_);
 }
 
 void VirtualNetwork::SetUsername(const std::string& username) {
-  SetStringProperty(kL2TPIPSecUserProperty, username, &username_);
+  SetStringProperty(kL2tpIpsecUserProperty, username, &username_);
 }
 
 void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
-  SetStringProperty(kL2TPIPSecPasswordProperty, user_passphrase,
+  SetStringProperty(kL2tpIpsecPasswordProperty, user_passphrase,
                     &user_passphrase_);
 }
 
 void VirtualNetwork::SetCertificateSlotAndPin(
     const std::string& slot, const std::string& pin) {
-  SetOrClearStringProperty(kL2TPIPSecClientCertSlotProp, slot, NULL);
-  SetOrClearStringProperty(kL2TPIPSecPINProperty, pin, NULL);
+  SetOrClearStringProperty(kL2tpIpsecClientCertSlotProp, slot, NULL);
+  SetOrClearStringProperty(kL2tpIpsecPinProperty, pin, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WirelessNetwork
-
-bool WirelessNetwork::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_SIGNAL_STRENGTH:
-      return value->GetAsInteger(&strength_);
-    default:
-      return Network::ParseValue(index, value);
-      break;
-  }
-  return false;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularDataPlan
@@ -1883,7 +796,8 @@ void CellularApn::Set(const DictionaryValue& dict) {
 // CellularNetwork
 
 CellularNetwork::CellularNetwork(const std::string& service_path)
-    : WirelessNetwork(service_path, TYPE_CELLULAR),
+    : WirelessNetwork(service_path, TYPE_CELLULAR,
+                      new NativeCellularNetworkParser),
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),
@@ -1891,90 +805,6 @@ CellularNetwork::CellularNetwork(const std::string& service_path)
 }
 
 CellularNetwork::~CellularNetwork() {
-}
-
-bool CellularNetwork::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_ACTIVATION_STATE: {
-      std::string activation_state_string;
-      if (value->GetAsString(&activation_state_string)) {
-        ActivationState prev_state = activation_state_;
-        activation_state_ = ParseActivationState(activation_state_string);
-        if (activation_state_ != prev_state)
-          RefreshDataPlansIfNeeded();
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_CELLULAR_APN: {
-      if (value->IsType(Value::TYPE_DICTIONARY)) {
-        apn_.Set(*static_cast<const DictionaryValue*>(value));
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN: {
-      if (value->IsType(Value::TYPE_DICTIONARY)) {
-        last_good_apn_.Set(*static_cast<const DictionaryValue*>(value));
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_NETWORK_TECHNOLOGY: {
-      std::string network_technology_string;
-      if (value->GetAsString(&network_technology_string)) {
-        network_technology_ = ParseNetworkTechnology(network_technology_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_ROAMING_STATE: {
-      std::string roaming_state_string;
-      if (value->GetAsString(&roaming_state_string)) {
-        roaming_state_ = ParseRoamingState(roaming_state_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_OPERATOR_NAME:
-      return value->GetAsString(&operator_name_);
-    case PROPERTY_INDEX_OPERATOR_CODE:
-      return value->GetAsString(&operator_code_);
-    case PROPERTY_INDEX_SERVING_OPERATOR: {
-      if (value->IsType(Value::TYPE_DICTIONARY)) {
-        const DictionaryValue* dict =
-            static_cast<const DictionaryValue*>(value);
-        operator_code_.clear();
-        operator_country_.clear();
-        operator_name_.clear();
-        dict->GetStringWithoutPathExpansion(kOperatorNameKey,
-                                            &operator_name_);
-        dict->GetStringWithoutPathExpansion(kOperatorCodeKey,
-                                            &operator_code_);
-        dict->GetStringWithoutPathExpansion(kOperatorCountryKey,
-                                            &operator_country_);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_PAYMENT_URL:
-      return value->GetAsString(&payment_url_);
-    case PROPERTY_INDEX_USAGE_URL:
-      return value->GetAsString(&usage_url_);
-    case PROPERTY_INDEX_STATE: {
-      // Save previous state before calling WirelessNetwork::ParseValue.
-      ConnectionState prev_state = state_;
-      if (WirelessNetwork::ParseValue(index, value)) {
-        if (state_ != prev_state)
-          RefreshDataPlansIfNeeded();
-        return true;
-      }
-      break;
-    }
-    default:
-      return WirelessNetwork::ParseValue(index, value);
-  }
-  return false;
 }
 
 bool CellularNetwork::StartActivation() const {
@@ -2105,7 +935,7 @@ std::string CellularNetwork::GetRoamingStateString() const {
 // WifiNetwork
 
 WifiNetwork::WifiNetwork(const std::string& service_path)
-    : WirelessNetwork(service_path, TYPE_WIFI),
+    : WirelessNetwork(service_path, TYPE_WIFI, new NativeWifiNetworkParser),
       encryption_(SECURITY_NONE),
       passphrase_required_(false),
       eap_method_(EAP_METHOD_UNKNOWN),
@@ -2122,7 +952,7 @@ void WifiNetwork::CalculateUniqueId() {
   if (encryption == SECURITY_WPA || encryption == SECURITY_RSN)
     encryption = SECURITY_PSK;
   std::string security = std::string(SecurityToString(encryption));
-  unique_id_ = security + "|" + name_;
+  set_unique_id(security + "|" + name());
 }
 
 bool WifiNetwork::SetSsid(const std::string& ssid) {
@@ -2155,97 +985,6 @@ bool WifiNetwork::SetHexSsid(const std::string& ssid_hex) {
   }
 
   return SetSsid(std::string(ssid_raw.begin(), ssid_raw.end()));
-}
-
-bool WifiNetwork::ParseValue(int index, const Value* value) {
-  switch (index) {
-    case PROPERTY_INDEX_WIFI_HEX_SSID: {
-      std::string ssid_hex;
-      if (!value->GetAsString(&ssid_hex))
-        return false;
-
-      SetHexSsid(ssid_hex);
-      return true;
-    }
-    case PROPERTY_INDEX_WIFI_AUTH_MODE:
-    case PROPERTY_INDEX_WIFI_PHY_MODE:
-    case PROPERTY_INDEX_WIFI_HIDDEN_SSID:
-    case PROPERTY_INDEX_WIFI_FREQUENCY:
-      // These properties are currently not used in the UI.
-      return true;
-    case PROPERTY_INDEX_NAME: {
-      // Does not change network name when it was already set by WiFi.HexSSID.
-      if (!name().empty())
-        return true;
-      else
-        return WirelessNetwork::ParseValue(index, value);
-    }
-    case PROPERTY_INDEX_SECURITY: {
-      std::string security_string;
-      if (value->GetAsString(&security_string)) {
-        encryption_ = ParseSecurity(security_string);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_PASSPHRASE: {
-      std::string passphrase;
-      if (value->GetAsString(&passphrase)) {
-        // Only store the passphrase if we are the owner.
-        // TODO(stevenjb): Remove this when chromium-os:12948 is resolved.
-        if (chromeos::UserManager::Get()->current_user_is_owner())
-          passphrase_ = passphrase;
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_PASSPHRASE_REQUIRED:
-      return value->GetAsBoolean(&passphrase_required_);
-    case PROPERTY_INDEX_IDENTITY:
-      return value->GetAsString(&identity_);
-    case PROPERTY_INDEX_EAP_IDENTITY:
-      return value->GetAsString(&eap_identity_);
-    case PROPERTY_INDEX_EAP_METHOD: {
-      std::string method;
-      if (value->GetAsString(&method)) {
-        eap_method_ = ParseEAPMethod(method);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_EAP_PHASE_2_AUTH: {
-      std::string auth;
-      if (value->GetAsString(&auth)) {
-        eap_phase_2_auth_ = ParseEAPPhase2Auth(auth);
-        return true;
-      }
-      break;
-    }
-    case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY:
-      return value->GetAsString(&eap_anonymous_identity_);
-    case PROPERTY_INDEX_EAP_CERT_ID:
-      return value->GetAsString(&eap_client_cert_pkcs11_id_);
-    case PROPERTY_INDEX_EAP_CA_CERT_NSS:
-      return value->GetAsString(&eap_server_ca_cert_nss_nickname_);
-    case PROPERTY_INDEX_EAP_USE_SYSTEM_CAS:
-      return value->GetAsBoolean(&eap_use_system_cas_);
-    case PROPERTY_INDEX_EAP_PASSWORD:
-      return value->GetAsString(&eap_passphrase_);
-    case PROPERTY_INDEX_EAP_CLIENT_CERT:
-    case PROPERTY_INDEX_EAP_CLIENT_CERT_NSS:
-    case PROPERTY_INDEX_EAP_PRIVATE_KEY:
-    case PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD:
-    case PROPERTY_INDEX_EAP_KEY_ID:
-    case PROPERTY_INDEX_EAP_CA_CERT:
-    case PROPERTY_INDEX_EAP_CA_CERT_ID:
-    case PROPERTY_INDEX_EAP_PIN:
-    case PROPERTY_INDEX_EAP_KEY_MGMT:
-      // These properties are currently not used in the UI.
-      return true;
-    default:
-      return WirelessNetwork::ParseValue(index, value);
-  }
-  return false;
 }
 
 const std::string& WifiNetwork::GetPassphrase() const {
@@ -2288,16 +1027,16 @@ void WifiNetwork::SetEAPMethod(EAPMethod method) {
   eap_method_ = method;
   switch (method) {
     case EAP_METHOD_PEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodPEAP, NULL);
+      SetStringProperty(kEapMethodProperty, kEapMethodPeap, NULL);
       break;
     case EAP_METHOD_TLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTLS, NULL);
+      SetStringProperty(kEapMethodProperty, kEapMethodTls, NULL);
       break;
     case EAP_METHOD_TTLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTTLS, NULL);
+      SetStringProperty(kEapMethodProperty, kEapMethodTtls, NULL);
       break;
     case EAP_METHOD_LEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodLEAP, NULL);
+      SetStringProperty(kEapMethodProperty, kEapMethodLeap, NULL);
       break;
     default:
       ClearProperty(kEapMethodProperty);
@@ -2314,24 +1053,24 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
       break;
     case EAP_PHASE_2_AUTH_MD5:
       SetStringProperty(kEapPhase2AuthProperty,
-                        is_peap ? kEapPhase2AuthPEAPMD5
-                                : kEapPhase2AuthTTLSMD5,
+                        is_peap ? kEapPhase2AuthPeapMd5
+                                : kEapPhase2AuthTtlsMd5,
                         NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAPV2:
       SetStringProperty(kEapPhase2AuthProperty,
-                        is_peap ? kEapPhase2AuthPEAPMSCHAPV2
-                                : kEapPhase2AuthTTLSMSCHAPV2,
+                        is_peap ? kEapPhase2AuthPeapMschap2
+                                : kEapPhase2AuthTtlsMschapV2,
                         NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSMSCHAP, NULL);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsMschap, NULL);
       break;
     case EAP_PHASE_2_AUTH_PAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSPAP, NULL);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsPap, NULL);
       break;
     case EAP_PHASE_2_AUTH_CHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTTLSCHAP, NULL);
+      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsChap, NULL);
       break;
   }
 }
@@ -2345,15 +1084,15 @@ void WifiNetwork::SetEAPServerCaCertNssNickname(
 
 void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
   VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
-  SetOrClearStringProperty(kEapCertIDProperty, pkcs11_id,
+  SetOrClearStringProperty(kEapCertIdProperty, pkcs11_id,
                            &eap_client_cert_pkcs11_id_);
   // flimflam requires both CertID and KeyID for TLS connections, despite
   // the fact that by convention they are the same ID.
-  SetOrClearStringProperty(kEapKeyIDProperty, pkcs11_id, NULL);
+  SetOrClearStringProperty(kEapKeyIdProperty, pkcs11_id, NULL);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
-  SetBooleanProperty(kEapUseSystemCAsProperty, use_system_cas,
+  SetBooleanProperty(kEapUseSystemCasProperty, use_system_cas,
                      &eap_use_system_cas_);
 }
 
@@ -2411,11 +1150,11 @@ std::string WifiNetwork::GetEncryptionString() const {
 bool WifiNetwork::IsPassphraseRequired() const {
   // TODO(stevenjb): Remove error_ tests when fixed in flimflam
   // (http://crosbug.com/10135).
-  if (error_ == ERROR_BAD_PASSPHRASE || error_ == ERROR_BAD_WEPKEY)
+  if (error() == ERROR_BAD_PASSPHRASE || error() == ERROR_BAD_WEPKEY)
     return true;
   // For 802.1x networks, configuration is required if connectable is false.
   if (encryption_ == SECURITY_8021X)
-    return !connectable_;
+    return !connectable();
   return passphrase_required_;
 }
 
@@ -2458,7 +1197,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual void CallRequestVirtualNetworkAndConnect(
       const std::string& service_name,
       const std::string& server_hostname,
-      VirtualNetwork::ProviderType provider_type) = 0;
+      ProviderType provider_type) = 0;
   // Called from NetworkConnectStart.
   // Calls NetworkConnectCompleted when the connection attept completes.
   virtual void CallConnectToNetwork(Network* network) = 0;
@@ -2759,8 +1498,6 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   void DeleteNetwork(Network* network);
   void AddRememberedNetwork(Network* network);
   void DeleteRememberedNetwork(const std::string& service_path);
-  Network* CreateNewNetwork(
-      ConnectionType type, const std::string& service_path);
   void ClearNetworks();
   void ClearRememberedNetworks();
   void DeleteNetworks();
@@ -3166,7 +1903,7 @@ NetworkDevice* NetworkLibraryImplBase::FindNetworkDeviceByPath(
 const NetworkDevice* NetworkLibraryImplBase::FindCellularDevice() const {
   for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
        iter != device_map_.end(); ++iter) {
-    if (iter->second->type() == TYPE_CELLULAR)
+    if (iter->second && iter->second->type() == TYPE_CELLULAR)
       return iter->second;
   }
   return NULL;
@@ -3612,7 +2349,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkPSK(
   connect_data_.passphrase = user_passphrase;
   CallRequestVirtualNetworkAndConnect(
       service_name, server_hostname,
-      VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK);
+      PROVIDER_TYPE_L2TP_IPSEC_PSK);
 }
 
 // 1. Connect to a virtual network with a user cert.
@@ -3632,7 +2369,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkCert(
   connect_data_.passphrase = user_passphrase;
   CallRequestVirtualNetworkAndConnect(
       service_name, server_hostname,
-      VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+      PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
 }
 
 // 2. Requests a WiFi Network by SSID and security.
@@ -3645,7 +2382,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkCert(
 // virtual void CallRequestVirtualNetworkAndConnect(
 //     const std::string& service_name,
 //     const std::string& server_hostname,
-//     VirtualNetwork::ProviderType provider_type) = 0;
+//     ProviderType provider_type) = 0;
 
 // 3. Sets network properties stored in ConnectData and calls
 // NetworkConnectStart.
@@ -3875,7 +2612,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
     const std::string& service_path) {
   NetworkMap::iterator found = remembered_network_map_.find(service_path);
   if (found == remembered_network_map_.end()) {
-    LOG(WARNING) << "Attempt to delete non-existant remembered network: "
+    LOG(WARNING) << "Attempt to delete non-existent remembered network: "
                  << service_path;
     return;
   }
@@ -3929,32 +2666,6 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
   delete remembered_network;
 }
 
-Network* NetworkLibraryImplBase::CreateNewNetwork(
-    ConnectionType type, const std::string& service_path) {
-  switch (type) {
-    case TYPE_ETHERNET: {
-      EthernetNetwork* ethernet = new EthernetNetwork(service_path);
-      return ethernet;
-    }
-    case TYPE_WIFI: {
-      WifiNetwork* wifi = new WifiNetwork(service_path);
-      return wifi;
-    }
-    case TYPE_CELLULAR: {
-      CellularNetwork* cellular = new CellularNetwork(service_path);
-      return cellular;
-    }
-    case TYPE_VPN: {
-      VirtualNetwork* vpn = new VirtualNetwork(service_path);
-      return vpn;
-    }
-    default: {
-      LOG(WARNING) << "Unknown service type: " << type;
-      return new Network(service_path, type);
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 void NetworkLibraryImplBase::ClearNetworks() {
@@ -3988,7 +2699,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetworks() {
 void NetworkLibraryImplBase::DeleteDevice(const std::string& device_path) {
   NetworkDeviceMap::iterator found = device_map_.find(device_path);
   if (found == device_map_.end()) {
-    LOG(WARNING) << "Attempt to delete non-existant device: "
+    LOG(WARNING) << "Attempt to delete non-existent device: "
                  << device_path;
     return;
   }
@@ -4213,7 +2924,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void CallRequestVirtualNetworkAndConnect(
       const std::string& service_name,
       const std::string& server_hostname,
-      VirtualNetwork::ProviderType provider_type) OVERRIDE;
+      ProviderType provider_type) OVERRIDE;
   virtual void CallDeleteRememberedNetwork(
       const std::string& profile_path,
       const std::string& service_path) OVERRIDE;
@@ -4250,12 +2961,12 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   static void NetworkStatusChangedHandler(
       void* object, const char* path, const char* key, const Value* value);
   void UpdateNetworkStatus(
-      const char* path, const char* key, const Value* value);
+      const std::string& path, const std::string& key, const Value& value);
 
   static void NetworkDevicePropertyChangedHandler(
       void* object, const char* path, const char* key, const Value* value);
   void UpdateNetworkDeviceStatus(
-      const char* path, const char* key, const Value* value);
+      const std::string& path, const std::string& key, const Value& value);
 
   static void PinOperationCallback(void* object,
                                    const char* path,
@@ -4298,7 +3009,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
  private:
   // This processes all Manager update messages.
   void NetworkManagerStatusChanged(const char* key, const Value* value);
-  void ParseNetworkManager(const DictionaryValue* dict);
+  void ParseNetworkManager(const DictionaryValue& dict);
   void UpdateTechnologies(const ListValue* technologies, int* bitfieldp);
   void UpdateAvailableTechnologies(const ListValue* technologies);
   void UpdateEnabledTechnologies(const ListValue* technologies);
@@ -4308,19 +3019,19 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   void UpdateNetworkServiceList(const ListValue* services);
   void UpdateWatchedNetworkServiceList(const ListValue* services);
   Network* ParseNetwork(const std::string& service_path,
-                        const DictionaryValue* info);
+                        const DictionaryValue& info);
 
   void UpdateRememberedNetworks(const ListValue* profiles);
   void RequestRememberedNetworksUpdate();
   void UpdateRememberedServiceList(const char* profile_path,
                                    const ListValue* profile_entries);
   Network* ParseRememberedNetwork(const std::string& service_path,
-                                  const DictionaryValue* info);
+                                  const DictionaryValue& info);
 
   // NetworkDevice list management functions.
   void UpdateNetworkDeviceList(const ListValue* devices);
   void ParseNetworkDevice(const std::string& device_path,
-                          const DictionaryValue* info);
+                          const DictionaryValue& info);
 
   // Empty device observer to ensure that device property updates are received.
   class NetworkLibraryDeviceObserver : public NetworkDeviceObserver {
@@ -4440,22 +3151,20 @@ void NetworkLibraryImplCros::NetworkStatusChangedHandler(
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  networklib->UpdateNetworkStatus(path, key, value);
+  if (key == NULL || value == NULL || path == NULL || object == NULL)
+    return;
+  networklib->UpdateNetworkStatus(std::string(path), std::string(key), *value);
 }
 
 void NetworkLibraryImplCros::UpdateNetworkStatus(
-    const char* path, const char* key, const Value* value) {
+    const std::string& path, const std::string& key, const Value& value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (key == NULL || value == NULL)
-    return;
   Network* network = FindNetworkByPath(path);
   if (network) {
     VLOG(2) << "UpdateNetworkStatus: " << network->name() << "." << key;
     bool prev_connected = network->connected();
-    // Note: ParseValue is virtual.
-    int index = property_index_parser().Get(std::string(key));
-    if (!network->ParseValue(index, value)) {
-      LOG(WARNING) << "UpdateNetworkStatus: Error parsing: "
+    if (!network->UpdateStatus(key, value, NULL)) {
+      LOG(WARNING) << "UpdateNetworkStatus: Error updating: "
                    << path << "." << key;
     }
     // If we just connected, this may have been added to remembered list.
@@ -4473,35 +3182,41 @@ void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  networklib->UpdateNetworkDeviceStatus(path, key, value);
+  if (key == NULL || value == NULL || path == NULL || object == NULL)
+    return;
+  networklib->UpdateNetworkDeviceStatus(std::string(path),
+                                        std::string(key),
+                                        *value);
 }
 
 void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
-    const char* path, const char* key, const Value* value) {
+    const std::string& path, const std::string& key, const Value& value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (key == NULL || value == NULL)
-    return;
   NetworkDevice* device = FindNetworkDeviceByPath(path);
   if (device) {
     VLOG(2) << "UpdateNetworkDeviceStatus: " << device->name() << "." << key;
-    PropertyIndex index = property_index_parser().Get(std::string(key));
-    if (!device->ParseValue(index, value)) {
-      VLOG(1) << "UpdateNetworkDeviceStatus: Failed to parse: "
-              << path << "." << key;
-    } else if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
-      bool settings_value =
-          UserCrosSettingsProvider::cached_data_roaming_enabled();
-      if (device->data_roaming_allowed() != settings_value) {
-        // Switch back to signed settings value.
-        SetCellularDataRoamingAllowed(settings_value);
-        return;
+    PropertyIndex index = PROPERTY_INDEX_UNKNOWN;
+    if (device->UpdateStatus(key, value, &index)) {
+      if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
+        bool settings_value =
+            UserCrosSettingsProvider::cached_data_roaming_enabled();
+        if (device->data_roaming_allowed() != settings_value) {
+          // Switch back to signed settings value.
+          SetCellularDataRoamingAllowed(settings_value);
+          return;
+        }
       }
+    } else {
+      VLOG(1) << "UpdateNetworkDeviceStatus: Failed to update: "
+              << path << "." << key;
     }
     // Notify only observers on device property change.
     NotifyNetworkDeviceChanged(device, index);
     // If a device's power state changes, new properties may become defined.
     if (index == PROPERTY_INDEX_POWERED)
-      chromeos::RequestNetworkDeviceInfo(path, &NetworkDeviceUpdate, this);
+      chromeos::RequestNetworkDeviceInfo(path.c_str(),
+                                         &NetworkDeviceUpdate,
+                                         this);
   }
 }
 
@@ -4530,7 +3245,7 @@ void NetworkLibraryImplCros::NetworkConnectCallback(
   }
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
-  Network* network = networklib->FindNetworkByPath(service_path);
+  Network* network = networklib->FindNetworkByPath(std::string(service_path));
   if (!network) {
     LOG(ERROR) << "No network for path: " << service_path;
     return;
@@ -4554,7 +3269,7 @@ void NetworkLibraryImplCros::WifiServiceUpdateAndConnect(
     DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), dict);
+        networklib->ParseNetwork(std::string(service_path), *dict);
     DCHECK_EQ(network->type(), TYPE_WIFI);
     networklib->ConnectToWifiNetworkUsingConnectData(
         static_cast<WifiNetwork*>(network));
@@ -4582,7 +3297,7 @@ void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
     DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), dict);
+        networklib->ParseNetwork(std::string(service_path), *dict);
     DCHECK_EQ(network->type(), TYPE_VPN);
     networklib->ConnectToVirtualNetworkUsingConnectData(
         static_cast<VirtualNetwork*>(network));
@@ -4594,7 +3309,7 @@ void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
 void NetworkLibraryImplCros::CallRequestVirtualNetworkAndConnect(
     const std::string& service_name,
     const std::string& server_hostname,
-    VirtualNetwork::ProviderType provider_type) {
+    ProviderType provider_type) {
   chromeos::RequestVirtualNetwork(service_name.c_str(),
                                   server_hostname.c_str(),
                                   ProviderTypeToString(provider_type),
@@ -4950,7 +3665,7 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
   if (!key)
     return;
   VLOG(1) << "NetworkManagerStatusChanged: KEY=" << key;
-  int index = property_index_parser().Get(std::string(key));
+  int index = NativeNetworkParser::property_mapper()->Get(key);
   switch (index) {
     case PROPERTY_INDEX_STATE:
       // Currently we ignore the network manager state.
@@ -5020,7 +3735,8 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
     }
     case PROPERTY_INDEX_PORTAL_URL:
     case PROPERTY_INDEX_CHECK_PORTAL_LIST:
-      // Currently we ignore PortalURL and CheckPortalList.
+    case PROPERTY_INDEX_ARP_GATEWAY:
+      // Currently we ignore PortalURL, CheckPortalList and ArpGateway.
       break;
     default:
       LOG(WARNING) << "Manager: Unhandled key: " << key;
@@ -5045,20 +3761,20 @@ void NetworkLibraryImplCros::NetworkManagerUpdate(
   VLOG(1) << "Received NetworkManagerUpdate.";
   DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
   const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-  networklib->ParseNetworkManager(dict);
+  networklib->ParseNetworkManager(*dict);
 }
 
-void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue* dict) {
-  for (DictionaryValue::key_iterator iter = dict->begin_keys();
-       iter != dict->end_keys(); ++iter) {
+void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
+  for (DictionaryValue::key_iterator iter = dict.begin_keys();
+       iter != dict.end_keys(); ++iter) {
     const std::string& key = *iter;
     Value* value;
-    bool res = dict->GetWithoutPathExpansion(key, &value);
+    bool res = dict.GetWithoutPathExpansion(key, &value);
     CHECK(res);
     NetworkManagerStatusChanged(key.c_str(), value);
   }
   // If there is no Profiles entry, request remembered networks here.
-  if (!dict->HasKey(kProfilesProperty))
+  if (!dict.HasKey(kProfilesProperty))
     RequestRememberedNetworksUpdate();
 }
 
@@ -5089,7 +3805,8 @@ void NetworkLibraryImplCros::UpdateTechnologies(
     std::string technology;
     (*iter)->GetAsString(&technology);
     if (!technology.empty()) {
-      ConnectionType type = ParseType(technology);
+      ConnectionType type =
+          NativeNetworkParser::ParseConnectionType(technology);
       bitfield |= 1 << type;
     }
   }
@@ -5175,7 +3892,7 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       network->SetState(STATE_FAILURE);
       AddNetwork(network);
     } else {
-      VLOG(2) << "Deleting non-existant Network: " << network->name()
+      VLOG(2) << "Deleting non-existent Network: " << network->name()
               << " State = " << network->GetStateString();
       DeleteNetwork(network);
     }
@@ -5215,25 +3932,24 @@ void NetworkLibraryImplCros::NetworkServiceUpdate(
       return;  // Network no longer in visible list, ignore.
     DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-    networklib->ParseNetwork(std::string(service_path), dict);
+    networklib->ParseNetwork(std::string(service_path), *dict);
   }
 }
 
 // Called from NetworkServiceUpdate and WifiServiceUpdateAndConnect.
 Network* NetworkLibraryImplCros::ParseNetwork(
-    const std::string& service_path, const DictionaryValue* info) {
+    const std::string& service_path, const DictionaryValue& info) {
   Network* network = FindNetworkByPath(service_path);
   if (!network) {
-    ConnectionType type = ParseTypeFromDictionary(info);
-    network = CreateNewNetwork(type, service_path);
+    NativeNetworkParser parser;
+    network = parser.CreateNetworkFromInfo(service_path, info);
     AddNetwork(network);
+  } else {
+    // Erase entry from network_unique_id_map_ in case unique id changes.
+    if (!network->unique_id().empty())
+      network_unique_id_map_.erase(network->unique_id());
+    network->network_parser()->UpdateNetworkFromInfo(info, network);
   }
-
-  // Erase entry from network_unique_id_map_ in case unique id changes.
-  if (!network->unique_id().empty())
-    network_unique_id_map_.erase(network->unique_id());
-
-  network->ParseInfo(info);  // virtual.
 
   if (!network->unique_id().empty())
     network_unique_id_map_[network->unique_id()] = network;
@@ -5393,7 +4109,7 @@ void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
     } else {
       DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-      networklib->ParseRememberedNetwork(std::string(service_path), dict);
+      networklib->ParseRememberedNetwork(std::string(service_path), *dict);
     }
   }
 }
@@ -5401,23 +4117,24 @@ void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
 // Returns NULL if |service_path| refers to a network that is not a
 // remembered type. Called from RememberedNetworkServiceUpdate.
 Network* NetworkLibraryImplCros::ParseRememberedNetwork(
-    const std::string& service_path, const DictionaryValue* info) {
+    const std::string& service_path, const DictionaryValue& info) {
   Network* remembered;
   NetworkMap::iterator found = remembered_network_map_.find(service_path);
   if (found != remembered_network_map_.end()) {
     remembered = found->second;
+    remembered->network_parser()->UpdateNetworkFromInfo(info, remembered);
   } else {
-    ConnectionType type = ParseTypeFromDictionary(info);
-    if (type == TYPE_WIFI || type == TYPE_VPN) {
-      remembered = CreateNewNetwork(type, service_path);
+    NativeNetworkParser parser;
+    remembered = parser.CreateNetworkFromInfo(service_path, info);
+    if (remembered->type() == TYPE_WIFI || remembered->type() == TYPE_VPN) {
       AddRememberedNetwork(remembered);
     } else {
-      VLOG(1) << "Ignoring remembered network: " << service_path
-              << " Type: " << ConnectionTypeToString(type);
+      LOG(WARNING) << "Ignoring remembered network: " << service_path
+                   << " Type: " << ConnectionTypeToString(remembered->type());
+      delete remembered;
       return NULL;
     }
   }
-  remembered->ParseInfo(info);  // virtual.
 
   SetProfileTypeFromPath(remembered);
 
@@ -5463,6 +4180,7 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
       NetworkDeviceMap::iterator found = old_device_map.find(device_path);
       if (found != old_device_map.end()) {
         VLOG(2) << " Adding existing device: " << device_path;
+        CHECK(found->second) << "Attempted to add NULL device pointer";
         device_map_[device_path] = found->second;
         old_device_map.erase(found);
       }
@@ -5493,23 +4211,27 @@ void NetworkLibraryImplCros::NetworkDeviceUpdate(
     } else {
       DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-      networklib->ParseNetworkDevice(std::string(device_path), dict);
+      networklib->ParseNetworkDevice(std::string(device_path), *dict);
     }
   }
 }
 
-void NetworkLibraryImplCros::ParseNetworkDevice(
-    const std::string& device_path, const DictionaryValue* info) {
+void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
+                                                const DictionaryValue& info) {
   NetworkDeviceMap::iterator found = device_map_.find(device_path);
   NetworkDevice* device;
   if (found != device_map_.end()) {
     device = found->second;
+    device->device_parser()->UpdateDeviceFromInfo(info, device);
   } else {
-    device = new NetworkDevice(device_path);
+    NativeNetworkDeviceParser parser;
+    device = parser.CreateDeviceFromInfo(device_path, info);
     VLOG(2) << " Adding device: " << device_path;
-    device_map_[device_path] = device;
+    if (device) {
+      device_map_[device_path] = device;
+    }
+    CHECK(device) << "Attempted to add NULL device for path: " << device_path;
   }
-  device->ParseInfo(info);
   VLOG(1) << "ParseNetworkDevice:" << device->name();
   NotifyNetworkManagerChanged(false);  // Not forced.
   AddNetworkDeviceObserver(device_path, network_device_observer_.get());
@@ -5540,7 +4262,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void CallRequestVirtualNetworkAndConnect(
       const std::string& service_name,
       const std::string& server_hostname,
-      VirtualNetwork::ProviderType provider_type) OVERRIDE;
+      ProviderType provider_type) OVERRIDE;
 
   virtual void CallDeleteRememberedNetwork(
       const std::string& profile_path,
@@ -5613,9 +4335,8 @@ void NetworkLibraryImplStub::Init() {
   connected_devices_ = devices;
 
   NetworkDevice* cellular = new NetworkDevice("cellular");
-  scoped_ptr<Value> cellular_type(Value::CreateStringValue(kTypeCellular));
-  cellular->ParseValue(PROPERTY_INDEX_TYPE, cellular_type.get());
-  cellular->IMSI_ = "123456789012345";
+  cellular->type_ = TYPE_CELLULAR;
+  cellular->imsi_ = "123456789012345";
   device_map_["cellular"] = cellular;
 
   // Networks
@@ -5630,7 +4351,7 @@ void NetworkLibraryImplStub::Init() {
   wifi1->set_strength(90);
   wifi1->set_connected(false);
   wifi1->set_connecting(true);
-  wifi1->set_active(true);
+  wifi1->set_is_active(true);
   wifi1->set_encryption(SECURITY_NONE);
   wifi1->set_profile_type(PROFILE_SHARED);
   AddNetwork(wifi1);
@@ -5684,7 +4405,7 @@ void NetworkLibraryImplStub::Init() {
   cellular1->set_strength(70);
   cellular1->set_connected(false);
   cellular1->set_connecting(true);
-  cellular1->set_active(true);
+  cellular1->set_is_active(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular1->set_payment_url(std::string("http://www.google.com"));
   cellular1->set_usage_url(std::string("http://www.google.com"));
@@ -5722,7 +4443,7 @@ void NetworkLibraryImplStub::Init() {
   VirtualNetwork* vpn1 = new VirtualNetwork("fv1");
   vpn1->set_name("Fake VPN Provider 1");
   vpn1->set_server_hostname("vpn1server.fake.com");
-  vpn1->set_provider_type(VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK);
+  vpn1->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_PSK);
   vpn1->set_username("VPN User 1");
   vpn1->set_connected(false);
   AddNetwork(vpn1);
@@ -5730,7 +4451,7 @@ void NetworkLibraryImplStub::Init() {
   VirtualNetwork* vpn2 = new VirtualNetwork("fv2");
   vpn2->set_name("Fake VPN Provider 2");
   vpn2->set_server_hostname("vpn2server.fake.com");
-  vpn2->set_provider_type(VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+  vpn2->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
   vpn2->set_username("VPN User 2");
   vpn2->set_connected(true);
   AddNetwork(vpn2);
@@ -5738,7 +4459,7 @@ void NetworkLibraryImplStub::Init() {
   VirtualNetwork* vpn3 = new VirtualNetwork("fv3");
   vpn3->set_name("Fake VPN Provider 3");
   vpn3->set_server_hostname("vpn3server.fake.com");
-  vpn3->set_provider_type(VirtualNetwork::PROVIDER_TYPE_OPEN_VPN);
+  vpn3->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
   vpn3->set_connected(false);
   AddNetwork(vpn3);
 
@@ -5758,7 +4479,7 @@ void NetworkLibraryImplStub::Init() {
   remembered_vpn2->set_name("Fake VPN Provider 2");
   remembered_vpn2->set_server_hostname("vpn2server.fake.com");
   remembered_vpn2->set_provider_type(
-      VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+      PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
   remembered_vpn2->set_connected(true);
   AddRememberedNetwork(remembered_vpn2);
 
@@ -5784,7 +4505,7 @@ void NetworkLibraryImplStub::CallRequestWifiNetworkAndConnect(
 void NetworkLibraryImplStub::CallRequestVirtualNetworkAndConnect(
     const std::string& service_name,
     const std::string& server_hostname,
-    VirtualNetwork::ProviderType provider_type) {
+    ProviderType provider_type) {
   VirtualNetwork* vpn = new VirtualNetwork(service_name);
   vpn->set_server_hostname(server_hostname);
   vpn->set_provider_type(provider_type);

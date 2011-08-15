@@ -99,7 +99,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   std::string server_hostname_;
   string16 service_name_from_server_;
   bool service_text_modified_;
-  VirtualNetwork::ProviderType provider_type_;
+  ProviderType provider_type_;
 
   views::Label* server_text_;
   views::Textfield* server_textfield_;

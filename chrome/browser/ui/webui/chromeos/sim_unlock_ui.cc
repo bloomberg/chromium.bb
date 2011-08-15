@@ -350,7 +350,7 @@ void SimUnlockHandler::RegisterMessages() {
 
 void SimUnlockHandler::OnNetworkDeviceChanged(NetworkLibrary* cros,
                                               const NetworkDevice* device) {
-  chromeos::SIMLockState lock_state = device->sim_lock_state();
+  chromeos::SimLockState lock_state = device->sim_lock_state();
   int retries_left = device->sim_retries_left();
   VLOG(1) << "OnNetworkDeviceChanged, lock: " << lock_state
           << ", retries: " << retries_left;
@@ -407,7 +407,7 @@ void SimUnlockHandler::EnterCode(const std::string& code,
   CHECK(lib);
 
   const NetworkDevice* cellular = GetCellularDevice();
-  chromeos::SIMLockState lock_state = cellular->sim_lock_state();
+  chromeos::SimLockState lock_state = cellular->sim_lock_state();
 
   switch (code_type) {
     case CODE_PIN:
@@ -548,7 +548,7 @@ void SimUnlockHandler::ProcessSimCardState(
     const chromeos::NetworkDevice* cellular) {
   std::string error_msg;
   if (cellular) {
-    chromeos::SIMLockState lock_state = cellular->sim_lock_state();
+    chromeos::SimLockState lock_state = cellular->sim_lock_state();
     int retries_left = cellular->sim_retries_left();
     VLOG(1) << "Current state: " << state_ << " lock_state: " << lock_state
             << " retries: " << retries_left;
