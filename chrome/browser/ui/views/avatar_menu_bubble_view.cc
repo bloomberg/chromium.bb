@@ -136,6 +136,8 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(Browser* browser)
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this, browser_));
+  // Build the menu for the first time.
+  OnAvatarMenuModelChanged(avatar_menu_model_.get());
 }
 
 AvatarMenuBubbleView::~AvatarMenuBubbleView() {

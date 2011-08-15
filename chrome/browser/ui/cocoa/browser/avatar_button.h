@@ -12,8 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 
 class Browser;
-@class MenuController;
-class ProfileMenuModel;
 
 namespace AvatarButtonInternal {
 class Observer;
@@ -29,12 +27,6 @@ class Observer;
 
   // The button child view of this view.
   scoped_nsobject<NSButton> button_;
-
-  // The cross-platform MenuModel that generates the popup menu.
-  scoped_ptr<ProfileMenuModel> model_;
-
-  // Cocoa bridge that creates the NSMenu from the |model_|.
-  scoped_nsobject<MenuController> menuController_;
 
   // Notification bridge for profile info updates.
   scoped_ptr<AvatarButtonInternal::Observer> observer_;

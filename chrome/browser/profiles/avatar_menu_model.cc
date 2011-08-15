@@ -103,6 +103,7 @@ void AvatarMenuModel::Observe(int type,
                               const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
   RebuildMenu();
+  observer_->OnAvatarMenuModelChanged(this);
 }
 
 void AvatarMenuModel::RebuildMenu() {
@@ -118,8 +119,6 @@ void AvatarMenuModel::RebuildMenu() {
     }
     items_.push_back(item);
   }
-
-  observer_->OnAvatarMenuModelChanged(this);
 }
 
 void AvatarMenuModel::ClearMenu() {

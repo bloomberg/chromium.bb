@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
@@ -25,7 +26,6 @@
 @interface AvatarButton (Private)
 - (IBAction)buttonClicked:(id)sender;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image;
-- (void)updateMenu;
 - (void)updateAvatar;
 @end
 
@@ -45,7 +45,6 @@ class Observer : public NotificationObserver {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
         [button_ updateAvatar];
-        [button_ updateMenu];
         break;
       default:
         NOTREACHED();
@@ -61,6 +60,12 @@ class Observer : public NotificationObserver {
 
 }  // namespace AvatarButtonInternal
 
+namespace {
+
+const CGFloat kMenuYOffsetAdjust = 5.0;
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @implementation AvatarButton
@@ -68,7 +73,6 @@ class Observer : public NotificationObserver {
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
-    [self updateMenu];
 
     // This view's single child view is a button with the same size and width as
     // the parent. Set it to automatically resize to the size of this view and
@@ -112,9 +116,17 @@ class Observer : public NotificationObserver {
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(button_.get(), sender);
-  [NSMenu popUpContextMenu:[menuController_ menu]
-                 withEvent:[NSApp currentEvent]
-                   forView:self];
+
+  NSPoint point = NSMakePoint(NSMidX([self bounds]),
+                              NSMinY([self bounds]) + kMenuYOffsetAdjust);
+  point = [self convertPoint:point toView:nil];
+  point = [[self window] convertBaseToScreen:point];
+
+  // |menu| will automatically release itself on close.
+  AvatarMenuBubbleController* menu =
+      [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
+                                               anchoredAt:point];
+  [menu showWindow:self];
 }
 
 // This will take in an original image and redraw it with a shadow.
@@ -145,13 +157,6 @@ class Observer : public NotificationObserver {
   [destination unlockFocus];
 
   return [destination.release() autorelease];
-}
-
-// Rebuilds the menu and menu controller.
-- (void)updateMenu {
-  model_.reset(new ProfileMenuModel(browser_));
-  menuController_.reset([[MenuController alloc] initWithModel:model_.get()
-                                       useWithPopUpButtonCell:NO]);
 }
 
 // Updates the avatar information from the profile cache.

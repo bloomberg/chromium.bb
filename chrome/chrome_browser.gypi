@@ -2375,6 +2375,8 @@
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.mm',
         'browser/ui/cocoa/browser/avatar_button.h',
         'browser/ui/cocoa/browser/avatar_button.mm',
+        'browser/ui/cocoa/browser/avatar_menu_bubble_controller.h',
+        'browser/ui/cocoa/browser/avatar_menu_bubble_controller.mm',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h',
         'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.mm',
         'browser/ui/cocoa/browser_command_executor.h',

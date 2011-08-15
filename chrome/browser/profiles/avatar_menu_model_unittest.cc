@@ -7,57 +7,22 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
+#include "chrome/browser/profiles/fake_profile_info_interface.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process_test.h"
 #include "content/common/notification_service.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
-
-class FakeProfileInfo : public ProfileInfoInterface {
- public:
-  FakeProfileInfo() {}
-  virtual ~FakeProfileInfo() {}
-
-  std::vector<AvatarMenuModel::Item*>* mock_profiles() {
-   return &profiles_;
-  }
-
-  virtual size_t GetNumberOfProfiles() const OVERRIDE {
-    return profiles_.size();
-  }
-
-  virtual size_t GetIndexOfProfileWithPath(
-      const FilePath& profile_path) const OVERRIDE {
-    return std::string::npos;
-  }
-
-  virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE {
-    return profiles_[index]->name;
-  }
-
-  virtual FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE {
-    return FilePath();
-  }
-
-  virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
-      size_t index) const OVERRIDE {
-    return profiles_[index]->icon;
-  }
-
- private:
-  std::vector<AvatarMenuModel::Item*> profiles_;
-};
 
 class MockObserver : public AvatarMenuModelObserver {
  public:
   MockObserver() : count_(0) {}
   virtual ~MockObserver() {}
 
-  virtual void OnAvatarMenuModelChanged(AvatarMenuModel* avatar_menu_model) {
+  virtual void OnAvatarMenuModelChanged(
+      AvatarMenuModel* avatar_menu_model) OVERRIDE{
     ++count_;
   }
 
@@ -78,8 +43,7 @@ class AvatarMenuModelTest : public TestingBrowserProcessTest {
   }
 
   const gfx::Image& GetTestImage() {
-    return ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_PROFILE_AVATAR_0);
+    return FakeProfileInfo::GetTestImage();
   }
 
  private:
@@ -101,7 +65,7 @@ TEST_F(AvatarMenuModelTest, InitialCreation) {
   EXPECT_EQ(0, observer.change_count());
 
   AvatarMenuModel model(cache(), &observer, browser());
-  EXPECT_EQ(1, observer.change_count());
+  EXPECT_EQ(0, observer.change_count());
 
   ASSERT_EQ(2U, model.GetNumberOfItems());
 
@@ -130,7 +94,7 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
   EXPECT_EQ(0, observer.change_count());
 
   AvatarMenuModel model(cache(), &observer, browser());
-  EXPECT_EQ(1, observer.change_count());
+  EXPECT_EQ(0, observer.change_count());
   EXPECT_EQ(2U, model.GetNumberOfItems());
 
   AvatarMenuModel::Item profile3(2, GetTestImage());
@@ -141,7 +105,7 @@ TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       NotificationService::AllSources(),
       NotificationService::NoDetails());
-  EXPECT_EQ(2, observer.change_count());
+  EXPECT_EQ(1, observer.change_count());
   ASSERT_EQ(3U, model.GetNumberOfItems());
 
   const AvatarMenuModel::Item& item1 = model.GetItemAt(0);

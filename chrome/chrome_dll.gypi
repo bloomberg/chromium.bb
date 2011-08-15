@@ -226,6 +226,7 @@
                 'app/framework-Info.plist',
                 'app/nibs/About.xib',
                 'app/nibs/AboutIPC.xib',
+                'app/nibs/AvatarMenuItem.xib',
                 'app/nibs/BookmarkAllTabs.xib',
                 'app/nibs/BookmarkBar.xib',
                 'app/nibs/BookmarkBubble.xib',
