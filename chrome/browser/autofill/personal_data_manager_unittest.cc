@@ -1760,3 +1760,101 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR));
 }
+
+TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
+  FormData form1;
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "theprez@gmail.com", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "21 Laussat St", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "California", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone number:", "phone_number", "817-555-6789", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  form_structure1.DetermineHeuristicTypes();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
+                                             &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  AutofillProfile expected;
+  autofill_test::SetProfileInfo(&expected, "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+      "San Francisco", "California", "94102", NULL, "817-555-6789", NULL);
+  const std::vector<AutofillProfile*>& results1 = personal_data_->profiles();
+  ASSERT_EQ(1U, results1.size());
+  EXPECT_EQ(0, expected.Compare(*results1[0]));
+
+  // Upper-case the first name and change the phone number.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "First name:", "first_name", "GEORGE", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "theprez@gmail.com", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "21 Laussat St", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "California", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone number:", "phone_number", "214-555-1234", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  form_structure2.DetermineHeuristicTypes();
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
+                                             &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  const std::vector<AutofillProfile*>& results2 = personal_data_->profiles();
+
+  // Modify expected to include multi-valued fields.
+  std::vector<string16> values;
+  expected.GetMultiInfo(PHONE_HOME_CITY_AND_NUMBER, &values);
+  values.push_back(ASCIIToUTF16("214-555-1234"));
+  expected.SetMultiInfo(PHONE_HOME_CITY_AND_NUMBER, values);
+
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected.CompareMulti(*results2[0]));
+}
