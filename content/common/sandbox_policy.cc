@@ -198,22 +198,20 @@ void AddDllEvictionPolicy(sandbox::TargetPolicy* policy) {
 // Returns the object path prepended with the current logon session.
 string16 PrependWindowsSessionPath(const char16* object) {
   // Cache this because it can't change after process creation.
-  static string16* session_prefix = NULL;
-  if (!session_prefix) {
+  uintptr_t s_session_id = 0;
+  if (s_session_id == 0) {
     HANDLE token;
-    DWORD session_id;
     DWORD session_id_length;
+    DWORD session_id = 0;
 
     CHECK(::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token));
     CHECK(::GetTokenInformation(token, TokenSessionId, &session_id,
         sizeof(session_id), &session_id_length));
     CloseHandle(token);
-
-    session_prefix = new string16(base::StringPrintf(L"\\Sessions\\%d",
-        session_id));
+    s_session_id = session_id;
   }
 
-  return *session_prefix + object;
+  return base::StringPrintf(L"\\Sessions\\%d%ls", s_session_id, object);
 }
 
 // Closes handles that are opened at process creation and initialization.
