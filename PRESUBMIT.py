@@ -51,6 +51,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   file_inclusion_pattern = r'.+%s' % source_extensions
   file_exclusion_pattern = (r'.+(_test_support|_(unit|browser|ui|perf)test)%s' %
                             source_extensions)
+  path_exclusion_pattern = r'.*[/\\](test|tool(s)?)[/\\].*'
 
   base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
@@ -59,8 +60,8 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       base_function_pattern, base_function_pattern))
 
   def FilterFile(affected_file):
-    black_list = ((file_exclusion_pattern, ) + _EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST)
+    black_list = ((file_exclusion_pattern, path_exclusion_pattern, ) +
+                  _EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
     return input_api.FilterSourceFile(
       affected_file,
       white_list=(file_inclusion_pattern, ),
