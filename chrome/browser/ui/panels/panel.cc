@@ -57,13 +57,13 @@ void Panel::SetExpansionState(ExpansionState new_expansion_state) {
     Deactivate();
 }
 
-bool Panel::ShouldBringUpTitleBar(int mouse_x, int mouse_y) const {
+bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
   // Skip the expanded panel.
   if (expansion_state_ == Panel::EXPANDED)
     return false;
 
   // Let the native panel decide.
-  return native_panel_->ShouldBringUpPanelTitleBar(mouse_x, mouse_y);
+  return native_panel_->ShouldBringUpPanelTitlebar(mouse_x, mouse_y);
 }
 
 bool Panel::IsDrawingAttention() const {

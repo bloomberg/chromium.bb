@@ -40,14 +40,14 @@ class NativePanel {
   // The native panel needs to update the bounds. In addition, it needs to watch
   // for the mouse movement so that it knows when to bring up or down all the
   // minimized panels. To do this, when the mouse moves, the native panel needs
-  // to call PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels to check.
+  // to call PanelManager::ShouldBringUpTitlebarForAllMinimizedPanels to check.
   virtual void OnPanelExpansionStateChanged(
       Panel::ExpansionState expansion_state) = 0;
 
   // When the mouse is at (mouse_x, mouse_y) in screen coordinate system, finds
   // out if the title-bar needs to pop up for the minimized panel that is only
   // shown as 3-pixel lines.
-  virtual bool ShouldBringUpPanelTitleBar(int mouse_x, int mouse_y) const = 0;
+  virtual bool ShouldBringUpPanelTitlebar(int mouse_x, int mouse_y) const = 0;
 
   virtual void ClosePanel() = 0;
   virtual void ActivatePanel() = 0;

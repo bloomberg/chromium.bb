@@ -36,8 +36,8 @@
 
 namespace {
 
-// The height in pixels of the title bar.
-const int kTitleBarHeight = 24;
+// The height in pixels of the titlebar.
+const int kTitlebarHeight = 24;
 
 // The thickness in pixels of the frame border.
 const int kFrameBorderThickness = 1;
@@ -51,7 +51,7 @@ const int kIconSize = 16;
 // The spacing in pixels between buttons or the button and the adjacent control.
 const int kButtonSpacing = 6;
 
-// Colors used in painting the title bar for drawing attention.
+// Colors used in painting the titlebar for drawing attention.
 const SkColor kBackgroundColorForAttention = 0xfffa983a;
 const SkColor kTitleTextColorForAttention = SK_ColorWHITE;
 
@@ -357,7 +357,7 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 void PanelBrowserFrameView::Layout() {
   // If the panel height is smaller than the title-bar height, as in minimized
   // case, we hide all controls.
-  bool is_control_visible = height() >= kTitleBarHeight;
+  bool is_control_visible = height() >= kTitlebarHeight;
   close_button_->SetVisible(is_control_visible);
   settings_button_->SetVisible(
       is_control_visible && is_settings_button_visible_);
@@ -414,26 +414,26 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() &&
-      browser_view_->OnTitleBarMousePressed(event.location())) {
+      browser_view_->OnTitlebarMousePressed(event.location())) {
     return true;
   }
   return BrowserNonClientFrameView::OnMousePressed(event);
 }
 
 bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
-  if (browser_view_->OnTitleBarMouseDragged(event.location()))
+  if (browser_view_->OnTitlebarMouseDragged(event.location()))
     return true;
   return BrowserNonClientFrameView::OnMouseDragged(event);
 }
 
 void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
-  if (browser_view_->OnTitleBarMouseReleased())
+  if (browser_view_->OnTitlebarMouseReleased())
     return;
   BrowserNonClientFrameView::OnMouseReleased(event);
 }
 
 void PanelBrowserFrameView::OnMouseCaptureLost() {
-  if (browser_view_->OnTitleBarMouseCaptureLost())
+  if (browser_view_->OnTitlebarMouseCaptureLost())
     return;
   BrowserNonClientFrameView::OnMouseCaptureLost();
 }
@@ -558,7 +558,7 @@ int PanelBrowserFrameView::NonClientBorderThickness() const {
 }
 
 int PanelBrowserFrameView::NonClientTopBorderHeight() const {
-  return kFrameBorderThickness + kTitleBarHeight + kClientEdgeThickness;
+  return kFrameBorderThickness + kTitlebarHeight + kClientEdgeThickness;
 }
 
 SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {

@@ -35,12 +35,12 @@ class PanelBrowserView : public BrowserView,
 
   PanelBrowserFrameView* GetFrameView() const;
 
-  // Called from frame view when title bar receives a mouse event.
+  // Called from frame view when titlebar receives a mouse event.
   // Return true if the event is handled.
-  bool OnTitleBarMousePressed(const gfx::Point& location);
-  bool OnTitleBarMouseDragged(const gfx::Point& location);
-  bool OnTitleBarMouseReleased();
-  bool OnTitleBarMouseCaptureLost();
+  bool OnTitlebarMousePressed(const gfx::Point& location);
+  bool OnTitlebarMouseDragged(const gfx::Point& location);
+  bool OnTitlebarMouseReleased();
+  bool OnTitlebarMouseCaptureLost();
 
  private:
   friend class NativePanelTestingWin;
@@ -76,7 +76,7 @@ class PanelBrowserView : public BrowserView,
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void OnPanelExpansionStateChanged(
       Panel::ExpansionState expansion_state) OVERRIDE;
-  virtual bool ShouldBringUpPanelTitleBar(int mouse_x,
+  virtual bool ShouldBringUpPanelTitlebar(int mouse_x,
                                           int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;

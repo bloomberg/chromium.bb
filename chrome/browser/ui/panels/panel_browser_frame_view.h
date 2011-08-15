@@ -141,7 +141,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
 
-  // Update control styles to indicate if the title bar is active or not.
+  // Update control styles to indicate if the titlebar is active or not.
   void UpdateControlStyles(PaintState paint_state);
 
   // Custom draw the frame.

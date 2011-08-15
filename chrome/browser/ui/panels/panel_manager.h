@@ -39,11 +39,11 @@ class PanelManager {
   void EndDragging(bool cancelled);
 
   // Should we bring up the titlebar, given the current mouse point?
-  bool ShouldBringUpTitleBarForAllMinimizedPanels(int mouse_x,
+  bool ShouldBringUpTitlebarForAllMinimizedPanels(int mouse_x,
                                                   int mouse_y) const;
 
   // Brings up or down the title-bar for all minimized panels.
-  void BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up);
+  void BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up);
 
   int num_panels() const { return panels_.size(); }
 

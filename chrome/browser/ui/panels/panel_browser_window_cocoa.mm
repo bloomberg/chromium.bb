@@ -91,7 +91,7 @@ void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
   NOTIMPLEMENTED();
 }
 
-bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitleBar(int mouse_x,
+bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitlebar(int mouse_x,
                                                          int mouse_y) const {
   NOTIMPLEMENTED();
   return false;

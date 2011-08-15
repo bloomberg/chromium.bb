@@ -42,7 +42,7 @@ class Panel : public BrowserWindow {
 
   void SetExpansionState(ExpansionState new_expansion_state);
 
-  bool ShouldBringUpTitleBar(int mouse_x, int mouse_y) const;
+  bool ShouldBringUpTitlebar(int mouse_x, int mouse_y) const;
 
   bool IsDrawingAttention() const;
 

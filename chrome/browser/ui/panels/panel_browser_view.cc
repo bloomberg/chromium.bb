@@ -143,7 +143,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
 bool PanelBrowserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (mouse_pressed_ && accelerator.key_code() == ui::VKEY_ESCAPE) {
-    OnTitleBarMouseCaptureLost();
+    OnTitlebarMouseCaptureLost();
     return true;
   }
   return BrowserView::AcceleratorPressed(accelerator);
@@ -216,7 +216,7 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
   SetBounds(bounds);
 }
 
-bool PanelBrowserView::ShouldBringUpPanelTitleBar(int mouse_x,
+bool PanelBrowserView::ShouldBringUpPanelTitlebar(int mouse_x,
                                                   int mouse_y) const {
   // We do not want to bring up other minimized panels if the mouse is over the
   // panel that pops up the title-bar to attract attention.
@@ -269,7 +269,7 @@ void PanelBrowserView::DrawAttention() {
     return;
   is_drawing_attention_ = true;
 
-  // Bring up the title bar to get people's attention.
+  // Bring up the titlebar to get people's attention.
   if (panel_->expansion_state() == Panel::MINIMIZED)
     panel_->SetExpansionState(Panel::TITLE_ONLY);
 
@@ -294,7 +294,7 @@ void PanelBrowserView::StopDrawingAttention() {
   // user clicks on it to mean to clear the attention.
   attention_cleared_time_ = base::TimeTicks::Now();
 
-  // Bring up the title bar.
+  // Bring up the titlebar.
   if (panel_->expansion_state() == Panel::TITLE_ONLY)
     panel_->SetExpansionState(Panel::EXPANDED);
 
@@ -313,14 +313,14 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }
 
-bool PanelBrowserView::OnTitleBarMousePressed(const gfx::Point& location) {
+bool PanelBrowserView::OnTitlebarMousePressed(const gfx::Point& location) {
   mouse_pressed_ = true;
   mouse_pressed_point_ = location;
   mouse_dragging_ = false;
   return true;
 }
 
-bool PanelBrowserView::OnTitleBarMouseDragged(const gfx::Point& location) {
+bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
@@ -335,7 +335,7 @@ bool PanelBrowserView::OnTitleBarMouseDragged(const gfx::Point& location) {
   return true;
 }
 
-bool PanelBrowserView::OnTitleBarMouseReleased() {
+bool PanelBrowserView::OnTitlebarMouseReleased() {
   if (mouse_dragging_)
     return EndDragging(false);
 
@@ -355,7 +355,7 @@ bool PanelBrowserView::OnTitleBarMouseReleased() {
   return true;
 }
 
-bool PanelBrowserView::OnTitleBarMouseCaptureLost() {
+bool PanelBrowserView::OnTitlebarMouseCaptureLost() {
   return EndDragging(true);
 }
 
@@ -401,23 +401,23 @@ NativePanelTestingWin::NativePanelTestingWin(
 
 void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
     const gfx::Point& point) {
-  panel_browser_view_->OnTitleBarMousePressed(point);
+  panel_browser_view_->OnTitlebarMousePressed(point);
 }
 
 void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
-  panel_browser_view_->OnTitleBarMouseReleased();
+  panel_browser_view_->OnTitlebarMouseReleased();
 }
 
 void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
   gfx::Rect current_bounds = panel_browser_view_->panel()->GetRestoredBounds();
-  panel_browser_view_->OnTitleBarMouseDragged(gfx::Point(
+  panel_browser_view_->OnTitlebarMouseDragged(gfx::Point(
       current_bounds.x() + delta_x, current_bounds.y() + delta_y));
 }
 
 void NativePanelTestingWin::CancelDragTitlebar() {
-  panel_browser_view_->OnTitleBarMouseCaptureLost();
+  panel_browser_view_->OnTitlebarMouseCaptureLost();
 }
 
 void NativePanelTestingWin::FinishDragTitlebar() {
-  panel_browser_view_->OnTitleBarMouseReleased();
+  panel_browser_view_->OnTitlebarMouseReleased();
 }

@@ -70,13 +70,13 @@ void PanelMouseWatcherWin::OnMouseAction(int mouse_x, int mouse_y) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   bool bring_up_titlebar =
-      panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+      panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
           mouse_x, mouse_y);
   if (bring_up_titlebar == bring_up_titlebar_)
     return;
   bring_up_titlebar_ = bring_up_titlebar;
 
-  panel_manager->BringUpOrDownTitleBarForAllMinimizedPanels(bring_up_titlebar);
+  panel_manager->BringUpOrDownTitlebarForAllMinimizedPanels(bring_up_titlebar);
 }
 
 }

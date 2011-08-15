@@ -271,17 +271,17 @@ void PanelManager::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
-bool PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels(
+bool PanelManager::ShouldBringUpTitlebarForAllMinimizedPanels(
     int mouse_x, int mouse_y) const {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
-    if ((*iter)->ShouldBringUpTitleBar(mouse_x, mouse_y))
+    if ((*iter)->ShouldBringUpTitlebar(mouse_x, mouse_y))
       return true;
   }
   return false;
 }
 
-void PanelManager::BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up) {
+void PanelManager::BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;

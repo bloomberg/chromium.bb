@@ -72,10 +72,10 @@ bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
     guint32 last_click_time,
     gfx::Point last_click_position) {
   // In theory we should never enter this function as we have a handler for
-  // button press on title bar where we handle this.  Not putting NOTREACHED()
-  // here because we don't want to crash if hit-testing for title bar in window
+  // button press on titlebar where we handle this.  Not putting NOTREACHED()
+  // here because we don't want to crash if hit-testing for titlebar in window
   // button press handler in BrowserWindowGtk is off by a pixel or two.
-  DLOG(WARNING) << "Hit-testing for title bar off by a pixel or two?";
+  DLOG(WARNING) << "Hit-testing for titlebar off by a pixel or two?";
   return TRUE;
 }
 
@@ -122,7 +122,7 @@ void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
   NOTIMPLEMENTED();
 }
 
-bool PanelBrowserWindowGtk::ShouldBringUpPanelTitleBar(int mouse_x,
+bool PanelBrowserWindowGtk::ShouldBringUpPanelTitlebar(int mouse_x,
                                                        int mouse_y) const {
   NOTIMPLEMENTED();
   return false;

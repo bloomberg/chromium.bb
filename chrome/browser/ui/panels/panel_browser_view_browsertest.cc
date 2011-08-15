@@ -266,26 +266,26 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
 
     PanelManager* panel_manager = PanelManager::GetInstance();
 
-    panel_manager->BringUpOrDownTitleBarForAllMinimizedPanels(true);
+    panel_manager->BringUpOrDownTitlebarForAllMinimizedPanels(true);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
 
-    panel_manager->BringUpOrDownTitleBarForAllMinimizedPanels(false);
+    panel_manager->BringUpOrDownTitlebarForAllMinimizedPanels(false);
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
 
     // Test if it is OK to bring up title-bar given the mouse position.
-    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         panel1->GetBounds().x(), panel1->GetBounds().y()));
-    EXPECT_FALSE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+    EXPECT_FALSE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         panel2->GetBounds().x(), panel2->GetBounds().y()));
-    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         panel3->GetBounds().right() - 1, panel3->GetBounds().bottom() - 1));
-    EXPECT_TRUE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         panel3->GetBounds().right() - 1, panel3->GetBounds().bottom() + 10));
-    EXPECT_FALSE(panel_manager->ShouldBringUpTitleBarForAllMinimizedPanels(
+    EXPECT_FALSE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         0, 0));
 
     panel1->Close();
@@ -338,11 +338,11 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     // Test that we cannot bring up other minimized panel if the mouse is over
     // the panel that draws attension.
     EXPECT_FALSE(PanelManager::GetInstance()->
-        ShouldBringUpTitleBarForAllMinimizedPanels(
+        ShouldBringUpTitlebarForAllMinimizedPanels(
             panel->GetBounds().x(), panel->GetBounds().y()));
 
     // Test that we cannot bring down the panel that is drawing the attention.
-    PanelManager::GetInstance()->BringUpOrDownTitleBarForAllMinimizedPanels(
+    PanelManager::GetInstance()->BringUpOrDownTitlebarForAllMinimizedPanels(
         false);
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
 
@@ -381,20 +381,20 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   EXPECT_TRUE(frame_view->close_button_->IsVisible());
 
   // Validate their layouts.
-  int title_bar_height = frame_view->NonClientTopBorderHeight() -
+  int titlebar_height = frame_view->NonClientTopBorderHeight() -
       frame_view->NonClientBorderThickness();
   EXPECT_GT(frame_view->title_icon_->width(), 0);
   EXPECT_GT(frame_view->title_icon_->height(), 0);
-  EXPECT_LT(frame_view->title_icon_->height(), title_bar_height);
+  EXPECT_LT(frame_view->title_icon_->height(), titlebar_height);
   EXPECT_GT(frame_view->title_label_->width(), 0);
   EXPECT_GT(frame_view->title_label_->height(), 0);
-  EXPECT_LT(frame_view->title_label_->height(), title_bar_height);
+  EXPECT_LT(frame_view->title_label_->height(), titlebar_height);
   EXPECT_GT(frame_view->settings_button_->width(), 0);
   EXPECT_GT(frame_view->settings_button_->height(), 0);
-  EXPECT_LT(frame_view->settings_button_->height(), title_bar_height);
+  EXPECT_LT(frame_view->settings_button_->height(), titlebar_height);
   EXPECT_GT(frame_view->close_button_->width(), 0);
   EXPECT_GT(frame_view->close_button_->height(), 0);
-  EXPECT_LT(frame_view->close_button_->height(), title_bar_height);
+  EXPECT_LT(frame_view->close_button_->height(), titlebar_height);
   EXPECT_LT(frame_view->title_icon_->x() + frame_view->title_icon_->width(),
       frame_view->title_label_->x());
   EXPECT_LT(frame_view->title_label_->x() + frame_view->title_label_->width(),
@@ -468,12 +468,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
 
   // Validates that no animation should be triggered for the panel currently
   // being dragged.
-  browser_view->OnTitleBarMousePressed(gfx::Point(
+  browser_view->OnTitlebarMousePressed(gfx::Point(
       target_bounds.x(), target_bounds.y()));
-  browser_view->OnTitleBarMouseDragged(gfx::Point(
+  browser_view->OnTitlebarMouseDragged(gfx::Point(
       target_bounds.x() + 5, target_bounds.y() + 5));
   EXPECT_FALSE(browser_view->bounds_animator_->is_animating());
-  browser_view->OnTitleBarMouseCaptureLost();
+  browser_view->OnTitlebarMouseCaptureLost();
 
   browser_view->panel()->Close();
 }

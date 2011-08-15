@@ -12,8 +12,8 @@
 @class CrTrackingArea;
 @class PanelWindowControllerCocoa;
 
-// A class that works as a custom title bar for Panels. It is placed on top of
-// the regular Cocoa title bar. We paint theme image on it, and it's
+// A class that works as a custom titlebar for Panels. It is placed on top of
+// the regular Cocoa titlebar. We paint theme image on it, and it's
 // the place for the close button, wrench button, page favicon, title label.
 // It also facilitates dragging and minimization of the panels, and changes
 // color as 'new activity' indicator.
@@ -35,7 +35,7 @@
   // Attaches this view to the controller_'s window as a titlebar.
 - (void)attach;
 
-  // Should be called when size of the title bar changes.
+  // Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;
 
   // Accessor to Panel's controller.

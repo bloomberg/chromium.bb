@@ -77,7 +77,7 @@ const int kCloseButtonLeftPadding = 8;
                  NSMaxY(rootViewBounds) - NSMaxY(contentFrame));
   [self setFrame:titlebarFrame];
 
-  // Update layout of controls in the title bar.
+  // Update layout of controls in the titlebar.
   [self updateCloseButtonLayout];
 
   // Set autoresizing behavior: glued to edges on left, top and right.
