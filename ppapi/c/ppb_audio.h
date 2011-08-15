@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_audio.idl modified Thu Aug 11 14:14:47 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -70,6 +70,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * audio_interface->StartPlayback(pp_audio);
  *
  * ...audio_callback() will now be periodically invoked on a seperate thread...
+ * @endcode
  */
 #define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
 #define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"

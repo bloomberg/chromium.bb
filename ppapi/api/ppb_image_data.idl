@@ -30,7 +30,7 @@
  *
  * ...components of a pixel, floats ranging from 0 to 1...
  * <code>float red = 1.0f;</code>
- * <code><code>float green = 0.50f;</code>
+ * <code>float green = 0.50f;</code>
  * <code>float blue = 0.0f;</code>
  * <code>float alpha = 0.75f;</code>
  * ...components for image data are 8-bit values ranging from 0 to 255...

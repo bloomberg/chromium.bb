@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_response_info.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_url_response_info.idl modified Fri Aug 12 14:54:32 2011. */
 
 #ifndef PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 #define PPAPI_C_PPB_URL_RESPONSE_INFO_H_
@@ -129,14 +129,14 @@ struct PPB_URLResponseInfo {
    * <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was set on the
    * <code>URLRequestInfo</code> used to produce this response.  This file
    * remains valid until the <code>URLLoader</code> associated with this
-   * <code>URLResponseInfo is closed or destroyed.
+   * <code>URLResponseInfo</code> is closed or destroyed.
    *
    * @param[in] request A <code>PP_Resource</code> corresponding to a
    * <code>URLResponseInfo</code>.
    *
-   * @return A <code>PP_Resource</code> corresponding to a FileRef if
-   * successful, 0 if <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was not
-   * requested or if the <code>URLLoader</code> has not been opened yet.
+   * @return A <code>PP_Resource</code> corresponding to a <code>FileRef</code>
+   * if successful, 0 if <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was
+   * not requested or if the <code>URLLoader</code> has not been opened yet.
    */
   PP_Resource (*GetBodyAsFileRef)(PP_Resource response);
 };

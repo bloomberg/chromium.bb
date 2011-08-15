@@ -120,7 +120,7 @@ struct PPB_AudioConfig {
    * system, but values in between aren't necessarily valid. This function
    * will return a supported count closest to the requested value.
    *
-   * @param[in] sample_rate A <code>PP_AudioSampleRate which is either
+   * @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
    * <code>PP_AUDIOSAMPLERATE_44100</code> or
    * <code>PP_AUDIOSAMPLERATE_48000.</code>
    * @param[in] requested_sample_frame_count A <code>uint_32t</code> requested

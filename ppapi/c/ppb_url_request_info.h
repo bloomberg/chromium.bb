@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_url_request_info.idl modified Thu Aug 11 14:19:23 2011. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -72,9 +72,10 @@ typedef enum {
    */
   PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
   /**
-   * This corresponds to a <code>PP_Bool (default=<code>PP_FALSE</code>).
-   * Set this value to <code>PP_TRUE</code> if you want to be able to poll the
-   * upload progress using PPB_URLLoader.GetUplaodProgress().
+   * This corresponds to a <code>PP_Bool</code>
+   * (default=<code>PP_FALSE</code>). Set this value to <code>PP_TRUE</code> if
+   * you want to be able to poll the upload progress using
+   * PPB_URLLoader.GetUplaodProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
   /**
@@ -155,7 +156,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 /**
  * The <code>PPB_URLRequestInfo</code> interface is used to create
  * and handle URL requests. This API is used in conjunction with
- * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader for further
+ * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
 #define PPB_URLREQUESTINFO_INTERFACE_0_2 "PPB_URLRequestInfo;0.2"

@@ -73,7 +73,7 @@ struct PPB_Instance {
    * @param[in] instance A <code>PP_Instance</code> indentifying one instance
    * of a module.
    *
-   * @return A <code>PP_Bool</code> containing <code>PP_TRUE<code> if the
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the
    * instance is full-frame.
    */
   PP_Bool (*IsFullFrame)(PP_Instance instance);

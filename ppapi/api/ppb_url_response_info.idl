@@ -116,14 +116,14 @@ interface PPB_URLResponseInfo {
    * <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was set on the
    * <code>URLRequestInfo</code> used to produce this response.  This file
    * remains valid until the <code>URLLoader</code> associated with this
-   * <code>URLResponseInfo is closed or destroyed.
+   * <code>URLResponseInfo</code> is closed or destroyed.
    *
    * @param[in] request A <code>PP_Resource</code> corresponding to a
    * <code>URLResponseInfo</code>.
    *
-   * @return A <code>PP_Resource</code> corresponding to a FileRef if
-   * successful, 0 if <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was not
-   * requested or if the <code>URLLoader</code> has not been opened yet.
+   * @return A <code>PP_Resource</code> corresponding to a <code>FileRef</code>
+   * if successful, 0 if <code>PP_URLREQUESTPROPERTY_STREAMTOFILE</code> was
+   * not requested or if the <code>URLLoader</code> has not been opened yet.
    */
   PP_Resource GetBodyAsFileRef(
       [in] PP_Resource response);

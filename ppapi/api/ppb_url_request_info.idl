@@ -65,9 +65,10 @@ enum PP_URLRequestProperty {
   PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
 
   /**
-   * This corresponds to a <code>PP_Bool (default=<code>PP_FALSE</code>).
-   * Set this value to <code>PP_TRUE</code> if you want to be able to poll the
-   * upload progress using PPB_URLLoader.GetUplaodProgress().
+   * This corresponds to a <code>PP_Bool</code>
+   * (default=<code>PP_FALSE</code>). Set this value to <code>PP_TRUE</code> if
+   * you want to be able to poll the upload progress using
+   * PPB_URLLoader.GetUplaodProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
 
@@ -146,7 +147,7 @@ enum PP_URLRequestProperty {
 /**
  * The <code>PPB_URLRequestInfo</code> interface is used to create
  * and handle URL requests. This API is used in conjunction with
- * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader for further
+ * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
 interface PPB_URLRequestInfo {

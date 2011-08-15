@@ -51,6 +51,7 @@ typedef void PPB_Audio_Callback([out] mem_t sample_buffer,
  * audio_interface->StartPlayback(pp_audio);
  *
  * ...audio_callback() will now be periodically invoked on a seperate thread...
+ * @endcode
  */
 interface PPB_Audio {
  /**
