@@ -8,6 +8,7 @@ import constants
 import os
 import re
 import shutil
+import tempfile
 
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -406,6 +407,48 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.Warning(str(e))
     cros_lib.Warning('========================================================')
 
+def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
+  """Generates stack traces for all minidumps in the gzipped_test_tarball.
+
+  Arguments:
+    buildroot: Root directory where build occurs.
+    board: Name of the board being worked on.
+    gzipped_test_tarball: Path to the gzipped test tarball.
+  """
+  chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
+  temp_dir = tempfile.mkdtemp(prefix='cbuildbot_dumps', dir=chroot_tmp)
+
+  # We need to unzip the test results tarball first because we cannot update
+  # a compressed tarball.
+  cros_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
+  test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
+  cros_lib.RunCommand(['tar',
+                       'xf',
+                       test_tarball,
+                       '--directory=%s' % temp_dir,
+                       '--wildcards', '*.dmp'])
+
+  symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
+  for dir, subdirs, files in os.walk(temp_dir):
+    for file in files:
+      minidump = cros_lib.ReinterpretPathForChroot(os.path.join(dir, file))
+      cwd = os.path.join(buildroot, 'src', 'scripts')
+      cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
+                          (minidump, symbol_dir, minidump),
+                          cwd=cwd,
+                          enter_chroot=True,
+                          error_ok=True,
+                          shell=True)
+
+  cros_lib.RunCommand(['tar',
+                       'uf',
+                       test_tarball,
+                       '--directory=%s' % temp_dir,
+                       '.'])
+  cros_lib.RunCommand('gzip -c %s > %s' % (test_tarball, gzipped_test_tarball),
+                      shell=True)
+  os.unlink(test_tarball)
+  shutil.rmtree(temp_dir)
 
 def ArchiveTestTarball(test_tarball, archive_dir):
   """Archives the test results tarball.

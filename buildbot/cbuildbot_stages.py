@@ -769,6 +769,7 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
     self._test_results_queue = multiprocessing.Queue()
+    self._breakpad_symbols_queue = multiprocessing.Queue()
 
   def TestStageComplete(self, test_results):
     """Tell Archive Stage that the test stage has completed.
@@ -778,6 +779,32 @@ class ArchiveStage(NonHaltingBuilderStage):
                        results are available, this should be set to None.
     """
     self._test_results_queue.put(test_results)
+
+  def _BreakpadSymbolsGenerated(self, success):
+    """Signal that breakpad symbols have been generated.
+
+    Arguments:
+      success: True to indicate the symbols were generated, else False.
+    """
+    if not success:
+      cros_lib.Warning('Failed to generate breakpad symbols.')
+    self._breakpad_symbols_queue.put(success)
+
+  def _WaitForBreakpadSymbols(self):
+    """Wait for the breakpad symbols to be generated.
+
+    Returns:
+      True if the breakpad symbols were generated.
+      False if the breakpad symbols were not generated within 20 mins.
+    """
+    success = False
+    try:
+      # TODO: Clean this up so that we no longer rely on a timeout
+      success = self._breakpad_symbols_queue.get(True, 1200)
+    except Queue.Empty:
+      cros_lib.Warning('Breakpad symbols were not generated within timeout '
+                       'period.')
+    return success
 
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
@@ -845,16 +872,25 @@ class ArchiveStage(NonHaltingBuilderStage):
     #  3. BuildAndArchiveAllImages: Build and archive images.
 
     def UploadTestResults():
-       """Upload test results when they are ready."""
-       test_results = self._GetTestTarball()
-       if test_results:
-         filename = commands.ArchiveTestTarball(test_results, archive_path)
-         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+      """Upload test results when they are ready."""
+      test_results = self._GetTestTarball()
+      if test_results:
+        if config['archive_build_debug'] and self._WaitForBreakpadSymbols():
+          commands.GenerateMinidumpStackTraces(buildroot, board, test_results)
+        filename = commands.ArchiveTestTarball(test_results, archive_path)
+        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
     def ArchiveDebugSymbols():
       """Generate and upload debug symbols."""
+      # TODO(thieule): Generate breakpad symbols if a crash was detected for
+      # bots that do not normally generate breakpad symbols
       if config['archive_build_debug']:
-        commands.GenerateBreakpadSymbols(buildroot, board)
+        success = False
+        try:
+          commands.GenerateBreakpadSymbols(buildroot, board)
+          success = True
+        finally:
+          self._BreakpadSymbolsGenerated(success)
         filename = commands.GenerateDebugTarball(
           buildroot, board, archive_path)
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)

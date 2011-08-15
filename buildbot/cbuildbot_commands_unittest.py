@@ -11,6 +11,7 @@ import os
 import shutil
 import socket
 import sys
+import tempfile
 import unittest
 
 import constants
@@ -72,6 +73,58 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands.ArchiveTestResults(buildroot, test_results_dir)
     self.mox.VerifyAll()
+
+  def testGenerateMinidumpStackTraces(self):
+    """Test if we can generate stack traces for minidumps."""
+    temp_dir = '/chroot/temp_dir'
+    gzipped_test_tarball = '/test_results.tgz'
+    test_tarball = '/test_results.tar'
+    dump_file = os.path.join(temp_dir, 'test.dmp')
+    buildroot = '/'
+    board = 'test_board'
+    symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
+                              'breakpad')
+    cwd = os.path.join(buildroot, 'src', 'scripts')
+
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
+    tempfile.mkdtemp(dir=mox.IgnoreArg(), prefix=mox.IgnoreArg()). \
+        AndReturn(temp_dir)
+    self.mox.StubOutWithMock(os, 'walk')
+    dump_file_dir, dump_file_name = os.path.split(dump_file)
+    os.walk(mox.IgnoreArg()).AndReturn([(dump_file_dir, [''],
+                                       [dump_file_name])])
+    self.mox.StubOutWithMock(cros_lib, 'ReinterpretPathForChroot')
+    cros_lib.ReinterpretPathForChroot(mox.IgnoreArg()).AndReturn(dump_file)
+    self.mox.StubOutWithMock(os, 'unlink')
+    self.mox.StubOutWithMock(shutil, 'rmtree')
+
+    cros_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
+    cros_lib.RunCommand(['tar',
+                         'xf',
+                         test_tarball,
+                         '--directory=%s' % temp_dir,
+                         '--wildcards', '*.dmp'])
+    cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
+                        (dump_file, symbol_dir, dump_file),
+                        cwd=cwd,
+                        enter_chroot=True,
+                        error_ok=True,
+                        shell=True)
+    cros_lib.RunCommand(['tar',
+                         'uf',
+                         test_tarball,
+                         '--directory=%s' % temp_dir,
+                         '.'])
+    cros_lib.RunCommand('gzip -c %s > %s' %
+                        (test_tarball, gzipped_test_tarball),
+                        shell=True)
+    os.unlink(test_tarball)
+    shutil.rmtree(temp_dir)
+
+    self.mox.ReplayAll();
+    commands.GenerateMinidumpStackTraces(buildroot, board,
+                                         gzipped_test_tarball)
+    self.mox.VerifyAll();
 
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""
