@@ -12,7 +12,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "net/base/net_util.h"
-#include "webkit/quota/special_storage_policy.h"
 
 namespace quota {
 
@@ -334,18 +333,23 @@ ClientUsageTracker::ClientUsageTracker(
       global_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
+      global_unlimited_usage_is_valid_(true),
       global_usage_task_(NULL),
       special_storage_policy_(special_storage_policy) {
   DCHECK(tracker_);
   DCHECK(client_);
+  if (special_storage_policy_)
+    special_storage_policy_->AddObserver(this);
 }
 
 ClientUsageTracker::~ClientUsageTracker() {
+  if (special_storage_policy_)
+    special_storage_policy_->RemoveObserver(this);
 }
 
 void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback* callback) {
   if (global_usage_retrieved_) {
-    callback->Run(type_, global_usage_, global_unlimited_usage_);
+    callback->Run(type_, global_usage_, GetCachedGlobalUnlimitedUsage());
     delete callback;
     return;
   }
@@ -377,7 +381,7 @@ void ClientUsageTracker::UpdateUsageCache(
   if (cached_hosts_.find(host) != cached_hosts_.end()) {
     cached_usage_[host][origin] += delta;
     global_usage_ += delta;
-    if (IsStorageUnlimited(origin))
+    if (global_unlimited_usage_is_valid_ && IsStorageUnlimited(origin))
       global_unlimited_usage_ += delta;
     DCHECK_GE(cached_usage_[host][origin], 0);
     DCHECK_GE(global_usage_, 0);
@@ -411,7 +415,7 @@ void ClientUsageTracker::AddCachedOrigin(
   int64 delta = usage - old_usage;
   if (delta) {
     global_usage_ += delta;
-    if (IsStorageUnlimited(origin))
+    if (global_unlimited_usage_is_valid_ && IsStorageUnlimited(origin))
       global_unlimited_usage_ += delta;
   }
   DCHECK_GE(iter->second, 0);
@@ -429,7 +433,8 @@ void ClientUsageTracker::GatherGlobalUsageComplete() {
   global_usage_retrieved_ = true;
 
   DCHECK(global_usage_callback_.HasCallbacks());
-  global_usage_callback_.Run(type_, global_usage_, global_unlimited_usage_);
+  global_usage_callback_.Run(type_, global_usage_,
+                             GetCachedGlobalUnlimitedUsage());
 
   for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();
        iter != host_usage_callbacks_.End(); ++iter) {
@@ -456,6 +461,28 @@ int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) {
     usage += iter->second;
   }
   return usage;
+}
+
+int64 ClientUsageTracker::GetCachedGlobalUnlimitedUsage() {
+  if (!global_unlimited_usage_is_valid_) {
+    global_unlimited_usage_ = 0;
+    for (HostUsageMap::const_iterator host_iter = cached_usage_.begin();
+         host_iter != cached_usage_.end(); host_iter++) {
+      const UsageMap& origin_map = host_iter->second;
+      for (UsageMap::const_iterator origin_iter = origin_map.begin();
+           origin_iter != origin_map.end(); origin_iter++) {
+        if (IsStorageUnlimited(origin_iter->first))
+          global_unlimited_usage_ += origin_iter->second;
+      }
+    }
+    global_unlimited_usage_is_valid_ = true;
+  }
+  return global_unlimited_usage_;
+}
+
+void ClientUsageTracker::OnSpecialStoragePolicyChanged() {
+  DCHECK(CalledOnValidThread());
+  global_unlimited_usage_is_valid_ = false;
 }
 
 void ClientUsageTracker::NoopHostUsageCallback(

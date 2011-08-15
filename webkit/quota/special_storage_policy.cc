@@ -6,8 +6,23 @@
 
 namespace quota {
 
+SpecialStoragePolicy::Observer::~Observer() {}
+
 SpecialStoragePolicy::SpecialStoragePolicy() {}
 
 SpecialStoragePolicy::~SpecialStoragePolicy() {}
+
+void SpecialStoragePolicy::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SpecialStoragePolicy::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void SpecialStoragePolicy::NotifyObservers() {
+  scoped_refptr<SpecialStoragePolicy> protect(this);
+  FOR_EACH_OBSERVER(Observer, observers_, OnSpecialStoragePolicyChanged());
+}
 
 }  // namespace quota

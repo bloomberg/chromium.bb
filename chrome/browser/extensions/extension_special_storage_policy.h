@@ -55,6 +55,8 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     CachedResults cached_results_;
   };
 
+  void NotifyChanged();
+
   base::Lock lock_;  // Synchronize all access to the collections.
   SpecialCollection protected_apps_;
   SpecialCollection unlimited_extensions_;

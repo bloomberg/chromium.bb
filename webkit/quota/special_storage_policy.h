@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 
 class GURL;
 
@@ -17,10 +18,18 @@ namespace quota {
 // storage subsystems query this interface to determine which origins
 // have these rights. Chrome provides an impl that is cognizant of what
 // is currently installed in the extensions system.
-// An implementation must be thread-safe.
+// The IsSomething() methods must be thread-safe, however Observers should
+// only be notified, added, and removed on the IO thead.
 class SpecialStoragePolicy
     : public base::RefCountedThreadSafe<SpecialStoragePolicy> {
  public:
+  class Observer {
+   public:
+    virtual void OnSpecialStoragePolicyChanged() = 0;
+   protected:
+    virtual ~Observer();
+  };
+
   SpecialStoragePolicy();
 
   // Protected storage is not subject to removal by the browsing data remover.
@@ -33,9 +42,17 @@ class SpecialStoragePolicy
   // file handler.
   virtual bool IsFileHandler(const std::string& extension_id) = 0;
 
+  // Adds/removes an observer, the policy does not take
+  // ownership of the observer. Should only be called on the IO thread.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  protected:
   friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
   virtual ~SpecialStoragePolicy();
+  void NotifyObservers();
+
+  ObserverList<Observer> observers_;
 };
 
 }  // namespace quota

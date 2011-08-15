@@ -39,6 +39,10 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     file_handlers_.clear();
   }
 
+  void NotifyChanged() {
+    SpecialStoragePolicy::NotifyObservers();
+  }
+
  private:
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;

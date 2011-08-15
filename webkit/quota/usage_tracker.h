@@ -15,15 +15,16 @@
 #include "base/callback.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace quota {
 
 class ClientUsageTracker;
-class SpecialStoragePolicy;
 
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
@@ -79,13 +80,14 @@ class UsageTracker : public QuotaTaskObserver {
 
 // This class holds per-client usage tracking information and caches per-host
 // usage data.  An instance of this class is created per client.
-class ClientUsageTracker {
+class ClientUsageTracker : public SpecialStoragePolicy::Observer,
+                           public base::NonThreadSafe {
  public:
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
                      StorageType type,
                      SpecialStoragePolicy* special_storage_policy);
-  ~ClientUsageTracker();
+  virtual ~ClientUsageTracker();
 
   void GetGlobalUsage(GlobalUsageCallback* callback);
   void GetHostUsage(const std::string& host, HostUsageCallback* callback);
@@ -109,10 +111,10 @@ class ClientUsageTracker {
   void GatherHostUsageComplete(const std::string& host);
 
   int64 GetCachedHostUsage(const std::string& host);
-
+  int64 GetCachedGlobalUnlimitedUsage();
+  virtual void OnSpecialStoragePolicyChanged() OVERRIDE;
   void NoopHostUsageCallback(
     const std::string& host,  StorageType type, int64 usage);
-
   bool IsStorageUnlimited(const GURL& origin) const;
 
   UsageTracker* tracker_;
@@ -122,6 +124,7 @@ class ClientUsageTracker {
   int64 global_usage_;
   int64 global_unlimited_usage_;
   bool global_usage_retrieved_;
+  bool global_unlimited_usage_is_valid_;
   HostSet cached_hosts_;
   HostUsageMap cached_usage_;
 

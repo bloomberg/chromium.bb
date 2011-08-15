@@ -710,6 +710,11 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   SetTemporaryGlobalQuota(1000);
   MessageLoop::current()->RunAllPending();
 
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(10 + 50 + 4000, usage());
+  EXPECT_EQ(4000, unlimited_usage());
+
   const int kPerHostQuotaFor1000 =
       1000 / QuotaManager::kPerHostTemporaryPortion;
 
@@ -755,6 +760,33 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
   EXPECT_EQ(kint64max, quota());
+
+  // Revoke the unlimited rights and make sure the change is noticed.
+  mock_special_storage_policy()->Reset();
+  mock_special_storage_policy()->NotifyChanged();
+
+  GetGlobalUsage(kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(10 + 50 + 4000, usage());
+  EXPECT_EQ(0, unlimited_usage());
+
+  GetUsageAndQuota(GURL("http://usage10/"), kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_EQ(10, quota());  // should be clamped to our current usage
+
+  GetUsageAndQuota(GURL("http://usage50/"), kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(50, usage());
+  EXPECT_EQ(kPerHostQuotaFor100, quota());
+
+  GetUsageAndQuota(GURL("http://unlimited/"), kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(4000, usage());
+  EXPECT_EQ(kPerHostQuotaFor100, quota());
 }
 
 TEST_F(QuotaManagerTest, OriginInUse) {
