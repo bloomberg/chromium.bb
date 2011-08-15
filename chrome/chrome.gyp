@@ -1645,10 +1645,12 @@
                 ['touchui==0', {
                   'pak_inputs': [
                     '<(grit_out_dir)/theme_resources_standard.pak',
+                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
                   ],
                 }, {  # else: touchui!=0
                   'pak_inputs': [
                     '<(grit_out_dir)/theme_resources_large.pak',
+                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_large/ui_resources_large.pak',
                   ],
                 }],
               ],
