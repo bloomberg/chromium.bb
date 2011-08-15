@@ -48,10 +48,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
         callback_(callback) {}
 
  private:
-  virtual ~RequestQuotaInfoBarDelegate() {
-    // Make sure we've dispatched the callback.
-    DCHECK(!callback_.get());
-  }
+  virtual ~RequestQuotaInfoBarDelegate() {}
 
   virtual bool ShouldExpire(
       const content::LoadCommittedDetails& details)
