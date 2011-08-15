@@ -177,6 +177,8 @@ void PpbFileIORpcServer::PPB_FileIO_Read(
       int32_t* pp_error_or_bytes) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  CHECK(*buffer_size <=
+        static_cast<nacl_abi_size_t>(std::numeric_limits<int32_t>::max()));
   CHECK(*buffer_size == static_cast<nacl_abi_size_t>(bytes_to_read));
 
   char* callback_buffer = NULL;
@@ -198,6 +200,7 @@ void PpbFileIORpcServer::PPB_FileIO_Read(
 
   if (*pp_error_or_bytes > 0) {  // Bytes read into |callback_buffer|.
     // No callback scheduled.
+    CHECK(static_cast<nacl_abi_size_t>(*pp_error_or_bytes) <= *buffer_size);
     *buffer_size = static_cast<nacl_abi_size_t>(*pp_error_or_bytes);
     memcpy(buffer, callback_buffer, *buffer_size);
     DeleteRemoteCallbackInfo(remote_callback);
