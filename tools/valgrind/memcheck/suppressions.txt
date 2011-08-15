@@ -884,7 +884,6 @@
 {
    bug_87500_a
    Memcheck:Leak
-   fun:_Zn*
    ...
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
@@ -4799,7 +4798,7 @@
    bug_89304
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net20ClientSocketPoolBaseINS_21*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   ...
    fun:_ZN3net20ClientSocketPoolBaseINS_15*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
    fun:_ZN3net19*SocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
    fun:_ZN3net18ClientSocketHandle4Init*
@@ -5271,6 +5270,29 @@
    fun:gtk_main_do_event
    fun:_ZN5views18AcceleratorHandler8DispatchEP9_GdkEvent
    fun:_ZN4base14MessagePumpGtk14DispatchEventsEP9_GdkEvent
+}
+{
+   bug_92876a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net18SSLClientSocketNSS10BufferSendEv
+   fun:_ZN3net18SSLClientSocketNSS13DoTransportIOEv
+   fun:_ZN3net18SSLClientSocketNSS11DoWriteLoopEi
+   fun:_ZN3net18SSLClientSocketNSS5WriteEPNS_8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net11SpdySession11WriteSocketEv
+}
+{
+   bug_92876b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net18SSLClientSocketNSS10BufferSendEv
+   fun:_ZN3net18SSLClientSocketNSS13DoTransportIOEv
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
+   fun:_ZN3net13SSLConnectJob6DoLoopEi
+   fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net13SSLConnectJobEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
 }
 
 #-----------------------------------------------------------------------
