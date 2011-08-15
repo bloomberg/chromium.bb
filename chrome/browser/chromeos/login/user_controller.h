@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/new_user_view.h"
@@ -142,7 +143,7 @@ class UserController : public views::WidgetDelegate,
   static const int kNewUserUnselectedSize;
 
  private:
-  FRIEND_TEST(UserControllerTest, GetNameTooltip);
+  FRIEND_TEST_ALL_PREFIXES(UserControllerTest, GetNameTooltip);
 
   class ControlsWidgetDelegate;
 
