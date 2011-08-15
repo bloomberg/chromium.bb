@@ -604,7 +604,7 @@ class BuildTargetStage(BuilderStage):
                                 self._options.hw_tests):
       mod_for_test = True
     else:
-      mod_for_test = False
+      mod_for_test = self._build_config['test_mod']
 
     commands.BuildImage(self._build_root,
                         self._build_config['board'],
