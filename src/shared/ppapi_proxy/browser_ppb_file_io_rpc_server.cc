@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string.h>
+#include <limits>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
@@ -222,7 +223,10 @@ void PpbFileIORpcServer::PPB_FileIO_Write(
     int32_t callback_id,
     int32_t* pp_error_or_bytes) {
   // TODO(sanga): Add comments for the parameters.
-  UNREFERENCED_PARAMETER(buffer_bytes);
+
+  CHECK(buffer_bytes <=
+        static_cast<nacl_abi_size_t>(std::numeric_limits<int32_t>::max()));
+  CHECK(static_cast<nacl_abi_size_t>(bytes_to_write) <= buffer_bytes);
 
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
