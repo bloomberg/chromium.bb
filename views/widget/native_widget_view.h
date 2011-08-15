@@ -40,6 +40,8 @@ class VIEWS_EXPORT NativeWidgetView : public View {
     delete_native_widget_ = delete_native_widget;
   }
 
+  void set_cursor(gfx::NativeCursor cursor) { cursor_ = cursor; }
+
   // Overridden from View:
   virtual void SchedulePaintInternal(const gfx::Rect& r) OVERRIDE;
   virtual void MarkLayerDirty() OVERRIDE;
@@ -53,6 +55,7 @@ class VIEWS_EXPORT NativeWidgetView : public View {
                                     View* child) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
@@ -85,6 +88,9 @@ class VIEWS_EXPORT NativeWidgetView : public View {
   bool sent_create_;
 
   bool delete_native_widget_;
+
+  // The cursor set for the associated widget.
+  gfx::NativeCursor cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetView);
 };

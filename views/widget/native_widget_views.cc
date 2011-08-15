@@ -477,6 +477,7 @@ void NativeWidgetViews::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetViews::SetCursor(gfx::NativeCursor cursor) {
+  view_->set_cursor(cursor);
   GetParentNativeWidget()->SetCursor(cursor);
 }
 

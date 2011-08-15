@@ -18,7 +18,8 @@ const char NativeWidgetView::kViewClassName[] = "views/NativeWidgetView";
 NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
     : native_widget_(native_widget),
       sent_create_(false),
-      delete_native_widget_(true) {
+      delete_native_widget_(true),
+      cursor_(NULL) {
 }
 
 NativeWidgetView::~NativeWidgetView() {
@@ -67,6 +68,10 @@ void NativeWidgetView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void NativeWidgetView::OnPaint(gfx::Canvas* canvas) {
   delegate()->OnNativeWidgetPaint(canvas);
+}
+
+gfx::NativeCursor NativeWidgetView::GetCursor(const MouseEvent& event) {
+  return cursor_;
 }
 
 bool NativeWidgetView::OnMousePressed(const MouseEvent& event) {
