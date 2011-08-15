@@ -4,27 +4,57 @@
 
 {
   'target_defaults': {
-    'include_dirs': [
-    '../..'
-    ],
-    'variables': { 
-      'chromium_code': 1
-    } 
+    'variables': { 'chromium_code':1 },
   },
-  'targets' : [
+  'targets': [
     {
       'target_name': 'GCP-driver',
       'type': 'executable',
       'dependencies': [
         '../../../base/base.gyp:base',
       ],
-      'sources' : [
-        'virtual_driver_posix.cc',
+      'sources': [
         'printer_driver_util_linux.cc',
         'printer_driver_util_posix.h',
+        'printer_driver_util_mac.mm',
+        'virtual_driver_posix.cc',
         '../virtual_driver_switches.cc',
-        '../virtual_driver_switches.h',
-      ]
-    },
-  ],
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'sources!': ['../virtual_driver_switches.cc'],
+          'libraries': ['ScriptingBridge.framework'],
+        }],
+     ], 
+  }],
+  'conditions': [
+     ['OS=="mac"', {
+      'targets' : [
+        {
+          'target_name': 'GCP-install',
+          'type': 'executable',
+          'dependencies': [
+            '../../../base/base.gyp:base',
+          ],
+          'sources' : [
+            'install_cloud_print_driver_mac.mm',
+            'installer_util_mac.h',
+            'installer_util_mac.mm'
+          ],
+        },
+       {
+          'target_name': 'GCP-uninstall',
+          'type': 'executable',
+          'dependencies': [
+            '../../../base/base.gyp:base',
+          ],
+          'sources' : [
+            'installer_util_mac.h',
+            'installer_util_mac.mm',
+            'uninstall_cloud_print_driver_mac.mm',
+          ],
+        },
+      ],
+      }],
+    ],
 }

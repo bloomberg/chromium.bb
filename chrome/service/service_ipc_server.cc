@@ -109,6 +109,10 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnGetCloudPrintProxyInfo)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
+    IPC_MESSAGE_HANDLER(ServiceMsg_EnableVirtualDriver,
+                        OnEnableVirtualDriver);
+    IPC_MESSAGE_HANDLER(ServiceMsg_DisableVirtualDriver,
+                        OnDisableVirtualDriver);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -145,3 +149,12 @@ void ServiceIPCServer::OnShutdown() {
 void ServiceIPCServer::OnUpdateAvailable() {
   g_service_process->SetUpdateAvailable();
 }
+
+void ServiceIPCServer::OnEnableVirtualDriver() {
+  g_service_process->EnableVirtualPrintDriver();
+}
+
+void ServiceIPCServer::OnDisableVirtualDriver() {
+  g_service_process->DisableVirtualPrintDriver();
+}
+

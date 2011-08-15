@@ -52,6 +52,8 @@
         'common/chrome_application_mac.h',
         'common/chrome_application_mac.mm',
         'common/chrome_descriptors.h',
+        'common/cloud_print_class_mac.h',
+        'common/cloud_print_class_mac.mm',
         'common/clipboard_messages.h',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',

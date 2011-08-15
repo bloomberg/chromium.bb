@@ -481,6 +481,7 @@ extern const char kCloudPrintPrintSystemSettings[];
 extern const char kCloudPrintEnableJobPoll[];
 extern const char kCloudPrintRobotRefreshToken[];
 extern const char kCloudPrintRobotEmail[];
+extern const char kVirtualPrinterDriverEnabled[];
 
 extern const char kProxy[];
 extern const char kMaxConnectionsPerProxy[];
@@ -536,6 +537,7 @@ extern const char kBackgroundModeEnabled[];
 
 extern const char kDevicePolicyRefreshRate[];
 extern const char kUserPolicyRefreshRate[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

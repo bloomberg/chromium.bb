@@ -192,6 +192,16 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   if (cloud_print_proxy_enabled) {
     GetCloudPrintProxy()->EnableForUser(lsid);
   }
+  // Enable Virtual Printer Driver if needed.
+  bool virtual_printer_driver_enabled = false;
+  service_prefs_->GetBoolean(prefs::kVirtualPrinterDriverEnabled,
+                             &virtual_printer_driver_enabled);
+
+  if (virtual_printer_driver_enabled) {
+    // Register the fact that there is at least one
+    // service needing the process.
+    OnServiceEnabled();
+  }
 
   VLOG(1) << "Starting Service Process IPC Server";
   ipc_server_.reset(new ServiceIPCServer(
@@ -270,6 +280,20 @@ void ServiceProcess::OnCloudPrintProxyDisabled(bool persist_state) {
     service_prefs_->WritePrefs();
   }
   OnServiceDisabled();
+}
+
+void ServiceProcess::EnableVirtualPrintDriver() {
+  OnServiceEnabled();
+  // Save the preference that we have enabled the virtual driver.
+  service_prefs_->SetBoolean(prefs::kVirtualPrinterDriverEnabled, true);
+  service_prefs_->WritePrefs();
+}
+
+void ServiceProcess::DisableVirtualPrintDriver() {
+  OnServiceDisabled();
+  // Save the preference that we have disabled the virtual driver.
+  service_prefs_->SetBoolean(prefs::kVirtualPrinterDriverEnabled, false);
+  service_prefs_->WritePrefs();
 }
 
 ServiceURLRequestContextGetter*

@@ -12,7 +12,7 @@
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
 #elif defined(OS_MACOSX)
-#include "content/common/chrome_application_mac.h"
+#include "chrome/service/chrome_service_application_mac.h"
 #endif  // defined(OS_WIN)
 
 // Mainline routine for running as the service process.
@@ -27,7 +27,7 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
           << parameters.command_line_.GetCommandLineString();
 
 #if defined(OS_MACOSX)
-  chrome_application_mac::RegisterCrApp();
+  chrome_service_application_mac::RegisterServiceCrApp();
 #endif
 
   base::PlatformThread::SetName("CrServiceMain");

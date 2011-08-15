@@ -1402,6 +1402,8 @@ const char kCloudPrintPrintSystemSettings[] =
 const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
+// Indicates whether the Mac Virtual driver is enabled.
+const char kVirtualPrinterDriverEnabled[] = "cloud_print.enable_virtual_driver";
 
 // Preference to store proxy settings.
 const char kProxy[] = "proxy";
@@ -1473,4 +1475,5 @@ const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 // by the cloud policy subsystem.
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
 const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
+
 }  // namespace prefs

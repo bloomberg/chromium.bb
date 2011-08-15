@@ -45,6 +45,12 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 // Tell the service process that an update is available.
 IPC_MESSAGE_CONTROL0(ServiceMsg_UpdateAvailable)
 
+// Tell the service process to enable the Mac Virtual driver.
+IPC_MESSAGE_CONTROL0(ServiceMsg_EnableVirtualDriver)
+
+// Tell the service process to disable the Mac Virtual driver.
+IPC_MESSAGE_CONTROL0(ServiceMsg_DisableVirtualDriver)
+
 //-----------------------------------------------------------------------------
 // Service process host messages:
 // These are messages from the service process to the browser.

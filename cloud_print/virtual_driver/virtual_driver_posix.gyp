@@ -4,7 +4,7 @@
 {
   'targets': [
     {
-      'target_name': 'virtual_driver',
+      'target_name': 'virtual_driver_posix',
       'type': 'none',
       'dependencies': [
         'posix/backend.gyp:*',
@@ -13,8 +13,3 @@
   ],
 }
 
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

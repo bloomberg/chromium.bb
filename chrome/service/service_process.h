@@ -39,6 +39,11 @@ class ServiceProcess : public CloudPrintProxy::Client {
   bool Initialize(MessageLoopForUI* message_loop,
                   const CommandLine& command_line,
                   ServiceProcessState* state);
+
+  // Functions for Cloud Print virtual driver on Mac.
+  void EnableVirtualPrintDriver();
+  void DisableVirtualPrintDriver();
+
   bool Teardown();
   // TODO(sanjeevr): Change various parts of the code such as
   // net::ProxyService::CreateSystemProxyConfigService to take in

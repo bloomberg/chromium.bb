@@ -1817,6 +1817,8 @@
         'browser/printing/cloud_print/cloud_print_setup_source.h',
         'browser/printing/cloud_print/cloud_print_url.cc',
         'browser/printing/cloud_print/cloud_print_url.h',
+        'browser/printing/cloud_print/virtual_driver_install_helper.cc',
+        'browser/printing/cloud_print/virtual_driver_install_helper.h',
         'browser/printing/print_dialog_cloud.cc',
         'browser/printing/print_dialog_cloud.h',
         'browser/printing/print_dialog_gtk.cc',

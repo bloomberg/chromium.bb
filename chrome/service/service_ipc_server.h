@@ -48,6 +48,8 @@ class ServiceIPCServer : public IPC::Channel::Listener,
       const std::string& user_email);
   void OnGetCloudPrintProxyInfo();
   void OnDisableCloudPrintProxy();
+  void OnEnableVirtualDriver();
+  void OnDisableVirtualDriver();
 
   void OnShutdown();
   void OnUpdateAvailable();

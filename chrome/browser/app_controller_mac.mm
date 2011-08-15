@@ -21,8 +21,11 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -51,10 +54,12 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/service_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
+#include "content/common/cloud_print_class_mac.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -154,6 +159,9 @@ void RecordLastRunAppBundlePath() {
 
 }  // anonymous namespace
 
+const AEEventClass kAECloudPrintInstallClass = 'GCPi';
+const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
+
 @interface AppController (Private)
 - (void)initMenuState;
 - (void)initProfileMenu;
@@ -162,6 +170,9 @@ void RecordLastRunAppBundlePath() {
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
+- (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event;
+- (void)installCloudPrint:(NSAppleEventDescriptor*)event;
+- (void)uninstallCloudPrint:(NSAppleEventDescriptor*)event;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (void)windowChangedToProfile:(Profile*)profile;
 - (void)checkForAnyKeyWindows;
@@ -184,6 +195,19 @@ void RecordLastRunAppBundlePath() {
           andSelector:@selector(getUrl:withReply:)
         forEventClass:kInternetEventClass
            andEventID:kAEGetURL];
+  [em setEventHandler:self
+          andSelector:@selector(submitCloudPrintJob:)
+        forEventClass:content::kAECloudPrintClass
+           andEventID:content::kAECloudPrintClass];
+  // Install and uninstall handlers for virtual drivers.
+  [em setEventHandler:self
+          andSelector:@selector(installCloudPrint:)
+        forEventClass:kAECloudPrintInstallClass
+           andEventID:kAECloudPrintInstallClass];
+  [em setEventHandler:self
+          andSelector:@selector(uninstallCloudPrint:)
+        forEventClass:kAECloudPrintUninstallClass
+           andEventID:kAECloudPrintUninstallClass];
   [em setEventHandler:self
           andSelector:@selector(getUrl:withReply:)
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
@@ -1069,6 +1093,38 @@ void RecordLastRunAppBundlePath() {
   gurlVector.push_back(gurl);
 
   [self openUrls:gurlVector];
+}
+
+// Apple Event handler that receives print event from service
+// process, gets the required data and launches Print dialog.
+- (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event {
+  // Pull parameter list out of Apple Event.
+  NSAppleEventDescriptor *paramList =
+      [event paramDescriptorForKeyword:content::kAECloudPrintClass];
+
+  if (paramList != nil) {
+    // Pull required fields out of parameter list.
+    NSString* mime = [[paramList descriptorAtIndex:1] stringValue];
+    NSString* inputPath = [[paramList descriptorAtIndex:2] stringValue];
+    NSString* printTitle = [[paramList descriptorAtIndex:3] stringValue];
+    // Convert the title to UTF 16 as required.
+    string16 title16 = base::SysNSStringToUTF16(printTitle);
+    print_dialog_cloud::CreatePrintDialogForFile(
+        FilePath([inputPath UTF8String]), title16,
+        [mime UTF8String], /*modal=*/false);
+  }
+}
+
+// Calls the helper class to install the virtual driver to the
+// service process.
+- (void)installCloudPrint:(NSAppleEventDescriptor*)event {
+  cloud_print::VirtualDriverInstallHelper::SetUpInstall();
+}
+
+// Calls the helper class to uninstall the virtual driver to the
+// service process.
+- (void)uninstallCloudPrint:(NSAppleEventDescriptor*)event {
+  cloud_print::VirtualDriverInstallHelper::SetUpUninstall();
 }
 
 - (void)application:(NSApplication*)sender
