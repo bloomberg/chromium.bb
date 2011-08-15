@@ -77,6 +77,8 @@
       # ==================================================
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      # crbug.com/89784
+      '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
@@ -165,8 +167,6 @@
       '-sync.SyncTest.testDisableAndEnableDatatypes',
       # crbug.com/88190
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
-      # crbug.com/89784
-      '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
     ],
