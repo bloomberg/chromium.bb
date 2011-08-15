@@ -17,7 +17,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
  public:
   TaskManagerDialogImpl();
 
-  static void Show();
+  static void Show(bool is_background_page_mode);
   static TaskManagerDialogImpl* GetInstance();
 
  protected:
@@ -35,6 +35,8 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   }
   virtual GURL GetDialogContentURL() const OVERRIDE {
     std::string url_string(chrome::kChromeUITaskManagerURL);
+    if (is_background_page_mode_)
+      url_string += "#bg";
     return GURL(url_string);
   }
   virtual void GetWebUIMessageHandlers(
@@ -62,10 +64,11 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   }
 
  private:
-  void ShowDialog();
+  void ShowDialog(bool is_background_page_mode);
   void OpenHtmlDialog();
 
   bool is_shown_;
+  bool is_background_page_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerDialogImpl);
 };
@@ -79,22 +82,25 @@ TaskManagerDialogImpl* TaskManagerDialogImpl::GetInstance() {
   return Singleton<TaskManagerDialogImpl>::get();
 }
 
-TaskManagerDialogImpl::TaskManagerDialogImpl() : is_shown_(false) {
+TaskManagerDialogImpl::TaskManagerDialogImpl()
+    : is_shown_(false), is_background_page_mode_(false) {
 }
 
 TaskManagerDialogImpl::~TaskManagerDialogImpl() {
 }
 
-void TaskManagerDialogImpl::Show() {
+// static
+void TaskManagerDialogImpl::Show(bool is_background_page_mode) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TaskManagerDialogImpl* dialog = TaskManagerDialogImpl::GetInstance();
-  dialog->ShowDialog();
+  dialog->ShowDialog(is_background_page_mode);
 }
 
-void TaskManagerDialogImpl::ShowDialog() {
+void TaskManagerDialogImpl::ShowDialog(bool is_background_page_mode) {
   // TODO(yoshiki): Brings up existing UI when called with is_shown_ == TRUE
   if (!is_shown_) {
     is_shown_ = true;
+    is_background_page_mode_ = is_background_page_mode;
     OpenHtmlDialog();
   }
 }
@@ -115,6 +121,13 @@ void TaskManagerDialogImpl::OpenHtmlDialog() {
 void TaskManagerDialog::Show() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&TaskManagerDialogImpl::Show));
+      NewRunnableFunction(&TaskManagerDialogImpl::Show, false));
+}
+
+// static
+void TaskManagerDialog::ShowBackgroundPages() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&TaskManagerDialogImpl::Show, true));
 }
 

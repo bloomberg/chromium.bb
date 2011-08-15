@@ -88,11 +88,13 @@ TaskManager.prototype = {
    * Initializes taskmanager.
    * @public
    */
-  initialize: function (dialogDom) {
+  initialize: function (dialogDom, backgroundMode) {
     if (!dialogDom) {
       console.log('ERROR: dialogDom is not defined.');
       return;
     }
+
+    this.backgroundMode_ = backgroundMode;
 
     this.initialized_ = true;
     this.enableTaskManager();
@@ -164,7 +166,7 @@ TaskManager.prototype = {
     }
 
     for (var i = 0; i < table_columns.length; i++) {
-      table_columns[i].renderFunction = this.renderText_.bind(this);
+      table_columns[i].renderFunction = this.renderColumn_.bind(this);
     }
 
     this.columnModel_ = new cr.ui.table.TableColumnModel(table_columns);
@@ -224,9 +226,33 @@ TaskManager.prototype = {
 
     // Expands height of row when a process has some tasks.
     this.table_.autoExpands = true;
+
+    // Sets custom row render function.
+    this.table_.setRenderFunction(this.renderRow_.bind(this));
   },
 
-  renderText_: function(entry, columnId, table) {
+  renderRow_: function(dataItem, table) {
+    var cm = table.columnModel;
+    var listItem = new cr.ui.ListItem({label: ''});
+
+    listItem.className = 'table-row';
+    if (this.backgroundMode_ && dataItem.isBackgroundResource)
+      listItem.className += ' table-background-row';
+
+    for (var i = 0; i < cm.size; i++) {
+      var cell = document.createElement('div');
+      cell.style.width = cm.getWidth(i) + '%';
+      cell.className = 'table-row-cell';
+      cell.appendChild(
+          cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
+
+      listItem.appendChild(cell);
+    }
+
+    return listItem;
+  },
+
+  renderColumn_: function(entry, columnId, table) {
     var container = this.document_.createElement('div');
     container.id = 'detail-container-' + columnId + '-pid' + entry.processId;
     container.className = 'detail-container-' + columnId;
@@ -342,7 +368,8 @@ TaskManager.prototype = {
 var taskmanager = TaskManager.getInstance();
 
 function init() {
-  taskmanager.initialize(document.body);
+  var backgroundMode = (location.hash == '#bg');
+  taskmanager.initialize(document.body, backgroundMode);
 }
 
 function onClose() {

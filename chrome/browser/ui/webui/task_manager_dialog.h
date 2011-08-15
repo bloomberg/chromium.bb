@@ -9,6 +9,7 @@
 class TaskManagerDialog {
  public:
   static void Show();
+  static void ShowBackgroundPages();
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TASK_MANAGER_DIALOG_H_

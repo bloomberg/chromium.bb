@@ -1066,7 +1066,17 @@ void BrowserView::ShowTaskManager() {
 }
 
 void BrowserView::ShowBackgroundPages() {
-  browser::ShowBackgroundPages();
+#if defined(WEBUI_TASK_MANAGER)
+  TaskManagerDialog::ShowBackgroundPages();
+#else
+  // Uses WebUI TaskManager when swiches is set. It is beta feature.
+  if (CommandLine::ForCurrentProcess()
+        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+    TaskManagerDialog::ShowBackgroundPages();
+  } else {
+    browser::ShowBackgroundPages();
+  }
+#endif  // defined(WEBUI_TASK_MANAGER)
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {

@@ -101,6 +101,26 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns render function for row.
+     * @return {Function(*, cr.ui.Table): HTMLElement} Render function.
+     */
+    getRenderFunction: function() {
+      return this.list_.renderFunction_;
+    },
+
+    /**
+     * Sets render function for row.
+     * @param {Function(*, cr.ui.Table): HTMLElement} Render function.
+     */
+    setRenderFunction: function(renderFunction) {
+      if (renderFunction === this.list_.renderFunction_)
+        return;
+
+      this.list_.renderFunction_ = renderFunction;
+      cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    /**
      * The header of the table.
      *
      * @type {cr.ui.table.TableColumnModel}

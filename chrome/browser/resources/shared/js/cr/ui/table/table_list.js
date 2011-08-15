@@ -67,17 +67,21 @@ cr.define('cr.ui.table', function() {
      * @return {!ListItem} The newly created list item.
      */
     createItem: function(dataItem) {
-      var cm = this.table_.columnModel;
+      return this.table_.getRenderFunction().call(null, dataItem, this.table_);
+    },
+
+    renderFunction_: function(dataItem, table) {
+      var cm = table.columnModel;
       var listItem = new ListItem({label: ''});
 
       listItem.className = 'table-row';
 
       for (var i = 0; i < cm.size; i++) {
-        var cell = this.ownerDocument.createElement('div');
+        var cell = table.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + '%';
         cell.className = 'table-row-cell';
         cell.appendChild(
-            cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), this));
+            cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
 
         listItem.appendChild(cell);
       }

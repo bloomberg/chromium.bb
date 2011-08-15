@@ -141,6 +141,8 @@ static DictionaryValue* CreateTaskGroupValue(const TaskManagerModel* tm,
   val->SetInteger("index_in_group", index - group_range.first);
   val->SetBoolean("is_resource_first_in_group",
                   tm->IsResourceFirstInGroup(index));
+  val->SetBoolean("isBackgroundResource",
+                  tm->IsBackgroundResource(index));
 
   // Columns which have one datum in each group.
   CreateGroupColumnList(tm, "processId", index, 1, val);
