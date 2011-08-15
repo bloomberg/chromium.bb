@@ -249,6 +249,20 @@ chrome_pfq = {
   'manifest_version': True,
 }
 
+chrome_pfq_info = {
+  'build_type': constants.CHROME_PFQ_TYPE,
+  'chrome_rev': constants.CHROME_REV_TOT,
+  'important': False,   # for the moment
+  'uprev' : False,
+  'overlays': 'public',
+  'manifest_version': True,
+  'master' : False,
+  'chrome_tests' : True,
+  'build_tests' : True,
+  'vm_tests' : False,
+  'quick_vm' : False,
+}
+
 internal = {
   'overlays' : 'both',
   'git_url' : MANIFEST_INT_URL,
@@ -369,6 +383,19 @@ add_config('arm-tegra2-chrome-pre-flight-queue', [chrome_pfq, arm, {
   'board' : 'tegra2',
   'chrome_rev': constants.CHROME_REV_LATEST,
 }])
+
+add_config('x86-generic-tot-chrome-pfq-informational', [chrome_pfq_info, {
+  'board' : 'x86-generic',
+}])
+
+add_config('arm-generic-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
+  'board' : 'arm-generic',
+}])
+
+add_config('arm-tegra2-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
+  'board' : 'tegra2',
+}])
+
 
 # TODO(sosa): Remove x86-pineview bin.
 add_config('x86-pineview-bin', [{
