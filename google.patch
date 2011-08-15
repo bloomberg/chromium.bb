@@ -2,6 +2,15 @@ Index: jdmarker.c
 ===================================================================
 --- jdmarker.c	(revision 677)
 +++ jdmarker.c	(working copy)
+@@ -906,7 +906,7 @@
+   }
+ 
+   if (cinfo->marker->discarded_bytes != 0) {
+-    WARNMS2(cinfo, JWRN_EXTRANEOUS_DATA, cinfo->marker->discarded_bytes, c);
++    TRACEMS2(cinfo, 1, JWRN_EXTRANEOUS_DATA, cinfo->marker->discarded_bytes, c);
+     cinfo->marker->discarded_bytes = 0;
+   }
+ 
 @@ -940,7 +940,144 @@
    return TRUE;
  }
@@ -1898,3 +1907,31 @@ Index: simd/jfmmxfst.asm
  
  EXTN(jsimd_fdct_ifast_mmx):
  	push	ebp
+Index: jdarith.c
+===================================================================
+--- jdarith.c	(revision 677)
++++ jdarith.c	(working copy)
+@@ -150,8 +150,8 @@
+    */
+   sv = *st;
+   qe = jpeg_aritab[sv & 0x7F];	/* => Qe_Value */
+-  nl = qe & 0xFF; qe >>= 8;	/* Next_Index_LPS + Switch_MPS */
+-  nm = qe & 0xFF; qe >>= 8;	/* Next_Index_MPS */
++  nl = (unsigned char) qe & 0xFF; qe >>= 8;	/* Next_Index_LPS + Switch_MPS */
++  nm = (unsigned char) qe & 0xFF; qe >>= 8;	/* Next_Index_MPS */
+ 
+   /* Decode & estimation procedures per sections D.2.4 & D.2.5 */
+   temp = e->a - qe;
+Index: jdhuff.c
+===================================================================
+--- jdhuff.c	(revision 677)
++++ jdhuff.c	(working copy)
+@@ -742,7 +742,7 @@
+  * this module, since we'll just re-assign them on the next call.)
+  */
+ 
+-#define BUFSIZE (DCTSIZE2 * 2)
++#define BUFSIZE (DCTSIZE2 * 2u)
+ 
+ METHODDEF(boolean)
+ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
