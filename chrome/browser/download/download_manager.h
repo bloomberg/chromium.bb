@@ -198,11 +198,11 @@ class DownloadManager
 
   Profile* profile() { return profile_; }
 
+  DownloadHistory* download_history() { return download_history_.get(); }
+
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
-#if defined(UNIT_TEST)
-  DownloadHistory* download_history() { return download_history_.get(); }
-#endif
+  FilePath last_download_path() { return last_download_path_; }
 
   // Creates the download item.  Must be called on the UI thread.
   void CreateDownloadItem(DownloadCreateInfo* info);
@@ -210,26 +210,19 @@ class DownloadManager
   // Clears the last download path, used to initialize "save as" dialogs.
   void ClearLastDownloadPath();
 
-  // Tests if a file type should be opened automatically.
-  bool ShouldOpenFileBasedOnExtension(const FilePath& path) const;
-
   // Overridden from DownloadStatusUpdaterDelegate:
   virtual bool IsDownloadProgressKnown();
   virtual int64 GetInProgressDownloadCount();
   virtual int64 GetReceivedDownloadBytes();
   virtual int64 GetTotalDownloadBytes();
 
-  // Called by the embedder after the save as dialog is closed.
+  // Called by the delegate after the save as dialog is closed.
   void FileSelected(const FilePath& path, void* params);
   void FileSelectionCanceled(void* params);
 
-  // Returns true if this download should show the "dangerous file" warning.
-  // Various factors are considered, such as the type of the file, whether a
-  // user action initiated the download, and whether the user has explicitly
-  // marked the file type as "auto open".
-  bool IsDangerousFile(const DownloadItem& download,
-                       const DownloadStateInfo& state,
-                       bool visited_referrer_before);
+  // Called by the delegate if it delayed the download in
+  // DownloadManagerDelegate::ShouldStartDownload and now is ready.
+  void RestartDownload(int32 download_id);
 
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
@@ -240,18 +233,6 @@ class DownloadManager
   // if the file is already removed. The check runs in the background and may
   // finish asynchronously after this method returns.
   void CheckForFileRemoval(DownloadItem* download_item);
-
-  // Callback function after url is checked with safebrowsing service.
-  void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
-
-  // Callback function after we check whether the referrer URL has been visited
-  // before today.
-  void CheckVisitedReferrerBeforeDone(int32 download_id,
-                                      bool visited_referrer_before);
-
-  // Callback function after download file hash is checked with safebrowsing
-  // service.
-  void CheckDownloadHashDone(int32 download_id, bool is_dangerous_hash);
 
   // Assert the named download item is on the correct queues
   // in the DownloadManager.  For debugging.
@@ -273,6 +254,10 @@ class DownloadManager
 
   // Download Id for next Save Page.
   int32 GetNextSavePageId();
+
+  // Get the download item from the active map.  Useful when the item is not
+  // yet in the history map.
+  DownloadItem* GetActiveDownloadItem(int id);
 
   DownloadManagerDelegate* delegate() const { return delegate_; }
 
@@ -319,18 +304,6 @@ class DownloadManager
   // and then notifies this update to the file's observer.
   void OnFileRemovalDetected(int64 db_handle);
 
-  // Called on the download thread to check whether the suggested file path
-  // exists.  We don't check if the file exists on the UI thread to avoid UI
-  // stalls from interacting with the file system.
-  void CheckIfSuggestedPathExists(int32 download_id,
-                                  DownloadStateInfo state,
-                                  const FilePath& default_path);
-
-  // Called on the UI thread once the DownloadManager has determined whether the
-  // suggested file path exists.
-  void OnPathExistenceAvailable(int32 download_id,
-                                const DownloadStateInfo& new_state);
-
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
@@ -354,10 +327,6 @@ class DownloadManager
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();
-
-  // Get the download item from the active map.  Useful when the item is not
-  // yet in the history map.
-  DownloadItem* GetActiveDownloadItem(int id);
 
   // Debugging routine to confirm relationship between below
   // containers; no-op if NDEBUG.

@@ -464,9 +464,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual DownloadManager* GetDownloadManager() {
     if (!download_manager_.get()) {
-      download_manager_delegate_.reset(new ChromeDownloadManagerDelegate());
+      download_manager_delegate_ = new ChromeDownloadManagerDelegate();
       scoped_refptr<DownloadManager> dlm(
-          new DownloadManager(download_manager_delegate_.get(),
+          new DownloadManager(download_manager_delegate_,
                               g_browser_process->download_status_updater()));
       download_manager_delegate_->set_download_manager(dlm);
       dlm->Init(this);
@@ -795,7 +795,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Used so that Chrome code can influence how content module's DownloadManager
   // functions.
-  scoped_ptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
+  scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;

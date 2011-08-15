@@ -20,6 +20,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_state_info.h"
 #include "chrome/browser/download/download_util.h"
@@ -257,7 +258,7 @@ bool DownloadItem::CanOpenDownload() {
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
-  return download_manager_->ShouldOpenFileBasedOnExtension(
+  return download_manager_->delegate()->ShouldOpenFileBasedOnExtension(
       GetUserVerifiedFilePath());
 }
 
@@ -434,8 +435,7 @@ void DownloadItem::Completed() {
     // Extensions should already have been unpacked and opened.
     DCHECK(auto_opened_);
   } else if (open_when_complete() ||
-             download_manager_->ShouldOpenFileBasedOnExtension(
-                 GetUserVerifiedFilePath()) ||
+             ShouldOpenFileBasedOnExtension() ||
              is_temporary()) {
     // If the download is temporary, like in drag-and-drop, do not open it but
     // we still need to set it auto-opened so that it can be removed from the
