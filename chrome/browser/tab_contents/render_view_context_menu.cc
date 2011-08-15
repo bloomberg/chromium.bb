@@ -484,13 +484,12 @@ void RenderViewContextMenu::InitMenu() {
 
   // When no special node or text is selected and selection has no link,
   // show page items.
-  bool is_devtools = false;
   if (params_.media_type == WebContextMenuData::MediaTypeNone &&
       !has_link &&
       !params_.is_editable &&
       !has_selection) {
     if (!params_.page_url.is_empty()) {
-      is_devtools = IsDevToolsURL(params_.page_url);
+      bool is_devtools = IsDevToolsURL(params_.page_url);
       if (!is_devtools && !IsInternalResourcesURL(params_.page_url)) {
         AppendPageItems();
         // Merge in frame items if we clicked within a frame that needs them.
@@ -542,7 +541,7 @@ void RenderViewContextMenu::InitMenu() {
   if (has_selection)
     AppendSearchProvider();
 
-  if (!is_devtools)
+  if (!IsDevToolsURL(params_.page_url))
     AppendAllExtensionItems();
 
   AppendDeveloperItems();
