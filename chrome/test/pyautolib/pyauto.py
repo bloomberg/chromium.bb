@@ -46,35 +46,17 @@ import types
 import unittest
 import urllib
 
+import pyauto_paths
+
 
 def _LocateBinDirs():
   """Setup a few dirs where we expect to find dependency libraries."""
-  script_dir = os.path.dirname(__file__)
-  chrome_src = os.path.join(script_dir, os.pardir, os.pardir, os.pardir)
-
-  bin_dirs = {
-      'linux2': [ os.path.join(chrome_src, 'out', 'Debug'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
-                  os.path.join(chrome_src, 'out', 'Release'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
-      'linux3': [ os.path.join(chrome_src, 'out', 'Debug'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
-                  os.path.join(chrome_src, 'out', 'Release'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
-      'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
-                  os.path.join(chrome_src, 'xcodebuild', 'Release')],
-      'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
-                  os.path.join(chrome_src, 'build', 'Debug'),
-                  os.path.join(chrome_src, 'chrome', 'Release'),
-                  os.path.join(chrome_src, 'build', 'Release')],
-      'cygwin': [ os.path.join(chrome_src, 'chrome', 'Debug'),
-                  os.path.join(chrome_src, 'chrome', 'Release')],
-  }
-  deps_dirs = [ os.path.join(script_dir, os.pardir,
-                             os.pardir, os.pardir, 'third_party'),
-                script_dir,
+  deps_dirs = [
+      os.path.dirname(__file__),
+      pyauto_paths.GetThirdPartyDir(),
+      os.path.join(pyauto_paths.GetThirdPartyDir(), 'webdriver', 'python'),
   ]
-  sys.path += map(os.path.normpath, bin_dirs.get(sys.platform, []) + deps_dirs)
+  sys.path += map(os.path.normpath, pyauto_paths.GetBuildDirs() + deps_dirs)
 
 _LocateBinDirs()
 
@@ -105,6 +87,7 @@ from pyauto_errors import NTPThumbnailNotShownError
 import pyauto_utils
 import simplejson as json  # found in third_party
 
+_CHROME_DRIVER_FACTORY = None
 _HTTP_SERVER = None
 _REMOTE_PROXY = None
 _OPTIONS = None
@@ -2830,6 +2813,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def NewWebDriver(self):
+    """Returns a new remote WebDriver instance.
+
+    Returns:
+      selenium.webdriver.remote.webdriver.WebDriver instance
+    """
+    from chrome_driver_factory import ChromeDriverFactory
+    global _CHROME_DRIVER_FACTORY
+    if _CHROME_DRIVER_FACTORY is None:
+      _CHROME_DRIVER_FACTORY = ChromeDriverFactory()
+    return _CHROME_DRIVER_FACTORY.NewChromeDriver(self)
+
+  def CreateNewAutomationProvider(self, channel_id):
+    """Creates a new automation provider.
+
+    The provider will open a named channel in server mode.
+    Args:
+      channel_id: the channel_id to open the server channel with
+    """
+    cmd_dict = {
+        'command': 'CreateNewAutomationProvider',
+        'channel_id': channel_id
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
   ## ChromeOS section
 
   def GetLoginInfo(self):
@@ -3821,6 +3829,10 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     global _HTTP_SERVER
     if _HTTP_SERVER:
       self._StopHTTPServer()
+
+    global _CHROME_DRIVER_FACTORY
+    if _CHROME_DRIVER_FACTORY is not None:
+      _CHROME_DRIVER_FACTORY.Stop()
 
   def _StartHTTPServer(self):
     """Start a local file server hosting data files over http://"""

@@ -73,7 +73,11 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  CommandLine command_line_options(CommandLine::NO_PROGRAM);
+  Automation::BrowserOptions browser_options;
+  FilePath::StringType path;
+  if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
+    browser_options.command = CommandLine(FilePath(path));
+
   ListValue* switches = NULL;
   const char* kCustomSwitchesKey = "chrome.switches";
   if (capabilities->GetListWithoutPathExpansion(kCustomSwitchesKey,
@@ -93,11 +97,11 @@ void CreateSession::ExecutePost(Response* const response) {
               kBadRequest, "Custom switch is not a string"));
           return;
         }
-        command_line_options.AppendSwitchNative(
+        browser_options.command.AppendSwitchNative(
             switch_string.substr(0, separator_index),
             switch_string_native.substr(separator_index + 1));
       } else {
-        command_line_options.AppendSwitch(switch_string);
+        browser_options.command.AppendSwitch(switch_string);
       }
     }
   } else if (capabilities->HasKey(kCustomSwitchesKey)) {
@@ -105,14 +109,16 @@ void CreateSession::ExecutePost(Response* const response) {
         kBadRequest, "Custom switches must be a list"));
     return;
   }
+
   Value* verbose_value;
   if (capabilities->GetWithoutPathExpansion("chrome.verbose", &verbose_value)) {
-    bool verbose;
-    if (verbose_value->GetAsBoolean(&verbose) && verbose) {
+    bool verbose = false;
+    if (verbose_value->GetAsBoolean(&verbose)) {
       // Since logging is shared among sessions, if any session requests verbose
       // logging, verbose logging will be enabled for all sessions. It is not
       // possible to turn it off.
-      logging::SetMinLogLevel(logging::LOG_INFO);
+      if (verbose)
+        logging::SetMinLogLevel(logging::LOG_INFO);
     } else {
       response->SetError(new Error(
           kBadRequest, "verbose must be a boolean true or false"));
@@ -120,14 +126,10 @@ void CreateSession::ExecutePost(Response* const response) {
     }
   }
 
-  FilePath browser_exe;
-  FilePath::StringType path;
-  if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
-    browser_exe = FilePath(path);
+  capabilities->GetStringWithoutPathExpansion(
+      "chrome.channel", &browser_options.channel_id);
 
   ScopedTempDir temp_profile_dir;
-  FilePath temp_user_data_dir;
-
   std::string base64_profile;
   if (capabilities->GetStringWithoutPathExpansion("chrome.profile",
                                                   &base64_profile)) {
@@ -144,8 +146,9 @@ void CreateSession::ExecutePost(Response* const response) {
       return;
     }
 
-    temp_user_data_dir = temp_profile_dir.path().AppendASCII("user_data_dir");
-    if (!Unzip(temp_profile_zip, temp_user_data_dir)) {
+    browser_options.user_data_dir =
+        temp_profile_dir.path().AppendASCII("user_data_dir");
+    if (!Unzip(temp_profile_zip, browser_options.user_data_dir)) {
       response->SetError(new Error(
           kBadRequest, "Could not unarchive provided user profile"));
       return;
@@ -186,13 +189,13 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  Session::Options options;
+  Session::Options session_options;
   Error* error = NULL;
   error = GetBooleanCapability(capabilities, "chrome.nativeEvents",
-                               &options.use_native_events);
+                               &session_options.use_native_events);
   if (!error) {
     error = GetBooleanCapability(capabilities, "chrome.loadAsync",
-                                 &options.load_async);
+                                 &session_options.load_async);
   }
   if (error) {
     response->SetError(error);
@@ -200,10 +203,8 @@ void CreateSession::ExecutePost(Response* const response) {
   }
 
   // Session manages its own liftime, so do not call delete.
-  Session* session = new Session(options);
-  error = session->Init(browser_exe,
-                        temp_user_data_dir,
-                        command_line_options);
+  Session* session = new Session(session_options);
+  error = session->Init(browser_options);
   if (error) {
     response->SetError(error);
     return;

@@ -11,7 +11,6 @@
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -184,64 +183,66 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
 
 namespace webdriver {
 
+Automation::BrowserOptions::BrowserOptions()
+    : command(CommandLine::NO_PROGRAM) {}
+
+Automation::BrowserOptions::~BrowserOptions() {}
+
 Automation::Automation() {}
 
 Automation::~Automation() {}
 
-void Automation::Init(const CommandLine& options,
-                      const FilePath& user_data_dir,
-                      Error** error) {
-  FilePath browser_exe;
-  if (!GetDefaultChromeExe(&browser_exe)) {
-    *error = new Error(kUnknownError, "Could not find default Chrome binary");
-    return;
-  }
-
-  InitWithBrowserPath(browser_exe, user_data_dir, options, error);
-}
-
-void Automation::InitWithBrowserPath(const FilePath& browser_exe,
-                                     const FilePath& user_data_dir,
-                                     const CommandLine& options,
-                                     Error** error) {
-  if (!file_util::PathExists(browser_exe)) {
-    std::string message = base::StringPrintf(
-        "Could not find Chrome binary at: %" PRFilePath,
-        browser_exe.value().c_str());
-    *error = new Error(kUnknownError, message);
-    return;
-  }
-
-  CommandLine command(browser_exe);
+void Automation::Init(const BrowserOptions& options, Error** error) {
+  // Prepare Chrome's command line.
+  CommandLine command(CommandLine::NO_PROGRAM);
   command.AppendSwitch(switches::kDisableHangMonitor);
   command.AppendSwitch(switches::kDisablePromptOnRepost);
   command.AppendSwitch(switches::kDomAutomationController);
   command.AppendSwitch(switches::kFullMemoryCrashReport);
   command.AppendSwitch(switches::kNoDefaultBrowserCheck);
   command.AppendSwitch(switches::kNoFirstRun);
-  command.AppendSwitchASCII(switches::kTestType, "webdriver");
-
-  if (user_data_dir.empty())
+  if (options.user_data_dir.empty())
     command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
 
-  command.AppendArguments(options, false);
+  command.AppendArguments(options.command, true /* include_program */);
 
-  launcher_.reset(new AnonymousProxyLauncher(false));
+  // Find the Chrome binary.
+  if (command.GetProgram().empty()) {
+    FilePath browser_exe;
+    if (!GetDefaultChromeExe(&browser_exe)) {
+      *error = new Error(kUnknownError, "Could not find default Chrome binary");
+      return;
+    }
+    command.SetProgram(browser_exe);
+  }
+  if (!file_util::PathExists(command.GetProgram())) {
+    std::string message = base::StringPrintf(
+        "Could not find Chrome binary at: %" PRFilePath,
+        command.GetProgram().value().c_str());
+    *error = new Error(kUnknownError, message);
+    return;
+  }
+  std::string chrome_details = base::StringPrintf(
+      "Using Chrome binary at: %" PRFilePath,
+      command.GetProgram().value().c_str());
+  LOG(INFO) << chrome_details;
+
+  // Create the ProxyLauncher and launch Chrome.
+  if (options.channel_id.empty()) {
+    launcher_.reset(new AnonymousProxyLauncher(false));
+  } else {
+    launcher_.reset(new NamedProxyLauncher(options.channel_id, false, false));
+  }
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
-      user_data_dir,  // template_user_data
+      options.user_data_dir,  // template_user_data
       base::Closure(),
       command,
       true,  // include_testing_id
       true   // show_window
   };
-
-  std::string chrome_details = base::StringPrintf(
-      "Using Chrome binary at: %" PRFilePath,
-      browser_exe.value().c_str());
-  LOG(INFO) << chrome_details;
-
-  if (!launcher_->LaunchBrowserAndServer(launch_props, true)) {
+  if (!launcher_->InitializeConnection(launch_props, true)) {
+    LOG(ERROR) << "Failed to initialize connection";
     *error = new Error(
         kUnknownError,
         "Unable to either launch or connect to Chrome. Please check that "
@@ -253,27 +254,21 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   LOG(INFO) << "Chrome launched successfully. Version: "
             << automation()->server_version();
 
-  bool has_automation_version = false;
-  *error = CompareVersion(730, 0, &has_automation_version);
-  if (*error)
-    return;
-
+  // Check the version of Chrome is compatible with this ChromeDriver.
   chrome_details += ", version (" + automation()->server_version() + ")";
-  if (has_automation_version) {
-    int version = 0;
-    std::string error_msg;
-    if (!SendGetChromeDriverAutomationVersion(
-            automation(), &version, &error_msg)) {
-      *error = new Error(kUnknownError, error_msg + " " + chrome_details);
-      return;
-    }
-    if (version > automation::kChromeDriverAutomationVersion) {
-      *error = new Error(
-          kUnknownError,
-          "ChromeDriver is not compatible with this version of Chrome. " +
-              chrome_details);
-      return;
-    }
+  int version = 0;
+  std::string error_msg;
+  if (!SendGetChromeDriverAutomationVersion(
+          automation(), &version, &error_msg)) {
+    *error = new Error(kUnknownError, error_msg + " " + chrome_details);
+    return;
+  }
+  if (version > automation::kChromeDriverAutomationVersion) {
+    *error = new Error(
+        kUnknownError,
+        "ChromeDriver is not compatible with this version of Chrome. " +
+            chrome_details);
+    return;
   }
 }
 

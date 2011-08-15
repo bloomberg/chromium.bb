@@ -519,17 +519,22 @@ AutomationProxy* NamedProxyLauncher::CreateAutomationProxy(
   return proxy;
 }
 
-void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
+bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
                                               bool wait_for_initial_loads) {
   if (launch_browser_) {
 #if defined(OS_POSIX)
     // Because we are waiting on the existence of the testing file below,
     // make sure there isn't one already there before browser launch.
-    EXPECT_TRUE(file_util::Delete(FilePath(channel_id_), false));
+    if (!file_util::Delete(FilePath(channel_id_), false)) {
+      LOG(ERROR) << "Failed to delete " << channel_id_;
+      return false;
+    }
 #endif
 
-    // Set up IPC testing interface as a client.
-    ASSERT_TRUE(LaunchBrowser(state));
+    if (!LaunchBrowser(state)) {
+      LOG(ERROR) << "Failed to LaunchBrowser";
+      return false;
+    }
   }
 
   // Wait for browser to be ready for connections.
@@ -542,9 +547,16 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
       break;
     base::PlatformThread::Sleep(automation::kSleepTime);
   }
-  EXPECT_TRUE(channel_initialized);
+  if (!channel_initialized) {
+    LOG(ERROR) << "Failed to wait for testing channel presence.";
+    return false;
+  }
 
-  ASSERT_TRUE(ConnectToRunningBrowser(wait_for_initial_loads));
+  if (!ConnectToRunningBrowser(wait_for_initial_loads)) {
+    LOG(ERROR) << "Failed to ConnectToRunningBrowser";
+    return false;
+  }
+  return true;
 }
 
 void NamedProxyLauncher::TerminateConnection() {
@@ -575,9 +587,9 @@ AutomationProxy* AnonymousProxyLauncher::CreateAutomationProxy(
   return proxy;
 }
 
-void AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
+bool AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
                                                   bool wait_for_initial_loads) {
-  ASSERT_TRUE(LaunchBrowserAndServer(state, wait_for_initial_loads));
+  return LaunchBrowserAndServer(state, wait_for_initial_loads);
 }
 
 void AnonymousProxyLauncher::TerminateConnection() {
