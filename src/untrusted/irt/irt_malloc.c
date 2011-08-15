@@ -19,6 +19,8 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "native_client/src/untrusted/irt/irt_private.h"
+
 /*
  * These macros parameterize the dlmalloc code the way we want it.
  * See dlmalloc/malloc.c for the details.
@@ -34,6 +36,22 @@
 #define HAVE_MREMAP             0
 #define NO_MALLINFO             1
 #define NO_MALLOC_STATS         1
+
+/*
+ * This is called before malloc et al return NULL.
+ *
+ * In early startup of the IRT itself, we cannot recover from failure.
+ */
+#define MALLOC_FAILURE_ACTION   irt_malloc_failure()
+static void irt_malloc_failure(void) {
+  if (!irt_initialized) {
+    static const char msg[] = "Memory allocation failure in IRT startup!\n";
+    write(2, msg, sizeof msg - 1);
+    _exit(-1);
+  }
+
+  errno = ENOMEM;
+}
 
 #include "native_client/src/third_party/dlmalloc/malloc.c"
 

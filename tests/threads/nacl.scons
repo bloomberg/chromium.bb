@@ -144,15 +144,16 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
                        is_broken=is_broken)
 
-second_tls_test_nexe = env.ComponentProgram(
-    'second_tls_test',
-    env.RawSyscallObjects(['second_tls_test.c']),
-    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+if not env.Bit('tests_use_irt'):
+  second_tls_test_nexe = env.ComponentProgram(
+      'second_tls_test',
+      env.RawSyscallObjects(['second_tls_test.c']),
+      EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
-node = env.CommandSelLdrTestNacl('second_tls_test.out',
-                                 second_tls_test_nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
-                       is_broken=is_broken)
+  node = env.CommandSelLdrTestNacl('second_tls_test.out',
+                                   second_tls_test_nexe)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
+                         is_broken=is_broken)
 
 many_threads_sequential_nexe = env.ComponentProgram(
     'many_threads_sequential',

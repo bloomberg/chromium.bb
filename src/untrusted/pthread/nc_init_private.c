@@ -5,7 +5,22 @@
  */
 
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
+
+static int nacl_irt_thread_create(void *start_user_address, void *stack,
+                                  void *thread_ptr) {
+  return -NACL_SYSCALL(thread_create)(start_user_address, stack, thread_ptr, 0);
+}
+
+static void nacl_irt_thread_exit(int32_t *stack_flag) {
+  NACL_SYSCALL(thread_exit)(stack_flag);
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
+}
+
+static int nacl_irt_thread_nice(const int nice) {
+  return -NACL_SYSCALL(thread_nice)(nice);
+}
 
 /*
  * The other interfaces have global __nc_irt_<name> variables.
@@ -13,5 +28,10 @@
  * defined in ../irt/irt_<name>.c.
  */
 void __nc_initialize_interfaces(struct nacl_irt_thread *irt_thread) {
-  *irt_thread = nacl_irt_thread;
+  const struct nacl_irt_thread init = {
+    nacl_irt_thread_create,
+    nacl_irt_thread_exit,
+    nacl_irt_thread_nice,
+  };
+  *irt_thread = init;
 }

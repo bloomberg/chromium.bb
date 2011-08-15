@@ -32,7 +32,7 @@ nc_private_objs = nc_objs + ['nc_init_private.c'] + [
     env.ComponentObject(
         'irt_%s' % interface,
         '${MAIN_DIR}/src/untrusted/irt/irt_%s.c' % interface)
-    for interface in ['thread', 'mutex', 'cond', 'sem', 'blockhook']
+    for interface in ['mutex', 'cond', 'sem', 'blockhook']
     ]
 
 env.ComponentLibrary('libpthread_private', nc_private_objs)
