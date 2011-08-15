@@ -353,12 +353,42 @@ cr.define('oobe', function() {
     }
   };
 
+  /**
+   * Updates networks list with the new data.
+   * @param {!Object} data Networks list.
+   */
   NetworkScreen.updateNetworks = function(data) {
     $('connect').updateNetworks(data);
   };
 
+  /**
+   * Updates network title, which is shown by the drop-down.
+   * @param {string} title Title to be displayed.
+   * @param {!Object} icon Icon to be displayed.
+   */
   NetworkScreen.updateNetworkTitle = function(title, icon) {
     $('connect').updateNetworkTitle(title, icon);
+  };
+
+  /**
+   * Shows the network error message.
+   * @param {string} message Message to be shown.
+   */
+  NetworkScreen.showError = function(message) {
+    var error = document.createElement('div');
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.textContent = message;
+    error.appendChild(messageDiv);
+
+    $('bubble').showContentForElement($('networks-list'), error);
+  };
+
+  /**
+   * Hides the error notification bubble (if any).
+   */
+  NetworkScreen.clearErrors = function() {
+    $('bubble').hide();
   };
 
   return {

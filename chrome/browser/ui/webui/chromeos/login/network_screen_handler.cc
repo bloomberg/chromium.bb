@@ -81,12 +81,13 @@ void NetworkScreenHandler::Hide() {
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
-  // scoped_ptr<Value> message_value(Value::CreateStringValue(message));
-  // web_ui_->CallJavascriptFunction("cr.ui.Oobe.showError", *message_value);
+  scoped_ptr<Value> message_value(Value::CreateStringValue(message));
+  web_ui_->CallJavascriptFunction("oobe.NetworkScreen.showError",
+                                  *message_value);
 }
 
 void NetworkScreenHandler::ClearErrors() {
-  // web_ui_->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+  web_ui_->CallJavascriptFunction("oobe.NetworkScreen.clearErrors");
 }
 
 void NetworkScreenHandler::ShowConnectingStatus(
