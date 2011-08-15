@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_IPC_MESSAGE_H__
-#define IPC_IPC_MESSAGE_H__
+#ifndef IPC_IPC_MESSAGE_H_
+#define IPC_IPC_MESSAGE_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/pickle.h"
+#include "ipc/ipc_export.h"
 
 #ifndef NDEBUG
 #define IPC_MESSAGE_LOG_ENABLED
@@ -33,10 +34,10 @@ class Channel;
 class Message;
 struct LogData;
 
-class Message : public Pickle {
+class IPC_EXPORT Message : public Pickle {
  public:
   // Implemented by objects that can send IPC messages across a channel.
-  class Sender {
+  class IPC_EXPORT Sender {
    public:
     virtual ~Sender() {}
 
@@ -280,4 +281,4 @@ enum SpecialRoutingIDs {
 #define IPC_REPLY_ID 0xFFFFFFF0  // Special message id for replies
 #define IPC_LOGGING_ID 0xFFFFFFF1  // Special message id for logging
 
-#endif  // IPC_IPC_MESSAGE_H__
+#endif  // IPC_IPC_MESSAGE_H_

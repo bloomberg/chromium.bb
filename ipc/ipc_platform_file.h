@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
-
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "ipc/ipc_export.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -41,9 +41,10 @@ inline base::PlatformFile PlatformFileForTransitToPlatformFile(
 }
 
 // Returns a file handle equivalent to |file| that can be used in |process|.
-PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile file,
-                                               base::ProcessHandle process,
-                                               bool close_source_handle);
+IPC_EXPORT PlatformFileForTransit GetFileHandleForProcess(
+    base::PlatformFile file,
+    base::ProcessHandle process,
+    bool close_source_handle);
 
 }  // namespace IPC
 

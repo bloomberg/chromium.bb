@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace IPC {
 
 class MessageReplyDeserializer;
 
-class SyncMessage : public Message {
+class IPC_EXPORT SyncMessage : public Message {
  public:
   SyncMessage(int32 routing_id, uint32 type, PriorityValue priority,
               MessageReplyDeserializer* deserializer);
@@ -81,7 +81,7 @@ class SyncMessage : public Message {
 };
 
 // Used to deserialize parameters from a reply to a synchronous message
-class MessageReplyDeserializer {
+class IPC_EXPORT MessageReplyDeserializer {
  public:
   virtual ~MessageReplyDeserializer() {}
   bool SerializeOutputParameters(const Message& msg);

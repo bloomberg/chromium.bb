@@ -29,13 +29,13 @@ namespace IPC {
 // the channel with the mode set to one of the NAMED modes. NAMED modes are
 // currently used by automation and service processes.
 
-class Channel : public Message::Sender {
+class IPC_EXPORT Channel : public Message::Sender {
   // Security tests need access to the pipe handle.
   friend class ChannelTest;
 
  public:
   // Implemented by consumers of a Channel to receive messages.
-  class Listener {
+  class IPC_EXPORT Listener {
    public:
     virtual ~Listener() {}
 

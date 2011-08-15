@@ -11,13 +11,15 @@
 #include "base/basictypes.h"
 #include "base/file_descriptor_posix.h"
 #include "base/memory/ref_counted.h"
+#include "ipc/ipc_export.h"
 
 // -----------------------------------------------------------------------------
 // A FileDescriptorSet is an ordered set of POSIX file descriptors. These are
 // associated with IPC messages so that descriptors can be transmitted over a
 // UNIX domain socket.
 // -----------------------------------------------------------------------------
-class FileDescriptorSet : public base::RefCountedThreadSafe<FileDescriptorSet> {
+class IPC_EXPORT FileDescriptorSet
+    : public base::RefCountedThreadSafe<FileDescriptorSet> {
  public:
   FileDescriptorSet();
 

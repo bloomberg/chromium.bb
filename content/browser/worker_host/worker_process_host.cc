@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"

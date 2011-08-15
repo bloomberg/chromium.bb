@@ -22,6 +22,7 @@
           'ipc_channel_win.cc',
           'ipc_channel_win.h',
           'ipc_descriptors.h',
+          'ipc_export.h',
           'ipc_logging.cc',
           'ipc_logging.h',
           'ipc_message.cc',
@@ -47,6 +48,9 @@
           'struct_constructor_macros.h',
           'struct_destructor_macros.h',
         ],
+        'defines': [
+          'IPC_IMPLEMENTATION',
+        ],
         'include_dirs': [
           '..',
         ],
@@ -56,7 +60,7 @@
   'targets': [
     {
       'target_name': 'ipc',
-      'type': 'static_library',
+      'type': '<(component)',
       'variables': {
         'ipc_target': 1,
       },
@@ -78,13 +82,13 @@
       'targets': [
         {
           'target_name': 'ipc_win64',
-          'type': 'static_library',
+          'type': '<(component)',
           'variables': {
             'ipc_target': 1,
           },
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
           ],
           # TODO(gregoryd): direct_dependent_settings should be shared with the
           # 32-bit target, but it doesn't work due to a bug in gyp

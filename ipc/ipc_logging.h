@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "ipc/ipc_export.h"
 
 // Logging function. |name| is a string in ASCII and |params| is a string in
 // UTF-8.
@@ -32,7 +33,7 @@ class Message;
 // One instance per process.  Needs to be created on the main thread (the UI
 // thread in the browser) but OnPreDispatchMessage/OnPostDispatchMessage
 // can be called on other threads.
-class Logging {
+class IPC_EXPORT Logging {
  public:
   // Implemented by consumers of log messages.
   class Consumer {

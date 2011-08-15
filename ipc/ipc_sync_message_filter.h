@@ -28,8 +28,8 @@ class MessageReplyDeserializer;
 // support fancy features that SyncChannel does, such as handling recursion or
 // receiving messages while waiting for a response.  Note that this object can
 // be used to send simultaneous synchronous messages from different threads.
-class SyncMessageFilter : public ChannelProxy::MessageFilter,
-                          public Message::Sender {
+class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
+                                     public Message::Sender {
  public:
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
   virtual ~SyncMessageFilter();

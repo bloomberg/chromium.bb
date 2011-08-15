@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,12 @@
 #define IPC_IPC_SWITCHES_H_
 #pragma once
 
-#include "base/base_switches.h"
+#include "ipc/ipc_export.h"
 
 namespace switches {
 
-extern const char kProcessChannelID[];
-extern const char kDebugChildren[];
+IPC_EXPORT extern const char kProcessChannelID[];
+IPC_EXPORT extern const char kDebugChildren[];
 
 }  // namespace switches
 

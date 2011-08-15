@@ -60,8 +60,8 @@ class MessageReplyDeserializer;
 // is more than this object.  If the message loop goes away while this object
 // is running and it's used to send a message, then it will use the invalid
 // message loop pointer to proxy it to the ipc thread.
-class SyncChannel : public ChannelProxy,
-                    public base::WaitableEventWatcher::Delegate {
+class IPC_EXPORT SyncChannel : public ChannelProxy,
+                               public base::WaitableEventWatcher::Delegate {
  public:
   SyncChannel(const IPC::ChannelHandle& channel_handle,
               Channel::Mode mode,

@@ -197,7 +197,7 @@ struct ParamTraits<int> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadInt(iter, r);
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -209,7 +209,7 @@ struct ParamTraits<unsigned int> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadInt(iter, reinterpret_cast<int*>(r));
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -221,7 +221,7 @@ struct ParamTraits<long> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadLong(iter, r);
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -233,7 +233,7 @@ struct ParamTraits<unsigned long> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadLong(iter, reinterpret_cast<long*>(r));
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -245,7 +245,7 @@ struct ParamTraits<long long> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -257,11 +257,11 @@ struct ParamTraits<unsigned long long> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<unsigned short> {
+struct IPC_EXPORT ParamTraits<unsigned short> {
   typedef unsigned short param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -316,7 +316,7 @@ struct ParamTraits<double> {
 };
 
 template <>
-struct ParamTraits<base::Time> {
+struct IPC_EXPORT ParamTraits<base::Time> {
   typedef base::Time param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -324,7 +324,7 @@ struct ParamTraits<base::Time> {
 };
 
 template <>
-struct ParamTraits<base::TimeDelta> {
+struct IPC_EXPORT ParamTraits<base::TimeDelta> {
   typedef base::TimeDelta param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -382,7 +382,7 @@ struct ParamTraits<MSG> {
 #endif  // defined(OS_WIN)
 
 template <>
-struct ParamTraits<base::DictionaryValue> {
+struct IPC_EXPORT ParamTraits<base::DictionaryValue> {
   typedef base::DictionaryValue param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -390,7 +390,7 @@ struct ParamTraits<base::DictionaryValue> {
 };
 
 template <>
-struct ParamTraits<base::ListValue> {
+struct IPC_EXPORT ParamTraits<base::ListValue> {
   typedef base::ListValue param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -584,7 +584,7 @@ struct ParamTraits<std::wstring> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadWString(iter, r);
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 
 template <class A, class B>
@@ -607,7 +607,7 @@ struct ParamTraits<std::pair<A, B> > {
 };
 
 template <>
-struct ParamTraits<NullableString16> {
+struct IPC_EXPORT ParamTraits<NullableString16> {
   typedef NullableString16 param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -626,7 +626,7 @@ struct ParamTraits<string16> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return m->ReadString16(iter, r);
   }
-  static void Log(const param_type& p, std::string* l);
+  IPC_EXPORT static void Log(const param_type& p, std::string* l);
 };
 #endif
 
@@ -698,7 +698,7 @@ struct ParamTraits<POINT> {
 #endif  // defined(OS_WIN)
 
 template <>
-struct ParamTraits<FilePath> {
+struct IPC_EXPORT ParamTraits<FilePath> {
   typedef FilePath param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -722,7 +722,7 @@ struct ParamTraits<FilePath> {
 // dup()ing any file descriptors to be transmitted and setting the |auto_close|
 // flag, which causes the file descriptor to be closed after writing.
 template<>
-struct ParamTraits<base::FileDescriptor> {
+struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
   typedef base::FileDescriptor param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -734,7 +734,7 @@ struct ParamTraits<base::FileDescriptor> {
 // fact that IPC endpoints are handled specially on POSIX.  See above comments
 // on FileDescriptor for more background.
 template<>
-struct ParamTraits<IPC::ChannelHandle> {
+struct IPC_EXPORT ParamTraits<IPC::ChannelHandle> {
   typedef ChannelHandle param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -767,7 +767,7 @@ struct ParamTraits<XFORM> {
 };
 #endif  // defined(OS_WIN)
 
-struct LogData {
+struct IPC_EXPORT LogData {
   LogData();
   ~LogData();
 
@@ -785,7 +785,7 @@ struct LogData {
 };
 
 template <>
-struct ParamTraits<LogData> {
+struct IPC_EXPORT ParamTraits<LogData> {
   typedef LogData param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
@@ -1077,8 +1077,9 @@ class MessageWithTuple : public Message {
 };
 
 // defined in ipc_logging.cc
-void GenerateLogData(const std::string& channel, const Message& message,
-                     LogData* data);
+IPC_EXPORT void GenerateLogData(const std::string& channel,
+                                const Message& message,
+                                LogData* data);
 
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
