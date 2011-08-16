@@ -492,6 +492,7 @@ add_config('amd64-generic-full', [full, {
 add_config('x86-mario-pre-flight-queue', [internal, {
   'board' : 'x86-mario',
   'master' : True,
+  'important': True,
 
   'uprev' : True,
   'quick_vm' : True,
