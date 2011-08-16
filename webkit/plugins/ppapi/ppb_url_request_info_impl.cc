@@ -44,6 +44,69 @@ namespace {
 const int32_t kDefaultPrefetchBufferUpperThreshold = 100 * 1000 * 1000;
 const int32_t kDefaultPrefetchBufferLowerThreshold = 50 * 1000 * 1000;
 
+bool IsValidToken(const std::string& token) {
+  size_t length = token.size();
+  if (length == 0)
+    return false;
+
+  for (size_t i = 0; i < length; i++) {
+    char c = token[i];
+    if (c >= 127 || c <= 32)
+      return false;
+    if (c == '(' || c == ')' || c == '<' || c == '>' || c == '@' ||
+        c == ',' || c == ';' || c == ':' || c == '\\' || c == '\"' ||
+        c == '/' || c == '[' || c == ']' || c == '?' || c == '=' ||
+        c == '{' || c == '}')
+      return false;
+  }
+  return true;
+}
+
+// These methods are not allowed by the XMLHttpRequest standard.
+// http://www.w3.org/TR/XMLHttpRequest/#the-open-method
+const char* const kForbiddenHttpMethods[] = {
+  "connect",
+  "trace",
+  "track",
+};
+
+// These are the "known" methods in the Webkit XHR implementation. Also see
+// the XMLHttpRequest standard.
+// http://www.w3.org/TR/XMLHttpRequest/#the-open-method
+const char* const kKnownHttpMethods[] = {
+  "get",
+  "post",
+  "put",
+  "head",
+  "copy",
+  "delete",
+  "index",
+  "lock",
+  "m-post",
+  "mkcol",
+  "move",
+  "options",
+  "propfind",
+  "proppatch",
+  "unlock",
+};
+
+std::string ValidateMethod(const std::string& method) {
+  for (size_t i = 0; i < arraysize(kForbiddenHttpMethods); ++i) {
+    if (LowerCaseEqualsASCII(method, kForbiddenHttpMethods[i]))
+      return std::string();
+  }
+  for (size_t i = 0; i < arraysize(kKnownHttpMethods); ++i) {
+    if (LowerCaseEqualsASCII(method, kKnownHttpMethods[i])) {
+      // Convert the method name to upper case to match Webkit and Firefox's
+      // XHR implementation.
+      return StringToUpperASCII(std::string(kKnownHttpMethods[i]));
+    }
+  }
+  // Pass through unknown methods that are not forbidden.
+  return method;
+}
+
 // A header string containing any of the following fields will cause
 // an error. The list comes from the XMLHttpRequest standard.
 // http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method
@@ -329,8 +392,10 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
       url_ = value;  // NOTE: This may be a relative URL.
       return true;
     case PP_URLREQUESTPROPERTY_METHOD:
-      method_ = value;
-      return true;
+      if (!IsValidToken(value))
+        return false;
+      method_ = ValidateMethod(value);
+      return !method_.empty();
     case PP_URLREQUESTPROPERTY_HEADERS:
       if (!AreValidHeaders(value))
         return false;

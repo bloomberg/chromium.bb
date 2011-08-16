@@ -215,6 +215,32 @@ TEST_F(URLRequestInfoTest, SetMethod) {
   ASSERT_TRUE(info_->SetStringProperty(
       PP_URLREQUESTPROPERTY_METHOD, "POST"));
   ASSERT_TRUE(IsExpected(GetMethod(), "POST"));
+
+  // Test that method names are converted to upper case.
+  ASSERT_TRUE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "get"));
+  ASSERT_TRUE(IsExpected(GetMethod(), "GET"));
+  ASSERT_TRUE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "post"));
+  ASSERT_TRUE(IsExpected(GetMethod(), "POST"));
+}
+
+TEST_F(URLRequestInfoTest, SetInvalidMethod) {
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "CONNECT"));
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "connect"));
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "TRACE"));
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "trace"));
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "TRACK"));
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "track"));
+
+  ASSERT_FALSE(info_->SetStringProperty(
+      PP_URLREQUESTPROPERTY_METHOD, "POST\x0d\x0ax-csrf-token:\x20test1234"));
 }
 
 TEST_F(URLRequestInfoTest, SetValidHeaders) {
