@@ -1274,10 +1274,16 @@ class EmergeQueue(object):
     self._emerge_queue.put(None)
     self._pool.close()
     self._pool.join()
+    self._emerge_queue.close()
+    self._emerge_queue = None
 
     # Now that our workers are finished, we can kill the print queue.
     self._print_queue.put(None)
     self._print_worker.join()
+    self._print_queue.close()
+    self._print_queue = None
+    self._job_queue.close()
+    self._job_queue = None
 
   def Run(self):
     """Run through the scheduled ebuilds.
@@ -1433,6 +1439,7 @@ def main():
   # Run the queued emerges.
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output)
   scheduler.Run()
+  scheduler = None
 
   # Update environment (library cache, symlinks, etc.)
   if deps.board and "--pretend" not in emerge.opts:
