@@ -56,12 +56,14 @@ void TouchLoginView::Init() {
   InitStatusArea();
   InitVirtualKeyboard();
 
+
+  Source<TabContents> tab_contents(webui_login_->tab_contents()));
   registrar_.Add(this,
                  content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 NotificationService::AllSources());
+                 tab_contents);
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllSources());
+                 tab_contents);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
                  NotificationService::AllSources());
