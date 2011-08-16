@@ -14,6 +14,7 @@
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
+#include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -23,7 +24,7 @@ class MultiAnimation;
 class Transform;
 
 // LayerAnimator manages animating various properties of a Layer.
-class LayerAnimator : public ui::AnimationDelegate {
+class COMPOSITOR_EXPORT LayerAnimator : public ui::AnimationDelegate {
  public:
   explicit LayerAnimator(Layer* layer);
   virtual ~LayerAnimator();

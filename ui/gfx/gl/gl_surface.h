@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "ui/gfx/gl/gl_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -17,7 +18,7 @@ class GLContext;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
-class GLSurface : public base::RefCounted<GLSurface> {
+class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
  public:
   GLSurface();
 

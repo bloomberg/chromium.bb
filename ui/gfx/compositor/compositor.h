@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -40,7 +41,7 @@ struct TextureDrawParams {
 // the bitmap.
 //
 // Views own the Texture.
-class Texture : public base::RefCounted<Texture> {
+class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
  public:
   // Sets the canvas of this texture. The origin is at |origin|.
   // |overall_size| gives the total size of texture.
@@ -67,7 +68,7 @@ class Texture : public base::RefCounted<Texture> {
 // displayable form of pixels comprising a single widget's contents. It draws an
 // appropriately transformed texture for each transformed view in the widget's
 // view hierarchy.
-class Compositor : public base::RefCounted<Compositor> {
+class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
  public:
   // Create a compositor from the provided handle.
   static Compositor* Create(gfx::AcceleratedWidget widget,

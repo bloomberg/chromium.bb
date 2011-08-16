@@ -8,10 +8,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/surface_export.h"
 
 // The GL context associated with the surface must be current when
 // an instance is created or destroyed.
-class AcceleratedSurface : public base::RefCounted<AcceleratedSurface> {
+class SURFACE_EXPORT AcceleratedSurface
+    : public base::RefCounted<AcceleratedSurface> {
  public:
   AcceleratedSurface(const gfx::Size& size);
   const gfx::Size& size() const { return size_; }
