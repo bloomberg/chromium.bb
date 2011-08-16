@@ -17,7 +17,7 @@ struct PP_Flash_NetAddress {
   char data[128];
 };
 
-#define PPB_FLASH_TCPSOCKET_INTERFACE "PPB_Flash_TCPSocket;0.1"
+#define PPB_FLASH_TCPSOCKET_INTERFACE "PPB_Flash_TCPSocket;0.2"
 
 struct PPB_Flash_TCPSocket {
   PP_Resource (*Create)(PP_Instance instance);
@@ -25,6 +25,8 @@ struct PPB_Flash_TCPSocket {
   PP_Bool (*IsFlashTCPSocket)(PP_Resource resource);
 
   // Connects to a TCP port given as a host-port pair.
+  // When a proxy server is used, |host| and |port| refer to the proxy server
+  // instead of the destination server.
   int32_t (*Connect)(PP_Resource tcp_socket,
                      const char* host,
                      uint16_t port,
@@ -49,10 +51,14 @@ struct PPB_Flash_TCPSocket {
   // Does SSL handshake and moves to sending and receiving encrypted data. The
   // socket must have been successfully connected. |server_name| will be
   // compared with the name(s) in the server's certificate during the SSL
-  // handshake.
-  int32_t (*InitiateSSL)(PP_Resource tcp_socket,
-                         const char* server_name,
-                         struct PP_CompletionCallback callback);
+  // handshake. |server_port| is only used to identify an SSL server in the SSL
+  // session cache.
+  // When a proxy server is used, |server_name| and |server_port| refer to the
+  // destination server.
+  int32_t (*SSLHandshake)(PP_Resource tcp_socket,
+                          const char* server_name,
+                          uint16_t server_port,
+                          struct PP_CompletionCallback callback);
 
   // Reads data from the socket. The size of |buffer| must be at least as large
   // as |bytes_to_read|. May perform a partial read. Returns the number of bytes

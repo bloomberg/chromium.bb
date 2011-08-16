@@ -66,12 +66,14 @@ bool TCPSocket::GetRemoteAddress(PP_Flash_NetAddress* remote_addr) {
   return PP_ToBool(result);
 }
 
-int32_t TCPSocket::InitiateSSL(const char* server_name,
-                               const CompletionCallback& callback) {
+int32_t TCPSocket::SSLHandshake(const char* server_name,
+                                uint16_t server_port,
+                                const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_Flash_TCPSocket>()->InitiateSSL(
-      pp_resource(), server_name, callback.pp_completion_callback());
+  return get_interface<PPB_Flash_TCPSocket>()->SSLHandshake(
+      pp_resource(), server_name, server_port,
+      callback.pp_completion_callback());
 }
 
 int32_t TCPSocket::Read(char* buffer,

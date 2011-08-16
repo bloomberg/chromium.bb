@@ -212,6 +212,10 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
                     bool /* succeeded */,
                     PP_Flash_NetAddress /* local_addr */,
                     PP_Flash_NetAddress /* remote_addr */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* socket_id */,
+                    bool /* succeeded */)
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashTCPSocket_ReadACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
@@ -680,6 +684,10 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_Connect,
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
                      uint32 /* socket_id */,
                      PP_Flash_NetAddress /* net_addr */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake,
+                     uint32 /* socket_id */,
+                     std::string /* server_name */,
+                     uint16_t /* server_port */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBFlashTCPSocket_Read,
                      uint32 /* socket_id */,
                      int32_t /* bytes_to_read */)

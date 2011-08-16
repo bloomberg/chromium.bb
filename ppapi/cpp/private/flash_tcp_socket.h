@@ -31,8 +31,9 @@ class TCPSocket : public Resource {
                                 const CompletionCallback& callback);
   bool GetLocalAddress(PP_Flash_NetAddress* local_addr);
   bool GetRemoteAddress(PP_Flash_NetAddress* remote_addr);
-  int32_t InitiateSSL(const char* server_name,
-                      const CompletionCallback& callback);
+  int32_t SSLHandshake(const char* server_name,
+                       uint16_t server_port,
+                       const CompletionCallback& callback);
   int32_t Read(char* buffer,
                int32_t bytes_to_read,
                const CompletionCallback& callback);

@@ -74,6 +74,8 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_ConnectACK,
                                 OnPluginDispatcherMessageReceived(msg))
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK,
+                                OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_ReadACK,
                                 OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_WriteACK,

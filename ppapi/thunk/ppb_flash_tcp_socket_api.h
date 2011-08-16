@@ -21,8 +21,9 @@ class PPB_Flash_TCPSocket_API {
                                         PP_CompletionCallback callback) = 0;
   virtual PP_Bool GetLocalAddress(PP_Flash_NetAddress* local_addr) = 0;
   virtual PP_Bool GetRemoteAddress(PP_Flash_NetAddress* remote_addr) = 0;
-  virtual int32_t InitiateSSL(const char* server_name,
-                              PP_CompletionCallback callback) = 0;
+  virtual int32_t SSLHandshake(const char* server_name,
+                               uint16_t server_port,
+                               PP_CompletionCallback callback) = 0;
   virtual int32_t Read(char* buffer,
                        int32_t bytes_to_read,
                        PP_CompletionCallback callback) = 0;

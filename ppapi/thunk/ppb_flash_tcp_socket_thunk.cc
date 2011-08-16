@@ -65,13 +65,15 @@ PP_Bool GetRemoteAddress(PP_Resource tcp_socket,
   return enter.object()->GetRemoteAddress(remote_addr);
 }
 
-int32_t InitiateSSL(PP_Resource tcp_socket,
-                    const char* server_name,
-                    PP_CompletionCallback callback) {
+int32_t SSLHandshake(PP_Resource tcp_socket,
+                     const char* server_name,
+                     uint16_t server_port,
+                     PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->InitiateSSL(server_name, callback);
+  int32_t result = enter.object()->SSLHandshake(server_name, server_port,
+                                                callback);
   return MayForceCallback(callback, result);
 }
 
@@ -110,7 +112,7 @@ const PPB_Flash_TCPSocket g_ppb_flash_tcp_socket_thunk = {
   &ConnectWithNetAddress,
   &GetLocalAddress,
   &GetRemoteAddress,
-  &InitiateSSL,
+  &SSLHandshake,
   &Read,
   &Write,
   &Disconnect

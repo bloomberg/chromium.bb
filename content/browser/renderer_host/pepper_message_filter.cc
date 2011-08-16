@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,13 +25,18 @@
 #include "content/browser/resource_context.h"
 #include "content/common/pepper_messages.h"
 #include "net/base/address_list.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_errors.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
+#include "net/base/ssl_config_service.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
@@ -120,7 +126,7 @@ const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
 
 class PepperMessageFilter::FlashTCPSocket {
  public:
-  FlashTCPSocket(PepperMessageFilter* pepper_message_filter,
+  FlashTCPSocket(FlashTCPSocketManager* manager,
                  int32 routing_id,
                  uint32 plugin_dispatcher_id,
                  uint32 socket_id);
@@ -128,32 +134,53 @@ class PepperMessageFilter::FlashTCPSocket {
 
   void Connect(const std::string& host, uint16_t port);
   void ConnectWithNetAddress(const PP_Flash_NetAddress& net_addr);
+  void SSLHandshake(const std::string& server_name, uint16_t server_port);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
 
  private:
+  enum ConnectionState {
+    // Before a connection is successfully established (including a previous
+    // connect request failed).
+    BEFORE_CONNECT,
+    // There is a connect request that is pending.
+    CONNECT_IN_PROGRESS,
+    // A connection has been successfully established.
+    CONNECTED,
+    // There is an SSL handshake request that is pending.
+    SSL_HANDSHAKE_IN_PROGRESS,
+    // An SSL connection has been successfully established.
+    SSL_CONNECTED,
+    // An SSL handshake has failed.
+    SSL_HANDSHAKE_FAILED
+  };
+
   void StartConnect(const net::AddressList& addresses);
 
   void SendConnectACKError();
   void SendReadACKError();
   void SendWriteACKError();
+  void SendSSLHandshakeACK(bool succeeded);
 
   void OnResolveCompleted(int result);
   void OnConnectCompleted(int result);
+  void OnSSLHandshakeCompleted(int result);
   void OnReadCompleted(int result);
   void OnWriteCompleted(int result);
 
-  PepperMessageFilter* pepper_message_filter_;
+  bool IsConnected() const;
+
+  FlashTCPSocketManager* manager_;
   int32 routing_id_;
   uint32 plugin_dispatcher_id_;
   uint32 socket_id_;
 
-  bool connect_in_progress_;
-  bool connected_;
+  ConnectionState connection_state_;
   bool end_of_file_reached_;
 
   net::CompletionCallbackImpl<FlashTCPSocket> resolve_callback_;
   net::CompletionCallbackImpl<FlashTCPSocket> connect_callback_;
+  net::CompletionCallbackImpl<FlashTCPSocket> ssl_handshake_callback_;
   net::CompletionCallbackImpl<FlashTCPSocket> read_callback_;
   net::CompletionCallbackImpl<FlashTCPSocket> write_callback_;
 
@@ -168,27 +195,78 @@ class PepperMessageFilter::FlashTCPSocket {
   DISALLOW_COPY_AND_ASSIGN(FlashTCPSocket);
 };
 
+// FlashTCPSocketManager manages the mapping from socket IDs to FlashTCPSocket
+// instances.
+class PepperMessageFilter::FlashTCPSocketManager {
+ public:
+  explicit FlashTCPSocketManager(PepperMessageFilter* pepper_message_filter);
+
+  void OnMsgCreate(int32 routing_id,
+                   uint32 plugin_dispatcher_id,
+                   uint32* socket_id);
+  void OnMsgConnect(uint32 socket_id,
+                    const std::string& host,
+                    uint16_t port);
+  void OnMsgConnectWithNetAddress(uint32 socket_id,
+                                  const PP_Flash_NetAddress& net_addr);
+  void OnMsgSSLHandshake(uint32 socket_id,
+                         const std::string& server_name,
+                         uint16_t server_port);
+  void OnMsgRead(uint32 socket_id, int32_t bytes_to_read);
+  void OnMsgWrite(uint32 socket_id, const std::string& data);
+  void OnMsgDisconnect(uint32 socket_id);
+
+  // Used by FlashTCPSocket.
+  bool Send(IPC::Message* message) {
+    return pepper_message_filter_->Send(message);
+  }
+  net::HostResolver* GetHostResolver() {
+    return pepper_message_filter_->GetHostResolver();
+  }
+  const net::SSLConfig& ssl_config() { return ssl_config_; }
+  // The caller doesn't take ownership of the returned object.
+  net::CertVerifier* GetCertVerifier();
+
+ private:
+  typedef std::map<uint32, linked_ptr<FlashTCPSocket> > SocketMap;
+  SocketMap sockets_;
+
+  uint32 next_socket_id_;
+
+  PepperMessageFilter* pepper_message_filter_;
+
+  // The default SSL configuration settings are used, as opposed to Chrome's SSL
+  // settings.
+  net::SSLConfig ssl_config_;
+  // This is lazily created. Users should use GetCertVerifier to retrieve it.
+  scoped_ptr<net::CertVerifier> cert_verifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlashTCPSocketManager);
+};
+
 PepperMessageFilter::FlashTCPSocket::FlashTCPSocket(
-    PepperMessageFilter* pepper_message_filter,
+    FlashTCPSocketManager* manager,
     int32 routing_id,
     uint32 plugin_dispatcher_id,
     uint32 socket_id)
-    : pepper_message_filter_(pepper_message_filter),
+    : manager_(manager),
       routing_id_(routing_id),
       plugin_dispatcher_id_(plugin_dispatcher_id),
       socket_id_(socket_id),
-      connect_in_progress_(false),
-      connected_(false),
+      connection_state_(BEFORE_CONNECT),
       end_of_file_reached_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           resolve_callback_(this, &FlashTCPSocket::OnResolveCompleted)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &FlashTCPSocket::OnConnectCompleted)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
+          ssl_handshake_callback_(this,
+                                  &FlashTCPSocket::OnSSLHandshakeCompleted)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
           read_callback_(this, &FlashTCPSocket::OnReadCompleted)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           write_callback_(this, &FlashTCPSocket::OnWriteCompleted)) {
-  DCHECK(pepper_message_filter);
+  DCHECK(manager);
 }
 
 PepperMessageFilter::FlashTCPSocket::~FlashTCPSocket() {
@@ -201,15 +279,15 @@ void PepperMessageFilter::FlashTCPSocket::Connect(const std::string& host,
                                                   uint16_t port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (connect_in_progress_ || connected_) {
+  if (connection_state_ != BEFORE_CONNECT) {
     SendConnectACKError();
     return;
   }
 
-  connect_in_progress_ = true;
+  connection_state_ = CONNECT_IN_PROGRESS;
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
   resolver_.reset(new net::SingleRequestHostResolver(
-      pepper_message_filter_->GetHostResolver()));
+      manager_->GetHostResolver()));
   int result = resolver_->Resolve(request_info, &address_list_,
                                   &resolve_callback_, net::BoundNetLog());
   if (result != net::ERR_IO_PENDING)
@@ -220,20 +298,56 @@ void PepperMessageFilter::FlashTCPSocket::ConnectWithNetAddress(
     const PP_Flash_NetAddress& net_addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (connect_in_progress_ || connected_ ||
+  if (connection_state_ != BEFORE_CONNECT ||
       !NetAddressToAddressList(net_addr, &address_list_)) {
     SendConnectACKError();
     return;
   }
 
-  connect_in_progress_ = true;
+  connection_state_ = CONNECT_IN_PROGRESS;
   StartConnect(address_list_);
+}
+
+void PepperMessageFilter::FlashTCPSocket::SSLHandshake(
+    const std::string& server_name,
+    uint16_t server_port) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Allow to do SSL handshake only if currently the socket has been connected
+  // and there isn't pending read or write.
+  // IsConnected() includes the state that SSL handshake has been finished and
+  // therefore isn't suitable here.
+  if (connection_state_ != CONNECTED || read_buffer_.get() ||
+      write_buffer_.get()) {
+    SendSSLHandshakeACK(false);
+    return;
+  }
+
+  connection_state_ = SSL_HANDSHAKE_IN_PROGRESS;
+  net::ClientSocketHandle* handle = new net::ClientSocketHandle();
+  handle->set_socket(socket_.release());
+  net::ClientSocketFactory* factory =
+      net::ClientSocketFactory::GetDefaultFactory();
+  net::HostPortPair host_port_pair(server_name, server_port);
+  net::SSLClientSocketContext ssl_context;
+  ssl_context.cert_verifier = manager_->GetCertVerifier();
+  socket_.reset(factory->CreateSSLClientSocket(
+      handle, host_port_pair, manager_->ssl_config(), NULL, ssl_context));
+  if (!socket_.get()) {
+    LOG(WARNING) << "Failed to create an SSL client socket.";
+    OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);
+    return;
+  }
+
+  int result = socket_->Connect(&ssl_handshake_callback_);
+  if (result != net::ERR_IO_PENDING)
+    OnSSLHandshakeCompleted(result);
 }
 
 void PepperMessageFilter::FlashTCPSocket::Read(int32 bytes_to_read) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!connected_ || end_of_file_reached_ || read_buffer_.get() ||
+  if (!IsConnected() || end_of_file_reached_ || read_buffer_.get() ||
       bytes_to_read <= 0) {
     SendReadACKError();
     return;
@@ -253,7 +367,7 @@ void PepperMessageFilter::FlashTCPSocket::Read(int32 bytes_to_read) {
 void PepperMessageFilter::FlashTCPSocket::Write(const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!connected_ || write_buffer_.get() || data.empty()) {
+  if (!IsConnected() || write_buffer_.get() || data.empty()) {
     SendWriteACKError();
     return;
   }
@@ -273,7 +387,7 @@ void PepperMessageFilter::FlashTCPSocket::Write(const std::string& data) {
 
 void PepperMessageFilter::FlashTCPSocket::StartConnect(
     const net::AddressList& addresses) {
-  DCHECK(connect_in_progress_);
+  DCHECK(connection_state_ == CONNECT_IN_PROGRESS);
 
   socket_.reset(
       new net::TCPClientSocket(addresses, NULL, net::NetLog::Source()));
@@ -283,31 +397,32 @@ void PepperMessageFilter::FlashTCPSocket::StartConnect(
 }
 
 void PepperMessageFilter::FlashTCPSocket::SendConnectACKError() {
-  pepper_message_filter_->Send(
-      new PpapiMsg_PPBFlashTCPSocket_ConnectACK(
-          routing_id_, plugin_dispatcher_id_, socket_id_, false,
-          kInvalidNetAddress, kInvalidNetAddress));
+  manager_->Send(new PpapiMsg_PPBFlashTCPSocket_ConnectACK(
+      routing_id_, plugin_dispatcher_id_, socket_id_, false,
+      kInvalidNetAddress, kInvalidNetAddress));
 }
 
 void PepperMessageFilter::FlashTCPSocket::SendReadACKError() {
-  pepper_message_filter_->Send(
-      new PpapiMsg_PPBFlashTCPSocket_ReadACK(
-          routing_id_, plugin_dispatcher_id_, socket_id_, false,
-          std::string()));
+  manager_->Send(new PpapiMsg_PPBFlashTCPSocket_ReadACK(
+    routing_id_, plugin_dispatcher_id_, socket_id_, false, std::string()));
 }
 
 void PepperMessageFilter::FlashTCPSocket::SendWriteACKError() {
-  pepper_message_filter_->Send(
-      new PpapiMsg_PPBFlashTCPSocket_WriteACK(
-          routing_id_, plugin_dispatcher_id_, socket_id_, false, 0));
+  manager_->Send(new PpapiMsg_PPBFlashTCPSocket_WriteACK(
+      routing_id_, plugin_dispatcher_id_, socket_id_, false, 0));
+}
+
+void PepperMessageFilter::FlashTCPSocket::SendSSLHandshakeACK(bool succeeded) {
+  manager_->Send(new PpapiMsg_PPBFlashTCPSocket_SSLHandshakeACK(
+      routing_id_, plugin_dispatcher_id_, socket_id_, succeeded));
 }
 
 void PepperMessageFilter::FlashTCPSocket::OnResolveCompleted(int result) {
-  DCHECK(connect_in_progress_);
+  DCHECK(connection_state_ == CONNECT_IN_PROGRESS);
 
   if (result != net::OK) {
     SendConnectACKError();
-    connect_in_progress_ = false;
+    connection_state_ = BEFORE_CONNECT;
     return;
   }
 
@@ -315,10 +430,11 @@ void PepperMessageFilter::FlashTCPSocket::OnResolveCompleted(int result) {
 }
 
 void PepperMessageFilter::FlashTCPSocket::OnConnectCompleted(int result) {
-  DCHECK(connect_in_progress_ && socket_.get());
+  DCHECK(connection_state_ == CONNECT_IN_PROGRESS && socket_.get());
 
   if (result != net::OK) {
     SendConnectACKError();
+    connection_state_ = BEFORE_CONNECT;
   } else {
     net::IPEndPoint ip_end_point;
     net::AddressList address_list;
@@ -330,31 +446,35 @@ void PepperMessageFilter::FlashTCPSocket::OnConnectCompleted(int result) {
         socket_->GetPeerAddress(&address_list) != net::OK ||
         !AddressListToNetAddress(address_list, &remote_addr)) {
       SendConnectACKError();
+      connection_state_ = BEFORE_CONNECT;
     } else {
-      pepper_message_filter_->Send(
-          new PpapiMsg_PPBFlashTCPSocket_ConnectACK(
-              routing_id_, plugin_dispatcher_id_, socket_id_, true,
-              local_addr, remote_addr));
-      connected_ = true;
+      manager_->Send(new PpapiMsg_PPBFlashTCPSocket_ConnectACK(
+          routing_id_, plugin_dispatcher_id_, socket_id_, true,
+          local_addr, remote_addr));
+      connection_state_ = CONNECTED;
     }
   }
-  connect_in_progress_ = false;
+}
+
+void PepperMessageFilter::FlashTCPSocket::OnSSLHandshakeCompleted(int result) {
+  DCHECK(connection_state_ == SSL_HANDSHAKE_IN_PROGRESS);
+
+  bool succeeded = result == net::OK;
+  SendSSLHandshakeACK(succeeded);
+  connection_state_ = succeeded ? SSL_CONNECTED : SSL_HANDSHAKE_FAILED;
 }
 
 void PepperMessageFilter::FlashTCPSocket::OnReadCompleted(int result) {
   DCHECK(read_buffer_.get());
 
   if (result > 0) {
-    pepper_message_filter_->Send(
-        new PpapiMsg_PPBFlashTCPSocket_ReadACK(
-            routing_id_, plugin_dispatcher_id_, socket_id_, true,
-            std::string(read_buffer_->data(), result)));
+    manager_->Send(new PpapiMsg_PPBFlashTCPSocket_ReadACK(
+        routing_id_, plugin_dispatcher_id_, socket_id_, true,
+        std::string(read_buffer_->data(), result)));
   } else if (result == 0) {
     end_of_file_reached_ = true;
-    pepper_message_filter_->Send(
-        new PpapiMsg_PPBFlashTCPSocket_ReadACK(
-            routing_id_, plugin_dispatcher_id_, socket_id_, true,
-            std::string()));
+    manager_->Send(new PpapiMsg_PPBFlashTCPSocket_ReadACK(
+        routing_id_, plugin_dispatcher_id_, socket_id_, true, std::string()));
   } else {
     SendReadACKError();
   }
@@ -365,42 +485,18 @@ void PepperMessageFilter::FlashTCPSocket::OnWriteCompleted(int result) {
   DCHECK(write_buffer_.get());
 
   if (result >= 0) {
-    pepper_message_filter_->Send(
-        new PpapiMsg_PPBFlashTCPSocket_WriteACK(
-            routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
+    manager_->Send(new PpapiMsg_PPBFlashTCPSocket_WriteACK(
+        routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
   } else {
     SendWriteACKError();
   }
   write_buffer_ = NULL;
 }
 
-// FlashTCPSocketManager manages the mapping from socket IDs to FlashTCPSocket
-// instances.
-class PepperMessageFilter::FlashTCPSocketManager {
- public:
-  explicit FlashTCPSocketManager(PepperMessageFilter* pepper_message_filter);
-
-  void OnMsgCreate(int32 routing_id,
-                   uint32 plugin_dispatcher_id,
-                   uint32* socket_id);
-  void OnMsgConnect(uint32 socket_id,
-                    const std::string& host,
-                    uint16_t port);
-  void OnMsgConnectWithNetAddress(uint32 socket_id,
-                                  const PP_Flash_NetAddress& net_addr);
-  void OnMsgRead(uint32 socket_id, int32_t bytes_to_read);
-  void OnMsgWrite(uint32 socket_id, const std::string& data);
-  void OnMsgDisconnect(uint32 socket_id);
-
- private:
-  typedef std::map<uint32, linked_ptr<FlashTCPSocket> > SocketMap;
-  SocketMap sockets_;
-
-  uint32 next_socket_id_;
-
-  PepperMessageFilter* pepper_message_filter_;
-  DISALLOW_COPY_AND_ASSIGN(FlashTCPSocketManager);
-};
+bool PepperMessageFilter::FlashTCPSocket::IsConnected() const {
+  return connection_state_ == CONNECTED ||
+         connection_state_ == SSL_CONNECTED;
+}
 
 PepperMessageFilter::FlashTCPSocketManager::FlashTCPSocketManager(
     PepperMessageFilter* pepper_message_filter)
@@ -434,8 +530,7 @@ void PepperMessageFilter::FlashTCPSocketManager::OnMsgCreate(
   } while (*socket_id == 0 ||
            sockets_.find(*socket_id) != sockets_.end());
   sockets_[*socket_id] = linked_ptr<FlashTCPSocket>(
-      new FlashTCPSocket(pepper_message_filter_, routing_id,
-                         plugin_dispatcher_id, *socket_id));
+      new FlashTCPSocket(this, routing_id, plugin_dispatcher_id, *socket_id));
 }
 
 void PepperMessageFilter::FlashTCPSocketManager::OnMsgConnect(
@@ -461,6 +556,19 @@ void PepperMessageFilter::FlashTCPSocketManager::OnMsgConnectWithNetAddress(
   }
 
   iter->second->ConnectWithNetAddress(net_addr);
+}
+
+void PepperMessageFilter::FlashTCPSocketManager::OnMsgSSLHandshake(
+    uint32 socket_id,
+    const std::string& server_name,
+    uint16_t server_port) {
+  SocketMap::iterator iter = sockets_.find(socket_id);
+  if (iter == sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  iter->second->SSLHandshake(server_name, server_port);
 }
 
 void PepperMessageFilter::FlashTCPSocketManager::OnMsgRead(
@@ -499,6 +607,14 @@ void PepperMessageFilter::FlashTCPSocketManager::OnMsgDisconnect(
   // callback. From this point on, there won't be any messages associated with
   // this socket sent to the plugin side.
   sockets_.erase(iter);
+}
+
+net::CertVerifier*
+PepperMessageFilter::FlashTCPSocketManager::GetCertVerifier() {
+  if (!cert_verifier_.get())
+    cert_verifier_.reset(new net::CertVerifier());
+
+  return cert_verifier_.get();
 }
 
 PepperMessageFilter::PepperMessageFilter(
@@ -542,6 +658,10 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
         PpapiHostMsg_PPBFlashTCPSocket_ConnectWithNetAddress,
         socket_manager_.get(),
         FlashTCPSocketManager::OnMsgConnectWithNetAddress)
+    IPC_MESSAGE_FORWARD(
+        PpapiHostMsg_PPBFlashTCPSocket_SSLHandshake,
+        socket_manager_.get(),
+        FlashTCPSocketManager::OnMsgSSLHandshake)
     IPC_MESSAGE_FORWARD(
         PpapiHostMsg_PPBFlashTCPSocket_Read,
         socket_manager_.get(), FlashTCPSocketManager::OnMsgRead)
