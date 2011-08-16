@@ -252,7 +252,7 @@ def _SetEnvForPnacl(env, root):
 
   if env.Bit('use_sandboxed_translator'):
     pnacl_ld_flags += ' --pnacl-sb'
-    if env.Bit('sandboxed_translator_dynamic'):
+    if env.Bit('sandboxed_translator_is_dynamic'):
       pnacl_ld_flags += ' --pnacl-sb-dynamic'
 
   # TODO(pdox): Remove PNaCl's dependency on the gcc toolchain here.
