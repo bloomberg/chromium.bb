@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/download/download_manager_delegate.h"
+#include "content/browser/download/download_manager_delegate.h"
 
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:

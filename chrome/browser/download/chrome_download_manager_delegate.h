@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/download/download_manager_delegate.h"
+#include "content/browser/download/download_manager_delegate.h"
 
 class DownloadItem;
 class DownloadManager;

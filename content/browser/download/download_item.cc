@@ -17,7 +17,6 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -32,6 +31,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_manager_delegate.h"
 #include "content/common/notification_source.h"
 
 // A DownloadItem normally goes through the following states:

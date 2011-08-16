@@ -861,7 +861,6 @@
         'browser/download/download_history.h',
         'browser/download/download_item_model.cc',
         'browser/download/download_item_model.h',
-        'browser/download/download_manager_delegate.h',
         'browser/download/download_prefs.cc',
         'browser/download/download_prefs.h',
         'browser/download/download_request_infobar_delegate.cc',
