@@ -66,8 +66,8 @@ int have_nacl_valgrind_interceptors;
 /* TSan interceptors. */
 
 #ifdef __GLIBC__
-#define VG_NACL_Z_LIBC_SONAME  NaClZulibcZdsoZa
-#define VG_NACL_Z_LIBPTHREAD_SONAME NaClZulibpthreadZdsoZd0
+#define VG_NACL_Z_LIBC_SONAME  NaClZulibcZdsoZdZa
+#define VG_NACL_Z_LIBPTHREAD_SONAME NaClZulibpthreadZdsoZdZa
 #define VG_NACL_Z_NONE_SONAME NaClZuNONE
 #define VG_NACL_Z_ANY_SONAME NaClZuZa
 #else
