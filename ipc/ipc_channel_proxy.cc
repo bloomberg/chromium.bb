@@ -194,22 +194,22 @@ void ChannelProxy::Context::OnSendMessage(Message* message) {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnAddFilter() {
-  std::vector<scoped_refptr<MessageFilter> > filters;
+  std::vector<scoped_refptr<MessageFilter> > new_filters;
   {
     base::AutoLock auto_lock(pending_filters_lock_);
-    filters.swap(pending_filters_);
+    new_filters.swap(pending_filters_);
   }
 
-  for (size_t i = 0; i < filters.size(); ++i) {
-    filters_.push_back(filters[i]);
+  for (size_t i = 0; i < new_filters.size(); ++i) {
+    filters_.push_back(new_filters[i]);
 
     // If the channel has already been created, then we need to send this
     // message so that the filter gets access to the Channel.
     if (channel_.get())
-      filters[i]->OnFilterAdded(channel_.get());
-    // Ditto for the peer process id.
+      new_filters[i]->OnFilterAdded(channel_.get());
+    // Ditto for if the channel has been connected.
     if (peer_pid_)
-      filters[i]->OnChannelConnected(peer_pid_);
+      new_filters[i]->OnChannelConnected(peer_pid_);
   }
 }
 
