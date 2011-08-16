@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/download_resource_handler.h"
+#include "content/browser/download/download_resource_handler.h"
 
 #include <string>
 

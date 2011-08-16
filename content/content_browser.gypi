@@ -119,6 +119,8 @@
         'browser/download/download_manager.h',
         'browser/download/download_request_handle.cc',
         'browser/download/download_request_handle.h',
+        'browser/download/download_resource_handler.cc',
+        'browser/download/download_resource_handler.h',
         'browser/download/download_state_info.cc',
         'browser/download/download_state_info.h',
         'browser/download/download_status_updater.cc',

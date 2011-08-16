@@ -1867,8 +1867,6 @@
         'browser/renderer_host/chrome_render_view_host_observer.h',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.cc',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
-        'browser/renderer_host/download_resource_handler.cc',
-        'browser/renderer_host/download_resource_handler.h',
         'browser/renderer_host/download_throttling_resource_handler.cc',
         'browser/renderer_host/download_throttling_resource_handler.h',
         'browser/renderer_host/gtk_im_context_wrapper.cc',
