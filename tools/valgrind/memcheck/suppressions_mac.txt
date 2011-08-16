@@ -1835,3 +1835,19 @@
    fun:CVDisplayLinkCreateWithActiveCGDisplays
    fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
 }
+{
+   bug_93036
+   Memcheck:Addr2
+   fun:+[NSPICTImageRep _verifyDataIsPICT:]
+   fun:+[NSImageRep imageRepClassForData:]
+   fun:-[NSImage initWithData:]
+   fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEi
+   fun:-[BookmarkBarController initWithBrowser:initialWidth:delegate:resizeDelegate:]
+}
+{
+   bug_93038
+   Memcheck:Cond
+   fun:-[AvatarMenuBubbleController performLayout]
+   ...
+   fun:*AvatarMenuBubbleControllerTest*
+}

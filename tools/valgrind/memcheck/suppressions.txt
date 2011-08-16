@@ -4846,7 +4846,7 @@
    fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
 }
 {
-   bug_90057
+   bug_90057a
    Memcheck:Leak
    ...
    fun:_ZN3net13CookieMonster9InitStoreEv
@@ -4857,6 +4857,17 @@
    fun:_ZN3net10URLRequest13CanGetCookiesEv
    fun:_ZN3net13URLRequestJob13CanGetCookiesEv
    fun:_ZN3net17URLRequestHttpJob23AddCookieHeaderAndStartEv
+}
+{
+   bug_90057b
+   Memcheck:Leak
+   ...
+   fun:_ZN3net13CookieMonster9InitStoreEv
+   fun:_ZN3net13CookieMonster15InitIfNecessaryEv
+   fun:_ZN3net13CookieMonster21GetCookiesWithOptionsERK4GURLRKNS_13CookieOptionsE
+   fun:_ZN3net13CookieMonster26GetCookiesWithOptionsAsyncERK4GURLRKNS_13CookieOptionsERKN4base8CallbackIFvRKSsEEE
+   fun:_ZN3net11CookieStore15GetCookiesAsyncERK4GURLRKN4base8CallbackIFvRKSsEEE
+   fun:_ZN12_GLOBAL__N_120GetCookiesOnIOThreadERK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEEPN4base13WaitableEventEPSs
 }
 {
    bug_90212
@@ -5264,6 +5275,41 @@
    fun:gtk_main_do_event
    fun:_ZN5views18AcceleratorHandler8DispatchEP9_GdkEvent
    fun:_ZN4base14MessagePumpGtk14DispatchEventsEP9_GdkEvent
+}
+{
+   bug_92741a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIPFvPNS_13WaitableEventEPSsRKSsES2_S3_EENS_8internal20InvokerStorageHolderINS8_15InvokerStorage2IT_T0_T1_EEEESB_RKSC_RKSD_
+   fun:_ZN12_GLOBAL__N_120GetCookiesOnIOThreadERK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEEPN4base13WaitableEventEPSs
+   fun:_Z18DispatchToFunctionIPFvRK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEEPN4base13WaitableEventEPSsES0_S6_SB_SC_EvT_RK6Tuple4IT0_T1_T2_T3_E
+   fun:_ZN16RunnableFunctionIPFvRK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEEPN4base13WaitableEventEPSsE6Tuple4IS0_S6_SB_SC_EE3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+}
+{
+   bug_92741b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN3net17URLRequestHttpJobEFvPSsPSt6vectorINS1_11CookieStore10CookieInfoESaIS6_EEENS_7WeakPtrIS2_EEEENS_8internal20InvokerStorageHolderINSE_15InvokerStorage1IT_T0_EEEESH_RKSI_
+   fun:_ZN3net17URLRequestHttpJob24CheckCookiePolicyAndLoadERKNS_10CookieListE
+   fun:_ZN4base8internal8Invoker1ILb1ENS0_15InvokerStorage1IMN3net17URLRequestHttpJobEFvRKNS3_10CookieListEENS_7WeakPtrIS4_EEEES9_E8DoInvokeEPNS0_18InvokerStorageBaseES7_
+   fun:_ZNK4base8CallbackIFvRKN3net10CookieListEEE3RunES4_
+}
+{
+   bug_92741c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN3net17URLRequestHttpJobEFvRKNS1_10CookieListEENS_7WeakPtrIS2_EEEENS_8internal20InvokerStorageHolderINSA_15InvokerStorage1IT_T0_EEEESD_RKSE_
+   fun:_ZN3net17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN3net17URLRequestHttpJob5StartEv
+   fun:_ZN3net10URLRequest8StartJobEPNS_13URLRequestJobE
+   fun:_ZN3net10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+   fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
+   fun:_ZN10URLFetcher4Core15StartOnIOThreadEv
+   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
 }
 {
    bug_92876a
