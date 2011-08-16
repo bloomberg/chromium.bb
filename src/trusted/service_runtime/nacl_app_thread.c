@@ -21,6 +21,7 @@
 
 void WINAPI NaClThreadLauncher(void *state) {
   struct NaClAppThread *natp = (struct NaClAppThread *) state;
+  uint32_t thread_idx;
   NaClLog(4, "NaClThreadLauncher: entered\n");
 
   NaClSignalStackRegister(natp->signal_stack);
@@ -30,7 +31,11 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClLog(4, "stack_ptr  = 0x%016"NACL_PRIxPTR"\n",
           NaClGetThreadCtxSp(&natp->user));
 
-  NaClTlsSetIdx(NaClGetThreadIdx(natp));
+  thread_idx = NaClGetThreadIdx(natp);
+  NaClTlsSetIdx(thread_idx);
+  nacl_thread[thread_idx] = natp;
+  nacl_user[thread_idx] = &natp->user;
+  nacl_sys[thread_idx] = &natp->sys;
 
   /*
    * We have to hold the threads_mu lock until after thread_num field
@@ -66,7 +71,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uintptr_t             sys_tls,
                       uint32_t              user_tls2) {
   int                         rv;
-  uint64_t                    thread_idx;
 
   NaClLog(4, "         natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "          nap = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) nap);
@@ -98,12 +102,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->tls2 = user_tls2;
 
   natp->dynamic_delete_generation = 0;
-
-  thread_idx = NaClGetThreadIdx(natp);
-
-  nacl_thread[thread_idx] = natp;
-  nacl_user[thread_idx] = &natp->user;
-  nacl_sys[thread_idx] = &natp->sys;
 
   rv = NaClThreadCtor(&natp->thread,
                       NaClThreadLauncher,
