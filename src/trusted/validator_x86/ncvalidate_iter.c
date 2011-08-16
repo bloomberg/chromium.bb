@@ -43,7 +43,7 @@ Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 
 Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 
-Bool NACL_FLAGS_ncval_annotate = FALSE;
+Bool NACL_FLAGS_ncval_annotate = TRUE;
 
 /* The set of cpu features to use, if non-NULL.
  * NOTE: This global is used to allow the injection of
