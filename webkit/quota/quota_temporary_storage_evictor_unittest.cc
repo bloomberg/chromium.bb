@@ -332,7 +332,7 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionSkippedTest) {
   EXPECT_EQ(0, statistics().num_errors_on_getting_usage_and_quota);
   EXPECT_EQ(1, statistics().num_evicted_origins);
   EXPECT_EQ(3, statistics().num_eviction_rounds);
-  EXPECT_EQ(1, statistics().num_skipped_eviction_rounds);
+  EXPECT_EQ(2, statistics().num_skipped_eviction_rounds);
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {

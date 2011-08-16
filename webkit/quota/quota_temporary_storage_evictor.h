@@ -38,6 +38,38 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
     int64 num_evicted_origins;
     int64 num_eviction_rounds;
     int64 num_skipped_eviction_rounds;
+
+    void subtract_assign(const Statistics& rhs) {
+      num_errors_on_evicting_origin -= rhs.num_errors_on_evicting_origin;
+      num_errors_on_getting_usage_and_quota -=
+          rhs.num_errors_on_getting_usage_and_quota;
+      num_evicted_origins -= rhs.num_evicted_origins;
+      num_eviction_rounds -= rhs.num_eviction_rounds;
+      num_skipped_eviction_rounds -= rhs.num_skipped_eviction_rounds;
+    }
+  };
+
+  struct EvictionRoundStatistics {
+    EvictionRoundStatistics()
+        : in_round(false),
+          is_initialized(false),
+          usage_overage_at_round(-1),
+          diskspace_shortage_at_round(-1),
+          usage_on_beginning_of_round(-1),
+          usage_on_end_of_round(-1),
+          num_evicted_origins_in_round(0) {
+    }
+
+    bool in_round;
+    bool is_initialized;
+
+    base::Time start_time;
+    int64 usage_overage_at_round;
+    int64 diskspace_shortage_at_round;
+
+    int64 usage_on_beginning_of_round;
+    int64 usage_on_end_of_round;
+    int64 num_evicted_origins_in_round;
   };
 
   QuotaTemporaryStorageEvictor(
@@ -46,7 +78,8 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   virtual ~QuotaTemporaryStorageEvictor();
 
   void GetStatistics(std::map<std::string, int64>* statistics);
-  void ReportHistogram();
+  void ReportPerRoundHistogram();
+  void ReportPerHourHistogram();
   void Start();
 
  private:
@@ -62,6 +95,9 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
       int64 available_disk_space);
   void OnGotLRUOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
+
+  void OnEvictionRoundStarted();
+  void OnEvictionRoundFinished();
 
   // This is only used for tests.
   void set_repeated_eviction(bool repeated_eviction) {
@@ -79,14 +115,13 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   QuotaEvictionHandler* quota_eviction_handler_;
 
   Statistics statistics_;
+  Statistics previous_statistics_;
+  EvictionRoundStatistics round_statistics_;
+  base::Time time_of_end_of_last_nonskipped_round_;
+  base::Time time_of_end_of_last_round_;
 
   int64 interval_ms_;
   bool repeated_eviction_;
-  int num_evicted_origins_in_round_;
-
-  int64 usage_on_beginning_of_round_;
-  base::Time time_of_beginning_of_round_;
-  base::Time time_of_end_of_last_round_;
 
   base::OneShotTimer<QuotaTemporaryStorageEvictor> eviction_timer_;
   base::RepeatingTimer<QuotaTemporaryStorageEvictor> histogram_timer_;
