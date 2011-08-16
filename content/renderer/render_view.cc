@@ -141,6 +141,7 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/glue/weburlloader_impl.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
@@ -2822,6 +2823,12 @@ void RenderView::didRunInsecureContent(
       routing_id_,
       origin.toString().utf8(),
       target));
+}
+
+void RenderView::didAdoptURLLoader(WebKit::WebURLLoader* loader) {
+  webkit_glue::WebURLLoaderImpl* loader_impl =
+      static_cast<webkit_glue::WebURLLoaderImpl*>(loader);
+  loader_impl->UpdateRoutingId(routing_id_);
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
