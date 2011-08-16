@@ -590,6 +590,7 @@ class Network {
   NetworkProfileType profile_type() const { return profile_type_; }
 
   const std::string& unique_id() const { return unique_id_; }
+  int priority_order() const { return priority_order_; }
 
   const std::string& proxy_config() const { return proxy_config_; }
 

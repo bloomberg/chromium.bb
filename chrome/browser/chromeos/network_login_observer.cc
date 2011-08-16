@@ -70,9 +70,13 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
        it != virtual_networks.end(); it++) {
     VirtualNetwork* vpn = *it;
     if (vpn->notify_failure()) {
-      // Display login dialog again for bad_passphrase and errors.
+      // Display login dialog for bad_passphrase or connect_failed. VPN does
+      // not store user name or other properties, so may need additional info
+      // for a configured network.
       // Always re-display the login dialog for newly added networks.
-      if (vpn->error() == ERROR_BAD_PASSPHRASE || vpn->added()) {
+      if (vpn->error() == ERROR_BAD_PASSPHRASE ||
+          vpn->error() == ERROR_CONNECT_FAILED ||
+          vpn->added()) {
         CreateModalPopup(new NetworkConfigView(vpn));
         return;  // Only support one failure per notification.
       }

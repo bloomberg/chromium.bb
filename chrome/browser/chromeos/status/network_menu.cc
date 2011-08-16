@@ -755,11 +755,10 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
         SkBitmap(), std::string(), FLAG_DISABLED));
   }
 
-  // If we are logged in and there is a connected network,
+  // If we are logged in and there is a connected network or a connected VPN,
   // add submenu for Private Networks.
   if (is_browser_mode) {
-    const Network* connected_network = cros->connected_network();
-    if (connected_network) {
+    if (cros->connected_network() || cros->virtual_network_connected()) {
       menu_items_.push_back(MenuItem());  // Separator
       const SkBitmap* icon = NetworkMenuIcon::GetVpnBitmap();
       menu_items_.push_back(MenuItem(
@@ -860,13 +859,8 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
 
   menu_items_.clear();
 
-  // VPN only applies if there's a connected underlying network.
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  const Network* connected_network = cros->connected_network();
-  if (!connected_network)
-    return;
-
   // Populate our MenuItems with the current list of virtual networks.
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
   const VirtualNetwork* active_vpn = cros->virtual_network();
 
@@ -907,10 +901,14 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
   if (!menu_items_.empty()) {  // Add separator if menu is not empty.
     menu_items_.push_back(MenuItem());
   }
-  menu_items_.push_back(MenuItem(
-      ui::MenuModel::TYPE_COMMAND,
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_ADD_VPN),
-      SkBitmap(), std::string(), FLAG_ADD_VPN));
+  // Can only connect to a VPN if we have a connected network.
+  if (cros->connected_network()) {
+    menu_items_.push_back(MenuItem(
+        ui::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_ADD_VPN),
+        SkBitmap(), std::string(), FLAG_ADD_VPN));
+  }
+  // Show disconnect if we have an active VPN.
   if (active_vpn) {
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,

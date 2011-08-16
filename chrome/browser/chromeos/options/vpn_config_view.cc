@@ -421,6 +421,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   } else {
     provider_type_text_label_ =
         new views::Label(UTF16ToWide(ProviderTypeToString(provider_type_)));
+    provider_type_text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(provider_type_text_label_);
     provider_type_combobox_ = NULL;
   }

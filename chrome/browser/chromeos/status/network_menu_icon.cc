@@ -340,6 +340,13 @@ class NetworkIcon {
       } else {
         // Use the ethernet icon for VPN when not connected.
         icon_ = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
+        // We can be connected to a VPN, even when there is no connected
+        // underlying network. In that case, for the status bar, show the
+        // disconencted badge.
+        if (is_status_bar_) {
+          bottom_right_badge_ =
+              rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+        }
       }
       // Overlay the VPN badge.
       bottom_left_badge_ = rb.GetBitmapNamed(kVpnBadgeId);
@@ -566,8 +573,8 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
     // Icon + badges.
     icon_->SetDirty();
     icon_->UpdateIcon(network);
-    // Overlay the VPN badge if connected or connecting to a VPN.
-    if (cros->virtual_network()) {
+    // Overlay the VPN badge if connecting to a VPN.
+    if (network->type() != TYPE_VPN && cros->virtual_network()) {
       const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
       if (cros->virtual_network()->connecting()) {
         double animation = GetAnimation();
@@ -578,8 +585,6 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
         vpn_connecting_badge_ = SkBitmapOperations::CreateBlendedBitmap(
             empty_vpn_badge_, *vpn_badge, animation);
         icon_->set_bottom_left_badge(&vpn_connecting_badge_);
-      } else if (cros->virtual_network()->connected()) {
-        icon_->set_bottom_left_badge(vpn_badge);
       }
     }
     if (!animating)
