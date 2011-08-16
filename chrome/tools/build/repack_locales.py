@@ -14,7 +14,7 @@ import getopt
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..', '..', '..',
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..',
                              'tools', 'data_pack'))
 import repack
 
@@ -47,7 +47,7 @@ def calc_output(locale):
       locale = 'en'
     return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale.replace('-', '_'))
   else:
-    return '%s/repack/%s.pak' % (INT_DIR, locale)
+    return os.path.join(INT_DIR, 'repack', locale + '.pak')
 
 
 def calc_inputs(locale):
@@ -55,35 +55,38 @@ def calc_inputs(locale):
   inputs = []
 
   #e.g. '<(grit_out_dir)/generated_resources_da.pak'
-  inputs.append('%s/generated_resources_%s.pak' % (GRIT_DIR, locale))
+  inputs.append(os.path.join(GRIT_DIR, 'generated_resources_%s.pak' % locale))
 
   #e.g. '<(grit_out_dir)/locale_settings_da.pak'
-  inputs.append('%s/locale_settings_%s.pak' % (GRIT_DIR, locale))
+  inputs.append(os.path.join(GRIT_DIR, 'locale_settings_%s.pak' % locale))
 
   #e.g. '<(grit_out_dir)/platform_locale_settings_da.pak'
-  inputs.append('%s/platform_locale_settings_%s.pak' % (GRIT_DIR, locale))
+  inputs.append(os.path.join(GRIT_DIR,
+                'platform_locale_settings_%s.pak' % locale))
 
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
-  inputs.append('%s/webkit/webkit_strings_%s.pak' % (SHARE_INT_DIR, locale))
+  inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
+                'webkit_strings_%s.pak' % locale))
 
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
-  inputs.append('%s/ui/ui_strings/ui_strings_%s.pak' % (
-      SHARE_INT_DIR, locale))
+  inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
+                'ui_strings_%s.pak' % locale))
 
   #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
-  inputs.append('%s/ui/app_locale_settings/app_locale_settings_%s.pak' % (
-      SHARE_INT_DIR, locale))
+  inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
+                'app_locale_settings_%s.pak' % locale))
 
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'
   #     or
   #     '<(grit_out_dir)/chromium_strings_da.pak'
-  inputs.append('%s/%s_strings_%s.pak' % (GRIT_DIR, BRANDING, locale))
+  inputs.append(os.path.join(
+      GRIT_DIR, '%s_strings_%s.pak' % (BRANDING, locale)))
 
   return inputs
 
 
 def list_outputs(locales):
-  """Print the names of files that will be generated for the given locales.
+  """Returns the names of files that will be generated for the given locales.
 
   This is to provide gyp the list of output files, so build targets can
   properly track what needs to be built.
@@ -93,11 +96,11 @@ def list_outputs(locales):
     outputs.append(calc_output(locale))
   # Quote each element so filename spaces don't mess up gyp's attempt to parse
   # it into a list.
-  print " ".join(['"%s"' % x for x in outputs])
+  return " ".join(['"%s"' % x for x in outputs])
 
 
 def list_inputs(locales):
-  """Print the names of files that will be processed for the given locales.
+  """Returns the names of files that will be processed for the given locales.
 
   This is to provide gyp the list of input files, so build targets can properly
   track their prerequisites.
@@ -107,7 +110,7 @@ def list_inputs(locales):
     inputs += calc_inputs(locale)
   # Quote each element so filename spaces don't mess up gyp's attempt to parse
   # it into a list.
-  print " ".join(['"%s"' % x for x in inputs])
+  return " ".join(['"%s"' % x for x in inputs])
 
 
 def repack_locales(locales):
@@ -119,14 +122,11 @@ def repack_locales(locales):
     repack.RePack(output, inputs)
 
 
-def main(argv=None):
+def DoMain(argv):
   global BRANDING
   global GRIT_DIR
   global SHARE_INT_DIR
   global INT_DIR
-
-  if argv is None:
-    argv = sys.argv
 
   short_options = 'iog:s:x:b:h'
   long_options = 'help'
@@ -144,58 +144,53 @@ Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> <locale> [...
   -x DIR         Intermediate build files output directory.
   -s DIR         Shared intermediate build files output directory.
   -b branding    Branding type of this build.
-  locale [...]   One or more locales to repack.""" % (argv[0])
+  locale [...]   One or more locales to repack.""" % (
+      os.path.basename(__file__))
 
   try:
-    try:
-      opts, locales = getopt.getopt(argv[1:], short_options, long_options)
-    except getopt.GetoptError, msg:
-      raise Usage(str(msg))
+    opts, locales = getopt.getopt(argv, short_options, long_options)
+  except getopt.GetoptError, msg:
+    raise Usage(str(msg))
 
-    if not locales:
-      usage_msg = 'Please specificy at least one locale to process.\n'
+  if not locales:
+    usage_msg = 'Please specificy at least one locale to process.\n'
 
-    for o, a in opts:
-      if o in ('-i'):
-        print_inputs = True
-      elif o in ('-o'):
-        print_outputs = True
-      elif o in ('-g'):
-        GRIT_DIR = a
-      elif o in ('-s'):
-        SHARE_INT_DIR = a
-      elif o in ('-x'):
-        INT_DIR = a
-      elif o in ('-b'):
-        BRANDING = a
-      elif o in ('-h', '--help'):
-        print helpstr
-        return 0
+  for o, a in opts:
+    if o in ('-i'):
+      print_inputs = True
+    elif o in ('-o'):
+      print_outputs = True
+    elif o in ('-g'):
+      GRIT_DIR = a
+    elif o in ('-s'):
+      SHARE_INT_DIR = a
+    elif o in ('-x'):
+      INT_DIR = a
+    elif o in ('-b'):
+      BRANDING = a
+    elif o in ('-h', '--help'):
+      raise Usage(helpstr)
 
-    if not (GRIT_DIR and INT_DIR and SHARE_INT_DIR):
-      usage_msg += 'Please specify all of "-g" and "-x" and "-s".\n'
-    if print_inputs and print_outputs:
-      usage_msg += 'Please specify only one of "-i" or "-o".\n'
-    # Need to know the branding, unless we're just listing the outputs.
-    if not print_outputs and not BRANDING:
-      usage_msg += 'Please specify "-b" to determine the input files.\n'
+  if not (GRIT_DIR and INT_DIR and SHARE_INT_DIR):
+    usage_msg += 'Please specify all of "-g" and "-x" and "-s".\n'
+  if print_inputs and print_outputs:
+    usage_msg += 'Please specify only one of "-i" or "-o".\n'
+  # Need to know the branding, unless we're just listing the outputs.
+  if not print_outputs and not BRANDING:
+    usage_msg += 'Please specify "-b" to determine the input files.\n'
 
-    if usage_msg:
-      raise Usage(usage_msg)
-  except Usage, err:
-    sys.stderr.write(err.msg + '\n')
-    sys.stderr.write(helpstr + '\n')
-    return 2
+  if usage_msg:
+    raise Usage(usage_msg)
 
   if print_inputs:
-    list_inputs(locales)
-    return 0
+    return list_inputs(locales)
 
   if print_outputs:
-    list_outputs(locales)
-    return 0
+    return list_outputs(locales)
 
-  repack_locales(locales)
+  return repack_locales(locales)
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  results = DoMain(sys.argv[1:])
+  if results:
+    print results

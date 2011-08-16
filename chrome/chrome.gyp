@@ -1616,7 +1616,7 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['os_posix == 1 and OS != "mac"', {
+    ['OS != "mac"', {
       'targets': [{
         'target_name': 'packed_resources',
         'type': 'none',
@@ -1681,15 +1681,10 @@
             },
             'inputs': [
               'tools/build/repack_locales.py',
-              # NOTE: Ideally the common command args would be shared amongst
-              # inputs/outputs/action, but the args include shell variables
-              # which need to be passed intact, and command expansion wants
-              # to expand the shell variables. Adding the explicit quoting
-              # here was the only way it seemed to work.
-              '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+              '<!@pymod_do_main(repack_locales -i <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(locales))'
             ],
             'outputs': [
-              '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+              '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(locales))'
             ],
             'action': [
               '<@(repack_locales_cmd)',
@@ -1706,7 +1701,7 @@
           {
             'destination': '<(PRODUCT_DIR)/locales',
             'files': [
-              '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+              '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(locales))'
             ],
           },
           {
@@ -1717,6 +1712,6 @@
           },
         ],
       }],  # targets
-    }],  # os_posix == 1 and OS != "mac"
+    }],  # OS != "mac"
   ],  # 'conditions'
 }
