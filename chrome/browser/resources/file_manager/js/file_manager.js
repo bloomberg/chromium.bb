@@ -183,11 +183,6 @@ FileManager.prototype = {
   const DOWNLOADS_DIRECTORY = '/Downloads';
 
   /**
-   * Height of the downloads folder warning, in px.
-   */
-  const DOWNLOADS_WARNING_HEIGHT = '57px';
-
-  /**
    * Location of the FAQ about the downloads directory.
    */
   const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
@@ -575,15 +570,6 @@ FileManager.prototype = {
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
     this.copyButton_ = this.dialogDom_.querySelector('.clipboard-copy');
     this.pasteButton_ = this.dialogDom_.querySelector('.clipboard-paste');
-
-    this.downloadsWarning_ =
-        this.dialogDom_.querySelector('.downloads-warning');
-    var html = util.htmlUnescape(strf('DOWNLOADS_DIRECTORY_WARNING',
-                                      DOWNLOADS_FAQ_URL));
-    // TODO(rginda): Fix this string in the grd file to include the target
-    // attribute, post R14.
-    html = html.replace('<a href=', '<a target=new_ href=');
-    this.downloadsWarning_.lastElementChild.innerHTML = html;
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
@@ -2507,21 +2493,6 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-        this.currentDirEntry_.fullPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
-        DOWNLOADS_DIRECTORY) {
-      if (this.downloadsWarning_.style.height != DOWNLOADS_WARNING_HEIGHT) {
-        // Current path starts with DOWNLOADS_DIRECTORY, show the warning.
-        this.downloadsWarning_.style.height = DOWNLOADS_WARNING_HEIGHT;
-        this.requestResize_(100);
-      }
-    } else {
-      if (this.downloadsWarning_.style.height != '0') {
-        this.downloadsWarning_.style.height = '0';
-        this.requestResize_(100);
-      }
-    }
-
     this.updateCommands_();
     this.updateOkButton_();
 
