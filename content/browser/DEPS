@@ -22,8 +22,5 @@ include_rules = [
   # ONLY USED BY TESTS
   "+chrome/browser/ui/browser.h",
   
-  # http://crbug.com/88871
-  "+chrome/common/chrome_notification_types.h",
-  
   # DO NOT ADD ANY MORE TO THIS LIST!!!  SEE ABOVE COMMENT
 ]
