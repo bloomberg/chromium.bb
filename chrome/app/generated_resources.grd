@@ -12272,10 +12272,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unselected
       </message>
       <message name="IDS_CHROMEOS_ACC_ACCESS_ENABLED" desc="A phrase to speak when accessibility is enabled.">
-        Accessibility turned on.
+        Enabling spoken feedback.
       </message>
       <message name="IDS_CHROMEOS_ACC_ACCESS_DISABLED" desc="A phrase to speak when accessibility is disabled.">
-        Accessibility turned off.
+        Disabling spoken feedback.
       </message>
       <message name="IDS_CHROMEOS_ACC_USERNAME_LABEL" desc="Label for the username text field.">
         Username.
