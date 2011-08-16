@@ -319,6 +319,7 @@ function handleKeyEvent(e){
     return;
   }
   update(modifiers);
+  KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
 }
 
 /**
