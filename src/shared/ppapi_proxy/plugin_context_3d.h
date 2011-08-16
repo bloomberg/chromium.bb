@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CONTEXT_3D_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CONTEXT_3D_H_
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
