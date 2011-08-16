@@ -192,6 +192,10 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
   if (file_util::PathExists(crx_path))
     file_util::Delete(crx_path, false);
   ScopedStdioHandle crx_handle(file_util::OpenFile(crx_path, "wb"));
+  if (!crx_handle.get()) {
+    error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_SHARING_VIOLATION);
+    return false;
+  }
 
   std::vector<uint8> public_key;
   if (!private_key->ExportPublicKey(&public_key)) {

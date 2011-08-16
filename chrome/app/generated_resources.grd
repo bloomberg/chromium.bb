@@ -3801,6 +3801,9 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_ERROR_WHILE_SIGNING" desc="Warning displayed in pack dialog when occurred an error while signing an extension.">
         Error while signing extension.
       </message>
+      <message name="IDS_EXTENSION_SHARING_VIOLATION" desc="Warning displayed in pack dialog when a sharing violation is found during creation of the crx.">
+        Failed to replace crx file. Check to see if the file is in use.
+      </message>
       <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
         Failed to export public key.
       </message>
