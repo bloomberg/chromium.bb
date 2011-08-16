@@ -135,20 +135,6 @@ class ChromeTests(object):
     Returns:
       A string with the command to run the test.
     '''
-    module_dir = os.path.join(self._source_dir, module)
-
-    # We need multiple data dirs, the current script directory and a module
-    # specific one. The global suppression file lives in our directory, and the
-    # module specific suppression file lives with the module.
-    self._data_dirs = [path_utils.ScriptDir()]
-
-    if module == "chrome":
-      # Unfortunately, not all modules have the same directory structure.
-      self._data_dirs.append(os.path.join(module_dir, "test", "data",
-                                          "heapcheck"))
-    else:
-      self._data_dirs.append(os.path.join(module_dir, "data", "heapcheck"))
-
     if not self._options.build_dir:
       dirs = [
         os.path.join(self._source_dir, "xcodebuild", "Debug"),
@@ -176,13 +162,13 @@ class ChromeTests(object):
   def Suppressions(self):
     '''Builds the list of available suppressions files.'''
     ret = []
-    for directory in self._data_dirs:
-      suppression_file = os.path.join(directory, "suppressions.txt")
-      if os.path.exists(suppression_file):
-        ret.append(suppression_file)
-      suppression_file = os.path.join(directory, "suppressions_linux.txt")
-      if os.path.exists(suppression_file):
-        ret.append(suppression_file)
+    directory = path_utils.ScriptDir()
+    suppression_file = os.path.join(directory, "suppressions.txt")
+    if os.path.exists(suppression_file):
+      ret.append(suppression_file)
+    suppression_file = os.path.join(directory, "suppressions_linux.txt")
+    if os.path.exists(suppression_file):
+      ret.append(suppression_file)
     return ret
 
   def Run(self):
@@ -199,20 +185,26 @@ class ChromeTests(object):
       cmd: the test running command line to be modified.
     '''
     filters = []
-    for directory in self._data_dirs:
-      gtest_filter_files = [
-          os.path.join(directory, name + ".gtest.txt"),
-          os.path.join(directory, name + ".gtest-heapcheck.txt"),
-          os.path.join(directory, name + ".gtest_linux.txt")]
-      for filename in gtest_filter_files:
-        if os.path.exists(filename):
-          logging.info("reading gtest filters from %s" % filename)
-          f = open(filename, 'r')
-          for line in f.readlines():
-            if line.startswith("#") or line.startswith("//") or line.isspace():
-              continue
-            line = line.rstrip()
-            filters.append(line)
+    directory = path_utils.ScriptDir()
+    gtest_filter_files = [
+        os.path.join(directory, name + ".gtest-heapcheck.txt"),
+        # TODO(glider): Linux vs. CrOS?
+    ]
+    logging.info("Reading gtest exclude filter files:")
+    for filename in gtest_filter_files:
+      # strip the leading absolute path (may be very long on the bot)
+      # and the following / or \.
+      readable_filename = filename.replace(self._source_dir, "")[1:]
+      if not os.path.exists(filename):
+        logging.info("  \"%s\" - not found" % readable_filename)
+        continue
+      logging.info("  \"%s\" - OK" % readable_filename)
+      f = open(filename, 'r')
+      for line in f.readlines():
+        if line.startswith("#") or line.startswith("//") or line.isspace():
+          continue
+        line = line.rstrip()
+        filters.append(line)
     gtest_filter = self._options.gtest_filter
     if len(filters):
       if gtest_filter:

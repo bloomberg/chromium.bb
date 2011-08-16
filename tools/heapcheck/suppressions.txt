@@ -1746,6 +1746,6 @@
    Heapcheck:Leak
    ...
    fun:DownloadManager::AddObserver
-   fun:::SelectFileObserver::SelectFileObserver
+   fun:*SelectFileObserver
    fun:DownloadManagerTest_*
 }

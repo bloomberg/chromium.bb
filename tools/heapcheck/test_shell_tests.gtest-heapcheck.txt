@@ -1,0 +1,2 @@
+# Fails on Chrome OS, http://crbug.com/93022
+WebDOMEventListenerTest.SameListenerMultipleEvents
