@@ -2554,24 +2554,19 @@ for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
     nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
 
-# Since the default linking layout is compatible with IRT loading now,
-# we should not need anything special here.
-# TODO(mcgrathr): Perhaps remove the variable entirely at some point.
-nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
-
 if nacl_env.Bit('irt'):
+  # Since the default linking layout is compatible with IRT loading now,
+  # we should not need anything special here.
+  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
-  # Even non-PPAPI nexes need this for IRT-compatible linking.
-  # We don't just make them link with ${PPAPI_LIBS} because in
-  # the non-IRT case under dynamic linking, that tries to link
-  # in libppruntime.so with its undefined symbols and fails
-  # for nexes that aren't actually PPAPI users.
 else:
   # TODO(mseaborn): This will go away when we only support using PPAPI
   # via the IRT library, so users of this dependency should not rely
   # on individual libraries like 'platform' being included by default.
+  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=['${NONIRT_LIBS}'])
   nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'srpc', 'imc', 'imc_syscalls',
-                               'platform', 'gio', 'pthread', 'm'])
+                               'platform', 'gio', '${PTHREAD_LIBS}', 'm',
+                               '${NONIRT_LIBS}'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.

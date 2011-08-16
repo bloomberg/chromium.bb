@@ -19,7 +19,7 @@ imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
                                               objs,
                                               EXTRA_LIBS=test_libs + [
                                                   '${NON_PPAPI_BROWSER_LIBS}',
-                                                  'pthread',
+                                                  '${PTHREAD_LIBS}',
                                                   ])
 env.Publish(imc_shm_mmap_test_nexe_name, 'run', ['imc_shm_mmap_test.nmf'])
 

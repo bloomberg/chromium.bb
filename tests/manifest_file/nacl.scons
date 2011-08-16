@@ -16,7 +16,7 @@ srpc_mf_nexe = env.ComponentProgram(srpc_mf_nexe_name,
                                         'gio',
                                         'imc',
                                         'imc_syscalls',
-                                        'pthread',
+                                        '${PTHREAD_LIBS}',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 env.Publish(srpc_mf_nexe_name, 'run',
             ['srpc_manifest_file_test.html',

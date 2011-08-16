@@ -12,7 +12,7 @@ srpc_hw_nexe_name = 'srpc_hw_%s' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
                                     EXTRA_LIBS=srpc_hw_libs + [
-                                        'pthread',
+                                        '${PTHREAD_LIBS}',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 # srpc_hw_undecorated is necessary because srpc_hw_fd.html makes use of
 # __urlAsNaClDesc with a nexe name.
@@ -21,7 +21,7 @@ srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
 srpc_hw_undecorated = env.ComponentProgram('srpc_hw',
                                            srpc_hw_obj,
                                            EXTRA_LIBS=srpc_hw_libs + [
-                                               'pthread',
+                                               '${PTHREAD_LIBS}',
                                                '${NON_PPAPI_BROWSER_LIBS}'])
 
 env.Publish(srpc_hw_nexe_name, 'run',

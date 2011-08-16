@@ -13,7 +13,8 @@ async_nexe_name = 'async_message_test_%s' % env.get('TARGET_FULLARCH')
 async_message_prog = env.ComponentProgram(
     async_nexe_name, 'async_message_test.c',
     EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
-                'srpc', 'platform', 'gio', 'imc', 'imc_syscalls', 'pthread'
+                'srpc', 'platform', 'gio', 'imc', 'imc_syscalls',
+                '${PTHREAD_LIBS}',
                 ])
 
 test_files = [
