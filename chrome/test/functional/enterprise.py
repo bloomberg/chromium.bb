@@ -325,6 +325,17 @@ class EnterpriseTest(pyauto.PyUITest):
     pid = self._GetPluginPID('Java')
     self.assertTrue(pid, 'No plugin process for java')
 
+  def testDisablePopups(self):
+    """Verify popups are not allowed if policy disables popups."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    url = self.GetFileURLForDataPath('popup_blocker', 'popup-window-open.html')
+    self.NavigateToURL(url)
+    self.assertEqual(1, len(self.GetBlockedPopupsInfo()),
+                     msg='Popup not blocked')
+    self.assertRaises(pyauto.JSONInterfaceError,
+               lambda: self.SetPrefs(pyauto.kManagedDefaultPopupsSetting, 1))
+
 class EnterpriseTestReverse(pyauto.PyUITest):
   """Test for the Enterprise features that uses the opposite values of the
   policies used by above test class 'EnterpriseTest'.
@@ -585,6 +596,17 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     self.assertTrue(self.WaitForInfobarCount(1))
     pid = self._GetPluginPID('Java')
     self.assertFalse(pid, 'There is a plugin process for java')
+
+  def testEnablePopups(self):
+    """Verify popups are allowed if policy enables popups."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    url = self.GetFileURLForDataPath('popup_blocker', 'popup-window-open.html')
+    self.NavigateToURL(url)
+    self.assertEqual(2, self.GetBrowserWindowCount(),
+                     msg='Popup could not be launched');
+    self.assertRaises(pyauto.JSONInterfaceError,
+               lambda: self.SetPrefs(pyauto.kManagedDefaultPopupsSetting, 2))
 
 
 if __name__ == '__main__':
