@@ -193,12 +193,6 @@ class PluginList {
   // the given name, it will be enabled/disabled.
   bool EnableGroup(bool enable, const string16& name);
 
-  // Disable all plugins groups that are known to be outdated, according to
-  // the information hardcoded in PluginGroup, to make sure that they can't
-  // be loaded on a web page and instead show a UI to update to the latest
-  // version.
-  void DisableOutdatedPluginGroups();
-
   virtual ~PluginList();
 
  protected:
@@ -306,9 +300,6 @@ class PluginList {
   };
   // Holds information about internal plugins.
   std::vector<InternalPlugin> internal_plugins_;
-
-  // If set to true outdated plugins are disabled in the end of LoadPlugins.
-  bool disable_outdated_plugins_;
 
   // Hardcoded plugin group definitions.
   const PluginGroupDefinition* const group_definitions_;

@@ -321,7 +321,6 @@ bool PluginList::ParseMimeTypes(
 
 PluginList::PluginList()
     : plugins_need_refresh_(true),
-      disable_outdated_plugins_(false),
       group_definitions_(kGroupDefinitions),
       num_group_definitions_(ARRAYSIZE_UNSAFE(kGroupDefinitions)),
       default_plugin_enabled_(false) {
@@ -332,7 +331,6 @@ PluginList::PluginList()
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
     : plugins_need_refresh_(true),
-      disable_outdated_plugins_(false),
       group_definitions_(definitions),
       num_group_definitions_(num_definitions),
       default_plugin_enabled_(false) {
@@ -448,8 +446,6 @@ void PluginList::LoadPlugins() {
     }
 
     group->EnforceGroupPolicy();
-    if (disable_outdated_plugins_)
-      group->DisableOutdatedPlugins();
   }
   // We flush the list of prematurely disabled plugins after the load has
   // finished. If for some reason a plugin reappears on a second load it is
@@ -780,10 +776,6 @@ bool PluginList::SupportsExtension(const webkit::WebPluginInfo& plugin,
     }
   }
   return false;
-}
-
-void PluginList::DisableOutdatedPluginGroups() {
-  disable_outdated_plugins_ = true;
 }
 
 PluginList::~PluginList() {

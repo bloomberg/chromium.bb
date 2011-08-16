@@ -190,10 +190,6 @@ class PluginGroup {
   // in has disappeared from the pc (or in the process of updating).
   bool IsEmpty() const;
 
-  // Disables all plugins in this group that are older than the
-  // minimum version.
-  void DisableOutdatedPlugins();
-
   // Parse a version string as used by a plug-in. This method is more lenient
   // in accepting weird version strings than Version::GetFromString().
   static Version* CreateVersionFromString(const string16& version_string);

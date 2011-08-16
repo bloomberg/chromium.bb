@@ -510,23 +510,6 @@ bool PluginGroup::IsEmpty() const {
   return web_plugin_infos_.empty();
 }
 
-void PluginGroup::DisableOutdatedPlugins() {
-  ResetGroupState();
-  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    scoped_ptr<Version> version(
-        CreateVersionFromString(web_plugin_infos_[i].version));
-    if (version.get()) {
-      for (size_t j = 0; j < version_ranges_.size(); ++j) {
-        if (IsPluginOutdated(*version, version_ranges_[j])) {
-          Disable(&web_plugin_infos_[i], WebPluginInfo::USER_DISABLED);
-          break;
-        }
-      }
-    }
-    UpdateActivePlugin(web_plugin_infos_[i]);
-  }
-}
-
 bool PluginGroup::EnableGroup(bool enable) {
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
   bool group_enabled_by_policy = IsPluginNameEnabledByPolicy(group_name_);

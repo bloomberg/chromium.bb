@@ -173,23 +173,6 @@ TEST_F(PluginGroupTest, PluginGroupDefinition) {
   }
 }
 
-TEST_F(PluginGroupTest, DisableOutdated) {
-  PluginGroupDefinition plugindefs[] = { kPluginDef3, kPluginDef34 };
-  for (size_t i = 0; i < 2; ++i) {
-    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-        plugindefs[i]));
-    group->AddPlugin(kPlugin3043);
-    group->AddPlugin(kPlugin3045);
-
-    EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.43"), group->description());
-    EXPECT_TRUE(group->IsVulnerable());
-
-    group->DisableOutdatedPlugins();
-    EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.45"), group->description());
-    EXPECT_FALSE(group->IsVulnerable());
-  }
-}
-
 TEST_F(PluginGroupTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
   const char* versions[][2] = {

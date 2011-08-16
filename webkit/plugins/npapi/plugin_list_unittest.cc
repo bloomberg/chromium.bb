@@ -98,39 +98,6 @@ TEST_F(PluginListTest, EmptyGroup) {
     EXPECT_GE(1U, groups[i].web_plugins_info().size());
 }
 
-TEST_F(PluginListTest, DisableOutdated) {
-  VersionRangeDefinition version_range[] = {
-      { "0", "4", "3.0.44" },
-      { "4", "5", "" }
-  };
-  WebPluginInfo plugin_3043(ASCIIToUTF16("MyPlugin"),
-                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
-                            ASCIIToUTF16("3.0.43"),
-                            ASCIIToUTF16("MyPlugin version 3.0.43"));
-  WebPluginInfo plugin_3045(ASCIIToUTF16("MyPlugin"),
-                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.45")),
-                            ASCIIToUTF16("3.0.45"),
-                            ASCIIToUTF16("MyPlugin version 3.0.45"));
-  plugin_list_.ClearPluginsToLoad();
-  plugin_list_.AddPluginToLoad(plugin_3043);
-  plugin_list_.AddPluginToLoad(plugin_3045);
-  // Enfore the load to run.
-  plugin_list_.RefreshPlugins();
-  std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(&plugins);
-  PluginGroup* group_3043 =
-      const_cast<PluginGroup*>(plugin_list_.GetPluginGroup(plugin_3043));
-  const PluginGroup* group_3045 = plugin_list_.GetPluginGroup(plugin_3045);
-  EXPECT_EQ(group_3043, group_3045);
-  group_3043->version_ranges_.push_back(VersionRange(version_range[0]));
-  group_3043->version_ranges_.push_back(VersionRange(version_range[1]));
-  EXPECT_EQ(plugin_3043.desc, group_3043->description());
-  EXPECT_TRUE(group_3043->IsVulnerable());
-  group_3043->DisableOutdatedPlugins();
-  EXPECT_EQ(plugin_3045.desc, group_3043->description());
-  EXPECT_FALSE(group_3043->IsVulnerable());
-}
-
 TEST_F(PluginListTest, BadPluginDescription) {
   WebPluginInfo plugin_3043(ASCIIToUTF16(""),
                             FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
