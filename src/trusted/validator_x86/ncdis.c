@@ -238,6 +238,8 @@ int GrokFlags(int argc, const char *argv[]) {
         GrokBoolFlag("--self_document", arg, &FLAGS_self_document) ||
         GrokBoolFlag("--use_iter", arg, &NACL_FLAGS_use_iter) ||
         GrokBoolFlag("--internal", arg, &NACL_FLAGS_internal) ||
+        GrokBoolFlag("--validator_decoder", arg,
+                     &NACL_FLAGS_validator_decoder) ||
         GrokBoolFlag("--help", arg, &help)) {
       if (help) usage();
       continue;

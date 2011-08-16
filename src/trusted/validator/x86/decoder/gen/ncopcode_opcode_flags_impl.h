@@ -37,8 +37,6 @@ static const char* const g_NaClIFlagName[NaClIFlagEnumSize + 1] = {
   "OpcodeAllowsRepne",
   "OpcodeAllowsData16",
   "SizeIgnoresData16",
-  "Opcode32Only",
-  "Opcode64Only",
   "OperandSize_b",
   "OperandSize_w",
   "OperandSize_v",
@@ -51,8 +49,11 @@ static const char* const g_NaClIFlagName[NaClIFlagEnumSize + 1] = {
   "OperandSizeForce64",
   "LongMode",
   "IgnorePrefixDATA16",
+  "Opcode32Only",
+  "Opcode64Only",
   "JumpInstruction",
   "ConditionalJump",
+  "PartialInstruction",
   "NaClIFlagEnumSize"
 };
 

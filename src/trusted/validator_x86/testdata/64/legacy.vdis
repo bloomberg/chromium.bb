@@ -1,0 +1,17 @@
+0000000000000000: 37                                           invalid
+0000000000000001: d5                                           invalid
+0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
+0000000000000008: d4                                           invalid
+0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
+000000000000000f: 3f                                           invalid
+0000000000000010: 62                                           invalid
+0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
+0000000000000017: 27                                           invalid
+0000000000000018: 2f                                           invalid
+0000000000000019: 60                                           invalid
+000000000000001a: f1                                           [P] dontcare(illegal)
+000000000000001b: d6                                           invalid
+000000000000001c: 9f                                           [P] dontcare(illegal)
+000000000000001d: 9e                                           [P] dontcare(illegal)
+000000000000001e: d7                                           [P] dontcare(illegal)
+000000000000001f: 48 d7                                        [P] dontcare(illegal)

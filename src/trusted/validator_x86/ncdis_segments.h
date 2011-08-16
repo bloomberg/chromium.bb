@@ -27,6 +27,11 @@ extern Bool NACL_FLAGS_use_iter;
  */
 extern Bool NACL_FLAGS_internal;
 
+/* When true, use the validator decoder tables instead of the regular
+ * decoder tables.
+ */
+extern Bool NACL_FLAGS_validator_decoder;
+
 void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
                             NaClMemorySize size);
 

@@ -40,6 +40,7 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/nc_compress.h"
+#include "native_client/src/trusted/validator_x86/ncval_simplify.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -77,6 +78,11 @@ static const char* NaClRunModeName(NaClRunMode mode) {
   /* NOTREACHED */
   return NULL;
 }
+
+/* Defines if we should simplify the instructions to
+ * what is needed by the validator.
+ */
+static Bool NACL_FLAGS_validator_decoder = FALSE;
 
 /* Defines the run mode files that should be generated. */
 NaClRunMode NACL_FLAGS_run_mode = NaClRunModeSize;
@@ -811,9 +817,9 @@ static void NaClDefOpInternal(NaClOpKind kind, NaClOpFlags flags) {
   }
   tables.operands_size++;
   index = current_inst->num_operands++;
-  ((NaClOp*) current_inst->operands)[index].kind = kind;
-  ((NaClOp*) current_inst->operands)[index].flags = flags;
-  ((NaClOp*) current_inst->operands)[index].format_string = NULL;
+  current_inst->operands[index].kind = kind;
+  current_inst->operands[index].flags = flags;
+  current_inst->operands[index].format_string = NULL;
 }
 
 static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
@@ -1058,7 +1064,7 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
       gprintf(g, "Adding flags:");
       NaClPrintlnOpFlags(g, more_flags));
   if (operand_index < current_inst->num_operands) {
-    ((NaClOp*) current_inst->operands)[operand_index].flags |= more_flags;
+    NaClAddBits(current_inst->operands[operand_index].flags, more_flags);
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClAddOpFlags: index out of range\n");
@@ -1069,7 +1075,7 @@ void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   DEBUG(NaClLog(LOG_INFO, "Removing flags:");
         NaClPrintlnOpFlags(NaClLogGetGio(), more_flags));
   if (operand_index < current_inst->num_operands) {
-    ((NaClOp*) current_inst->operands)[operand_index].flags &= ~more_flags;
+    NaClRemoveBits(current_inst->operands[operand_index].flags, more_flags);
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClRemoveOpFlags: index out of range\n");
@@ -1080,7 +1086,7 @@ void NaClAddOpFormat(uint8_t operand_index, const char* format) {
   DEBUG(NaClLog(LOG_INFO, "Adding format[%"NACL_PRIu8"]: '%s'\n",
                 operand_index, format));
   if (operand_index < current_inst->num_operands) {
-    ((NaClOp*) current_inst->operands)[operand_index].format_string =
+    current_inst->operands[operand_index].format_string =
         strdup(format);
   } else {
     NaClFatalOp((int) operand_index, "NaClAddOpFormat: index out of range\n");
@@ -1116,7 +1122,7 @@ static void NaClApplySanityChecksToInst() {
   /* Fix case where both OperandSize_w and SizeIgnoresData16 are specified. */
   if ((current_inst->flags & NACL_IFLAG(OperandSize_w)) &&
       (current_inst->flags & NACL_IFLAG(SizeIgnoresData16))) {
-    current_inst->flags &= ~NACL_IFLAG(OperandSize_w);
+    NaClRemoveBits(current_inst->flags, NACL_IFLAG(OperandSize_w));
   }
   if ((current_inst->flags & NACL_IFLAG(OperandSize_b)) &&
       (current_inst->flags & (NACL_IFLAG(OperandSize_w) |
@@ -1315,15 +1321,15 @@ static void NaClAddRepPrefixFlagsIfApplicable() {
     case Prefix660F:
     case Prefix660F38:
     case Prefix660F3A:
-      current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16) |
-          NACL_IFLAG(SizeIgnoresData16);
+      NaClAddBits(current_inst->flags, NACL_IFLAG(OpcodeAllowsData16) |
+                  NACL_IFLAG(SizeIgnoresData16));
       break;
     case PrefixF20F:
     case PrefixF20F38:
-      current_inst->flags |= NACL_IFLAG(OpcodeAllowsRepne);
+      NaClAddBits(current_inst->flags, NACL_IFLAG(OpcodeAllowsRepne));
       break;
     case PrefixF30F:
-      current_inst->flags |= NACL_IFLAG(OpcodeAllowsRep);
+      NaClAddBits(current_inst->flags, NACL_IFLAG(OpcodeAllowsRep));
       break;
     default:
       break;
@@ -1354,7 +1360,7 @@ static void NaClDefInstInternal(
 
   /* Before starting, expand appropriate implicit flag assumnptions. */
   if (flags & NACL_IFLAG(OpcodeLtC0InModRm)) {
-    flags |= NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3);
+    NaClAddBits(flags, NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3));
   }
 
   DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%02x)\n",
@@ -1520,19 +1526,19 @@ static void NaClRecheckIFlags() {
   }
   /* If the instruction has an opcode in modrm, then it uses modrm. */
   if (NACL_EMPTY_IFLAGS != (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
-    current_inst->flags |= NACL_IFLAG(OpcodeUsesModRm);
+    NaClAddBits(current_inst->flags, NACL_IFLAG(OpcodeUsesModRm));
   }
   /* If the instruction allows a two byte value, add DATA16 flag. */
   if (NACL_EMPTY_IFLAGS != (current_inst->flags &
                             (NACL_IFLAG(OperandSize_w) |
                              NACL_IFLAG(OpcodeHasImmed_z)))) {
-    current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16);
+    NaClAddBits(current_inst->flags, NACL_IFLAG(OpcodeAllowsData16));
   }
   /* If the instruction uses the modrm rm field as an opcode value,
    * it also requires that the modrm mod field is 0x3.
    */
   if (current_inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
-    current_inst->flags |= NACL_IFLAG(ModRmModIs0x3);
+    NaClAddBits(current_inst->flags, NACL_IFLAG(ModRmModIs0x3));
   }
   NaClApplySanityChecksToInst();
 }
@@ -1543,7 +1549,7 @@ void NaClAddIFlags(NaClIFlags more_flags) {
       NaClLog(LOG_INFO, "Adding instruction flags: ");
       NaClIFlagsPrint(g, more_flags);
       gprintf(g, "\n"));
-  current_inst->flags |= more_flags;
+  NaClAddBits(current_inst->flags, more_flags);
   NaClRecheckIFlags();
 }
 
@@ -1553,7 +1559,7 @@ void NaClRemoveIFlags(NaClIFlags less_flags) {
       NaClLog(LOG_INFO, "Removing instruction flags: ");
       NaClIFlagsPrint(g, less_flags);
       gprintf(g, "\n"));
-  current_inst->flags &= ~less_flags;
+  NaClRemoveBits(current_inst->flags, less_flags);
   NaClRecheckIFlags();
 }
 
@@ -1759,17 +1765,20 @@ static void NaClVerifyInstCounts() {
 
 /* Removes X86-32 specific flags from the given instruction. */
 static void NaClInstRemove32Stuff(NaClModeledInst* inst) {
-  inst->flags &= ~(NACL_IFLAG(Opcode32Only));
+  NaClRemoveBits(inst->flags, NACL_IFLAG(Opcode32Only));
 }
 
 /* Removes X86-64 specific flags from the given instruction. */
 static void NaClInstRemove64Stuff(NaClModeledInst* inst) {
-  inst->flags &=
-      ~(NACL_IFLAG(OpcodeRex) |
-        NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasRexR) |
-        NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-        NACL_IFLAG(AddressSize_o) | NACL_IFLAG(OperandSizeDefaultIs64) |
-        NACL_IFLAG(OperandSizeForce64));
+  NaClRemoveBits(inst->flags,
+                 NACL_IFLAG(OpcodeRex) |
+                 NACL_IFLAG(OpcodeUsesRexW) |
+                 NACL_IFLAG(OpcodeHasRexR) |
+                 NACL_IFLAG(Opcode64Only) |
+                 NACL_IFLAG(OperandSize_o) |
+                 NACL_IFLAG(AddressSize_o) |
+                 NACL_IFLAG(OperandSizeDefaultIs64) |
+                 NACL_IFLAG(OperandSizeForce64));
 }
 
 /* Simplifies the instructions if possible. Mostly removes flags that
@@ -1789,7 +1798,8 @@ static void NaClSimplifyIfApplicable() {
           NaClInstRemove32Stuff(next);
         }
         /* Remove size only flags, since already compiled into tables. */
-        next->flags &= ~(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(Opcode32Only));
+        NaClRemoveBits(next->flags,
+                       NACL_IFLAG(Opcode64Only) | NACL_IFLAG(Opcode32Only));
         next = next->next_rule;
       }
     }
@@ -2161,6 +2171,8 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
       NACL_FLAGS_run_mode = X86_64;
     } else if (GrokBoolFlag("-documentation", argv[i],
                             &NACL_FLAGS_human_readable) ||
+               GrokBoolFlag("-validator_decoder", argv[i],
+                            &NACL_FLAGS_validator_decoder) ||
                GrokBoolFlag("-nacl_subregs", argv[i],
                             &NACL_FLAGS_nacl_subregs)) {
       continue;
@@ -2239,7 +2251,7 @@ int main(const int argc, const char* argv[]) {
       (NACL_FLAGS_run_mode == NaClRunModeSize)) {
     fprintf(stderr,
             "ERROR: usage: ncdecode_tablegen <architecture_flag> "
-            "[-documentation | -nacl_subregs] [file]\n");
+            "[-documentation | -validator_decoder -nacl_subregs] [file]\n");
     return -1;
   }
   InitTables();
@@ -2248,6 +2260,9 @@ int main(const int argc, const char* argv[]) {
   NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
   FillInMissingOperandsDescs();
+
+  if (NACL_FLAGS_validator_decoder)
+    NaClNcvalInstSimplify(&tables);
 
   /* Don't compress if output is to be readable! Compression
    * ignores extra (redundant) data used by print routines of

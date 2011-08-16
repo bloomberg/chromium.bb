@@ -1,6 +1,7 @@
 # Define set of possible instruction opcode flags that can apply
-# to an instruction.
-# Each line defines a separate instruction mnemonic.
+# to an instruction. These flags fully define how to parse an
+# x86 instruction. Used by the decoder defined
+# in native_client/src/trusted/validator/x86/decoder.
 
 # Note: The following sufficies are used:
 #    b - 8 bits.
@@ -114,12 +115,6 @@ OpcodeAllowsData16
 # Also used to mark instructions with 66 prefix.
 SizeIgnoresData16
 
-# Opcode only applies if running in 32-bit mode.
-Opcode32Only
-
-# Opcode only applies if running in 64-bit mode.
-Opcode64Only
-
 # Defines the expected size of the operand. Can be repeated.
 # The (possibly repeated) flags define the set possible operand
 # sizes that are allowed by the opcode.
@@ -151,8 +146,32 @@ LongMode
 # in NACL.
 IgnorePrefixDATA16
 
-# Mark instruction as (unconditional) jump.
+#
+#--------------------------------------------------------------
+#
+# Note: instructions below this point are used elsewhere within native
+# client, and do not effect the x86 instruction decoder.
+
+
+# Opcode only applies if running in 32-bit mode.
+# Used by the table generator to decide if the instruction
+# should be included in the set of generated tables.
+Opcode32Only
+
+# Opcode only applies if running in 64-bit mode.
+# Used by the table generator to decide if the instruction
+# should be included in the set of generated tables.
+Opcode64Only
+
+# Mark instruction as (unconditional) jump. Used by the x86-64
+# validator to quickly categorize unconditional jumps.
 JumpInstruction
 
-# Mark instruction as conditional jump.
+# Mark instruction as conditional jump. Used by the x86-64
+# validator to quickly categorize unconditional jumps.
 ConditionalJump
+
+# Mark the instruction as partial. This communicates to the print routines
+# that the matched instruction is NOT a valid x86 instruction. Hence, it should
+# use different print rules to better communicate what was partially matched.
+PartialInstruction

@@ -1,0 +1,69 @@
+0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
+0000000000000005: 89 ff                                        mov %edi, %edi
+0000000000000007: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+000000000000000b: f3 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+000000000000000e: 89 ff                                        mov %edi, %edi
+0000000000000010: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000014: f2 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+0000000000000017: 89 ff                                        mov %edi, %edi
+0000000000000019: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+000000000000001d: f3 f2 ae                                     [P] dontcare %al (u), %es:%rdi (u)
+0000000000000020: 64 65 89 c0                                  mov %eax, %eax
+0000000000000024: 66 66 89 c0                                  mov %ax, %ax
+0000000000000028: 67 67 89 04 24                               mov [%esp], %eax
+000000000000002d: 40 40 eb fd                                  [P] dontcarejump %rip (s), 0x2e (u)
+0000000000000031: 36 f0 01 04 24                               add [%rsp], %eax
+0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
+000000000000003b: 89 ff                                        mov %edi, %edi
+000000000000003d: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000041: 26 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+0000000000000044: 89 ff                                        mov %edi, %edi
+0000000000000046: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+000000000000004a: f3 26 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+000000000000004d: 66 f0 01 04 24                               add [%rsp], %ax
+0000000000000052: f0 66 01 04 24                               add [%rsp], %ax
+0000000000000057: 89 ff                                        mov %edi, %edi
+0000000000000059: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+000000000000005d: 66 f3 ab                                     [P] dontcare %es:%rdi (s), %ax (u)
+0000000000000060: 89 ff                                        mov %edi, %edi
+0000000000000062: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000066: f3 66 ab                                     [P] dontcare %es:%rdi (s), %ax (u)
+0000000000000069: 67 f0 01 04 24                               add [%esp], %eax
+000000000000006e: f0 67 01 04 24                               add [%esp], %eax
+0000000000000073: 89 ff                                        mov %edi, %edi
+0000000000000075: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000079: 67 f3 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+000000000000007c: 89 ff                                        mov %edi, %edi
+000000000000007e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000082: f3 67 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+0000000000000085: f0 48 01 04 24                               add [%rsp], %rax
+000000000000008a: 48 f0 01 04 24                               add [%rsp], %rax
+000000000000008f: 89 ff                                        mov %edi, %edi
+0000000000000091: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+0000000000000095: f3 48 ab                                     [P] dontcare %es:%rdi (s), %rax (u)
+0000000000000098: 64 66 89 c0                                  mov %ax, %ax
+000000000000009c: 66 64 89 c0                                  mov %ax, %ax
+00000000000000a0: 67 64 01 04 24                               add %fs:[%esp], %eax
+00000000000000a5: 64 67 01 04 24                               add %fs:[%esp], %eax
+00000000000000aa: 64 48 89 c0                                  mov %rax, %rax
+00000000000000ae: 48 64 89 c0                                  mov %rax, %rax
+00000000000000b2: 66 67 01 04 24                               add [%esp], %ax
+00000000000000b7: 67 66 01 04 24                               add [%esp], %ax
+00000000000000bc: 66 44 89 3c 24                               mov [%rsp], %r15w
+00000000000000c1: 44 66 89 3c 24                               mov [%rsp], %r15w
+00000000000000c6: 67 4c 89 3c 24                               mov [%esp], %r15
+00000000000000cb: 4c 67 89 3c 24                               mov [%esp], %r15
+00000000000000d0: 64 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+00000000000000d6: 64 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+00000000000000db: 66 66 0f 38 01 c8                            [P] dontcare %xmm0 (u)
+00000000000000e1: 66 f2 0f 58 c8                               [P] dontcare %xmm0 (u)
+00000000000000e6: 67 66 0f 38 01 04 24                         [P] dontcare [%esp] (u)
+00000000000000ed: 67 f2 0f 58 04 24                            [P] dontcare [%esp] (u)
+00000000000000f3: 89 c0                                        mov %eax, %eax
+00000000000000f5: 66 41 0f 38 01 04 07                         [P] dontcare [%r15+%rax*1] (u)
+00000000000000fc: 89 c0                                        mov %eax, %eax
+00000000000000fe: 41 66 0f 38 01 04 07                         [P] dontcare [%r15+%rax*1] (u)
+0000000000000105: 89 c0                                        mov %eax, %eax
+0000000000000107: f2 41 0f 58 04 07                            [P] dontcare [%r15+%rax*1] (u)
+000000000000010d: 89 c0                                        mov %eax, %eax
+000000000000010f: 41 f2 0f 58 04 07                            [P] dontcare [%r15+%rax*1] (u)

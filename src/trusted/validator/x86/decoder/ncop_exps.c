@@ -17,8 +17,8 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/x86/decoder/gen/ncop_expr_node_flag_impl.h"
 #include "native_client/src/trusted/validator/x86/decoder/gen/ncop_expr_node_kind_impl.h"
+#include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables_types.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_decode_tables.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -336,6 +336,18 @@ static void NaClPrintSegmentOverride(struct Gio* file,
   NaClPrintDisassembledExp(file, vector, seg_index);
 }
 
+/* Print the flag name if the flag is defined for the corresponding operand.
+ * Used to print out set/use/zero extend information for partial instructions.
+ */
+static void NaClPrintAddOperandFlag(struct Gio* f,
+                                    const NaClOp* op,
+                                    NaClOpFlag flag,
+                                    const char* flag_name) {
+  if (op->flags & NACL_OPFLAG(flag)) {
+    gprintf(f, "%s", flag_name);
+  }
+}
+
 /* Print the given instruction opcode of the give state, to the
  * given file.
  */
@@ -347,7 +359,25 @@ static void NaClPrintDisassembled(struct Gio* file,
   Bool not_printed_prefix_segment = TRUE;
   NaClExp* node;
   NaClExpVector* vector = NaClInstStateExpVector(state);
-  NaClPrintLower(file, (char*) NaClMnemonicName(inst->name));
+
+  /* Print the name of the instruction. */
+  if (NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction))) {
+    /* Instruction has been simplified. Print out corresponding
+     * hints to the reader, so that they know that the instruction
+     * has been simplified.
+     */
+    gprintf(file, "[P] ");
+    NaClPrintLower(file, (char*) NaClMnemonicName(inst->name));
+    if (NaClHasBit(inst->flags, NACL_IFLAG(NaClIllegal))) {
+      gprintf(file, "(illegal)");
+    }
+  } else {
+    NaClPrintLower(file, (char*) NaClMnemonicName(inst->name));
+  }
+
+  /* Use the generated expression tree to print out (non-implicit) operands
+   * of the instruction.
+   */
   while (tree_index < vector->number_expr_nodes) {
     node = &vector->node[tree_index];
     if (node->kind != OperandReference ||
@@ -359,6 +389,24 @@ static void NaClPrintDisassembled(struct Gio* file,
         gprintf(file, ", ");
       }
       NaClPrintDisassembledExp(file, vector, tree_index);
+
+      /* If this is a partial instruction, add set/use information
+       * so that that it is more clear what was matched.
+       */
+      if (NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction)) &&
+          node->kind == OperandReference) {
+        const NaClOp* op = NaClGetInstOperand(state->decoder_tables,
+                                              inst, (uint8_t) node->value);
+        if (NaClHasBit(op->flags, (NACL_OPFLAG(OpSet) |
+                                   NACL_OPFLAG(OpUse) |
+                                   NACL_OPFLAG(OperandZeroExtends_v)))) {
+          gprintf(file, " (");
+          NaClPrintAddOperandFlag(file, op, OpSet, "s");
+          NaClPrintAddOperandFlag(file, op, OpUse, "u");
+          NaClPrintAddOperandFlag(file, op, OperandZeroExtends_v, "z");
+          gprintf(file, ")");
+        }
+      }
     } else if (not_printed_prefix_segment &&
                (OperandReference == node->kind) &&
                (node->flags & NACL_EFLAG(ExprImplicit))) {

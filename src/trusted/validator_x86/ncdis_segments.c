@@ -17,12 +17,18 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
+#include "native_client/src/trusted/validator_x86/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
+/* True if the full decoder (iterator model) should be used. */
 Bool NACL_FLAGS_use_iter = (64 == NACL_TARGET_SUBARCH);
 
+/* True if internal details should be printed as part of the disassembly. */
 Bool NACL_FLAGS_internal = FALSE;
+
+/* True if validator decoder tables should be used. */
+Bool NACL_FLAGS_validator_decoder = FALSE;
 
 static const char* kHardCodedMessage = "[hard coded]";
 
@@ -82,6 +88,12 @@ static void NaClInstPrintOpcodeSeq(struct Gio* gout,
   }
 }
 
+static const struct NaClDecodeTables* NaClGetDecoderTables() {
+  return NACL_FLAGS_validator_decoder
+      ? kNaClValDecoderTables
+      : kNaClDecoderTables;
+}
+
 void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
                             NaClMemorySize size) {
   if (NACL_FLAGS_use_iter) {
@@ -89,7 +101,7 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
     NaClInstIter* iter;
     struct Gio* gout = NaClLogGetGio();
     NaClSegmentInitialize(mbase, vbase, size, &segment);
-    iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
+    iter = NaClInstIterCreate(NaClGetDecoderTables(), &segment);
     if (NULL == iter) {
       gprintf(NaClLogGetGio(), "Error: not enough memory\n");
     } else {

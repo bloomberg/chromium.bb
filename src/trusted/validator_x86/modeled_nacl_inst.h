@@ -51,8 +51,7 @@ typedef struct NaClModeledInst {
   /* The number of operands modeled for this instruction. */
   uint8_t num_operands;
   /* The corresponding models of the operands. */
-  /* NaClOp operands[NACL_MAX_NUM_OPERANDS]; */
-  const NaClOp* operands;
+  NaClOp* operands;
   /* Pointer to the next pattern to try and match for the
    * given sequence of opcode bytes.
    */

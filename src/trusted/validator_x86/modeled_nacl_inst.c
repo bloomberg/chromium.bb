@@ -22,6 +22,18 @@ void NaClSetOpcodePlusR(uint8_t value, uint8_t *opcode_ext) {
   *opcode_ext += value;
 }
 
+/* Print the flag name if the flag is defined for the corresponding operand.
+ * Used to print out set/use/zero extend information for partial instructions.
+ */
+static void NaClPrintAddOperandFlag(struct Gio* f,
+                                    const NaClOp* op,
+                                    NaClOpFlag flag,
+                                    const char* flag_name) {
+  if (op->flags & NACL_OPFLAG(flag)) {
+    gprintf(f, "%s", flag_name);
+  }
+}
+
 void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
   int i;
   int count = 2;
@@ -73,7 +85,24 @@ void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
       ((inst->flags & NACL_IFLAG(Opcode0F0F)))) {
     Bool is_first = TRUE;
     int i;
-    gprintf(f, "    %s", NaClMnemonicName(inst->name));
+    gprintf(f, "    ");
+
+    /* Instruction has been simplified. Print out corresponding
+     * hints to the reader, so that they know that the instruction
+     * has been simplified.
+     */
+    if (NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction))) {
+      gprintf(f, "[P] ");
+    }
+    gprintf(f, "%s", NaClMnemonicName(inst->name));
+
+    /* If an instruction has been simplified, and it illegal, communicate
+     * that in the printed modeled instruction.
+     */
+    if (NaClHasBit(inst->flags, NACL_IFLAG(NaClIllegal)) &&
+        NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction))) {
+      gprintf(f, "(illegal)");
+    }
     for (i = 0; i < inst->num_operands; ++i) {
       if (NULL == inst->operands[i].format_string) continue;
       if (is_first) {
@@ -82,6 +111,22 @@ void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
         gprintf(f, ",");
       }
       gprintf(f, " %s", inst->operands[i].format_string);
+
+      /* If this is a partial instruction, add set/use information
+       * so that that it is more clear what was matched.
+       */
+      if (NaClHasBit(inst->flags, NACL_IFLAG(PartialInstruction))) {
+        const NaClOp* op = inst->operands + i;
+        if (NaClHasBit(op->flags, (NACL_OPFLAG(OpSet) |
+                                   NACL_OPFLAG(OpUse) |
+                                   NACL_OPFLAG(OperandZeroExtends_v)))) {
+          gprintf(f, " (");
+          NaClPrintAddOperandFlag(f, op, OpSet, "s");
+          NaClPrintAddOperandFlag(f, op, OpUse, "u");
+          NaClPrintAddOperandFlag(f, op, OperandZeroExtends_v, "z");
+          gprintf(f, ")");
+        }
+      }
     }
     gprintf(f, "\n");
     /* Now print actual encoding of each operand. */

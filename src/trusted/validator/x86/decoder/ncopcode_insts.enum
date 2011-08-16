@@ -1,7 +1,21 @@
 # Define instruction mnemonics enumerated type.
 # Each line defines a separate instruction mnemonic.
 # Note: No need to sort, the generator will do this.
-Invalid  # Special marker for problems parsing instructions.
+#
+# Special names for communicating instruction patterns, when decoder
+# tables are simplified and no longer represent actual x86 instructions:
+#
+DontCare         # Instruction name is not needed.
+DontCareJump     # Generic jump instruction name.
+DontCareCondJump # Generic conditional jump instruction name.
+#
+# Speical marker used to mark instructions that correspond to opcodes
+# that do not define a valid x86 instruction.
+#
+Invalid
+#
+# instruction mnemonics:
+#
 Aaa
 Aad
 Aam

@@ -17,6 +17,10 @@
 #define NaClHasBit(set, bit) ((set) & (bit))
 #define NaClExcludesBit(set, bit) (~(set) & bit)
 
+/* Readability macros for changing bitsets. */
+#define NaClAddBits(set, bits) (set |= (bits))
+#define NaClRemoveBits(set, bits) (set &= ~(bits))
+
 EXTERN_C_BEGIN
 
 /* Defines the corresponding byte encodings for each of the prefixes. */

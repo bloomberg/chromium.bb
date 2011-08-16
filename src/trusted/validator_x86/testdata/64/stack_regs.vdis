@@ -1,0 +1,15 @@
+0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+0000000000000002: 90                                           [P] dontcare
+0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+0000000000000006: 8d 65 00                                     lea %esp, [%rbp]
+0000000000000009: 4c 01 fc                                     add %rsp, %r15
+000000000000000c: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+000000000000000e: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+0000000000000012: 31 ec                                        [P] dontcare %esp (suz), %ebp (u)
+0000000000000014: 4a 8d 24 3c                                  lea %rsp, [%rsp+%r15*1]
+0000000000000018: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+000000000000001a: 4a 8d 6c 3d 00                               lea %rbp, [%rbp+%r15*1]
+000000000000001f: 89 c0                                        mov %eax, %eax
+0000000000000021: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+0000000000000025: 89 c0                                        mov %eax, %eax
+0000000000000027: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]

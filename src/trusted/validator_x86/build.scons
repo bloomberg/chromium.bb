@@ -125,6 +125,7 @@ ncdecode_tablegen = gen_env.ComponentProgram(
     'ncdecode_tablegen',
     ['ncdecode_tablegen.c',
      'nc_compress.c',
+     'ncval_simplify.c',
      'ncdecode_forms.c',
      'zero_extends.c',
      'nc_def_jumps.c',
@@ -155,18 +156,21 @@ if generate:
   #
   # Generate 32 and 64 bit versions of nc_opcode_table and nc_subregs
   #
-  for filename in ['nc_opcode_table', 'nc_subregs']:
+  for filename in ['nc_opcode_table', 'nc_subregs', 'ncval_reg_sfi_opcode_table']:
     for bits in ['32', '64']:
       fullname = '%s/gen/%s_%s.h' % (val_src_dir, filename, bits)
       exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'
       if filename == 'nc_subregs':
         cmd_line = '%s -m%s -nacl_subregs %s'% (exe_path, bits, fullname)
+      elif filename == 'ncval_reg_sfi_opcode_table':
+        cmd_line = '%s -m%s -validator_decoder %s'% (exe_path, bits, fullname)
       else:
         cmd_line = '%s -m%s %s'% (exe_path, bits, fullname)
       out = gen_env.Command(env.File(fullname), exe_path, cmd_line)
-  #    gen_env.Alias('valgen', source=[exe_path], action=[Action(cmd_line)])
       tables.append(fullname)
 
+  # Generate 32 and 64 bit versions of ncval_opcode_table (validator
+  # decoder tables)
   gen_list = enum_headers + tables
   gen_env.AlwaysBuild(
       gen_env.Alias('valgen', gen_list))
@@ -255,6 +259,7 @@ env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi_verbose'),
 # of both x86-32 and x86-64 validators.
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
                           ['ncdis_segments.c',
+                           'ncval_decode_tables.c',
                            'ncval_driver.c',
                            'nc_read_segment.c',
                            'ncenuminsts.c'])
@@ -415,6 +420,20 @@ test_env.AddNodeToTestSuite(ncdis_internal_test,
                             ['small_tests'],
                             NCDIS_ITER_TEST_NAME)
 
+# Same as above, but using validator decoder as well.
+ncdis_iter_internal_vd_golden = test_env.File(TESTDATA_SUBARCH_DIR +
+                                              'ncdis_iter_test.internal_vd')
+
+ncdis_internal_vd_test = test_env.CommandTest(
+    NCDIS_ITER_TEST_NAME + '_int_vd.out',
+    [ncdis, '--use_iter', '--internal', '--validator_decoder', '--commands=-'],
+    stdin=ncdis_iter_input_golden,
+    stdout_golden=ncdis_iter_internal_vd_golden)
+
+test_env.AddNodeToTestSuite(ncdis_internal_vd_test,
+                            ['small_tests'],
+                            NCDIS_ITER_TEST_NAME)
+
 # ======================================================================
 # Segment register validator.
 ncval = test_env.ComponentProgram(
@@ -450,17 +469,18 @@ if env.Bit('target_x86_32'):
 
 # Run tests using ncdis on test files. Assumes that extension
 # dis implies to use the iterator model, while ndis does not.
-def __AddNcDisTests(use_iter):
+def __AddNcDisTests(use_iter, validator_decoder):
   test = 'ncdis_hex'
-  if use_iter:
-    ext = 'dis'
-  else:
-    ext = 'ndis'
   options = ['--hex_text=-']
   if use_iter:
+    ext = 'dis'
     options.append('--use_iter');
   else:
+    ext = 'ndis'
     options.append('--use_iter=false');
+  if validator_decoder:
+    ext = 'v' + ext
+    options.append('--validator_decoder')
   for base in __GoldenBases(ext):
     node_dis = test_env.CommandTest(
         __OutTestFile(test, base, ext),
@@ -470,8 +490,9 @@ def __AddNcDisTests(use_iter):
     __AddTest(test, test_env, base, ext, node_dis,
               ['small_tests', 'validator_tests'])
 
-__AddNcDisTests(True)
-__AddNcDisTests(False)
+for use_iter in [False, True]:
+  for validator_decoder in [False, True]:
+    __AddNcDisTests(use_iter, validator_decoder)
 
 # Run tests using ncval --use_iter, on test files. Assume that write sandbox
 # tests use extension 'val' while read/write sandbox tests use extension
@@ -583,20 +604,23 @@ __AddNcValStuboutTests(False)
 
 # Run test to see if we have changed the set of modeled instructions.
 def __AddModeledInstsTest():
-  test = 'test'
-  base = 'modeled_insts'
-  ext = 'txt'
-  command = [ncdecode_tablegen,
-             '-m%s' % (env['TARGET_SUBARCH']),
-             '-documentation']
-  model = test_env.CommandTest(
-      __OutTestFile(test, base, ext),
-      command,
-      stdout_golden = __BaseTestFile(base, ext))
-  __AddTest(test, test_env, base, ext, model,
-            ['small_tests',
-             'validator_tests',
-             'validator_modeling'])
+  for prefix in ['' , 'ncval_reg_sfi_']:
+    test = 'test'
+    base = prefix + 'modeled_insts'
+    ext = 'txt'
+    command = [ncdecode_tablegen,
+               '-m%s' % (env['TARGET_SUBARCH']),
+               '-documentation']
+    if prefix == 'ncval_reg_sfi_':
+      command.append('-validator_decoder')
+    model = test_env.CommandTest(
+        __OutTestFile(test, base, ext),
+        command,
+        stdout_golden = __BaseTestFile(base, ext))
+    __AddTest(test, test_env, base, ext, model,
+              ['small_tests',
+               'validator_tests',
+               'validator_modeling'])
 
 __AddModeledInstsTest()
 
