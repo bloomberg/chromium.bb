@@ -61,6 +61,13 @@
 
 #include <AvailabilityMacros.h>
 
+#if defined(MAC_OS_X_VERSION_10_6) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6  // SDK >= 10.6
+// Get the system's own declarations of these things if using an SDK where
+// they are present.
+#include <Block.h>
+#endif  // SDK >= 10.6
+
 extern "C" {
 
 #if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_5  // DT <= 10.5
@@ -69,11 +76,29 @@ extern "C" {
 #define MAYBE_WEAK_IMPORT
 #endif  // DT <= 10.5
 
+MAYBE_WEAK_IMPORT extern void* _Block_copy(const void*);
+MAYBE_WEAK_IMPORT extern void _Block_release(const void*);
+MAYBE_WEAK_IMPORT extern void _Block_object_assign(void*,
+                                                   const void*,
+                                                   const int);
+MAYBE_WEAK_IMPORT extern void _Block_object_dispose(const void*, const int);
+
 MAYBE_WEAK_IMPORT extern void* _NSConcreteGlobalBlock[32];
 MAYBE_WEAK_IMPORT extern void* _NSConcreteStackBlock[32];
 
 #undef MAYBE_WEAK_IMPORT
 
 }  // extern "C"
+
+// Macros from <Block.h>, in case <Block.h> is not present.
+
+#ifndef Block_copy
+#define Block_copy(...) \
+    ((__typeof(__VA_ARGS__))_Block_copy((const void *)(__VA_ARGS__)))
+#endif
+
+#ifndef Block_release
+#define Block_release(...) _Block_release((const void *)(__VA_ARGS__))
+#endif
 
 #endif  // CHROME_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_

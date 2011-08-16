@@ -7,10 +7,11 @@
 #
 # This file provides symbols for _NSConcreteGlobalBlock and
 # _NSConcreteStackBlock, normally present in libSystem.dylib and provided by
-# by libclosure-38/data.c in Mac OS X 10.6 and later. When using the 10.5 SDK,
-# the symbols are not present. This file's definition can be used with extreme
-# care in an application that needs to use the 10.5 SDK in conjunction with
-# blocks.
+# by libclosure-38/data.c in Mac OS X 10.6 and later. It also provides symbols
+# for various block runtime functions provided by libclosure-38/runtime.c.
+# When using the 10.5 SDK, the symbols are not present. This file's definition
+# can be used with extreme care in an application that needs to use the 10.5
+# SDK in conjunction with blocks.
 #
 # This file cooperates with the build system to produce a dynamic library
 # that, when linked against, causes dependents to look in libSystem for the
@@ -36,7 +37,18 @@
     .globl name ## ;\
     name ## :
 
+.text
+
+# Mac OS X 10.6.8 libclosure-38/runtime.c
+
+DEFINE_GLOBAL_SYMBOL(__Block_copy)
+DEFINE_GLOBAL_SYMBOL(__Block_release)
+DEFINE_GLOBAL_SYMBOL(__Block_object_assign)
+DEFINE_GLOBAL_SYMBOL(__Block_object_dispose)
+
 .section __DATA,__data
+
+# Mac OS X 10.6.8 libclosure-38/data.c
 
 DEFINE_GLOBAL_SYMBOL(__NSConcreteGlobalBlock)
 DEFINE_GLOBAL_SYMBOL(__NSConcreteStackBlock)
