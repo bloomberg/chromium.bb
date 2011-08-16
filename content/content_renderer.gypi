@@ -219,6 +219,11 @@
             ],
           },
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
         ['enable_webrtc==1', {
           'dependencies': [
             '../third_party/webrtc/modules/video_capture/main/source/video_capture.gyp:video_capture_module',
