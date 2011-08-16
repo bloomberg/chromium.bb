@@ -382,8 +382,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 }
 
+#if defined(OS_WIN)
+// Bug 93158.
+#define MAYBE_ReloadExtension FLAKY_ReloadExtension
+#else
+#define MAYBE_ReloadExtension ReloadExtension
+#endif
+
 // Regression test for http://crbug.com/18693.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
