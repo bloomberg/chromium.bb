@@ -75,3 +75,13 @@ void *_realloc_r(struct _reent *ignored, void *ptr, size_t size) {
 void _free_r(struct _reent *ignored, void *ptr) {
   free(ptr);
 }
+
+/*
+ * This must never be called.  It's here to catch any stray calls.
+ */
+void *sbrk(intptr_t increment) {
+  static const char msg[] = "BUG! IRT code called sbrk\n";
+  write(2, msg, sizeof(msg) - 1);
+  _exit(-1);
+  return NULL;
+}

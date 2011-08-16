@@ -92,12 +92,23 @@ sys_private = [
     ]
 
 if not env.Bit('nacl_glibc'):
-  blockhook = env.ComponentObject(
-      'private_blockhook.o', '${MAIN_DIR}/src/untrusted/irt/irt_blockhook.c')
-  sys_private += [
-      blockhook,
-      'gc_hooks_private.c',
-      'sys_private.c',
-      ]
+  sys_private.append(env.ComponentObject(
+      'private_blockhook', '${MAIN_DIR}/src/untrusted/irt/irt_blockhook.c'))
+  # We must combine these all into a single .o file so that there is no
+  # danger of some of this code not being brought in from the archive, and
+  # later getting the IRT-based versions from libnacl instead.  e.g., if
+  # your test calls only malloc (defined in -lc) and malloc is the only
+  # caller of sbrk, then when processing -lsys_private (before -lc) the
+  # linker will omit sbrk_private.o, and only when processing -lc (which
+  # implicitly includes -lnacl) will it try to pull in some definition of
+  # sbrk--so it will get the libnacl one instead of the libsys_private one.
+  # Putting everything important into a single .o file avoids this scenario.
+  private_combine = [env.ComponentObject(module, '%s.c' % module)
+                     for module in ['gc_hooks_private',
+                                    'sbrk_private',
+                                    'sys_private']]
+  sys_private.append(env.Command('combined_private${OBJSUFFIX}',
+                                 private_combine,
+                                 '${LD} -relocatable -o ${TARGET} ${SOURCES}'))
 
 env.ComponentLibrary('libnacl_sys_private', sys_private)

@@ -23,7 +23,6 @@ else:
 irt_support_sources = [
     'irt_entry.c',
     'irt_malloc.c',
-    'irt_sbrk.c',
     'irt_private_pthread.c',
     'irt_private_tls.c',
     ]
@@ -61,7 +60,10 @@ irt_support_objs += [
     for module in ['nc_mutex', 'nc_condvar', 'nc_token']
     ]
 
-irt_support_libs = ['nacl_sys_private']
+irt_support_objs += [
+    blob_env.ComponentObject('sys_private',
+                             '${MAIN_DIR}/src/untrusted/nacl/sys_private.c'),
+    ]
 
 if env.Bit('target_arm'):
   blob_env.Append(LINKFLAGS='--pnacl-allow-native')
@@ -80,7 +82,7 @@ irt_browser = ['irt_interfaces_ppapi.c',
 
 def LinkIrt(output, files, libs):
   return blob_env.ComponentProgram(output, irt_support_objs + files,
-                                   EXTRA_LIBS=libs + irt_support_libs)
+                                   EXTRA_LIBS=libs)
 
 irt_core_library = LinkIrt('irt_core', irt_nonbrowser, [])
 irt_library = LinkIrt('irt', irt_browser, ['ppruntime',

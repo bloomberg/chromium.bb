@@ -83,32 +83,6 @@ long int sysconf(int name) {
   return value;
 }
 
-/*
- * This has to be weak because the IRT defines its own version.
- */
-__attribute__((weak)) void *sbrk(intptr_t increment) {
-  static void *current_break;
-  void *old_break;
-  void *new_break;
-
-  if (0 == current_break)
-    current_break = NACL_SYSCALL(sysbrk)(0);
-
-  old_break = current_break;
-  new_break = old_break + increment;
-
-  if (new_break != old_break) {
-    new_break = NACL_SYSCALL(sysbrk)(new_break);
-    if (new_break == old_break) {
-      errno = ENOMEM;
-      return (void *) -1;
-    }
-    current_break = new_break;
-  }
-
-  return old_break;
-}
-
 void *mmap(void *start, size_t length, int prot, int flags,
            int fd, off_t offset) {
   uint32_t rv = (uintptr_t) NACL_SYSCALL(mmap)(start, length, prot, flags,
