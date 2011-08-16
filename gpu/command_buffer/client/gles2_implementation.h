@@ -87,7 +87,7 @@ class IdHandlerInterface {
   virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) = 0;
 
   // Frees some ids.
-  virtual void FreeIds(GLsizei n, const GLuint* ids) = 0;
+  virtual bool FreeIds(GLsizei n, const GLuint* ids) = 0;
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
   virtual bool MarkAsUsedForBind(GLuint id) = 0;
@@ -156,7 +156,8 @@ class GLES2Implementation {
       size_t transfer_buffer_size,
       void* transfer_buffer,
       int32 transfer_buffer_id,
-      bool share_resources);
+      bool share_resources,
+      bool bind_generates_resource = true);  // Will remove in 2 CLs!
 
   ~GLES2Implementation();
 
@@ -177,7 +178,6 @@ class GLES2Implementation {
   void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
-  void DeleteProgramOrShaderHelper(GLuint program_or_shader);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
   GLint GetUniformLocationHelper(GLuint program, const char* name);
   bool GetActiveAttribHelper(
@@ -383,6 +383,8 @@ class GLES2Implementation {
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* renderbuffers);
   void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
+  bool DeleteProgramHelper(GLuint program);
+  bool DeleteShaderHelper(GLuint shader);
 
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);
@@ -473,6 +475,8 @@ class GLES2Implementation {
 
   // Whether or not this context is sharing resources.
   bool sharing_resources_;
+
+  bool bind_generates_resource_;
 
   // Map of GLenum to Strings for glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.

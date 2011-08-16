@@ -11,10 +11,6 @@
 #include <utility>
 #include "../common/types.h"
 
-// TODO(apatrick): Having regular GL flush semantics on the client side, it
-// probably isn't necessary to round trip to the service to allocate IDs.
-// Retire this code.
-
 namespace gpu {
 
 // A resource ID, key to the resource maps.

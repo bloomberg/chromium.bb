@@ -94,6 +94,7 @@ RendererGLContext* RendererGLContext::CreateViewContext(
       render_view_id,
       gfx::Size(),
       share_resources,
+      false,
       share_group,
       allowed_extensions,
       attrib_list,
@@ -129,6 +130,7 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
       0,
       size,
       share_resources,
+      false,
       share_group,
       allowed_extensions,
       attrib_list,
@@ -306,6 +308,7 @@ bool RendererGLContext::Initialize(bool onscreen,
                                    int render_view_id,
                                    const gfx::Size& size,
                                    bool share_resources,
+                                   bool bind_generates_resource,
                                    RendererGLContext* share_group,
                                    const char* allowed_extensions,
                                    const int32* attrib_list,
@@ -420,7 +423,8 @@ bool RendererGLContext::Initialize(bool onscreen,
       transfer_buffer.size,
       transfer_buffer.ptr,
       transfer_buffer_id_,
-      share_resources);
+      share_resources,
+      bind_generates_resource);
 
   size_ = size;
 

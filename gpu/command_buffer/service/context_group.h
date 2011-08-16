@@ -36,7 +36,7 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   typedef scoped_refptr<ContextGroup> Ref;
 
-  ContextGroup();
+  explicit ContextGroup(bool bind_generates_resource);
   ~ContextGroup();
 
   // This should only be called by GLES2Decoder.
@@ -46,6 +46,10 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   // Sets the ContextGroup has having a lost context.
   void set_have_context(bool have_context) {
     have_context_ = have_context;
+  }
+
+  bool bind_generates_resource() {
+    return bind_generates_resource_;
   }
 
   uint32 max_vertex_attribs() const {
@@ -113,6 +117,7 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   // Whether or not this context is initialized.
   bool initialized_;
   bool have_context_;
+  bool bind_generates_resource_;
 
   uint32 max_vertex_attribs_;
   uint32 max_texture_units_;

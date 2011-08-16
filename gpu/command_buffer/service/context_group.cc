@@ -16,9 +16,10 @@
 namespace gpu {
 namespace gles2 {
 
-ContextGroup::ContextGroup()
+ContextGroup::ContextGroup(bool bind_generates_resource)
     : initialized_(false),
       have_context_(true),
+      bind_generates_resource_(bind_generates_resource),
       max_vertex_attribs_(0u),
       max_texture_units_(0u),
       max_texture_image_units_(0u),

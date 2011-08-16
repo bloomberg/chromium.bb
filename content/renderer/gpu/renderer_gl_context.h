@@ -194,6 +194,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
                   int render_view_id,
                   const gfx::Size& size,
                   bool share_resources,
+                  bool bind_generates_resource,
                   RendererGLContext* share_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,

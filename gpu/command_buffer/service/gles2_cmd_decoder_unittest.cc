@@ -96,7 +96,8 @@ class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
         false,  // has stencil
         false,  // request alpha
         false,  // request depth
-        false); // request stencil
+        false,  // request stencil
+        true);   // bind generates resource
     SetupDefaultProgram();
   }
 };
@@ -3190,7 +3191,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
       false,   // has stencil
       true,    // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3220,7 +3222,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3250,7 +3253,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
       false,   // has stencil
       false,   // request alpha
       true,    // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3280,7 +3284,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3310,7 +3315,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
       true,    // has stencil
       false,   // request alpha
       false,   // request depth
-      true);   // request stencil
+      true,    // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3340,7 +3346,8 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
       true,    // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3370,7 +3377,8 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
       false,   // has stencil
       false,   // request alpha
       true,    // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   Enable cmd;
   cmd.Init(GL_DEPTH_TEST);
@@ -3426,7 +3434,8 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   Enable cmd;
   cmd.Init(GL_DEPTH_TEST);
@@ -3482,7 +3491,8 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
       true,    // has stencil
       false,   // request alpha
       false,   // request depth
-      true);   // request stencil
+      true,    // request stencil
+      true);   // bind generates resource
 
   Enable cmd;
   cmd.Init(GL_STENCIL_TEST);
@@ -3538,7 +3548,8 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
       true,    // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   Enable cmd;
   cmd.Init(GL_STENCIL_TEST);
@@ -3594,7 +3605,8 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
       true,    // has stencil
       false,   // request alpha
       true,    // request depth
-      true);   // request stencil
+      true,    // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3637,7 +3649,8 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
       true,    // has stencil
       false,   // request alpha
       true,    // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -3680,7 +3693,8 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
@@ -3756,7 +3770,8 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
@@ -4107,7 +4122,8 @@ TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleGLError) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   EXPECT_CALL(*gl_, GetError())
@@ -4169,7 +4185,8 @@ TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormats) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -4225,7 +4242,8 @@ TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -4296,7 +4314,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId));
   EXPECT_CALL(*gl_, GenTextures(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
@@ -4317,7 +4336,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
 
   EXPECT_CALL(*gl_, GetError())
@@ -4349,7 +4369,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
 
   TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
@@ -4368,7 +4389,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
 
@@ -4425,7 +4447,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
 
@@ -4464,7 +4487,8 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
       false,   // has stencil
       false,   // request alpha
       false,   // request depth
-      false);  // request stencil
+      false,   // request stencil
+      true);   // bind generates resource
 
   GLenum target = GL_TEXTURE_EXTERNAL_OES;
   GLint level = 0;
@@ -4483,6 +4507,38 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
 
   // TexImage2D is not allowed with GL_TEXTURE_EXTERNAL_OES targets.
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+
+  BindTexture cmd1;
+  cmd1.Init(GL_TEXTURE_2D, kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  BindBuffer cmd2;
+  cmd2.Init(GL_ARRAY_BUFFER, kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  BindFramebuffer cmd3;
+  cmd3.Init(GL_FRAMEBUFFER, kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd3));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  BindRenderbuffer cmd4;
+  cmd4.Init(GL_RENDERBUFFER, kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd4));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 // TODO(gman): Complete this test.

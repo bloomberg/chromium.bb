@@ -168,7 +168,8 @@ class GLES2DecoderTestBase : public testing::Test {
       bool has_stencil,
       bool request_alpha,
       bool request_depth,
-      bool request_stencil);
+      bool request_stencil,
+      bool bind_generates_resource);
 
   const ContextGroup& group() const {
     return *group_.get();

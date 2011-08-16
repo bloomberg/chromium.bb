@@ -36,7 +36,7 @@ class ContextGroupTest : public testing::Test {
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
-    group_ = ContextGroup::Ref(new ContextGroup());
+    group_ = ContextGroup::Ref(new ContextGroup(true));
   }
 
   virtual void TearDown() {

@@ -108,7 +108,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
   using gpu::GpuScheduler;
   std::vector<int32> attribs;
-  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup());
+  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
   scoped_ptr<GpuScheduler> gpu_scheduler(
       GpuScheduler::Create(command_buffer_.get(),
                            NULL,
@@ -160,7 +160,8 @@ EGLContext Display::CreateContext(EGLConfig config,
       buffer.size,
       buffer.ptr,
       transfer_buffer_id_,
-      share_resources));
+      share_resources,
+      true));
 
   context_->EnableFeatureCHROMIUM(
       "pepper3d_allow_buffers_on_multiple_targets");

@@ -3089,11 +3089,8 @@ class DeleteHandler(TypeHandler):
       arg.WriteClientSideValidationCode(file, func)
     file.Write(
         "  GPU_CLIENT_DCHECK(%s != 0);\n" % func.GetOriginalArgs()[-1].name)
-    file.Write("  DeleteProgramOrShaderHelper(%s);\n" %
-               func.GetOriginalArgs()[-1].name)
-    file.Write("  helper_->%s(%s);\n" %
-               (func.name, func.MakeCmdArgString("")))
-    file.Write("  Flush();\n")
+    file.Write("  %sHelper(%s);\n" %
+               (func.original_name, func.GetOriginalArgs()[-1].name))
     file.Write("}\n")
     file.Write("\n")
 
@@ -3222,8 +3219,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       code = """  %(name)sHelper(%(args)s);
-  helper_->%(name)sImmediate(%(args)s);
-  Flush();
 }
 
 """

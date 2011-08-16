@@ -90,7 +90,8 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
                                                 transfer_buffer.size,
                                                 transfer_buffer.ptr,
                                                 transfer_buffer_id,
-                                                false));
+                                                false,
+                                                true));
   return command_buffer.release() != NULL;
 }
 

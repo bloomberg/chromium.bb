@@ -130,13 +130,14 @@ const int32 GLES2MockCommandBufferHelper::kTransferBufferId;
 
 namespace gles2 {
 
-using testing::Return;
-using testing::Mock;
-using testing::Truly;
-using testing::Sequence;
-using testing::DoAll;
-using testing::Invoke;
 using testing::_;
+using testing::DoAll;
+using testing::InSequence;
+using testing::Invoke;
+using testing::Mock;
+using testing::Sequence;
+using testing::Truly;
+using testing::Return;
 
 ACTION_P(SetMemory, obj) {
   memcpy(arg0, &obj, sizeof(obj));
@@ -208,6 +209,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLint kMaxVertexUniformVectors = 128;
   static const GLint kNumCompressedTextureFormats = 0;
   static const GLint kNumShaderBinaryFormats = 0;
+  static const GLuint kStartId = 1024;
 
   GLES2ImplementationTest()
       : commands_(NULL),
@@ -216,6 +218,13 @@ class GLES2ImplementationTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    Initialize(false, true);
+  }
+
+  virtual void TearDown() {
+  }
+
+  void Initialize(bool shared_resources, bool bind_generates_resource) {
     offset_ = GLES2Implementation::kStartingOffset;
 
     command_buffer_.reset(new MockGLES2CommandBuffer());
@@ -249,17 +258,48 @@ class GLES2ImplementationTest : public testing::Test {
     AllocateTransferBuffer(sizeof(state));  // in
     uint32 offset = AllocateTransferBuffer(sizeof(state));  // out
 
-    EXPECT_CALL(*command_buffer_, OnFlush(_))
-        .WillOnce(SetMemoryAtOffset(offset, state))
-        .RetiresOnSaturation();
-    GetNextToken();  // eat the token that starting up will use.
+    {
+      InSequence sequence;
 
-    gl_.reset(new GLES2Implementation(
-        helper_.get(),
-        kTransferBufferSize,
-        transfer_buffer_.ptr,
-        kTransferBufferId,
-        false));
+      EXPECT_CALL(*command_buffer_, OnFlush(_))
+          .WillOnce(SetMemoryAtOffset(offset, state))
+          .RetiresOnSaturation();
+      GetNextToken();  // eat the token that starting up will use.
+
+      // Must match StrictSharedIdHandler::kNumIdsToGet.
+      GLuint num_ids = 2048;
+      scoped_array<GLuint> all_ids(new GLuint[num_ids]);
+      if (shared_resources) {
+        if (!bind_generates_resource) {
+          GLuint start = kStartId;
+          GLuint max_num_per = MaxTransferBufferSize() / sizeof(GLuint);
+          GLuint* ids = all_ids.get();
+          for (GLuint ii = 0; ii < num_ids; ++ii) {
+            ids[ii] = start + ii;
+          }
+          while (num_ids) {
+            GLuint num = std::min(num_ids, max_num_per);
+            size_t size = num * sizeof(ids[0]);
+            uint32 offset = AllocateTransferBuffer(size);
+            EXPECT_CALL(*command_buffer_, OnFlush(_))
+                .WillOnce(SetMemoryAtOffsetFromArray(offset, ids, size))
+                .RetiresOnSaturation();
+            GetNextToken();
+            start += num;
+            ids += num;
+            num_ids -= num;
+          }
+        }
+      }
+
+      gl_.reset(new GLES2Implementation(
+          helper_.get(),
+          kTransferBufferSize,
+          transfer_buffer_.ptr,
+          kTransferBufferId,
+          shared_resources,
+          bind_generates_resource));
+    }
 
     EXPECT_CALL(*command_buffer_, OnFlush(_))
         .Times(1)
@@ -269,9 +309,6 @@ class GLES2ImplementationTest : public testing::Test {
     commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
                 command_buffer_->GetState().put_offset;
     ClearCommands();
-  }
-
-  virtual void TearDown() {
   }
 
   const void* GetPut() {
@@ -332,6 +369,13 @@ class GLES2ImplementationTest : public testing::Test {
   scoped_ptr<GLES2Implementation> gl_;
   int token_;
   uint32 offset_;
+};
+
+class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
+ protected:
+  virtual void SetUp() {
+    Initialize(true, false);
+  }
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -1684,6 +1728,78 @@ TEST_F(GLES2ImplementationTest, TexImage2DSubRows) {
       kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
       pixels.get() + padded_row_size + part_size,
       GetTransferAddressFromOffsetAs<uint8>(offset4, part_size)));
+}
+
+// Test that GenBuffer does not call GenSharedIds.
+// This is because with client side arrays on we know the StrictSharedIdHandler
+// for buffers has already gotten a set of ids
+TEST_F(GLES2ImplementationStrictSharedTest, GenBuffer) {
+  // Starts at + 2 because client side arrays take first 2 ids.
+  GLuint ids[3] = { kStartId + 2, kStartId + 3, kStartId + 4 };
+  struct Cmds {
+    GenBuffersImmediate gen;
+    GLuint data[3];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  gl_->GenBuffers(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_NE(0u, ids[0]);
+  EXPECT_NE(0u, ids[1]);
+  EXPECT_NE(0u, ids[2]);
+}
+
+// Binds can not be cached with bind_generates_resource = false because
+// our id might not be valid.
+TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
+  struct PNameValue {
+    GLenum pname;
+    GLint expected;
+  };
+  const PNameValue pairs[] = {
+    { GL_TEXTURE_BINDING_2D, 1, },
+    { GL_TEXTURE_BINDING_CUBE_MAP, 2, },
+    { GL_FRAMEBUFFER_BINDING, 3, },
+    { GL_RENDERBUFFER_BINDING, 4, },
+    { GL_ARRAY_BUFFER_BINDING, 5, },
+    { GL_ELEMENT_ARRAY_BUFFER_BINDING, 6, },
+  };
+  size_t num_pairs = sizeof(pairs) / sizeof(pairs[0]);
+  for (size_t ii = 0; ii < num_pairs; ++ii) {
+    const PNameValue& pv = pairs[ii];
+    GLint v = -1;
+    EXPECT_CALL(*command_buffer_, OnFlush(_))
+        .WillOnce(SetMemory(SizedResultHelper<GLuint>(pv.expected)))
+        .RetiresOnSaturation();
+    gl_->GetIntegerv(pv.pname, &v);
+    EXPECT_EQ(pv.expected, v);
+  }
+}
+
+TEST_F(GLES2ImplementationStrictSharedTest, CanNotDeleteIdsWeDidNotCreate) {
+  GLuint id = 0x12345678;
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  gl_->DeleteBuffers(1, &id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  gl_->DeleteFramebuffers(1, &id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  gl_->DeleteRenderbuffers(1, &id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  gl_->DeleteTextures(1, &id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  gl_->DeleteProgram(id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  gl_->DeleteShader(id);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 
 }  // namespace gles2

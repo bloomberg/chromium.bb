@@ -92,7 +92,8 @@ bool Graphics3DImpl::CreateGLES2Impl(int32 command_buffer_size,
       transfer_buffer.size,
       transfer_buffer.ptr,
       transfer_buffer_id_,
-      false));
+      false,
+      true));
 
   return true;
 }
