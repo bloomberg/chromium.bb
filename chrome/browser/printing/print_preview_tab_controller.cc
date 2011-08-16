@@ -4,7 +4,10 @@
 
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 
+#include <vector>
+
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -14,12 +17,53 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/plugin_service.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
+
+using webkit::npapi::PluginGroup;
+using webkit::npapi::PluginList;
+using webkit::WebPluginInfo;
+
+namespace {
+
+void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
+  // Always enable the internal PDF plugin for the print preview page.
+  string16 internal_pdf_group_name(
+      ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
+  PluginGroup* internal_pdf_group = NULL;
+  std::vector<PluginGroup> plugin_groups;
+  PluginList::Singleton()->GetPluginGroups(false, &plugin_groups);
+  for (size_t i = 0; i < plugin_groups.size(); ++i) {
+    if (plugin_groups[i].GetGroupName() == internal_pdf_group_name) {
+      internal_pdf_group = &plugin_groups[i];
+      break;
+    }
+  }
+  if (internal_pdf_group) {
+    std::vector<WebPluginInfo> plugins = internal_pdf_group->web_plugin_infos();
+    DCHECK_EQ(plugins.size(), 1U);
+
+    PluginService::OverriddenPlugin plugin;
+    plugin.render_process_id = preview_tab->render_view_host()->process()->id();
+    plugin.render_view_id = preview_tab->render_view_host()->routing_id();
+    plugin.plugin = plugins[0];
+    plugin.plugin.enabled = WebPluginInfo::USER_ENABLED;
+
+    PluginService::GetInstance()->OverridePluginForTab(plugin);
+  }
+}
+
+}  // namespace
 
 namespace printing {
 
@@ -223,6 +267,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
       GetWrapperIndex(initiator_tab) + 1;
   browser::Navigate(&params);
   TabContentsWrapper* preview_tab = params.target_contents;
+  EnableInternalPDFPluginForTab(preview_tab);
   static_cast<RenderViewHostDelegate*>(preview_tab->tab_contents())->Activate();
 
   // Add an entry to the map.

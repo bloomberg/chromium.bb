@@ -4,8 +4,6 @@
 
 #include "content/browser/plugin_service.h"
 
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
@@ -360,7 +358,8 @@ bool PluginService::GetPluginInfo(int render_process_id,
     for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
       if (overridden_plugins_[i].render_process_id == render_process_id &&
           overridden_plugins_[i].render_view_id == render_view_id &&
-          overridden_plugins_[i].url == url) {
+          (overridden_plugins_[i].url == url ||
+           overridden_plugins_[i].url.is_empty())) {
         if (actual_mime_type)
           *actual_mime_type = mime_type;
         *info = overridden_plugins_[i].plugin;
@@ -487,10 +486,10 @@ PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
     const FilePath& plugin_path) {
   PepperPluginInfo* info = NULL;
   for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
-   if (ppapi_plugins_[i].path == plugin_path) {
-     info = &ppapi_plugins_[i];
-     break;
-   }
+    if (ppapi_plugins_[i].path == plugin_path) {
+      info = &ppapi_plugins_[i];
+      break;
+    }
   }
   return info;
 }

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -49,7 +50,7 @@ class PluginService
   struct OverriddenPlugin {
     int render_process_id;
     int render_view_id;
-    GURL url;
+    GURL url;  // If empty, the override applies to all urls in render_view.
     webkit::WebPluginInfo plugin;
   };
 
