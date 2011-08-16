@@ -81,10 +81,10 @@ class MockChromotingHostContext : public ChromotingHostContext {
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(jingle_thread, JingleThread*());
+  MOCK_METHOD0(ui_message_loop, base::MessageLoopProxy*());
   MOCK_METHOD0(main_message_loop, MessageLoop*());
   MOCK_METHOD0(encode_message_loop, MessageLoop*());
   MOCK_METHOD0(network_message_loop, base::MessageLoopProxy*());
-  MOCK_METHOD0(ui_message_loop, MessageLoop*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockChromotingHostContext);

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stringize_macros.h"
+#include "remoting/base/plugin_message_loop_proxy.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -58,7 +59,7 @@ base::AtExitManager* g_at_exit_manager = NULL;
 // NPAPI plugin implementation for remoting host.
 // Documentation for most of the calls in this class can be found here:
 // https://developer.mozilla.org/en/Gecko_Plugin_API_Reference/Scripting_plugins
-class HostNPPlugin {
+class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
  public:
   // |mode| is the display mode of plug-in. Values:
   // NP_EMBED: (1) Instance was created by an EMBED tag and shares the browser
@@ -66,7 +67,10 @@ class HostNPPlugin {
   // NP_FULL: (2) Instance was created by a separate file and is the primary
   //              content in the window.
   HostNPPlugin(NPP instance, uint16 mode)
-    : instance_(instance), scriptable_object_(NULL) {}
+      : instance_(instance),
+        scriptable_object_(NULL),
+        np_thread_id_(base::PlatformThread::CurrentId()) {
+  }
 
   ~HostNPPlugin() {
     if (scriptable_object_) {
@@ -146,9 +150,47 @@ class HostNPPlugin {
     return scriptable_object_;
   }
 
+  // PluginMessageLoopProxy::Delegate implementation.
+  virtual bool RunOnPluginThread(
+      int delay_ms, void(function)(void*), void* data) OVERRIDE {
+    if (delay_ms == 0) {
+      g_npnetscape_funcs->pluginthreadasynccall(instance_, function, data);
+    } else {
+      base::AutoLock auto_lock(timers_lock_);
+      uint32_t timer_id = g_npnetscape_funcs->scheduletimer(
+          instance_, delay_ms, false, &NPDelayedTaskSpringboard);
+      DelayedTask task = {function, data};
+      timers_[timer_id] = task;
+    }
+    return true;
+  }
+
+  virtual bool IsPluginThread() OVERRIDE {
+    return np_thread_id_ == base::PlatformThread::CurrentId();
+  }
+
+  static void NPDelayedTaskSpringboard(NPP npp, uint32_t timer_id) {
+    HostNPPlugin* self = reinterpret_cast<HostNPPlugin*>(npp->pdata);
+    DelayedTask task;
+    {
+      base::AutoLock auto_lock(self->timers_lock_);
+      std::map<uint32_t, DelayedTask>::iterator it =
+          self->timers_.find(timer_id);
+      CHECK(it != self->timers_.end());
+      task = it->second;
+      self->timers_.erase(it);
+    }
+    task.function(task.data);
+  }
+
  private:
   struct ScriptableNPObject : public NPObject {
     HostNPScriptObject* scriptable_object;
+  };
+
+  struct DelayedTask {
+    void (*function)(void*);
+    void* data;
   };
 
   static HostNPScriptObject* ScriptableFromObject(NPObject* obj) {
@@ -160,10 +202,11 @@ class HostNPPlugin {
     ScriptableNPObject* object =
         reinterpret_cast<ScriptableNPObject*>(
             g_npnetscape_funcs->memalloc(sizeof(ScriptableNPObject)));
+    HostNPPlugin* plugin = reinterpret_cast<HostNPPlugin*>(npp->pdata);
 
     object->_class = aClass;
     object->referenceCount = 1;
-    object->scriptable_object = new HostNPScriptObject(npp, object);
+    object->scriptable_object = new HostNPScriptObject(npp, object, plugin);
     if (!object->scriptable_object->Init()) {
       Deallocate(object);
       object = NULL;
@@ -290,6 +333,10 @@ class HostNPPlugin {
 
   NPP instance_;
   NPObject* scriptable_object_;
+
+  base::PlatformThreadId np_thread_id_;
+  std::map<uint32_t, DelayedTask> timers_;
+  base::Lock timers_lock_;
 };
 
 // Utility functions to map NPAPI Entry Points to C++ Objects.
