@@ -111,6 +111,12 @@
               'product_name': 'ppGoogleNaClPluginChrome',
               'product_extension': 'plugin',
             }],
+            ['OS=="mac" and mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+            }],
             ['OS=="win"', {
               'dependencies': [
                 '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
