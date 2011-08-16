@@ -380,7 +380,7 @@ TEST(MessageTest, Response) {
   EXPECT_EQ(dbus::Message::MESSAGE_METHOD_RETURN, response.GetMessageType());
 }
 
-TEST(MergeTest, Response_FromMethodCall) {
+TEST(MessageTest, Response_FromMethodCall) {
   const uint32 kSerial = 123;
   dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
@@ -392,7 +392,7 @@ TEST(MergeTest, Response_FromMethodCall) {
   EXPECT_EQ(kSerial, response->GetReplySerial());
 }
 
-TEST(MergeTest, ErrorResponse) {
+TEST(MessageTest, ErrorResponse) {
   dbus::ErrorResponse error_response;
   EXPECT_TRUE(error_response.raw_message() == NULL);
   error_response.reset_raw_message(
@@ -400,7 +400,7 @@ TEST(MergeTest, ErrorResponse) {
   EXPECT_EQ(dbus::Message::MESSAGE_ERROR, error_response.GetMessageType());
 }
 
-TEST(MergeTest, ErrorResponse_FromMethodCall) {
+TEST(MessageTest, ErrorResponse_FromMethodCall) {
   const uint32 kSerial = 123;
 const char kErrorMessage[] = "error message";
 
