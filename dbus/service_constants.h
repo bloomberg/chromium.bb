@@ -95,6 +95,8 @@ const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerStoreUserPolicy[] = "StoreUserPolicy";
 const char kSessionManagerRetrieveUserPolicy[] = "RetrieveUserPolicy";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
+const char kSessionManagerStartSessionService[] = "StartSessionService";
+const char kSessionManagerStopSessionService[] = "StopSessionService";
 // Signals
 const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
 }  // namespace login_manager
