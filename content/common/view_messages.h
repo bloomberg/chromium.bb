@@ -748,16 +748,15 @@ IPC_STRUCT_END()
 IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
                      int32 /* next_page_id */)
 
-// Sent to the RenderView when a prerendered or instant page is committed
-// to an existing tab. The existing tab has a history of
-// |merged_history_length| which precedes the current history of pages
-// in the render view. All page_ids >= |minimum_page_id| are appended to
-// this new history in the same order.
+// Sent to the RenderView when a new tab is swapped into an existing
+// tab and the histories need to be merged. The existing tab has a history of
+// |merged_history_length| which precedes the history of the new tab. All
+// page_ids >= |minimum_page_id| in the new tab are appended to the history.
 //
-// For example, suppose the history of page_ids in the instant RenderView
-// is [4 7 8]. This instant RenderView is committed, and merged into
-// an existing tab with 3 history items, with every page with page_id >= 7
-// is preserved. The resulting page history is [-1 -1 -1 7 8].
+// For example, suppose the history of page_ids in the new tab's RenderView
+// is [4 7 8]. This is merged into an existing tab with 3 history items, and
+// all pages in the new tab with page_id >= 7 are to be preserved.
+// The resulting page history is [-1 -1 -1 7 8].
 IPC_MESSAGE_ROUTED2(ViewMsg_SetHistoryLengthAndPrune,
                     int, /* merge_history_length */
                     int32 /* minimum_page_id */)

@@ -599,10 +599,8 @@ bool TabContents::NavigateToEntry(
 void TabContents::SetHistoryLengthAndPrune(const SiteInstance* site_instance,
                                            int history_length,
                                            int32 minimum_page_id) {
-  // SetHistoryLengthAndPrune doesn't handle pending cross-site navigations
-  // cleanly. Since it's only used when swapping in instant and prerendered
-  // TabContents, checks are done at a higher level to ensure that the pages
-  // are not swapped in during this case.
+  // SetHistoryLengthAndPrune doesn't work when there are pending cross-site
+  // navigations. Callers should ensure that this is the case.
   if (render_manager_.pending_render_view_host()) {
     NOTREACHED();
     return;
