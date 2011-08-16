@@ -186,6 +186,8 @@ void VectorPlatformDeviceSkia::drawDevice(const SkDraw& draw,
     // to unwrap the embedded SkPDFDevice.
     VectorPlatformDeviceSkia* vector_device =
         static_cast<VectorPlatformDeviceSkia*>(device);
+    vector_device->pdf_device_->setOrigin(vector_device->getOrigin().fX,
+                                          vector_device->getOrigin().fY);
     real_device = vector_device->pdf_device_.get();
   }
   pdf_device_->drawDevice(draw, real_device, x, y, paint);
