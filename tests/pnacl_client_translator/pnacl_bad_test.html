@@ -37,11 +37,14 @@ function declareTests(tester) {
 
   // 'bad_pexe_undefined' loads a manifest, then loads a pexe that compiles
   // but will result in undefined symbols, causing the link to fail.
-  badLoadTest(
-      tester,
-      'bad_pexe_undefined_syms',
-      'pnacl_bad_pexe_undefined_syms.nmf',
-      'NaCl module load failed: PnaclCoordinator link failed.');
+  // NOTE: this is currently flaking out and sometimes it fails to
+  // compile (rather than fail to link). Disable this until we figure it out.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=2149
+//  badLoadTest(
+//      tester,
+//      'bad_pexe_undefined_syms',
+//      'pnacl_bad_pexe_undefined_syms.nmf',
+//      'NaCl module load failed: PnaclCoordinator link failed.');
 
   // 'nonexistent_pexe loads a manifest, then tries to load a nonexistent pexe,
   // given both a nexe and a portable program to choose from.
