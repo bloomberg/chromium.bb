@@ -78,17 +78,11 @@ static bool g_logging_to_plugin = false;
 static HostNPScriptObject* g_logging_scriptable_object = NULL;
 static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 
-HostNPScriptObject::HostNPScriptObject(
-    NPP plugin,
-    NPObject* parent,
-    PluginMessageLoopProxy::Delegate* plugin_thread_delegate)
+HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
     : plugin_(plugin),
       parent_(parent),
       state_(kDisconnected),
       np_thread_id_(base::PlatformThread::CurrentId()),
-      plugin_message_loop_proxy_(
-          new PluginMessageLoopProxy(plugin_thread_delegate)),
-      host_context_(plugin_message_loop_proxy_),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
       nat_traversal_enabled_(false),
@@ -105,6 +99,10 @@ HostNPScriptObject::HostNPScriptObject(
     g_logging_old_handler = logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(&LogToUI);
   g_logging_scriptable_object = this;
+
+  VLOG(2) << "HostNPScriptObject";
+  host_context_.SetUITaskPostFunction(base::Bind(
+      &HostNPScriptObject::PostTaskToNPThread, base::Unretained(this)));
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -118,8 +116,6 @@ HostNPScriptObject::~HostNPScriptObject() {
   g_logging_old_handler = NULL;
   g_logging_scriptable_object = NULL;
 
-  plugin_message_loop_proxy_->Detach();
-
   // Stop listening for policy updates.
   if (nat_policy_.get()) {
     base::WaitableEvent nat_policy_stopped_(true, false);
@@ -132,6 +128,7 @@ HostNPScriptObject::~HostNPScriptObject() {
   // here because |host_context_| needs to be stopped on the plugin
   // thread, but the plugin thread may not exist after the instance
   // is destroyed.
+  destructing_.Set();
   disconnected_event_.Reset();
   DisconnectInternal();
   disconnected_event_.Wait();
@@ -580,8 +577,11 @@ void HostNPScriptObject::OnReceivedSupportID(
 }
 
 void HostNPScriptObject::OnStateChanged(State state) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (destructing_.IsSet())
+    return;
+
+  if (!host_context_.IsUIThread()) {
+    host_context_.PostTaskToUIThread(
         FROM_HERE, base::Bind(&HostNPScriptObject::OnStateChanged,
                               base::Unretained(this), state));
     return;
@@ -615,8 +615,11 @@ bool HostNPScriptObject::LogToUI(int severity, const char* file, int line,
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
+  if (destructing_.IsSet())
+    return;
+
+  if (!host_context_.IsUIThread()) {
+    host_context_.PostTaskToUIThread(
         FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
                               base::Unretained(this), message));
     return;
@@ -699,6 +702,27 @@ bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,
   if (is_good)
       g_npnetscape_funcs->releasevariantvalue(&np_result);
   return is_good;
+}
+
+void HostNPScriptObject::PostTaskToNPThread(
+    const tracked_objects::Location& from_here, const base::Closure& task) {
+  // The NPAPI functions cannot make use of |from_here|, but this method is
+  // passed as a callback to ChromotingHostContext, so it needs to have the
+  // appropriate signature.
+
+  // Copy task to the heap so that we can pass it to NPTaskSpringboard().
+  base::Closure* task_in_heap = new base::Closure(task);
+
+  // Can be called from any thread.
+  g_npnetscape_funcs->pluginthreadasynccall(plugin_, &NPTaskSpringboard,
+                                            task_in_heap);
+}
+
+// static
+void HostNPScriptObject::NPTaskSpringboard(void* task) {
+  base::Closure* real_task = reinterpret_cast<base::Closure*>(task);
+  real_task->Run();
+  delete real_task;
 }
 
 }  // namespace remoting

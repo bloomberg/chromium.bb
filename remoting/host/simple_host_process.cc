@@ -104,8 +104,13 @@ class SimpleHost {
     // It needs to be a UI message loop to keep runloops spinning on the Mac.
     MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-    remoting::ChromotingHostContext context(
-        base::MessageLoopProxy::current());
+    remoting::ChromotingHostContext context;
+    // static_cast needed to resolve overloaded PostTask member-function.
+    context.SetUITaskPostFunction(base::Bind(
+        static_cast<void(MessageLoop::*)(
+            const tracked_objects::Location&,
+            const base::Closure&)>(&MessageLoop::PostTask),
+        base::Unretained(&message_loop)));
     context.Start();
 
     base::Thread file_io_thread("FileIO");
