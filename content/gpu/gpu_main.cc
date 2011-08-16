@@ -60,6 +60,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     dead_on_arrival = true;
   }
 
+  base::win::ScopedCOMInitializer com_initializer;
+
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();
@@ -102,8 +104,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     ui::SetDefaultX11ErrorHandlers();
 #endif
   }
-
-  base::win::ScopedCOMInitializer com_initializer;
 
   GpuProcess gpu_process;
 
