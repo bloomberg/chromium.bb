@@ -68,7 +68,7 @@ const CGFloat kLabelInset = 49.0;
 
   AvatarMenuInternal::Bridge* bridge = new AvatarMenuInternal::Bridge(self);
   AvatarMenuModel* model = new AvatarMenuModel(
-        &g_browser_process->profile_manager()->GetProfileInfoCache(),
+        &g_browser_process->profile_manager()->GetProfileInfo(),
         bridge, parentBrowser);
 
   if ((self = [self initWithModel:model

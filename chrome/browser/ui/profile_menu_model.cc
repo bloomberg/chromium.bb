@@ -64,8 +64,8 @@ SwitchProfileMenuModel::SwitchProfileMenuModel(
     : SimpleMenuModel(this),
       browser_(browser),
       delegate_(delegate) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   size_t count = cache.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
     AddCheckItem(ProfileMenuModel::COMMAND_SWITCH_TO_PROFILE + i,
@@ -79,8 +79,8 @@ SwitchProfileMenuModel::SwitchProfileMenuModel(
 }
 
 void SwitchProfileMenuModel::ExecuteCommand(int command_id) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   if (IsSwitchProfileCommand(command_id)) {
     size_t index = GetProfileIndexFromSwitchProfileCommand(command_id);
     FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
@@ -94,8 +94,8 @@ void SwitchProfileMenuModel::ExecuteCommand(int command_id) {
 }
 
 bool SwitchProfileMenuModel::IsCommandIdChecked(int command_id) const {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   if (IsSwitchProfileCommand(command_id)) {
     size_t index = GetProfileIndexFromSwitchProfileCommand(command_id);
     FilePath userDataFolder;
@@ -135,8 +135,8 @@ size_t SwitchProfileMenuModel::GetProfileIndexFromSwitchProfileCommand(
 ProfileMenuModel::ProfileMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       browser_(browser) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   size_t profile_index = cache.GetIndexOfProfileWithPath(
       browser_->profile()->GetPath());
   AddItem(COMMAND_PROFILE_NAME, cache.GetNameOfProfileAtIndex(profile_index));
