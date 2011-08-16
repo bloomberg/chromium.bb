@@ -12,10 +12,12 @@
 
 namespace remoting {
 
-ChromotingHostContext::ChromotingHostContext()
+ChromotingHostContext::ChromotingHostContext(
+    base::MessageLoopProxy* ui_message_loop)
     : main_thread_("ChromotingMainThread"),
       encode_thread_("ChromotingEncodeThread"),
-      desktop_thread_("ChromotingDesktopThread") {
+      desktop_thread_("ChromotingDesktopThread"),
+      ui_message_loop_(ui_message_loop) {
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
@@ -41,6 +43,10 @@ JingleThread* ChromotingHostContext::jingle_thread() {
   return &jingle_thread_;
 }
 
+base::MessageLoopProxy* ChromotingHostContext::ui_message_loop() {
+  return ui_message_loop_;
+}
+
 MessageLoop* ChromotingHostContext::main_message_loop() {
   return main_thread_.message_loop();
 }
@@ -55,33 +61,6 @@ base::MessageLoopProxy* ChromotingHostContext::network_message_loop() {
 
 MessageLoop* ChromotingHostContext::desktop_message_loop() {
   return desktop_thread_.message_loop();
-}
-
-void ChromotingHostContext::SetUITaskPostFunction(
-    const UIThreadPostTaskFunction& poster) {
-  ui_poster_ = poster;
-  ui_main_thread_id_ = base::PlatformThread::CurrentId();
-}
-
-void ChromotingHostContext::PostTaskToUIThread(
-    const tracked_objects::Location& from_here, const base::Closure& task) {
-  ui_poster_.Run(from_here, task);
-}
-
-void ChromotingHostContext::PostDelayedTaskToUIThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    int delay_ms) {
-  // Post delayed task on the main thread that will post task on UI
-  // thread. It is safe to use base::Unretained() here because
-  // ChromotingHostContext owns |main_thread_|.
-  main_message_loop()->PostDelayedTask(from_here, base::Bind(
-      &ChromotingHostContext::PostTaskToUIThread, base::Unretained(this),
-      from_here, task), delay_ms);
-}
-
-bool ChromotingHostContext::IsUIThread() const {
-  return ui_main_thread_id_ == base::PlatformThread::CurrentId();
 }
 
 }  // namespace remoting

@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "remoting/base/plugin_message_loop_proxy.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
@@ -45,7 +46,8 @@ class NatPolicy;
 // destroyed it sychronously shuts down the host and all threads.
 class HostNPScriptObject : public HostStatusObserver {
  public:
-  HostNPScriptObject(NPP plugin, NPObject* parent);
+  HostNPScriptObject(NPP plugin, NPObject* parent,
+                     PluginMessageLoopProxy::Delegate* plugin_thread_delegate);
   virtual ~HostNPScriptObject();
 
   bool Init();
@@ -142,13 +144,6 @@ class HostNPScriptObject : public HostStatusObserver {
                              const NPVariant* args,
                              uint32_t argCount);
 
-  // Posts a task on the main NP thread.
-  void PostTaskToNPThread(
-      const tracked_objects::Location& from_here, const base::Closure& task);
-
-  // Utility function for PostTaskToNPThread.
-  static void NPTaskSpringboard(void* task);
-
   // Set an exception for the current call.
   void SetException(const std::string& exception_string);
 
@@ -162,6 +157,7 @@ class HostNPScriptObject : public HostStatusObserver {
   ScopedRefNPObject log_debug_info_func_;
   ScopedRefNPObject on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
+  scoped_refptr<PluginMessageLoopProxy> plugin_message_loop_proxy_;
 
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_refptr<MutableHostConfig> host_config_;
@@ -172,7 +168,6 @@ class HostNPScriptObject : public HostStatusObserver {
   int failed_login_attempts_;
 
   base::WaitableEvent disconnected_event_;
-  base::CancellationFlag destructing_;
 
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
 
