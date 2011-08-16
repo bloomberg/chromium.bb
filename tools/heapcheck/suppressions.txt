@@ -1720,3 +1720,32 @@
    fun:BrowserAccessibilityManager::CreateEmptyDocument
    fun:BrowserAccessibilityManagerTest_TestCreateEmptyDocument_Test::TestBody
 }
+{
+   bug_93006a
+   Heapcheck:Leak
+   fun:DownloadManager::Init
+   fun:DownloadManagerTest*
+   fun:DownloadManagerTest_*
+}
+{
+   bug_93006b
+   Heapcheck:Leak
+   fun:DownloadManagerTest*
+   fun:DownloadManagerTest_*
+}
+{
+   bug_93006c
+   Heapcheck:Leak
+   ...
+   fun:MockDownloadManager*
+   fun:DownloadManagerTest*
+   fun:DownloadManagerTest_*
+}
+{
+   bug_93006d
+   Heapcheck:Leak
+   ...
+   fun:DownloadManager::AddObserver
+   fun:::SelectFileObserver::SelectFileObserver
+   fun:DownloadManagerTest_*
+}

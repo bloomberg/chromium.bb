@@ -4014,8 +4014,6 @@
    fun:_ZN12browser_sync15SyncBackendHost21MakeHttpBridgeFactoryEPN3net23URLRequestContextGetterE
    fun:_ZN12browser_sync15SyncBackendHost10InitializeEPNS_12SyncFrontendERK4GURLRKSt3setIN8syncable9ModelTypeESt4lessIS8_ESaIS8_EEPN3net23URLRequestContextGetterERKN8sync_api15SyncCredentialsEb
    fun:_ZN12browser_sync37SyncBackendHostTest_InitShutdown_Test8TestBodyEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
 {
    bug_78528_b
@@ -4034,8 +4032,6 @@
    fun:_Znw*
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:*ProfileSyncService*SetUpEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
 {
    bug_78786
@@ -4286,8 +4282,6 @@
    fun:_Znw*
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:_ZN20InProcessBrowserTest5SetUpEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
 }
 {
    bug_80550_a
@@ -5299,110 +5293,15 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN43DownloadManagerTest_DownloadCancelTest_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI43DownloadManagerTest_DownloadCancelTest_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
+   fun:_ZN*DownloadManagerTest_*
 }
 {
    bug_93006b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN43DownloadManagerTest_DownloadRemoveTest_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI43DownloadManagerTest_DownloadRemoveTest_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_93006c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN43DownloadManagerTest_DownloadRenameTest_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI43DownloadManagerTest_DownloadRenameTest_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_93006d
-   Memcheck:Leak
-   fun:_Znw*
    fun:_ZN15DownloadManager4InitEP7Profile
    fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN38DownloadManagerTest_StartDownload_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI38DownloadManagerTest_StartDownload_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_93006e
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN46DownloadManagerTest_DownloadOverwriteTest_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI46DownloadManagerTest_DownloadOverwriteTest_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_93006f
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15DownloadManager4InitEP7Profile
-   fun:_ZN19DownloadManagerTestC2Ev
-   fun:_ZN46DownloadManagerTest_DownloadInterruptTest_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplI46DownloadManagerTest_DownloadInterruptTest_TestE10CreateTestEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_15TestFactoryBaseEPNS_4TestEEET0_PT_MS6_FS5_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
+   fun:_ZN*DownloadManagerTest_*
 }
 
 #-----------------------------------------------------------------------
