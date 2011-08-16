@@ -68,9 +68,9 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   void Disconnect();
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // IPC::Channel::Sender implementation
   virtual bool Send(IPC::Message* message);

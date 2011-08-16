@@ -55,9 +55,9 @@ class PpapiBrokerProcessHost : public BrowserChildProcessHost {
   virtual bool CanShutdown();
   virtual void OnProcessLaunched();
 
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   void CancelRequests();
 

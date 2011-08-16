@@ -54,7 +54,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
 
   // Listener implementation.
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
-  void OnChannelConnected(int32 peer_pid) {
+  void OnChannelConnected(int32 peer_pid) OVERRIDE {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             new MessageLoop::QuitTask());
   }

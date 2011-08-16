@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,11 @@ class BrowserMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // IPC::ChannelProxy::MessageFilter methods.  If you override them, make sure
   // to call them as well.  These are always called on the IO thread.
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnChannelClosing();
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   // DON'T OVERRIDE THIS!  Override the other version below.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC::Message::Sender implementation.  Can be called on any thread.  Can't
   // send sync messages (since we don't want to block the browser on any other

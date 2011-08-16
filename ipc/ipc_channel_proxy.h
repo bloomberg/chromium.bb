@@ -191,9 +191,9 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     virtual ~Context();
 
     // IPC::Channel::Listener methods:
-    virtual bool OnMessageReceived(const Message& message);
-    virtual void OnChannelConnected(int32 peer_pid);
-    virtual void OnChannelError();
+    virtual bool OnMessageReceived(const Message& message) OVERRIDE;
+    virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+    virtual void OnChannelError() OVERRIDE;
 
     // Like OnMessageReceived but doesn't try the filters.
     bool OnMessageReceivedNoFilter(const Message& message);

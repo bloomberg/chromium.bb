@@ -127,11 +127,13 @@ class AutomationProvider
   void AddLoginHandler(NavigationController* tab, LoginHandler* handler);
   void RemoveLoginHandler(NavigationController* tab);
 
-  // IPC implementations
-  virtual bool Send(IPC::Message* msg);
-  virtual void OnChannelConnected(int pid);
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
+  // IPC::Channel::Sender implementation.
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
+
+  // IPC::Channel::Listener implementation.
+  virtual void OnChannelConnected(int pid) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   IPC::Message* reply_message_release() {
     IPC::Message* reply_message = reply_message_;

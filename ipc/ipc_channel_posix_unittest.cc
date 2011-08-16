@@ -43,35 +43,35 @@ class IPCChannelPosixTestListener : public IPC::Channel::Listener {
 
   virtual ~IPCChannelPosixTestListener() {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     EXPECT_EQ(message.type(), QUIT_MESSAGE);
     status_ = MESSAGE_RECEIVED;
     QuitRunLoop();
     return true;
   }
 
-  virtual void OnChannelConnected(int32 peer_pid) {
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
     status_ = CONNECTED;
     if (!quit_only_on_message_) {
       QuitRunLoop();
     }
   }
 
-  virtual void OnChannelError()  {
+  virtual void OnChannelError() OVERRIDE {
     status_ = CHANNEL_ERROR;
     if (!quit_only_on_message_) {
       QuitRunLoop();
     }
   }
 
-  virtual void OnChannelDenied() {
+  virtual void OnChannelDenied() OVERRIDE {
     status_ = DENIED;
     if (!quit_only_on_message_) {
       QuitRunLoop();
     }
   }
 
-  virtual void OnChannelListenError() {
+  virtual void OnChannelListenError() OVERRIDE {
     status_ = LISTEN_ERROR;
     if (!quit_only_on_message_) {
       QuitRunLoop();

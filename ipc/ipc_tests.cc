@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -288,11 +288,11 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 
 class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
  public:
-  virtual void OnChannelConnected(int32 peer_pid) {
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
     SendNextMessage();
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC::MessageIterator iter(message);
 
     iter.NextInt();
@@ -303,7 +303,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
     return true;
   }
 
-  virtual void OnChannelError() {
+  virtual void OnChannelError() OVERRIDE {
     // There is a race when closing the channel so the last message may be lost.
     EXPECT_LE(messages_left_, 1);
     MessageLoop::current()->Quit();

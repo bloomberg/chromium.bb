@@ -59,9 +59,9 @@ class GpuChannelHost : public IPC::Channel::Listener,
   const GPUInfo& gpu_info() const;
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

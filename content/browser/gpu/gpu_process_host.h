@@ -54,8 +54,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual bool Send(IPC::Message* msg);
 
   // ChildProcessHost implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   typedef Callback3<const IPC::ChannelHandle&,
                     base::ProcessHandle,

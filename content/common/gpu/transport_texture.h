@@ -60,9 +60,9 @@ class TransportTexture : public IPC::Channel::Listener {
   void TextureUpdated(int texture_id);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   // Mapping from service (GPU) IDs to client (Renderer) IDs.

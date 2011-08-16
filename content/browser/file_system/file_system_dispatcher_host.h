@@ -44,9 +44,9 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   virtual ~FileSystemDispatcherHost();
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   void UnregisterOperation(int request_id);
 

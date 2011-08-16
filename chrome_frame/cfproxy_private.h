@@ -155,10 +155,10 @@ class CFProxy : public Interface2IPCMessage,
   virtual void Tab_RunUnloadHandlers(int tab);
 
   //////////////////////////////////////////////////////////////////////////
-  // IPC::Channel::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   bool CalledOnIpcThread() const {
     return base::PlatformThread::CurrentId() == ipc_thread_.thread_id();

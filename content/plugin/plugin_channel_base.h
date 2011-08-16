@@ -128,9 +128,9 @@ class PluginChannelBase : public IPC::Channel::Listener,
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   void set_send_unblocking_only_during_unblock_dispatch() {
     send_unblocking_only_during_unblock_dispatch_ = true;

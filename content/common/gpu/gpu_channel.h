@@ -73,9 +73,9 @@ class GpuChannel : public IPC::Channel::Listener,
   }
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
-  virtual void OnChannelConnected(int32 peer_pid);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

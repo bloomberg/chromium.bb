@@ -56,8 +56,8 @@ class PluginChannel : public PluginChannelBase {
 
  protected:
   // IPC::Channel::Listener implementation:
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   virtual void CleanUp();
 
