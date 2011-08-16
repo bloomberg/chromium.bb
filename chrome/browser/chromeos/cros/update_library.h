@@ -54,6 +54,8 @@ class UpdateLibrary {
 
   virtual ~UpdateLibrary() {}
 
+  virtual void Init() = 0;
+
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(Observer* observer) = 0;
