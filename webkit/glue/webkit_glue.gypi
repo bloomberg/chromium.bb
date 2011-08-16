@@ -433,6 +433,8 @@
         'webthemeengine_impl_linux.cc',
         'webthemeengine_impl_mac.cc',
         'webthemeengine_impl_win.cc',
+        'webthread_impl.h',
+        'webthread_impl.cc',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',
         'webvideoframe_impl.cc',

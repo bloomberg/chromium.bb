@@ -41,6 +41,7 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
+#include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 
 #if defined(OS_LINUX)
@@ -543,6 +544,10 @@ void WebKitClientImpl::stopSharedTimer() {
 
 void WebKitClientImpl::callOnMainThread(void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func, context));
+}
+
+WebKit::WebThread* WebKitClientImpl::createThread(const char* name) {
+  return new WebThreadImpl(name);
 }
 
 base::PlatformFile WebKitClientImpl::databaseOpenFile(

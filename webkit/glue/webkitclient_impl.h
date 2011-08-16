@@ -6,6 +6,7 @@
 #define WEBKIT_CLIENT_IMPL_H_
 
 #include "base/platform_file.h"
+#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #if defined(OS_WIN)
@@ -80,6 +81,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
 #endif
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
+  virtual WebKit::WebThread* createThread(const char* name);
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
