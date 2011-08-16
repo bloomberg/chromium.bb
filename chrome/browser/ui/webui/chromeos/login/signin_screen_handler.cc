@@ -11,9 +11,11 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -193,6 +195,19 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                   help_id);
 }
 
+void SigninScreenHandler::OnBrowsingDataRemoverDone() {
+  // Show sign in screen as soon as we clear the cookie jar.
+  DictionaryValue params;
+  params.SetString("email", email_);
+  params.SetString("startUrl", kGaiaExtStartPage);
+  params.SetBoolean("createAccount",
+      UserCrosSettingsProvider::cached_allow_new_user());
+  params.SetBoolean("guestSignin",
+      UserCrosSettingsProvider::cached_allow_guest());
+  email_.clear();
+  ShowScreen(kGaiaSigninScreen, &params);
+}
+
 void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
   std::string username;
   std::string password;
@@ -240,20 +255,12 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   if (extension_driven_) {
-    DictionaryValue params;
-    params.SetString("startUrl", kGaiaExtStartPage);
-
-    std::string email;
+    email_.clear();
     // |args| can be null if it's OOBE.
-    if (args && args->GetString(0, &email))
-      params.SetString("email", email);
+    if (args)
+      args->GetString(0, &email_);
 
-    params.SetBoolean("createAccount",
-        UserCrosSettingsProvider::cached_allow_new_user());
-    params.SetBoolean("guestSignin",
-        UserCrosSettingsProvider::cached_allow_guest());
-
-    ShowScreen(kGaiaSigninScreen, &params);
+    StartClearingCookies();
   } else {
     ShowScreen(kSigninScreen, NULL);
   }
@@ -350,6 +357,16 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
   delegate_->CreateAccount();
+}
+
+void SigninScreenHandler::StartClearingCookies() {
+  BrowsingDataRemover* remover = new BrowsingDataRemover(
+      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
+      BrowsingDataRemover::EVERYTHING,
+      base::Time());
+  remover->AddObserver(this);
+  remover->Remove(BrowsingDataRemover::REMOVE_COOKIES |
+                  BrowsingDataRemover::REMOVE_LSO_DATA);
 }
 
 }  // namespace chromeos

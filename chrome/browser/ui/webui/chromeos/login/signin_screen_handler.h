@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
@@ -69,7 +70,8 @@ class SigninScreenHandlerDelegate {
 // A class that handles the WebUI hooks in sign-in screen in OobeDisplay
 // and LoginDisplay.
 class SigninScreenHandler : public BaseScreenHandler,
-                            public LoginDisplayWebUIHandler {
+                            public LoginDisplayWebUIHandler,
+                            public BrowsingDataRemover::Observer {
  public:
   SigninScreenHandler();
   virtual ~SigninScreenHandler();
@@ -95,6 +97,9 @@ class SigninScreenHandler : public BaseScreenHandler,
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
+
+  // BrowsingDataRemover::Observer overrides.
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
   // Handles confirmation message of user authentication that was performed by
   // the authentication extension.
@@ -130,6 +135,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Sends user list to account picker.
   void SendUserList(bool animated);
 
+  // Kick off cookie / local storage cleanup.
+  void StartClearingCookies();
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
 
@@ -142,6 +150,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   // True if new user sign in flow is driven by the extension.
   bool extension_driven_;
 
+  std::string email_;
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
