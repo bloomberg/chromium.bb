@@ -135,14 +135,6 @@ struct HistoryURLProviderParams {
 
 // This class is an autocomplete provider and is also a pseudo-internal
 // component of the history system.  See comments above.
-//
-// Note: This object can get leaked on shutdown if there are pending
-// requests on the database (which hold a reference to us). Normally, these
-// messages get flushed for each thread. We do a round trip from main, to
-// history, back to main while holding a reference. If the main thread
-// completes before the history thread, the message to delegate back to the
-// main thread will not run and the reference will leak. Therefore, don't do
-// anything on destruction.
 class HistoryURLProvider : public HistoryProvider {
  public:
   HistoryURLProvider(ACProviderListener* listener, Profile* profile);
@@ -156,7 +148,6 @@ class HistoryURLProvider : public HistoryProvider {
       params_(NULL),
       languages_(languages) {}
 #endif
-  // no destructor (see note above)
 
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
@@ -195,44 +186,6 @@ class HistoryURLProvider : public HistoryProvider {
   static int CalculateRelevance(AutocompleteInput::Type input_type,
                                 MatchType match_type,
                                 size_t match_number);
-
-  // Determines the confidence for a |match| when compared to all the
-  // |matches|. Returns a number in the range [0, 1].
-  static float CalculateConfidence(const history::HistoryMatch& match,
-                                   const history::HistoryMatches& matches);
-
-  // Given the user's |input| and a |match| created from it, reduce the
-  // match's URL to just a host.  If this host still matches the user input,
-  // return it.  Returns the empty string on failure.
-  static GURL ConvertToHostOnly(const history::HistoryMatch& match,
-                                const string16& input);
-
-  // See if a shorter version of the best match should be created, and if so
-  // place it at the front of |matches|.  This can suggest history URLs that
-  // are prefixes of the best match (if they've been visited enough, compared
-  // to the best match), or create host-only suggestions even when they haven't
-  // been visited before: if the user visited http://example.com/asdf once,
-  // we'll suggest http://example.com/ even if they've never been to it.  See
-  // the function body for the exact heuristics used.
-  static void PromoteOrCreateShorterSuggestion(
-      history::URLDatabase* db,
-      const HistoryURLProviderParams& params,
-      bool have_what_you_typed_match,
-      const AutocompleteMatch& what_you_typed_match,
-      history::HistoryMatches* matches);
-
-  // Ensures that |matches| contains an entry for |info|, which may mean adding
-  // a new such entry (using |input_location| and |match_in_scheme|).
-  //
-  // If |promote| is true, this also ensures the entry is the first element in
-  // |matches|, moving or adding it to the front as appropriate.  When
-  // |promote| is false, existing matches are left in place, and newly added
-  // matches are placed at the back.
-  static void EnsureMatchPresent(const history::URLRow& info,
-                                 size_t input_location,
-                                 bool match_in_scheme,
-                                 history::HistoryMatches* matches,
-                                 bool promote);
 
   // Helper function that actually launches the two autocomplete passes.
   void RunAutocompletePasses(const AutocompleteInput& input,
