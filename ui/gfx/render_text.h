@@ -90,15 +90,13 @@ enum BreakType {
 class UI_EXPORT SelectionModel {
  public:
   enum CaretPlacement {
-    // PREVIOUS_GRAPHEME_TRAILING means cursor is visually attached to the
-    // trailing edge of previous grapheme.
-    PREVIOUS_GRAPHEME_TRAILING,
     LEADING,
     TRAILING,
   };
 
   SelectionModel();
   explicit SelectionModel(size_t pos);
+  SelectionModel(size_t start, size_t end);
   SelectionModel(size_t end, size_t pos, CaretPlacement status);
   SelectionModel(size_t start, size_t end, size_t pos, CaretPlacement status);
 
@@ -277,7 +275,7 @@ class UI_EXPORT RenderText {
                                                 BreakType break_type);
 
   // Get the logical index of the grapheme preceeding the argument |position|.
-  virtual size_t GetIndexOfPreviousGrapheme(size_t position) const;
+  virtual size_t GetIndexOfPreviousGrapheme(size_t position);
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.

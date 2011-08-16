@@ -414,8 +414,7 @@ void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
 }
 
 void TextfieldViewsModel::SelectRange(const ui::Range& range) {
-  gfx::SelectionModel selection(range.start(), range.end(),
-      range.end(), gfx::SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
+  gfx::SelectionModel selection(range.start(), range.end());
   SelectSelectionModel(selection);
 }
 
@@ -589,8 +588,7 @@ void TextfieldViewsModel::SetCompositionText(
         std::min(range.start() + composition.selection.start(), range.end());
     size_t end =
         std::min(range.start() + composition.selection.end(), range.end());
-    gfx::SelectionModel sel(start, end, end,
-                            gfx::SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
+    gfx::SelectionModel sel(start, end);
     render_text_->SetSelectionModel(sel);
   } else {
     render_text_->SetCursorPosition(range.end());

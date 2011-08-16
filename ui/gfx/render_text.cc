@@ -87,11 +87,15 @@ StyleRange::StyleRange()
 }
 
 SelectionModel::SelectionModel() {
-  Init(0, 0, 0, PREVIOUS_GRAPHEME_TRAILING);
+  Init(0, 0, 0, LEADING);
 }
 
 SelectionModel::SelectionModel(size_t pos) {
-  Init(pos, pos, pos, PREVIOUS_GRAPHEME_TRAILING);
+  Init(pos, pos, pos, LEADING);
+}
+
+SelectionModel::SelectionModel(size_t start, size_t end) {
+  Init(start, end, end, LEADING);
 }
 
 SelectionModel::SelectionModel(size_t end,
@@ -266,6 +270,8 @@ void RenderText::SelectAll() {
   SetSelectionModel(sel);
 }
 
+// TODO(xji): it does not work for languages do not use space as word breaker,
+// such as Chinese. Should use BreakIterator.
 void RenderText::SelectWord() {
   size_t selection_start = GetSelectionStart();
   size_t cursor_position = GetCursorPosition();
@@ -305,7 +311,8 @@ void RenderText::SelectWord() {
   SelectionModel sel(selection_model());
   sel.set_selection_start(selection_start);
   sel.set_selection_end(cursor_position);
-  sel.set_caret_placement(SelectionModel::PREVIOUS_GRAPHEME_TRAILING);
+  sel.set_caret_pos(GetIndexOfPreviousGrapheme(cursor_position));
+  sel.set_caret_placement(SelectionModel::TRAILING);
   SetSelectionModel(sel);
 }
 
@@ -542,7 +549,7 @@ SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
   return SelectionModel(pos, pos, SelectionModel::LEADING);
 }
 
-size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) const {
+size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
   // TODO(msw): Handle complex script.
   return std::max(static_cast<int>(position - 1), static_cast<int>(0));
 }
