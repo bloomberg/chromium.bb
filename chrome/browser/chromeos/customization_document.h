@@ -64,18 +64,21 @@ class StartupCustomizationDocument : public CustomizationDocument {
  public:
   static StartupCustomizationDocument* GetInstance();
 
-  const std::string& initial_locale() const { return initial_locale_; }
-  const std::string& initial_timezone() const { return initial_timezone_; }
-  const std::string& keyboard_layout() const { return keyboard_layout_; }
-  const std::string& registration_url() const { return registration_url_; }
-
   std::string GetHelpPage(const std::string& locale) const;
   std::string GetEULAPage(const std::string& locale) const;
 
+  const std::string& registration_url() const { return registration_url_; }
+
+  // These methods can be called even if !IsReady(), in this case VPD values
+  // will be returned.
+  const std::string& initial_locale() const { return initial_locale_; }
+  const std::string& initial_timezone() const { return initial_timezone_; }
+  const std::string& keyboard_layout() const { return keyboard_layout_; }
+
  private:
-  FRIEND_TEST(StartupCustomizationDocumentTest, Basic);
-  FRIEND_TEST(StartupCustomizationDocumentTest, VPD);
-  FRIEND_TEST(StartupCustomizationDocumentTest, BadManifest);
+  FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, VPD);
+  FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, BadManifest);
   friend struct DefaultSingletonTraits<StartupCustomizationDocument>;
 
   // C-tor for singleton construction.

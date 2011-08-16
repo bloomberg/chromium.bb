@@ -214,7 +214,7 @@ namespace browser {
 // TODO(nkostylev): Split this into a smaller functions.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
-  VLOG(1) << "Showing login screen: " << first_screen_name;
+  VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
   // The login screen will enable alternate keyboard layouts, but we don't want
   // to start the IME process unless one is selected.
@@ -282,47 +282,45 @@ void ShowLoginWizard(const std::string& first_screen_name,
   const chromeos::StartupCustomizationDocument* startup_manifest =
       chromeos::StartupCustomizationDocument::GetInstance();
 
+  // Switch to initial locale if specified by customization
+  // and has not been set yet. We cannot call
+  // chromeos::LanguageSwitchMenu::SwitchLanguage here before
+  // EmitLoginPromptReady.
+  PrefService* prefs = g_browser_process->local_state();
+  const std::string current_locale =
+      prefs->GetString(prefs::kApplicationLocale);
+  VLOG(1) << "Current locale: " << current_locale;
   std::string locale;
-  if (startup_manifest->IsReady()) {
-    // Switch to initial locale if specified by customization
-    // and has not been set yet. We cannot call
-    // chromeos::LanguageSwitchMenu::SwitchLanguage here before
-    // EmitLoginPromptReady.
-    PrefService* prefs = g_browser_process->local_state();
-    const std::string current_locale =
-        prefs->GetString(prefs::kApplicationLocale);
-    VLOG(1) << "Current locale: " << current_locale;
-    if (current_locale.empty()) {
-      locale = startup_manifest->initial_locale();
-      std::string layout = startup_manifest->keyboard_layout();
-      VLOG(1) << "Initial locale: " << locale
-              << "keyboard layout " << layout;
-      if (!locale.empty()) {
-        // Save initial locale from VPD/customization manifest as current
-        // Chrome locale. Otherwise it will be lost if Chrome restarts.
-        // Don't need to schedule pref save because setting initial local
-        // will enforce preference saving.
-        prefs->SetString(prefs::kApplicationLocale, locale);
-        chromeos::WizardController::SetInitialLocale(locale);
-        // Determine keyboard layout from OEM customization (if provided) or
-        // initial locale and save it in preferences.
-        DetermineAndSaveHardwareKeyboard(locale, layout);
-        // Then, enable the hardware keyboard.
-        chromeos::input_method::EnableInputMethods(
-            locale,
-            chromeos::input_method::kKeyboardLayoutsOnly,
-            chromeos::input_method::GetHardwareInputMethodId());
-        // Reloading resource bundle causes us to do blocking IO on UI thread.
-        // Temporarily allow it until we fix http://crosbug.com/11102
-        base::ThreadRestrictions::ScopedAllowIO allow_io;
-        const std::string loaded_locale =
-            ResourceBundle::ReloadSharedInstance(locale);
-        CHECK(!loaded_locale.empty()) << "Locale could not be found for "
-                                      << locale;
-        // Set the application locale here so that the language switch
-        // menu works properly with the newly loaded locale.
-        g_browser_process->SetApplicationLocale(loaded_locale);
-      }
+  if (current_locale.empty()) {
+    locale = startup_manifest->initial_locale();
+    std::string layout = startup_manifest->keyboard_layout();
+    VLOG(1) << "Initial locale: " << locale
+            << "keyboard layout " << layout;
+    if (!locale.empty()) {
+      // Save initial locale from VPD/customization manifest as current
+      // Chrome locale. Otherwise it will be lost if Chrome restarts.
+      // Don't need to schedule pref save because setting initial local
+      // will enforce preference saving.
+      prefs->SetString(prefs::kApplicationLocale, locale);
+      chromeos::WizardController::SetInitialLocale(locale);
+      // Determine keyboard layout from OEM customization (if provided) or
+      // initial locale and save it in preferences.
+      DetermineAndSaveHardwareKeyboard(locale, layout);
+      // Then, enable the hardware keyboard.
+      chromeos::input_method::EnableInputMethods(
+          locale,
+          chromeos::input_method::kKeyboardLayoutsOnly,
+          chromeos::input_method::GetHardwareInputMethodId());
+      // Reloading resource bundle causes us to do blocking IO on UI thread.
+      // Temporarily allow it until we fix http://crosbug.com/11102
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      const std::string loaded_locale =
+          ResourceBundle::ReloadSharedInstance(locale);
+      CHECK(!loaded_locale.empty()) << "Locale could not be found for "
+                                    << locale;
+      // Set the application locale here so that the language switch
+      // menu works properly with the newly loaded locale.
+      g_browser_process->SetApplicationLocale(loaded_locale);
     }
   }
 
@@ -332,18 +330,16 @@ void ShowLoginWizard(const std::string& first_screen_name,
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 
-  if (startup_manifest->IsReady()) {
-    // Set initial timezone if specified by customization.
-    const std::string timezone_name = startup_manifest->initial_timezone();
-    VLOG(1) << "Initial time zone: " << timezone_name;
-    // Apply locale customizations only once so preserve whatever locale
-    // user has changed to during OOBE.
-    if (!timezone_name.empty()) {
-      icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-          icu::UnicodeString::fromUTF8(timezone_name));
-      CHECK(timezone) << "Timezone could not be set for " << timezone_name;
-      chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
-    }
+  // Set initial timezone if specified by customization.
+  const std::string timezone_name = startup_manifest->initial_timezone();
+  VLOG(1) << "Initial time zone: " << timezone_name;
+  // Apply locale customizations only once to preserve whatever locale
+  // user has changed to during OOBE.
+  if (!timezone_name.empty()) {
+    icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
+        icu::UnicodeString::fromUTF8(timezone_name));
+    CHECK(timezone) << "Timezone could not be set for " << timezone_name;
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
   }
 }
 

@@ -166,46 +166,46 @@ StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
 
 void StartupCustomizationDocument::Init(
     chromeos::system::StatisticsProvider* statistics_provider) {
-  if (!IsReady())
-    return;
+  if (IsReady()) {
+    root_->GetString(kInitialLocaleAttr, &initial_locale_);
+    root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
+    root_->GetString(kKeyboardLayoutAttr, &keyboard_layout_);
+    root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
-  root_->GetString(kInitialLocaleAttr, &initial_locale_);
-  root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
-  root_->GetString(kKeyboardLayoutAttr, &keyboard_layout_);
-  root_->GetString(kRegistrationUrlAttr, &registration_url_);
+    std::string hwid;
+    if (statistics_provider->GetMachineStatistic(kHardwareClass, &hwid)) {
+      ListValue* hwid_list = NULL;
+      if (root_->GetList(kHwidMapAttr, &hwid_list)) {
+        for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
+          DictionaryValue* hwid_dictionary = NULL;
+          std::string hwid_mask;
+          if (hwid_list->GetDictionary(i, &hwid_dictionary) &&
+              hwid_dictionary->GetString(kHwidMaskAttr, &hwid_mask)) {
+            if (MatchPattern(hwid, hwid_mask)) {
+              // If HWID for this machine matches some mask, use HWID specific
+              // settings.
+              std::string result;
+              if (hwid_dictionary->GetString(kInitialLocaleAttr, &result))
+                initial_locale_ = result;
 
-  std::string hwid;
-  if (statistics_provider->GetMachineStatistic(kHardwareClass, &hwid)) {
-    ListValue* hwid_list = NULL;
-    if (root_->GetList(kHwidMapAttr, &hwid_list)) {
-      for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
-        DictionaryValue* hwid_dictionary = NULL;
-        std::string hwid_mask;
-        if (hwid_list->GetDictionary(i, &hwid_dictionary) &&
-            hwid_dictionary->GetString(kHwidMaskAttr, &hwid_mask)) {
-          if (MatchPattern(hwid, hwid_mask)) {
-            // If HWID for this machine matches some mask, use HWID specific
-            // settings.
-            std::string result;
-            if (hwid_dictionary->GetString(kInitialLocaleAttr, &result))
-              initial_locale_ = result;
+              if (hwid_dictionary->GetString(kInitialTimezoneAttr, &result))
+                initial_timezone_ = result;
 
-            if (hwid_dictionary->GetString(kInitialTimezoneAttr, &result))
-              initial_timezone_ = result;
-
-            if (hwid_dictionary->GetString(kKeyboardLayoutAttr, &result))
-              keyboard_layout_ = result;
+              if (hwid_dictionary->GetString(kKeyboardLayoutAttr, &result))
+                keyboard_layout_ = result;
+            }
+            // Don't break here to allow other entires to be applied if match.
+          } else {
+            LOG(ERROR) << "Syntax error in customization manifest";
           }
-          // Don't break here to allow other entires to be applied if match.
-        } else {
-          LOG(ERROR) << "Syntax error in customization manifest";
         }
       }
+    } else {
+      LOG(ERROR) << "HWID is missing in machine statistics";
     }
-  } else {
-    LOG(ERROR) << "HWID is missing in machine statistics";
   }
 
+  // If manifest doesn't exist still apply values from VPD.
   statistics_provider->GetMachineStatistic(kInitialLocaleAttr,
                                            &initial_locale_);
   statistics_provider->GetMachineStatistic(kInitialTimezoneAttr,
