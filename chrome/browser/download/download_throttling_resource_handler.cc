@@ -5,7 +5,7 @@
 #include "chrome/browser/download/download_throttling_resource_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/download/download_util.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
@@ -32,8 +32,8 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       tmp_buffer_length_(0),
       ignore_on_read_complete_(in_complete),
       request_closed_(false) {
-  download_util::RecordDownloadCount(
-      download_util::INITIATED_BY_NAVIGATION_COUNT);
+  download_stats::RecordDownloadCount(
+      download_stats::INITIATED_BY_NAVIGATION_COUNT);
 
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
@@ -45,10 +45,6 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
 
   limiter->CanDownloadOnIOThread(
       render_process_host_id_, render_view_id, request_id, this);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&download_util::NotifyDownloadInitiated,
-                          render_process_host_id_, render_view_id_));
 }
 
 DownloadThrottlingResourceHandler::~DownloadThrottlingResourceHandler() {

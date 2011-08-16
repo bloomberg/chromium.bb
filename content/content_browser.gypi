@@ -124,6 +124,8 @@
         'browser/download/download_resource_handler.h',
         'browser/download/download_state_info.cc',
         'browser/download/download_state_info.h',
+        'browser/download/download_stats.cc',
+        'browser/download/download_stats.h',
         'browser/download/download_status_updater.cc',
         'browser/download/download_status_updater.h',
         'browser/download/download_status_updater_delegate.h',

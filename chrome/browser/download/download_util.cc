@@ -15,7 +15,6 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -113,14 +112,6 @@ void GenerateFileNameInternal(const GURL& url,
                                           mime_type, default_file_name);
 }
 
-// All possible error codes from the network module. Note that the error codes
-// are all positive (since histograms expect positive sample values).
-const int kAllNetErrorCodes[] = {
-#define NET_ERROR(label, value) -(value),
-#include "net/base/net_error_list.h"
-#undef NET_ERROR
-};
-
 }  // namespace
 
 // Download temporary file creation --------------------------------------------
@@ -183,137 +174,6 @@ void GenerateFileNameFromSuggestedName(const GURL& url,
   // TODO(asanka): We should pass in a valid referrer_charset here.
   GenerateFileNameInternal(url, std::string(), std::string(),
                            suggested_name, mime_type, generated_name);
-}
-
-void RecordDownloadCount(DownloadCountTypes type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
-}
-
-void RecordDownloadCompleted(const base::TimeTicks& start) {
-  download_util::RecordDownloadCount(download_util::COMPLETED_COUNT);
-  UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
-}
-
-void RecordDownloadInterrupted(int error, int64 received, int64 total) {
-  download_util::RecordDownloadCount(download_util::INTERRUPTED_COUNT);
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      "Download.InterruptedError",
-      -error,
-      base::CustomHistogram::ArrayToCustomRanges(
-          kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
-
-  // The maximum should be 2^kBuckets, to have the logarithmic bucket
-  // boundaries fall on powers of 2.
-  static const int kBuckets = 30;
-  static const int64 kMaxKb = 1 << kBuckets;  // One Terabyte, in Kilobytes.
-  int64 delta_bytes = total - received;
-  bool unknown_size = total <= 0;
-  int64 received_kb = received / 1024;
-  int64 total_kb = total / 1024;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK",
-                              received_kb,
-                              1,
-                              kMaxKb,
-                              kBuckets);
-  if (!unknown_size) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK",
-                                total_kb,
-                                1,
-                                kMaxKb,
-                                kBuckets);
-    if (delta_bytes >= 0) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
-                                  delta_bytes,
-                                  1,
-                                  kMaxKb,
-                                  kBuckets);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
-                                  -delta_bytes,
-                                  1,
-                                  kMaxKb,
-                                  kBuckets);
-    }
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
-}
-
-namespace {
-
-enum DownloadContent {
-  DOWNLOAD_CONTENT_UNRECOGNIZED = 0,
-  DOWNLOAD_CONTENT_TEXT = 1,
-  DOWNLOAD_CONTENT_IMAGE = 2,
-  DOWNLOAD_CONTENT_AUDIO = 3,
-  DOWNLOAD_CONTENT_VIDEO = 4,
-  DOWNLOAD_CONTENT_OCTET_STREAM = 5,
-  DOWNLOAD_CONTENT_PDF = 6,
-  DOWNLOAD_CONTENT_DOC = 7,
-  DOWNLOAD_CONTENT_XLS = 8,
-  DOWNLOAD_CONTENT_PPT = 9,
-  DOWNLOAD_CONTENT_ARCHIVE = 10,
-  DOWNLOAD_CONTENT_EXE = 11,
-  DOWNLOAD_CONTENT_DMG = 12,
-  DOWNLOAD_CONTENT_CRX = 13,
-  DOWNLOAD_CONTENT_MAX = 14,
-};
-
-struct MimeTypeToDownloadContent {
-  const char* mime_type;
-  DownloadContent download_content;
-};
-
-static MimeTypeToDownloadContent kMapMimeTypeToDownloadContent[] = {
-  {"application/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
-  {"binary/octet-stream", DOWNLOAD_CONTENT_OCTET_STREAM},
-  {"application/pdf", DOWNLOAD_CONTENT_PDF},
-  {"application/msword", DOWNLOAD_CONTENT_DOC},
-  {"application/vnd.ms-excel", DOWNLOAD_CONTENT_XLS},
-  {"application/vns.ms-powerpoint", DOWNLOAD_CONTENT_PPT},
-  {"application/zip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-gzip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-rar-compressed", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-tar", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-bzip", DOWNLOAD_CONTENT_ARCHIVE},
-  {"application/x-exe", DOWNLOAD_CONTENT_EXE},
-  {"application/x-apple-diskimage", DOWNLOAD_CONTENT_DMG},
-  {"application/x-chrome-extension", DOWNLOAD_CONTENT_CRX},
-};
-
-}  // namespace
-
-void RecordDownloadMimeType(const std::string& mime_type_string) {
-  DownloadContent download_content = DOWNLOAD_CONTENT_UNRECOGNIZED;
-
-  // Look up exact matches.
-  for (size_t i = 0; i < arraysize(kMapMimeTypeToDownloadContent); ++i) {
-    const MimeTypeToDownloadContent& entry =
-        kMapMimeTypeToDownloadContent[i];
-    if (mime_type_string == entry.mime_type) {
-      download_content = entry.download_content;
-      break;
-    }
-  }
-
-  // Do partial matches.
-  if (download_content == DOWNLOAD_CONTENT_UNRECOGNIZED) {
-    if (StartsWithASCII(mime_type_string, "text/", true)) {
-      download_content = DOWNLOAD_CONTENT_TEXT;
-    } else if (StartsWithASCII(mime_type_string, "image/", true)) {
-      download_content = DOWNLOAD_CONTENT_IMAGE;
-    } else if (StartsWithASCII(mime_type_string, "audio/", true)) {
-      download_content = DOWNLOAD_CONTENT_AUDIO;
-    } else if (StartsWithASCII(mime_type_string, "video/", true)) {
-      download_content = DOWNLOAD_CONTENT_VIDEO;
-    }
-  }
-
-  // Record the value.
-  UMA_HISTOGRAM_ENUMERATION("Download.ContentType",
-                            download_content,
-                            DOWNLOAD_CONTENT_MAX);
 }
 
 // Download progress painting --------------------------------------------------
@@ -777,18 +637,6 @@ void DownloadUrl(
                      render_process_host_id,
                      render_view_id,
                      *context);
-}
-
-void NotifyDownloadInitiated(int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                               render_view_id);
-  if (!rvh)
-    return;
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_DOWNLOAD_INITIATED, Source<RenderViewHost>(rvh),
-      NotificationService::NoDetails());
 }
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {

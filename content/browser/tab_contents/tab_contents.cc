@@ -13,12 +13,12 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_from_memory_cache_details.h"
@@ -760,8 +760,8 @@ void TabContents::OnSavePage() {
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
       dlm->DownloadUrl(current_page_url, GURL(), "", this);
-      download_util::RecordDownloadCount(
-          download_util::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
+      download_stats::RecordDownloadCount(
+          download_stats::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
       return;
     }
   }

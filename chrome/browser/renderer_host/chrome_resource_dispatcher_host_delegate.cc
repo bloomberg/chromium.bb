@@ -19,13 +19,16 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/autologin_infobar_delegate.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/resource_context.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/common/notification_service.h"
 #include "content/common/resource_messages.h"
 #include "net/base/load_flags.h"
 
@@ -51,6 +54,17 @@ void AddPrerenderOnUI(
                                                       render_view_id,
                                                       url,
                                                       referrer);
+}
+
+void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                               render_view_id);
+  if (!rvh)
+    return;
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_DOWNLOAD_INITIATED, Source<RenderViewHost>(rvh),
+      NotificationService::NoDetails());
 }
 
 }  // end namespace
@@ -154,6 +168,10 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
       int request_id,
       bool is_new_request,
       bool in_complete) {
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&NotifyDownloadInitiatedOnUI, child_id, route_id));
 
   // If this isn't a new request, we've seen this before and added the safe
   // browsing resource handler already so no need to add it again. This code

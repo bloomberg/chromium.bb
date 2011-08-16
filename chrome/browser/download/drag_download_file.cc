@@ -6,10 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/file_stream.h"
 
@@ -128,8 +128,8 @@ void DragDownloadFile::InitiateDownload() {
                                        referrer_encoding_,
                                        save_info,
                                        tab_contents_);
-  download_util::RecordDownloadCount(
-      download_util::INITIATED_BY_DRAG_N_DROP_COUNT);
+  download_stats::RecordDownloadCount(
+      download_stats::INITIATED_BY_DRAG_N_DROP_COUNT);
 }
 
 void DragDownloadFile::DownloadCompleted(bool is_successful) {

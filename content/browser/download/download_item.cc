@@ -32,6 +32,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
+#include "content/browser/download/download_stats.h"
 #include "content/common/notification_source.h"
 
 // A DownloadItem normally goes through the following states:
@@ -387,7 +388,7 @@ void DownloadItem::Cancel(bool update_history) {
     return;
   }
 
-  download_util::RecordDownloadCount(download_util::CANCELLED_COUNT);
+  download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
 
   TransitionTo(CANCELLED);
   StopProgressTimer();
@@ -427,7 +428,7 @@ void DownloadItem::Completed() {
   DCHECK(all_data_saved_);
   TransitionTo(COMPLETE);
   download_manager_->DownloadCompleted(id());
-  download_util::RecordDownloadCompleted(start_tick_);
+  download_stats::RecordDownloadCompleted(start_tick_);
 
   if (is_extension_install()) {
     // Extensions should already have been unpacked and opened.
@@ -527,9 +528,9 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
   last_os_error_ = os_error;
   UpdateSize(size);
   StopProgressTimer();
-  download_util::RecordDownloadInterrupted(os_error,
-                                           received_bytes_,
-                                           total_bytes_);
+  download_stats::RecordDownloadInterrupted(os_error,
+                                            received_bytes_,
+                                            total_bytes_);
   TransitionTo(INTERRUPTED);
 }
 
@@ -779,7 +780,7 @@ void DownloadItem::Init(bool active) {
   UpdateTarget();
   if (active) {
     StartProgressTimer();
-    download_util::RecordDownloadCount(download_util::START_COUNT);
+    download_stats::RecordDownloadCount(download_stats::START_COUNT);
   }
   VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
 }

@@ -18,7 +18,6 @@
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy.h"
@@ -741,11 +740,6 @@ void ResourceDispatcherHost::BeginDownload(
             << url.possibly_invalid_spec();
     return;
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&download_util::NotifyDownloadInitiated,
-                          child_id, route_id));
 
   net::URLRequest* request = new net::URLRequest(url, this);
 

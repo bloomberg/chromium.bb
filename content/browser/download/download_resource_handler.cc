@@ -10,12 +10,12 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -45,7 +45,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       buffer_(new DownloadBuffer),
       rdh_(rdh),
       is_paused_(false) {
-  download_util::RecordDownloadCount(download_util::UNTHROTTLED_COUNT);
+  download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,
@@ -95,7 +95,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
                                                global_id_.request_id);
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
-  download_util::RecordDownloadMimeType(info->mime_type);
+  download_stats::RecordDownloadMimeType(info->mime_type);
   // TODO(ahendrickson) -- Get the last modified time and etag, so we can
   // resume downloading.
 

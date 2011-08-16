@@ -13,11 +13,11 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
@@ -609,8 +609,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            render_process_id_,
                                            message.routing_id(),
                                            resource_context_);
-  download_util::RecordDownloadCount(
-      download_util::INITIATED_BY_RENDERER_COUNT);
+  download_stats::RecordDownloadCount(
+      download_stats::INITIATED_BY_RENDERER_COUNT);
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(
