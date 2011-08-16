@@ -156,8 +156,7 @@ class OmniboxViewViews : public views::View,
   // Selects the text given by |caret| and |end|.
   void SelectRange(size_t caret, size_t end);
 
-  AutocompletePopupView* CreatePopupView(Profile* profile,
-                                         View* location_bar);
+  AutocompletePopupView* CreatePopupView(View* location_bar);
 
   views::Textfield* textfield_;
 

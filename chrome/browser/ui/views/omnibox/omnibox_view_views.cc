@@ -146,7 +146,7 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
                                    bool popup_window_mode,
                                    views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(CreatePopupView(profile, location_bar)),
+      popup_view_(CreatePopupView(location_bar)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -642,8 +642,8 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // And Go system uses.
   string16 text = GetText();
   url_parse::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(
-      text, model_->GetDesiredTLD(), &scheme, &host);
+  AutocompleteInput::ParseForEmphasizeComponents(text, model_->GetDesiredTLD(),
+                                                 &scheme, &host);
   const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
   SkColor base_color = emphasize ? kFadedTextColor : kNormalTextColor;
   ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
@@ -693,7 +693,6 @@ void OmniboxViewViews::SelectRange(size_t caret, size_t end) {
 }
 
 AutocompletePopupView* OmniboxViewViews::CreatePopupView(
-    Profile* profile,
     View* location_bar) {
 #if defined(TOUCH_UI)
   typedef TouchAutocompletePopupContentsView AutocompleteContentsView;
