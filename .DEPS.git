@@ -41,7 +41,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@2bd4562d201c4e0426771543ddaf4bdc16f91d6e',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@1c19b01e56d8b9f55b2866c97e67687725264bdd',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@5bbf24608a62c64a0d7ea17c0b3052091369780c',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
