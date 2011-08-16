@@ -57,7 +57,7 @@ void TouchLoginView::Init() {
   InitVirtualKeyboard();
 
 
-  Source<TabContents> tab_contents(webui_login_->tab_contents()));
+  Source<TabContents> tab_contents(webui_login_->tab_contents());
   registrar_.Add(this,
                  content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  tab_contents);
