@@ -1951,9 +1951,11 @@ void Browser::OpenBookmarkManager() {
 void Browser::OpenBookmarkManagerForNode(int64 node_id) {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
-  ShowSingletonTabOverwritingNTP(
-    GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL).Resolve(
+  browser::NavigateParams params(GetSingletonTabNavigateParams(
+      GURL(chrome::kChromeUIBookmarksURL).Resolve(
       StringPrintf("/#%s", base::Int64ToString(node_id).c_str()))));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(params);
 }
 
 void Browser::ShowAppMenu() {
