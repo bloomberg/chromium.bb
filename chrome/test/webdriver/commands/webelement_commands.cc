@@ -13,10 +13,9 @@
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "third_party/webdriver/atoms.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/size.h"
 
 namespace webdriver {
 
@@ -280,7 +279,7 @@ bool ElementLocationInViewCommand::DoesGet() {
 }
 
 void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
-  gfx::Point location;
+  Point location;
   Error* error = session_->GetElementLocationInView(element, &location);
   if (error) {
     response->SetError(error);
@@ -367,7 +366,7 @@ bool ElementSizeCommand::DoesGet() {
 }
 
 void ElementSizeCommand::ExecuteGet(Response* const response) {
-  gfx::Size size;
+  Size size;
   Error* error = session_->GetElementSize(
       session_->current_target(), element, &size);
   if (error) {
@@ -565,7 +564,7 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
     paths.push_back(path);
   }
 
-  gfx::Point location;
+  Point location;
   error = session_->GetClickableLocation(element, &location);
   if (error) {
     return error;

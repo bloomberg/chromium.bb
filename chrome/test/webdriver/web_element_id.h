@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "chrome/test/automation/value_conversion_traits.h"
+
 namespace base {
 class Value;
 }
@@ -27,7 +29,7 @@ class WebElementId {
 
   // Creates a |WebElementId| from an element dictionary returned by a WebDriver
   // atom. It will be valid iff the dictionary is correctly constructed.
-  explicit WebElementId(base::Value* value);
+  explicit WebElementId(const base::Value* value);
 
   ~WebElementId();
 
@@ -59,5 +61,13 @@ struct LocatorType {
 };
 
 }  // namespace webdriver
+
+template <>
+struct ValueConversionTraits<webdriver::WebElementId> {
+  static base::Value* CreateValueFrom(const webdriver::WebElementId& t);
+  static bool SetFromValue(
+      const base::Value* value, webdriver::WebElementId* t);
+  static bool CanConvert(const base::Value* value);
+};
 
 #endif  // CHROME_TEST_WEBDRIVER_WEB_ELEMENT_ID_H_

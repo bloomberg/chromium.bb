@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/test/automation/javascript_message_utils.h"
 
 namespace {
 
@@ -30,10 +31,10 @@ WebElementId::WebElementId() : is_valid_(false) {}
 
 WebElementId::WebElementId(const std::string& id) : id_(id), is_valid_(true) {}
 
-WebElementId::WebElementId(Value* value) {
+WebElementId::WebElementId(const Value* value) {
   is_valid_ = false;
   if (value->IsType(Value::TYPE_DICTIONARY)) {
-    is_valid_ = static_cast<DictionaryValue*>(value)->
+    is_valid_ = static_cast<const DictionaryValue*>(value)->
         GetString(kWebElementKey, &id_);
   }
 }
@@ -54,3 +55,22 @@ bool WebElementId::is_valid() const {
 }
 
 }  // namespace webdriver
+
+base::Value* ValueConversionTraits<webdriver::WebElementId>::CreateValueFrom(
+    const webdriver::WebElementId& t) {
+  return t.ToValue();
+}
+
+bool ValueConversionTraits<webdriver::WebElementId>::SetFromValue(
+    const base::Value* value, webdriver::WebElementId* t) {
+  webdriver::WebElementId id(value);
+  if (id.is_valid())
+    *t = id;
+  return id.is_valid();
+}
+
+bool ValueConversionTraits<webdriver::WebElementId>::CanConvert(
+    const base::Value* value) {
+  webdriver::WebElementId t;
+  return SetFromValue(value, &t);
+}

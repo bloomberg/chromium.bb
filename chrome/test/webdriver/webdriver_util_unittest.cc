@@ -5,7 +5,7 @@
 #include <set>
 #include <string>
 
-#include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(RandomIDTest, CanGenerateSufficientlyRandomIDs) {

@@ -14,48 +14,12 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/automation/dom_element_proxy.h"
-
-// ValueConversionTraits contains functions for creating a value from a
-// type, and setting a type from a value. This is general-purpose and can
-// be moved to a common location if needed.
-template <class T>
-struct ValueConversionTraits {
-};
-
-template <>
-struct ValueConversionTraits<int> {
-  static Value* CreateValue(int t) {
-    return Value::CreateIntegerValue(t);
-  }
-  static bool SetFromValue(Value* value, int* t) {
-    return value->GetAsInteger(t);
-  }
-};
-
-template <>
-struct ValueConversionTraits<bool> {
-  static Value* CreateValue(bool t) {
-    return Value::CreateBooleanValue(t);
-  }
-  static bool SetFromValue(Value* value, bool* t) {
-    return value->GetAsBoolean(t);
-  }
-};
-
-template <>
-struct ValueConversionTraits<std::string> {
-  static Value* CreateValue(const std::string& t) {
-    return Value::CreateStringValue(t);
-  }
-  static bool SetFromValue(Value* value, std::string* t) {
-    return value->GetAsString(t);
-  }
-};
+#include "chrome/test/automation/value_conversion_traits.h"
 
 template <>
 struct ValueConversionTraits<DOMElementProxy::By> {
   typedef DOMElementProxy::By type;
-  static Value* CreateValue(const type& t) {
+  static Value* CreateValueFrom(const type& t) {
     DictionaryValue* value = new DictionaryValue();
     std::string by_type;
     switch (t.type()) {
@@ -80,19 +44,23 @@ struct ValueConversionTraits<DOMElementProxy::By> {
 
 template <typename T>
 struct ValueConversionTraits<std::vector<T> > {
-  static Value* CreateValue(const std::vector<T>& t) {
+  static Value* CreateValueFrom(const std::vector<T>& t) {
     ListValue* value = new ListValue();
     for (size_t i = 0; i < t.size(); i++) {
-      value->Append(ValueConversionTraits<T>::CreateValue(t[i]));
+      value->Append(ValueConversionTraits<T>::CreateValueFrom(t[i]));
     }
     return value;
   }
-  static bool SetFromValue(Value* value, std::vector<T>* t) {
+  static bool SetFromValue(const Value* value, std::vector<T>* t) {
     if (!value->IsType(Value::TYPE_LIST))
       return false;
 
-    ListValue* list_value = static_cast<ListValue*>(value);
+    const ListValue* list_value = static_cast<const ListValue*>(value);
     ListValue::const_iterator iter;
+    for (iter = list_value->begin(); iter != list_value->end(); ++iter) {
+      if (!ValueConversionTraits<T>::CanConvert(*iter))
+        return false;
+    }
     for (iter = list_value->begin(); iter != list_value->end(); ++iter) {
       T inner_value;
       ValueConversionTraits<T>::SetFromValue(*iter, &inner_value);
@@ -108,7 +76,7 @@ namespace javascript_utils {
 template <typename T>
 std::string JSONStringify(const T& arg) {
   std::string javascript;
-  scoped_ptr<Value> value(ValueConversionTraits<T>::CreateValue(arg));
+  scoped_ptr<Value> value(ValueConversionTraits<T>::CreateValueFrom(arg));
   base::JSONWriter::Write(value.get(), false, &javascript);
   return javascript;
 }

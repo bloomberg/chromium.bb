@@ -35,9 +35,9 @@
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/webdriver/frame_path.h"
-#include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
-#include "ui/gfx/point.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -302,7 +302,7 @@ void Automation::ExecuteScript(int tab_id,
 }
 
 void Automation::MouseMove(int tab_id,
-                           const gfx::Point& p,
+                           const Point& p,
                            Error** error) {
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
@@ -311,13 +311,14 @@ void Automation::MouseMove(int tab_id,
 
   std::string error_msg;
   if (!SendMouseMoveJSONRequest(
-          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+          automation(), windex, tab_index, p.rounded_x(), p.rounded_y(),
+          &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::MouseClick(int tab_id,
-                            const gfx::Point& p,
+                            const Point& p,
                             automation::MouseButton button,
                             Error** error) {
   int windex = 0, tab_index = 0;
@@ -327,14 +328,15 @@ void Automation::MouseClick(int tab_id,
 
   std::string error_msg;
   if (!SendMouseClickJSONRequest(
-          automation(), windex, tab_index, button, p.x(), p.y(), &error_msg)) {
+          automation(), windex, tab_index, button, p.rounded_x(),
+          p.rounded_y(), &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::MouseDrag(int tab_id,
-                           const gfx::Point& start,
-                           const gfx::Point& end,
+                           const Point& start,
+                           const Point& end,
                            Error** error) {
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
@@ -342,14 +344,15 @@ void Automation::MouseDrag(int tab_id,
     return;
 
   std::string error_msg;
-  if (!SendMouseDragJSONRequest(automation(), windex, tab_index, start.x(),
-                                start.y(), end.x(), end.y(), &error_msg)) {
+  if (!SendMouseDragJSONRequest(
+          automation(), windex, tab_index, start.rounded_x(), start.rounded_y(),
+          end.rounded_x(), end.rounded_y(), &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::MouseButtonUp(int tab_id,
-                               const gfx::Point& p,
+                               const Point& p,
                                Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
@@ -362,13 +365,14 @@ void Automation::MouseButtonUp(int tab_id,
 
   std::string error_msg;
   if (!SendMouseButtonUpJSONRequest(
-          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+          automation(), windex, tab_index, p.rounded_x(), p.rounded_y(),
+          &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::MouseButtonDown(int tab_id,
-                                 const gfx::Point& p,
+                                 const Point& p,
                                  Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
@@ -381,13 +385,14 @@ void Automation::MouseButtonDown(int tab_id,
 
   std::string error_msg;
   if (!SendMouseButtonDownJSONRequest(
-          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+          automation(), windex, tab_index, p.rounded_x(), p.rounded_y(),
+          &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::MouseDoubleClick(int tab_id,
-                                  const gfx::Point& p,
+                                  const Point& p,
                                   Error** error) {
   *error = CheckAdvancedInteractionsSupported();
   if (*error)
@@ -400,13 +405,14 @@ void Automation::MouseDoubleClick(int tab_id,
 
   std::string error_msg;
   if (!SendMouseDoubleClickJSONRequest(
-          automation(), windex, tab_index, p.x(), p.y(), &error_msg)) {
+          automation(), windex, tab_index, p.rounded_x(), p.rounded_y(),
+          &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }
 
 void Automation::DragAndDropFilePaths(
-    int tab_id, const gfx::Point& location,
+    int tab_id, const Point& location,
     const std::vector<FilePath::StringType>& paths, Error** error) {
   int windex = 0, tab_index = 0;
   *error = GetIndicesForTab(tab_id, &windex, &tab_index);
@@ -416,8 +422,8 @@ void Automation::DragAndDropFilePaths(
 
   std::string error_msg;
   if (!SendDragAndDropFilePathsJSONRequest(
-          automation(), windex, tab_index, location.x(), location.y(), paths,
-          &error_msg)) {
+          automation(), windex, tab_index, location.rounded_x(),
+          location.rounded_y(), paths, &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
   }
 }

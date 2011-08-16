@@ -17,7 +17,7 @@
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/web_element_id.h"
-#include "ui/gfx/point.h"
+#include "chrome/test/webdriver/webdriver_basic_types.h"
 
 class CommandLine;
 class FilePath;
@@ -29,14 +29,10 @@ class Value;
 class WaitableEvent;
 }
 
-namespace gfx {
-class Rect;
-class Size;
-}
-
 namespace webdriver {
 
 class Error;
+class ValueParser;
 
 // A window ID and frame path combination that uniquely identifies a specific
 // frame within a session.
@@ -103,6 +99,16 @@ class Session {
                        const base::ListValue* const args,
                        base::Value** value);
 
+  // Executes the given script in the context of the given frame and parses
+  // the value with the given parser. The script should be in the form of an
+  // anonymous function. |script_name| is only used when creating error
+  // messages. This function takes ownership of |args| and |parser|.
+  Error* ExecuteScriptAndParse(const FrameId& frame_id,
+                               const std::string& anonymous_func_script,
+                               const std::string& script_name,
+                               const base::ListValue* args,
+                               const ValueParser* parser);
+
   // Executes given |script| in the context of the given frame.
   // The |script| should be in the form of a function body
   // (e.g. "return arguments[0]"), where |args| is the list of arguments to
@@ -118,14 +124,14 @@ class Session {
   Error* SendKeys(const WebElementId& element, const string16& keys);
 
   // Sets the file paths to the file upload control under the given location.
-  Error* DragAndDropFilePaths(const gfx::Point& location,
+  Error* DragAndDropFilePaths(const Point& location,
                               const std::vector<FilePath::StringType>& paths);
 
   // Clicks the mouse at the given location using the given button.
-  Error* MouseMoveAndClick(const gfx::Point& location,
+  Error* MouseMoveAndClick(const Point& location,
                            automation::MouseButton button);
-  Error* MouseMove(const gfx::Point& location);
-  Error* MouseDrag(const gfx::Point& start, const gfx::Point& end);
+  Error* MouseMove(const Point& location);
+  Error* MouseDrag(const Point& start, const Point& end);
   Error* MouseClick(automation::MouseButton button);
   Error* MouseButtonDown();
   Error* MouseButtonUp();
@@ -214,7 +220,7 @@ class Session {
   // the client's viewport.
   Error* GetElementLocationInView(
       const WebElementId& element,
-      gfx::Point* location);
+      Point* location);
 
   // Scroll the element's region into view and get its location relative to
   // the client's viewport. If |center| is true, the element will be centered
@@ -223,22 +229,22 @@ class Session {
   // of the given region.
   Error* GetElementRegionInView(
       const WebElementId& element,
-      const gfx::Rect& region,
+      const Rect& region,
       bool center,
       bool verify_clickable_at_middle,
-      gfx::Point* location);
+      Point* location);
 
   // Gets the size of the element from the given window and frame, even if
   // its display is none.
   Error* GetElementSize(const FrameId& frame_id,
                         const WebElementId& element,
-                        gfx::Size* size);
+                        Size* size);
 
   // Gets the size of the element's first client rect. If the element has
   // no client rects, this will return an error.
   Error* GetElementFirstClientRect(const FrameId& frame_id,
                                    const WebElementId& element,
-                                   gfx::Rect* rect);
+                                   Rect* rect);
 
   // Gets the element's effective style for the given property.
   Error* GetElementEffectiveStyle(
@@ -289,7 +295,7 @@ class Session {
   // location of the element. If the element is not clickable, or if the
   // location cannot be determined, an error will be returned.
   Error* GetClickableLocation(const WebElementId& element,
-                              gfx::Point* location);
+                              Point* location);
 
   // Gets the attribute of the given element. If there are no errors, the
   // function sets |value| and the caller takes ownership.
@@ -312,7 +318,7 @@ class Session {
   void set_implicit_wait(int timeout_ms);
   int implicit_wait() const;
 
-  const gfx::Point& get_mouse_position() const;
+  const Point& get_mouse_position() const;
 
   const Options& options() const;
 
@@ -334,9 +340,9 @@ class Session {
   // Executes the given |script| in the context of the given frame.
   // Waits for script to finish and parses the response.
   // The caller is responsible for the script result |value|.
-  Error* ExecuteScriptAndParseResponse(const FrameId& frame_id,
-                                       const std::string& script,
-                                       base::Value** value);
+  Error* ExecuteScriptAndParseValue(const FrameId& frame_id,
+                                    const std::string& script,
+                                    base::Value** value);
 
   void SendKeysOnSessionThread(const string16& keys, Error** error);
   Error* SwitchToFrameWithJavaScriptLocatedFrame(
@@ -348,18 +354,24 @@ class Session {
                             const std::string& query,
                             bool find_one,
                             std::vector<WebElementId>* elements);
+  Error* ExecuteFindElementScriptAndParse(const FrameId& frame_id,
+                                          const WebElementId& root_element,
+                                          const std::string& locator,
+                                          const std::string& query,
+                                          bool find_one,
+                                          std::vector<WebElementId>* elements);
   // Returns an error if the element is not clickable.
   Error* VerifyElementIsClickable(
       const FrameId& frame_id,
       const WebElementId& element,
-      const gfx::Point& location);
+      const Point& location);
   Error* GetElementRegionInViewHelper(
       const FrameId& frame_id,
       const WebElementId& element,
-      const gfx::Rect& region,
+      const Rect& region,
       bool center,
       bool verify_clickable_at_middle,
-      gfx::Point* location);
+      Point* location);
 
   const std::string id_;
   FrameId current_target_;
@@ -379,7 +391,7 @@ class Session {
   std::vector<WebElementId> frame_elements_;
 
   // Last mouse position. Advanced APIs need this value.
-  gfx::Point mouse_position_;
+  Point mouse_position_;
 
   // Chrome does not have an individual method for setting the prompt text
   // of an alert. Instead, when the WebDriver client wants to set the text,

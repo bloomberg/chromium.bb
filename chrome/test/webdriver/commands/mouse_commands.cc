@@ -6,13 +6,13 @@
 
 #include "base/values.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/size.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 
 namespace {
 
@@ -46,27 +46,21 @@ void MoveAndClickCommand::ExecutePost(Response* response) {
 
   if (tag_name == "option") {
     const char* kCanOptionBeToggledScript =
-        "return (function(option) {"
+        "function(option) {"
         "  var select = option.parentElement;"
         "  if (!select || select.tagName.toLowerCase() != 'select')"
         "    throw new Error('Option element is not in a select');"
         "  return select.multiple;"
-        "}).apply(null, arguments);";
-    ListValue args;
-    args.Append(element.ToValue());
-    Value* value = NULL;
-    error = session_->ExecuteScript(
-        session_->current_target(), kCanOptionBeToggledScript, &args, &value);
+        "}";
+    bool can_be_toggled;
+    error = session_->ExecuteScriptAndParse(
+        session_->current_target(),
+        kCanOptionBeToggledScript,
+        "canOptionBeToggled",
+        CreateListValueFrom(element),
+        CreateDirectValueParser(&can_be_toggled));
     if (error) {
       response->SetError(error);
-      return;
-    }
-    scoped_ptr<Value> scoped_value(value);
-    bool can_be_toggled;
-    if (!value->GetAsBoolean(&can_be_toggled)) {
-      response->SetError(
-          new Error(kUnknownError, "canOptionBeToggled returned non-boolean: " +
-                        JsonStringify(value)));
       return;
     }
 
@@ -78,7 +72,7 @@ void MoveAndClickCommand::ExecutePost(Response* response) {
           session_->current_target(), element, true);
     }
   } else {
-    gfx::Point location;
+    Point location;
     error = session_->GetClickableLocation(element, &location);
     if (!error)
       error = session_->MouseMoveAndClick(location, automation::kLeftButton);
@@ -101,7 +95,7 @@ bool HoverCommand::DoesPost() {
 
 void HoverCommand::ExecutePost(Response* response) {
   Error* error = NULL;
-  gfx::Point location;
+  Point location;
   error = session_->GetClickableLocation(element, &location);
   if (!error)
     error = session_->MouseMove(location);
@@ -136,14 +130,14 @@ bool DragCommand::DoesPost() {
 
 void DragCommand::ExecutePost(Response* response) {
   Error* error = NULL;
-  gfx::Point drag_from;
+  Point drag_from;
   error = session_->GetClickableLocation(element, &drag_from);
   if (error) {
     response->SetError(error);
     return;
   }
 
-  gfx::Point drag_to(drag_from);
+  Point drag_to(drag_from);
   drag_to.Offset(drag_x_, drag_y_);
   if (drag_to.x() < 0 || drag_to.y() < 0)
     error = new Error(kBadRequest, "Invalid (x,y) coordinates");
@@ -199,7 +193,7 @@ bool MoveToCommand::Init(Response* const response) {
 }
 
 void MoveToCommand::ExecutePost(Response* const response) {
-  gfx::Point location;
+  Point location;
   Error* error;
 
   if (has_element_) {
@@ -221,7 +215,7 @@ void MoveToCommand::ExecutePost(Response* const response) {
     DCHECK(has_element_);
 
     // If not, calculate the half of the element size and translate by it.
-    gfx::Size size;
+    Size size;
     error = session_->GetElementSize(session_->current_target(),
                                      element_, &size);
     if (error) {

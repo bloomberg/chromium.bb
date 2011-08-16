@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
@@ -12,6 +12,8 @@
 #include "base/values.h"
 
 namespace webdriver {
+
+SkipParsing* kSkipParsing = NULL;
 
 std::string GenerateRandomID() {
   uint64 msb = base::RandUint64();
@@ -25,4 +27,18 @@ std::string JsonStringify(const Value* value) {
   return json;
 }
 
+ValueParser::ValueParser() { }
+
+ValueParser::~ValueParser() { }
+
 }  // namespace webdriver
+
+bool ValueConversionTraits<webdriver::SkipParsing>::SetFromValue(
+    const base::Value* value, const webdriver::SkipParsing* t) {
+  return true;
+}
+
+bool ValueConversionTraits<webdriver::SkipParsing>::CanConvert(
+    const base::Value* value) {
+  return true;
+}

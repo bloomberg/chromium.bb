@@ -48,8 +48,8 @@
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 #include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/session_manager.h"
-#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/mongoose/mongoose.h"
 
 #if defined(OS_WIN)

@@ -26,14 +26,11 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace webdriver {
 
 class Error;
 class FramePath;
+class Point;
 
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
@@ -83,7 +80,7 @@ class Automation {
 
   // Drag and drop the file paths to the given location.
   void DragAndDropFilePaths(int tab_id,
-                            const gfx::Point& location,
+                            const Point& location,
                             const std::vector<FilePath::StringType>& paths,
                             Error** error);
 
@@ -108,18 +105,18 @@ class Automation {
                  base::DictionaryValue* cookie_dict,
                  Error** error);
 
-  void MouseMove(int tab_id, const gfx::Point& p, Error** error);
+  void MouseMove(int tab_id, const Point& p, Error** error);
   void MouseClick(int tab_id,
-                  const gfx::Point& p,
+                  const Point& p,
                   automation::MouseButton button,
                   Error** error);
   void MouseDrag(int tab_id,
-                 const gfx::Point& start,
-                 const gfx::Point& end,
+                 const Point& start,
+                 const Point& end,
                  Error** error);
-  void MouseButtonDown(int tab_id, const gfx::Point& p, Error** error);
-  void MouseButtonUp(int tab_id, const gfx::Point& p, Error** error);
-  void MouseDoubleClick(int tab_id, const gfx::Point& p, Error** error);
+  void MouseButtonDown(int tab_id, const Point& p, Error** error);
+  void MouseButtonUp(int tab_id, const Point& p, Error** error);
+  void MouseDoubleClick(int tab_id, const Point& p, Error** error);
 
   // Get persistent IDs for all the tabs currently open. These IDs can be used
   // to identify the tab as long as the tab exists.

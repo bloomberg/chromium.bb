@@ -32,14 +32,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_json_requests.h"
-#include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/webdriver/session_manager.h"
-#include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/webdriver/atoms.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 
 namespace webdriver {
 
@@ -131,13 +129,39 @@ Error* Session::ExecuteScript(const FrameId& frame_id,
       "[function(){%s\n},%s,true]));",
       atoms::EXECUTE_SCRIPT, script.c_str(), args_as_json.c_str());
 
-  return ExecuteScriptAndParseResponse(frame_id, jscript, value);
+  return ExecuteScriptAndParseValue(frame_id, jscript, value);
 }
 
 Error* Session::ExecuteScript(const std::string& script,
                               const ListValue* const args,
                               Value** value) {
   return ExecuteScript(current_target_, script, args, value);
+}
+
+Error* Session::ExecuteScriptAndParse(const FrameId& frame_id,
+                                      const std::string& anonymous_func_script,
+                                      const std::string& script_name,
+                                      const ListValue* args,
+                                      const ValueParser* parser) {
+  scoped_ptr<const ListValue> scoped_args(args);
+  scoped_ptr<const ValueParser> scoped_parser(parser);
+  std::string called_script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", anonymous_func_script.c_str());
+  Value* unscoped_value = NULL;
+  Error* error = ExecuteScript(frame_id, called_script, args, &unscoped_value);
+  if (error) {
+    error->AddDetails(script_name + " execution failed");
+    return error;
+  }
+
+  scoped_ptr<Value> value(unscoped_value);
+  std::string error_msg;
+  if (!parser->Parse(value.get())) {
+    error_msg = base::StringPrintf("%s returned invalid value: %s",
+        script_name.c_str(), JsonStringify(value.get()).c_str());
+    return new Error(kUnknownError, error_msg);
+  }
+  return NULL;
 }
 
 Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
@@ -162,7 +186,7 @@ Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
       timeout_ms,
       "function(result) {window.domAutomationController.send(result);}");
 
-  return ExecuteScriptAndParseResponse(frame_id, jscript, value);
+  return ExecuteScriptAndParseValue(frame_id, jscript, value);
 }
 
 Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
@@ -181,8 +205,6 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
   if (!is_enabled)
     return new Error(kInvalidElementState);
 
-  ListValue args;
-  args.Append(element.ToValue());
   // Focus the target element in order to send keys to it.
   // First, the currently active element is blurred, if it is different from
   // the target element. We do not want to blur an element unnecessarily,
@@ -202,24 +224,27 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
   //   - You cannot focus a descendant of a content editable node
   // TODO(jleyba): Update this to use the correct atom.
   const char* kFocusScript =
-      "var elem = arguments[0];"
-      "var doc = elem.ownerDocument || elem;"
-      "var prevActiveElem = doc.activeElement;"
-      "if (elem != prevActiveElem && prevActiveElem)"
-      "  prevActiveElem.blur();"
-      "elem.focus();"
-      "if (elem != prevActiveElem && elem.value && elem.value.length &&"
-      "    elem.setSelectionRange) {"
-      "  elem.setSelectionRange(elem.value.length, elem.value.length);"
-      "}"
-      "if (elem != doc.activeElement)"
-      "  throw new Error('Failed to send keys because cannot focus element.');";
-  Value* unscoped_result = NULL;
-  error = ExecuteScript(kFocusScript, &args, &unscoped_result);
+      "function(elem) {"
+      "  var doc = elem.ownerDocument || elem;"
+      "  var prevActiveElem = doc.activeElement;"
+      "  if (elem != prevActiveElem && prevActiveElem)"
+      "    prevActiveElem.blur();"
+      "  elem.focus();"
+      "  if (elem != prevActiveElem && elem.value && elem.value.length &&"
+      "      elem.setSelectionRange) {"
+      "    elem.setSelectionRange(elem.value.length, elem.value.length);"
+      "  }"
+      "  if (elem != doc.activeElement)"
+      "    throw new Error('Failed to send keys because cannot focus element');"
+      "}";
+  error = ExecuteScriptAndParse(current_target_,
+                                kFocusScript,
+                                "focusElement",
+                                CreateListValueFrom(element),
+                                CreateDirectValueParser(kSkipParsing));
   if (error)
     return error;
 
-  error = NULL;
   RunSessionTask(NewRunnableMethod(
       this,
       &Session::SendKeysOnSessionThread,
@@ -229,7 +254,7 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
 }
 
 Error* Session::DragAndDropFilePaths(
-    const gfx::Point& location,
+    const Point& location,
     const std::vector<FilePath::StringType>& paths) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
@@ -293,44 +318,29 @@ Error* Session::Reload() {
 }
 
 Error* Session::GetURL(std::string* url) {
-  ListValue no_args;
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(current_target_,
-                               "return document.URL;",
-                               &no_args,
-                               &unscoped_value);
-  scoped_ptr<Value> value(unscoped_value);
-  if (error)
-    return error;
-  if (!value->GetAsString(url))
-    return new Error(kUnknownError, "GetURL Script returned non-string: " +
-                         JsonStringify(value.get()));
-  return NULL;
+  return ExecuteScriptAndParse(current_target_,
+                               "function() { return document.URL }",
+                               "getUrl",
+                               new ListValue(),
+                               CreateDirectValueParser(url));
 }
 
 Error* Session::GetTitle(std::string* tab_title) {
-  std::string script =
-      "if (document.title)"
-      "  return document.title;"
-      "else"
-      "  return document.URL;";
-
-  ListValue no_args;
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(current_target_,
-                               script,
-                               &no_args,
-                               &unscoped_value);
-  scoped_ptr<Value> value(unscoped_value);
-  if (error)
-    return error;
-  if (!value->GetAsString(tab_title))
-    return new Error(kUnknownError, "GetTitle script returned non-string: " +
-                         JsonStringify(value.get()));
-  return NULL;
+  const char* kGetTitleScript =
+      "function() {"
+      "  if (document.title)"
+      "    return document.title;"
+      "  else"
+      "    return document.URL;"
+      "}";
+  return ExecuteScriptAndParse(current_target_,
+                               kGetTitleScript,
+                               "getTitle",
+                               new ListValue(),
+                               CreateDirectValueParser(tab_title));
 }
 
-Error* Session::MouseMoveAndClick(const gfx::Point& location,
+Error* Session::MouseMoveAndClick(const Point& location,
                                   automation::MouseButton button) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
@@ -345,7 +355,7 @@ Error* Session::MouseMoveAndClick(const gfx::Point& location,
   return error;
 }
 
-Error* Session::MouseMove(const gfx::Point& location) {
+Error* Session::MouseMove(const Point& location) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
@@ -358,8 +368,8 @@ Error* Session::MouseMove(const gfx::Point& location) {
   return error;
 }
 
-Error* Session::MouseDrag(const gfx::Point& start,
-                          const gfx::Point& end) {
+Error* Session::MouseDrag(const Point& start,
+                          const Point& end) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
@@ -480,18 +490,16 @@ Error* Session::SwitchToWindow(const std::string& name) {
       return error;
     // See if any of the window names match |name|.
     for (size_t i = 0; i < window_ids.size(); ++i) {
-      ListValue empty_list;
-      Value* unscoped_name_value = NULL;
       std::string window_name;
-      Error* error = ExecuteScript(FrameId(window_ids[i], FramePath()),
-                                   "return window.name;",
-                                   &empty_list,
-                                   &unscoped_name_value);
+      Error* error = ExecuteScriptAndParse(
+          FrameId(window_ids[i], FramePath()),
+          "function() { return window.name; }",
+          "getWindowName",
+          new ListValue(),
+          CreateDirectValueParser(&window_name));
       if (error)
         return error;
-      scoped_ptr<Value> name_value(unscoped_name_value);
-      if (name_value->GetAsString(&window_name) &&
-          name == window_name) {
+      if (name == window_name) {
         switch_to_id = window_ids[i];
         break;
       }
@@ -507,21 +515,21 @@ Error* Session::SwitchToWindow(const std::string& name) {
 
 Error* Session::SwitchToFrameWithNameOrId(const std::string& name_or_id) {
   std::string script =
-      "var arg = arguments[0];"
-      "var xpath = '(/html/body//iframe|/html/frameset/frame)';"
-      "var sub = function(s) { return s.replace(/\\$/g, arg); };"
-      "xpath += sub('[@name=\"$\" or @id=\"$\"]');"
-      "var frame = document.evaluate(xpath, document, null, "
-      "    XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
-      "if (!frame) { return null; }"
-      "xpath = frame.tagName == 'IFRAME' ? '/html/body//iframe'"
-      "                                  : '/html/frameset/frame';"
-      "frame_xpath = xpath + "
-      "              sub('[@' + (frame.id == arg ? 'id' : 'name') + '=\"$\"]');"
-      "return [frame, frame_xpath];";
-  ListValue args;
-  args.Append(new StringValue(name_or_id));
-  return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
+      "function(arg) {"
+      "  var xpath = '(/html/body//iframe|/html/frameset/frame)';"
+      "  var sub = function(s) { return s.replace(/\\$/g, arg); };"
+      "  xpath += sub('[@name=\"$\" or @id=\"$\"]');"
+      "  var frame = document.evaluate(xpath, document, null, "
+      "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
+      "  if (!frame) { return null; }"
+      "  xpath = frame.tagName == 'IFRAME' ? '/html/body//iframe'"
+      "                                    : '/html/frameset/frame';"
+      "  frame_xpath = xpath + "
+      "      sub('[@' + (frame.id == arg ? 'id' : 'name') + '=\"$\"]');"
+      "  return [frame, frame_xpath];"
+      "}";
+  return SwitchToFrameWithJavaScriptLocatedFrame(
+      script, CreateListValueFrom(name_or_id));
 }
 
 Error* Session::SwitchToFrameWithIndex(int index) {
@@ -533,43 +541,39 @@ Error* Session::SwitchToFrameWithIndex(int index) {
   // into the list of all IFRAME and FRAME elements on the page - if we find
   // something, then that XPath expression can be used as the new frame's XPath.
   std::string script =
-      "var index = '[' + (arguments[0] + 1) + ']';"
-      "var xpath = '(/html/body//iframe|/html/frameset/frame)' + "
-      "            index;"
-      "console.info('searching for frame by xpath: ' + xpath);"
-      "var frame = document.evaluate(xpath, document, null, "
-      "XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
-      "console.info(frame == null ? 'found nothing' : frame);"
-      "if (!frame) { return null; }"
-      "frame_xpath = ((frame.tagName == 'IFRAME' ? "
-      "    '(/html/body//iframe)' : '/html/frameset/frame') + index);"
-      "return [frame, frame_xpath];";
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(index));
-  return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
+      "function(index) {"
+      "  var xpathIndex = '[' + (index + 1) + ']';"
+      "  var xpath = '(/html/body//iframe|/html/frameset/frame)' + "
+      "              xpathIndex;"
+      "  var frame = document.evaluate(xpath, document, null, "
+      "  XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
+      "  if (!frame) { return null; }"
+      "  frame_xpath = ((frame.tagName == 'IFRAME' ? "
+      "      '(/html/body//iframe)' : '/html/frameset/frame') + xpathIndex);"
+      "  return [frame, frame_xpath];"
+      "}";
+  return SwitchToFrameWithJavaScriptLocatedFrame(
+      script, CreateListValueFrom(index));
 }
 
 Error* Session::SwitchToFrameWithElement(const WebElementId& element) {
   // TODO(jleyba): Extract this, and the other frame switch methods to an atom.
   std::string script =
-      "var element = arguments[0];"
-      "console.info('Attempting to switch to ' + element);"
-      "if (element.nodeType != 1 || !/^i?frame$/i.test(element.tagName)) {"
-      "  console.info('Element is not a frame: ' + element + "
-      "' {nodeType:' + element.nodeType + ',tagName:' + element.tagName + '}');"
-      "  return null;"
-      "}"
-      "for (var i = 0; i < window.frames.length; i++) {"
-      "  if (element.contentWindow == window.frames[i]) {"
-      "    return [element, '(//iframe|//frame)[' + (i + 1) + ']'];"
+      "function(elem) {"
+      "  if (elem.nodeType != 1 || !/^i?frame$/i.test(elem.tagName)) {"
+      "    console.error('Element is not a frame');"
+      "    return null;"
       "  }"
-      "}"
-      "console.info('Frame is not connected to this DOM tree');"
-      "return null;";
-
-  ListValue args;
-  args.Append(element.ToValue());
-  return SwitchToFrameWithJavaScriptLocatedFrame(script, &args);
+      "  for (var i = 0; i < window.frames.length; i++) {"
+      "    if (elem.contentWindow == window.frames[i]) {"
+      "      return [elem, '(//iframe|//frame)[' + (i + 1) + ']'];"
+      "    }"
+      "  }"
+      "  console.info('Frame is not connected to this DOM tree');"
+      "  return null;"
+      "}";
+  return SwitchToFrameWithJavaScriptLocatedFrame(
+      script, CreateListValueFrom(element));
 }
 
 void Session::SwitchToTopFrame() {
@@ -591,13 +595,12 @@ Error* Session::SwitchToTopFrameIfCurrentFrameInvalid() {
   // frame element is valid, otherwise the automation hangs until a timeout.
   for (size_t i = 0; i < frame_elements_.size(); ++i) {
     FrameId frame_id(current_target_.window_id, frame_path);
-    ListValue args;
-    args.Append(frame_elements_[i].ToValue());
-    Value* unscoped_value = NULL;
-    scoped_ptr<Error> error(ExecuteScript(
-        frame_id, "", &args, &unscoped_value));
-
-    scoped_ptr<Value> value(unscoped_value);
+    scoped_ptr<Error> error(ExecuteScriptAndParse(
+        frame_id,
+        "function(){ }",
+        "emptyScript",
+        CreateListValueFrom(frame_elements_[i]),
+        CreateDirectValueParser(kSkipParsing)));
     if (error.get() && error->code() == kStaleElementReference) {
       SwitchToTopFrame();
     } else if (error.get()) {
@@ -730,26 +733,26 @@ Error* Session::FindElements(const FrameId& frame_id,
 
 Error* Session::GetElementLocationInView(
     const WebElementId& element,
-    gfx::Point* location) {
-  gfx::Size size;
+    Point* location) {
+  Size size;
   Error* error = GetElementSize(current_target_, element, &size);
   if (error)
     return error;
   return GetElementRegionInView(
-      element, gfx::Rect(gfx::Point(0, 0), size),
+      element, Rect(Point(0, 0), size),
       false /* center */, false /* verify_clickable_at_middle */, location);
 }
 
 Error* Session::GetElementRegionInView(
     const WebElementId& element,
-    const gfx::Rect& region,
+    const Rect& region,
     bool center,
     bool verify_clickable_at_middle,
-    gfx::Point* location) {
+    Point* location) {
   CHECK(element.is_valid());
 
-  gfx::Point region_offset = region.origin();
-  gfx::Size region_size = region.size();
+  Point region_offset = region.origin();
+  Size region_size = region.size();
   Error* error = GetElementRegionInViewHelper(
       current_target_, element, region, center, verify_clickable_at_middle,
       &region_offset);
@@ -782,7 +785,7 @@ Error* Session::GetElementRegionInView(
     region_offset.Offset(border_left, border_top);
 
     error = GetElementRegionInViewHelper(
-        frame_id, frame_element, gfx::Rect(region_offset, region_size),
+        frame_id, frame_element, Rect(region_offset, region_size),
         center, verify_clickable_at_middle, &region_offset);
     if (error)
       return error;
@@ -793,66 +796,22 @@ Error* Session::GetElementRegionInView(
 
 Error* Session::GetElementSize(const FrameId& frame_id,
                                const WebElementId& element,
-                               gfx::Size* size) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_SIZE);
-  ListValue args;
-  args.Append(element.ToValue());
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error)
-    return error;
-  if (!result->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(kUnknownError, "GetSize atom returned non-dict type: " +
-                         JsonStringify(result.get()));
-  }
-  DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
-  int width, height;
-  if (!dict->GetInteger("width", &width) ||
-      !dict->GetInteger("height", &height)) {
-    return new Error(kUnknownError, "GetSize atom returned invalid dict: " +
-                         JsonStringify(dict));
-  }
-  *size = gfx::Size(width, height);
-  return NULL;
+                               Size* size) {
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::GET_SIZE,
+                               "getSize",
+                               CreateListValueFrom(element),
+                               CreateDirectValueParser(size));
 }
 
 Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
                                           const WebElementId& element,
-                                          gfx::Rect* rect) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_FIRST_CLIENT_RECT);
-  ListValue args;
-  args.Append(element.ToValue());
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error)
-    return error;
-  if (!result->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(
-        kUnknownError,
-        "GetFirstClientRect atom returned non-dict type: " +
-            JsonStringify(result.get()));
-  }
-  DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
-  // TODO(kkania): Convert the atom to return integers.
-  double left, top, width, height;
-  if (!dict->GetDouble("left", &left) ||
-      !dict->GetDouble("top", &top) ||
-      !dict->GetDouble("width", &width) ||
-      !dict->GetDouble("height", &height)) {
-    return new Error(
-        kUnknownError,
-        "GetFirstClientRect atom returned invalid dict: " +
-            JsonStringify(dict));
-  }
-  *rect = gfx::Rect(static_cast<int>(left), static_cast<int>(top),
-                    static_cast<int>(width), static_cast<int>(height));
-  return NULL;
+                                          Rect* rect) {
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::GET_FIRST_CLIENT_RECT,
+                               "getFirstClientRect",
+                               CreateListValueFrom(element),
+                               CreateDirectValueParser(rect));
 }
 
 Error* Session::GetElementEffectiveStyle(
@@ -860,28 +819,11 @@ Error* Session::GetElementEffectiveStyle(
     const WebElementId& element,
     const std::string& prop,
     std::string* value) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_EFFECTIVE_STYLE);
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateStringValue(prop));
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(
-      frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error) {
-    error->AddDetails(base::StringPrintf(
-        "GetEffectiveStyle atom failed for property (%s)", prop.c_str()));
-    return error;
-  }
-
-  if (!result->GetAsString(value)) {
-    std::string context = base::StringPrintf(
-        "GetEffectiveStyle atom returned non-string for property (%s): %s",
-        prop.c_str(), JsonStringify(result.get()).c_str());
-    return new Error(kUnknownError, context);
-  }
-  return NULL;
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::GET_EFFECTIVE_STYLE,
+                               "getEffectiveStyle",
+                               CreateListValueFrom(element, prop),
+                               CreateDirectValueParser(value));
 }
 
 Error* Session::GetElementBorder(const FrameId& frame_id,
@@ -907,77 +849,42 @@ Error* Session::IsElementDisplayed(const FrameId& frame_id,
                                    const WebElementId& element,
                                    bool ignore_opacity,
                                    bool* is_displayed) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_DISPLAYED);
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateBooleanValue(ignore_opacity));
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error)
-    return error;
-  if (!result->GetAsBoolean(is_displayed))
-    return new Error(kUnknownError, "IsDisplayed atom returned non-boolean: " +
-                         JsonStringify(result.get()));
-  return NULL;
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::IS_DISPLAYED,
+                               "isDisplayed",
+                               CreateListValueFrom(element, ignore_opacity),
+                               CreateDirectValueParser(is_displayed));
 }
 
 Error* Session::IsElementEnabled(const FrameId& frame_id,
                                  const WebElementId& element,
                                  bool* is_enabled) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_ENABLED);
-  ListValue args;
-  args.Append(element.ToValue());
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error)
-    return error;
-  if (!result->GetAsBoolean(is_enabled))
-    return new Error(kUnknownError, "IsEnabled atom returned non-boolean: " +
-                         JsonStringify(result.get()));
-  return NULL;
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::IS_ENABLED,
+                               "isEnabled",
+                               CreateListValueFrom(element),
+                               CreateDirectValueParser(is_enabled));
 }
 
 Error* Session::IsOptionElementSelected(const FrameId& frame_id,
                                         const WebElementId& element,
                                         bool* is_selected) {
-  ListValue args;
-  args.Append(element.ToValue());
-
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_SELECTED);
-
-  Value* result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &result);
-  if (error)
-    return error;
-  scoped_ptr<Value> scoped_result(result);
-  if (!result->GetAsBoolean(is_selected)) {
-    return new Error(kUnknownError, "isSelected atom returned non-boolean: " +
-                         JsonStringify(result));
-  }
-  return NULL;
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::IS_SELECTED,
+      "isSelected",
+      CreateListValueFrom(element),
+      CreateDirectValueParser(is_selected));
 }
 
 Error* Session::SetOptionElementSelected(const FrameId& frame_id,
                                          const WebElementId& element,
                                          bool selected) {
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateBooleanValue(selected));
-
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::SET_SELECTED);
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  return error;
+  return ExecuteScriptAndParse(frame_id,
+                               atoms::SET_SELECTED,
+                               "setSelected",
+                               CreateListValueFrom(element, selected),
+                               CreateDirectValueParser(kSkipParsing));
 }
 
 Error* Session::ToggleOptionElement(const FrameId& frame_id,
@@ -993,24 +900,16 @@ Error* Session::ToggleOptionElement(const FrameId& frame_id,
 Error* Session::GetElementTagName(const FrameId& frame_id,
                                   const WebElementId& element,
                                   std::string* tag_name) {
-  ListValue args;
-  args.Append(element.ToValue());
-
-  std::string script = "return arguments[0].tagName.toLocaleLowerCase();";
-
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
-  if (error)
-    return error;
-  if (!result->GetAsString(tag_name))
-    return new Error(kUnknownError, "TagName script returned non-string: " +
-                         JsonStringify(result.get()));
-  return NULL;
+  return ExecuteScriptAndParse(
+      frame_id,
+      "function(elem) { return elem.tagName.toLowerCase() }",
+      "getElementTagName",
+      CreateListValueFrom(element),
+      CreateDirectValueParser(tag_name));
 }
 
 Error* Session::GetClickableLocation(const WebElementId& element,
-                                     gfx::Point* location) {
+                                     Point* location) {
   bool is_displayed = false;
   Error* error = IsElementDisplayed(
       current_target_, element, true /* ignore_opacity */, &is_displayed);
@@ -1019,7 +918,7 @@ Error* Session::GetClickableLocation(const WebElementId& element,
   if (!is_displayed)
     return new Error(kElementNotVisible, "Element must be displayed to click");
 
-  gfx::Rect rect;
+  Rect rect;
   error = GetElementFirstClientRect(current_target_, element, &rect);
   if (error)
     return error;
@@ -1034,20 +933,13 @@ Error* Session::GetClickableLocation(const WebElementId& element,
 }
 
 Error* Session::GetAttribute(const WebElementId& element,
-                             const std::string& key, Value** value) {
-  std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_ATTRIBUTE);
-
-  ListValue args;
-  args.Append(element.ToValue());
-  args.Append(Value::CreateStringValue(key));
-
-  Error* error = ExecuteScript(script, &args, value);
-  if (error) {
-    return error;
-  }
-
-  return NULL;
+                             const std::string& key,
+                             Value** value) {
+  return ExecuteScriptAndParse(current_target_,
+                               atoms::GET_ATTRIBUTE,
+                               "getAttribute",
+                               CreateListValueFrom(element, key),
+                               CreateDirectValueParser(value));
 }
 
 Error* Session::WaitForAllTabsToStopLoading() {
@@ -1095,7 +987,7 @@ int Session::implicit_wait() const {
   return implicit_wait_;
 }
 
-const gfx::Point& Session::get_mouse_position() const {
+const Point& Session::get_mouse_position() const {
   return mouse_position_;
 }
 
@@ -1145,9 +1037,9 @@ void Session::TerminateOnSessionThread() {
   automation_.reset();
 }
 
-Error* Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
-                                              const std::string& script,
-                                              Value** script_result) {
+Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
+                                           const std::string& script,
+                                           Value** script_result) {
   std::string response_json;
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
@@ -1236,31 +1128,43 @@ void Session::SendKeysOnSessionThread(const string16& keys, Error** error) {
 
 Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
     const std::string& script, ListValue* args) {
-  Value* unscoped_result = NULL;
-  Error* error = ExecuteScript(script, args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
+  class SwitchFrameValueParser : public ValueParser {
+   public:
+    SwitchFrameValueParser(
+        bool* found_frame, WebElementId* frame, std::string* xpath)
+        : found_frame_(found_frame), frame_(frame), xpath_(xpath) { }
+
+    virtual ~SwitchFrameValueParser() { }
+
+    virtual bool Parse(base::Value* value) const OVERRIDE {
+      if (value->IsType(Value::TYPE_NULL)) {
+        *found_frame_ = false;
+        return true;
+      }
+      ListValue* list;
+      if (!value->GetAsList(&list))
+        return false;
+      *found_frame_ = true;
+      return SetFromListValue(list, frame_, xpath_);
+    }
+
+   private:
+    bool* found_frame_;
+    WebElementId* frame_;
+    std::string* xpath_;
+  };
+
+  bool found_frame;
+  WebElementId new_frame_element;
+  std::string xpath;
+  Error* error = ExecuteScriptAndParse(
+      current_target_, script, "switchFrame", args,
+      new SwitchFrameValueParser(&found_frame, &new_frame_element, &xpath));
   if (error)
     return error;
 
-  ListValue* frame_and_xpath_list;
-  if (!result->GetAsList(&frame_and_xpath_list))
+  if (!found_frame)
     return new Error(kNoSuchFrame);
-  DictionaryValue* element_dict;
-  std::string xpath;
-  if (!frame_and_xpath_list->GetDictionary(0, &element_dict) ||
-      !frame_and_xpath_list->GetString(1, &xpath)) {
-    return new Error(
-        kUnknownError,
-        "Frame finding script did not return correct type: " +
-            JsonStringify(frame_and_xpath_list));
-  }
-  WebElementId new_frame_element(element_dict);
-  if (!new_frame_element.is_valid()) {
-    return new Error(
-        kUnknownError,
-        "Frame finding script did not return a frame element: " +
-            JsonStringify(element_dict));
-  }
 
   frame_elements_.push_back(new_frame_element);
   current_target_.frame_path = current_target_.frame_path.Append(xpath);
@@ -1274,132 +1178,143 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
                                    bool find_one,
                                    std::vector<WebElementId>* elements) {
   CHECK(root_element.is_valid());
-
-  std::string jscript;
-  if (find_one) {
-    // TODO(jleyba): Write a Chrome-specific find element atom that will
-    // correctly throw an error if the element cannot be found.
-    jscript = base::StringPrintf(
-        "var result = (%s).apply(null, arguments);"
-        "if (!result) {"
-        "var e = new Error('Unable to locate element');"
-        "e.code = %d;"
-        "throw e;"
-        "} else { return result; }",
-        atoms::FIND_ELEMENT, kNoSuchElement);
-  } else {
-    jscript = base::StringPrintf("return (%s).apply(null, arguments);",
-                                 atoms::FIND_ELEMENTS);
-  }
-  ListValue jscript_args;
-  DictionaryValue* locator_dict = new DictionaryValue();
-  locator_dict->SetString(locator, query);
-  jscript_args.Append(locator_dict);
-  jscript_args.Append(root_element.ToValue());
-
-  // The element search needs to loop until at least one element is found or the
-  // session's implicit wait timeout expires, whichever occurs first.
   base::Time start_time = base::Time::Now();
+  while (true) {
+    std::vector<WebElementId> temp_elements;
+    Error* error = ExecuteFindElementScriptAndParse(
+        frame_id, root_element, locator, query, find_one, &temp_elements);
+    if (error)
+      return error;
 
-  scoped_ptr<Value> value;
-  scoped_ptr<Error> error;
-  bool done = false;
-  while (!done) {
-    Value* unscoped_value = NULL;
-    error.reset(ExecuteScript(
-        frame_id, jscript, &jscript_args, &unscoped_value));
-    value.reset(unscoped_value);
-    if (!error.get()) {
-      // If searching for many elements, make sure we found at least one before
-      // stopping.
-      done = find_one ||
-             (value->GetType() == Value::TYPE_LIST &&
-             static_cast<ListValue*>(value.get())->GetSize() > 0);
-    } else if (error->code() != kNoSuchElement) {
-      return error.release();
+    if (temp_elements.size() > 0u) {
+      elements->swap(temp_elements);
+      break;
     }
-    int64 elapsed_time = (base::Time::Now() - start_time).InMilliseconds();
-    done = done || elapsed_time > implicit_wait_;
-    if (!done)
-      base::PlatformThread::Sleep(50);  // Prevent a busy loop.
-  }
 
-  if (error.get())
-    return error.release();
-
-  // Parse the results.
-  const std::string kInvalidElementDictionaryMessage =
-      "Find element script returned invalid element dictionary: " +
-          JsonStringify(value.get());
-  if (value->IsType(Value::TYPE_LIST)) {
-    ListValue* element_list = static_cast<ListValue*>(value.get());
-    for (size_t i = 0; i < element_list->GetSize(); ++i) {
-      DictionaryValue* element_dict = NULL;
-      if (!element_list->GetDictionary(i, &element_dict)) {
-        return new Error(
-            kUnknownError,
-            "Find element script returned non-dictionary: " +
-                JsonStringify(element_list));
-      }
-
-      WebElementId element(element_dict);
-      if (!element.is_valid()) {
-        return new Error(kUnknownError, kInvalidElementDictionaryMessage);
-      }
-      elements->push_back(element);
+    if ((base::Time::Now() - start_time).InMilliseconds() > implicit_wait_) {
+      if (find_one)
+        return new Error(kNoSuchElement);
+      break;
     }
-  } else if (value->IsType(Value::TYPE_DICTIONARY)) {
-    DictionaryValue* element_dict =
-        static_cast<DictionaryValue*>(value.get());
-    WebElementId element(element_dict);
-    if (!element.is_valid()) {
-      return new Error(kUnknownError, kInvalidElementDictionaryMessage);
-    }
-    elements->push_back(element);
-  } else {
-    return new Error(
-        kUnknownError,
-        "Find element script returned unsupported type: " +
-            JsonStringify(value.get()));
+    base::PlatformThread::Sleep(50);
   }
   return NULL;
+}
+
+Error* Session::ExecuteFindElementScriptAndParse(
+    const FrameId& frame_id,
+    const WebElementId& root_element,
+    const std::string& locator,
+    const std::string& query,
+    bool find_one,
+    std::vector<WebElementId>* elements) {
+  CHECK(root_element.is_valid());
+
+  class FindElementsParser : public ValueParser {
+   public:
+    explicit FindElementsParser(std::vector<WebElementId>* elements)
+        : elements_(elements) { }
+
+    virtual ~FindElementsParser() { }
+
+    virtual bool Parse(base::Value* value) const OVERRIDE {
+      if (!value->IsType(Value::TYPE_LIST))
+        return false;
+      ListValue* list = static_cast<ListValue*>(value);
+      for (size_t i = 0; i < list->GetSize(); ++i) {
+        WebElementId element;
+        Value* element_value = NULL;
+        if (!list->Get(i, &element_value))
+          return false;
+        if (!SetFromValue(element_value, &element))
+          return false;
+        elements_->push_back(element);
+      }
+      return true;
+    }
+   private:
+    std::vector<WebElementId>* elements_;
+  };
+
+  class FindElementParser : public ValueParser {
+   public:
+    explicit FindElementParser(std::vector<WebElementId>* elements)
+        : elements_(elements) { }
+
+    virtual ~FindElementParser() { }
+
+    virtual bool Parse(base::Value* value) const OVERRIDE {
+      if (value->IsType(Value::TYPE_NULL))
+        return true;
+      WebElementId element;
+      bool set = SetFromValue(value, &element);
+      if (set)
+        elements_->push_back(element);
+      return set;
+    }
+   private:
+    std::vector<WebElementId>* elements_;
+  };
+
+  DictionaryValue locator_dict;
+  locator_dict.SetString(locator, query);
+  std::vector<WebElementId> temp_elements;
+  Error* error = NULL;
+  if (find_one) {
+    error = ExecuteScriptAndParse(
+          frame_id,
+          atoms::FIND_ELEMENT,
+          "findElement",
+          CreateListValueFrom(&locator_dict, root_element),
+          new FindElementParser(&temp_elements));
+  } else {
+    error = ExecuteScriptAndParse(
+          frame_id,
+          atoms::FIND_ELEMENTS,
+          "findElements",
+          CreateListValueFrom(&locator_dict, root_element),
+          new FindElementsParser(&temp_elements));
+  }
+  if (!error)
+    elements->swap(temp_elements);
+  return error;
 }
 
 Error* Session::VerifyElementIsClickable(
     const FrameId& frame_id,
     const WebElementId& element,
-    const gfx::Point& location) {
-  std::string jscript = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_ELEMENT_CLICKABLE);
-  ListValue jscript_args;
-  jscript_args.Append(element.ToValue());
-  DictionaryValue* location_dict = new DictionaryValue();
-  location_dict->SetInteger("x", location.x());
-  location_dict->SetInteger("y", location.y());
-  jscript_args.Append(location_dict);
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(frame_id, jscript, &jscript_args,
-                               &unscoped_value);
+    const Point& location) {
+  class IsElementClickableParser : public ValueParser {
+   public:
+    IsElementClickableParser(bool* clickable, std::string* message)
+        : clickable_(clickable), message_(message) { }
+
+    virtual ~IsElementClickableParser() { }
+
+    virtual bool Parse(base::Value* value) const OVERRIDE {
+      if (!value->IsType(Value::TYPE_DICTIONARY))
+        return false;
+      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      dict->GetString("message", message_);
+      return dict->GetBoolean("clickable", clickable_);
+    }
+
+   private:
+    bool* clickable_;
+    std::string* message_;
+  };
+
+  bool clickable;
+  std::string message;
+  Error* error = ExecuteScriptAndParse(
+      frame_id,
+      atoms::IS_ELEMENT_CLICKABLE,
+      "isElementClickable",
+      CreateListValueFrom(element, location),
+      new IsElementClickableParser(&clickable, &message));
   if (error)
     return error;
 
-  scoped_ptr<Value> value(unscoped_value);
-  if (!value->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(
-        kUnknownError,
-        "isElementClickable atom returned non-dictionary type: " +
-            JsonStringify(value.get()));
-  }
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  bool clickable = false;
-  if (!dict->GetBoolean("clickable", &clickable)) {
-    return new Error(
-        kUnknownError,
-        "isElementClickable atom returned bad invalid dictionary: " +
-            JsonStringify(dict));
-  }
-  std::string message;
-  dict->GetString("message", &message);
   if (!clickable) {
     if (message.empty())
       message = "element is not clickable";
@@ -1414,47 +1329,20 @@ Error* Session::VerifyElementIsClickable(
 Error* Session::GetElementRegionInViewHelper(
     const FrameId& frame_id,
     const WebElementId& element,
-    const gfx::Rect& region,
+    const Rect& region,
     bool center,
     bool verify_clickable_at_middle,
-    gfx::Point* location) {
-  std::string jscript = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_LOCATION_IN_VIEW);
-  ListValue jscript_args;
-  jscript_args.Append(element.ToValue());
-  jscript_args.Append(Value::CreateBooleanValue(center));
-  DictionaryValue* elem_offset_dict = new DictionaryValue();
-  elem_offset_dict->SetInteger("left", region.x());
-  elem_offset_dict->SetInteger("top", region.y());
-  elem_offset_dict->SetInteger("width", region.width());
-  elem_offset_dict->SetInteger("height", region.height());
-  jscript_args.Append(elem_offset_dict);
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(frame_id, jscript, &jscript_args,
-                               &unscoped_value);
-  scoped_ptr<Value> value(unscoped_value);
-  if (error)
-    return error;
-
-  if (!value->IsType(Value::TYPE_DICTIONARY)) {
-    return new Error(
-        kUnknownError,
-        "Location atom returned non-dictionary type: " +
-            JsonStringify(value.get()));
-  }
-  DictionaryValue* loc_dict = static_cast<DictionaryValue*>(value.get());
-  int x = 0, y = 0;
-  if (!loc_dict->GetInteger("x", &x) ||
-      !loc_dict->GetInteger("y", &y)) {
-    return new Error(
-        kUnknownError,
-        "Location atom returned bad coordinate dictionary: " +
-            JsonStringify(loc_dict));
-  }
-  gfx::Point temp_location = gfx::Point(x, y);
+    Point* location) {
+  Point temp_location;
+  Error* error = ExecuteScriptAndParse(
+      frame_id,
+      atoms::GET_LOCATION_IN_VIEW,
+      "getLocationInView",
+      CreateListValueFrom(element, center, region),
+      CreateDirectValueParser(&temp_location));
 
   if (verify_clickable_at_middle) {
-    gfx::Point middle_point = temp_location;
+    Point middle_point = temp_location;
     middle_point.Offset(region.width() / 2, region.height() / 2);
     error = VerifyElementIsClickable(frame_id, element, middle_point);
     if (error)
@@ -1487,39 +1375,21 @@ Error* Session::GetScreenShot(std::string* png) {
 }
 
 Error* Session::GetBrowserConnectionState(bool* online) {
-  std::string jscript = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_ONLINE);
-  base::ListValue no_args;
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(jscript,
-                               &no_args,
-                               &unscoped_value);
-  scoped_ptr<base::Value> value(unscoped_value);
-  if (error)
-    return error;
-  if (!value->GetAsBoolean(online))
-    return new Error(kUnknownError,
-                     "IS_ONLINE script returned non-boolean: " +
-                     JsonStringify(value.get()));
-  return NULL;
+  return ExecuteScriptAndParse(
+      current_target_,
+      atoms::IS_ONLINE,
+      "isOnline",
+      new ListValue(),
+      CreateDirectValueParser(online));
 }
 
 Error* Session::GetAppCacheStatus(int* status) {
-  std::string jscript = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_APPCACHE_STATUS);
-  base::ListValue no_args;
-  Value* unscoped_value = NULL;
-  Error* error = ExecuteScript(jscript,
-                               &no_args,
-                               &unscoped_value);
-  scoped_ptr<base::Value> value(unscoped_value);
-  if (error)
-    return error;
-  if (!value->GetAsInteger(status))
-    return new Error(kUnknownError,
-                     "GET_APPCACHE_STATUS script returned non-integer: " +
-                     JsonStringify(value.get()));
-  return NULL;
+  return ExecuteScriptAndParse(
+      current_target_,
+      atoms::GET_APPCACHE_STATUS,
+      "getAppcacheStatus",
+      new ListValue(),
+      CreateDirectValueParser(status));
 }
 
 }  // namespace webdriver

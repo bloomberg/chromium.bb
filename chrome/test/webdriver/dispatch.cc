@@ -21,8 +21,8 @@
 #include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/session_manager.h"
-#include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 
 namespace webdriver {
 
