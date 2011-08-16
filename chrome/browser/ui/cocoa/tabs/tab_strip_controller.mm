@@ -840,9 +840,16 @@ private:
 
       // Account for the width of the new tab button.
       availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
+
+      // Account for the right-side controls if not in rapid closure mode.
+      // (In rapid closure mode, the available width is set based on the
+      // position of the rightmost tab, not based on the width of the tab strip,
+      // so the right controls have already been accounted for.)
+      availableSpace -= [self rightIndentForControls];
     }
+
+    // Need to leave room for the left-side controls even in rapid closure mode.
     availableSpace -= [self leftIndentForControls];
-    availableSpace -= [self rightIndentForControls];
   }
 
   // This may be negative, but that's okay (taken care of by |MAX()| when
