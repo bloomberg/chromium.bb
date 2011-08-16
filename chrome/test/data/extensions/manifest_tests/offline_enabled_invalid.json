@@ -1,0 +1,10 @@
+{
+  "name": "invalid offline enabled",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "loco.html"
+    }
+  },
+  "offline_enabled": "nope"
+}

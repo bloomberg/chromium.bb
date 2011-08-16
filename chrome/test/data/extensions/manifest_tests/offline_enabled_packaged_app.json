@@ -1,0 +1,10 @@
+{
+  "name": "offline true packaged app",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "loco.html"
+    }
+  },
+  "offline_enabled": true
+}

@@ -1,0 +1,5 @@
+{
+  "name": "offline enabled extension",
+  "version": "1",
+  "offline_enabled": true
+}

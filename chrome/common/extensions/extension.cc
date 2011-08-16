@@ -1190,7 +1190,8 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
         *key != keys::kPermissions &&
         *key != keys::kOptionalPermissions &&
         *key != keys::kOptionsPage &&
-        *key != keys::kBackground) {
+        *key != keys::kBackground &&
+        *key != keys::kOfflineEnabled) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kHostedAppsCannotIncludeExtensionFeatures, *key);
       return false;
@@ -1208,6 +1209,7 @@ bool Extension::IsTrustedId(const std::string& id) {
 
 Extension::Extension(const FilePath& path, Location location)
     : incognito_split_mode_(false),
+      offline_enabled_(false),
       location_(location),
       converted_from_user_script_(false),
       is_theme_(false),
@@ -1870,7 +1872,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   }
 
   // Initialize options page url (optional).
-  // Funtion LoadIsApp() set is_app_ above.
+  // Function LoadIsApp() set is_app_ above.
   if (source.HasKey(keys::kOptionsPage)) {
     std::string options_str;
     if (!source.GetString(keys::kOptionsPage, &options_str)) {
@@ -2301,6 +2303,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       incognito_split_mode_ = true;
     } else {
       *error = errors::kInvalidIncognitoBehavior;
+      return false;
+    }
+  }
+
+  // Initialize offline-enabled status. Defaults to false.
+  if (source.HasKey(keys::kOfflineEnabled)) {
+    if (!source.GetBoolean(keys::kOfflineEnabled, &offline_enabled_)) {
+      *error = errors::kInvalidOfflineEnabled;
       return false;
     }
   }

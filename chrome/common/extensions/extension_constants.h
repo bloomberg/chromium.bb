@@ -53,6 +53,7 @@ namespace extension_manifest_keys {
   extern const char* kNaClModulesMIMEType;
   extern const char* kNaClModulesPath;
   extern const char* kName;
+  extern const char* kOfflineEnabled;
   extern const char* kOmnibox;
   extern const char* kOmniboxKeyword;
   extern const char* kOptionalPermissions;
@@ -193,6 +194,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidNaClModulesMIMEType;
   extern const char* kInvalidNaClModulesPath;
   extern const char* kInvalidName;
+  extern const char* kInvalidOfflineEnabled;
   extern const char* kInvalidOmniboxKeyword;
   extern const char* kInvalidOptionsPage;
   extern const char* kInvalidOptionsPageExpectUrlInPackage;

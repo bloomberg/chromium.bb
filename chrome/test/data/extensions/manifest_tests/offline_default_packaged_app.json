@@ -1,0 +1,9 @@
+{
+  "name": "offline packaged app",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "loco.html"
+    }
+  }
+}

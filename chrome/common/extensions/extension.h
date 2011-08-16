@@ -532,6 +532,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
+  bool offline_enabled() const { return offline_enabled_; }
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
 
   bool wants_file_access() const { return wants_file_access_; }
@@ -707,6 +708,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // If true, a separate process will be used for the extension in incognito
   // mode.
   bool incognito_split_mode_;
+
+  // Whether the extension or app should be enabled when offline.
+  bool offline_enabled_;
 
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;

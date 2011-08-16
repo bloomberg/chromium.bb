@@ -600,7 +600,7 @@ TEST_F(ExtensionManifestTest, DisallowHybridApps) {
 TEST_F(ExtensionManifestTest, OptionsPageInApps) {
   scoped_refptr<Extension> extension;
 
-  // Allow options page with absolute URL in hosed apps.
+  // Allow options page with absolute URL in hosted apps.
   extension = LoadAndExpectSuccess("hosted_app_absolute_options.json");
   EXPECT_STREQ("http",
                extension->options_url().scheme().c_str());
@@ -825,4 +825,24 @@ TEST_F(ExtensionManifestTest, FileManagerURLOverride) {
   // Extensions of other types can't ovverride chrome://files/ URL.
   LoadAndExpectError("filebrowser_url_override.json",
       errors::kInvalidChromeURLOverrides);
+}
+
+TEST_F(ExtensionManifestTest, OfflineEnabled) {
+  LoadAndExpectError("offline_enabled_invalid.json",
+                     errors::kInvalidOfflineEnabled);
+  scoped_refptr<Extension> extension_0(
+      LoadAndExpectSuccess("offline_enabled_extension.json"));
+  EXPECT_TRUE(extension_0->offline_enabled());
+  scoped_refptr<Extension> extension_1(
+      LoadAndExpectSuccess("offline_enabled_packaged_app.json"));
+  EXPECT_TRUE(extension_1->offline_enabled());
+  scoped_refptr<Extension> extension_2(
+      LoadAndExpectSuccess("offline_disabled_packaged_app.json"));
+  EXPECT_FALSE(extension_2->offline_enabled());
+  scoped_refptr<Extension> extension_3(
+      LoadAndExpectSuccess("offline_default_packaged_app.json"));
+  EXPECT_FALSE(extension_3->offline_enabled());
+  scoped_refptr<Extension> extension_4(
+      LoadAndExpectSuccess("offline_enabled_hosted_app.json"));
+  EXPECT_TRUE(extension_4->offline_enabled());
 }

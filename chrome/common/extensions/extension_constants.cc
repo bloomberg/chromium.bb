@@ -48,6 +48,7 @@ const char* kName = "name";
 const char* kNaClModules = "nacl_modules";
 const char* kNaClModulesMIMEType = "mime_type";
 const char* kNaClModulesPath = "path";
+const char* kOfflineEnabled = "offline_enabled";
 const char* kOmnibox = "omnibox";
 const char* kOmniboxKeyword = "omnibox.keyword";
 const char* kOptionalPermissions = "optional_permissions";
@@ -261,6 +262,8 @@ const char* kInvalidNaClModulesPath =
     "Invalid value for 'nacl_modules[*].path'.";
 const char* kInvalidNaClModulesMIMEType =
     "Invalid value for 'nacl_modules[*].mime_type'.";
+const char* kInvalidOfflineEnabled =
+    "Invalid value for 'offline_enabled'.";
 const char* kInvalidOmniboxKeyword =
     "Invalid value for 'omnibox.keyword'.";
 const char* kInvalidOptionsPage =
