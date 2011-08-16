@@ -39,6 +39,7 @@ class URLResponseInfo : public Resource {
   ///
   /// @param[in] property A <code>PP_URLResponseProperty</code> identifying the
   /// type of property in the response.
+  ///
   /// @return A <code>Var</code> containing the response property value if
   /// successful, <code>is_undefined Var</code> if an input parameter is
   /// invalid.

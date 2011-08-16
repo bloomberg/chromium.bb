@@ -31,6 +31,7 @@ class Resource {
   /// <code>Resource</code>.
   ///
   /// @param[in] other A Resource.
+  ///
   /// @return A Resource containing the assigned Resource.
   Resource& operator=(const Resource& other);
 

@@ -66,6 +66,8 @@ class Instance {
   /// This function returns the <code>PP_Instance</code> identifying this
   /// object. When using the PPAPI C++ wrappers this is not normally necessary,
   /// but is required when using the lower-level C APIs.
+  ///
+  /// @return A <code>PP_Instance</code> identifying this object.
   PP_Instance pp_instance() const { return pp_instance_; }
 
   /// Init() initializes this instance with the provided arguments. This
@@ -86,7 +88,7 @@ class Instance {
   /// argument values: "nacl_module" and "2".  The indices of these values
   /// match the indices of the corresponding names in <code>argn</code>.
   ///
-  /// @return True on success. Returning false causes the instance to be
+  /// @return true on success. Returning false causes the instance to be
   /// instance to be deleted and no other functions to be called.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
@@ -177,6 +179,8 @@ class Instance {
   /// Refer to <code>RequestInputEvents</code> and
   /// <code>RequestFilteringInputEvents</code> for further information.
   ///
+  /// @param[in] event The event to handle.
+  ///
   /// @return true if the event was handled, false if not. If you have
   /// registered to filter this class of events by calling
   /// <code>RequestFilteringInputEvents</code>, and you return false,
@@ -213,12 +217,6 @@ class Instance {
   /// JavaScript execution will not be blocked while HandleMessage() is
   /// processing the message.
   ///
-  /// @param[in] message A <code>Var</code> containing the data sent from
-  /// JavaScript. Message can have an int32_t, double, bool, or string value
-  /// (objects are not supported).
-  ///
-  /// \see PostMessage for sending messages to JavaScript.
-  ///
   /// <strong>Example:</strong>
   ///
   /// The following JavaScript code invokes <code>HandleMessage</code>, passing
@@ -236,6 +234,12 @@ class Instance {
   /// </body>
   ///
   /// @endcode
+  ///
+  /// Refer to PostMessage() for sending messages to JavaScript.
+  ///
+  /// @param[in] message A <code>Var</code> containing the data sent from
+  /// JavaScript. Message can have an int32_t, double, bool, or string value
+  /// (objects are not supported).
   virtual void HandleMessage(const Var& message);
 
   /// @}
@@ -269,10 +273,21 @@ class Instance {
 
   /// Binds the given Graphics3D as the current display surface.
   /// See BindGraphics(const Graphics2D& graphics).
+  ///
+  /// @param[in] graphics A <code>Graphics3D_Dev</code> to bind.
+  ///
+  /// @return true if bind was successful or false if the device was not the
+  /// correct type. On success, a reference to the device will be held by the
+  /// instance, so the caller can release its reference if it chooses.
   bool BindGraphics(const Graphics3D_Dev& graphics);
 
   /// Binds the given Surface3D as the current display surface.
   /// See BindGraphics(const Graphics2D& graphics).
+  /// @param[in] graphics A <code>Surface3D_Dev</code> to bind.
+  ///
+  /// @return true if bind was successful or false if the device was not the
+  /// correct type. On success, a reference to the device will be held by the
+  /// instance, so the caller can release its reference if it chooses.
   bool BindGraphics(const Surface3D_Dev& graphics);
 
   /// IsFullFrame() determines if the instance is full-frame (repr).
@@ -354,7 +369,12 @@ class Instance {
   ///       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
   ///
   /// @endcode
-  ////
+  ///
+  /// @param event_classes A combination of flags from
+  /// <code>PP_InputEvent_Class</code> that identifies the classes of events
+  /// the instance is requesting. The flags are combined by logically ORing
+  /// their values.
+  ///
   /// @return <code>PP_OK</code> if the operation succeeded,
   /// <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or
   /// <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were
@@ -378,7 +398,7 @@ class Instance {
   /// one, you'll still receive the next two. You just won't get more events
   /// generated.
   ///
-  /// @param event_classes A combination of flags from
+  /// @param[in] event_classes A combination of flags from
   /// <code>PP_InputEvent_Class</code> that identifies the classes of events the
   /// instance is no longer interested in.
   void ClearInputEventRequest(uint32_t event_classes);
@@ -386,24 +406,6 @@ class Instance {
   /// PostMessage() asynchronously invokes any listeners for message events on
   /// the DOM element for the given instance. A call to PostMessage() will
   /// not block while the message is processed.
-  ///
-  /// @param[in] message A <code>Var</code> containing the data to be sent to
-  /// JavaScript.
-  /// Message can have a numeric, boolean, or string value; arrays and
-  /// dictionaries are not yet supported. Ref-counted var types are copied, and
-  /// are therefore not shared between the instance and the browser.
-  ///
-  /// Listeners for message events in JavaScript code will receive an object
-  /// conforming to the HTML 5 <code>MessageEvent</code> interface.
-  /// Specifically, the value of message will be contained as a property called
-  ///  data in the received <code>MessageEvent</code>.
-  ///
-  /// This messaging system is similar to the system used for listening for
-  /// messages from Web Workers. Refer to
-  /// <code>http://www.whatwg.org/specs/web-workers/current-work/</code> for
-  /// further information.
-  ///
-  /// @see HandleMessage() for receiving events from JavaScript.
   ///
   /// <strong>Example:</strong>
   ///
@@ -431,6 +433,23 @@ class Instance {
   /// @endcode
   ///
   /// The browser will pop-up an alert saying "Hello world!"
+  ///
+  /// Listeners for message events in JavaScript code will receive an object
+  /// conforming to the HTML 5 <code>MessageEvent</code> interface.
+  /// Specifically, the value of message will be contained as a property called
+  /// data in the received <code>MessageEvent</code>.
+  ///
+  /// This messaging system is similar to the system used for listening for
+  /// messages from Web Workers. Refer to
+  /// <code>http://www.whatwg.org/specs/web-workers/current-work/</code> for
+  /// further information.
+  ///
+  /// Refer to HandleMessage() for receiving events from JavaScript.
+  ///
+  /// @param[in] message A <code>Var</code> containing the data to be sent to
+  /// JavaScript. Message can have a numeric, boolean, or string value; arrays
+  /// and dictionaries are not yet supported. Ref-counted var types are copied,
+  /// and are therefore not shared between the instance and the browser.
   void PostMessage(const Var& message);
 
   /// @}
@@ -457,20 +476,32 @@ class Instance {
   /// register with the module (AddPluginInterface) for your interface name to
   /// get the C calls in the first place.
   ///
-  /// @see RemovePerInstanceObject
-  /// @see GetPerInstanceObject
+  /// Refer to RemovePerInstanceObject() and GetPerInstanceObject() for further
+  /// information.
+  ///
+  /// @param[in] interface_name The name of the interface to associate with the
+  /// instance
+  /// @param[in] object
   void AddPerInstanceObject(const std::string& interface_name, void* object);
 
   /// {PENDING: summarize Remove method here}
   ///
-  /// @see AddPerInstanceObject
+  /// Refer to AddPerInstanceObject() for further information.
+  ///
+  /// @param[in] interface_name The name of the interface to associate with the
+  /// instance
+  /// @param[in] object
   void RemovePerInstanceObject(const std::string& interface_name, void* object);
 
   /// Look up an object previously associated with an instance. Returns NULL
   /// if the instance is invalid or there is no object for the given interface
   /// name on the instance.
   ///
-  /// @see AddPerInstanceObject
+  /// Refer to AddPerInstanceObject() for further information.
+  ///
+  /// @param[in] instance
+  /// @param[in] interface_name The name of the interface to associate with the
+  /// instance.
   static void* GetPerInstanceObject(PP_Instance instance,
                                     const std::string& interface_name);
 

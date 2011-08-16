@@ -23,6 +23,7 @@ class Point {
 
   /// A constructor accepting two int32_t values for x and y and converting
   /// them to a Point.
+  ///
   /// @param[in] in_x An int32_t value representing a horizontal coordinate
   /// of a point, starting with 0 as the left-most coordinate.
   /// @param[in] in_y An int32_t value representing a vertical coordinate
@@ -34,6 +35,7 @@ class Point {
 
   /// A constructor accepting a pointer to a PP_Point and converting the
   /// PP_Point to a Point. This is an implicit conversion constructor.
+  ///
   /// @param[in] point A pointer to a PP_Point.
   Point(const PP_Point& point) {  // Implicit.
     point_.x = point.x;
@@ -51,32 +53,38 @@ class Point {
   }
 
   /// Getter function for returning the internal PP_Point struct.
+  ///
   /// @return A const reference to the internal PP_Point struct.
   const PP_Point& pp_point() const {
     return point_;
   }
 
   /// Getter function for returning the internal PP_Point struct.
+  ///
   /// @return A mutable reference to the PP_Point struct.
   PP_Point& pp_point() {
     return point_;
   }
 
   /// Getter function for returning the value of x.
+  ///
   /// @return The value of x for this Point.
   int32_t x() const { return point_.x; }
 
   /// Setter function for setting the value of x.
+  ///
   /// @param[in] in_x A new x value.
   void set_x(int32_t in_x) {
     point_.x = in_x;
   }
 
   /// Getter function for returning the value of y.
+  ///
   /// @return The value of y for this Point.
   int32_t y() const { return point_.y; }
 
   /// Setter function for setting the value of y.
+  ///
   /// @param[in] in_y A new y value.
   void set_y(int32_t in_y) {
     point_.y = in_y;
@@ -84,7 +92,9 @@ class Point {
 
   /// Adds two Points (this and other) together by adding their x values and
   /// y values.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return A new Point containing the result.
   Point operator+(const Point& other) const {
     return Point(x() + other.x(), y() + other.y());
@@ -92,7 +102,9 @@ class Point {
 
   /// Subtracts one Point from another Point by subtracting their x values
   /// and y values. Returnes a new point with the result.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return A new Point containing the result.
   Point operator-(const Point& other) const {
     return Point(x() - other.x(), y() - other.y());
@@ -100,7 +112,9 @@ class Point {
 
   /// Adds two Points (this and other) together by adding their x and y
   /// values. Returns this point as the result.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return This Point containing the result.
   Point& operator+=(const Point& other) {
     point_.x += other.x();
@@ -110,7 +124,9 @@ class Point {
 
   /// Subtracts one Point from another Point by subtracting their x values
   /// and y values. Returns this point as the result.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return This Point containing the result.
   Point& operator-=(const Point& other) {
     point_.x -= other.x();
@@ -119,6 +135,7 @@ class Point {
   }
 
   /// Swaps the coordinates of two Points.
+  ///
   /// @param[in] other A Point.
   void swap(Point& other) {
     int32_t x = point_.x;
@@ -158,6 +175,7 @@ class FloatPoint {
 
   /// A constructor accepting a pointer to a PP_FloatPoint and converting the
   /// PP_Point to a Point. This is an implicit conversion constructor.
+  ///
   /// @param[in] point A PP_FloatPoint.
   FloatPoint(const PP_FloatPoint& point) {  // Implicit.
     float_point_.x = point.x;
@@ -174,32 +192,38 @@ class FloatPoint {
   }
 
   /// Getter function for returning the internal PP_FloatPoint struct.
+  ///
   /// @return A const reference to the internal PP_FloatPoint struct.
   const PP_FloatPoint& pp_float_point() const {
     return float_point_;
   }
 
   /// Getter function for returning the internal PP_Point struct.
+  ///
   /// @return A mutable reference to the PP_Point struct.
   PP_FloatPoint& pp_float_point() {
     return float_point_;
   }
 
   /// Getter function for returning the value of x.
+  ///
   /// @return The value of x for this Point.
   float x() const { return float_point_.x; }
 
   /// Setter function for setting the value of x.
+  ///
   /// @param[in] in_x A new x value.
   void set_x(float in_x) {
     float_point_.x = in_x;
   }
 
   /// Getter function for returning the value of y.
+  ///
   /// @return The value of y for this Point.
   float y() const { return float_point_.y; }
 
   /// Setter function for setting the value of y.
+  ///
   /// @param[in] in_y A new y value.
   void set_y(float in_y) {
     float_point_.y = in_y;
@@ -207,7 +231,9 @@ class FloatPoint {
 
   /// Adds two Points (this and other) together by adding their x values and
   /// y values.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return A new Point containing the result.
   FloatPoint operator+(const FloatPoint& other) const {
     return FloatPoint(x() + other.x(), y() + other.y());
@@ -215,7 +241,9 @@ class FloatPoint {
 
   /// Subtracts one Point from another Point by subtracting their x values
   /// and y values. Returnes a new point with the result.
+  ///
   /// @param[in] other A FloatPoint.
+  ///
   /// @return A new Point containing the result.
   FloatPoint operator-(const FloatPoint& other) const {
     return FloatPoint(x() - other.x(), y() - other.y());
@@ -223,7 +251,9 @@ class FloatPoint {
 
   /// Adds two Points (this and other) together by adding their x and y
   /// values. Returns this point as the result.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return This Point containing the result.
   FloatPoint& operator+=(const FloatPoint& other) {
     float_point_.x += other.x();
@@ -233,7 +263,9 @@ class FloatPoint {
 
   /// Subtracts one Point from another Point by subtracting their x values
   /// and y values. Returns this point as the result.
+  ///
   /// @param[in] other A Point.
+  ///
   /// @return This Point containing the result.
   FloatPoint& operator-=(const FloatPoint& other) {
     float_point_.x -= other.x();
@@ -242,6 +274,7 @@ class FloatPoint {
   }
 
   /// Swaps the coordinates of two Points.
+  ///
   /// @param[in] other A Point.
   void swap(FloatPoint& other) {
     float x = float_point_.x;
@@ -259,16 +292,20 @@ class FloatPoint {
 }  // namespace pp
 
 /// Determines whether the x and y values of two Points are equal.
+///
 /// @param[in] lhs The Point on the left-hand side of the equation.
 /// @param[in] rhs The Point on the right-hand side of the equation.
+///
 /// @return true if they are equal, false if unequal.
 inline bool operator==(const pp::Point& lhs, const pp::Point& rhs) {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
 /// Determines whether two Points have different coordinates.
+///
 /// @param[in] lhs The Point on the left-hand side of the equation.
 /// @param[in] rhs The Point on the right-hand side of the equation.
+///
 /// @return true if the coordinates of lhs are equal to the coordinates
 /// of rhs, otherwise false.
 inline bool operator!=(const pp::Point& lhs, const pp::Point& rhs) {
@@ -276,16 +313,20 @@ inline bool operator!=(const pp::Point& lhs, const pp::Point& rhs) {
 }
 
 /// Determines whether the x and y values of two FloatPoints are equal.
+///
 /// @param[in] lhs The Point on the left-hand side of the equation.
 /// @param[in] rhs The Point on the right-hand side of the equation.
+///
 /// @return true if they are equal, false if unequal.
 inline bool operator==(const pp::FloatPoint& lhs, const pp::FloatPoint& rhs) {
   return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
 /// Determines whether two Points have different coordinates.
+///
 /// @param[in] lhs The Point on the left-hand side of the equation.
 /// @param[in] rhs The Point on the right-hand side of the equation.
+///
 /// @return true if the coordinates of lhs are equal to the coordinates
 /// of rhs, otherwise false.
 inline bool operator!=(const pp::FloatPoint& lhs, const pp::FloatPoint& rhs) {

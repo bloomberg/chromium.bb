@@ -63,6 +63,7 @@ class Graphics2D : public Resource {
   /// of this 2D graphics context.
   ///
   /// @param[in] other An other 2D graphics context.
+  ///
   /// @return A new Graphics2D context.
   Graphics2D& operator=(const Graphics2D& other);
 

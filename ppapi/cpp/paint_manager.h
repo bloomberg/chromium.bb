@@ -90,9 +90,11 @@ class PaintManager {
     /// 1/60 second timer to do an invalidate instead. This will limit your
     /// animation to the slower of 60Hz or "however fast Flush can complete."
     ///
-    /// @param graphics A <code>Graphics2D</code> to be painted.
-    /// @param paint_rects A list of rects to paint.
-    /// @param paint_bounds A union of the rects to paint.
+    /// @param[in] graphics A <code>Graphics2D</code> to be painted.
+    /// @param[in] paint_rects A list of rects to paint.
+    /// @param[in] paint_bounds A union of the rects to paint.
+    ///
+    /// @return true if successful, otherwise false.
     virtual bool OnPaint(Graphics2D& graphics,
                          const std::vector<Rect>& paint_rects,
                          const Rect& paint_bounds) = 0;
@@ -155,12 +157,13 @@ class PaintManager {
   /// non-opqaue pixels or aren't sure, set this to false for more general
   /// blending.
   ///
-  /// If you set is_always_opaque, your alpha channel should always be set to
-  /// 0xFF or there may be painting artifacts. Being opaque will allow the
-  /// browser to do a memcpy rather than a blend to paint the plugin, and this
-  /// means your alpha values will get set on the page backing store. If these
-  /// values are incorrect, it could mess up future blending. If you aren't
-  /// sure, it is always correct to specify that it it not opaque.
+  /// If you set <code>is_always_opaque</code>, your alpha channel should
+  /// always be set to <code>0xFF</code> or there may be painting artifacts.
+  /// Being opaque will allow the browser to do a memcpy rather than a blend
+  /// to paint the plugin, and this means your alpha values will get set on the
+  /// page backing store. If these values are incorrect, it could mess up
+  /// future blending. If you aren't sure, it is always correct to specify that
+  /// it it not opaque.
   void Initialize(Instance* instance, Client* client, bool is_always_opaque);
 
   /// Setter function setting the max ratio of paint rect area to scroll rect
@@ -223,7 +226,7 @@ class PaintManager {
 
   /// InvalidateRect() Invalidate the provided rect.
   ///
-  /// @param rect The <code>Rect</code> to be invalidated.
+  /// @param[in] rect The <code>Rect</code> to be invalidated.
   void InvalidateRect(const Rect& rect);
 
   /// ScrollRect() scrolls the provided <code>clip_rect</code> by the
@@ -238,7 +241,7 @@ class PaintManager {
   /// (the instance has called SetSize() but we haven't actually painted it
   /// yet), or the current size of no resize is pending.
   ///
-  /// @return The effetive size.
+  /// @return The effective size.
   Size GetEffectiveSize() const;
 
  private:

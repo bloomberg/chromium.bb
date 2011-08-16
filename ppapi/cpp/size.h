@@ -110,7 +110,7 @@ class Size {
 
   /// GetArea() determines the area (width * height).
   ///
-  /// @return The area
+  /// @return The area.
   int GetArea() const {
     return width() * height();
   }

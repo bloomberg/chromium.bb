@@ -64,9 +64,13 @@ class Audio : public Resource {
   const AudioConfig& config() const { return config_; }
 
   /// StartPlayback() starts playback of audio.
+  ///
+  /// @return true if successful, otherwise false.
   bool StartPlayback();
 
   /// StopPlayback stops playback of audio.
+  ///
+  /// @return true if successful, otherwise false.
   bool StopPlayback();
 
  private:

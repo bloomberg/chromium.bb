@@ -51,10 +51,9 @@ class ImageData : public Resource {
   ///
   /// @param[in] format A PP_ImageDataFormat containing desired image format.
   /// PP_ImageDataFormat is an enumeration of the different types of
-  /// image data formats. Refer to the
-  /// <a href="/chrome/nativeclient/docs/reference/pepperc/
-  /// ppb__image__data_8h.html"><code>ppb_image_data.h</code></a> for further
-  /// information.
+  /// image data formats. Refer to
+  /// <a href="../pepperc/ppb__image__data_8h.html">
+  /// <code>ppb_image_data.h</code></a> for further information.
   ///
   /// @param[in] size A pointer to a <code>Size</code> containing the image
   /// size.

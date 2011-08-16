@@ -131,6 +131,7 @@ class URLLoader : public Resource {
   /// headers for the redirect url are received or error occured. This callback
   /// will only run if FollowRedirect() returns
   /// <code>PP_OK_COMPLETIONPENDING</code>.
+  ///
   /// @return An int32_t containing an error code from
   /// <code>pp_errors.h</code>.
   int32_t FollowRedirect(const CompletionCallback& cc);
@@ -146,7 +147,8 @@ class URLLoader : public Resource {
   ///
   /// @param[in] bytes_sent The number of bytes sent thus far.
   /// @param[in] total_bytes_to_be_sent The total number of bytes to be sent.
-  /// @return True if the upload progress is available, false if it is not
+  ///
+  /// @return true if the upload progress is available, false if it is not
   /// available.
   bool GetUploadProgress(int64_t* bytes_sent,
                          int64_t* total_bytes_to_be_sent) const;
@@ -164,7 +166,8 @@ class URLLoader : public Resource {
   /// @param[in] total_bytes_to_be_received The total number of bytes to be
   /// received. The total bytes to be received may be unknown, in which case
   /// <code>total_bytes_to_be_received</code> will be set to -1.
-  /// @return True if the download progress is available, false if it is
+  ///
+  /// @return true if the download progress is available, false if it is
   /// not available.
   bool GetDownloadProgress(int64_t* bytes_received,
                            int64_t* total_bytes_to_be_received) const;
@@ -188,6 +191,7 @@ class URLLoader : public Resource {
   /// completion. The callback will run if the bytes (full or partial) are
   /// read or an error occurs asynchronously. This callback will run only if
   /// this function returns <code>PP_OK_COMPLETIONPENDING</code>.
+  ///
   /// @return An int32_t containing the number of bytes read or an error code
   /// from <code>pp_errors.h</code>.
   int32_t ReadResponseBody(void* buffer,
@@ -204,6 +208,7 @@ class URLLoader : public Resource {
   /// completion. This callback will run when body is downloaded or an error
   /// occurs after FinishStreamingToFile() returns
   /// <code>PP_OK_COMPLETIONPENDING</code>.
+  ///
   /// @return An int32_t containing the number of bytes read or an error code
   /// from <code>pp_errors.h</code>.
   int32_t FinishStreamingToFile(const CompletionCallback& cc);
