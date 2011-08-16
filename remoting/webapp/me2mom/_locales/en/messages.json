@@ -23,6 +23,10 @@
     "message": "Continue",
     "description": "Label for the continue button on the pre-authorization page"
   },
+  "continuePrompt": {
+    "message": "You are currently sharing this machine with another user. Please confirm that you want to continue sharing.",
+    "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it"
+  },
   "debugButton": {
     "message": "Debug Log",
     "description": "Label for the debug log button"
@@ -38,6 +42,18 @@
   "disconnectButton": {
     "message": "Disconnect",
     "description": "Label for the disconnect button"
+  },
+  "disconnectButtonPlusShortcutLinux": {
+    "message": "Disconnect (Ctrl+Alt+Esc)",
+    "description": "Shortcut for the disconnect action on Linux"
+  },
+  "disconnectButtonPlusShortcutMacOSX": {
+    "message": "Disconnect (⌥⌃⎋)",
+    "description": "Shortcut for the disconnect action on Mac OS X. This probably doesn't need localizing since it is common practise on this platform to refer to the keys involved using symbols."
+  },
+  "disconnectButtonPlusShortcutWindows": {
+    "message": "Disconnect (Ctrl+Alt+Esc)",
+    "description": "Shortcut for the disconnect action on Windows"
   },
   "errorGeneric": {
     "message": "An error occurred.",

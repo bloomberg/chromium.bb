@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/ui_strings.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 namespace remoting {
@@ -24,7 +25,7 @@ class ContinueWindowLinux : public remoting::ContinueWindow {
  private:
   CHROMEGTK_CALLBACK_1(ContinueWindowLinux, void, OnResponse, int);
 
-  void CreateWindow();
+  void CreateWindow(UiStrings* ui_strings);
 
   ChromotingHost* host_;
   GtkWidget* continue_window_;
@@ -40,15 +41,15 @@ ContinueWindowLinux::ContinueWindowLinux()
 ContinueWindowLinux::~ContinueWindowLinux() {
 }
 
-void ContinueWindowLinux::CreateWindow() {
+void ContinueWindowLinux::CreateWindow(UiStrings* ui_strings) {
   if (continue_window_) return;
 
   continue_window_ = gtk_dialog_new_with_buttons(
-      kTitle,
+      ui_strings->product_name.c_str(),
       NULL,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      kCancelButtonText, GTK_RESPONSE_CANCEL,
-      kDefaultButtonText, GTK_RESPONSE_OK,
+      ui_strings->stop_sharing_button_text.c_str(), GTK_RESPONSE_CANCEL,
+      ui_strings->continue_button_text.c_str(), GTK_RESPONSE_OK,
       NULL);
 
   gtk_dialog_set_default_response(GTK_DIALOG(continue_window_),
@@ -65,7 +66,7 @@ void ContinueWindowLinux::CreateWindow() {
   GtkWidget* content_area =
       gtk_dialog_get_content_area(GTK_DIALOG(continue_window_));
 
-  GtkWidget* text_label = gtk_label_new(kMessage);
+  GtkWidget* text_label = gtk_label_new(ui_strings->continue_prompt.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
   // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_linux.cc.
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
@@ -76,7 +77,7 @@ void ContinueWindowLinux::CreateWindow() {
 
 void ContinueWindowLinux::Show(remoting::ChromotingHost* host) {
   host_ = host;
-  CreateWindow();
+  CreateWindow(host->ui_strings());
   gtk_window_set_urgency_hint(GTK_WINDOW(continue_window_), TRUE);
   gtk_window_present(GTK_WINDOW(continue_window_));
 }

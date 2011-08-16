@@ -24,6 +24,9 @@ class DisconnectWindow {
   static const char kDisconnectKeysWin[];
 
   // Show the disconnect window allowing the user to shut down |host|.
+  // TODO(jamiewalch): Once all platforms are using localized strings,
+  // remove |username| from this signature (it will be substituted as
+  // appropriate at the localization stage).
   virtual void Show(ChromotingHost* host, const std::string& username) = 0;
 
   // Hide the disconnect window.

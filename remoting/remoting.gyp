@@ -422,6 +422,8 @@
         'host/screen_recorder.h',
         'host/support_access_verifier.cc',
         'host/support_access_verifier.h',
+        'host/ui_strings.cc',
+        'host/ui_strings.h',
         'host/user_authenticator.h',
         'host/user_authenticator_linux.cc',
         'host/user_authenticator_mac.cc',

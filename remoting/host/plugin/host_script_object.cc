@@ -16,10 +16,10 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
-#include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
+#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
@@ -40,6 +40,7 @@ namespace remoting {
 //
 // attribute Function void logDebugInfo(string);
 // attribute Function void onStateChanged();
+// attribute Function string localizeString(string,...);
 //
 // // The |auth_service_with_token| parameter should be in the format
 // // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
@@ -52,6 +53,7 @@ const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
 const char* kAttrNameClient = "client";
 const char* kAttrNameState = "state";
+const char* kAttrNameLocalizeString = "localizeString";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
@@ -80,8 +82,6 @@ HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
     : plugin_(plugin),
       parent_(parent),
       state_(kDisconnected),
-      log_debug_info_func_(NULL),
-      on_state_changed_func_(NULL),
       np_thread_id_(base::PlatformThread::CurrentId()),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
@@ -135,13 +135,6 @@ HostNPScriptObject::~HostNPScriptObject() {
 
   // Stop all threads.
   host_context_.Stop();
-
-  if (log_debug_info_func_) {
-    g_npnetscape_funcs->releaseobject(log_debug_info_func_);
-  }
-  if (on_state_changed_func_) {
-    g_npnetscape_funcs->releaseobject(on_state_changed_func_);
-  }
 }
 
 bool HostNPScriptObject::Init() {
@@ -195,6 +188,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameAccessCodeLifetime ||
           property_name == kAttrNameClient ||
           property_name == kAttrNameState ||
+          property_name == kAttrNameLocalizeString ||
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnStateChanged ||
           property_name == kAttrNameDisconnected ||
@@ -215,10 +209,13 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
   }
 
   if (property_name == kAttrNameOnStateChanged) {
-    OBJECT_TO_NPVARIANT(on_state_changed_func_, *result);
+    OBJECT_TO_NPVARIANT(on_state_changed_func_.get(), *result);
+    return true;
+  } else if (property_name == kAttrNameLocalizeString) {
+    OBJECT_TO_NPVARIANT(localize_func_.get(), *result);
     return true;
   } else if (property_name == kAttrNameLogDebugInfo) {
-    OBJECT_TO_NPVARIANT(log_debug_info_func_, *result);
+    OBJECT_TO_NPVARIANT(log_debug_info_func_.get(), *result);
     return true;
   } else if (property_name == kAttrNameState) {
     INT32_TO_NPVARIANT(state_, *result);
@@ -263,13 +260,18 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
 
   if (property_name == kAttrNameOnStateChanged) {
     if (NPVARIANT_IS_OBJECT(*value)) {
-      if (on_state_changed_func_) {
-        g_npnetscape_funcs->releaseobject(on_state_changed_func_);
-      }
       on_state_changed_func_ = NPVARIANT_TO_OBJECT(*value);
-      if (on_state_changed_func_) {
-        g_npnetscape_funcs->retainobject(on_state_changed_func_);
-      }
+      return true;
+    } else {
+      SetException("SetProperty: unexpected type for property " +
+                   property_name);
+    }
+    return false;
+  }
+
+  if (property_name == kAttrNameLocalizeString) {
+    if (NPVARIANT_IS_OBJECT(*value)) {
+      localize_func_ = NPVARIANT_TO_OBJECT(*value);
       return true;
     } else {
       SetException("SetProperty: unexpected type for property " +
@@ -280,13 +282,7 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
 
   if (property_name == kAttrNameLogDebugInfo) {
     if (NPVARIANT_IS_OBJECT(*value)) {
-      if (log_debug_info_func_) {
-        g_npnetscape_funcs->releaseobject(log_debug_info_func_);
-      }
       log_debug_info_func_ = NPVARIANT_TO_OBJECT(*value);
-      if (log_debug_info_func_) {
-        g_npnetscape_funcs->retainobject(log_debug_info_func_);
-      }
       return true;
     } else {
       SetException("SetProperty: unexpected type for property " +
@@ -310,6 +306,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
   const char* entries[] = {
     kAttrNameAccessCode,
     kAttrNameState,
+    kAttrNameLocalizeString,
     kAttrNameLogDebugInfo,
     kAttrNameOnStateChanged,
     kFuncNameConnect,
@@ -350,6 +347,7 @@ void HostNPScriptObject::OnClientAuthenticated(
   if (pos != std::string::npos)
     client_username_.replace(pos, std::string::npos, "");
   LOG(INFO) << "Client " << client_username_ << " connected.";
+  LocalizeStrings();
   OnStateChanged(kConnected);
 }
 
@@ -589,9 +587,9 @@ void HostNPScriptObject::OnStateChanged(State state) {
     return;
   }
   state_ = state;
-  if (on_state_changed_func_) {
+  if (on_state_changed_func_.get()) {
     VLOG(2) << "Calling state changed " << state;
-    bool is_good = InvokeAndIgnoreResult(on_state_changed_func_, NULL, 0);
+    bool is_good = InvokeAndIgnoreResult(on_state_changed_func_.get(), NULL, 0);
     LOG_IF(ERROR, !is_good) << "OnStateChanged failed";
   }
 }
@@ -627,10 +625,10 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
     return;
   }
 
-  if (log_debug_info_func_) {
+  if (log_debug_info_func_.get()) {
     NPVariant log_message;
     STRINGZ_TO_NPVARIANT(message.c_str(), log_message);
-    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_,
+    bool is_good = InvokeAndIgnoreResult(log_debug_info_func_.get(),
                                          &log_message, 1);
     LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";
   }
@@ -640,6 +638,59 @@ void HostNPScriptObject::SetException(const std::string& exception_string) {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   g_npnetscape_funcs->setexception(parent_, exception_string.c_str());
   LOG(INFO) << exception_string;
+}
+
+void HostNPScriptObject::LocalizeStrings() {
+  UiStrings* ui_strings = host_->ui_strings();
+  std::string direction;
+  LocalizeString("@@bidi_dir", NULL, &direction);
+  ui_strings->direction =
+      direction == "rtl" ? remoting::UiStrings::RTL
+                         : remoting::UiStrings::LTR;
+  LocalizeString("productName", NULL, &ui_strings->product_name);
+  LocalizeString("disconnectButton", NULL, &ui_strings->disconnect_button_text);
+  LocalizeString(
+#if defined(OS_WIN)
+      "disconnectButtonPlusShortcutWindows",
+#elif defined(OS_MAC)
+      "disconnectButtonPlusShortcutMacOSX",
+#else
+      "disconnectButtonPlusShortcutLinux",
+#endif
+      NULL, &ui_strings->disconnect_button_text_plus_shortcut);
+  LocalizeString("continuePrompt", NULL, &ui_strings->continue_prompt);
+  LocalizeString("continueButton", NULL, &ui_strings->continue_button_text);
+  LocalizeString("stopSharingButton", NULL,
+                 &ui_strings->stop_sharing_button_text);
+  LocalizeString("messageShared", client_username_.c_str(),
+                 &ui_strings->disconnect_message);
+}
+
+bool HostNPScriptObject::LocalizeString(const char* tag,
+                                        const char* substitution,
+                                        std::string* result) {
+  NPVariant args[2];
+  STRINGZ_TO_NPVARIANT(tag, args[0]);
+  int arg_count = 1;
+  if (substitution) {
+    STRINGZ_TO_NPVARIANT(substitution, args[1]);
+    ++arg_count;
+  }
+  NPVariant np_result;
+  bool is_good = g_npnetscape_funcs->invokeDefault(
+      plugin_, localize_func_.get(), &args[0], arg_count, &np_result);
+  if (!is_good) {
+    LOG(ERROR) << "Localization failed for " << tag;
+    return false;
+  }
+  std::string translation = StringFromNPVariant(np_result);
+  g_npnetscape_funcs->releasevariantvalue(&np_result);
+  if (translation.empty()) {
+    LOG(ERROR) << "Missing translation for " << tag;
+    return false;
+  }
+  *result = translation;
+  return true;
 }
 
 bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,

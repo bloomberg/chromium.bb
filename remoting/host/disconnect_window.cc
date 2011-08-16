@@ -4,8 +4,10 @@
 
 #include "remoting/host/disconnect_window.h"
 
+// TODO(jamiewalch): Remove this file once all platforms pick up the
+// localized versions from ui_strings.h
+
 namespace remoting {
-// TODO(garykac): These strings should be localized.
 const char DisconnectWindow::kTitle[] = "Remoting";
 const char DisconnectWindow::kSharingWith[] = "Sharing with: ";
 const char DisconnectWindow::kDisconnectButton[] = "Disconnect";

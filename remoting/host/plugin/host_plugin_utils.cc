@@ -40,4 +40,21 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant) {
   return NPVARIANT_TO_OBJECT(variant);
 }
 
+ScopedRefNPObject::ScopedRefNPObject() : object_(NULL) { }
+
+ScopedRefNPObject::~ScopedRefNPObject() {
+  *this = NULL;
+}
+
+ScopedRefNPObject& ScopedRefNPObject::operator=(NPObject* object) {
+  if (object) {
+    g_npnetscape_funcs->retainobject(object);
+  }
+  if (object_) {
+    g_npnetscape_funcs->releaseobject(object_);
+  }
+  object_ = object;
+  return *this;
+}
+
 }  // namespace remoting

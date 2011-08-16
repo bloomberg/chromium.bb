@@ -15,6 +15,7 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/session_manager.h"
@@ -144,6 +145,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // is ignored.
   void PauseSession(bool pause);
 
+  UiStrings* ui_strings() { return &ui_strings_; }
+
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
@@ -238,6 +241,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Stores list of tasks that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.
   std::vector<Task*> shutdown_tasks_;
+
+  UiStrings ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

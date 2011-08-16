@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/plugin/host_plugin_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -79,6 +80,7 @@ class HostNPScriptObject : public HostStatusObserver {
   // base/logging.h.
   static bool LogToUI(int severity, const char* file, int line,
                       size_t message_start, const std::string& str);
+
  private:
   enum State {
     kDisconnected,
@@ -125,6 +127,15 @@ class HostNPScriptObject : public HostStatusObserver {
   // Called when the nat traversal policy is updated.
   void OnNatPolicyUpdate(bool nat_traversal_enabled);
 
+  void LocalizeStrings();
+
+  // Helper function for executing InvokeDefault on an NPObject that performs
+  // a string->string mapping with one optional substitution parameter. Stores
+  // the translation in |result| and returns true on success, or leaves it
+  // unchanged and returns false on failure.
+  bool LocalizeString(const char* tag, const char* substitution,
+                      std::string* result);
+
   // Helper function for executing InvokeDefault on an NPObject, and ignoring
   // the return value.
   bool InvokeAndIgnoreResult(NPObject* func,
@@ -147,8 +158,9 @@ class HostNPScriptObject : public HostStatusObserver {
   std::string access_code_;
   std::string client_username_;
   base::TimeDelta access_code_lifetime_;
-  NPObject* log_debug_info_func_;
-  NPObject* on_state_changed_func_;
+  ScopedRefNPObject localize_func_;
+  ScopedRefNPObject log_debug_info_func_;
+  ScopedRefNPObject on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;
 
   scoped_ptr<RegisterSupportHostRequest> register_request_;

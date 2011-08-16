@@ -3,11 +3,6 @@
  * found in the LICENSE file.
  */
 
-/**
- * Localize the document by replacing innerText of nodes with an i18n-content
- * attribute with the corresponding localized string.
- */
-
 var l10n = l10n || {};
 
 /**

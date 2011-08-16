@@ -493,6 +493,11 @@ void ChromotingHost::LocalLoginSucceeded(
   // Immediately add the connection and start the session.
   recorder_->AddConnection(connection);
   recorder_->Start();
+  // Notify observers that there is at least one authenticated client.
+  for (StatusObserverList::iterator it = status_observers_.begin();
+       it != status_observers_.end(); ++it) {
+    (*it)->OnClientAuthenticated(connection);
+  }
   // TODO(jamiewalch): Tidy up actions to be taken on connect/disconnect,
   // including closing the connection on failure of a critical operation.
   EnableCurtainMode(true);
@@ -502,12 +507,6 @@ void ChromotingHost::LocalLoginSucceeded(
     if (pos != std::string::npos)
       username.replace(pos, std::string::npos, "");
     desktop_environment_->OnConnect(username);
-  }
-
-  // Notify observers that there is at least one authenticated client.
-  for (StatusObserverList::iterator it = status_observers_.begin();
-       it != status_observers_.end(); ++it) {
-    (*it)->OnClientAuthenticated(connection);
   }
 }
 

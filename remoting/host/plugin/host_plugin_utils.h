@@ -30,6 +30,25 @@ NPVariant NPVariantFromString(const std::string& val);
 // Convert an NPVariant into an NSPObject.
 NPObject* ObjectFromNPVariant(const NPVariant& variant);
 
+// Scoped reference pointer for NPObjects. All objects using this class
+// must be owned by g_npnetscape_funcs.
+class ScopedRefNPObject {
+ public:
+  ScopedRefNPObject();
+  ~ScopedRefNPObject();
+
+  // Release the held reference and replace it with |object|, incrementing
+  // its reference count.
+  ScopedRefNPObject& operator=(NPObject* object);
+
+  NPObject* get() { return object_; }
+
+ private:
+  NPObject* object_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedRefNPObject);
+};
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_PLUGIN_HOST_PLUGIN_UTILS_H_
