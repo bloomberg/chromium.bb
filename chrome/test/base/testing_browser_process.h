@@ -102,6 +102,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual const std::string& GetApplicationLocale();
   virtual void SetApplicationLocale(const std::string& app_locale);
   virtual DownloadStatusUpdater* download_status_updater();
+  virtual DownloadRequestLimiter* download_request_limiter();
   virtual bool plugin_finder_disabled() const;
   virtual void CheckForInspectorFiles() {}
 

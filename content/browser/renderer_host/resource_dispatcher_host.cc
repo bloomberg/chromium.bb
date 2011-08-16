@@ -18,7 +18,6 @@
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
@@ -241,7 +240,6 @@ ResourceDispatcherHost::ResourceDispatcherHost(
     const ResourceQueue::DelegateSet& resource_queue_delegates)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this))),
-      download_request_limiter_(new DownloadRequestLimiter()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
       webkit_thread_(new WebKitThread),
@@ -745,8 +743,9 @@ void ResourceDispatcherHost::BeginDownload(
                                   save_info));
 
   if (delegate_) {
-    handler = delegate_->DownloadStarting(handler, context, child_id,
-                                          route_id);
+    handler = delegate_->DownloadStarting(
+        handler, context, request, child_id, route_id, request_id_, true,
+        false);
   }
 
   const net::URLRequestContext* request_context = context.request_context();
@@ -1688,8 +1687,6 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
 }
 
 void ResourceDispatcherHost::OnUserGesture(TabContents* tab) {
-  download_request_limiter()->OnUserGesture(tab);
-
   last_user_gesture_time_ = TimeTicks::Now();
 }
 

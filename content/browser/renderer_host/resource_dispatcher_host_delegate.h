@@ -14,6 +14,7 @@ class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class ResourceMessageFilter;
+class TabContents;
 struct ResourceHostMsg_Request;
 struct ResourceResponse;
 
@@ -50,13 +51,21 @@ class ResourceDispatcherHostDelegate {
       int child_id,
       int route_id) = 0;
 
-  // Called when a download is starting, after the resource handles from the
-  // content layer have been added.
+  // Allows an embedder to add additional resource handlers for a download.
+  // |is_new_request| is true if this is a request that is just starting, i.e.
+  // the content layer has just added its own resource handlers; it's false if
+  // this was originally a non-download request that had some resource handlers
+  // applied already and now we found out it's a download.
+  // |in_complete| is true if this is invoked from |OnResponseCompleted|.
   virtual ResourceHandler* DownloadStarting(
       ResourceHandler* handler,
       const content::ResourceContext& resource_context,
+      net::URLRequest* request,
       int child_id,
-      int route_id) = 0;
+      int route_id,
+      int request_id,
+      bool is_new_request,
+      bool in_complete) = 0;
 
   // Called to determine whether a request's start should be deferred. This
   // is only called if the ResourceHandler associated with the request does

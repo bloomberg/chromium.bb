@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
+#include "chrome/browser/download/download_throttling_resource_handler.h"
 
 #include "base/logging.h"
 #include "chrome/browser/download/download_util.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 
 DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
+    ResourceHandler* next_handler,
     ResourceDispatcherHost* host,
+    DownloadRequestLimiter* limiter,
     net::URLRequest* request,
     const GURL& url,
     int render_process_host_id,
@@ -26,6 +27,8 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       request_id_(request_id),
+      next_handler_(next_handler),
+      request_allowed_(false),
       tmp_buffer_length_(0),
       ignore_on_read_complete_(in_complete),
       request_closed_(false) {
@@ -40,7 +43,7 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
   // released in ContinueDownload() and CancelDownload().
   AddRef();
 
-  host_->download_request_limiter()->CanDownloadOnIOThread(
+  limiter->CanDownloadOnIOThread(
       render_process_host_id_, render_view_id, request_id, this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -55,8 +58,8 @@ bool DownloadThrottlingResourceHandler::OnUploadProgress(int request_id,
                                                          uint64 position,
                                                          uint64 size) {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    return download_handler_->OnUploadProgress(request_id, position, size);
+  if (request_allowed_)
+    return next_handler_->OnUploadProgress(request_id, position, size);
   return true;
 }
 
@@ -66,9 +69,8 @@ bool DownloadThrottlingResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   DCHECK(!request_closed_);
-  if (download_handler_.get()) {
-    return download_handler_->OnRequestRedirected(
-        request_id, url, response, defer);
+  if (request_allowed_) {
+    return next_handler_->OnRequestRedirected(request_id, url, response, defer);
   }
   url_ = url;
   return true;
@@ -78,8 +80,8 @@ bool DownloadThrottlingResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response) {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    return download_handler_->OnResponseStarted(request_id, response);
+  if (request_allowed_)
+    return next_handler_->OnResponseStarted(request_id, response);
   response_ = response;
   return true;
 }
@@ -88,8 +90,8 @@ bool DownloadThrottlingResourceHandler::OnWillStart(int request_id,
                                                     const GURL& url,
                                                     bool* defer) {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    return download_handler_->OnWillStart(request_id, url, defer);
+  if (request_allowed_)
+    return next_handler_->OnWillStart(request_id, url, defer);
   return true;
 }
 
@@ -98,8 +100,8 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
                                                    int* buf_size,
                                                    int min_size) {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    return download_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  if (request_allowed_)
+    return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 
   // We should only have this invoked once, as such we only deal with one
   // tmp buffer.
@@ -129,12 +131,12 @@ bool DownloadThrottlingResourceHandler::OnReadCompleted(int request_id,
   if (tmp_buffer_.get()) {
     DCHECK(!tmp_buffer_length_);
     tmp_buffer_length_ = *bytes_read;
-    if (download_handler_.get())
+    if (request_allowed_)
       CopyTmpBufferToDownloadHandler();
     return true;
   }
-  if (download_handler_.get())
-    return download_handler_->OnReadCompleted(request_id, bytes_read);
+  if (request_allowed_)
+    return next_handler_->OnReadCompleted(request_id, bytes_read);
   return true;
 }
 
@@ -143,9 +145,9 @@ bool DownloadThrottlingResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    return download_handler_->OnResponseCompleted(request_id, status,
-                                                  security_info);
+  if (request_allowed_)
+    return next_handler_->OnResponseCompleted(request_id, status,
+                                              security_info);
 
   // For a download, if ResourceDispatcher::Read() fails,
   // ResourceDispatcher::OnresponseStarted() will call
@@ -159,8 +161,8 @@ bool DownloadThrottlingResourceHandler::OnResponseCompleted(
 
 void DownloadThrottlingResourceHandler::OnRequestClosed() {
   DCHECK(!request_closed_);
-  if (download_handler_.get())
-    download_handler_->OnRequestClosed();
+  if (request_allowed_)
+    next_handler_->OnRequestClosed();
   request_closed_ = true;
 }
 
@@ -171,20 +173,10 @@ void DownloadThrottlingResourceHandler::CancelDownload() {
 }
 
 void DownloadThrottlingResourceHandler::ContinueDownload() {
-  DCHECK(!download_handler_.get());
   if (!request_closed_) {
-    download_handler_ =
-        new DownloadResourceHandler(host_,
-                                    render_process_host_id_,
-                                    render_view_id_,
-                                    request_id_,
-                                    url_,
-                                    host_->download_file_manager(),
-                                    request_,
-                                    false,
-                                    DownloadSaveInfo());
+    request_allowed_ = true;
     if (response_.get())
-      download_handler_->OnResponseStarted(request_id_, response_.get());
+      next_handler_->OnResponseStarted(request_id_, response_.get());
 
     if (tmp_buffer_length_)
       CopyTmpBufferToDownloadHandler();
@@ -199,11 +191,11 @@ void DownloadThrottlingResourceHandler::CopyTmpBufferToDownloadHandler() {
   // Copy over the tmp buffer.
   net::IOBuffer* buffer;
   int buf_size;
-  if (download_handler_->OnWillRead(request_id_, &buffer, &buf_size,
-                                    tmp_buffer_length_)) {
+  if (next_handler_->OnWillRead(request_id_, &buffer, &buf_size,
+                                tmp_buffer_length_)) {
     CHECK(buf_size >= tmp_buffer_length_);
     memcpy(buffer->data(), tmp_buffer_->data(), tmp_buffer_length_);
-    download_handler_->OnReadCompleted(request_id_, &tmp_buffer_length_);
+    next_handler_->OnReadCompleted(request_id_, &tmp_buffer_length_);
   }
   tmp_buffer_length_ = 0;
   tmp_buffer_ = NULL;

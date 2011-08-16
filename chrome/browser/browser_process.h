@@ -184,6 +184,7 @@ class BrowserProcess {
   virtual void SetApplicationLocale(const std::string& locale) = 0;
 
   virtual DownloadStatusUpdater* download_status_updater() = 0;
+  virtual DownloadRequestLimiter* download_request_limiter() = 0;
 
   // Returns the object that watches for changes in the closeable state of tab.
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;

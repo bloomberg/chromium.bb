@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/child_process_security_policy.h"

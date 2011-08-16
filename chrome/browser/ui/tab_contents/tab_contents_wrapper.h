@@ -32,6 +32,7 @@ class AutofillManager;
 class AutomationTabHelper;
 class BlockedContentTabHelper;
 class BookmarkTabHelper;
+class DownloadRequestLimiterObserver;
 class Extension;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
@@ -334,6 +335,7 @@ class TabContentsWrapper : public TabContentsObserver,
   // (These provide no API for callers; objects that need to exist 1:1 with tabs
   // and silently do their thing live here.)
 
+  scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;

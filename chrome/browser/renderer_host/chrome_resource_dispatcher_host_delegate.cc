@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/download/download_throttling_resource_handler.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -56,6 +59,7 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     ResourceDispatcherHost* resource_dispatcher_host,
     prerender::PrerenderTracker* prerender_tracker)
     : resource_dispatcher_host_(resource_dispatcher_host),
+      download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
       prerender_tracker_(prerender_tracker) {
 }
@@ -142,20 +146,36 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
 }
 
 ResourceHandler* ChromeResourceDispatcherHostDelegate::DownloadStarting(
-    ResourceHandler* handler,
-    const content::ResourceContext& resource_context,
-    int child_id,
-    int route_id) {
-#if defined(ENABLE_SAFE_BROWSING)
-  ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
-      resource_context.GetUserData(NULL));
-  if (!io_data->safe_browsing_enabled()->GetValue())
-    return handler;
+      ResourceHandler* handler,
+      const content::ResourceContext& resource_context,
+      net::URLRequest* request,
+      int child_id,
+      int route_id,
+      int request_id,
+      bool is_new_request,
+      bool in_complete) {
 
-  return CreateSafeBrowsingResourceHandler(handler, child_id, route_id, false);
+  // If this isn't a new request, we've seen this before and added the safe
+  // browsing resource handler already so no need to add it again. This code
+  // path is only hit for requests initiated through the browser, and not the
+  // web, so no need to add the throttling handler.
+  if (is_new_request) {
+#if defined(ENABLE_SAFE_BROWSING)
+    ProfileIOData* io_data = reinterpret_cast<ProfileIOData*>(
+        resource_context.GetUserData(NULL));
+    if (!io_data->safe_browsing_enabled()->GetValue())
+      return handler;
+
+    return CreateSafeBrowsingResourceHandler(
+        handler, child_id, route_id, false);
 #else
-  return handler;
+    return handler;
 #endif
+  }
+
+  return new DownloadThrottlingResourceHandler(
+      handler, resource_dispatcher_host_, download_request_limiter_, request,
+      request->url(), child_id, route_id, request_id, in_complete);
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(

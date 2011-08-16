@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_
-#define CHROME_BROWSER_RENDERER_HOST_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_
 #pragma once
 
 #include <string>
@@ -24,14 +24,16 @@ class URLRequest;
 // download and asks the DownloadRequestLimiter if the download should be
 // allowed. The DownloadRequestLimiter notifies us asynchronously as to whether
 // the download is allowed or not. If the download is allowed the request is
-// resumed, a DownloadResourceHandler is created and all EventHandler methods
-// are delegated to it. If the download is not allowed the request is canceled.
+// resumed, all EventHandler methods are delegated to it to the original
+// handler. If the download is not allowed the request is canceled.
 
 class DownloadThrottlingResourceHandler
     : public ResourceHandler,
       public DownloadRequestLimiter::Callback {
  public:
-  DownloadThrottlingResourceHandler(ResourceDispatcherHost* host,
+  DownloadThrottlingResourceHandler(ResourceHandler* next_handler,
+                                    ResourceDispatcherHost* host,
+                                    DownloadRequestLimiter* limiter,
                                     net::URLRequest* request,
                                     const GURL& url,
                                     int render_process_host_id,
@@ -71,9 +73,11 @@ class DownloadThrottlingResourceHandler
   int render_view_id_;
   int request_id_;
 
-  // Handles the actual download. This is only created if the download is
-  // allowed to continue.
-  scoped_refptr<DownloadResourceHandler> download_handler_;
+  // The original handler.
+  scoped_refptr<ResourceHandler> next_handler_;
+
+  // Set to true when we know that the request is allowed to start.
+  bool request_allowed_;
 
   // Response supplied to OnResponseStarted. Only non-null if OnResponseStarted
   // is invoked.
@@ -97,4 +101,4 @@ class DownloadThrottlingResourceHandler
   DISALLOW_COPY_AND_ASSIGN(DownloadThrottlingResourceHandler);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_THROTTLING_RESOURCE_HANDLER_H_

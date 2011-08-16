@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
+#include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
@@ -158,6 +159,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 
   // Create the per-tab observers.
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
+  download_request_limiter_observer_.reset(
+      new DownloadRequestLimiterObserver(contents));
   file_select_observer_.reset(new FileSelectObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   prerender_observer_.reset(new prerender::PrerenderObserver(this));

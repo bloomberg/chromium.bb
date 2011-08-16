@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 
+class DownloadRequestLimiter;
 class ResourceDispatcherHost;
 class SafeBrowsingService;
 
@@ -47,8 +48,12 @@ class ChromeResourceDispatcherHostDelegate
   virtual ResourceHandler* DownloadStarting(
       ResourceHandler* handler,
       const content::ResourceContext& resource_context,
+      net::URLRequest* request,
       int child_id,
-      int route_id) OVERRIDE;
+      int route_id,
+      int request_id,
+      bool is_new_request,
+      bool in_complete) OVERRIDE;
   virtual bool ShouldDeferStart(
       net::URLRequest* request,
       const content::ResourceContext& resource_context) OVERRIDE;
@@ -78,6 +83,7 @@ class ChromeResourceDispatcherHostDelegate
       ResourceHandler* handler, int child_id, int route_id, bool subresource);
 
   ResourceDispatcherHost* resource_dispatcher_host_;
+  scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   prerender::PrerenderTracker* prerender_tracker_;
 

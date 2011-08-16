@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -308,15 +308,24 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     info->set_is_download(true);
 
-    DownloadThrottlingResourceHandler* download_handler =
-        new DownloadThrottlingResourceHandler(host_,
-                                              request_,
-                                              request_->url(),
-                                              info->child_id(),
-                                              info->route_id(),
-                                              request_id,
-                                              in_complete);
-    UseAlternateResourceHandler(request_id, download_handler);
+    scoped_refptr<ResourceHandler> handler(
+      new DownloadResourceHandler(host_,
+                                  info->child_id(),
+                                  info->route_id(),
+                                  info->request_id(),
+                                  request_->url(),
+                                  host_->download_file_manager(),
+                                  request_,
+                                  false,
+                                  DownloadSaveInfo()));
+
+    if (host_->delegate()) {
+      handler = host_->delegate()->DownloadStarting(
+          handler, *info->context(), request_, info->child_id(),
+          info->route_id(), info->request_id(), false, in_complete);
+    }
+
+    UseAlternateResourceHandler(request_id, handler);
   }
   return real_handler_->OnResponseStarted(request_id, response_);
 }

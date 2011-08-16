@@ -24,6 +24,7 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/remote_debugging_server.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/user_script_listener.h"
@@ -584,6 +585,13 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
   return &download_status_updater_;
+}
+
+DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
+  DCHECK(CalledOnValidThread());
+  if (!download_request_limiter_)
+    download_request_limiter_ = new DownloadRequestLimiter();
+  return download_request_limiter_;
 }
 
 TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {
