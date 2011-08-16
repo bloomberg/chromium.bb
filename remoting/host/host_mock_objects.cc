@@ -4,6 +4,8 @@
 
 #include "remoting/host/host_mock_objects.h"
 
+#include "base/message_loop_proxy.h"
+
 namespace remoting {
 
 MockCapturer::MockCapturer() {}
@@ -46,7 +48,9 @@ LocalInputMonitor* LocalInputMonitor::Create() {
   return new MockLocalInputMonitor();
 }
 
-MockChromotingHostContext::MockChromotingHostContext() {}
+MockChromotingHostContext::MockChromotingHostContext()
+    : ChromotingHostContext(base::MessageLoopProxy::CreateForCurrentThread()) {
+}
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
 

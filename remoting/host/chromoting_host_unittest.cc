@@ -78,7 +78,7 @@ class ChromotingHostTest : public testing::Test {
     ON_CALL(context_, network_message_loop())
         .WillByDefault(Return(message_loop_proxy_.get()));
     ON_CALL(context_, ui_message_loop())
-        .WillByDefault(Return(&message_loop_));
+        .WillByDefault(Return(message_loop_proxy_.get()));
     EXPECT_CALL(context_, main_message_loop())
         .Times(AnyNumber());
     EXPECT_CALL(context_, encode_message_loop())
@@ -87,12 +87,6 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
     EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
-
-    context_.SetUITaskPostFunction(base::Bind(
-        static_cast<void(MessageLoop::*)(
-            const tracked_objects::Location&,
-            const base::Closure&)>(&MessageLoop::PostTask),
-        base::Unretained(&message_loop_)));
 
     Capturer* capturer = new CapturerFake();
     event_executor_ = new MockEventExecutor();

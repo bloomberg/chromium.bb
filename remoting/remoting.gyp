@@ -337,6 +337,8 @@
         'base/encoder_vp8.h',
         'base/encoder_row_based.cc',
         'base/encoder_row_based.h',
+        'base/plugin_message_loop_proxy.cc',
+        'base/plugin_message_loop_proxy.h',
         'base/rate_counter.cc',
         'base/rate_counter.h',
         'base/running_average.cc',
