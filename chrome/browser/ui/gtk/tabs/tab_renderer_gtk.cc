@@ -72,6 +72,10 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
+const SkScalar kTabCapWidth = 15;
+const SkScalar kTabTopCurveWidth = 4;
+const SkScalar kTabBottomCurveWidth = 3;
+
 // The vertical and horizontal offset used to position the close button
 // in the tab. TODO(jhawkins): Ask pkasting what the Fuzz is about.
 const int kCloseButtonVertFuzz = 0;
