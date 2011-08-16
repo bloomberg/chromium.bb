@@ -35,7 +35,7 @@ deps = {
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@b6a55bd24a7f00f7308f0ea4316f8b73b497bc53',
+        Var('git_url') + '/external/angleproject.git@1584eebfcb4410e1dbed867c38837448861638a3',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
