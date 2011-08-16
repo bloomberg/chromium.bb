@@ -483,9 +483,31 @@ int HistoryURLProvider::CalculateRelevance(AutocompleteInput::Type input_type,
 float HistoryURLProvider::CalculateConfidence(
     const history::HistoryMatch& match,
     const history::HistoryMatches& matches) {
-  // TODO(dominich): Take into account bookmarked page?
-  // TODO(dominich): See CompareHistoryMatch for more measures to include.
-  // Using typed count in place of visit count as:
+  // Calculate a score based on typed count.
+  const float typed_numerator = match.url_info.typed_count();
+  float typed_denominator = 0.0f;
+  for (history::HistoryMatches::const_iterator it = matches.begin();
+       it != matches.end(); ++it) {
+    typed_denominator += it->url_info.typed_count();
+  }
+  const float typed_score = (typed_denominator > 0.0f) ?
+      (typed_numerator / typed_denominator) : 0.0f;
+
+  // Calculate a score based on visit count
+  const float visit_numerator = match.url_info.visit_count();
+  float visit_denominator = 0.0f;
+  for (history::HistoryMatches::const_iterator it = matches.begin();
+       it != matches.end(); ++it) {
+    visit_denominator += it->url_info.visit_count();
+  }
+  const float visit_score = (visit_denominator > 0.0f) ?
+      (visit_numerator / visit_denominator) : 0.0f;
+
+  // Calculate a score based on innermost matching.
+  const float innermost_score = (match.innermost_match ? 1.0f : 0.0f);
+
+  // TODO(dominich): Add a boost for bookmarked pages?
+  // Prefer typed count to visit count as:
   // - It's a better indicator of what the user wants to open given that they
   //   are typing in the address bar (users tend to open certain URLs by typing
   //   and others by e.g. bookmarks, so visit_count is a good indicator of
@@ -495,20 +517,8 @@ float HistoryURLProvider::CalculateConfidence(
   //   (meaning many high-visit_count-URLs may be present in one query and
   //   absent in a similar one), leading to wild swings in confidence for the
   //   same result across distinct queries.
-  float numerator = match.url_info.typed_count();
-  float denominator = 0.0f;
-  for (history::HistoryMatches::const_iterator it = matches.begin();
-       it != matches.end(); ++it) {
-    denominator += it->url_info.typed_count();
-  }
-  if (denominator < 1) {
-    numerator = match.url_info.visit_count();
-    for (history::HistoryMatches::const_iterator it = matches.begin();
-         it != matches.end(); ++it) {
-      denominator += it->url_info.visit_count();
-    }
-  }
-  return (denominator > 0.0f ? numerator / denominator : 0);
+  // Add a boost for innermost matches (matches after scheme or 'www.').
+  return (0.5f * typed_score) + (0.3f * visit_score) + (0.2f * innermost_score);
 }
 
 // static
