@@ -126,6 +126,7 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'sources': [
@@ -526,6 +527,7 @@
             '../third_party/libxml/libxml.gyp:libxml',
             '../ui/ui.gyp:ui_nacl_win64',
             '../ui/ui.gyp:ui_resources',
+            '../ui/ui.gyp:ui_resources_standard',
           ],
           'include_dirs': [
             '../third_party/icu/public/i18n',

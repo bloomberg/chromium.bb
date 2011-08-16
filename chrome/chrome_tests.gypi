@@ -597,6 +597,7 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/ui.gyp:ui_resources',
+            '../ui/ui.gyp:ui_resources_standard',
           ],
           'sources': [
             '../webkit/glue/resources/aliasb.cur',
@@ -626,6 +627,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
@@ -1261,6 +1263,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
         '../v8/tools/gyp/v8.gyp:v8',
         'chrome_resources',
         'chrome_strings',
@@ -2310,6 +2313,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
@@ -2758,6 +2762,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             # TODO(alekseys): port sidebar to linux/mac.
@@ -2912,6 +2917,7 @@
         # This is the safebrowsing test server.
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
       ],
       'include_dirs': [
         '..',
@@ -2944,6 +2950,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],
@@ -3392,6 +3399,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -3513,6 +3521,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -3635,6 +3644,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
           ],

@@ -135,6 +135,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
@@ -343,6 +344,7 @@
                       '<(grit_out_dir)/theme_resources_standard.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                     ],
