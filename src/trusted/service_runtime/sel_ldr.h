@@ -54,7 +54,6 @@ EXTERN_C_BEGIN
 #define NACL_SERVICE_PORT_DESCRIPTOR    3
 #define NACL_SERVICE_ADDRESS_DESCRIPTOR 4
 
-#define NACL_DEFAULT_ALLOC_MAX  (32 << 20)  /* total brk and mmap allocs */
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
 #define NACL_SANDBOX_CHROOT_FD  "SBX_D"
@@ -78,17 +77,8 @@ struct NaClApp {
    * public, user settable prior to app start.
    */
   uint8_t                   addr_bits;
-  uintptr_t                 max_data_alloc;
   uintptr_t                 stack_size;
   /*
-   * max_data_alloc controls how much total data memory can be
-   * allocated to the NaCl process; this is initialized data,
-   * uninitialized data, and heap and affects the brk system call.
-   * the text size and rodata size are not included, even though in
-   * NaCl the text and rodata pages are also backed by the pager
-   * since due to relocation the text pages and rodata contents
-   * cannot simply be memory mapped from the executable.
-   *
    * stack_size is the maximum size of the (main) stack.  The stack
    * memory is eager allocated (mapped in w/o MAP_NORESERVE) so
    * there must be enough swap space; page table entries are not

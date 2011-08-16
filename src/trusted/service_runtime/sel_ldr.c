@@ -72,7 +72,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
-  nap->max_data_alloc = NACL_DEFAULT_ALLOC_MAX;
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
 
   nap->aux_info = NULL;
@@ -453,7 +452,6 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
           "(struct Gio *) 0x%08"NACL_PRIxPTR")\n", (uintptr_t) nap,
           (uintptr_t) gp);
   gprintf(gp, "addr space size:  2**%"NACL_PRId32"\n", nap->addr_bits);
-  gprintf(gp, "max data alloc:   0x%08"NACL_PRIx32"\n", nap->max_data_alloc);
   gprintf(gp, "stack size:       0x%08"NACL_PRIx32"\n", nap->stack_size);
 
   gprintf(gp, "mem start addr:   0x%08"NACL_PRIxPTR"\n", nap->mem_start);
