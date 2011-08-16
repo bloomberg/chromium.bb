@@ -79,8 +79,11 @@ deps = {
     (Var("googlecode_url") % "google-cache-invalidation-api") +
     "/trunk/src/google@135",
 
+  # TODO(dgrogan): Remove third_party/leveldb after WebCore.gyp is updated.
   "src/third_party/leveldb":
     (Var("googlecode_url") % "leveldb") + "/trunk@36",
+  "src/third_party/leveldatabase/src":
+    (Var("googlecode_url") % "leveldb") + "/trunk@47",
 
   "src/third_party/snappy/src":
     (Var("googlecode_url") % "snappy") + "/trunk@37",

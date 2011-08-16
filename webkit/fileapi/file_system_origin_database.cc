@@ -10,8 +10,8 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "third_party/leveldb/include/leveldb/iterator.h"
-#include "third_party/leveldb/include/leveldb/write_batch.h"
+#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace {
 

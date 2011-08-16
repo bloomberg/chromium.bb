@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/leveldb/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace fileapi {
 
