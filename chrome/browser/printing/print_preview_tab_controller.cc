@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -108,6 +109,8 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
 
 TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
     TabContents* tab) const {
+  // |preview_tab_map_| is keyed by the preview tab, so if find() succeeds, then
+  // |tab| is the preview tab.
   PrintPreviewTabMap::const_iterator it = preview_tab_map_.find(tab);
   if (it != preview_tab_map_.end())
     return tab;
@@ -125,19 +128,21 @@ TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
 void PrintPreviewTabController::Observe(int type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  TabContents* source_tab = NULL;
-  content::LoadCommittedDetails* detail_info = NULL;
-
   switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      OnRendererProcessClosed(Source<RenderProcessHost>(source).ptr());
+      break;
+    }
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      source_tab = Source<TabContents>(source).ptr();
+      OnTabContentsDestroyed(Source<TabContents>(source).ptr());
       break;
     }
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
-      source_tab = controller->tab_contents();
-      detail_info = Details<content::LoadCommittedDetails>(details).ptr();
+      content::LoadCommittedDetails* load_details =
+          Details<content::LoadCommittedDetails>(details).ptr();
+      OnNavEntryCommitted(controller->tab_contents(), load_details);
       break;
     }
     default: {
@@ -145,16 +150,65 @@ void PrintPreviewTabController::Observe(int type,
       break;
     }
   }
+}
 
-  DCHECK(source_tab);
+void PrintPreviewTabController::OnRendererProcessClosed(
+    RenderProcessHost* rph) {
+  for (PrintPreviewTabMap::iterator iter = preview_tab_map_.begin();
+       iter != preview_tab_map_.end(); ++iter) {
+    if (iter->second != NULL &&
+        iter->second->render_view_host()->process() == rph) {
+      TabContents* preview_tab = GetPrintPreviewForTab(iter->second);
+      PrintPreviewUI* print_preview_ui =
+          static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+      print_preview_ui->OnInitiatorTabCrashed();
+    }
+  }
+}
 
-  TabContents* preview_tab = GetPrintPreviewForTab(source_tab);
-  bool source_tab_is_preview_tab = (source_tab == preview_tab);
+void PrintPreviewTabController::OnTabContentsDestroyed(TabContents* tab) {
+  TabContents* preview_tab = GetPrintPreviewForTab(tab);
+  if (!preview_tab)
+    return;
 
-  if (detail_info) {
-    PageTransition::Type transition_type =
-        detail_info->entry->transition_type();
-    NavigationType::Type nav_type = detail_info->type;
+  if (tab == preview_tab) {
+    // Remove the initiator tab's observers before erasing the mapping.
+    TabContents* initiator_tab = GetInitiatorTab(tab);
+    if (initiator_tab)
+      RemoveObservers(initiator_tab);
+
+    // Print preview tab contents are destroyed. Notify |PrintPreviewUI| to
+    // abort the initiator tab preview request.
+    if (IsPrintPreviewTab(tab) && tab->web_ui()) {
+      PrintPreviewUI* print_preview_ui =
+          static_cast<PrintPreviewUI*>(tab->web_ui());
+      print_preview_ui->OnTabDestroyed();
+    }
+
+    // Erase the map entry.
+    preview_tab_map_.erase(tab);
+  } else {
+    // Initiator tab is closed. Disable the controls in preview tab.
+    if (preview_tab->web_ui()) {
+      PrintPreviewUI* print_preview_ui =
+          static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+      print_preview_ui->OnInitiatorTabClosed();
+    }
+
+    // |tab| is an initiator tab, update the map entry and remove observers.
+    preview_tab_map_[preview_tab] = NULL;
+  }
+
+  RemoveObservers(tab);
+}
+
+void PrintPreviewTabController::OnNavEntryCommitted(
+    TabContents* tab, content::LoadCommittedDetails* details) {
+  TabContents* preview_tab = GetPrintPreviewForTab(tab);
+  bool source_tab_is_preview_tab = (tab == preview_tab);
+  if (details) {
+    PageTransition::Type transition_type = details->entry->transition_type();
+    NavigationType::Type nav_type = details->type;
 
     // Don't update/erase the map entry if the page has not changed.
     if (transition_type == PageTransition::RELOAD ||
@@ -168,6 +222,13 @@ void PrintPreviewTabController::Observe(int type,
         nav_type == NavigationType::NEW_PAGE &&
         source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
+      // Set the initiator tab url.
+      TabContents* initiator_tab = GetInitiatorTab(tab);
+      if (initiator_tab && preview_tab->web_ui()) {
+        PrintPreviewUI* print_preview_ui =
+            static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+        print_preview_ui->SetInitiatorTabURL(initiator_tab->GetURL().spec());
+      }
       return;
     }
 
@@ -179,34 +240,23 @@ void PrintPreviewTabController::Observe(int type,
     }
   }
 
+  RemoveObservers(tab);
   if (source_tab_is_preview_tab) {
     // Remove the initiator tab's observers before erasing the mapping.
-    TabContents* initiator_tab = GetInitiatorTab(source_tab);
+    TabContents* initiator_tab = GetInitiatorTab(tab);
     if (initiator_tab)
       RemoveObservers(initiator_tab);
-
-    // |source_tab_is_preview_tab| is misleading in the case where the user
-    // chooses to re-open the initiator tab after closing it, as |source_tab|
-    // has navigated to the URL of the initiator tab at this point. Make sure to
-    // verify that |source_tab| really is a print preview tab.
-    if (IsPrintPreviewTab(source_tab) && source_tab->web_ui()) {
-      PrintPreviewUI* print_preview_ui =
-          static_cast<PrintPreviewUI*>(source_tab->web_ui());
-      print_preview_ui->OnNavigation();
-    }
-
-    // Erase the map entry.
-    preview_tab_map_.erase(source_tab);
+    preview_tab_map_.erase(tab);
   } else {
-    // Initiator tab is closed. Disable the controls in preview tab.
-    PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-    print_preview_ui->OnInitiatorTabClosed(source_tab->GetURL().spec());
-
-    // |source_tab| is an initiator tab, update the map entry.
     preview_tab_map_[preview_tab] = NULL;
+
+    // Initiator tab is closed. Disable the controls in preview tab.
+    if (preview_tab->web_ui()) {
+      PrintPreviewUI* print_preview_ui =
+          static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+      print_preview_ui->OnInitiatorTabClosed();
+    }
   }
-  RemoveObservers(source_tab);
 }
 
 // static
@@ -285,6 +335,16 @@ void PrintPreviewTabController::AddObservers(TabContents* tab) {
                  Source<TabContents>(tab));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&tab->controller()));
+
+  // Multiple sites may share the same RenderProcessHost, so check if this
+  // notification has already been added.
+  RenderProcessHost* rph = tab->render_view_host()->process();
+  if (!registrar_.IsRegistered(this,
+                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                               Source<RenderProcessHost>(rph))) {
+    registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                   Source<RenderProcessHost>(rph));
+  }
 }
 
 void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
@@ -292,6 +352,16 @@ void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
                     Source<TabContents>(tab));
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                     Source<NavigationController>(&tab->controller()));
+
+  // Multiple sites may share the same RenderProcessHost, so check if this
+  // notification has already been added.
+  RenderProcessHost* rph = tab->render_view_host()->process();
+  if (registrar_.IsRegistered(this,
+                              content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                              Source<RenderProcessHost>(rph))) {
+    registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                      Source<RenderProcessHost>(rph));
+  }
 }
 
 }  // namespace printing

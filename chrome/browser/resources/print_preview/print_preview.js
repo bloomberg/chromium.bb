@@ -149,6 +149,19 @@ function launchNativePrintDialog() {
 
 /**
  * Disables the controls which need the initiator tab to generate preview
+ * data. This function is called when the initiator tab has crashed.
+ * @param {string} initiatorTabURL The URL of the initiator tab.
+ */
+function onInitiatorTabCrashed(initiatorTabURL) {
+  disableInputElementsInSidebar();
+  displayErrorMessageWithButton(
+      localStrings.getString('initiatorTabCrashed'),
+      localStrings.getString('reopenPage'),
+      function() { chrome.send('reloadCrashedInitiatorTab'); });
+}
+
+/**
+ * Disables the controls which need the initiator tab to generate preview
  * data. This function is called when the initiator tab is closed.
  * @param {string} initiatorTabURL The URL of the initiator tab.
  */

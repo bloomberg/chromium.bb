@@ -50,10 +50,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const FilePath& default_path);
 
-  // Called when the print preview tab navigates. This is the last time this
+  // Called when the print preview tab is destroyed. This is the last time
   // this object has access to the PrintViewManager in order to disconnect the
   // observer.
-  void OnNavigation();
+  void OnTabDestroyed();
 
  private:
   friend class PrintSystemTaskProxy;
@@ -96,6 +96,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Brings up a web page to allow the user to configure cloud print.
   // |args| is unused.
   void HandleManageCloudPrint(const base::ListValue* args);
+
+  // Reloads the initiator tab and closes the associated preview tab. |args| is
+  // unused.
+  void HandleReloadCrashedInitiatorTab(const base::ListValue* args);
 
   // Asks the browser to show the native printer management dialog.
   // |args| is unused.

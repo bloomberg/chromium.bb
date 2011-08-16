@@ -21,7 +21,12 @@
 #include "content/common/notification_registrar.h"
 
 class Browser;
+class RenderProcessHost;
 class TabContents;
+
+namespace content {
+struct LoadCommittedDetails;
+}
 
 namespace printing {
 
@@ -52,7 +57,7 @@ class PrintPreviewTabController
   // Returns NULL if no initiator tab exists for |preview_tab|.
   TabContents* GetInitiatorTab(TabContents* preview_tab);
 
-  // Notification observer implementation.
+  // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -66,6 +71,19 @@ class PrintPreviewTabController
  private:
   friend class base::RefCounted<PrintPreviewTabController>;
 
+  // Handler for the RENDERER_PROCESS_CLOSED notification. This is observed when
+  // the initiator renderer crashed.
+  void OnRendererProcessClosed(RenderProcessHost* rph);
+
+  // Handler for the TAB_CONTENTS_DESTROYED notification. This is observed when
+  // either tab is closed.
+  void OnTabContentsDestroyed(TabContents* tab);
+
+  // Handler for the NAV_ENTRY_COMMITTED notification. This is observed when the
+  // renderer is navigated to a different page.
+  void OnNavEntryCommitted(TabContents* tab,
+                           content::LoadCommittedDetails* details);
+
   // 1:1 relationship between initiator tab and print preview tab.
   // Key: Preview tab.
   // Value: Initiator tab.
@@ -78,6 +96,7 @@ class PrintPreviewTabController
   void AddObservers(TabContents* tab);
   void RemoveObservers(TabContents* tab);
 
+  // Mapping between print preview tab and the corresponding initiator tab.
   PrintPreviewTabMap preview_tab_map_;
 
   // A registrar for listening notifications.

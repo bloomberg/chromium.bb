@@ -73,6 +73,7 @@ enum UserActionBuckets {
   CANCEL,
   FALLBACK_TO_ADVANCED_SETTINGS_DIALOG,
   PREVIEW_FAILED,
+  INITIATOR_TAB_CRASHED,
   PREVIEW_STARTED,
   USERACTION_BUCKET_BOUNDARY
 };
@@ -432,6 +433,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
   web_ui_->RegisterMessageCallback("manageLocalPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
+  web_ui_->RegisterMessageCallback("reloadCrashedInitiatorTab",
+      NewCallback(this, &PrintPreviewHandler::HandleReloadCrashedInitiatorTab));
   web_ui_->RegisterMessageCallback("closePrintPreviewTab",
       NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
   web_ui_->RegisterMessageCallback("hidePreview",
@@ -651,6 +654,19 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
+void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(const ListValue*) {
+  ReportStats();
+  ReportUserActionHistogram(INITIATOR_TAB_CRASHED);
+
+  TabContents* initiator_tab = GetInitiatorTab();
+  if (!initiator_tab)
+    return;
+
+  initiator_tab->OpenURL(
+      initiator_tab->GetURL(), GURL(), CURRENT_TAB, PageTransition::RELOAD);
+  ActivateInitiatorTabAndClosePreviewTab();
+}
+
 void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* args) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
@@ -830,7 +846,7 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
       NULL);
 }
 
-void PrintPreviewHandler::OnNavigation() {
+void PrintPreviewHandler::OnTabDestroyed() {
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;

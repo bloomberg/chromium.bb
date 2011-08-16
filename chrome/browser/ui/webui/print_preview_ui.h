@@ -37,6 +37,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // Clear the existing print preview data.
   void ClearAllPreviewData();
 
+  // Setters
+  void SetInitiatorTabURL(const std::string& initiator_url);
+
   // Notifies the Web UI that there is a print preview request. There should be
   // a matching call to OnPreviewDataIsAvailable() or OnPrintPreviewFailed().
   void OnPrintPreviewRequest();
@@ -59,10 +62,9 @@ class PrintPreviewUI : public ChromeWebUI {
 
   void OnReusePreviewData(int preview_request_id);
 
-  // Notifies the Web UI that a navigation has occurred in this tab. This is the
-  // last chance to communicate with the source tab before the association is
-  // erased.
-  void OnNavigation();
+  // Notifies the Web UI that preview tab is destroyed. This is the last chance
+  // to communicate with the source tab before the association is erased.
+  void OnTabDestroyed();
 
   // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
@@ -72,7 +74,10 @@ class PrintPreviewUI : public ChromeWebUI {
 
   // Notifies the Web UI that initiator tab is closed, so we can disable all the
   // controls that need the initiator tab for generating the preview data.
-  void OnInitiatorTabClosed(const std::string& initiator_url);
+  void OnInitiatorTabClosed();
+
+  // Notifies the Web UI that the initiator tab has crashed.
+  void OnInitiatorTabCrashed();
 
   // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
@@ -101,6 +106,10 @@ class PrintPreviewUI : public ChromeWebUI {
 
   // Document cookie from the initiator renderer.
   int document_cookie_;
+
+  // Store the |initiator_url| in order to display an accurate error message
+  // when the initiator tab is closed/crashed.
+  std::string initiator_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

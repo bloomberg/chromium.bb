@@ -8,11 +8,12 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/url_constants.h"
 
-typedef BrowserWithTestWindowTest PrintPreviewTabControllerTest;
+typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;
 
 // Create/Get a preview tab for initiator tab.
-TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
+TEST_F(PrintPreviewTabControllerUnitTest, GetOrCreatePreviewTab) {
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
@@ -38,9 +39,6 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_NE(initiator_tab, preview_tab);
 
-  // Activate initiator_tab.
-  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
-
   // Get the print preview tab for initiator tab.
   TabContents* new_preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
@@ -55,7 +53,7 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
 // To show multiple print preview tabs exist in the same browser for
 // different initiator tabs. If preview tab already exists for an initiator, it
 // gets focused.
-TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
+TEST_F(PrintPreviewTabControllerUnitTest, MultiplePreviewTabs) {
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
@@ -103,9 +101,6 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   // Current tab is |preview_tab_2|.
   EXPECT_EQ(preview_tab_2_index, browser()->active_index());
 
-  // Activate |tab_contents_1| tab.
-  static_cast<RenderViewHostDelegate*>(tab_contents_1)->Activate();
-
   // When we get the preview tab for |tab_contents_1|,
   // |preview_tab_1| is activated and focused.
   tab_controller->GetOrCreatePreviewTab(tab_contents_1);
@@ -113,7 +108,7 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
 }
 
 // Clear the initiator tab details associated with preview tab.
-TEST_F(PrintPreviewTabControllerTest, ClearInitiatorTabDetails) {
+TEST_F(PrintPreviewTabControllerUnitTest, ClearInitiatorTabDetails) {
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
@@ -141,9 +136,6 @@ TEST_F(PrintPreviewTabControllerTest, ClearInitiatorTabDetails) {
 
   // Clear the initiator tab details associated with the preview tab.
   tab_controller->EraseInitiatorTabInfo(preview_tab);
-
-  // Activate initiator_tab.
-  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
 
   // Get the print preview tab for initiator tab.
   TabContents* new_preview_tab =

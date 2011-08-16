@@ -54,9 +54,17 @@ void PrintPreviewUI::ClearAllPreviewData() {
   print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
-void PrintPreviewUI::OnInitiatorTabClosed(
-    const std::string& initiator_url) {
-  StringValue initiator_tab_url(initiator_url);
+void PrintPreviewUI::SetInitiatorTabURL(const std::string& initiator_url) {
+  initiator_url_ = initiator_url;
+}
+
+void PrintPreviewUI::OnInitiatorTabCrashed() {
+  StringValue initiator_tab_url(initiator_url_);
+  CallJavascriptFunction("onInitiatorTabCrashed", initiator_tab_url);
+}
+
+void PrintPreviewUI::OnInitiatorTabClosed() {
+  StringValue initiator_tab_url(initiator_url_);
   CallJavascriptFunction("onInitiatorTabClosed", initiator_tab_url);
 }
 
@@ -114,8 +122,8 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          ui_preview_request_id);
 }
 
-void PrintPreviewUI::OnNavigation() {
-  handler_->OnNavigation();
+void PrintPreviewUI::OnTabDestroyed() {
+  handler_->OnTabDestroyed();
 }
 
 void PrintPreviewUI::OnFileSelectionCancelled() {
