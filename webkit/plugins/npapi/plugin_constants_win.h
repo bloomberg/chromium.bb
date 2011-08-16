@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@ namespace npapi {
 
 // The window class name for a plugin window.
 extern const char16 kNativeWindowClassName[];
+
+// If property is non-zero window reparenting must add UIPI message filters.
+extern const char16 kNativeWindowClassFilterProp[];
 
 // The name of the window class name for the wrapper HWND around the actual
 // plugin window that's used when running in multi-process mode.  This window
