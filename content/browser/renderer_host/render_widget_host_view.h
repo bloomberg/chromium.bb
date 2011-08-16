@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
@@ -295,6 +296,12 @@ class RenderWidgetHostView {
   // fade effect, pass a NULL value for |color|. In this case, |animate| is
   // ignored.
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) = 0;
+
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+
+  virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) = 0;
 
   void set_popup_type(WebKit::WebPopupType popup_type) {
     popup_type_ = popup_type;

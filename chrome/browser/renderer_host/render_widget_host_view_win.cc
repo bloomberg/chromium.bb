@@ -764,6 +764,18 @@ void RenderWidgetHostViewWin::SetVisuallyDeemphasized(const SkColor* color,
   InvalidateRect(NULL, FALSE);
 }
 
+void RenderWidgetHostViewWin::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+}
+
+void RenderWidgetHostViewWin::SetHasHorizontalScrollbar(
+    bool has_horizontal_scrollbar) {
+}
+
+void RenderWidgetHostViewWin::SetScrollOffsetPinning(
+    bool is_pinned_to_left, bool is_pinned_to_right) {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 

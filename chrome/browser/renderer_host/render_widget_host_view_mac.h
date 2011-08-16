@@ -117,9 +117,32 @@ class RWHVMEditCommandHelper;
 
   // Whether the previous mouse event was ignored due to hitTest check.
   BOOL mouseEventWasIgnored_;
+
+  // If a scroll event came back unhandled from the renderer. Set to |NO| at
+  // the start of a scroll gesture, and then to |YES| if a scroll event comes
+  // back unhandled from the renderer.
+  // Used for history swiping.
+  BOOL gotUnhandledWheelEvent_;
+
+  // Cummulative scroll delta since scroll gesture start. Only valid during
+  // scroll gesture handling. Used for history swiping.
+  NSSize totalScrollDelta_;
+
+  // If the viewport is scrolled all the way to the left or right.
+  // Used for history swiping.
+  BOOL isPinnedLeft_;
+  BOOL isPinnedRight_;
+
+  // If the main frame has a horizontal scrollbar.
+  // Used for history swiping.
+  BOOL hasHorizontalScrollbar_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
+@property(nonatomic) BOOL gotUnhandledWheelEvent;
+@property(nonatomic, setter=setPinnedLeft:) BOOL isPinnedLeft;
+@property(nonatomic, setter=setPinnedRight:) BOOL isPinnedRight;
+@property(nonatomic) BOOL hasHorizontalScrollbar;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
@@ -279,6 +302,13 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   void ForceTextureReload();
 
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
+
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void SetHasHorizontalScrollbar(
+      bool has_horizontal_scrollbar) OVERRIDE;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
 
   void KillSelf();
 

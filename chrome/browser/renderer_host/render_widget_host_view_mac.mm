@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+
 #include <QuartzCore/QuartzCore.h>
 
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include <cmath>
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -17,9 +19,12 @@
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/mac/closure_blocks_leopard_compat.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 #import "chrome/browser/renderer_host/text_input_client_mac.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/render_messages.h"
@@ -55,6 +60,41 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebGestureEvent;
+
+// Declare symbols that are part of the 10.7 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+enum {
+    NSEventPhaseNone        = 0, // event not associated with a phase.
+    NSEventPhaseBegan       = 0x1 << 0,
+    NSEventPhaseStationary  = 0x1 << 1,
+    NSEventPhaseChanged     = 0x1 << 2,
+    NSEventPhaseEnded       = 0x1 << 3,
+    NSEventPhaseCancelled   = 0x1 << 4,
+};
+typedef NSUInteger NSEventPhase;
+
+enum {
+     NSEventSwipeTrackingLockDirection = 0x1 << 0,
+     NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
+};
+typedef NSUInteger NSEventSwipeTrackingOptions;
+
+@interface NSEvent (LionAPI)
++ (BOOL)isSwipeTrackingFromScrollEventsEnabled;
+
+- (NSEventPhase)phase;
+- (CGFloat)scrollingDeltaX;
+- (CGFloat)scrollingDeltaY;
+- (void)trackSwipeEventWithOptions:(NSEventSwipeTrackingOptions)options
+          dampenAmountThresholdMin:(CGFloat)minDampenThreshold
+                               max:(CGFloat)maxDampenThreshold
+                      usingHandler:(void (^)(CGFloat gestureAmount,
+                                             NSEventPhase phase,
+                                             BOOL isComplete,
+                                             BOOL *stop))trackingHandler;
+@end
+#endif  // 10.7
 
 static inline int ToWebKitModifiers(NSUInteger flags) {
   int modifiers = 0;
@@ -1018,6 +1058,22 @@ void RenderWidgetHostViewMac::SetVisuallyDeemphasized(const SkColor* color,
   // This is not used on mac.
 }
 
+void RenderWidgetHostViewMac::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  [cocoa_view_ setGotUnhandledWheelEvent:YES];
+}
+
+void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
+    bool has_horizontal_scrollbar) {
+  [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
+}
+
+void RenderWidgetHostViewMac::SetScrollOffsetPinning(
+    bool is_pinned_to_left, bool is_pinned_to_right) {
+  [cocoa_view_ setPinnedLeft:is_pinned_to_left];
+  [cocoa_view_ setPinnedRight:is_pinned_to_right];
+}
+
 void RenderWidgetHostViewMac::ShutdownHost() {
   shutdown_factory_.RevokeAll();
   render_widget_host_->Shutdown();
@@ -1101,6 +1157,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 @synthesize selectedRange = selectedRange_;
 @synthesize markedRange = markedRange_;
+@synthesize gotUnhandledWheelEvent = gotUnhandledWheelEvent_;
+@synthesize isPinnedLeft = isPinnedLeft_;
+@synthesize isPinnedRight = isPinnedRight_;
+@synthesize hasHorizontalScrollbar = hasHorizontalScrollbar_;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
@@ -1231,10 +1291,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
   }
-
-  // Forward the gesture event to the next responder so that the browser window
-  // controller has a chance to act on back/forward gestures.
-  [[self nextResponder] beginGestureWithEvent:event];
 }
 
 - (void)endGestureWithEvent:(NSEvent*)event {
@@ -1244,10 +1300,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
   }
-
-  // Forward the gesture event to the next responder so that the browser window
-  // controller has a chance to act on back/forward gestures.
-  [[self nextResponder] endGestureWithEvent:event];
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
@@ -1497,8 +1549,82 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     [NSCursor setHiddenUntilMouseMoves:YES];
 }
 
-- (void)scrollWheel:(NSEvent *)theEvent {
+// Checks if |theEvent| should trigger history swiping, and if so, does
+// history swiping. Returns YES if the event was consumed or NO if it should
+// be passed on to the renderer.
+- (BOOL)maybeHandleHistorySwiping:(NSEvent*)theEvent {
+  BOOL canUseLionApis = [theEvent respondsToSelector:@selector(phase)];
+  if (!canUseLionApis)
+    return NO;
+
+  // Scroll events always go to the web first, and can only trigger history
+  // swiping if they come back unhandled.
+  if ([theEvent phase] == NSEventPhaseBegan) {
+    totalScrollDelta_ = NSZeroSize;
+    gotUnhandledWheelEvent_ = false;
+  }
+
+  if (gotUnhandledWheelEvent_ &&
+      [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
+      [theEvent phase] == NSEventPhaseChanged) {
+    totalScrollDelta_.width += [theEvent scrollingDeltaX];
+    totalScrollDelta_.height += [theEvent scrollingDeltaY];
+
+    bool isHorizontalGesture =
+      std::abs(totalScrollDelta_.width) > std::abs(totalScrollDelta_.height);
+
+    bool isRightScroll = [theEvent scrollingDeltaX] < 0;
+    bool goForward = isRightScroll;
+
+    if (isHorizontalGesture &&
+        // If "forward" is inactive and the user rubber-bands to the right,
+        // "isPinnedLeft" will be false.  When the user then rubber-bands to
+        // the left in the same gesture, that should trigger history
+        // immediately if there's no scrollbar, hence the check for
+        // hasHorizontalScrollbar_.
+        (!hasHorizontalScrollbar_ ||
+        // One would think we have to check canGoBack / canGoForward here, but
+        // that's actually done in the renderer
+        // (ChromeClientImpl::shouldRubberBand()), when it decides if it should
+        // rubberband or send back an event unhandled.
+            (isPinnedLeft_ && !isRightScroll) ||
+            (isPinnedRight_ && isRightScroll))) {
+      // The way this api works: gestureAmount is between -1 and 1 (float). If
+      // the user does the gesture for more than about 25% (i.e. < -0.25 or >
+      // 0.25) and then lets go, it is accepted, we get a NSEventPhaseEnded,
+      // and after that the block is called with amounts animating towards 1
+      // (or -1, depending on the direction).  If the user lets go below that
+      // threshold, we get NSEventPhaseCancelled, and the amount animates
+      // toward 0.
+      [theEvent trackSwipeEventWithOptions:0
+                  dampenAmountThresholdMin:-1
+                                       max:1
+                              usingHandler:^(CGFloat gestureAmount,
+                                             NSEventPhase phase,
+                                             BOOL isComplete,
+                                             BOOL *stop) {
+          // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
+          // automatically.
+          // TODO(thakis): UI.
+          Browser* browser = BrowserList::GetLastActive();
+          if (phase == NSEventPhaseEnded && browser) {
+            if (goForward)
+              browser->GoForward(CURRENT_TAB);
+            else
+              browser->GoBack(CURRENT_TAB);
+          }
+        }];
+      return YES;
+    }
+  }
+  return NO;
+}
+
+- (void)scrollWheel:(NSEvent*)theEvent {
   [self cancelChildPopups];
+
+  if ([self maybeHandleHistorySwiping:theEvent])
+    return;
 
   const WebMouseWheelEvent& event =
       WebInputEventFactory::mouseWheelEvent(theEvent, self);

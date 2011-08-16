@@ -92,6 +92,12 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void SetHasHorizontalScrollbar(
+      bool has_horizontal_scrollbar) OVERRIDE;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
 #if defined(TOOLKIT_USES_GTK)
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
 #endif

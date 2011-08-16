@@ -335,6 +335,18 @@ void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
   // TODO(anicolao)
 }
 
+void RenderWidgetHostViewViews::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+}
+
+void RenderWidgetHostViewViews::SetHasHorizontalScrollbar(
+    bool has_horizontal_scrollbar) {
+}
+
+void RenderWidgetHostViewViews::SetScrollOffsetPinning(
+    bool is_pinned_to_left, bool is_pinned_to_right) {
+}
+
 void RenderWidgetHostViewViews::SelectRect(const gfx::Point& start,
                                            const gfx::Point& end) {
   if (host_)

@@ -2504,8 +2504,6 @@
         'browser/ui/cocoa/framed_browser_window.mm',
         'browser/ui/cocoa/fullscreen_window.h',
         'browser/ui/cocoa/fullscreen_window.mm',
-        'browser/ui/cocoa/gesture_utils.h',
-        'browser/ui/cocoa/gesture_utils.mm',
         'browser/ui/cocoa/gradient_button_cell.h',
         'browser/ui/cocoa/gradient_button_cell.mm',
         'browser/ui/cocoa/history_menu_bridge.h',
@@ -4122,6 +4120,9 @@
               'browser/nacl_loader.sb',
             ],
           },
+          'dependencies': [
+            'closure_blocks_leopard_compat',
+          ],
           'actions': [
             {
               # This action is used to extract the localization data from xib

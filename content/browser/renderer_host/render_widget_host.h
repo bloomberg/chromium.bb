@@ -404,6 +404,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // overridden by RenderView to send upwards to its delegate.
   virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
+  // Called when a mousewheel event was not processed by the renderer. This is
+  // overridden by RenderView to send upwards to its delegate.
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) {}
+
   // Notification that the user has made some kind of input that could
   // perform an action. The render view host overrides this to forward the
   // information to its delegate (see corresponding function in
@@ -510,7 +514,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Called by OnMsgInputEventAck() to process a wheel event ack message.
   // This could result in a task being posted to allow additional wheel
   // input messages to be coalesced.
-  void ProcessWheelAck();
+  void ProcessWheelAck(bool processed);
 
   // True if renderer accessibility is enabled. This should only be set when a
   // screenreader is detected as it can potentially slow down Chrome.
@@ -586,6 +590,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // (Similar to |mouse_move_pending_|.) True if a mouse wheel event was sent
   // and we are waiting for a corresponding ack.
   bool mouse_wheel_pending_;
+  WebKit::WebMouseWheelEvent current_wheel_event_;
 
   typedef std::deque<WebKit::WebMouseWheelEvent> WheelEventQueue;
 

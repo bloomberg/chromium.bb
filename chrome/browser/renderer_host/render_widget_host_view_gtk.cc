@@ -1119,6 +1119,19 @@ void RenderWidgetHostViewGtk::SetVisuallyDeemphasized(
   }
 }
 
+void RenderWidgetHostViewGtk::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+}
+
+void RenderWidgetHostViewGtk::SetHasHorizontalScrollbar(
+    bool has_horizontal_scrollbar) {
+}
+
+void RenderWidgetHostViewGtk::SetScrollOffsetPinning(
+    bool is_pinned_to_left, bool is_pinned_to_right) {
+}
+
+
 void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
   GtkPreserveWindow* widget =
     reinterpret_cast<GtkPreserveWindow*>(view_.get());

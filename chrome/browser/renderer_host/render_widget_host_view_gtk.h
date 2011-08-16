@@ -98,6 +98,12 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void SetHasHorizontalScrollbar(
+      bool has_horizontal_scrollbar) OVERRIDE;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 

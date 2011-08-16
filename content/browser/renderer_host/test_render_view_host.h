@@ -124,6 +124,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) { }
+  virtual void SetHasHorizontalScrollbar(
+      bool has_horizontal_scrollbar) { }
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) { }
 
 #if defined(TOUCH_UI)
   virtual void AcceleratedSurfaceSetIOSurface(

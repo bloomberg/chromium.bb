@@ -1009,16 +1009,17 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
 
 void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(
     bool has_horizontal_scrollbar, bool has_vertical_scrollbar) {
-  // TODO(thakis): Implement, http://crbug.com/90228
+  if (view())
+    view()->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
 }
 
 void RenderViewHost::OnMsgDidChangeScrollOffsetPinningForMainFrame(
     bool is_pinned_to_left, bool is_pinned_to_right) {
-  // TODO(thakis): Implement, http://crbug.com/90228
+  if (view())
+    view()->SetScrollOffsetPinning(is_pinned_to_left, is_pinned_to_right);
 }
 
 void RenderViewHost::OnMsgDidChangeNumWheelEvents(int count) {
-  // TODO(thakis): Implement, http://crbug.com/90228
 }
 
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text,

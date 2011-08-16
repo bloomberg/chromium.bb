@@ -554,6 +554,7 @@ void RenderWidgetHost::ForwardWheelEvent(
     return;
   }
   mouse_wheel_pending_ = true;
+  current_wheel_event_ = wheel_event;
 
   HISTOGRAM_COUNTS_100("MPArch.RWH_WheelQueueSize",
                        coalesced_mouse_wheel_events_.size());
@@ -1013,8 +1014,6 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
       DCHECK(next_mouse_move_->type == WebInputEvent::MouseMove);
       ForwardMouseEvent(*next_mouse_move_);
     }
-  } else if (type == WebInputEvent::MouseWheel) {
-    ProcessWheelAck();
   } else if (WebInputEvent::isKeyboardEventType(type)) {
     bool processed = false;
     if (!message.ReadBool(&iter, &processed)) {
@@ -1023,6 +1022,14 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
     }
 
     ProcessKeyboardEventAck(type, processed);
+  } else if (type == WebInputEvent::MouseWheel) {
+    bool processed = false;
+    if (!message.ReadBool(&iter, &processed)) {
+      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
+      process()->ReceivedBadMessage();
+    }
+
+    ProcessWheelAck(processed);
   } else if (type == WebInputEvent::TouchMove) {
     touch_move_pending_ = false;
     if (touch_event_is_queued_) {
@@ -1037,7 +1044,7 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
       Details<int>(&type));
 }
 
-void RenderWidgetHost::ProcessWheelAck() {
+void RenderWidgetHost::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
   // Now send the next (coalesced) mouse wheel event.
@@ -1047,6 +1054,9 @@ void RenderWidgetHost::ProcessWheelAck() {
     coalesced_mouse_wheel_events_.pop_front();
     ForwardWheelEvent(next_wheel_event);
   }
+
+  if (!processed && !is_hidden_ && view_)
+    view_->UnhandledWheelEvent(current_wheel_event_);
 }
 
 void RenderWidgetHost::OnMsgFocus() {

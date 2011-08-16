@@ -166,6 +166,12 @@ class RenderWidgetHostViewWin
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void SetVisuallyDeemphasized(const SkColor* color,
                                        bool animate) OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+  virtual void SetHasHorizontalScrollbar(
+      bool has_horizontal_scrollbar) OVERRIDE;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
   virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
   virtual void OnAccessibilityNotifications(
