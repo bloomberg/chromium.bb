@@ -239,7 +239,7 @@ cr.define('ntp4', function() {
 
     // TODO(estade): Change these to real values.
     // The smallest a tile can be.
-    minTileWidth: 200,
+    minTileWidth: 122,
     // The biggest a tile can be.
     maxTileWidth: 240,
   };

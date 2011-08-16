@@ -382,7 +382,7 @@ cr.define('ntp4', function() {
     maxColCount: 6,
 
     // The smallest a tile can be.
-    minTileWidth: 96 / APP_IMG_SIZE_FRACTION,
+    minTileWidth: 64 / APP_IMG_SIZE_FRACTION,
     // The biggest a tile can be.
     maxTileWidth: 128 / APP_IMG_SIZE_FRACTION,
   };
