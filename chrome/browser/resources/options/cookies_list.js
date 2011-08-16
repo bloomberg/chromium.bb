@@ -26,7 +26,7 @@ cr.define('options', function() {
                    ['accessed', 'label_cookie_last_accessed'] ],
     'database': [ ['name', 'label_cookie_name'],
                   ['desc', 'label_webdb_desc'],
-                  ['webdbSize', 'label_local_storage_size'],
+                  ['size', 'label_local_storage_size'],
                   ['modified', 'label_local_storage_last_modified'] ],
     'local_storage': [ ['origin', 'label_local_storage_origin'],
                        ['size', 'label_local_storage_size'],
