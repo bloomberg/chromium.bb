@@ -102,13 +102,13 @@ class ChromeAppExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> GetIsInstalled(const v8::Arguments& args) {
     WebFrame* frame = WebFrame::frameForCurrentContext();
     if (!frame)
-      return v8::Boolean::New(false);
+      return v8::False();
 
     GURL url(frame->document().url());
     if (url.is_empty() ||
         !url.is_valid() ||
         !(url.SchemeIs("http") || url.SchemeIs("https")))
-      return v8::Boolean::New(false);
+      return v8::False();
 
     const ::Extension* extension =
         extension_dispatcher_->extensions()->GetByURL(frame->document().url());
