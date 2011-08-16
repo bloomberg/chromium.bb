@@ -25,6 +25,7 @@
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/render_messages.h"
@@ -1587,15 +1588,25 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         // that's actually done in the renderer
         // (ChromeClientImpl::shouldRubberBand()), when it decides if it should
         // rubberband or send back an event unhandled.
+        // TODO(thakis): Is this true with the UI up?
             (isPinnedLeft_ && !isRightScroll) ||
             (isPinnedRight_ && isRightScroll))) {
-      // The way this api works: gestureAmount is between -1 and 1 (float). If
+
+      // Released by the tracking handler once the gesture is complete.
+      HistoryOverlayController* historyOverlay =
+          [[HistoryOverlayController alloc]
+            initForMode:goForward ? kHistoryOverlayModeForward :
+                                    kHistoryOverlayModeBack];
+
+      // The way this api works: gestureAmount is between -1 and 1 (float).  If
       // the user does the gesture for more than about 25% (i.e. < -0.25 or >
       // 0.25) and then lets go, it is accepted, we get a NSEventPhaseEnded,
       // and after that the block is called with amounts animating towards 1
       // (or -1, depending on the direction).  If the user lets go below that
       // threshold, we get NSEventPhaseCancelled, and the amount animates
-      // toward 0.
+      // toward 0.  When gestureAmount has reaches its final value, i.e. the
+      // track animation is done, the handler is called with |isComplete| set
+      // to |YES|.
       [theEvent trackSwipeEventWithOptions:0
                   dampenAmountThresholdMin:-1
                                        max:1
@@ -1603,15 +1614,25 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
                                              NSEventPhase phase,
                                              BOOL isComplete,
                                              BOOL *stop) {
+          if (phase == NSEventPhaseBegan) {
+            [historyOverlay showPanelForWindow:[self window]];
+            return;
+          }
+
           // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
           // automatically.
-          // TODO(thakis): UI.
           Browser* browser = BrowserList::GetLastActive();
           if (phase == NSEventPhaseEnded && browser) {
             if (goForward)
               browser->GoForward(CURRENT_TAB);
             else
               browser->GoBack(CURRENT_TAB);
+          }
+
+          [historyOverlay setProgress:gestureAmount];
+          if (isComplete) {
+            [historyOverlay dismiss];
+            [historyOverlay release];
           }
         }];
       return YES;

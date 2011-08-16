@@ -2510,6 +2510,8 @@
         'browser/ui/cocoa/history_menu_bridge.mm',
         'browser/ui/cocoa/history_menu_cocoa_controller.h',
         'browser/ui/cocoa/history_menu_cocoa_controller.mm',
+        'browser/ui/cocoa/history_overlay_controller.h',
+        'browser/ui/cocoa/history_overlay_controller.mm',
         'browser/ui/cocoa/hover_button.h',
         'browser/ui/cocoa/hover_button.mm',
         'browser/ui/cocoa/hover_close_button.h',
