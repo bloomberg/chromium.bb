@@ -94,14 +94,14 @@ void NaClPatchWindowsExceptionDispatcher() {
             "NaClPatchWindowsExceptionDispatcher: "
             "GetProcAddress() failed to get KiUserExceptionDispatcher\n");
   }
-  if (!VirtualProtect(handler, sizeof(patch_bytes),
+  if (!VirtualProtect(handler, patch_size,
                       PAGE_EXECUTE_READWRITE, &old_prot)) {
     NaClLog(LOG_FATAL,
             "NaClPatchWindowsExceptionDispatcher: "
             "VirtualProtect() failed to make the routine writable\n");
   }
-  memcpy(handler, patch_bytes, sizeof(patch_bytes));
-  if (!VirtualProtect(handler, sizeof(patch_bytes), old_prot, &old_prot)) {
+  memcpy(handler, patch_bytes, patch_size);
+  if (!VirtualProtect(handler, patch_size, old_prot, &old_prot)) {
     NaClLog(LOG_FATAL,
             "NaClPatchWindowsExceptionDispatcher: "
             "VirtualProtect() failed to restore page permissions\n");
