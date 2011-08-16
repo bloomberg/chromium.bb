@@ -566,12 +566,13 @@ button {
   vertical-align: middle;
 }
 
-.divider-vert {
-  background: url('chrome://theme/IDR_DIVIDER_VERT') center center no-repeat;
+.header-bar-item {
+  -webkit-padding-start: 15px;
+  background-image: url('chrome://theme/IDR_DIVIDER_VERT');
+  background-position: left center;
+  background-repeat: no-repeat;
   display: inline-block;
   height: 24px;
-  vertical-align: middle;
-  width: 15px;
 }
 
 #login-header-bar #shutdown-button {
@@ -588,6 +589,7 @@ button {
   background-repeat: no-repeat;
 }
 
+html[dir=rtl] .header-bar-item,
 html[dir=rtl] #shutdown-button,
 html[dir=rtl] #add-user-button {
   background-position: right center;

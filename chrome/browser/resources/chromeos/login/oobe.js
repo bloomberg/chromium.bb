@@ -156,6 +156,13 @@ cr.define('cr.ui', function() {
      */
     showScreen: function(screen) {
       var screenId = screen.id;
+
+      // Show sign-in screen instead of account picker if pod row is empty.
+      if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0) {
+        Oobe.showSigninUI();
+        return;
+      }
+
       var data = screen.data;
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
@@ -448,6 +455,7 @@ cr.define('cr.ui', function() {
   Oobe.showSigninUI = function(opt_email) {
     $('add-user-button').hidden = true;
     $('cancel-add-user-button').hidden = false;
+    $('add-user-header-bar-item').hidden = $('pod-row').pods.length == 0;
     chrome.send('showAddUser', [opt_email]);
   };
 

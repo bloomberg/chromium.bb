@@ -123,11 +123,7 @@ void SigninScreenHandler::Show(bool oobe_ui) {
     // figure out how to make it fast enough.
     SendUserList(false);
 
-    // Show sign-in UI if there is no visible users.
-    if (WebUILoginDisplay::GetInstance()->users().empty())
-      HandleShowAddUser(NULL);
-    else
-      ShowScreen(kAccountPickerScreen, NULL);
+    ShowScreen(kAccountPickerScreen, NULL);
   }
 }
 
