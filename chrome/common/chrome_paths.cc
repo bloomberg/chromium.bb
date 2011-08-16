@@ -52,6 +52,12 @@ const FilePath::CharType kInternalNaClPluginFileName[] =
     FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so");
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+// File name of the nacl_helper, Linux only.
+const FilePath::CharType kInternalNaClHelperFileName[] =
+    FILE_PATH_LITERAL("nacl_helper_bootstrap");
+#endif
+
 }  // namespace
 
 namespace chrome {
@@ -234,6 +240,13 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(kInternalNaClPluginFileName);
       break;
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    case chrome::FILE_NACL_HELPER:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(kInternalNaClHelperFileName);
+      break;
+#endif
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
       if (base::mac::AmIBundled()) {
