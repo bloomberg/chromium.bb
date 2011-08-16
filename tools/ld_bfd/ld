@@ -34,8 +34,6 @@ def main():
       continue
     if arg == "-Wl,--thread-count=4" or arg == "--thread-count=4":
       continue
-    if arg == "--icf=none":
-      continue
     args.append(arg)
   print("ld_bfd/ld: exec ", args)
   sys.exit(subprocess.call(args))
