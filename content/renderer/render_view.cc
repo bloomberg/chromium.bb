@@ -261,8 +261,6 @@ static const int kDelaySecondsForContentStateSync = 1;
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
-static const char kBackForwardNavigationScheme[] = "history";
-
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
