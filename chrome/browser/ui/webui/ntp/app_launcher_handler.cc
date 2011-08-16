@@ -99,7 +99,7 @@ bool AppLauncherHandler::IsAppExcludedFromList(const Extension* extension) {
   // The WebStore launcher gets special treatment in ntp/apps.js.
   // The Cloud Print app should never be displayed in the NTP.
   bool ntp3 =
-      !NewTabUI::Ntp4Enabled();
+      !NewTabUI::NTP4Enabled();
   if (!extension->is_app() ||
       (ntp3 && extension->id() == extension_misc::kWebStoreAppId) ||
       (extension->id() == extension_misc::kCloudPrintAppId)) {
@@ -269,7 +269,7 @@ void AppLauncherHandler::Observe(int type,
       if (!extension->is_app())
         break;
 
-      if (NewTabUI::Ntp4Enabled()) {
+      if (NewTabUI::NTP4Enabled()) {
         scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
         if (app_info.get()) {
           std::string function =
@@ -367,7 +367,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
       extension_service_->apps_promo()->ShouldShowAppLauncher(
           extension_service_->GetAppIds()));
 
-  if (NewTabUI::Ntp4Enabled()) {
+  if (NewTabUI::NTP4Enabled()) {
     PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
     const ListValue* app_page_names = prefs->GetList(prefs::kNTPAppPageNames);
     if (app_page_names && app_page_names->GetSize()) {
@@ -501,7 +501,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(promo_active_, launch_bucket);
     extension_service_->apps_promo()->ExpireDefaultApps();
-  } else if (NewTabUI::Ntp4Enabled()) {
+  } else if (NewTabUI::NTP4Enabled()) {
     RecordWebStoreLaunch(promo_active_);
   }
 
@@ -549,7 +549,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 
   // Don't update the page; it already knows about the launch type change.
   scoped_ptr<AutoReset<bool> > auto_reset;
-  if (NewTabUI::Ntp4Enabled())
+  if (NewTabUI::NTP4Enabled())
     auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extension_service_->extension_prefs()->SetLaunchType(
@@ -580,7 +580,7 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   bool dont_confirm = false;
   if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
     scoped_ptr<AutoReset<bool> > auto_reset;
-    if (NewTabUI::Ntp4Enabled())
+    if (NewTabUI::NTP4Enabled())
       auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
     ExtensionDialogAccepted();
   } else {
@@ -592,7 +592,7 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   // If the user has intentionally hidden the promotion, we'll uninstall all the
   // default apps (we know the user hasn't installed any apps on their own at
   // this point, or the promotion wouldn't have been shown).
-  if (NewTabUI::Ntp4Enabled()) {
+  if (NewTabUI::NTP4Enabled()) {
     UninstallDefaultApps();
     extension_service_->apps_promo()->HidePromo();
   } else {
@@ -643,7 +643,7 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
 
   // Don't update the page; it already knows the apps have been reordered.
   scoped_ptr<AutoReset<bool> > auto_reset;
-  if (NewTabUI::Ntp4Enabled())
+  if (NewTabUI::NTP4Enabled())
     auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extension_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
@@ -658,7 +658,7 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
 
   // Don't update the page; it already knows the apps have been reordered.
   scoped_ptr<AutoReset<bool> > auto_reset;
-  if (NewTabUI::Ntp4Enabled())
+  if (NewTabUI::NTP4Enabled())
     auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
 
   extension_service_->extension_prefs()->SetPageIndex(extension_id,

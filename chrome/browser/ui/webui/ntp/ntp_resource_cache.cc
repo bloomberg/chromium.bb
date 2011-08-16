@@ -433,7 +433,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // consistent across builds, supporting the union of all NTP front-ends
   // for simplicity.
   std::string full_html;
-  if (NewTabUI::Ntp4Enabled()) {
+  if (NewTabUI::NTP4Enabled()) {
     base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
         GetRawDataResource(IDR_NEW_TAB_4_HTML));
     full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
@@ -607,7 +607,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBComponents(color_section_border));  // $22
 
   // Get our template.
-  int ntp_css_resource_id = NewTabUI::Ntp4Enabled() ?
+  int ntp_css_resource_id = NewTabUI::NTP4Enabled() ?
       IDR_NEW_TAB_4_THEME_CSS : IDR_NEW_TAB_THEME_CSS;
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

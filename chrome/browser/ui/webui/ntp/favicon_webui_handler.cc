@@ -35,6 +35,10 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   double id;
   CHECK(args->GetDouble(1, &id));
 
+  std::string callback_name;
+  CHECK(args->GetString(2, &callback_name));
+  callbacks_map_[static_cast<int>(id)] = callback_name;
+
   FaviconService* favicon_service =
       Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty())
@@ -72,6 +76,6 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
     color_value.reset(new StringValue("#919191"));
   }
 
-  web_ui_->CallJavascriptFunction("ntp4.setFaviconDominantColor",
-                                  id_value, *color_value);
+  web_ui_->CallJavascriptFunction(callbacks_map_[id], id_value, *color_value);
+  callbacks_map_.erase(id);
 }

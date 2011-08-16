@@ -47,7 +47,7 @@ class NewTabUI : public ChromeWebUI,
   static int current_pref_version() { return current_pref_version_; }
 
   // Returns whether NTP4 is enabled.
-  static bool Ntp4Enabled();
+  static bool NTP4Enabled();
 
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:

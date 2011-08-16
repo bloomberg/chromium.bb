@@ -81,7 +81,7 @@ void NewTabPageHandler::RegisterUserPrefs(PrefService* prefs) {
 // static
 void NewTabPageHandler::GetLocalizedValues(Profile* profile,
                                            DictionaryValue* values) {
-  if (!NewTabUI::Ntp4Enabled())
+  if (!NewTabUI::NTP4Enabled())
     return;
 
   values->SetInteger("most_visited_page_id", MOST_VISITED_PAGE_ID);

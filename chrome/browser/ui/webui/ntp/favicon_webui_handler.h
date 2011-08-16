@@ -41,6 +41,10 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // database doesn't have a favicon for a webpage.
   scoped_refptr<RefCountedMemory> default_favicon_;
 
+  // A mapping of favicon ID to callback names for requests that are
+  // in-progress.
+  std::map<int, std::string> callbacks_map_;
+
   DISALLOW_COPY_AND_ASSIGN(FaviconWebUIHandler);
 };
 

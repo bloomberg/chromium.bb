@@ -9,6 +9,9 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"
 
+class PrefService;
+class Profile;
+
 // The handler for Javascript messages related to the "bookmarks" view.
 class BookmarksHandler : public WebUIMessageHandler,
                          public NotificationObserver {
@@ -23,6 +26,12 @@ class BookmarksHandler : public WebUIMessageHandler,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // Callback for the "getBookmarksData" message.
+  void HandleGetBookmarksData(const base::ListValue* args);
+
+  // Register NTP preferences.
+  static void RegisterUserPrefs(PrefService* prefs);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);

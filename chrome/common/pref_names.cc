@@ -1147,6 +1147,9 @@ const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
 // Serves dates to determine display of elements on the NTP.
 const char kNTPDateResourceServer[] = "ntp.date_resource_server";
 
+// Which bookmarks folder should be visible on the new tab page v4.
+const char kNTPShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
+
 // Which page should be visible on the new tab page v4
 const char kNTPShownPage[] = "ntp.shown_page";
 

@@ -500,6 +500,13 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Removes all tiles from the page.
+     */
+    removeAllTiles: function() {
+      this.tileGrid_.innerHTML = '';
+    },
+
+    /**
      * Makes some calculations for tile layout. These change depending on
      * height, width, and the number of tiles.
      * TODO(estade): optimize calls to this function. Do nothing if the page is

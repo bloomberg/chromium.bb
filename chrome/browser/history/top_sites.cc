@@ -651,7 +651,7 @@ MostVisitedURLList TopSites::GetPrepopulatePages() {
     MostVisitedURL& url = urls[i];
     url.url = GURL(l10n_util::GetStringUTF8(kPrepopulatePageIDs[i]));
     url.redirects.push_back(url.url);
-    url.favicon_url = NewTabUI::Ntp4Enabled() ?
+    url.favicon_url = NewTabUI::NTP4Enabled() ?
         GURL(kNewPrepopulateFaviconURLs[i]) :
         GURL(kPrepopulateFaviconURLs[i]);
     url.title = l10n_util::GetStringUTF16(kPrepopulateTitleIDs[i]);

@@ -84,7 +84,7 @@ cr.define('ntp4', function() {
       }
 
       var id = tileID++;
-      this.setAttribute('id', 'tile' + id);
+      this.id = 'most-visited-tile-' + id;
       this.data_ = data;
       // TODO(estade): this shouldn't be focusable if the page isn't showing.
       this.tabIndex = 0;
@@ -94,10 +94,12 @@ cr.define('ntp4', function() {
           'chrome://favicon/size/32/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       faviconDiv.dir = data.direction;
-      if (data.faviconDominantColor)
+      if (data.faviconDominantColor) {
         this.setStripeColor(data.faviconDominantColor);
-      else
-        chrome.send('getFaviconDominantColor', [faviconUrl, id]);
+      } else {
+        chrome.send('getFaviconDominantColor',
+            [faviconUrl, id, 'ntp4.setMostVisitedFaviconDominantColor']);
+      }
 
       var title = this.querySelector('.title');
       title.textContent = data.title;
@@ -427,8 +429,8 @@ cr.define('ntp4', function() {
     return oldData;
   };
 
-  function setFaviconDominantColor(id, color) {
-    var tile = $('tile' + id);
+  function setMostVisitedFaviconDominantColor(id, color) {
+    var tile = $('most-visited-tile-' + id);
     if (tile)
       tile.setStripeColor(color);
   };
@@ -436,6 +438,6 @@ cr.define('ntp4', function() {
   return {
     MostVisitedPage: MostVisitedPage,
     refreshData: refreshData,
-    setFaviconDominantColor: setFaviconDominantColor,
+    setMostVisitedFaviconDominantColor: setMostVisitedFaviconDominantColor,
   };
 });

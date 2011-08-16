@@ -206,7 +206,7 @@ cr.define('ntp4', function() {
 
     bookmarksPage = new ntp4.BookmarksPage();
     appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
-    chrome.send('getBookmarks');
+    chrome.send('getBookmarksData');
   }
 
   /**
@@ -688,6 +688,10 @@ cr.define('ntp4', function() {
     mostVisitedPage.data = data;
   }
 
+  function setBookmarksData(data) {
+    bookmarksPage.data = data;
+  }
+
   /**
    * Check the directionality of the page.
    * @return {boolean} True if Chrome is running an RTL UI.
@@ -710,22 +714,23 @@ cr.define('ntp4', function() {
 
   // Return an object with all the exports
   return {
-    assert: assert,
     appAdded: appAdded,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
+    assert: assert,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
-    getCardSlider: getCardSlider,
     getAppsPageIndex: getAppsPageIndex,
+    getCardSlider: getCardSlider,
     initialize: initialize,
     isRTL: isRTL,
     leaveRearrangeMode: leaveRearrangeMode,
-    themeChanged: themeChanged,
-    setRecentlyClosedTabs: setRecentlyClosedTabs,
+    saveAppPageName: saveAppPageName,
+    setBookmarksData: setBookmarksData,
     setMostVisitedPages: setMostVisitedPages,
+    setRecentlyClosedTabs: setRecentlyClosedTabs,
     showNotification: showNotification,
-    saveAppPageName: saveAppPageName
+    themeChanged: themeChanged
   };
 });
 

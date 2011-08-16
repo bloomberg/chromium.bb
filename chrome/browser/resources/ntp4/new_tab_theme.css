@@ -63,6 +63,13 @@ body {
   background-color: $8 /* COLOR_NTP_TEXT */
 }
 
+/* Bookmarks ******************************************************************/
+
+.bookmark,
+.bookmark > .title {
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
 /* Most Visited ***************************************************************/
 
 .most-visited,
