@@ -3436,7 +3436,7 @@ DebugRun() {
 # translator binaries.
 
 track-translator-size() {
-  local platforms=$1
+  local platforms="$@"
   for platform in ${platforms}; do
     print-size-of-sb-tool ${platform} llc
     print-size-of-sb-tool ${platform} ld
