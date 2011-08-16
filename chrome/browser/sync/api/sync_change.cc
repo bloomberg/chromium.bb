@@ -42,20 +42,3 @@ SyncChange::SyncChangeType SyncChange::change_type() const {
 SyncData SyncChange::sync_data() const {
   return sync_data_;
 }
-
-// static
-std::string SyncChange::ChangeTypeToString(SyncChangeType change_type) {
-  switch (change_type) {
-    case ACTION_INVALID:
-      return "ACTION_INVALID";
-    case ACTION_ADD:
-      return "ACTION_ADD";
-    case ACTION_UPDATE:
-      return "ACTION_UPDATE";
-    case ACTION_DELETE:
-      return "ACTION_DELETE";
-    default:
-      NOTREACHED();
-  }
-  return std::string();
-}

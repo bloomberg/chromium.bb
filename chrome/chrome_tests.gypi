@@ -1640,7 +1640,6 @@
         'browser/search_engines/template_url_fetcher_unittest.cc',
         'browser/search_engines/template_url_service_test_util.cc',
         'browser/search_engines/template_url_service_test_util.h',
-        'browser/search_engines/template_url_service_sync_unittest.cc',
         'browser/search_engines/template_url_service_unittest.cc',
         'browser/search_engines/template_url_parser_unittest.cc',
         'browser/search_engines/template_url_prepopulate_data_unittest.cc',

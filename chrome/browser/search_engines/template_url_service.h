@@ -17,8 +17,6 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -30,7 +28,6 @@ class Profile;
 class PrefSetObserver;
 class SearchHostToURLsMap;
 class SearchTermsData;
-class SyncData;
 class TemplateURLServiceObserver;
 class TemplateURLRef;
 
@@ -61,14 +58,12 @@ struct URLVisitedDetails;
 
 class TemplateURLService : public WebDataServiceConsumer,
                            public ProfileKeyedService,
-                           public NotificationObserver,
-                           public SyncableService {
+                           public NotificationObserver {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
   typedef std::vector<const TemplateURL*> TemplateURLVector;
   // Type for a static function pointer that acts as a time source.
   typedef base::Time(TimeProvider)();
-  typedef std::map<std::string, SyncData> SyncDataMap;
 
   // Struct used for initializing the data store with fake data.
   // Each initializer is mapped to a TemplateURL.
@@ -128,12 +123,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
   const TemplateURL* GetTemplateURLForKeyword(const string16& keyword) const;
-
-  // Looks up |sync_guid| and returns the element it maps to.  Returns NULL if
-  // the guid was not found.
-  // The caller should not try to delete the returned pointer; the data store
-  // retains ownership of it.
-  const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
@@ -244,34 +233,6 @@ class TemplateURLService : public WebDataServiceConsumer,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // SyncableService implementation.
-
-  // Returns all syncable TemplateURLs from this model as SyncData. This should
-  // include every search engine and no Extension keywords.
-  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
-  // Process new search engine changes from Sync, merging them into our local
-  // data. This may send notifications if local search engines are added,
-  // updated or removed.
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
-  // Merge initial search engine data from Sync and push any local changes up
-  // to Sync. This may send notifications if local search engines are added,
-  // updated or removed.
-  virtual SyncError MergeDataAndStartSyncing(
-      syncable::ModelType type,
-      const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
-  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
-
-  // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
-  // that has been modified, and |type| is the Sync ChangeType that took place.
-  // This may send a new SyncChange to the cloud. If our model has not yet been
-  // associated with Sync, or if this is triggered by a Sync change, then this
-  // does nothing.
-  void ProcessTemplateURLChange(const TemplateURL* turl,
-                                SyncChange::SyncChangeType type);
-
   Profile* profile() const { return profile_; }
 
   void SetSearchEngineDialogSlot(int slot) {
@@ -284,18 +245,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Registers the preferences used to save a TemplateURL to prefs.
   static void RegisterUserPrefs(PrefService* prefs);
-
-  // Returns a SyncData with a sync representation of the search engine data
-  // from |turl|.
-  static SyncData CreateSyncDataFromTemplateURL(const TemplateURL& turl);
-
-  // Returns a heap-allocated TemplateURL, populated by |sync_data|'s fields.
-  // This does the opposite of CreateSyncDataFromTemplateURL. The caller owns
-  // the returned TemplateURL*.
-  static TemplateURL* CreateTemplateURLFromSyncData(const SyncData& sync_data);
-
-  // Returns a map mapping Sync GUIDs to pointers to SyncData.
-  static SyncDataMap CreateGUIDToSyncDataMap(const SyncDataList& sync_data);
 
 #if defined(UNIT_TEST)
   // Set a different time provider function, such as
@@ -323,24 +272,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                            DontUpdateKeywordSearchForNonReplaceable);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           CreateSyncDataFromTemplateURL);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           CreateTemplateURLFromSyncData);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           ResolveSyncKeywordConflict);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           FindDuplicateOfSyncTemplateURL);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           MergeSyncAndLocalURLDuplicates);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           CreateGUIDToSyncDataMap);
-
   friend class TemplateURLServiceTestUtil;
 
   typedef std::map<string16, const TemplateURL*> KeywordToTemplateMap;
-  typedef std::map<std::string, const TemplateURL*> GUIDToTemplateMap;
 
   // Helper functor for FindMatchingKeywords(), for finding the range of
   // keywords which begin with a prefix.
@@ -461,50 +395,10 @@ class TemplateURLService : public WebDataServiceConsumer,
       const TemplateURL** default_search_provider,
       const TemplateURL* default_from_prefs);
 
-  // Resets the sync GUID of the specified TemplateURL and persists the change
-  // to the database. This does not notify observers.
-  void ResetTemplateURLGUID(const TemplateURL* url, const std::string& guid);
-
-  // Attempts to generate a unique keyword for |turl| based on its original
-  // keyword. If its keyword is already unique, that is returned. Otherwise, it
-  // tries to return the autogenerated keyword if that is unique to the Service,
-  // and finally it repeatedly appends special characters to the keyword until
-  // it is unique to the Service.
-  string16 UniquifyKeyword(const TemplateURL& turl) const;
-
-  // Given a TemplateURL from Sync, resolves any keyword conflicts by checking
-  // the local keywords and uniquifying either the cloud keyword or a
-  // conflicting local keyword (whichever is older). If the cloud TURL is
-  // changed, then an appropriate SyncChange is appended to |change_list|. If
-  // a local TURL is changed, the service is updated with the new keyword. If
-  // there was no conflict to begin with, this does nothing. In the case of tied
-  // last_modified dates, |sync_turl| wins. Returns true iff there was a
-  // conflict.
-  bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
-                                  SyncChangeList& change_list);
-
-  // Returns a TemplateURL from the service that has the same keyword and search
-  // URL as |sync_turl|, if it exists.
-  const TemplateURL* FindDuplicateOfSyncTemplateURL(
-      const TemplateURL& sync_turl);
-
-  // Given a TemplateURL from the cloud and a local matching duplicate found by
-  // FindDuplcateOfSyncTemplateURL, merges the two. If |sync_url| is newer, this
-  // replaces |local_url| with |sync_url| using the service's Remove and Add.
-  // If |local_url| is newer, this copies the GUID from |sync_url| over to
-  // |local_url| and adds an update to change_list to notify the server of the
-  // change.
-  void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_url,
-                                      TemplateURL* local_url,
-                                      SyncChangeList& change_list);
-
   NotificationRegistrar registrar_;
 
   // Mapping from keyword to the TemplateURL.
   KeywordToTemplateMap keyword_to_template_map_;
-
-  // Mapping from Sync GUIDs to the TemplateURL.
-  GUIDToTemplateMap guid_to_template_map_;
 
   TemplateURLVector template_urls_;
 
@@ -562,19 +456,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Function returning current time in base::Time units.
   TimeProvider* time_provider_;
-
-  // Do we have an active association between the TemplateURLs and sync models?
-  // Set in MergeDataAndStartSyncing, reset in StopSyncing. While this is not
-  // set, we ignore any local search engine changes (when we start syncing we
-  // will look up the most recent values anyways).
-  bool models_associated_;
-
-  // Whether we're currently processing changes from the syncer. While this is
-  // true, we ignore any local search engine changes, since we triggered them.
-  bool processing_syncer_changes_;
-
-  // Sync's SyncChange handler. We push all our changes through this.
-  SyncChangeProcessor* sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
