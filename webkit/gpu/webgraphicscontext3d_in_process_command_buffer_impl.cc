@@ -652,7 +652,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   GLInProcessContext* parent_context = NULL;
   if (!render_directly_to_web_view) {
     WebKit::WebGraphicsContext3D* view_context =
-        web_view->graphicsContext3D();
+        web_view ? web_view->graphicsContext3D() : NULL;
     if (view_context) {
       WebGraphicsContext3DInProcessCommandBufferImpl* context_impl =
           static_cast<WebGraphicsContext3DInProcessCommandBufferImpl*>(
