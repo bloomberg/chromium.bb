@@ -296,6 +296,15 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
+  # This only controls whether the sandboxed translator is itself dynamically
+  # linked, not whether it generates dynamic nexes (or links against glibc)
+  #  --nacl_glibc should still control that.
+  # it only has effect if use_sandboxed_translator is also true
+  # TODO(dschuff) this can go away when we are no longer required to explicitly
+  # invoke runnable-ld.so
+  BitFromArgument(env, 'sandboxed_translator_is_dynamic', default=False,
+    desc='used dynamically-linked sandboxed translator')
+
   BitFromArgument(env, 'browser_headless', default=False,
     desc='Where possible, set up a dummy display to run the browser on '
       'when running browser tests.  On Linux, this runs the browser through '

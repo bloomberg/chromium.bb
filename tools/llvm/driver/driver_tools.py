@@ -150,8 +150,15 @@ INITIAL_ENV = {
   'AS_X8632'      : '${LLVM_MC}',
   'AS_X8664'      : '${LLVM_MC}',
 
-  'LD_SB'         : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/ld',
-  'LLC_SB'        : '${SEL_LDR} -a -- ${BASE_SB}/nonsrpc/bin/llc',
+  'LD_SB'         : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${BASE_SB}/nonsrpc/bin/ld',
+  'LLC_SB'        : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${RUNNABLE_LD} ' +
+                    '${BASE_SB}/nonsrpc/bin/llc',
+  'SB_DYNAMIC'    : '0',
+  'NNACL_LIBDIR'  : '${BASE_NACL}/toolchain/${SCONS_OS}_x86/' +
+                    'x86_64-nacl/${ARCH  == X8632 ? lib32 : lib}',
+  'RUNNABLE_LD'   : '${SB_DYNAMIC ? ${NNACL_LIBDIR}/runnable-ld.so ' +
+                    '--library-path ${NNACL_LIBDIR}}',
+
 
   'LLC_SRPC'      : '${BASE_SB}/srpc/bin/llc',
   'LD_SRPC'       : '${BASE_SB}/srpc/bin/ld',
@@ -188,6 +195,7 @@ DriverPatterns = [
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "SetArch($0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
+  ( '--pnacl-sb-dynamic',              "env.set('SB_DYNAMIC', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
   ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),
@@ -391,7 +399,8 @@ class env(object):
         ParseError(s, j, j, "Unexpected token")
       if uselen:
         ParseError(s, j, j, "Cannot combine == and #")
-      (literal_str,j) = cls.eval_str(s, j+2, [' ']+terminators)
+      (_,j) = cls.eval_whitespace(s, j+2)
+      (literal_str,j) = cls.eval_str(s, j, [' ']+terminators)
       (_,j) = cls.eval_whitespace(s, j)
       if j == len(s):
         return (False, j) # Error one level up

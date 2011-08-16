@@ -91,6 +91,8 @@ fi
 readonly LIBMODE_NEWLIB
 readonly LIBMODE_GLIBC
 
+readonly SB_LIBMODE=${SB_LIBMODE:-newlib}
+
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
@@ -256,7 +258,7 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
 if ${UTMAN_USE_MQ}; then
-  readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"9d8df882108d"}
+  readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"a0a52a3f1392"}
   readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"27b8475488ca"}
 
   # Vendor Revs of llvm and llvm-gcc to which the qeues apply
@@ -1963,6 +1965,10 @@ check-sb-arch() {
 LLVM_SB_SETUP=false
 llvm-sb-setup() {
   local flags=""
+  if [ ${SB_LIBMODE} == "glibc" ]; then
+    llvm-sb-setup-naclgcc "$@"
+    return
+  fi
 
   if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
     return 0
@@ -2001,6 +2007,50 @@ llvm-sb-setup() {
     LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
+    LDFLAGS="") # TODO(pdox): Support -s
+}
+
+llvm-sb-setup-naclgcc() {
+  local flags=""
+
+  if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
+    return 0
+  fi
+
+  if [ $# -ne 2 ] ; then
+    Fatal "Please specify arch and mode"
+  fi
+
+  LLVM_SB_SETUP=true
+
+  LLVM_SB_ARCH=$1
+  LLVM_SB_MODE=$2
+  check-sb-arch ${LLVM_SB_ARCH}
+  check-sb-mode ${LLVM_SB_MODE}
+
+  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.naclgcc"
+  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}.naclgcc"
+  case ${LLVM_SB_MODE} in
+    srpc)    flags+=" -DNACL_SRPC" ;;
+    nonsrpc) ;;
+  esac
+
+  local naclgcc_root="";
+  if [ ${SB_LIBMODE} == "glibc" ]; then
+    naclgcc_root=${NNACL_GLIBC_ROOT}
+  else
+    naclgcc_root=${NNACL_ROOT}
+  fi
+
+
+  LLVM_SB_CONFIGURE_ENV=(
+    AR="${naclgcc_root}/bin/i686-nacl-ar" \
+    As="${naclgcc_root}/bin/i686-nacl-as" \
+    CC="${naclgcc_root}/bin/i686-nacl-gcc ${flags}" \
+    CXX="${naclgcc_root}/bin/i686-nacl-g++ ${flags}" \
+    LD="${naclgcc_root}/bin/i686-nacl-ld" \
+    NM="${naclgcc_root}/bin/i686-nacl-nm" \
+    RANLIB="${naclgcc_root}/bin/i686-nacl-ranlib" \
     LDFLAGS="") # TODO(pdox): Support -s
 }
 
@@ -2100,13 +2150,13 @@ llvm-sb-make() {
   fi
 
   local use_tcmalloc=0
-  if ${LIBMODE_NEWLIB} ; then
+  if ${LIBMODE_NEWLIB} && [ ${SB_LIBMODE} == "newlib" ]; then
     use_tcmalloc=1
   fi
 
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
-      ONLY_TOOLS=llc \
+      ONLY_TOOLS="llc lli"\
       NACL_SANDBOX=1 \
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
@@ -2129,14 +2179,34 @@ llvm-sb-install() {
 
   RunWithLog ${LLVM_SB_LOG_PREFIX}.install \
       env -i PATH="/usr/bin:/bin" \
-      ONLY_TOOLS=llc \
+      ONLY_TOOLS="llc lli"\
       NACL_SANDBOX=1 \
       KEEP_SYMBOLS=1 \
       make ${MAKE_OPTS} install
 
   spopd
 
-  translate-and-install-sb-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
+  if [ ${SB_LIBMODE} == "newlib" ]; then
+    translate-and-install-sb-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
+  else
+    install-naclgcc-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
+    install-naclgcc-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} lli
+  fi
+}
+
+install-naclgcc-tool() {
+  local arch=$1
+  local mode=$2
+  local name=$3
+
+  local bindir="${PNACL_SB_ROOT}/${arch}/${mode}/bin"
+  local tarch=x8632
+  mv "${bindir}/${name}" "${bindir}/${name}.${tarch}.nexe"
+
+  local bindir_tarch="${PNACL_SB_ROOT}/${tarch}/${mode}/bin"
+  local nexe="${bindir}/${name}.${tarch}.nexe"
+  mkdir -p "${bindir_tarch}"
+  cp -f "${nexe}" "${bindir_tarch}/${name}"
 }
 
 translate-and-install-sb-tool() {

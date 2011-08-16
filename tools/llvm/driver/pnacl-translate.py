@@ -189,6 +189,10 @@ def RunLD(infile, outfile, shared):
 
 def RunLLC(infile, outfile, filetype):
   UseSRPC = env.getbool('SANDBOXED') and env.getbool('SRPC')
+  # For now, sel_universal doesn't properly support dynamic sb translator
+  if env.getbool('SANDBOXED') and env.getbool('SB_DYNAMIC'):
+    CheckTranslatorPrerequisites()
+    UseSRPC = False
   env.push()
   env.setmany(input=infile, output=outfile, filetype=filetype)
   if UseSRPC:
