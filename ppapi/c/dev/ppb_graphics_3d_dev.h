@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
 
 // Example usage from plugin code:
 //
@@ -29,29 +28,10 @@
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_7 "PPB_Graphics3D(Dev);0.7"
-#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_7
+#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_8 "PPB_Graphics3D(Dev);0.8"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_8
 
 struct PPB_Graphics3D_Dev {
-  // Returns a string describing some aspect of the Graphics3D implementation.
-  // name may be one of:
-  // - PP_GRAPHICS3DSTRING_EXTENSIONS: describes which extensions are supported
-  //   by the implementation. The string is zero-terminated and contains a
-  //   space-separated list of extension names; extension names themselves do
-  //   not contain spaces. If there are no extensions, then the empty string is
-  //   returned.
-  // - PP_GRAPHICS3DSTRING_VENDOR: Implementation dependent.
-  // - PP_GRAPHICS3DSTRING_VERSION: The format of the string is:
-  //   <major version.minor version><space><vendor specific info>
-  //   Both the major and minor portions of the version number are numeric.
-  //   The vendor-specific information is optional; if present, its format and
-  //   contents are implementation specific.
-  // On failure, PP_VARTYPE_UNDEFINED is returned.
-  //
-  // TODO(alokp): Does this function need module argument?
-  //
-  struct PP_Var (*GetString)(int32_t name);
-
   // Creates and initializes a rendering context and returns a handle to it.
   // The returned context is off-screen to start with. It must be attached to
   // a plugin instance using PPB_Instance::BindGraphics to draw on the web page.

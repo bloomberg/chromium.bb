@@ -25,8 +25,6 @@ class Graphics3D_Dev : public Resource {
 
   ~Graphics3D_Dev();
 
-  static Var GetString(int32_t name);
-
   int32_t GetAttribs(int32_t* attrib_list) const;
   int32_t SetAttribs(int32_t* attrib_list);
 

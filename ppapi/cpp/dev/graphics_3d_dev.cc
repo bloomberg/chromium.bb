@@ -37,15 +37,6 @@ Graphics3D_Dev::Graphics3D_Dev(const Instance& instance,
 Graphics3D_Dev::~Graphics3D_Dev() {
 }
 
-// static
-Var Graphics3D_Dev::GetString(int32_t name) {
-  if (!has_interface<PPB_Graphics3D_Dev>())
-    return Var();
-
-  return Var(Var::PassRef(),
-             get_interface<PPB_Graphics3D_Dev>()->GetString(name));
-}
-
 int32_t Graphics3D_Dev::GetAttribs(int32_t* attrib_list) const {
   if (!has_interface<PPB_Graphics3D_Dev>())
     return PP_ERROR_NOINTERFACE;

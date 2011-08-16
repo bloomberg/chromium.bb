@@ -17,11 +17,6 @@ namespace {
 
 typedef EnterResource<PPB_Graphics3D_API> EnterGraphics3D;
 
-PP_Var GetString(int32_t name) {
-  // TODO(alokp): Implement me.
-  return PP_MakeUndefined();
-}
-
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
                    const int32_t* attrib_list) {
@@ -67,7 +62,6 @@ int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
 }
 
 const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
-  &GetString,
   &Create,
   &IsGraphics3D,
   &GetAttribs,

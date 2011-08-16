@@ -13,13 +13,6 @@ enum PP_Graphics3DError_Dev {
   PP_GRAPHICS3DERROR_CONTEXT_LOST = 0x300E
 };
 
-enum PP_Graphics3DString_Dev {
-  PP_GRAPHICS3DSTRING_VENDOR = 0x3053,
-  PP_GRAPHICS3DSTRING_VERSION = 0x3054,
-  // Which extensions are supported.
-  PP_GRAPHICS3DSTRING_EXTENSIONS = 0x3055
-};
-
 enum PP_Graphics3DAttrib_Dev {
   // Bits of Alpha in the color buffer.
   PP_GRAPHICS3DATTRIB_ALPHA_SIZE = 0x3021,
