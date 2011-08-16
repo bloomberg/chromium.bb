@@ -18,6 +18,7 @@ include_rules = [
   "+skia/ext",
   "+skia/include",
   "+third_party/cros",
+  "+third_party/cros_system_api",
   "+webkit/database",
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.

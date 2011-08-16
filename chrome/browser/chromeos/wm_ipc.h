@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 
 typedef unsigned long Atom;
 typedef unsigned long XID;
