@@ -37,6 +37,7 @@ EXTRA_ENV = {
   'STATIC'   : '0',
   'PIC'      : '0',
   'STDLIB'   : '1',
+  'RELOCATABLE': '0',
 
   'BAREBONES_LINK' : '0',
 
@@ -75,6 +76,7 @@ EXTRA_ENV = {
   # Common to both GOLD and BFD.
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${SHARED ? -shared} ${STATIC ? -static} ' +
+                     '${RELOCATABLE ? -relocatable} ' +
                      '${LIBMODE_GLIBC && ' +
                      '!STATIC ? ${@AddPrefix:-rpath-link=:SEARCH_DIRS}}',
 
@@ -112,7 +114,9 @@ EXTRA_ENV = {
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
 
-  'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
+  'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
+                       '${STATIC ? static : ' +
+                       '${SHARED ? shared : dynamic}}}',
 
   'LD_SCRIPT'      : '${LD_SCRIPT_%LIBMODE%_%EMITMODE%}',
 
@@ -124,8 +128,12 @@ EXTRA_ENV = {
   'LD_SCRIPT_glibc_shared' : '${LD_EMUL}.xs',
   'LD_SCRIPT_glibc_dynamic': '${LD_EMUL}.x',
 
+  'LD_SCRIPT_newlib_relocatable': '',
+  'LD_SCRIPT_glibc_relocatable' : '',
+
   'BCLD'      : '${LD_GOLD}',
-  'BCLD_FLAGS': '${LD_GOLD_FLAGS} ${!SHARED ? --undef-sym-check} ' +
+  'BCLD_FLAGS': '${LD_GOLD_FLAGS} ' +
+                '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
 
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
@@ -153,6 +161,9 @@ LDPatterns = [
   ( '-static',         "env.set('STATIC', '1')\n"
                        "env.set('SHARED', '0')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
+
+  ( '-r',                  "env.set('RELOCATABLE', '1')"),
+  ( '-relocatable',        "env.set('RELOCATABLE', '1')"),
 
   ( ('-L', '(.+)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
@@ -231,6 +242,12 @@ LDPatterns = [
 def main(argv):
   ParseArgs(argv, LDPatterns)
 
+  if env.getbool('RELOCATABLE'):
+    if env.getbool('SHARED'):
+      Log.Fatal("-r and -shared may not be used together")
+    env.set('STATIC', '0')
+    env.set('BAREBONES_LINK', '1')
+
   if env.getbool('LIBMODE_NEWLIB'):
     if env.getbool('SHARED'):
       Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
@@ -278,6 +295,9 @@ def main(argv):
     if env.getbool('SHARED'):
       bitcode_type = 'pso'
       native_type = 'so'
+    elif env.getbool('RELOCATABLE'):
+      bitcode_type = 'po'
+      native_type = 'o'
     else:
       bitcode_type = 'pexe'
       native_type = 'nexe'
