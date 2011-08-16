@@ -120,6 +120,7 @@ void FFmpegVideoDecodeEngine::Initialize(
                                 kNoTimestamp);
     frame_queue_available_.push_back(video_frame);
   }
+
   codec_context_->thread_count = decode_threads;
   if (codec &&
       avcodec_open(codec_context_, codec) >= 0 &&
@@ -186,7 +187,6 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
                                      av_frame_.get(),
                                      &frame_decoded,
                                      &packet);
-
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
     LOG(ERROR) << "Error decoding a video frame with timestamp: "
@@ -301,24 +301,6 @@ void FFmpegVideoDecodeEngine::ReadInput() {
   DCHECK_EQ(output_eos_reached_, false);
   pending_input_buffers_++;
   event_handler_->ProduceVideoSample(NULL);
-}
-
-VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {
-  // J (Motion JPEG) versions of YUV are full range 0..255.
-  // Regular (MPEG) YUV is 16..240.
-  // For now we will ignore the distinction and treat them the same.
-  switch (codec_context_->pix_fmt) {
-    case PIX_FMT_YUV420P:
-    case PIX_FMT_YUVJ420P:
-      return VideoFrame::YV12;
-    case PIX_FMT_YUV422P:
-    case PIX_FMT_YUVJ422P:
-      return VideoFrame::YV16;
-    default:
-      // TODO(scherkus): More formats here?
-      break;
-  }
-  return VideoFrame::INVALID;
 }
 
 }  // namespace media

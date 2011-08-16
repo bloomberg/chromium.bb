@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,11 +69,6 @@ class FFmpegBitstreamConverter : public BitstreamConverter {
   virtual bool ConvertPacket(AVPacket* packet);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest, ConvertPacket_FailedFilter);
-  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest, ConvertPacket_Success);
-  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest,
-                           ConvertPacket_SuccessInPlace);
-
   std::string filter_name_;
   AVBitStreamFilterContext* stream_filter_;
   AVCodecContext* stream_context_;
