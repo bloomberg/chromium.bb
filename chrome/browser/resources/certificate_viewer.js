@@ -13,6 +13,7 @@ cr.define('cert_viewer', function() {
     $('close').onclick = function() {
       window.close();
     }
+    $('export').onclick = exportCertificate;
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 
     initializeTree($('hierarchy'), showCertificateFields);
@@ -20,8 +21,7 @@ cr.define('cert_viewer', function() {
 
     i18nTemplate.process(document, templateData);
     stripGtkAccessorKeys();
-    var args = JSON.parse(chrome.dialogArguments);
-    chrome.send('requestCertificateInfo', [args.cert]);
+    chrome.send('requestCertificateInfo');
   }
 
   /**
@@ -43,10 +43,11 @@ cr.define('cert_viewer', function() {
    *     translated strings could be added / modified to remove the & sign.
    */
   function stripGtkAccessorKeys() {
-    var tabs = $('tabs').childNodes;
-    for (var i = 0; i < tabs.length; i++) {
-      tabs[i].textContent = tabs[i].textContent.replace('&','');
-    }
+    // Copy all the tab labels into an array.
+    var nodes = Array.prototype.slice.call($('tabs').childNodes, 0);
+    nodes.push($('export'));
+    for (var i = 0; i < nodes.length; i++)
+      nodes[i].textContent = nodes[i].textContent.replace('&','');
   }
 
   /**
@@ -105,20 +106,37 @@ cr.define('cert_viewer', function() {
   }
 
   /**
-   * Show certificate fields for the selected certificate in the hierarchy.
+   * Clear any previous certificate fields in the tree.
    */
-  function showCertificateFields() {
+  function clearCertificateFields() {
     var treeItem = $('cert-fields');
     for (var key in treeItem.detail.children) {
       treeItem.remove(treeItem.detail.children[key]);
       delete treeItem.detail.children[key];
     }
+  }
+
+  /**
+   * Request certificate fields for the selected certificate in the hierarchy.
+   */
+  function showCertificateFields() {
+    clearCertificateFields();
     var item = $('hierarchy').selectedItem;
-    if (item && item.detail.payload.fields) {
-      treeItem.add(treeItem.detail.children['root'] =
-          constructTree(item.detail.payload.fields[0]));
-      revealTree(treeItem);
-    }
+    if (item && item.detail.payload.index !== undefined)
+      chrome.send('requestCertificateFields', [item.detail.payload.index]);
+  }
+
+  /**
+   * Show the returned certificate fields for the selected certificate.
+   * @param {Object} certFields A dictionary containing the fields tree
+   *     structure.
+   */
+  function getCertificateFields(certFields) {
+    clearCertificateFields();
+    var treeItem = $('cert-fields');
+    treeItem.add(treeItem.detail.children['root'] =
+        constructTree(certFields[0]));
+    revealTree(treeItem);
   }
 
   /**
@@ -132,9 +150,19 @@ cr.define('cert_viewer', function() {
       $('cert-field-value').textContent = '';
   }
 
+  /**
+   * Export the selected certificate.
+   */
+  function exportCertificate() {
+    var item = $('hierarchy').selectedItem;
+    if (item && item.detail.payload.index !== undefined)
+      chrome.send('exportCertificate', [item.detail.payload.index]);
+  }
+
   return {
     initialize: initialize,
     getCertificateInfo: getCertificateInfo,
+    getCertificateFields: getCertificateFields,
   };
 });
 

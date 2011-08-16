@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_H_
 #pragma once
 
+#include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,14 +22,15 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
 class CertificateViewerDialog : private HtmlDialogUIDelegate {
  public:
   // Shows the certificate viewer dialog for the passed in certificate.
-  static void ShowDialog(gfx::NativeWindow owning_window,
+  static void ShowDialog(gfx::NativeWindow parent,
                          net::X509Certificate* cert);
 
  private:
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
-  explicit CertificateViewerDialog(net::X509Certificate* cert);
+  explicit CertificateViewerDialog(gfx::NativeWindow parent,
+                                   net::X509Certificate* cert);
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const OVERRIDE;
@@ -47,13 +49,53 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The argument string for the dialog which passes the certificate pointer.
-  std::string json_args_;
+  // The owning window.
+  gfx::NativeWindow parent_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   string16 title_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
+};
+
+// Dialog handler which handles calls from the JS WebUI code to view certificate
+// details and export the certificate.
+class CertificateViewerDialogHandler : public WebUIMessageHandler {
+ public:
+  CertificateViewerDialogHandler(gfx::NativeWindow parent,
+                                 net::X509Certificate* cert);
+
+  // Overridden from WebUIMessageHandler
+  virtual void RegisterMessages();
+
+ private:
+  // Brings up the export certificate dialog for the chosen certificate in the
+  // chain.
+  //
+  // The input is an integer index to the certificate in the chain to export.
+  void ExportCertificate(const base::ListValue* args);
+
+  // Gets the details for a specific certificate in the certificate chain. Calls
+  // the javascript function cert_viewer.getCertificateFields with a tree
+  // structure containing the fields and values for certain nodes.
+  //
+  // The input is an integer index to the certificate in the chain to view.
+  void RequestCertificateFields(const base::ListValue* args);
+
+  // Extracts the certificate details and returns them to the javascript
+  // function cert_viewer.getCertificateInfo in a dictionary structure.
+  void RequestCertificateInfo(const base::ListValue* args);
+
+  // The certificate being viewed.
+  scoped_refptr<net::X509Certificate> cert_;
+
+  // The parent window.
+  gfx::NativeWindow parent_;
+
+  // The certificate chain.
+  net::X509Certificate::OSCertHandles cert_chain_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialogHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_H_
