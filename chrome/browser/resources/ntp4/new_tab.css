@@ -158,6 +158,10 @@ html[dir='rtl'] #attribution {
   margin: 0 9px;
 }
 
+#logo-img {
+  margin-top: 4px;
+}
+
 /* Trash. *********************************************************************/
 
 #trash {
