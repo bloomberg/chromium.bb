@@ -358,6 +358,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         continue
 
       src_path = self.cros_source.GetRelativePath(rel_src_path)
+
+      # Additional case in case the repo has been removed from the manifest.
+      if not os.path.exists(src_path):
+        cros_lib.Info('Detected repo removed from manifest %s' % project)
+        continue
+
       revision = handler.projects[project]['revision']
       result = cros_lib.RunCommand(['git', 'log', '%s..HEAD' % revision],
                                    print_cmd=False, redirect_stdout=True,
