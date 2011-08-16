@@ -1105,8 +1105,10 @@ pre_base_env.AddMethod(DownloadedChromeBinary)
 
 
 def ChromeBinary(env):
-  return env.File(ARGUMENTS.get('chrome_browser_path',
-                                env.DownloadedChromeBinary()))
+  if 'chrome_browser_path' in ARGUMENTS:
+    return env.File(env.SConstructAbsPath(ARGUMENTS['chrome_browser_path']))
+  else:
+    return env.DownloadedChromeBinary()
 
 pre_base_env.AddMethod(ChromeBinary)
 

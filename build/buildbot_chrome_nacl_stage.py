@@ -111,7 +111,6 @@ def BuildAndTest(options):
   # Decide platform specifics.
   env = dict(os.environ)
   if sys.platform in ['win32', 'cygwin']:
-    shell = True
     if options.bits == 64:
       bits = 64
     elif options.bits == 32:
@@ -121,7 +120,6 @@ def BuildAndTest(options):
       bits = 64
     else:
       bits = 32
-    tools_bits = {32: 'x86', 64: 'x64'}[bits]
     msvs_path = ';'.join([
         r'c:\Program Files\Microsoft Visual Studio 9.0\VC',
         r'c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC',
@@ -133,11 +131,10 @@ def BuildAndTest(options):
         r'c:\Program Files (x86)\Microsoft Visual Studio 8\Common7\Tools',
     ])
     env['PATH'] += ';' + msvs_path
-    scons = ['vcvarsall %s && scons.bat' % tools_bits]
+    scons = [sys.executable, 'scons.py']
   elif sys.platform == 'darwin':
     bits = 32
-    scons = ['./scons']
-    shell = False
+    scons = [sys.executable, 'scons.py']
   else:
     p = subprocess.Popen(
         'uname -m | '
@@ -155,8 +152,7 @@ def BuildAndTest(options):
       bits = 32
     # xvfb-run has a 2-second overhead per invocation, so it is cheaper to wrap
     # the entire build step rather than each test (browser_headless=1).
-    scons = ['xvfb-run', '--auto-servernum', './scons']
-    shell = False
+    scons = ['xvfb-run', '--auto-servernum', sys.executable, 'scons.py']
 
   chrome_filename = FindChrome(src_dir, options)
 
@@ -188,7 +184,7 @@ def BuildAndTest(options):
   # Run nacl/chrome integration tests.
   cmd = scons + ['-k', 'platform=x86-%d' % bits,
       'disable_dynamic_plugin_loading=1',
-      'chrome_browser_path=' + chrome_filename,
+      'chrome_browser_path=%s' % chrome_filename,
   ]
   if options.integration_bot:
     # On the NaCl/Chromium integration bot, the IRT library downloaded
@@ -205,7 +201,7 @@ def BuildAndTest(options):
 
   sys.stdout.write('\nRunning %s\n\n' % ' '.join(cmd))
   sys.stdout.flush()
-  subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
+  subprocess.check_call(cmd, cwd=nacl_dir, env=env)
 
 
 def MakeCommandLineParser():
