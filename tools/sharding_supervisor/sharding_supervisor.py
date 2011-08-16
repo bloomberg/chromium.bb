@@ -81,21 +81,37 @@ class ShardRunner(threading.Thread):
     counter: Called to get the next shard index to run.
   """
 
-  def __init__(self, supervisor, counter, test_fail, test_timeout):
+  def __init__(self, supervisor, counter, test_start, test_ok, test_fail):
     """Inits ShardRunner with a supervisor and counter."""
     threading.Thread.__init__(self)
     self.supervisor = supervisor
     self.counter = counter
+    self.test_start = test_start
+    self.test_ok = test_ok
     self.test_fail = test_fail
-    self.test_timeout = test_timeout
+    self.current_test = ""
 
-  def SearchForFailure(self, regex, prefix, line, description):
-    results = regex.search(line)
+  def ReportFailure(self, description, prefix, test_name):
+    log_line = "%s: %s%s\n" % (description, prefix, test_name)
+    self.supervisor.LogLineFailure(log_line)
+
+  def ProcessLine(self, prefix, line):
+    results = self.test_start.search(line)
     if results:
-      log_line = "%s: %s%s\n" % (description, prefix, results.group(1))
-      self.supervisor.LogLineFailure(log_line)
-      return True
-    return False
+      if self.current_test:
+        self.ReportFailure("INCOMPLETE", prefix, self.current_test)
+      self.current_test = results.group(1)
+      return
+
+    results = self.test_ok.search(line)
+    if results:
+      self.current_test = ""
+      return
+
+    results = self.test_fail.search(line)
+    if results:
+      self.ReportFailure("FAILED", prefix, results.group(1))
+      self.current_test = ""
 
   def run(self):
     """Runs shards and outputs the results.
@@ -124,9 +140,7 @@ class ShardRunner(threading.Thread):
           line = chars.getvalue()
           if not line and not shard_running:
             break
-          if not self.SearchForFailure(
-              self.test_fail, prefix, line, "FAILED"):
-            self.SearchForFailure(self.test_timeout, prefix, line, "TIMEOUT")
+          self.ProcessLine(prefix, line)
           line = prefix + line
           self.supervisor.LogOutputLine(index, line)
           chars.close()
@@ -185,25 +199,23 @@ class ShardingSupervisor(object):
     test_name_regex = r"((\w+/)?\w+\.\w+(/\d+)?)"
 
     # Regex for filtering out ANSI escape codes when using color.
-    ansi_code_regex = r"(?:\x1b\[.*?[a-zA-Z])?"
+    ansi_regex = r"(?:\x1b\[.*?[a-zA-Z])?"
 
+    test_start = re.compile(
+        ansi_regex + r"\[\s+RUN\s+\] " + ansi_regex + test_name_regex)
+    test_ok = re.compile(
+        ansi_regex + r"\[\s+OK\s+\] " + ansi_regex + test_name_regex)
     test_fail = re.compile(
-        ansi_code_regex + "\[\s+FAILED\s+\] " + ansi_code_regex +
-        test_name_regex)
-    test_timeout = re.compile(
-        "Test timeout \([0-9]+ ms\) exceeded for " + test_name_regex)
+        ansi_regex + r"\[\s+FAILED\s+\] " + ansi_regex + test_name_regex)
 
     workers = []
     counter = Queue.Queue()
     for i in range(self.num_shards):
       counter.put(i)
 
-    # Disable stdout buffering to read shard output one character at a time.
-    # This allows for shard crashes that do not end with a "\n".
-    sys.stdout = os.fdopen(sys.stdout.fileno(), "w", 0)
-
     for i in range(self.num_runs):
-      worker = ShardRunner(self, counter, test_fail, test_timeout)
+      worker = ShardRunner(
+          self, counter, test_start, test_ok, test_fail)
       worker.start()
       workers.append(worker)
     if self.reorder:
@@ -212,10 +224,7 @@ class ShardingSupervisor(object):
       for worker in workers:
         worker.join()
 
-    # Re-enable stdout buffering.
-    sys.stdout = sys.__stdout__
-
-    return self.PrintSummary()
+    return self.PrintSummary(self.failure_log)
 
   def LogLineFailure(self, line):
     """Saves a line in the failure log to be printed at the end.
@@ -251,7 +260,7 @@ class ShardingSupervisor(object):
   def ShardIndexCompleted(self, index):
     self.shard_output[index].put(self.SHARD_COMPLETED)
 
-  def PrintSummary(self):
+  def PrintSummary(self, failed_tests):
     """Prints a summary of the test results.
 
     If any shards had failing tests, the list is sorted and printed. Then all
@@ -264,24 +273,25 @@ class ShardingSupervisor(object):
     num_failed = len(self.failed_shards)
     if num_failed > 0:
       self.failed_shards.sort()
-      if self.color:
-        sys.stderr.write("\x1b[1;5;31m")
-      sys.stderr.write("SHARDS THAT FAILED: %s\n" % str(self.failed_shards))
+      self.WriteText(sys.stderr,
+                     "FAILED SHARDS: %s\n" % str(self.failed_shards),
+                     "\x1b[1;5;31m")
     else:
-      if self.color:
-        sys.stderr.write("\x1b[1;5;32m")
-      sys.stderr.write("ALL SHARDS PASSED!\n")
-    if self.failure_log:
-      if self.color:
-        sys.stderr.write("\x1b[1;5;31m")
-      sys.stderr.write("TESTS THAT DID NOT PASS:\n")
-      if self.color:
-        sys.stderr.write("\x1b[m")
-      for line in self.failure_log:
+      self.WriteText(sys.stderr, "ALL SHARDS PASSED!\n", "\x1b[1;5;32m")
+    if failed_tests:
+      self.WriteText(sys.stderr, "FAILED TESTS:\n", "\x1b[1;5;31m")
+      for line in failed_tests:
         sys.stderr.write(line)
     if self.color:
       sys.stderr.write("\x1b[m")
     return num_failed
+
+  def WriteText(self, pipe, text, ansi):
+    if self.color:
+      pipe.write(ansi)
+    pipe.write(text)
+    if self.color:
+      pipe.write("\x1b[m")
 
 
 def main():
@@ -293,7 +303,8 @@ def main():
       "-r", "--runs_per_core", type="int", default=SS_DEFAULT_RUNS_PER_CORE,
       help="number of shards to run in parallel per CPU")
   parser.add_option(
-      "-c", "--color", action="store_true", default=sys.stdout.isatty(),
+      "-c", "--color", action="store_true",
+      default=sys.platform != "win32" and sys.stdout.isatty(),
       help="force color output, also used by gtest if --gtest_color is not"
       " specified")
   parser.add_option(
