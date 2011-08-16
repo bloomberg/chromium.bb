@@ -33,6 +33,8 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual void Flush();
   virtual void Seek();
 
+  VideoFrame::Format GetSurfaceFormat() const;
+
  private:
   void DecodeFrame(scoped_refptr<Buffer> buffer);
   void ReadInput();
