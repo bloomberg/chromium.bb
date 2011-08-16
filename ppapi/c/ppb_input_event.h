@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Thu Jul 21 16:16:00 2011. */
+/* From ppb_input_event.idl modified Tue Aug 16 09:56:44 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -206,13 +206,17 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Class, 4);
  * @addtogroup Interfaces
  * @{
  */
+/**
+ * The <code>PPB_InputEvent</code> interface contains pointers to several
+ * functions related to generic input events on the browser.
+ */
 #define PPB_INPUT_EVENT_INTERFACE_1_0 "PPB_InputEvent;1.0"
 #define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_InputEvent {
   /**
-   * Request that input events corresponding to the given input events are
-   * delivered to the instance.
+   * RequestInputEvent() requests that input events corresponding to the given
+   * input events are delivered to the instance.
    *
    * It's recommended that you use RequestFilteringInputEvents() for keyboard
    * events instead of this function so that you don't interfere with normal
@@ -230,7 +234,7 @@ struct PPB_InputEvent {
    * do optimizations for scroll or touch events that can be processed
    * substantially faster if it knows there are no non-default receivers for
    * that message. Requesting that such messages be delivered, even if they are
-   * processed very quickly, may have a noticable effect on the performance of
+   * processed very quickly, may have a noticeable effect on the performance of
    * the page.
    *
    * When requesting input events through this function, the events will be
@@ -238,29 +242,33 @@ struct PPB_InputEvent {
    * aren't interested in the message, no other parts of the page will get
    * a crack at the message.
    *
-   * Example:
+   * <strong>Example:</strong>
+   * <code>
    *   RequestInputEvents(instance, PP_INPUTEVENT_CLASS_MOUSE);
    *   RequestFilteringInputEvents(instance,
    *       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
+   * </code>
    *
    * @param instance The <code>PP_Instance</code> of the instance requesting
    * the given events.
    *
-   * @param event_classes A combination of flags from PP_InputEvent_Class that
-   * identifies the classes of events the instance is requesting. The flags
-   * are combined by logically ORing their values.
+   * @param event_classes A combination of flags from
+   * <code>PP_InputEvent_Class</code> that identifies the classes of events the
+   * instance is requesting. The flags are combined by logically ORing their
+   * values.
    *
-   * @return PP_OK if the operation succeeded, PP_ERROR_BADARGUMENT if instance
-   * is invalid, or PP_ERROR_NOTSUPPORTED if one of the event class bits were
+   * @return <code>PP_OK</code> if the operation succeeded,
+   * <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or
+   * <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were
    * illegal. In the case of an invalid bit, all valid bits will be applied
    * and only the illegal bits will be ignored. The most common cause of a
-   * PP_ERROR_NOTSUPPORTED return value is requesting keyboard events, these
-   * must use RequestFilteringInputEvents().
+   * <code>PP_ERROR_NOTSUPPORTED</code> return value is requesting keyboard
+   * events, these must use RequestFilteringInputEvents().
    */
   int32_t (*RequestInputEvents)(PP_Instance instance, uint32_t event_classes);
   /**
-   * Request that input events corresponding to the given input events are
-   * delivered to the instance for filtering.
+   * RequestFilteringInputEvents() requests that input events corresponding to
+   * the given input events are delivered to the instance for filtering.
    *
    * By default, no input events are delivered. In most cases you would
    * register to receive events by calling RequestInputEvents(). In some cases,
@@ -275,21 +283,24 @@ struct PPB_InputEvent {
    * the input event, rather than sending the input event asynchronously. This
    * can have significant overhead.
    *
-   * Example:
+   * <strong>Example:</strong>
+   * <code>
    *   RequestInputEvents(instance, PP_INPUTEVENT_CLASS_MOUSE);
    *   RequestFilteringInputEvents(instance,
    *       PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_KEYBOARD);
+   * </code>
    *
-   * @return PP_OK if the operation succeeded, PP_ERROR_BADARGUMENT if instance
-   * is invalid, or PP_ERROR_NOTSUPPORTED if one of the event class bits were
+   * @return <code>PP_OK</code> if the operation succeeded,
+   * <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or
+   * <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were
    * illegal. In the case of an invalid bit, all valid bits will be applied
    * and only the illegal bits will be ignored.
    */
   int32_t (*RequestFilteringInputEvents)(PP_Instance instance,
                                          uint32_t event_classes);
   /**
-   * Request that input events corresponding to the given input classes no
-   * longer be delivered to the instance.
+   * ClearInputEventRequest() requests that input events corresponding to the
+   * given input classes no longer be delivered to the instance.
    *
    * By default, no input events are delivered. If you have previously
    * requested input events via RequestInputEvents() or
@@ -306,37 +317,52 @@ struct PPB_InputEvent {
    * @param instance The <code>PP_Instance</code> of the instance requesting
    * to no longer receive the given events.
    *
-   * @param event_classes A combination of flags from PP_InputEvent_Class that
-   * identifies the classes of events the instance is no longer interested in.
+   * @param event_classes A combination of flags from
+   * <code>PP_InputEvent_Class</code> that identify the classes of events the
+   * instance is no longer interested in.
    */
   void (*ClearInputEventRequest)(PP_Instance instance, uint32_t event_classes);
   /**
-   * Returns true if the given resource is a valid input event resource.
+   * IsInputEvent() returns true if the given resource is a valid input event
+   * resource.
+   *
+   * @param[in] resource A <code>PP_Resource</code>.
+   *
+   * @return True if the given resource is a valid input event
+   * resource.
    */
   PP_Bool (*IsInputEvent)(PP_Resource resource);
   /**
-   * Returns the type of input event for the given input event resource.
-   * This is valid for all input events. Returns PP_INPUTEVENT_TYPE_UNDEFINED
-   * if the resource is invalid.
+   * GetType() returns the type of input event for the given input event
+   * resource.
+   *
+   * @param[in] resource A <code>PP_Resource</code> containing the input event.
+   *
+   * @return A <code>PP_InputEvent_Type</code> if its a valid input event or
+   * <code>PP_INPUTEVENT_TYPE_UNDEFINED</code> if the resource is invalid.
    */
   PP_InputEvent_Type (*GetType)(PP_Resource event);
   /**
-   * Returns the time that the event was generated. This will be before the
-   * current time since processing and dispatching the event has some overhead.
-   * Use this value to compare the times the user generated two events without
-   * being sensitive to variable processing time.
+   * GetTimeStamp() Returns the time that the event was generated. This will be
+   *  before the current time since processing and dispatching the event has
+   * some overhead. Use this value to compare the times the user generated two
+   * events without being sensitive to variable processing time.
    *
-   * The return value is in time ticks, which is a monotonically increasing
-   * clock not related to the wall clock time. It will not change if the user
-   * changes their clock or daylight savings time starts, so can be reliably
-   * used to compare events. This means, however, that you can't correlate
-   * event times to a particular time of day on the system clock.
+   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   *
+   * @return The return value is in time ticks, which is a monotonically
+   * increasing clock not related to the wall clock time. It will not change
+   * if the user changes their clock or daylight savings time starts, so can
+   * be reliably used to compare events. This means, however, that you can't
+   * correlate event times to a particular time of day on the system clock.
    */
   PP_TimeTicks (*GetTimeStamp)(PP_Resource event);
   /**
-   * Returns a bitfield indicating which modifiers were down at the time of
-   * the event. This is a combination of the flags in the
-   * PP_InputEvent_Modifier enum.
+   * GetModifiers() returns a bitfield indicating which modifiers were down
+   * at the time of the event. This is a combination of the flags in the
+   * <code>PP_InputEvent_Modifier</code> enum.
+   *
+   * @param[in] resource A <code>PP_Resource</code> containing the input event.
    *
    * @return The modifiers associated with the event, or 0 if the given
    * resource is not a valid event resource.
@@ -344,15 +370,40 @@ struct PPB_InputEvent {
   uint32_t (*GetModifiers)(PP_Resource event);
 };
 
+/**
+ * The <code>PPB_MouseInputEvent</code> interface contains pointers to several
+ * functions related to mouse input events.
+ */
 #define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0 "PPB_MouseInputEvent;1.0"
 #define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_MouseInputEvent {
   /**
-   * Creates a mouse input event with the given parameters. Normally you will
-   * get a mouse event passed through the HandleInputEvent and will not need
-   * to create them, but some applications may want to create their own for
-   * internal use. The type must be one of the mouse event types.
+   * Create() creates a mouse input event with the given parameters. Normally
+   * you will get a mouse event passed through the
+   * <code>HandleInputEvent</code> and will not need to create them, but some
+   * applications may want to create their own for internal use. The type must
+   * be one of the mouse event types.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in] modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @param[in] mouse_button The button that changed for mouse down or up
+   * events. This value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for
+   * mouse move, enter, and leave events.
+   *
+   * @param[in] mouse_position A <code>Point</code> containing the x and y
+   * position of the mouse when the event occurred.
+   *
+   * @return A <code>PP_Resource</code> containing the new mouse input event.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_InputEvent_Type type,
@@ -362,21 +413,31 @@ struct PPB_MouseInputEvent {
                         const struct PP_Point* mouse_position,
                         int32_t click_count);
   /**
-   * Determines if a resource is a mouse event.
+   * IsMouseInputEvent() determines if a resource is a mouse event.
    *
-   * @return PP_TRUE if the given resource is a valid mouse input event.
+   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   *
+   * @return <code>PP_TRUE</code> if the given resource is a valid mouse input
+   * event, otherwise <code>PP_FALSE</code>.
    */
   PP_Bool (*IsMouseInputEvent)(PP_Resource resource);
   /**
-   * Returns which mouse button generated a mouse down or up event.
+   * GetButton() returns the mouse button that generated a mouse down or up
+   * event.
+   *
+   * @param[in] mouse_event A <code>PP_Resource</code> containing the mouse
+   * event.
    *
    * @return The mouse button associated with mouse down and up events. This
-   * value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and leave
-   * events, and for all non-mouse events.
+   * value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for mouse move,
+   * enter, and leave events, and for all non-mouse events.
    */
   PP_InputEvent_MouseButton (*GetButton)(PP_Resource mouse_event);
   /**
-   * Returns the pixel location of a mouse input event.
+   * GetPosition() returns the pixel location of a mouse input event.
+   *
+   * @param[in] mouse_event A <code>PP_Resource</code> containing the mouse
+   * event.
    *
    * @return The point associated with the mouse event, relative to the upper-
    * left of the instance receiving the event. These values can be negative for
@@ -389,15 +450,38 @@ struct PPB_MouseInputEvent {
   int32_t (*GetClickCount)(PP_Resource mouse_event);
 };
 
+/**
+ * The <code>PPB_WheelIputEvent</code> interface contains pointers to several
+ * functions related to wheel input events.
+ */
 #define PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0 "PPB_WheelInputEvent;1.0"
 #define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_WheelInputEvent {
   /**
-   * Creates a wheel input event with the given parameters. Normally you will
-   * get a wheel event passed through the HandleInputEvent and will not need
-   * to create them, but some applications may want to create their own for
-   * internal use.
+   * Create() creates a wheel input event with the given parameters. Normally
+   * you will get a wheel event passed through the
+   * <code>HandleInputEvent</code> and will not need to create them, but some
+   * applications may want to create their own for internal use.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in] modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @param[in] wheel_delta The scroll wheel's horizontal and vertical scroll
+   * amounts.
+   *
+   * @param[in] wheel_ticks The number of "clicks" of the scroll wheel that
+   * have produced the event.
+   *
+   * @param[in] scroll_by_page When true, the user is requesting to scroll
+   * by pages. When false, the user is requesting to scroll by lines.
+   *
+   * @return A <code>PP_Resource</code> containing the new wheel input event.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_TimeTicks time_stamp,
@@ -406,22 +490,20 @@ struct PPB_WheelInputEvent {
                         const struct PP_FloatPoint* wheel_ticks,
                         PP_Bool scroll_by_page);
   /**
-   * Determines if a resource is a wheel event.
+   * IsWheelInputEvent() determines if a resource is a wheel event.
    *
-   * @return PP_TRUE if the given resource is a valid wheel input event.
+   * @param[in] wheel_event A <code>PP_Resource</code> containing the event.
+   *
+   * @return <code>PP_TRUE</code> if the given resource is a valid wheel input
+   * event.
    */
   PP_Bool (*IsWheelInputEvent)(PP_Resource resource);
   /**
-   * Indicates the amount vertically and horizontally the user has requested
-   * to scroll by with their mouse wheel. A scroll down or to the right (where
-   * the content moves up or left) is represented as positive values, and
-   * a scroll up or to the left (where the content moves down or right) is
-   * represented as negative values.
-   *
-   * The units are either in pixels (when scroll_by_page is false) or pages
-   * (when scroll_by_page is true). For example, y = -3 means scroll up 3
-   * pixels when scroll_by_page is false, and scroll up 3 pages when
-   * scroll_by_page is true.
+   * GetDelta() returns the amount vertically and horizontally the user has
+   * requested to scroll by with their mouse wheel. A scroll down or to the
+   * right (where the content moves up or left) is represented as positive
+   * values, and a scroll up or to the left (where the content moves down or
+   * right) is represented as negative values.
    *
    * This amount is system dependent and will take into account the user's
    * preferred scroll sensitivity and potentially also nonlinear acceleration
@@ -431,37 +513,57 @@ struct PPB_WheelInputEvent {
    * only generate integer scroll amounts. But fractional values are also
    * possible, for example, on some trackpads and newer mice that don't have
    * "clicks".
+   *
+   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * event.
+   *
+   * @return The vertical and horizontal scroll values. The units are either in
+   * pixels (when scroll_by_page is false) or pages (when scroll_by_page is
+   * true). For example, y = -3 means scroll up 3 pixels when scroll_by_page
+   * is false, and scroll up 3 pages when scroll_by_page is true.
    */
   struct PP_FloatPoint (*GetDelta)(PP_Resource wheel_event);
   /**
-   * The number of "clicks" of the scroll wheel that have produced the
-   * event. The value may have system-specific acceleration applied to it,
-   * depending on the device. The positive and negative meanings are the same
-   * as for GetWheelDelta().
+   * GetTicks() returns the number of "clicks" of the scroll wheel
+   * that have produced the event. The value may have system-specific
+   * acceleration applied to it, depending on the device. The positive and
+   * negative meanings are the same as for GetDelta().
    *
    * If you are scrolling, you probably want to use the delta values.  These
    * tick events can be useful if you aren't doing actual scrolling and don't
    * want or pixel values. An example may be cycling between different items in
    * a game.
    *
-   * You may receive fractional values for the wheel ticks if the mouse wheel
-   * is high resolution or doesn't have "clicks". If your program wants
-   * discrete events (as in the "picking items" example) you should accumulate
+   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * event.
+   *
+   * @return The number of "clicks" of the scroll wheel. You may receive
+   * fractional values for the wheel ticks if the mouse wheel is high
+   * resolution or doesn't have "clicks". If your program wants discrete
+   * events (as in the "picking items" example) you should accumulate
    * fractional click values from multiple messages until the total value
    * reaches positive or negative one. This should represent a similar amount
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
   struct PP_FloatPoint (*GetTicks)(PP_Resource wheel_event);
   /**
-   * Indicates if the scroll delta x/y indicates pages or lines to
-   * scroll by.
+   * GetScrollByPage() indicates if the scroll delta x/y indicates pages or
+   * lines to scroll by.
    *
-   * @return PP_TRUE if the event is a wheel event and the user is scrolling
-   * by pages. PP_FALSE if not or if the resource is not a wheel event.
+   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * event.
+   *
+   * @return <code>PP_TRUE</code> if the event is a wheel event and the user is
+   * scrolling by pages. <code>PP_FALSE</code> if not or if the resource is not
+   * a wheel event.
    */
   PP_Bool (*GetScrollByPage)(PP_Resource wheel_event);
 };
 
+/**
+ * The <code>PPB_KeyboardInputEvent</code> interface contains pointers to
+ * several functions related to keyboard input events.
+ */
 #define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0 "PPB_KeyboardInputEvent;1.0"
 #define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
     PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0
@@ -472,6 +574,27 @@ struct PPB_KeyboardInputEvent {
    * will get a keyboard event passed through the HandleInputEvent and will not
    * need to create them, but some applications may want to create their own
    * for internal use. The type must be one of the keyboard event types.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in]  modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @param[in] key_code This value reflects the DOM KeyboardEvent
+   * <code>keyCode</code> field. Chrome populates this with the Windows-style
+   * Virtual Key code of the key.
+   *
+   * @param[in] character_text This value represents the typed character as a
+   * UTF-8 string.
+   *
+   * @return A <code>PP_Resource</code> containing the new keyboard input
+   * event.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_InputEvent_Type type,
@@ -480,18 +603,29 @@ struct PPB_KeyboardInputEvent {
                         uint32_t key_code,
                         struct PP_Var character_text);
   /**
-   * Determines if a resource is a keyboard event.
+   * IsKeyboardInputEvent() determines if a resource is a keyboard event.
    *
-   * @return PP_TRUE if the given resource is a valid mouse input event.
+   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   *
+   * @return <code>PP_TRUE</code> if the given resource is a valid input event.
    */
   PP_Bool (*IsKeyboardInputEvent)(PP_Resource resource);
   /**
-   * Returns the DOM |keyCode| field for the keyboard event.
+   * GetKeyCode() returns the DOM keyCode field for the keyboard event.
    * Chrome populates this with the Windows-style Virtual Key code of the key.
+   *
+   * @param[in] key_event A <code>PP_Resource</code> containing the keyboard
+   * event.
+   *
+   * @return The DOM keyCode field for the keyboard event.
    */
   uint32_t (*GetKeyCode)(PP_Resource key_event);
   /**
-   * Returns the typed character for the given character event.
+   * GetCharacterText() returns the typed character as a UTF-8 string for the
+   * given character event.
+   *
+   * @param[in] character_event A <code>PP_Resource</code> containing the
+   * keyboard event.
    *
    * @return A string var representing a single typed character for character
    * input events. For non-character input events the return value will be an
