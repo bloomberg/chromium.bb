@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
@@ -44,6 +45,7 @@ int g_npobjects_alive = 0;
 
 void TrackedClassDeallocate(NPObject* npobject) {
   g_npobjects_alive--;
+  delete npobject;
 }
 
 NPClass g_tracked_npclass = {
@@ -61,7 +63,8 @@ NPClass g_tracked_npclass = {
   NULL,
 };
 
-// Returns a new tracked NPObject with a refcount of 1.
+// Returns a new tracked NPObject with a refcount of 1. You'll want to put this
+// in a NPObjectReleaser to free this ref when the test completes.
 NPObject* NewTrackedNPObject() {
   NPObject* object = new NPObject;
   object->_class = &g_tracked_npclass;
@@ -70,6 +73,17 @@ NPObject* NewTrackedNPObject() {
   g_npobjects_alive++;
   return object;
 }
+
+class ReleaseNPObject {
+ public:
+  void operator()(NPObject* o) const {
+    WebKit::WebBindings::releaseObject(o);
+  }
+};
+
+// Handles automatically releasing a reference to the NPObject on destruction.
+// It's assumed the input has a ref already taken.
+typedef scoped_ptr_malloc<NPObject, ReleaseNPObject> NPObjectReleaser;
 
 }  // namespace
 
@@ -183,7 +197,7 @@ TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.
-  scoped_ptr<NPObject> npobject(NewTrackedNPObject());
+  NPObjectReleaser npobject(NewTrackedNPObject());
   NPObjectToPPVar(instance2.get(), npobject.get());
 
   EXPECT_EQ(1, g_npobjects_alive);
@@ -197,7 +211,7 @@ TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
 // Make sure that using the same NPObject should give the same PP_Var
 // each time.
 TEST_F(ResourceTrackerTest, ReuseVar) {
-  scoped_ptr<NPObject> npobject(NewTrackedNPObject());
+  NPObjectReleaser npobject(NewTrackedNPObject());
 
   PP_Var pp_object1 = NPObjectToPPVar(instance(), npobject.get());
   PP_Var pp_object2 = NPObjectToPPVar(instance(), npobject.get());
