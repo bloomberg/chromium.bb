@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_audio_config.idl modified Tue Aug 16 10:08:33 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -63,7 +63,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
  *
  * Refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
- * Audio API Code Walkthrough</a> for information on using this interface.
+ * Audio API</a> for information on using this interface.
  */
 #define PPB_AUDIO_CONFIG_INTERFACE_0_5 "PPB_AudioConfig;0.5"
 #define PPB_AUDIO_CONFIG_INTERFACE_1_0 "PPB_AudioConfig;1.0"

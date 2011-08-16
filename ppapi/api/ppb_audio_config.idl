@@ -46,7 +46,7 @@ enum PP_AudioSampleRate {
  *
  * Refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
- * Audio API Code Walkthrough</a> for information on using this interface.
+ * Audio API</a> for information on using this interface.
  */
 [macro="PPB_AUDIO_CONFIG_INTERFACE"]
 interface PPB_AudioConfig {

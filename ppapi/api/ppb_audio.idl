@@ -27,7 +27,7 @@ typedef void PPB_Audio_Callback([out] mem_t sample_buffer,
  * The <code>PPB_Audio</code> interface contains pointers to several functions
  * for handling audio resources. Please refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
- * Audio API Code Walkthrough</a> for information on using this interface.
+ * Audio API</a> for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
  * <code>PPB_AudioConfig</code> function for more details.
  *

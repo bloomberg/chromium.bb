@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Thu Aug 11 14:14:47 2011. */
+/* From ppb_audio.idl modified Tue Aug 16 10:08:09 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -46,7 +46,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * The <code>PPB_Audio</code> interface contains pointers to several functions
  * for handling audio resources. Please refer to the
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
- * Audio API Code Walkthrough</a> for information on using this interface.
+ * Audio API</a> for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
  * <code>PPB_AudioConfig</code> function for more details.
  *
