@@ -4878,6 +4878,16 @@
    fun:_ZN12_GLOBAL__N_120GetCookiesOnIOThreadERK4GURLRK13scoped_refptrIN3net23URLRequestContextGetterEEPN4base13WaitableEventEPSs
 }
 {
+   bug_90057c
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net17URLRequestHttpJob14SaveNextCookieEv
+   fun:_ZN3net17URLRequestHttpJob35SaveCookiesAndNotifyHeadersCompleteEv
+   fun:_ZN3net17URLRequestHttpJob16OnStartCompletedEi
+   fun:_Z16DispatchToMethodIN3net17URLRequestHttpJobEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+}
+{
    bug_90212
    Memcheck:Leak
    fun:_Znw*
