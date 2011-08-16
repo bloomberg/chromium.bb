@@ -578,5 +578,11 @@ int main(int argc, char** argv) {
 
   base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
   base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
+  // Avoid CRT cleanup in debug test runs to ensure that webkit ASSERTs which
+  // check if globals are created and destroyed on the same thread don't fire.
+  // Webkit global objects are created on the inproc renderer thread.
+#if !defined(NDEBUG)
+  ExitProcess(test_suite.test_result());
+#endif  // NDEBUG
   return test_suite.test_result();
 }
