@@ -14,7 +14,7 @@
 
 namespace gfx {
 
-class GL_EXPORT GLInterface {
+class GLInterface {
  public:
   virtual ~GLInterface() {
   }

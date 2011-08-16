@@ -22,20 +22,16 @@
   'targets': [
     {
       'target_name': 'compositor',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
-      'defines': [
-        'COMPOSITOR_IMPLEMENTATION',
-      ],
       'sources': [
         'compositor.cc',
         'compositor.h',
-        'compositor_export.h',
         'compositor_gl.cc',
         'compositor_gl.h',
         'compositor_win.cc',

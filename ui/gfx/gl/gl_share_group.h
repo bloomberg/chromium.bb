@@ -10,14 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "ui/gfx/gl/gl_export.h"
 
 namespace gfx {
 
 class GLContext;
 
 // A group of GL contexts that share an ID namespace.
-class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
+class GLShareGroup : public base::RefCounted<GLShareGroup> {
  public:
   GLShareGroup();
 

@@ -10,7 +10,7 @@
   'targets': [
     {
       'target_name': 'gl',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -19,9 +19,6 @@
       'variables': {
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gl',
       },
-      'defines': [
-        'GL_IMPLEMENTATION',
-      ],
       'include_dirs': [
         '<(DEPTH)/third_party/swiftshader/include',
         '<(DEPTH)/third_party/mesa/MesaLib/include',
@@ -46,7 +43,6 @@
         'gl_context_stub.cc',
         'gl_context_stub.h',
         'gl_context_win.cc',
-        'gl_export.h',
         'gl_implementation.cc',
         'gl_implementation.h',
         'gl_implementation_linux.cc',

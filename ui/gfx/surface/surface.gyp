@@ -19,7 +19,7 @@
   'targets': [
     {
       'target_name': 'surface',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -35,14 +35,10 @@
         'accelerated_surface_wayland.h',
         'io_surface_support_mac.cc',
         'io_surface_support_mac.h',
-        'surface_export.h',
         'transport_dib.h',
         'transport_dib_linux.cc',
         'transport_dib_mac.cc',
         'transport_dib_win.cc',
-      ],
-      'defines': [
-        'SURFACE_IMPLEMENTATION',
       ],
       'conditions': [
         ['use_wayland == 1', {

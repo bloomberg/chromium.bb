@@ -26,7 +26,7 @@ class Texture;
 // NOTE: unlike Views, each Layer does *not* own its children views. If you
 // delete a Layer and it has children, the parent of each child layer is set to
 // NULL, but the children are not deleted.
-class COMPOSITOR_EXPORT Layer {
+class Layer {
  public:
   explicit Layer(Compositor* compositor);
   ~Layer();

@@ -11,7 +11,7 @@
 namespace gfx {
 
 // A GLSurface that does nothing for unit tests.
-class GL_EXPORT GLSurfaceStub : public GLSurface {
+class GLSurfaceStub : public GLSurface {
  public:
   virtual ~GLSurfaceStub();
 

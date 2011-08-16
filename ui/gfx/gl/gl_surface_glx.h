@@ -8,14 +8,13 @@
 #include "ui/gfx/gl/gl_surface.h"
 
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/gl/gl_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
 
 // Base class for GLX surfaces.
-class GL_EXPORT GLSurfaceGLX : public GLSurface {
+class GLSurfaceGLX : public GLSurface {
  public:
   GLSurfaceGLX();
   virtual ~GLSurfaceGLX();

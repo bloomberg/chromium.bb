@@ -22,7 +22,7 @@ namespace ui {
 class CompositorGL;
 class TextureProgramGL;
 
-class COMPOSITOR_EXPORT TextureGL : public Texture {
+class TextureGL : public Texture {
  public:
   explicit TextureGL(CompositorGL* compositor);
 
@@ -56,7 +56,7 @@ class COMPOSITOR_EXPORT TextureGL : public Texture {
   DISALLOW_COPY_AND_ASSIGN(TextureGL);
 };
 
-class COMPOSITOR_EXPORT CompositorGL : public Compositor {
+class CompositorGL : public Compositor {
  public:
   CompositorGL(gfx::AcceleratedWidget widget, const gfx::Size& size);
   virtual ~CompositorGL();

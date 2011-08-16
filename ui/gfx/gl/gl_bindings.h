@@ -16,7 +16,6 @@
 
 #include "build/build_config.h"
 #include "base/logging.h"
-#include "ui/gfx/gl/gl_export.h"
 
 // The standard OpenGL native extension headers are also included.
 #if defined(OS_WIN)

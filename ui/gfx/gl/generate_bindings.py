@@ -486,7 +486,7 @@ def GenerateHeader(file, functions, set_name):
   # declaration.
   file.write('\n')
   for [return_type, names, arguments] in functions:
-    file.write('GL_EXPORT extern %sProc g_%s;\n' % (names[0], names[0]))
+    file.write('extern %sProc g_%s;\n' % (names[0], names[0]))
   file.write('\n')
   file.write( '}  // namespace gfx\n')
 

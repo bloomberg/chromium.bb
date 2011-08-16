@@ -8,25 +8,23 @@
 #define UI_GFX_GL_GL_SWITCHES_H_
 #pragma once
 
-#include "ui/gfx/gl/gl_export.h"
-
 namespace gfx {
 
 // The GL implementation names that can be passed to --use-gl.
-GL_EXPORT extern const char kGLImplementationDesktopName[];
-GL_EXPORT extern const char kGLImplementationOSMesaName[];
-GL_EXPORT extern const char kGLImplementationEGLName[];
+extern const char kGLImplementationDesktopName[];
+extern const char kGLImplementationOSMesaName[];
+extern const char kGLImplementationEGLName[];
 extern const char kGLImplementationMockName[];
 
 }  // namespace gfx
 
 namespace switches {
 
-GL_EXPORT extern const char kDisableGpuVsync[];
-GL_EXPORT extern const char kEnableGPUServiceLogging[];
-GL_EXPORT extern const char kEnableGPUClientLogging[];
-GL_EXPORT extern const char kGpuNoContextLost[];
-GL_EXPORT extern const char kUseGL[];
+extern const char kDisableGpuVsync[];
+extern const char kEnableGPUServiceLogging[];
+extern const char kEnableGPUClientLogging[];
+extern const char kGpuNoContextLost[];
+extern const char kUseGL[];
 
 }  // namespace switches
 
