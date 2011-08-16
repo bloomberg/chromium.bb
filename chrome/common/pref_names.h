@@ -256,6 +256,12 @@ extern const char kEnableReferrers[];
 extern const char kPresentationModeEnabled[];
 #endif
 
+extern const char kImportBookmarks[];
+extern const char kImportHistory[];
+extern const char kImportHomepage[];
+extern const char kImportSearchEngine[];
+extern const char kImportSavedPasswords[];
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 extern const char kLocalProfileId[];
 extern const char kPasswordsUseLocalProfileId[];
@@ -514,7 +520,6 @@ extern const char kCarrierDealPromoShown[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];
-
 extern const char kDiskCacheDir[];
 
 extern const char kChromeOsReleaseChannel[];

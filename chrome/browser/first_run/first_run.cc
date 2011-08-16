@@ -57,6 +57,56 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
   return ProfileManager::GetProfilePrefsPath(default_pref_dir);
 }
 
+// Sets the |items| bitfield according to whether the import data specified by
+// |import_type| should be be auto imported or not.
+void SetImportItem(PrefService* user_prefs,
+                   const char* pref_path,
+                   int import_items,
+                   int dont_import_items,
+                   importer::ImportItem import_type,
+                   int& items) {
+  // Work out whether an item is to be imported according to what is specified
+  // in master preferences.
+  bool should_import = false;
+  bool master_pref_set =
+      ((import_items | dont_import_items) & import_type) != 0;
+  bool master_pref = ((import_items & ~dont_import_items) & import_type) != 0;
+
+  if (import_type == importer::HISTORY ||
+      ((import_type != importer::FAVORITES) &&
+      FirstRun::IsOrganicFirstRun())) {
+    // History is always imported unless turned off in master_preferences.
+    // Search engines are only imported in certain builds unless overridden
+    // in master_preferences.Home page is imported in organic builds only unless
+    // turned off in master_preferences.
+    should_import = !master_pref_set || master_pref;
+  } else {
+    // Bookmarks are never imported, unless turned on in master_preferences.
+    // Search engine and home page import behaviour is similar in non organic
+    // builds.
+    should_import = master_pref_set && master_pref;
+  }
+
+  // If an import policy is set, import items according to policy. If no master
+  // preference is set, but a corresponding recommended policy is set, import
+  // item according to recommended policy. If both a master preference and a
+  // recommended policy is set, the master preference wins. If neither
+  // recommended nor managed policies are set, import item according to what we
+  // worked out above.
+  if (master_pref_set)
+    user_prefs->SetBoolean(pref_path, should_import);
+
+  if (!user_prefs->FindPreference(pref_path)->IsDefaultValue()) {
+    if (user_prefs->GetBoolean(pref_path))
+      items |= import_type;
+  } else { // no policy (recommended or managed) is set
+    if (should_import)
+      items |= import_type;
+  }
+
+  user_prefs->ClearPref(pref_path);
+}
+
 }  // namespace
 
 // FirstRun -------------------------------------------------------------------
@@ -105,7 +155,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
     return true;
   master_prefs = master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
-
   installer::MasterPreferences prefs(master_prefs);
   if (!prefs.read_from_file())
     return true;
@@ -227,8 +276,11 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // Bookmarks are never imported unless specifically turned on.
   if (prefs.GetBool(
           installer::master_preferences::kDistroImportBookmarksPref,
-          &value) && value) {
-    out_prefs->do_import_items |= importer::FAVORITES;
+          &value)) {
+    if (value)
+      out_prefs->do_import_items |= importer::FAVORITES;
+    else
+      out_prefs->dont_import_items |= importer::FAVORITES;
   }
 
   if (prefs.GetBool(
@@ -523,33 +575,49 @@ void FirstRun::AutoImport(
     importer_host->set_headless();
     int items = 0;
 
-    // History is always imported unless turned off in master_preferences.
-    if (!(dont_import_items & importer::HISTORY))
-      items = items | importer::HISTORY;
-    // Home page is imported in organic builds only unless turned off or
-    // defined in master_preferences.
     if (IsOrganicFirstRun()) {
-      if (!(dont_import_items & importer::HOME_PAGE) && !homepage_defined)
-        items = items | importer::HOME_PAGE;
-    } else {
-      if (import_items & importer::HOME_PAGE)
-        items = items | importer::HOME_PAGE;
-    }
-    // Search engines are only imported in certain builds unless overridden
-    // in master_preferences. Search engines are not imported automatically
-    // if the user already has a user preferences directory.
-    if (IsOrganicFirstRun()) {
-      if (!(dont_import_items & importer::SEARCH_ENGINES) &&
-          !local_state_file_exists) {
-        items = items | importer::SEARCH_ENGINES;
+      // Home page is imported in organic builds only unless turned off or
+      // defined in master_preferences.
+      if (homepage_defined) {
+        dont_import_items |= importer::HOME_PAGE;
+        if (import_items & importer::HOME_PAGE)
+          import_items &= ~importer::HOME_PAGE;
       }
-    } else if (import_items & importer::SEARCH_ENGINES) {
-        items = items | importer::SEARCH_ENGINES;
+      // Search engines are not imported automatically in organic builds if the
+      // user already has a user preferences directory.
+      if (local_state_file_exists) {
+        dont_import_items |= importer::SEARCH_ENGINES;
+        if (import_items & importer::SEARCH_ENGINES)
+          import_items &= ~importer::SEARCH_ENGINES;
+      }
     }
 
-    // Bookmarks are never imported, unless turned on in master_preferences.
-    if (import_items & importer::FAVORITES)
-      items = items | importer::FAVORITES;
+    PrefService* user_prefs = profile->GetPrefs();
+
+    SetImportItem(user_prefs,
+                  prefs::kImportHistory,
+                  import_items,
+                  dont_import_items,
+                  importer::HISTORY,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportHomepage,
+                  import_items,
+                  dont_import_items,
+                  importer::HOME_PAGE,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportSearchEngine,
+                  import_items,
+                  dont_import_items,
+                  importer::SEARCH_ENGINES,
+                  items);
+    SetImportItem(user_prefs,
+                  prefs::kImportBookmarks,
+                  import_items,
+                  dont_import_items,
+                  importer::FAVORITES,
+                  items);
 
     ImportSettings(profile, importer_host, importer_list, items);
   }

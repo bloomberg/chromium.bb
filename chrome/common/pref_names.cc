@@ -747,6 +747,26 @@ const char kEnableReferrers[] = "enable_referrers";
 const char kPresentationModeEnabled[] = "presentation_mode_enabled";
 #endif
 
+// Boolean that specifies whether to import bookmarks from the default browser
+// on first run.
+const char kImportBookmarks[] = "import_bookmarks";
+
+// Boolean that specifies whether to import the browsing history from the
+// default browser on first run.
+const char kImportHistory[] = "import_history";
+
+// Boolean that specifies whether to import the homepage from the default
+// browser on first run.
+const char kImportHomepage[] = "import_home_page";
+
+// Boolean that specifies whether to import the search engine from the default
+// browser on first run.
+const char kImportSearchEngine[] = "import_search_engine";
+
+// Boolean that specifies whether to import the saved passwords from the default
+// browser on first run.
+const char kImportSavedPasswords[] = "import_saved_passwords";
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 const char kLocalProfileId[] = "profile.local_profile_id";

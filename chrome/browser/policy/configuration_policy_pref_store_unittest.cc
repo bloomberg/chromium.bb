@@ -238,7 +238,17 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyAllowFileSelectionDialogs,
                     prefs::kAllowFileSelectionDialogs),
         TypeAndName(kPolicyAllowCrossOriginAuthPrompt,
-                    prefs::kAllowCrossOriginAuthPrompt)));
+                    prefs::kAllowCrossOriginAuthPrompt),
+        TypeAndName(kPolicyImportBookmarks,
+                    prefs::kImportBookmarks),
+        TypeAndName(kPolicyImportHistory,
+                    prefs::kImportHistory),
+        TypeAndName(kPolicyImportHomepage,
+                    prefs::kImportHomepage),
+        TypeAndName(kPolicyImportSearchEngine,
+                    prefs::kImportSearchEngine),
+        TypeAndName(kPolicyImportSavedPasswords,
+                    prefs::kImportSavedPasswords)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

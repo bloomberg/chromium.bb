@@ -102,8 +102,7 @@ cr.define('options', function() {
      * @private
      */
     setUpCheckboxState_: function(checkbox, enabled) {
-      checkbox.disabled = !enabled;
-      checkbox.checked = enabled;
+       checkbox.setDisabled("noProfileData", !enabled);
     },
 
     /**
@@ -118,8 +117,8 @@ cr.define('options', function() {
       var importOptions = ['history', 'favorites', 'passwords', 'search'];
       for (var i = 0; i < importOptions.length; i++) {
         var checkbox = $('import-' + importOptions[i]);
-        this.setUpCheckboxState_(checkbox,
-            browserProfile ? browserProfile[importOptions[i]] : false);
+        var enable = browserProfile && browserProfile[importOptions[i]];
+        this.setUpCheckboxState_(checkbox, enable);
       }
     },
 
@@ -152,6 +151,25 @@ cr.define('options', function() {
         this.validateCommitButton_();
       }
     },
+
+    /**
+    * Clear import prefs set when user checks/unchecks a checkbox so that each
+    * checkbox goes back to the default "checked" state (or alternatively, to
+    * the state set by a recommended policy).
+    * @private
+    */
+    clearUserPrefs_: function() {
+      var importPrefs = ['import_history',
+                         'import_bookmarks',
+                         'import_saved_passwords',
+                         'import_search_engine'];
+      for (var i = 0; i < importPrefs.length; i++)
+        Preferences.clearPref(importPrefs[i], undefined);
+    },
+  };
+
+  ImportDataOverlay.clearUserPrefs = function() {
+    ImportDataOverlay.getInstance().clearUserPrefs_();
   };
 
   /**
@@ -167,15 +185,12 @@ cr.define('options', function() {
    * @param {boolean} state True if an import operation is in progress.
    */
   ImportDataOverlay.setImportingState = function(state) {
-    if (state) {
-      var checkboxes =
-          document.querySelectorAll('#import-checkboxes input[type=checkbox]');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].disabled = true;
-      }
-    } else {
+    var checkboxes =
+        document.querySelectorAll('#import-checkboxes input[type=checkbox]');
+    for (var i = 0; i < checkboxes.length; i++)
+        checkboxes[i].setDisabled("Importing", state);
+    if (!state)
       ImportDataOverlay.getInstance().updateCheckboxes_();
-    }
     $('import-browsers').disabled = state;
     $('import-throbber').style.visibility = state ? "visible" : "hidden";
     ImportDataOverlay.getInstance().validateCommitButton_();
@@ -185,6 +200,7 @@ cr.define('options', function() {
    * Remove the import overlay from display.
    */
   ImportDataOverlay.dismiss = function() {
+    ImportDataOverlay.clearUserPrefs();
     OptionsPage.closeOverlay();
   };
 

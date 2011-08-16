@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 96
+#   For your editing convenience: highest ID currently used: 101
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1667,6 +1667,61 @@
       'desc': '''Specifies the release channel that this device should be locked to. This policy is a work in progress; currently, the user can still change the release channel even if it's specified by the policy.'''
     },
     {
+      'name': 'ImportBookmarks',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 97,
+      'caption': '''Import bookmarks from default browser on first run''',
+      'desc': '''This policy forces bookmarks to be imported from the current default browser if enabled. If disabled, no bookmarks are imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'label': '''Import bookmarks from default browser on first run''',
+    },
+    {
+      'name': 'ImportHistory',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 98,
+      'caption': '''Import browsing history from default browser on first run''',
+      'desc': '''This policy forces the browsing history to be imported from the current default browser if enabled. If disabled, no browsing history is imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'label': '''Import browsing history from default browser on first run''',
+    },
+    {
+      'name': 'ImportHomepage',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 99,
+      'caption': '''Import of homepage from default browser on first run''',
+      'desc': '''This policy forces the home page to be imported from the current default browser if enabled. If disabled, the home page is not imported. If it is not configured, the default behaviour is used.''',
+      'label': '''Import of homepage from default browser on first run''',
+    },
+    {
+      'name': 'ImportSearchEngine',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 100,
+      'caption': '''Import search engines from default browser on first run''',
+      'desc': '''This policy forces search engines to be imported from the current default browser if enabled. If disabled, the default search engine is not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'label': '''Import search engines from default browser on first run''',
+    },
+    {
+      'name': 'ImportSavedPasswords',
+      'type': 'main',
+      'supported_on': ['chrome.*:15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 101,
+      'caption': '''Import saved passwords from default browser on first run''',
+      'desc': '''This policy forces the saved passwords to be imported from the previous default browser if enabled. If disabled, the saved passwords are not imported. If it is not configured, the default behaviour is used. If enabled, this policy also affects the import dialog.''',
+      'label': '''Import saved passwords from default browser on first run''',
+    },
+    {
       'name': 'MaxConnectionsPerProxy',
       'type': 'int',
       'supported_on': ['chrome_os:1.0-','chrome.*:14-'],
@@ -1692,7 +1747,6 @@
       'caption': '''Prevent app promotions from appearing on the new tab page''',
       'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.''',
     },
-
   ],
   'messages': {
     # Messages that are not associated to any policies.

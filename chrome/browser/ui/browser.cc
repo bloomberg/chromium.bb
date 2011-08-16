@@ -2249,6 +2249,22 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
                                 PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kImportBookmarks,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kImportHistory,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kImportHomepage,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kImportSearchEngine,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,

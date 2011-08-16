@@ -15,12 +15,14 @@
 #include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/importer/toolbar_importer_utils.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -109,6 +111,18 @@ void ImporterHost::StartImportSettings(
   DCHECK(target_profile);
 
   profile_ = target_profile;
+  PrefService* user_prefs = profile_->GetPrefs();
+
+  // Make sure only items that were not disabled by policy are imported.
+  if (!user_prefs->GetBoolean(prefs::kImportHistory))
+    items &= ~importer::HISTORY;
+  if (!user_prefs->GetBoolean(prefs::kImportSearchEngine))
+    items &= ~importer::SEARCH_ENGINES;
+  if (!user_prefs->GetBoolean(prefs::kImportBookmarks))
+    items &= ~importer::FAVORITES;
+  if (!user_prefs->GetBoolean(prefs::kImportSavedPasswords))
+    items &= ~importer::PASSWORDS;
+
   // Preserves the observer and creates a task, since we do async import so that
   // it doesn't block the UI. When the import is complete, observer will be
   // notified.
