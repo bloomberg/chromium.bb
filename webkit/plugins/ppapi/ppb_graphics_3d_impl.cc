@@ -62,26 +62,24 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 
 // static
 PP_Resource PPB_Graphics3D_Impl::Create(PluginInstance* instance,
-                                        PP_Config3D_Dev config,
                                         PP_Resource share_context,
                                         const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
 
-  if (!graphics_3d->Init(config, share_context, attrib_list))
+  if (!graphics_3d->Init(share_context, attrib_list))
     return 0;
 
   return graphics_3d->GetReference();
 }
 
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(PluginInstance* instance,
-                                           PP_Config3D_Dev config,
                                            PP_Resource share_context,
                                            const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
 
-  if (!graphics_3d->InitRaw(config, share_context, attrib_list))
+  if (!graphics_3d->InitRaw(share_context, attrib_list))
     return 0;
 
   return graphics_3d->GetReference();
@@ -172,10 +170,9 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   return PP_OK_COMPLETIONPENDING;
 }
 
-bool PPB_Graphics3D_Impl::Init(PP_Config3D_Dev config,
-                               PP_Resource share_context,
+bool PPB_Graphics3D_Impl::Init(PP_Resource share_context,
                                const int32_t* attrib_list) {
-  if (!InitRaw(config, share_context, attrib_list))
+  if (!InitRaw(share_context, attrib_list))
     return false;
 
   gpu::CommandBuffer* command_buffer = GetCommandBuffer();
@@ -185,8 +182,7 @@ bool PPB_Graphics3D_Impl::Init(PP_Config3D_Dev config,
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize);
 }
 
-bool PPB_Graphics3D_Impl::InitRaw(PP_Config3D_Dev config,
-                                  PP_Resource share_context,
+bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
                                   const int32_t* attrib_list) {
   // TODO(alokp): Support shared context.
   DCHECK_EQ(0, share_context);

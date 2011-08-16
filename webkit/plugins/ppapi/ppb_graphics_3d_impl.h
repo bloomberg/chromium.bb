@@ -19,11 +19,9 @@ class PPB_Graphics3D_Impl : public Resource,
   virtual ~PPB_Graphics3D_Impl();
 
   static PP_Resource Create(PluginInstance* instance,
-                            PP_Config3D_Dev config,
                             PP_Resource share_context,
                             const int32_t* attrib_list);
   static PP_Resource CreateRaw(PluginInstance* instance,
-                               PP_Config3D_Dev config,
                                PP_Resource share_context,
                                const int32_t* attrib_list);
 
@@ -67,11 +65,9 @@ class PPB_Graphics3D_Impl : public Resource,
  private:
   explicit PPB_Graphics3D_Impl(PluginInstance* instance);
 
-  bool Init(PP_Config3D_Dev config,
-            PP_Resource share_context,
+  bool Init(PP_Resource share_context,
             const int32_t* attrib_list);
-  bool InitRaw(PP_Config3D_Dev config,
-               PP_Resource share_context,
+  bool InitRaw(PP_Resource share_context,
                const int32_t* attrib_list);
 
   // Notifications received from the GPU process.

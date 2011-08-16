@@ -71,7 +71,6 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   static const Info* GetInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         PP_Config3D_Dev config,
                                          PP_Resource share_context,
                                          const int32_t* attrib_list);
 
@@ -84,7 +83,6 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
 
  private:
   void OnMsgCreate(PP_Instance instance,
-                   PP_Config3D_Dev config,
                    const std::vector<int32_t>& attribs,
                    ppapi::HostResource* result);
   void OnMsgInitCommandBuffer(const ppapi::HostResource& context,

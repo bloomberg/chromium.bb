@@ -152,13 +152,13 @@ int32_t PPB_Context3D_Impl::BindSurfacesImpl(PPB_Surface3D_Impl* new_draw,
   // TODO(alokp): Support separate draw-read surfaces.
   DCHECK_EQ(new_draw, new_read);
   if (new_draw != new_read)
-    return PP_GRAPHICS3DERROR_BAD_MATCH;
+    return PP_ERROR_NOTSUPPORTED;
 
   if (new_draw == draw_surface_)
     return PP_OK;
 
   if (new_draw && new_draw->context())
-    return PP_GRAPHICS3DERROR_BAD_ACCESS;  // Already bound.
+    return PP_ERROR_BADARGUMENT;  // Already bound.
 
   if (draw_surface_)
     draw_surface_->BindToContext(NULL);
@@ -302,7 +302,7 @@ bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
     PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, 0,
     PP_GRAPHICS3DATTRIB_HEIGHT, 1,
     PP_GRAPHICS3DATTRIB_WIDTH, 1,
-    PP_GRAPHICS3DATTRIBVALUE_NONE,
+    PP_GRAPHICS3DATTRIB_NONE,
   };
   if (!platform_context_->Init(kAttribs)) {
     Destroy();

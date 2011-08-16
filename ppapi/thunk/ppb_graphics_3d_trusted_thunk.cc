@@ -21,14 +21,13 @@ PP_Graphics3DTrustedState GetErrorState() {
 }
 
 PP_Resource CreateRaw(PP_Instance instance,
-                      PP_Config3D_Dev config,
                       PP_Resource share_context,
                       const int32_t* attrib_list) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateGraphics3DRaw(
-      instance, config, share_context, attrib_list);
+      instance, share_context, attrib_list);
 }
 
 PP_Bool InitCommandBuffer(PP_Resource context, int32_t size) {

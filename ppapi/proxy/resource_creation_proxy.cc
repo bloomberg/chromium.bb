@@ -251,16 +251,14 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
 
 PP_Resource ResourceCreationProxy::CreateGraphics3D(
     PP_Instance instance,
-    PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
   return PPB_Graphics3D_Proxy::CreateProxyResource(
-      instance, config, share_context, attrib_list);
+      instance, share_context, attrib_list);
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
     PP_Instance instance,
-    PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
   // Not proxied. The raw creation function is used only in the implementation

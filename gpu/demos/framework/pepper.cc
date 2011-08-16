@@ -88,7 +88,7 @@ class PluginInstance : public pp::Instance {
         PP_GRAPHICS3DATTRIB_HEIGHT, size_.height(),
         PP_GRAPHICS3DATTRIB_NONE
     };
-    context_ = pp::Graphics3D_Dev(*this, 0, pp::Graphics3D_Dev(), attribs);
+    context_ = pp::Graphics3D_Dev(*this, pp::Graphics3D_Dev(), attribs);
     if (context_.is_null())
       return;
 

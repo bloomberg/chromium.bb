@@ -182,20 +182,16 @@ PP_Resource ResourceCreationImpl::CreateGraphics2D(
 
 PP_Resource ResourceCreationImpl::CreateGraphics3D(
     PP_Instance instance,
-    PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
-  return PPB_Graphics3D_Impl::Create(instance_, config, share_context,
-                                     attrib_list);
+  return PPB_Graphics3D_Impl::Create(instance_, share_context, attrib_list);
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Instance instance,
-    PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
-  return PPB_Graphics3D_Impl::CreateRaw(instance_, config, share_context,
-                                        attrib_list);
+  return PPB_Graphics3D_Impl::CreateRaw(instance_, share_context, attrib_list);
 }
 
 PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance pp_instance,

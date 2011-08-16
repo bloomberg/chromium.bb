@@ -24,40 +24,17 @@ Graphics3D_Dev::Graphics3D_Dev() {
 }
 
 Graphics3D_Dev::Graphics3D_Dev(const Instance& instance,
-                               PP_Config3D_Dev config,
                                const Graphics3D_Dev& share_context,
                                const int32_t* attrib_list) {
   if (has_interface<PPB_Graphics3D_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D_Dev>()->Create(
         instance.pp_instance(),
-        config,
         share_context.pp_resource(),
         attrib_list));
   }
 }
 
 Graphics3D_Dev::~Graphics3D_Dev() {
-}
-
-// static
-int32_t Graphics3D_Dev::GetConfigs(int32_t *configs,
-                                   int32_t config_size,
-                                   int32_t *num_config) {
-  if (!has_interface<PPB_Graphics3D_Dev>())
-    return PP_ERROR_NOINTERFACE;
-
-  return get_interface<PPB_Graphics3D_Dev>()->GetConfigs(
-      configs, config_size, num_config);
-}
-
-// static
-int32_t Graphics3D_Dev::GetConfigAttribs(PP_Config3D_Dev config,
-                                         int32_t* attrib_list) {
-  if (!has_interface<PPB_Graphics3D_Dev>())
-    return PP_ERROR_NOINTERFACE;
-
-  return get_interface<PPB_Graphics3D_Dev>()->GetConfigAttribs(
-      config, attrib_list);
 }
 
 // static

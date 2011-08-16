@@ -20,18 +20,10 @@ class Graphics3D_Dev : public Resource {
   Graphics3D_Dev();
 
   Graphics3D_Dev(const Instance& instance,
-                 PP_Config3D_Dev config,
                  const Graphics3D_Dev& share_context,
                  const int32_t* attrib_list);
 
   ~Graphics3D_Dev();
-
-  static int32_t GetConfigs(PP_Config3D_Dev* configs,
-                            int32_t config_size,
-                            int32_t* num_config);
-
-  static int32_t GetConfigAttribs(PP_Config3D_Dev config,
-                                  int32_t* attrib_list);
 
   static Var GetString(int32_t name);
 

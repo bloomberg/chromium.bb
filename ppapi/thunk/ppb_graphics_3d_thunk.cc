@@ -17,32 +17,19 @@ namespace {
 
 typedef EnterResource<PPB_Graphics3D_API> EnterGraphics3D;
 
-int32_t GetConfigs(PP_Config3D_Dev* configs,
-                   int32_t config_size,
-                   int32_t* num_config) {
-  // TODO(alokp): Implement me.
-  return PP_ERROR_FAILED;
-}
-
-int32_t GetConfigAttribs(PP_Config3D_Dev config, int32_t* attrib_list) {
-  // TODO(alokp): Implement me.
-  return PP_ERROR_FAILED;
-}
-
 PP_Var GetString(int32_t name) {
   // TODO(alokp): Implement me.
   return PP_MakeUndefined();
 }
 
 PP_Resource Create(PP_Instance instance,
-                   PP_Config3D_Dev config,
                    PP_Resource share_context,
                    const int32_t* attrib_list) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateGraphics3D(instance, config, share_context,
-                                             attrib_list);
+  return enter.functions()->CreateGraphics3D(
+      instance, share_context, attrib_list);
 }
 
 PP_Bool IsGraphics3D(PP_Resource resource) {
@@ -80,8 +67,6 @@ int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
 }
 
 const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
-  &GetConfigs,
-  &GetConfigAttribs,
   &GetString,
   &Create,
   &IsGraphics3D,

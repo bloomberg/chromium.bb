@@ -420,7 +420,6 @@ const InterfaceProxy::Info* PPB_Graphics3D_Proxy::GetInfo() {
 // static
 PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
     PP_Instance instance,
-    PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
@@ -445,7 +444,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(
-      INTERFACE_ID_PPB_GRAPHICS_3D, instance, config, attribs, &result));
+      INTERFACE_ID_PPB_GRAPHICS_3D, instance, attribs, &result));
   if (result.is_null())
     return 0;
 
@@ -488,7 +487,6 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
-                                       PP_Config3D_Dev config,
                                        const std::vector<int32_t>& attribs,
                                        HostResource* result) {
   if (attribs.empty() || attribs.back() != PP_GRAPHICS3DATTRIB_NONE)
@@ -498,8 +496,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
   if (enter.succeeded()) {
     result->SetHostResource(
         instance,
-        enter.functions()->CreateGraphics3DRaw(instance, config, 0,
-                                               &attribs.front()));
+        enter.functions()->CreateGraphics3DRaw(instance, 0, &attribs.front()));
   }
 }
 

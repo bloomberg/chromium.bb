@@ -399,7 +399,7 @@ int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
   // TODO(alokp): Support separate draw-read surfaces.
   DCHECK_EQ(pp_draw, pp_read);
   if (pp_draw != pp_read)
-    return PP_GRAPHICS3DERROR_BAD_MATCH;
+    return PP_ERROR_BADARGUMENT;
 
   EnterResourceNoLock<PPB_Surface3D_API> enter_draw(pp_draw, false);
   EnterResourceNoLock<PPB_Surface3D_API> enter_read(pp_read, false);

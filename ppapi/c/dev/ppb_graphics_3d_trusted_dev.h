@@ -55,7 +55,6 @@ struct PPB_Graphics3DTrusted_Dev {
   // Creates a raw Graphics3D resource. A raw Graphics3D is intended to be used
   // with the trusted interface, through the command buffer (for proxying).
   PP_Resource (*CreateRaw)(PP_Instance instance_id,
-                           PP_Config3D_Dev config,
                            PP_Resource share_context,
                            const int32_t* attrib_list);
 
