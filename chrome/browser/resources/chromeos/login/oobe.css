@@ -646,23 +646,24 @@ body.login-display #progress {
   -webkit-padding-end: 20px;
   -webkit-padding-start: 2px;
   -webkit-user-select: none;
+  -webkit-box-align: start;
   background-image: url('../../shared/images/select.png'),
                     -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   background-position: center right;
   background-repeat: no-repeat;
   border: 1px solid #aaa;
   color: #555;
+  display: -webkit-box;
   font-size: inherit;
-  height: 24px;
+  height: 20px;
   margin: 0;
   overflow: hidden;
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding-top: 1px;
+  padding-bottom: 1px;
   text-overflow: ellipsis;
   text-align: left;  
   text-indent: 4px;
   white-space: nowrap;
-  width: 250px;
   z-index: 10;
 }
 
@@ -675,11 +676,13 @@ body.login-display #progress {
   background-repeat: no-repeat;
 }
 
-.dropdown-title:active {
-  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-  background-image: url('../../shared/images/select.png'),
-                    -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
-  color: #444;
+.dropdown-title img {
+  height: 20px;
+  maring-top: -1px;
+}
+
+.dropdown-title div {
+  margin-top: 1px;
 }
 
 .dropdown-container {

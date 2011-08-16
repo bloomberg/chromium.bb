@@ -99,8 +99,8 @@ cr.define('oobe', function() {
      * @param {string} icon Icon in dataURL format.
      */
     setTitle: function(title, icon) {
-      // TODO(nkostylev): Icon support for dropdown title.
-      this.titleButton.textContent = title;
+      this.titleButton.firstElementChild.src = icon;
+      this.titleButton.lastElementChild.textContent = title;
     },
 
     /**
@@ -172,6 +172,7 @@ cr.define('oobe', function() {
           item.controller.isShown = false;
           if (item.iid >= 0)
             chrome.send('networkItemChosen', [item.iid]);
+          this.parentNode.parentNode.titleButton.focus();
         });
         wrapperDiv.addEventListener('mouseover', function f(e) {
           this.parentNode.selectItem(this);
@@ -205,23 +206,37 @@ cr.define('oobe', function() {
      * @private
      */
     createTitle_: function() {
-      var el = this.ownerDocument.createElement('button');
+      var image = this.ownerDocument.createElement('img');
+      var text = this.ownerDocument.createElement('div');
+
+      var el = this.ownerDocument.createElement('div');
+      el.appendChild(image);
+      el.appendChild(text);
+
+      el.tabIndex = 0;
       el.classList.add('dropdown-title');
       el.iid = -1;
       el.controller = this;
-      el.enterPressed = false;
+      el.inFocus = false;
+      el.opening = false;
 
       el.addEventListener('click', function f(e) {
-        this.focus();
         this.controller.isShown = !this.controller.isShown;
+      });
 
-        if (this.enterPressed) {
-          this.enterPressed = false;
-          if (!this.controller.isShown) {
-            var item = this.controller.container.selectedItem.lastElementChild;
-            if (item.iid >= 0 && !item.classList.contains('disabled-item'))
-              chrome.send('networkItemChosen', [item.iid]);
-          }
+      el.addEventListener('focus', function(e) {
+        this.inFocus = true;
+      });
+
+      el.addEventListener('blur', function(e) {
+        this.inFocus = false;
+      });
+
+      el.addEventListener('keydown', function f(e) {
+        if (this.inFocus && !this.controller.isShown && e.keyCode == 13) {
+          // Enter has been pressed.
+          this.opening = true;
+          this.controller.isShown = true;
         }
       });
       return el;
@@ -264,7 +279,17 @@ cr.define('oobe', function() {
           break;
         }
         case 13: {  // Enter.
-          this.titleButton.enterPressed = true;
+          var button = this.titleButton;
+          if (!button.opening) {
+            button.focus();
+            this.isShown = false;
+            var item =
+                button.controller.container.selectedItem.lastElementChild;
+            if (item.iid >= 0 && !item.classList.contains('disabled-item'))
+              chrome.send('networkItemChosen', [item.iid]);
+          } else {
+            button.opening = false;
+          }
           break;
         }
       };
