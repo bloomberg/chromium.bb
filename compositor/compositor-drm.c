@@ -681,6 +681,8 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	struct drm_compositor *c = (struct drm_compositor *) ec;
 	struct gbm_bo *bo;
 	EGLImageKHR image;
+	uint32_t *pixels;
+	GLuint tex;
 
 	if (width > 64 || height > 64)
 		return EGL_NO_IMAGE_KHR;
@@ -693,6 +695,26 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 	image = ec->create_image(c->base.display, NULL,
 				 EGL_NATIVE_PIXMAP_KHR, bo, NULL);
 	gbm_bo_destroy(bo);
+
+	/* If the requested size is smaller than the allocated one, make the
+	 * whole image transparent. */
+	if (width != 64 || height != 64) {
+		pixels = calloc(64 * 64, sizeof *pixels);
+
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		c->base.image_target_texture_2d(GL_TEXTURE_2D, image);
+		glTexSubImage(GL_TEXTURE_2D, 0, 0, 0, 64, 64,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
+
+		glDeleteTextures(1, &tex);
+		free(pixels);
+	}
 
 	return image;
 }
