@@ -23,30 +23,21 @@ namespace remoting {
 // thread. This is neccessary so that DesktopEnvironment can be
 // deleted synchronously even while there are pending tasks on the
 // message queue.
-//
-// TODO(sergeyu): Merge this code with remoting::TaskThreadProxy. The
-// problem solved by this class is very simular to the one solved by
-// ScopedRunnableMethodFactory. The main difference is that this class
-// is thread-safe. Change the interface to make it look more like
-// ScopedRunnableMethodFactory and rename it to avoid confusion with
-// MessageLoopProxy.
 class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
  public:
-  UIThreadProxy(base::MessageLoopProxy* message_loop)
-      : message_loop_(message_loop) {
+  UIThreadProxy(ChromotingHostContext* context)
+      : context_(context) {
   }
 
-  // TODO(sergeyu): Rename this method.
   void Detach() {
-    DCHECK(message_loop_->BelongsToCurrentThread());
-    message_loop_ = NULL;
+    DCHECK(context_->IsUIThread());
+    context_ = NULL;
   }
 
   void CallOnUIThread(const tracked_objects::Location& from_here,
                       const base::Closure& closure) {
-    scoped_refptr<base::MessageLoopProxy> message_loop = message_loop_;
-    if (message_loop) {
-      message_loop->PostTask(from_here, base::Bind(
+    if (context_) {
+      context_->PostTaskToUIThread(from_here, base::Bind(
           &UIThreadProxy::CallClosure, this, closure));
     }
   }
@@ -54,9 +45,8 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
   void CallOnUIThreadDelayed(const tracked_objects::Location& from_here,
                              const base::Closure& closure,
                              int delay_ms) {
-    scoped_refptr<base::MessageLoopProxy> message_loop = message_loop_;
-    if (message_loop) {
-      message_loop->PostDelayedTask(from_here, base::Bind(
+    if (context_) {
+      context_->PostDelayedTaskToUIThread(from_here, base::Bind(
           &UIThreadProxy::CallClosure, this, closure), delay_ms);
     }
   }
@@ -67,11 +57,11 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
   virtual ~UIThreadProxy() { }
 
   void CallClosure(const base::Closure& closure) {
-    if (message_loop_)
+    if (context_)
       closure.Run();
   }
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  ChromotingHostContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(UIThreadProxy);
 };
@@ -108,14 +98,14 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       local_input_monitor_(local_input_monitor),
       is_monitoring_local_inputs_(false),
       continue_timer_started_(false),
-      proxy_(new UIThreadProxy(context->ui_message_loop())) {
+      proxy_(new UIThreadProxy(context)) {
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
 }
 
 void DesktopEnvironment::Shutdown() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
@@ -141,7 +131,7 @@ void DesktopEnvironment::OnPause(bool pause) {
 }
 
 void DesktopEnvironment::ProcessOnConnect(const std::string& username) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   MonitorLocalInputs(true);
   ShowDisconnectWindow(true, username);
@@ -149,7 +139,7 @@ void DesktopEnvironment::ProcessOnConnect(const std::string& username) {
 }
 
 void DesktopEnvironment::ProcessOnLastDisconnect() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
@@ -162,7 +152,7 @@ void DesktopEnvironment::ProcessOnPause(bool pause) {
 }
 
 void DesktopEnvironment::MonitorLocalInputs(bool enable) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   if (enable == is_monitoring_local_inputs_)
     return;
@@ -176,7 +166,7 @@ void DesktopEnvironment::MonitorLocalInputs(bool enable) {
 
 void DesktopEnvironment::ShowDisconnectWindow(bool show,
                                               const std::string& username) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   if (show) {
     disconnect_window_->Show(host_, username);
@@ -186,7 +176,7 @@ void DesktopEnvironment::ShowDisconnectWindow(bool show,
 }
 
 void DesktopEnvironment::ShowContinueWindow(bool show) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   if (show) {
     continue_window_->Show(host_);
@@ -196,7 +186,7 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 }
 
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   if (start && !continue_timer_started_) {
     continue_timer_target_time_ = base::Time::Now() +
@@ -211,7 +201,7 @@ void DesktopEnvironment::StartContinueWindowTimer(bool start) {
 }
 
 void DesktopEnvironment::ContinueWindowTimerFunc() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(context_->IsUIThread());
 
   // This function may be called prematurely if timer was stopped and
   // then started again. In that case we just ignore this call.
