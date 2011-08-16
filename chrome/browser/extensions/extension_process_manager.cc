@@ -96,8 +96,10 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
+  // We can listen to everything for SITE_INSTANCE_DELETED because we check the
+  // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
 }

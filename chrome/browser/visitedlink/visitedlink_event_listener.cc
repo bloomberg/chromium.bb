@@ -108,7 +108,7 @@ VisitedLinkEventListener::VisitedLinkEventListener() {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 VisitedLinkEventListener::~VisitedLinkEventListener() {
