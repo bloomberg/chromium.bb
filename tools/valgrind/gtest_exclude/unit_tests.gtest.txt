@@ -23,3 +23,6 @@ SignedSettingsTest.StorePolicyNoPolicyData
 
 # Failing on CrOS, see http://crbug.com/80438
 InputMethodUtilTest.*
+
+# Flaky and not very interesting under Valgrind http://crbug.com/93027
+ProcessWatcherTest.ImmediateTermination
