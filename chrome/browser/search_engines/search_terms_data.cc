@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/instant/instant_field_trial.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -55,10 +56,14 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   return base_url.ReplaceComponents(repl).spec();
 }
 
+std::string SearchTermsData::InstantFieldTrialUrlParam() const {
+  return std::string();
+}
+
 // static
 std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
 
-UIThreadSearchTermsData::UIThreadSearchTermsData() {
+UIThreadSearchTermsData::UIThreadSearchTermsData() : profile_(NULL) {
   // GoogleURLTracker::GoogleURL() DCHECKs this also, but adding it here helps
   // us catch bad behavior at a more common place in this code.
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
@@ -96,6 +101,12 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   return rlz_string;
 }
 #endif
+
+std::string UIThreadSearchTermsData::InstantFieldTrialUrlParam() const {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return InstantFieldTrial::GetGroupAsUrlParam(profile_);
+}
 
 // static
 void UIThreadSearchTermsData::SetGoogleBaseURL(std::string* google_base_url) {

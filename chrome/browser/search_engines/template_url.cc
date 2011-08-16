@@ -52,6 +52,8 @@ static const char kGoogleBaseSuggestURLParameter[] =
     "google:baseSuggestURL";
 static const char kGoogleBaseSuggestURLParameterFull[] =
     "{google:baseSuggestURL}";
+static const char kGoogleInstantFieldTrialGroupParameter[] =
+    "google:instantFieldTrialGroupParameter";
 static const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 static const char kGoogleRLZParameter[] = "google:RLZ";
@@ -146,6 +148,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_URL, start));
   } else if (parameter == kGoogleBaseSuggestURLParameter) {
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
+  } else if (parameter == kGoogleInstantFieldTrialGroupParameter) {
+    replacements->push_back(Replacement(GOOGLE_INSTANT_FIELD_TRIAL_GROUP,
+                                        start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));
@@ -280,7 +285,21 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     const string16& terms,
     int accepted_suggestion,
     const string16& original_query_for_suggestion) const {
+  return ReplaceSearchTermsUsingProfile(NULL,
+                                        host,
+                                        terms,
+                                        accepted_suggestion,
+                                        original_query_for_suggestion);
+}
+
+std::string TemplateURLRef::ReplaceSearchTermsUsingProfile(
+    Profile* profile,
+    const TemplateURL& host,
+    const string16& terms,
+    int accepted_suggestion,
+    const string16& original_query_for_suggestion) const {
   UIThreadSearchTermsData search_terms_data;
+  search_terms_data.set_profile(profile);
   return ReplaceSearchTermsUsingTermsData(host,
                                           terms,
                                           accepted_suggestion,
@@ -373,6 +392,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_BASE_SUGGEST_URL:
         url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
+        break;
+
+      case GOOGLE_INSTANT_FIELD_TRIAL_GROUP:
+        url.insert(i->index, search_terms_data.InstantFieldTrialUrlParam());
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:

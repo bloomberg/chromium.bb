@@ -1023,8 +1023,8 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   // functionality so that embeded tags (like {google:baseURL}) are escaped
   // correctly.
   // TODO(sky): having to use a replaceable url is a bit of a hack here.
-  GURL instant_url(template_url->instant_url()->ReplaceSearchTerms(
-      *template_url, string16(), -1, string16()));
+  GURL instant_url(template_url->instant_url()->ReplaceSearchTermsUsingProfile(
+      tab_contents->profile(), *template_url, string16(), -1, string16()));
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));

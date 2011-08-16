@@ -440,9 +440,8 @@ URLFetcher* SearchProvider::CreateSuggestFetcher(int id,
   const TemplateURLRef* const suggestions_url = provider.suggestions_url();
   DCHECK(suggestions_url->SupportsReplacement());
   URLFetcher* fetcher = URLFetcher::Create(id,
-      GURL(suggestions_url->ReplaceSearchTerms(
-           provider, text,
-           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
+      GURL(suggestions_url->ReplaceSearchTermsUsingProfile(profile_, provider,
+          text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       URLFetcher::GET, this);
   fetcher->set_request_context(profile_->GetRequestContext());
   fetcher->Start();
@@ -886,11 +885,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 
   const TemplateURLRef* const search_url = provider.url();
   DCHECK(search_url->SupportsReplacement());
-  match.destination_url =
-      GURL(search_url->ReplaceSearchTerms(provider,
-                                          query_string,
-                                          accepted_suggestion,
-                                          input_text));
+  match.destination_url = GURL(search_url->ReplaceSearchTermsUsingProfile(
+      profile_, provider, query_string, accepted_suggestion, input_text));
 
   // Search results don't look like URLs.
   match.transition =

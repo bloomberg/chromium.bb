@@ -50,6 +50,9 @@ class InstantFieldTrial {
   // names, to split histograms by field trial groups.
   static std::string GetGroupName(Profile* profile);
 
+ // Returns a string denoting the user's group, for adding as a URL param.
+ static std::string GetGroupAsUrlParam(Profile* profile);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstantFieldTrial);
 };

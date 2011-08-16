@@ -38,7 +38,7 @@ void InstantFieldTrial::Activate() {
 
 // static
 InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
-  if (profile->IsOffTheRecord())
+  if (!profile || profile->IsOffTheRecord())
     return INACTIVE;
 
   const PrefService* prefs = profile->GetPrefs();
@@ -80,4 +80,17 @@ std::string InstantFieldTrial::GetGroupName(Profile* profile) {
   }
   NOTREACHED();
   return "InstantUnknown";
+}
+
+// static
+std::string InstantFieldTrial::GetGroupAsUrlParam(Profile* profile) {
+  switch (GetGroup(profile)) {
+    case INACTIVE:    return std::string();
+    case CONTROL1:    return "ix=c1&";
+    case CONTROL2:    return "ix=c2&";
+    case EXPERIMENT1: return "ix=e1&";
+    case EXPERIMENT2: return "ix=e2&";
+  }
+  NOTREACHED();
+  return std::string();
 }

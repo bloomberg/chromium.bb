@@ -319,6 +319,7 @@ string16 KeywordProvider::SplitKeywordFromInput(
 
 // static
 void KeywordProvider::FillInURLAndContents(
+    Profile* profile,
     const string16& remaining_input,
     const TemplateURL* element,
     AutocompleteMatch* match) {
@@ -354,9 +355,9 @@ void KeywordProvider::FillInURLAndContents(
     // input, but we rely on later canonicalization functions to do more
     // fixup to make the URL valid if necessary.
     DCHECK(element->url()->SupportsReplacement());
-    match->destination_url = GURL(element->url()->ReplaceSearchTerms(
-        *element, remaining_input,
-        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+    match->destination_url = GURL(element->url()->
+        ReplaceSearchTermsUsingProfile(profile, *element, remaining_input,
+            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     std::vector<size_t> content_param_offsets;
     match->contents.assign(l10n_util::GetStringFUTF16(message_id,
                                                       element->short_name(),
@@ -431,7 +432,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.
-  FillInURLAndContents(remaining_input, element, &result);
+  FillInURLAndContents(profile_, remaining_input, element, &result);
 
   if (supports_replacement)
     result.template_url = element;

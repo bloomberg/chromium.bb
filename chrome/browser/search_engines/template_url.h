@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 
 class PrefService;
+class Profile;
 class SearchTermsData;
 class TemplateURL;
 class WebDataService;
@@ -71,6 +72,16 @@ class TemplateURLRef {
   //
   // The TemplateURL is used to determine the input encoding for the term.
   std::string ReplaceSearchTerms(
+      const TemplateURL& host,
+      const string16& terms,
+      int accepted_suggestion,
+      const string16& original_query_for_suggestion) const;
+
+  // Just like ReplaceSearchTerms except that it takes a Profile that's used to
+  // retrieve Instant field trial params. Most callers don't care about those
+  // params, and so can use ReplaceSearchTerms instead.
+  std::string ReplaceSearchTermsUsingProfile(
+      Profile* profile,
       const TemplateURL& host,
       const string16& terms,
       int accepted_suggestion,
@@ -158,6 +169,7 @@ class TemplateURLRef {
     GOOGLE_ACCEPTED_SUGGESTION,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
+    GOOGLE_INSTANT_FIELD_TRIAL_GROUP,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_RLZ,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
