@@ -311,7 +311,7 @@ if test_env.Bit('target_x86_32'):
     ncdecode_tests = test_env.ComponentProgram(
         'ncdecode_tests',
         ['ncdecode_tests.c'],
-        EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+        EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_seg_sfi_verbose'),
                     ])
 
     node = test_env.CommandTest(
@@ -328,7 +328,7 @@ ncdis = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
-              test_env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+              #test_env.NaClTargetArchSuffix('ncdis_seg_sfi_verbose'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
               'utils',
               ])
@@ -342,7 +342,7 @@ if test_env.Bit('target_x86_32'):
       'ncval_tests',
       ['ncval_tests.c'],
       EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
-                  test_env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+                  test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
                   ])
   test_env.Requires(ncval_tests, crt)
 
@@ -423,7 +423,7 @@ ncval = test_env.ComponentProgram(
     force_cpp_o,
   ],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
-              test_env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+              test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
               'utils'
               ])

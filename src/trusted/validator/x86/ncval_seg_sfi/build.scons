@@ -34,13 +34,16 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 test_env = env.Clone();
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
+# Special purpose partial decoder used by the ncval_seg_sfi (x86-32 bit validator).
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncdis_seg_sfi'),
+                     ['ncdecode.c'])
+
 # Segment register validator library
 env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi'),
-                     ['ncdecode.c',
-                      'ncvalidate.c',
+                     ['ncvalidate.c',
                       'ncvalidate_detailed.c'
                       ])
 
 # Verbose version of segment register validator library.
-env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_seg_sfi_verbose'),
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncdis_seg_sfi_verbose'),
                      ['ncdecode_verbose.c'])

@@ -49,7 +49,7 @@
 
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {
-  DEBUG(
+  DEBUG_OR_ERASE(
       switch(type) {
         case IMM_UNKNOWN: return "IMM_UNKNOWN";
         case IMM_NONE: return "IMM_NONE";
