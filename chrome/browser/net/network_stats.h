@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/io_thread.h"
 #include "net/base/address_list.h"
@@ -34,15 +35,30 @@ namespace chrome_browser_net {
 // c) What is the latency for UDP and TCP.
 // d) If connectivity failed, at what stage (Connect or Write or Read) did it
 // fail?
+//
+// The following is the overview of the echo message protocol.
+//
+// We send the "echo request" to the TCP/UDP servers in the following format:
+// <version><checksum><payload_size><payload>. <version> is the version number
+// of the "echo request". <checksum> is the checksum of the <payload>.
+// <payload_size> specifies the number of bytes in the <payload>.
+//
+// TCP/UDP servers respond to the "echo request" by returning "echo response".
+// "echo response" is of the format:
+// "<version><checksum><payload_size><key><encoded_payload>". <payload_size>
+// specifies the number of bytes in the <encoded_payload>. <key> is used to
+// decode the <encoded_payload>.
 
 class NetworkStats {
  public:
   enum Status {              // Used in HISTOGRAM_ENUMERATION.
     SUCCESS,                 // Successfully received bytes from the server.
     IP_STRING_PARSE_FAILED,  // Parsing of IP string failed.
+    SOCKET_CREATE_FAILED,    // Socket creation failed.
     RESOLVE_FAILED,          // Host resolution failed.
     CONNECT_FAILED,          // Connection to the server failed.
     WRITE_FAILED,            // Sending an echo message to the server failed.
+    READ_TIMED_OUT,          // Reading the reply from the server timed out.
     READ_FAILED,             // Reading the reply from the server failed.
     READ_VERIFY_FAILED,      // Verification of data failed.
     STATUS_MAX,              // Bounding value.
@@ -57,7 +73,7 @@ class NetworkStats {
   // Initializes |finished_callback_| and the number of bytes to send to the
   // server. |finished_callback| is called when we are done with the test.
   // |finished_callback| is mainly useful for unittests.
-  void Initialize(int bytes_to_send,
+  void Initialize(uint32 bytes_to_send,
                   net::CompletionCallback* finished_callback);
 
   // This method is called after socket connection is completed. It will send
@@ -74,8 +90,12 @@ class NetworkStats {
   // to indicate that the test has finished.
   void DoFinishCallback(int result);
 
+  // Verifies the data and calls Finish() if there is an error or if all bytes
+  // are read. Returns true if Finish() is called otherwise returns false.
+  virtual bool ReadComplete(int result);
+
   // Returns the number of bytes to be sent to the |server|.
-  int load_size() const { return load_size_; }
+  uint32 load_size() const { return load_size_; }
 
   // Helper methods to get and set |socket_|.
   net::Socket* socket() { return socket_.get(); }
@@ -85,10 +105,6 @@ class NetworkStats {
   base::TimeTicks start_time() const { return start_time_; }
 
  private:
-  // Verifies the data and calls Finish() if there is an error or if all bytes
-  // are read. Returns true if Finish() is called otherwise returns false.
-  bool ReadComplete(int result);
-
   // Callbacks when an internal IO is completed.
   void OnReadComplete(int result);
   void OnWriteComplete(int result);
@@ -98,6 +114,21 @@ class NetworkStats {
 
   // Sends data to server until an error occurs.
   int SendData();
+
+  // We set a timeout for responses from the echo servers.
+  void StartReadDataTimer(int milliseconds);
+  void OnReadDataTimeout();   // Called when the ReadData Timer fires.
+
+  // Fills the |io_buffer| with the "echo request" message. This gets the
+  // <payload> from |stream_| and calculates the <checksum> of the <payload> and
+  // returns the "echo request" that has <version>, <checksum>, <payload_size>
+  // and <payload>.
+  void GetEchoRequest(net::IOBuffer* io_buffer);
+
+  // This method parses the "echo response" message in the |encoded_message_| to
+  // verify that the <payload> is same as what we had sent in "echo request"
+  // message.
+  bool VerifyBytes();
 
   // The socket handle for this session.
   scoped_ptr<net::Socket> socket_;
@@ -109,9 +140,12 @@ class NetworkStats {
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
   // Some counters for the session.
-  int load_size_;
+  uint32 load_size_;
   int bytes_to_read_;
   int bytes_to_send_;
+
+  // The encoded message read from the server.
+  std::string encoded_message_;
 
   // |stream_| is used to generate data to be sent to the server and it is also
   // used to verify the data received from the server.
@@ -130,6 +164,9 @@ class NetworkStats {
 
   // The time when the session was started.
   base::TimeTicks start_time_;
+
+  // We use this factory to create timeout tasks for socket's ReadData.
+  ScopedRunnableMethodFactory<NetworkStats> timers_factory_;
 };
 
 class UDPStatsClient : public NetworkStats {
@@ -148,7 +185,7 @@ class UDPStatsClient : public NetworkStats {
   // Returns true if successful in starting the client.
   bool Start(const std::string& ip_str,
              int port,
-             int bytes_to_send,
+             uint32 bytes_to_send,
              net::CompletionCallback* callback);
 
  protected:
@@ -158,6 +195,11 @@ class UDPStatsClient : public NetworkStats {
   // Collects stats for UDP connectivity. This is called when all the data from
   // server is read or when there is a failure during connect/read/write.
   virtual void Finish(Status status, int result);
+
+  // This method calls NetworkStats::ReadComplete() to verify the data and calls
+  // Finish() if there is an error or if read callback didn't return any data
+  // (|result| is less than or equal to 0).
+  virtual bool ReadComplete(int result);
 };
 
 class TCPStatsClient : public NetworkStats {
@@ -176,7 +218,7 @@ class TCPStatsClient : public NetworkStats {
   // Returns true if successful in starting the client.
   bool Start(net::HostResolver* host_resolver,
              const net::HostPortPair& server,
-             int bytes_to_send,
+             uint32 bytes_to_send,
              net::CompletionCallback* callback);
 
  protected:
@@ -186,6 +228,10 @@ class TCPStatsClient : public NetworkStats {
   // Collects stats for TCP connectivity. This is called when all the data from
   // server is read or when there is a failure during connect/read/write.
   virtual void Finish(Status status, int result);
+
+  // This method calls NetworkStats::ReadComplete() to verify the data and calls
+  // Finish() if there is an error (|result| is less than 0).
+  virtual bool ReadComplete(int result);
 
  private:
   // Callback that is called when host resolution is completed.
