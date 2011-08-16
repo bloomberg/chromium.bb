@@ -793,16 +793,20 @@ cr.define('ntp4', function() {
       this.scrollbarUpdate_ = 0;
 
       var content = this.content_;
-      if (content.scrollHeight == content.clientHeight) {
+
+      // Adjust height to account for possible header-bar.
+      var adjustedClientHeight = content.clientHeight - content.offsetTop;
+
+      if (content.scrollHeight == adjustedClientHeight) {
         this.scrollbar_.hidden = true;
         return;
       } else {
         this.scrollbar_.hidden = false;
       }
 
-      var thumbTop = content.scrollTop / content.scrollHeight *
-          this.clientHeight;
-      var thumbHeight = content.clientHeight / content.scrollHeight *
+      var thumbTop = content.offsetTop +
+          content.scrollTop / content.scrollHeight * adjustedClientHeight;
+      var thumbHeight = adjustedClientHeight / content.scrollHeight *
           this.clientHeight;
 
       this.scrollbar_.style.top = thumbTop + 'px';
