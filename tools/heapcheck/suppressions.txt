@@ -1749,3 +1749,19 @@
    fun:*SelectFileObserver
    fun:DownloadManagerTest_*
 }
+{
+   bug_93006e
+   Heapcheck:Leak
+   ...
+   fun:DownloadResourceHandler::OnWillRead
+   fun:BufferedResourceHandler::UseAlternateResourceHandler
+   fun:BufferedResourceHandler::CompleteResponseStarted
+   fun:BufferedResourceHandler::OnReadCompleted
+   fun:ResourceDispatcherHost::CompleteRead
+   fun:ResourceDispatcherHost::OnReadCompleted
+   fun:net::URLRequest::NotifyReadCompleted
+   fun:net::URLRequestJob::NotifyReadComplete
+   fun:net::URLRequestTestJob::ProcessNextOperation
+   fun:net::URLRequestTestJob::ProcessOnePendingMessage
+   fun:ResourceDispatcherHostTest_*
+}
