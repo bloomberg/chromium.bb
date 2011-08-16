@@ -106,6 +106,14 @@ class TestGypBase(TestCommon.TestCommon):
     self.copy_test_configuration(self.origin_cwd, self.workdir)
     self.set_configuration(None)
 
+    # Set $HOME so that gyp doesn't read the user's actual
+    # ~/.gyp/include.gypi file, which may contain variables
+    # and other settings that would change the output.
+    os.environ['HOME'] = self.workpath()
+    # Clear $GYP_DEFINES for the same reason.
+    if 'GYP_DEFINES' in os.environ:
+      del os.environ['GYP_DEFINES']
+
   def built_file_must_exist(self, name, type=None, **kw):
     """
     Fails the test if the specified built file name does not exist.

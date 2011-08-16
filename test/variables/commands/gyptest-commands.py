@@ -16,11 +16,6 @@ test = TestGyp.TestGyp(format='gypd')
 
 expect = test.read('commands.gyp.stdout').replace('\r', '')
 
-# Set $HOME so that gyp doesn't read the user's actual
-# ~/.gyp/include.gypi file, which may contain variables
-# and other settings that would change the output.
-os.environ['HOME'] = test.workpath()
-
 test.run_gyp('commands.gyp',
              '--debug', 'variables', '--debug', 'general',
              stdout=expect)

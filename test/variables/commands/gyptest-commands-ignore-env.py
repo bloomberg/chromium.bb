@@ -13,19 +13,14 @@ import os
 
 import TestGyp
 
+test = TestGyp.TestGyp(format='gypd')
+
 os.environ['GYP_DEFINES'] = 'FOO=BAR'
 os.environ['GYP_GENERATORS'] = 'foo'
 os.environ['GYP_GENERATOR_FLAGS'] = 'genflag=foo'
 os.environ['GYP_GENERATOR_OUTPUT'] = 'somedir'
 
-test = TestGyp.TestGyp(format='gypd')
-
 expect = test.read('commands.gyp.ignore-env.stdout').replace('\r', '')
-
-# Set $HOME so that gyp doesn't read the user's actual
-# ~/.gyp/include.gypi file, which may contain variables
-# and other settings that would change the output.
-os.environ['HOME'] = test.workpath()
 
 test.run_gyp('commands.gyp',
              '--debug', 'variables', '--debug', 'general',
