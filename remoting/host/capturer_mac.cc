@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -20,6 +21,9 @@
 namespace remoting {
 
 namespace {
+
+// The amount of time allowed for displays to reconfigure.
+const int64 kDisplayReconfigurationTimeoutInSeconds = 10;
 
 class scoped_pixel_buffer_object {
  public:
@@ -127,11 +131,6 @@ class CapturerMac : public Capturer {
   CapturerMac();
   virtual ~CapturerMac();
 
-  // Enable or disable capturing. Capturing should be disabled while a screen
-  // reconfiguration is in progress, otherwise reading from the screen base
-  // address is likely to segfault.
-  void EnableCapture(bool enable);
-
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
@@ -154,6 +153,8 @@ class CapturerMac : public Capturer {
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                 size_t count,
                                 const CGRect *rect_array);
+  void DisplaysReconfigured(CGDirectDisplayID display,
+                            CGDisplayChangeSummaryFlags flags);
   static void ScreenRefreshCallback(CGRectCount count,
                                     const CGRect *rect_array,
                                     void *user_parameter);
@@ -188,7 +189,9 @@ class CapturerMac : public Capturer {
   // Format of pixels returned in buffer.
   media::VideoFrame::Format pixel_format_;
 
-  bool capturing_;
+  // Acts as a critical section around our display configuration data
+  // structures. Specifically cgl_context_ and pixel_buffer_object_.
+  base::WaitableEvent display_configuration_capture_event_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
@@ -198,7 +201,7 @@ CapturerMac::CapturerMac()
       current_buffer_(0),
       last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
-      capturing_(true) {
+      display_configuration_capture_event_(false, true) {
   // TODO(dmaclach): move this initialization out into session_manager,
   // or at least have session_manager call into here to initialize it.
   CGError err =
@@ -220,10 +223,6 @@ CapturerMac::~CapturerMac() {
   CGScreenUnregisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback, this);
   CGDisplayRemoveReconfigurationCallback(
       CapturerMac::DisplaysReconfiguredCallback, this);
-}
-
-void CapturerMac::EnableCapture(bool enable) {
-  capturing_ = enable;
 }
 
 void CapturerMac::ReleaseBuffers() {
@@ -298,43 +297,47 @@ void CapturerMac::InvalidateFullScreen() {
 }
 
 void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
+  // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
-  if (capturing_) {
-    SkRegion region;
-    helper_.SwapInvalidRegion(&region);
-    VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
-    current_buffer.Update();
 
-    bool flip = true;  // GL capturers need flipping.
-    if (cgl_context_) {
-      if (pixel_buffer_object_.get() != 0) {
-        GlBlitFast(current_buffer, region);
-      } else {
-        // See comment in scoped_pixel_buffer_object::Init about why the slow
-        // path is always used on 10.5.
-        GlBlitSlow(current_buffer);
-      }
+  // Critical section shared with DisplaysReconfigured(...).
+  CHECK(display_configuration_capture_event_.TimedWait(
+      base::TimeDelta::FromSeconds(kDisplayReconfigurationTimeoutInSeconds)));
+  SkRegion region;
+  helper_.SwapInvalidRegion(&region);
+  VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
+  current_buffer.Update();
+
+  bool flip = true;  // GL capturers need flipping.
+  if (cgl_context_) {
+    if (pixel_buffer_object_.get() != 0) {
+      GlBlitFast(current_buffer, region);
     } else {
-      CgBlit(current_buffer, region);
-      flip = false;
+      // See comment in scoped_pixel_buffer_object::Init about why the slow
+      // path is always used on 10.5.
+      GlBlitSlow(current_buffer);
     }
-
-    DataPlanes planes;
-    planes.data[0] = current_buffer.ptr();
-    planes.strides[0] = current_buffer.bytes_per_row();
-    if (flip) {
-      planes.strides[0] = -planes.strides[0];
-      planes.data[0] +=
-          (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
-    }
-
-    data = new CaptureData(planes, gfx::Size(current_buffer.size()),
-                           pixel_format());
-    data->mutable_dirty_region() = region;
-
-    current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
-    helper_.set_size_most_recent(data->size());
+  } else {
+    CgBlit(current_buffer, region);
+    flip = false;
   }
+
+  DataPlanes planes;
+  planes.data[0] = current_buffer.ptr();
+  planes.strides[0] = current_buffer.bytes_per_row();
+  if (flip) {
+    planes.strides[0] = -planes.strides[0];
+    planes.data[0] +=
+        (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
+  }
+
+  data = new CaptureData(planes, gfx::Size(current_buffer.size()),
+                         pixel_format());
+  data->mutable_dirty_region() = region;
+
+  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
+  helper_.set_size_most_recent(data->size());
+  display_configuration_capture_event_.Signal();
 
   callback->Run(data);
   delete callback;
@@ -342,6 +345,11 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
 
 void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
            const SkRegion& region) {
+  const int buffer_height = buffer.size().height();
+  const int buffer_width = buffer.size().width();
+
+  // Clip to the size of our current screen.
+  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
   if (last_buffer_) {
     // We are doing double buffer for the capture data so we just need to copy
     // the invalid region from the previous capture in the current buffer.
@@ -351,14 +359,16 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
 
     // Since the image obtained from OpenGL is upside-down, need to do some
     // magic here to copy the correct rectangle.
-    const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
+    const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
     for(SkRegion::Iterator i(last_invalid_region_); !i.done(); i.next()) {
+      SkIRect copy_rect = i.rect();
+      copy_rect.intersect(clip_rect);
       CopyRect(last_buffer_ + y_offset,
                -buffer.bytes_per_row(),
                buffer.ptr() + y_offset,
                -buffer.bytes_per_row(),
                4,  // Bytes for pixel for RGBA.
-               i.rect());
+               copy_rect);
     }
   }
   last_buffer_ = buffer.ptr();
@@ -366,8 +376,7 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
 
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_.get());
-  glReadPixels(0, 0, buffer.size().width(), buffer.size().height(),
-               GL_BGRA, GL_UNSIGNED_BYTE, 0);
+  glReadPixels(0, 0, buffer_width, buffer_height, GL_BGRA, GL_UNSIGNED_BYTE, 0);
   GLubyte* ptr = static_cast<GLubyte*>(
       glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB));
   if (ptr == NULL) {
@@ -377,14 +386,16 @@ void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
   } else {
     // Copy only from the dirty rects. Since the image obtained from OpenGL is
     // upside-down we need to do some magic here to copy the correct rectangle.
-    const int y_offset = (buffer.size().height() - 1) * buffer.bytes_per_row();
+    const int y_offset = (buffer_height - 1) * buffer.bytes_per_row();
     for(SkRegion::Iterator i(region); !i.done(); i.next()) {
+      SkIRect copy_rect = i.rect();
+      copy_rect.intersect(clip_rect);
       CopyRect(ptr + y_offset,
          -buffer.bytes_per_row(),
          buffer.ptr() + y_offset,
          -buffer.bytes_per_row(),
          4,  // Bytes for pixel for RGBA.
-         i.rect());
+         copy_rect);
     }
   }
   if (!glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB)) {
@@ -414,9 +425,15 @@ void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
 
 void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
                          const SkRegion& region) {
+  const int buffer_height = buffer.size().height();
+  const int buffer_width = buffer.size().width();
+
+    // Clip to the size of our current screen.
+  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
+
   if (last_buffer_)
     memcpy(buffer.ptr(), last_buffer_,
-           buffer.bytes_per_row() * buffer.size().height());
+           buffer.bytes_per_row() * buffer_height);
   last_buffer_ = buffer.ptr();
   CGDirectDisplayID main_display = CGMainDisplayID();
   uint8* display_base_address =
@@ -427,12 +444,14 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
   // |capturer_helper_|s region from |last_invalid_region_|.
   // http://crbug.com/92354
   for(SkRegion::Iterator i(region); !i.done(); i.next()) {
+    SkIRect copy_rect = i.rect();
+    copy_rect.intersect(clip_rect);
     CopyRect(display_base_address,
              src_bytes_per_row,
              buffer.ptr(),
              buffer.bytes_per_row(),
              src_bytes_per_pixel,
-             i.rect());
+             copy_rect);
   }
 }
 
@@ -464,6 +483,24 @@ void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
   InvalidateRegion(region);
 }
 
+void CapturerMac::DisplaysReconfigured(CGDirectDisplayID display,
+                                       CGDisplayChangeSummaryFlags flags) {
+  if (display == CGMainDisplayID()) {
+    if (flags & kCGDisplayBeginConfigurationFlag) {
+      // Wait on |display_configuration_capture_event_| to prevent more
+      // captures from occurring on a different thread while the displays
+      // are being reconfigured.
+      CHECK(display_configuration_capture_event_.TimedWait(
+                base::TimeDelta::FromSeconds(
+                    kDisplayReconfigurationTimeoutInSeconds)));
+    } else {
+      ScreenConfigurationChanged();
+      // Now that the configuration has changed, signal the event.
+      display_configuration_capture_event_.Signal();
+    }
+  }
+}
+
 void CapturerMac::ScreenRefreshCallback(CGRectCount count,
                                         const CGRect *rect_array,
                                         void *user_parameter) {
@@ -483,15 +520,8 @@ void CapturerMac::DisplaysReconfiguredCallback(
     CGDirectDisplayID display,
     CGDisplayChangeSummaryFlags flags,
     void *user_parameter) {
-  if (display == CGMainDisplayID()) {
-    CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
-    if (flags & kCGDisplayBeginConfigurationFlag) {
-      capturer->EnableCapture(false);
-    } else {
-      capturer->EnableCapture(true);
-      capturer->ScreenConfigurationChanged();
-    }
-  }
+  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+  capturer->DisplaysReconfigured(display, flags);
 }
 
 }  // namespace
