@@ -58,13 +58,15 @@ class SadTabView : public views::View,
 
   TabContents* tab_contents_;
   views::Link* learn_more_link_;
+  views::Link* feedback_link_;
 
   // Regions within the display for different components, populated by
   // Layout().
   gfx::Rect icon_bounds_;
   gfx::Rect title_bounds_;
   gfx::Rect message_bounds_;
-  gfx::Rect link_bounds_;
+  gfx::Rect learn_more_bounds_;
+  gfx::Rect feedback_bounds_;
 
   Kind kind_;
   bool painted_;

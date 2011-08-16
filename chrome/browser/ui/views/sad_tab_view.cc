@@ -7,6 +7,9 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -52,6 +55,7 @@ static const int kMessageFontSizeDelta = 1;
 SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
     : tab_contents_(tab_contents),
       learn_more_link_(NULL),
+      feedback_link_(NULL),
       kind_(kind),
       painted_(false) {
   DCHECK(tab_contents);
@@ -82,6 +86,15 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
     learn_more_link_->SetNormalColor(kLinkColor);
     learn_more_link_->set_listener(this);
     AddChildView(learn_more_link_);
+
+    if (kind == KILLED) {
+      feedback_link_ = new views::Link(
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK)));
+      feedback_link_->SetFont(*message_font_);
+      feedback_link_->SetNormalColor(kLinkColor);
+      feedback_link_->set_listener(this);
+      AddChildView(feedback_link_);
+    }
   }
 }
 
@@ -117,9 +130,16 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
                         message_bounds_.width(), message_bounds_.height(),
                         kMessageFlags);
 
-  if (learn_more_link_ != NULL)
-    learn_more_link_->SetBounds(link_bounds_.x(), link_bounds_.y(),
-                                link_bounds_.width(), link_bounds_.height());
+  if (learn_more_link_ != NULL) {
+    learn_more_link_->SetBounds(
+        learn_more_bounds_.x(), learn_more_bounds_.y(),
+        learn_more_bounds_.width(), learn_more_bounds_.height());
+  }
+  if (feedback_link_ != NULL) {
+    feedback_link_->SetBounds(
+        feedback_bounds_.x(), feedback_bounds_.y(),
+        feedback_bounds_.width(), feedback_bounds_.height());
+  }
 }
 
 void SadTabView::Layout() {
@@ -142,13 +162,25 @@ void SadTabView::Layout() {
   int message_x = (width() - message_width) / 2;
   int message_y = title_bounds_.bottom() + kTitleMessageSpacing;
   message_bounds_.SetRect(message_x, message_y, message_width, message_height);
+  int bottom = message_bounds_.bottom();
 
   if (learn_more_link_ != NULL) {
     gfx::Size sz = learn_more_link_->GetPreferredSize();
     gfx::Insets insets = learn_more_link_->GetInsets();
-    link_bounds_.SetRect((width() - sz.width()) / 2,
-                         message_bounds_.bottom() + kTitleMessageSpacing -
-                         insets.top(), sz.width(), sz.height());
+    learn_more_bounds_.SetRect((width() - sz.width()) / 2,
+                               bottom + kTitleMessageSpacing - insets.top(),
+                               sz.width(),
+                               sz.height());
+    bottom = learn_more_bounds_.bottom();
+  }
+
+  if (feedback_link_ != NULL) {
+    gfx::Size sz = feedback_link_->GetPreferredSize();
+    gfx::Insets insets = feedback_link_->GetInsets();
+    feedback_bounds_.SetRect((width() - sz.width()) / 2,
+                             bottom + kTitleMessageSpacing - insets.top(),
+                             sz.width(),
+                             sz.height());
   }
 }
 
@@ -159,5 +191,10 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
     tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
+  } else if (tab_contents_ != NULL && source == feedback_link_) {
+    browser::ShowHtmlBugReportView(
+        Browser::GetBrowserForController(&tab_contents_->controller(), NULL),
+        l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
+        userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
   }
 }

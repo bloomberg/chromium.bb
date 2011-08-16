@@ -7227,6 +7227,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
         Either Chrome ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
       </message>
+      <message name="IDS_KILLED_TAB_FEEDBACK_LINK" desc="The text for the feedback link on the killed tab page.">
+        Send feedback to help improve Chrome
+      </message>
+      <message name="IDS_KILLED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with.">
+        Chrome ran out of memory.\n
+      </message>
 
       <!-- Default Browser related messages -->
       <message name="IDS_HIDE_ICONS_NOT_SUPPORTED" desc="Message to explain we only support uninstall and not hide-icons.">
