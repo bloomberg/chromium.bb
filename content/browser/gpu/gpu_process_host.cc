@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/gpu_process_host.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
