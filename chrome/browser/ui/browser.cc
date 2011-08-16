@@ -1133,9 +1133,9 @@ void Browser::CloseTabContents(TabContents* contents) {
   CloseContents(contents);
 }
 
-void Browser::BrowserShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                                    gfx::NativeWindow parent_window) {
-  window_->ShowHTMLDialog(delegate, parent_window);
+gfx::NativeWindow Browser::BrowserShowHtmlDialog(
+    HtmlDialogUIDelegate* delegate, gfx::NativeWindow parent_window) {
+  return window_->ShowHTMLDialog(delegate, parent_window);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

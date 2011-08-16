@@ -311,9 +311,10 @@ void Panel::ConfirmBrowserCloseWithPendingDownloads() {
   NOTIMPLEMENTED();
 }
 
-void Panel::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                           gfx::NativeWindow parent_window) {
+gfx::NativeWindow Panel::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
+                                        gfx::NativeWindow parent_window) {
   NOTIMPLEMENTED();
+  return NULL;
 }
 
 void Panel::UserChangedTheme() {

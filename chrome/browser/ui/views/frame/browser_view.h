@@ -309,8 +309,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) OVERRIDE;
   virtual void ShowThemeInstallBubble() OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
-  virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window) OVERRIDE;
+  virtual gfx::NativeWindow ShowHTMLDialog(
+      HtmlDialogUIDelegate* delegate,
+      gfx::NativeWindow parent_window) OVERRIDE;
   virtual void UserChangedTheme() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void TabContentsFocused(TabContents* source) OVERRIDE;

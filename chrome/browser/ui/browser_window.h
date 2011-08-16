@@ -244,8 +244,8 @@ class BrowserWindow {
 
   // Shows a dialog box with HTML content. |parent_window| is the window the
   // dialog should be opened modal to and is a native window handle.
-  virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window) = 0;
+  virtual gfx::NativeWindow ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
+                                           gfx::NativeWindow parent_window) = 0;
 
   // ThemeService calls this when a user has changed his or her theme,
   // indicating that it's time to redraw everything.

@@ -1145,8 +1145,8 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   browser::CreateViewsWindow(GetNativeHandle(), view)->Show();
 }
 
-void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                                 gfx::NativeWindow parent_window) {
+gfx::NativeWindow BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
+                                              gfx::NativeWindow parent_window) {
   // Default to using our window as the parent if the argument is not specified.
   gfx::NativeWindow parent = parent_window ? parent_window
                                            : GetNativeHandle();
@@ -1154,7 +1154,7 @@ void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
   parent = GetNormalBrowserWindowForBrowser(browser(), NULL);
 #endif  // defined(OS_CHROMEOS)
 
-  browser::ShowHtmlDialog(parent, browser_.get()->profile(), delegate);
+  return browser::ShowHtmlDialog(parent, browser_.get()->profile(), delegate);
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(

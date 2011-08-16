@@ -428,12 +428,12 @@ class Browser : public TabHandlerDelegate,
                       bool user_gesture);
   void CloseTabContents(TabContents* contents);
 
-  // Show a dialog with HTML content. |delegate| contains a pointer to the
-  // delegate who knows how to display the dialog (which file URL and JSON
-  // string input to use during initialization). |parent_window| is the window
-  // that should be parent of the dialog, or NULL for the default.
-  void BrowserShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                             gfx::NativeWindow parent_window);
+  // Shows a dialog with HTML content and returns it. |delegate| contains a
+  // pointer to the delegate who knows how to display the dialog (which file
+  // URL and JSON string input to use during initialization). |parent_window|
+  // is the window that should be parent of the dialog, or NULL for the default.
+  gfx::NativeWindow BrowserShowHtmlDialog(HtmlDialogUIDelegate* delegate,
+                                          gfx::NativeWindow parent_window);
 
   // Called when a popup select is about to be displayed.
   void BrowserRenderWidgetShowing();
