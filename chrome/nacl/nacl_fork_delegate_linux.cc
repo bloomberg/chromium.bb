@@ -13,11 +13,9 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/file_path.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/common/zygote_fork_delegate_linux.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_helper_linux.h"
 
@@ -42,24 +40,18 @@ void NaClForkDelegate::Init(const bool sandboxed,
   base::file_handle_mapping_vector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
-  // TODO(bradchen): To make this the default for release builds,
-  // remove command line switch.
+  // TODO(bradchen): Before making this the default for release builds,
+  // replace command line switch with PathService::Get().
+  const std::string nacl_zygote_exe =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kNaClLinuxHelper);
   ready_ = false;
-  const bool use_helper = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNaClLinuxHelper);
-  FilePath helper_exe;
-  if (use_helper && PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe)) {
+  if (nacl_zygote_exe.length() != 0) {
     CommandLine::StringVector argv = CommandLine::ForCurrentProcess()->argv();
-    argv[0] = helper_exe.value();
+    argv[0] = nacl_zygote_exe;
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
-    // LD_BIND_NOW forces non-lazy binding in the dynamic linker, to
-    // prevent the linker from trying to look at the text of the nacl_helper
-    // program after it has been replaced by the nacl module.
-    base::environment_vector env;
-    env.push_back(std::make_pair("LD_BIND_NOW", "1"));
-    options.environ = &env;
     ready_ = base::LaunchProcess(argv, options, NULL);
     // parent and error cases are handled below
   }

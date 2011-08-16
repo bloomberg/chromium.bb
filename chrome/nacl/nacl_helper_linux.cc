@@ -116,33 +116,14 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
 
 }  // namespace
 
-static const void* g_nacl_reserved_space = NULL;
-extern "C" __attribute__((visibility("default")))
-const void* nacl_helper_get_1G_address() {
-  return g_nacl_reserved_space;
-}
-
-// nacl_helper_init does the real work of this module. It is invoked as
-// a static constructor and never returns, preventing main() from the
-// nacl_helper_bootstrap program from being called.
-//
-// NOTE This routine must not return.
-extern "C" __attribute__((visibility("default")))
-void nacl_helper_init(int argc, char *argv[],
-                      const char *nacl_reserved_space) {
+int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
   std::vector<int> empty; // for SendMsg() calls
 
   g_suid_sandbox_active = (NULL != getenv("SBX_D"));
-  g_nacl_reserved_space = nacl_reserved_space;
-  if (!nacl_reserved_space) {
-    VLOG(1) << "nacl_reserved_space is NULL";
-  } else {
-    VLOG(1) << "nacl_reserved_space is at "
-            << (void *)nacl_reserved_space;
-  }
+
   // Send the zygote a message to let it know we are ready to help
   if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
                                  kNaClHelperStartupAck,
@@ -182,5 +163,4 @@ void nacl_helper_init(int argc, char *argv[],
       LOG(ERROR) << "*** send() to zygote failed";
     }
   }
-  CHECK(false);  // This routine must not return
 }
