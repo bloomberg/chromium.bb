@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_input_event.idl modified Wed Jul 20 11:12:41 2011. */
+/* From ppp_input_event.idl modified Thu Aug 11 16:06:41 2011. */
 
 #ifndef PPAPI_C_PPP_INPUT_EVENT_H_
 #define PPAPI_C_PPP_INPUT_EVENT_H_
@@ -16,7 +16,7 @@
 
 /**
  * @file
- * This file defines the API for receiving input events form the browser.
+ * This file defines the API for receiving input events from the browser.
  */
 
 

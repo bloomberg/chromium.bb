@@ -4,7 +4,7 @@
  */
 
 /**
- * This file defines the API for receiving input events form the browser.
+ * This file defines the API for receiving input events from the browser.
  */
 
 label Chrome {
