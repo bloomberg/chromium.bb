@@ -3450,10 +3450,10 @@ print-size-of-sb-tool() {
   local tool_size_string=$(${PNACL_SIZE} -B "${bin_dir}/${tool}" | \
     grep '[0-9]\+')
   set -- ${tool_size_string}
-  echo "RESULT ${tool}_${platform}_size: text $1 bytes"
-  echo "RESULT ${tool}_${platform}_size: data $2 bytes"
-  echo "RESULT ${tool}_${platform}_size: bss $3 bytes"
-  echo "RESULT ${tool}_${platform}_size: total $4 bytes"
+  echo "RESULT ${tool}_${platform}_size: text= $1 bytes"
+  echo "RESULT ${tool}_${platform}_size: data= $2 bytes"
+  echo "RESULT ${tool}_${platform}_size: bss= $3 bytes"
+  echo "RESULT ${tool}_${platform}_size: total= $4 bytes"
 }
 
 ######################################################################
