@@ -51,7 +51,6 @@ NetworkScreenHandler::NetworkScreenHandler()
 }
 
 NetworkScreenHandler::~NetworkScreenHandler() {
-  ClearErrors();
 }
 
 // NetworkScreenHandler, NetworkScreenActor implementation: --------------------
