@@ -184,6 +184,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
+      dialog_creator_(NULL),
 #if defined(OS_WIN)
       message_box_active_(CreateEvent(NULL, TRUE, FALSE, NULL)),
 #endif
@@ -209,8 +210,8 @@ TabContents::~TabContents() {
   is_being_destroyed_ = true;
 
   // Clear out any JavaScript state.
-  if (delegate_)
-    delegate_->GetJavaScriptDialogCreator()->ResetJavaScriptState(this);
+  if (dialog_creator_)
+    dialog_creator_->ResetJavaScriptState(this);
 
   NotifyDisconnected();
 
@@ -1222,8 +1223,10 @@ void TabContents::DidNavigateAnyFramePostCommit(
   // If we navigate, reset JavaScript state. This does nothing to prevent
   // a malicious script from spamming messages, since the script could just
   // reload the page to stop blocking.
-  if (delegate_)
-    delegate_->GetJavaScriptDialogCreator()->ResetJavaScriptState(this);
+  if (dialog_creator_) {
+    dialog_creator_->ResetJavaScriptState(this);
+    dialog_creator_ = NULL;
+  }
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
@@ -1690,15 +1693,15 @@ void TabContents::RunJavaScriptMessage(
           content::GetContentClient()->browser()->GetAcceptLangs(this));
     }
 
-    delegate_->GetJavaScriptDialogCreator()->RunJavaScriptDialog(
-        this,
-        title_type,
-        title,
-        flags,
-        message,
-        default_prompt,
-        reply_msg,
-        &suppress_this_message);
+    dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
+    dialog_creator_->RunJavaScriptDialog(this,
+                                         title_type,
+                                         title,
+                                         flags,
+                                         message,
+                                         default_prompt,
+                                         reply_msg,
+                                         &suppress_this_message);
   }
 
   if (suppress_this_message) {
@@ -1726,10 +1729,10 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
   }
 
   is_showing_before_unload_dialog_ = true;
-  delegate_->GetJavaScriptDialogCreator()->RunBeforeUnloadDialog(
-      this,
-      message,
-      reply_msg);
+  dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
+  dialog_creator_->RunBeforeUnloadDialog(this,
+                                         message,
+                                         reply_msg);
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {

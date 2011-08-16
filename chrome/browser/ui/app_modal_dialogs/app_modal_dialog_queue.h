@@ -20,7 +20,7 @@ class AppModalDialogQueue {
   // Returns the singleton instance.
   static AppModalDialogQueue* GetInstance();
 
-  // Adds a modal dialog to the queue, if there are no other dialogs in the
+  // Adds a modal dialog to the queue. If there are no other dialogs in the
   // queue, the dialog will be shown immediately. Once it is shown, the
   // most recently active browser window (or whichever is currently active)
   // will be app modal, meaning it will be activated if the user tries to
@@ -56,7 +56,8 @@ class AppModalDialogQueue {
     return active_dialog_;
   }
 
-  // Iterators to walk the queue.
+  // Iterators to walk the queue. The queue does not include the currently
+  // active app modal dialog box.
   typedef std::deque<AppModalDialog*>::iterator iterator;
   iterator begin() {
     return app_modal_dialog_queue_.begin();
@@ -81,8 +82,8 @@ class AppModalDialogQueue {
   // are not valid.
   AppModalDialog* GetNextDialog();
 
-  // Contains all app modal dialogs which are waiting to be shown, with the
-  // currently modal dialog at the front of the queue.
+  // Contains all app modal dialogs which are waiting to be shown. The currently
+  // active modal dialog is not included.
   std::deque<AppModalDialog*> app_modal_dialog_queue_;
 
   // The currently active app-modal dialog box's delegate. NULL if there is no

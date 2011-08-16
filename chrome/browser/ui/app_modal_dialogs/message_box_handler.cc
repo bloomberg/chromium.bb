@@ -174,6 +174,9 @@ string16 ChromeJavaScriptDialogCreator::GetTitle(TitleType title_type,
 void ChromeJavaScriptDialogCreator::CancelPendingDialogs(
     content::DialogDelegate* delegate) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
+  AppModalDialog* active_dialog = queue->active_dialog();
+  if (active_dialog && active_dialog->delegate() == delegate)
+    active_dialog->Invalidate();
   for (AppModalDialogQueue::iterator i = queue->begin();
        i != queue->end(); ++i) {
     if ((*i)->delegate() == delegate)

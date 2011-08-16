@@ -823,6 +823,10 @@ class TabContents : public PageNavigator,
   // once.
   bool notify_disconnection_;
 
+  // Pointer to the JavaScript dialog creator, lazily assigned. Used because the
+  // delegate of this TabContents is nulled before its destructor is called.
+  content::JavaScriptDialogCreator* dialog_creator_;
+
 #if defined(OS_WIN)
   // Handle to an event that's set when the page is showing a message box (or
   // equivalent constrained window).  Plugin processes check this to know if
