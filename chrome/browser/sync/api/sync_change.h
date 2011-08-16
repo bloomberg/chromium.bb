@@ -45,6 +45,9 @@ class SyncChange {
   SyncChangeType change_type() const;
   SyncData sync_data() const;
 
+  // Returns a string representation of |change_type|.
+  static std::string ChangeTypeToString(SyncChangeType change_type);
+
  private:
   SyncChangeType change_type_;
 
