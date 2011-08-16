@@ -123,6 +123,14 @@ static NaClSrpcService* BuildClientService(NaClSrpcChannel* channel) {
  * by different methods reflecting how they get their table of rpc methods.
  */
 
+void NaClSrpcChannelInitialize(NaClSrpcChannel* channel) {
+  channel->message_channel = NULL;
+  channel->next_outgoing_request_id = 0;
+  channel->server = NULL;
+  channel->client = NULL;
+  channel->server_instance_data = NULL;
+}
+
 static int NaClSrpcChannelCtorHelper(NaClSrpcChannel* channel,
                                      NaClSrpcImcDescType handle) {
   NaClSrpcLog(1,
@@ -130,10 +138,7 @@ static int NaClSrpcChannelCtorHelper(NaClSrpcChannel* channel,
               (void*) channel,
               (void*) handle);
   /* Initialize the channel to allow errors to be handled. */
-  channel->client = NULL;
-  channel->server = NULL;
-  channel->server_instance_data = NULL;
-  channel->next_outgoing_request_id = 0;
+  NaClSrpcChannelInitialize(channel);
   /* Create the message fragmentation layer. */
   channel->message_channel = NaClSrpcMessageChannelNew(handle);
   if (NULL == channel->message_channel) {

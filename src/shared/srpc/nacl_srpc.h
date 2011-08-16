@@ -447,6 +447,12 @@ struct NaClSrpcChannel {
 typedef struct NaClSrpcChannel NaClSrpcChannel;
 
 /**
+ *  Initialize an SRPC channel so that its pointers are NULL.  This makes it
+ *  safe to call a Dtor on the channel, even if the Ctor has not been called.
+ */
+void NaClSrpcChannelInitialize(NaClSrpcChannel* channel);
+
+/**
  *  Constructs an SRPC client object communicating over an IMC descriptor.
  *  Clients issue RPC requests and receive responses.
  *  @param channel The channel descriptor to be constructed.

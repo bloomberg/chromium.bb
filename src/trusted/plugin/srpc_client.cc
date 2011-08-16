@@ -24,6 +24,7 @@ SrpcClient::SrpcClient()
       browser_interface_(NULL) {
   PLUGIN_PRINTF(("SrpcClient::SrpcClient (this=%p)\n",
                  static_cast<void*>(this)));
+  NaClSrpcChannelInitialize(&srpc_channel_);
 }
 
 SrpcClient* SrpcClient::New(Plugin* plugin, nacl::DescWrapper* wrapper) {

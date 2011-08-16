@@ -327,9 +327,10 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       subprocess_(NULL),
       async_receive_desc_(NULL),
       async_send_desc_(NULL),
-      anchor_(new nacl::WeakRefAnchor),
+      anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
                                                 init_done_cb)) {
+  NaClSrpcChannelInitialize(&command_channel_);
 }
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
@@ -526,15 +527,14 @@ void ServiceRuntime::Shutdown() {
   if (reverse_service_ != NULL) {
     reverse_service_->WaitForServiceThreadsToExit();
     reverse_service_->Unref();
+    reverse_service_ = NULL;
   }
-  reverse_service_ = NULL;
 }
 
 ServiceRuntime::~ServiceRuntime() {
   PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime (this=%p)\n",
                  static_cast<void*>(this)));
-
-  // We do this just in case Terminate() was not called.
+  // We do this just in case Shutdown() was not called.
   subprocess_.reset(NULL);
   if (reverse_service_ != NULL) {
     reverse_service_->Unref();

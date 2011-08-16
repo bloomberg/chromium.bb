@@ -198,8 +198,10 @@ struct NaClSrpcMessageChannel* NaClSrpcMessageChannelNew(
 }
 
 void NaClSrpcMessageChannelDelete(struct NaClSrpcMessageChannel* channel) {
-  PortableDescDtor(&channel->desc);
-  free(channel);
+  if (NULL != channel) {
+    PortableDescDtor(&channel->desc);
+    free(channel);
+  }
 }
 
 /*
