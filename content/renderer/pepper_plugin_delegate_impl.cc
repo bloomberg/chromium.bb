@@ -1234,6 +1234,12 @@ base::PlatformFileError PepperPluginDelegateImpl::GetDirContents(
   return error;
 }
 
+void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
+    const GURL& url, FilePath* platform_path) {
+  RenderThread::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(
+      url, platform_path));
+}
+
 scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThread::current()->GetFileThreadMessageLoopProxy();

@@ -363,6 +363,10 @@ class PluginDelegate {
   virtual base::PlatformFileError GetDirContents(const PepperFilePath& path,
                                                  DirContents* contents) = 0;
 
+  // Synchronously returns the platform file path for a filesystem URL.
+  virtual void SyncGetFileSystemPlatformPath(const GURL& url,
+                                             FilePath* platform_path) = 0;
+
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>

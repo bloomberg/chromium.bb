@@ -32,7 +32,7 @@ class PPB_FileSystem_Impl : public Resource,
   virtual ::ppapi::thunk::PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
 
   PluginInstance* instance() { return instance_; }
-  PP_FileSystemType type() { return type_; }
+  PP_FileSystemType type() const { return type_; }
   const GURL& root_url() const { return root_url_; }
   void set_root_url(const GURL& root_url) { root_url_ = root_url; }
   bool opened() const { return opened_; }

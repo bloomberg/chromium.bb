@@ -251,6 +251,9 @@ class PepperPluginDelegateImpl
   virtual base::PlatformFileError GetDirContents(
       const webkit::ppapi::PepperFilePath& path,
       webkit::ppapi::DirContents* contents) OVERRIDE;
+  virtual void SyncGetFileSystemPlatformPath(
+      const GURL& url,
+      FilePath* platform_path) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() OVERRIDE;
   virtual int32_t ConnectTcp(

@@ -133,6 +133,11 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
                      GURL /* file path */,
                      int /* file flags */)
 
+// For Pepper's URL loader.
+IPC_SYNC_MESSAGE_CONTROL1_1(FileSystemHostMsg_SyncGetPlatformPath,
+                            GURL /* file path */,
+                            FilePath /* platform_path */)
+
 // Pre- and post-update notifications for ppapi implementation.
 IPC_MESSAGE_CONTROL1(FileSystemHostMsg_WillUpdate,
                      GURL /* file_path */)

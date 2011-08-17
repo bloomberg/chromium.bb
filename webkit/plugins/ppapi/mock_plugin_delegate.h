@@ -84,6 +84,8 @@ class MockPluginDelegate : public PluginDelegate {
                                             base::PlatformFileInfo* info);
   virtual base::PlatformFileError GetDirContents(const PepperFilePath& path,
                                                  DirContents* contents);
+  virtual void SyncGetFileSystemPlatformPath(const GURL& url,
+                                             FilePath* platform_path);
   virtual void PublishPolicy(const std::string& policy_json);
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy();

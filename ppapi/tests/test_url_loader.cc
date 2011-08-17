@@ -28,6 +28,34 @@
 
 REGISTER_TEST_CASE(URLLoader);
 
+namespace {
+
+int32_t WriteEntireBuffer(PP_Instance instance,
+                          pp::FileIO* file_io,
+                          int32_t offset,
+                          const std::string& data) {
+  TestCompletionCallback callback(instance);
+  int32_t write_offset = offset;
+  const char* buf = data.c_str();
+  int32_t size = data.size();
+
+  while (write_offset < offset + size) {
+    int32_t rv = file_io->Write(write_offset, &buf[write_offset - offset],
+                                size - write_offset + offset, callback);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv < 0)
+      return rv;
+    if (rv == 0)
+      return PP_ERROR_FAILED;
+    write_offset += rv;
+  }
+
+  return PP_OK;
+}
+
+}  // namespace
+
 TestURLLoader::TestURLLoader(TestingInstance* instance)
     : TestCase(instance),
       file_io_trusted_interface_(NULL) {
@@ -45,6 +73,8 @@ bool TestURLLoader::Init() {
 void TestURLLoader::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(BasicGET);
   RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST);
+  RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST);
   RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST);
@@ -137,6 +167,54 @@ std::string TestURLLoader::LoadAndCompareBody(
   PASS();
 }
 
+int32_t TestURLLoader::OpenFileSystem(pp::FileSystem* file_system,
+                                      std::string* message) {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  int32_t rv = file_system->Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING) {
+    message->assign("FileSystem::Open force_async");
+    return rv;
+  }
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK) {
+    message->assign("FileSystem::Open");
+    return rv;
+  }
+  return rv;
+}
+
+int32_t TestURLLoader::PrepareFileForPost(
+      const pp::FileRef& file_ref,
+      const std::string& data,
+      std::string* message) {
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  pp::FileIO file_io(instance_);
+  int32_t rv = file_io.Open(file_ref,
+                            PP_FILEOPENFLAG_CREATE |
+                            PP_FILEOPENFLAG_TRUNCATE |
+                            PP_FILEOPENFLAG_WRITE,
+                            callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING) {
+    message->assign("FileIO::Open force_async");
+    return rv;
+  }
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK) {
+    message->assign("FileIO::Open");
+    return rv;
+  }
+
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, data);
+  if (rv != PP_OK) {
+    message->assign("FileIO::Write");
+    return rv;
+  }
+
+  return rv;
+}
+
 std::string TestURLLoader::TestBasicGET() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
@@ -150,6 +228,48 @@ std::string TestURLLoader::TestBasicPOST() {
   std::string postdata("postdata");
   request.AppendDataToBody(postdata.data(), postdata.length());
   return LoadAndCompareBody(request, postdata);
+}
+
+std::string TestURLLoader::TestBasicFilePOST() {
+  std::string message;
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  int32_t rv = OpenFileSystem(&file_system, &message);
+  if (rv != PP_OK)
+    return ReportError(message.c_str(), rv);
+
+  pp::FileRef file_ref(file_system, "/file_post_test");
+  std::string postdata("postdata");
+  rv = PrepareFileForPost(file_ref, postdata, &message);
+  if (rv != PP_OK)
+    return ReportError(message.c_str(), rv);
+
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("/echo");
+  request.SetMethod("POST");
+  request.AppendFileToBody(file_ref, 0);
+  return LoadAndCompareBody(request, postdata);
+}
+
+std::string TestURLLoader::TestBasicFileRangePOST() {
+  std::string message;
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  int32_t rv = OpenFileSystem(&file_system, &message);
+  if (rv != PP_OK)
+    return ReportError(message.c_str(), rv);
+
+  pp::FileRef file_ref(file_system, "/file_range_post_test");
+  std::string postdata("postdatapostdata");
+  rv = PrepareFileForPost(file_ref, postdata, &message);
+  if (rv != PP_OK)
+    return ReportError(message.c_str(), rv);
+
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("/echo");
+  request.SetMethod("POST");
+  request.AppendFileRangeToBody(file_ref, 4, 12, 0);
+  return LoadAndCompareBody(request, postdata.substr(4, 12));
 }
 
 std::string TestURLLoader::TestCompoundBodyPOST() {

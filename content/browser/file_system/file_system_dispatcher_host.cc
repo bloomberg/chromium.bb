@@ -25,7 +25,9 @@
 #include "webkit/fileapi/file_system_util.h"
 
 using fileapi::FileSystemCallbackDispatcher;
+using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationContext;
 
 class BrowserFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {
@@ -126,6 +128,13 @@ void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
   DCHECK(context_);
 }
 
+void FileSystemDispatcherHost::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  if (message.type() == FileSystemHostMsg_SyncGetPlatformPath::ID)
+    *thread = BrowserThread::FILE;
+}
+
 bool FileSystemDispatcherHost::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   *message_was_ok = true;
@@ -146,6 +155,8 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_WillUpdate, OnWillUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidUpdate, OnDidUpdate)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_SyncGetPlatformPath,
+                        OnSyncGetPlatformPath)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -267,6 +278,28 @@ void FileSystemDispatcherHost::OnDidUpdate(const GURL& path, int64 delta) {
   quota_util->proxy()->UpdateOriginUsage(
       context_->quota_manager_proxy(), origin_url, type, delta);
   quota_util->proxy()->EndUpdateOrigin(origin_url, type);
+}
+
+void FileSystemDispatcherHost::OnSyncGetPlatformPath(
+    const GURL& path, FilePath* platform_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(platform_path);
+  *platform_path = FilePath();
+  base::PlatformFileInfo info;
+  GURL origin_url;
+  fileapi::FileSystemType type;
+  FilePath virtual_path;
+  if (!CrackFileSystemURL(path, &origin_url, &type, &virtual_path))
+    return;
+  FileSystemFileUtil* file_util =
+      context_->path_manager()->GetFileSystemFileUtil(type);
+  if (!file_util)
+    return;
+  FileSystemOperationContext operation_context(context_, file_util);
+  operation_context.set_src_origin_url(origin_url);
+  operation_context.set_src_type(type);
+  file_util->GetFileInfo(&operation_context, virtual_path,
+                         &info, platform_path);
 }
 
 FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(

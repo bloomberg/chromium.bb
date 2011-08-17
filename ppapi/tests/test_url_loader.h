@@ -13,6 +13,8 @@ struct PPB_FileIOTrusted;
 
 namespace pp {
 class FileIO;
+class FileRef;
+class FileSystem;
 class URLLoader;
 class URLRequestInfo;
 }
@@ -31,9 +33,15 @@ class TestURLLoader : public TestCase {
                                      std::string* body);
   std::string LoadAndCompareBody(const pp::URLRequestInfo& request,
                                  const std::string& expected_body);
+  int32_t OpenFileSystem(pp::FileSystem* file_system, std::string* message);
+  int32_t PrepareFileForPost(const pp::FileRef& file_ref,
+                             const std::string& data,
+                             std::string* message);
 
   std::string TestBasicGET();
   std::string TestBasicPOST();
+  std::string TestBasicFilePOST();
+  std::string TestBasicFileRangePOST();
   std::string TestCompoundBodyPOST();
   std::string TestEmptyDataPOST();
   std::string TestBinaryDataPOST();

@@ -54,9 +54,10 @@ class PPB_FileRef_Impl : public Resource,
                          PP_CompletionCallback callback) OVERRIDE;
 
   PPB_FileSystem_Impl* file_system() const { return file_system_.get(); }
-  const std::string& virtual_path() const { return virtual_path_; }
 
   // Returns the virtual path (i.e., the path that the pepper plugin sees)
+  const std::string& virtual_path() const { return virtual_path_; }
+
   // Returns the system path corresponding to this file.
   FilePath GetSystemPath() const;
 

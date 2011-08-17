@@ -19,11 +19,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
+#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/string.h"
-#include "webkit/glue/webkit_glue.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -157,7 +159,7 @@ bool AreValidHeaders(const std::string& headers) {
 }  // namespace
 
 struct PPB_URLRequestInfo_Impl::BodyItem {
-  BodyItem(const std::string& data)
+  explicit BodyItem(const std::string& data)
       : data(data),
         start_offset(0),
         number_of_bytes(-1),
@@ -287,9 +289,24 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
     http_body.initialize();
     for (size_t i = 0; i < body_.size(); ++i) {
       if (body_[i].file_ref) {
+        FilePath platform_path;
+        switch (body_[i].file_ref->file_system()->type()) {
+          case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
+          case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
+            // TODO(kinuko): remove this sync IPC when we add more generic
+            // AppendURLRange solution that works for both Blob/FileSystem URL.
+            instance()->delegate()->SyncGetFileSystemPlatformPath(
+                body_[i].file_ref->GetFileSystemURL(),
+                &platform_path);
+            break;
+          case PP_FILESYSTEMTYPE_EXTERNAL:
+            platform_path = body_[i].file_ref->GetSystemPath();
+            break;
+          default:
+            NOTREACHED();
+        }
         http_body.appendFileRange(
-            webkit_glue::FilePathToWebString(
-                body_[i].file_ref->GetSystemPath()),
+            webkit_glue::FilePathToWebString(platform_path),
             body_[i].start_offset,
             body_[i].number_of_bytes,
             body_[i].expected_last_modified_time);
