@@ -5,6 +5,7 @@
 #include "printing/printing_context.h"
 
 #include "base/values.h"
+#include "printing/print_settings_initializer.h"
 
 namespace printing {
 
@@ -31,6 +32,15 @@ void PrintingContext::ResetSettings() {
 PrintingContext::Result PrintingContext::OnError() {
   ResetSettings();
   return abort_printing_ ? CANCEL : FAILED;
+}
+
+PrintingContext::Result PrintingContext::UpdatePrintSettings(
+    const base::DictionaryValue& job_settings,
+    const PageRanges& ranges) {
+  PrintingContext::Result result = UpdatePrinterSettings(job_settings, ranges);
+  printing::PrintSettingsInitializer::InitHeaderFooterStrings(job_settings,
+                                                              &settings_);
+  return result;
 }
 
 }  // namespace printing

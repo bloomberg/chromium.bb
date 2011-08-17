@@ -187,6 +187,15 @@ Metafile* PrintWebViewHelper::RenderPage(
     printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
 
   float webkit_scale_factor = frame->printPage(page_number, canvas.get());
+
+  if (params.display_header_footer) {
+    // |page_number| is 0-based, so 1 is added.
+    PrintHeaderAndFooter(device, canvas.get(), page_number + 1,
+                         print_preview_context_.total_page_count(),
+                         webkit_scale_factor, page_layout_in_points,
+                         *header_footer_info_);
+  }
+
   if (*scale_factor <= 0 || webkit_scale_factor <= 0) {
     NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {

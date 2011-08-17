@@ -51,10 +51,16 @@ class PrintingContext {
   // default device settings.
   virtual Result UseDefaultSettings() = 0;
 
-  // Updates print settings. |job_settings| contains all print job settings
-  // information. |ranges| has the new page range settings.
-  virtual Result UpdatePrintSettings(const base::DictionaryValue& job_settings,
-                                     const PageRanges& ranges) = 0;
+  // Updates printer related settings. |job_settings| contains all print job
+  // settings information. |ranges| has the new page range settings.
+  virtual Result UpdatePrinterSettings(
+      const base::DictionaryValue& job_settings,
+      const PageRanges& ranges) = 0;
+
+  // Updates Print Settings. |job_settings| contains all print job
+  // settings information. |ranges| has the new page range settings.
+  Result UpdatePrintSettings(const base::DictionaryValue& job_settings,
+                             const PageRanges& ranges);
 
   // Initializes with predefined settings.
   virtual Result InitWithSettings(const PrintSettings& settings) = 0;

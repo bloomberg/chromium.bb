@@ -140,7 +140,7 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
   return OK;
 }
 
-PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
+PrintingContext::Result PrintingContextCairo::UpdatePrinterSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
 #if defined(OS_CHROMEOS)
   bool landscape = false;

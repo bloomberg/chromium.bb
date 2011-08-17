@@ -36,10 +36,19 @@
 #include "content/common/view_messages.h"
 #endif
 
+#if defined(USE_SKIA)
+#include "base/string_number_conversions.h"
+#include "skia/ext/vector_canvas.h"
+#include "skia/ext/vector_platform_device_skia.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#endif  // defined(USE_SKIA)
+
+using base::Time;
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
+using printing::GetHeaderFooterSegmentWidth;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDocument;
 using WebKit::WebElement;
@@ -87,6 +96,11 @@ bool PrintMsg_Print_Params_IsEqual(
          oldParams.params.supports_alpha_blend ==
              newParams.params.supports_alpha_blend &&
          oldParams.pages.size() == newParams.pages.size() &&
+         oldParams.params.display_header_footer ==
+             newParams.params.display_header_footer &&
+         oldParams.params.date == newParams.params.date &&
+         oldParams.params.title == newParams.params.title &&
+         oldParams.params.url == newParams.params.url &&
          std::equal(oldParams.pages.begin(), oldParams.pages.end(),
              newParams.pages.begin());
 }
@@ -101,7 +115,146 @@ void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
                                  print_params.desired_dpi));
 }
 
+#if defined(USE_SKIA)
+// Given a text, the positions, and the paint object, this method gets the
+// coordinates and prints the text at those coordinates on the canvas.
+void PrintHeaderFooterText(
+    string16 text,
+    skia::VectorCanvas* canvas,
+    SkPaint paint,
+    float webkit_scale_factor,
+    const PageSizeMargins& page_layout,
+    printing::HorizontalHeaderFooterPosition horizontal_position,
+    printing::VerticalHeaderFooterPosition vertical_position,
+    SkScalar offset_to_baseline) {
+  size_t text_byte_length = text.length() * sizeof(char16);
+  // Get the (x, y) coordinate from where printing of the current text should
+  // start depending on the horizontal alignment (LEFT, RIGHT, CENTER) and
+  // vertical alignment (TOP, BOTTOM).
+  SkScalar text_width_in_points = paint.measureText(text.c_str(),
+                                                    text_byte_length);
+  SkScalar x = 0;
+  switch (horizontal_position) {
+    case printing::LEFT: {
+      x = printing::kSettingHeaderFooterInterstice - page_layout.margin_left;
+      break;
+    }
+    case printing::RIGHT: {
+      x = page_layout.content_width + page_layout.margin_right -
+          printing::kSettingHeaderFooterInterstice - text_width_in_points;
+      break;
+    }
+    case printing::CENTER: {
+      SkScalar available_width = GetHeaderFooterSegmentWidth(
+          page_layout.margin_left + page_layout.margin_right +
+              page_layout.content_width);
+      x = available_width - page_layout.margin_left +
+          (available_width - text_width_in_points) / 2;
+      break;
+    }
+    default: {
+      NOTREACHED();
+    }
+  }
+
+  SkScalar y = 0;
+  switch (vertical_position) {
+    case printing::TOP:
+      y = printing::kSettingHeaderFooterInterstice -
+          page_layout.margin_top - offset_to_baseline;
+      break;
+    case printing::BOTTOM:
+      y = page_layout.margin_bottom + page_layout.content_height -
+          printing::kSettingHeaderFooterInterstice - offset_to_baseline;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  x = x / webkit_scale_factor;
+  y = y / webkit_scale_factor;
+  paint.setTextSize(paint.getTextSize() / webkit_scale_factor);
+  canvas->drawText(text.c_str(), text_byte_length, x, y, paint);
+}
+#endif  // defined(USE_SKIA)
+
 }  // namespace
+
+#if defined(USE_SKIA)
+// static - Not anonymous so that platform implementations can use it.
+void PrintWebViewHelper::PrintHeaderAndFooter(
+    SkDevice* device,
+    skia::VectorCanvas* canvas,
+    int page_number,
+    int total_pages,
+    float webkit_scale_factor,
+    const PageSizeMargins& page_layout,
+    const DictionaryValue& header_footer_info) {
+  static_cast<skia::VectorPlatformDeviceSkia*>(device)->setDrawingArea(
+      SkPDFDevice::kMargin_DrawingArea);
+
+  SkPaint paint;
+  paint.setColor(SK_ColorBLACK);
+  paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
+  paint.setTextSize(printing::kSettingHeaderFooterFontSize);
+  paint.setTypeface(SkTypeface::CreateFromName(
+      printing::kSettingHeaderFooterFontFamilyName, SkTypeface::kNormal));
+
+  // Print the headers onto the |canvas| if there is enough space to print
+  // them.
+  string16 date;
+  string16 title;
+  if (!header_footer_info.GetString(printing::kSettingHeaderFooterTitle,
+                                    &title) ||
+      !header_footer_info.GetString(printing::kSettingHeaderFooterDate,
+                                    &date)) {
+    NOTREACHED();
+  }
+  string16 header_text = date + title;
+
+  SkRect header_bounds;
+  paint.measureText(header_text.c_str(), header_text.length() * sizeof(char16),
+                    &header_bounds, 0);
+  SkScalar text_height =
+      printing::kSettingHeaderFooterInterstice + header_bounds.height();
+  if (text_height <= page_layout.margin_top) {
+    PrintHeaderFooterText(date, canvas, paint, webkit_scale_factor, page_layout,
+                          printing::LEFT, printing::TOP, header_bounds.top());
+    PrintHeaderFooterText(title, canvas, paint, webkit_scale_factor,
+                          page_layout, printing::CENTER, printing::TOP,
+                          header_bounds.top());
+  }
+
+  // Prints the footers onto the |canvas| if there is enough space to print
+  // them.
+  string16 page_of_total_pages = base::IntToString16(page_number) +
+                                 UTF8ToUTF16("/") +
+                                 base::IntToString16(total_pages);
+  string16 url;
+  if (!header_footer_info.GetString(printing::kSettingHeaderFooterURL,
+                                    &url)) {
+    NOTREACHED();
+  }
+  string16 footer_text = page_of_total_pages + url;
+
+  SkRect footer_bounds;
+  paint.measureText(footer_text.c_str(), footer_text.length() * sizeof(char16),
+                    &footer_bounds, 0);
+  text_height =
+      printing::kSettingHeaderFooterInterstice + footer_bounds.height();
+  if (text_height <= page_layout.margin_bottom) {
+    PrintHeaderFooterText(page_of_total_pages, canvas, paint,
+                          webkit_scale_factor, page_layout, printing::RIGHT,
+                          printing::BOTTOM, footer_bounds.bottom());
+    PrintHeaderFooterText(url, canvas, paint, webkit_scale_factor, page_layout,
+                          printing::LEFT, printing::BOTTOM,
+                          footer_bounds.bottom());
+  }
+
+  static_cast<skia::VectorPlatformDeviceSkia*>(device)->setDrawingArea(
+      SkPDFDevice::kContent_DrawingArea);
+}
+#endif  // defined(USE_SKIA)
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const PrintMsg_Print_Params& print_params,
@@ -766,7 +919,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   PrintMsg_PrintPages_Params settings;
 
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
-      print_pages_params_->params.document_cookie, job_settings, &settings));
+       print_pages_params_->params.document_cookie, job_settings, &settings));
 
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
@@ -780,6 +933,17 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+
+  if (print_pages_params_->params.display_header_footer) {
+    header_footer_info_.reset(new DictionaryValue());
+    header_footer_info_->SetString(printing::kSettingHeaderFooterDate,
+                                   print_pages_params_->params.date);
+    header_footer_info_->SetString(printing::kSettingHeaderFooterURL,
+                                   print_pages_params_->params.url);
+    header_footer_info_->SetString(printing::kSettingHeaderFooterTitle,
+                                   print_pages_params_->params.title);
+  }
+
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
   return true;

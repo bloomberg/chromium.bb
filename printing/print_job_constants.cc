@@ -30,6 +30,37 @@ const char kSettingDeviceName[] = "deviceName";
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 
+// Option to print headers and Footers: true if selected, false if not.
+const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
+
+// Default font family name for printing the headers and footers.
+const char kSettingHeaderFooterFontFamilyName[] = "sans";
+
+// Default font name for printing the headers and footers.
+const char kSettingHeaderFooterFontName[] = "Helvetica";
+
+// Default font size for printing the headers and footers.
+const int kSettingHeaderFooterFontSize = 8;
+
+// Number of horizontal regions for headers and footers.
+const float kSettingHeaderFooterHorizontalRegions = 3;
+
+// Interstice or gap between different header footer components.
+// Hardcoded to 0.25cm = 1/10" = 7.2points.
+const float kSettingHeaderFooterInterstice = 7.2f;
+
+// Key that specifies the date of the page that will be printed in the headers
+// and footers.
+const char kSettingHeaderFooterDate[] = "date";
+
+// Key that specifies the title of the page that will be printed in the headers
+// and footers.
+const char kSettingHeaderFooterTitle[] = "title";
+
+// Key that specifies the URL of the page that will be printed in the headers
+// and footers.
+const char kSettingHeaderFooterURL[] = "url";
+
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
