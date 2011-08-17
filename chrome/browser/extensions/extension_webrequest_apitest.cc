@@ -76,14 +76,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
-// Times out: http://crbug.com/91715, http://crbug.com/93062.
-#define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
-#else
-#define MAYBE_WebRequestBlocking WebRequestBlocking
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestBlocking) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestBlocking) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

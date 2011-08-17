@@ -115,6 +115,7 @@ function checkUserAgent(headers) {
 }
 
 function captureEvent(name, details) {
+  console.log("capture " + name + ": " + details.url);
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
   if (details.tabId == -1 || details.type == "other" ||

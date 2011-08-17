@@ -1,6 +1,8 @@
 <script src="framework.js">
 </script>
 <script>
+var pass = chrome.test.callbackPass;
+
 // Constants as functions, not to be called until after runTests.
 function getURLEchoUserAgent() {
   return getServerURL('echoheader?User-Agent');
@@ -19,8 +21,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("complexLoad/a.html"),
-            frameUrl: getURL("complexLoad/a.html")
+            url: getURL("complexLoad/b.html"),
+            frameUrl: getURL("complexLoad/b.html")
           },
           retval: {cancel: true}
         },
@@ -28,7 +30,7 @@ runTests([
         { label: "onErrorOccurred",
           event: "onErrorOccurred",
           details: {
-            url: getURL("complexLoad/a.html"),
+            url: getURL("complexLoad/b.html"),
             fromCache: false,
             error: "net::ERR_EMPTY_RESPONSE"
             // Request to chrome-extension:// url has no IP.
@@ -40,8 +42,15 @@ runTests([
       ],
       {},  // filter
       ["blocking"]);
-    console.log("load canc: navigating to a");
-    navigateAndWait(getURL("complexLoad/a.html"));
+    console.log("load canc: navigating to b");
+    navigateAndWait(getURL("complexLoad/b.html"), function() {
+      // Workaround for hanging test. For some reason, if we try to load
+      // a new URL in the current tab, it hangs on the buildbot.
+      // See http://crbug.com/91715
+      chrome.tabs.create({url: "about:blank"}, pass(function(tab) {
+        tabId = tab.id;
+      }));
+    });
   },
 
   // Navigates to a page with a blocking handler that redirects to a different
