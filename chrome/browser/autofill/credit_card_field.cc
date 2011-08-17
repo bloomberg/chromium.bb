@@ -85,30 +85,46 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       credit_card_field->expiration_month_ = scanner->Cursor();
       scanner->Advance();
     } else {
-      // "Expiration date" is the most common label here, but some pages have
-      // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look
-      // for the field names ccmonth and ccyear, which appear on at least 4 of
-      // our test pages.
-      //
-      // -> On at least one page (The China Shop2.html) we find only the labels
-      // "month" and "year".  So for now we match these words directly; we'll
-      // see if this turns out to be too general.
-      //
-      // Toolbar Bug 51451: indeed, simply matching "month" is too general for
-      //   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
-      // Instead, we match only words beginning with "month".
+      // First try to parse split month/year expiration fields.
+      scanner->SaveCursor();
       pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
-      if ((!credit_card_field->expiration_month_ ||
-           credit_card_field->expiration_month_->IsEmpty()) &&
+      if (!credit_card_field->expiration_month_ &&
           ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                               &credit_card_field->expiration_month_)) {
-        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
-        if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
+        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_YEAR_RE);
+        if (ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT | MATCH_SELECT,
                                  &credit_card_field->expiration_year_)) {
-          scanner->RewindTo(saved_cursor);
-          return NULL;
+          continue;
         }
-        continue;
+      }
+
+      // If that fails, try to parse a combined expiration field.
+      if (!credit_card_field->expiration_date_) {
+        // Look for a 2-digit year first.
+        scanner->Rewind();
+        pattern = l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_EXPIRATION_DATE_2_DIGIT_YEAR_RE);
+        if (ParseFieldSpecifics(scanner, pattern,
+                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
+                                &credit_card_field->expiration_date_)) {
+          credit_card_field->is_two_digit_year_ = true;
+          continue;
+        }
+
+        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
+        if (ParseFieldSpecifics(scanner, pattern,
+                                MATCH_LABEL | MATCH_VALUE | MATCH_TEXT,
+                                &credit_card_field->expiration_date_)) {
+          continue;
+        }
+      }
+
+      if (credit_card_field->expiration_month_ &&
+          !credit_card_field->expiration_year_ &&
+          !credit_card_field->expiration_date_) {
+        // Parsed a month but couldn't parse a year; give up.
+        scanner->RewindTo(saved_cursor);
+        return NULL;
       }
     }
 
@@ -140,11 +156,12 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   // the number and name were parsed in a separate part of the form.  So if
   // the cvc and date were found independently they are returned.
   if ((credit_card_field->number_ || credit_card_field->verification_) &&
-      credit_card_field->expiration_month_ &&
-      (credit_card_field->expiration_year_ ||
-      (LowerCaseEqualsASCII(
-           credit_card_field->expiration_month_->form_control_type,
-           "month")))) {
+      (credit_card_field->expiration_date_ ||
+       (credit_card_field->expiration_month_ &&
+        (credit_card_field->expiration_year_ ||
+         (LowerCaseEqualsASCII(
+             credit_card_field->expiration_month_->form_control_type,
+             "month")))))) {
     return credit_card_field.release();
   }
 
@@ -159,7 +176,9 @@ CreditCardField::CreditCardField()
       number_(NULL),
       verification_(NULL),
       expiration_month_(NULL),
-      expiration_year_(NULL) {
+      expiration_year_(NULL),
+      expiration_date_(NULL),
+      is_two_digit_year_(false) {
 }
 
 bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
@@ -173,9 +192,26 @@ bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
     ok = ok && AddClassification(cardholder_, CREDIT_CARD_NAME, map);
 
   ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
-  ok = ok && AddClassification(expiration_month_, CREDIT_CARD_EXP_MONTH, map);
-  ok = ok && AddClassification(expiration_year_,
-                               CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                               map);
+  if (expiration_date_) {
+    if (is_two_digit_year_) {
+      ok = ok && AddClassification(expiration_date_,
+                                   CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR, map);
+    } else {
+      ok = ok && AddClassification(expiration_date_,
+                                   CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, map);
+    }
+  } else {
+    ok = ok && AddClassification(expiration_month_, CREDIT_CARD_EXP_MONTH, map);
+    if (is_two_digit_year_) {
+      ok = ok && AddClassification(expiration_year_,
+                                   CREDIT_CARD_EXP_2_DIGIT_YEAR,
+                                   map);
+    } else {
+      ok = ok && AddClassification(expiration_year_,
+                                   CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                                   map);
+    }
+  }
+
   return ok;
 }

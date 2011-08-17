@@ -30,6 +30,8 @@ class CreditCardField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseFullCreditCard);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpMonthYear2);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpField);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest, ParseExpField2DigitYear);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFieldTest,
                            ParseCreditCardHolderNameWithCCFullName);
 
@@ -53,9 +55,15 @@ class CreditCardField : public FormField {
   // The 3-digit card verification number; we don't currently fill this.
   const AutofillField* verification_;
 
-  // Both required.  TODO(jhawkins): Parse the select control.
+  // Either |expiration_date_| or both |expiration_month_| and
+  // |expiration_year_| are required.
   const AutofillField* expiration_month_;
   const AutofillField* expiration_year_;
+  const AutofillField* expiration_date_;
+
+  // True if the year is detected to be a 2-digit year; otherwise, we assume
+  // a 4-digit year.
+  bool is_two_digit_year_;
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardField);
 };
