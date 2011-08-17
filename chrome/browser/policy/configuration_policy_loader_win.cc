@@ -69,8 +69,10 @@ void ConfigurationPolicyLoaderWin::SetupWatches() {
 
 void ConfigurationPolicyLoaderWin::Reload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  AsynchronousPolicyLoader::Reload();
+  // Reset the watches BEFORE reading the individual policies to avoid
+  // missing a change notification.
   SetupWatches();
+  AsynchronousPolicyLoader::Reload();
 }
 
 void ConfigurationPolicyLoaderWin::OnObjectSignaled(HANDLE object) {
