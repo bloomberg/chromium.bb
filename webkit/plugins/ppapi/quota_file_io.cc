@@ -4,6 +4,8 @@
 
 #include "webkit/plugins/ppapi/quota_file_io.h"
 
+#include <algorithm>
+
 #include "base/stl_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/task.h"
@@ -222,6 +224,8 @@ QuotaFileIO::~QuotaFileIO() {
 bool QuotaFileIO::Write(
     int64_t offset, const char* buffer, int32_t bytes_to_write,
     WriteCallback* callback) {
+  if (bytes_to_write <= 0)
+    return false;
   WriteOperation* op = new WriteOperation(
       this, false, offset, buffer, bytes_to_write, callback);
   return RegisterOperationForQuotaChecks(op);

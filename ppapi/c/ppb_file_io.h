@@ -164,7 +164,7 @@ struct PPB_FileIO {
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Read().
    *
-   * @return An The number of bytes read an error code from
+   * @return An The number of bytes read or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Read() multiple times with a completion
    * callback to queue up parallel reads from the file at different offsets.
@@ -190,7 +190,9 @@ struct PPB_FileIO {
    * @return An The number of bytes written or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Write() multiple times with a completion
-   * callback to queue up parallel writes to the file at different offsets.
+   * callback to queue up parallel writes to the file at different offsets.  If
+   * bytes_to_write is less than or equal to zero, return value is
+   * PP_ERROR_FAILED.
    */
   int32_t (*Write)(PP_Resource file_io,
                    int64_t offset,
@@ -243,4 +245,3 @@ struct PPB_FileIO {
  */
 
 #endif  /* PPAPI_C_PPB_FILE_IO_H_ */
-

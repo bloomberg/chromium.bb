@@ -35,6 +35,7 @@ class QuotaFileIO {
 
   // Performs write or setlength operation with quota checks.
   // Returns true when the operation is successfully dispatched.
+  // |bytes_to_write| must be geater than zero.
   // |callback| will be dispatched when the operation completes.
   // Otherwise it returns false and |callback| will not be dispatched.
   // |callback| will not be dispatched either when this instance is

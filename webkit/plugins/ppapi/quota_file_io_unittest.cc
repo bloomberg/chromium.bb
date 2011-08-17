@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <deque>
+#include <limits>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -115,6 +117,16 @@ class QuotaFileIOTest : public PpapiUnittest {
   }
 
   void WriteTestBody(bool will_operation) {
+    // Attempt to write zero bytes.
+    EXPECT_FALSE(quota_file_io_->Write(0, "data", 0,
+                                       callback_factory_.NewCallback(
+                                           &QuotaFileIOTest::DidWrite)));
+    // Attempt to write negative number of bytes.
+    EXPECT_FALSE(quota_file_io_->Write(0, "data",
+                                       std::numeric_limits<int32_t>::min(),
+                                       callback_factory_.NewCallback(
+                                           &QuotaFileIOTest::DidWrite)));
+
     quota_plugin_delegate()->set_available_space(100);
     std::string read_buffer;
 
