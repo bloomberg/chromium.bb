@@ -61,7 +61,12 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     didShowPage: function() {
-      $('manage-profile-icon-grid').redraw();
+      var grid = $('manage-profile-icon-grid');
+      // Recalculate the measured item size.
+      grid.measured_ = null;
+      grid.columns = 0;
+      grid.redraw();
+
       $('manage-profile-name').focus();
     },
 

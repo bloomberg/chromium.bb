@@ -87,7 +87,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     getColumnCount_: function() {
-      var width = this.getItemWidth_();
+      var size = this.getItemSize_();
+      var width = size.width + size.marginHorizontal; // Uncollapse margin.
       return width ? Math.floor(this.clientWidth / width) : 0;
     },
 
