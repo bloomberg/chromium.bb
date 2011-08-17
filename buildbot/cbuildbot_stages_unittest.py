@@ -1309,6 +1309,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         "************************************************************\n"
         "** BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n"
         "**  result_url\n"
+        "@@@STEP_LINK@Artifacts@result_url@@@"
         "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')

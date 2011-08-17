@@ -197,6 +197,7 @@ class Results:
     if archive_url:
       file.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
       file.write('%s  %s\n' % (edge, archive_url))
+      file.write('@@@STEP_LINK@Artifacts@%s@@@' % archive_url)
       file.write(line)
 
     if first_exception:
@@ -204,5 +205,3 @@ class Results:
       file.write('Build failed with:\n')
       file.write('\n')
       file.write(first_exception)
-
-
