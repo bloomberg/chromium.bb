@@ -629,8 +629,15 @@ bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
 }
 
 void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {
-  EventBindings::HandleContextCreated(
-      frame, false, extension_dispatcher_.get());
+  // This can happen if the frame has JavaScript disabled. The context was
+  // created  but we can't access it through mainWorldScriptContext().
+  if (frame->mainWorldScriptContext().IsEmpty())
+    return;
+
+  EventBindings::HandleContextCreated(frame,
+                                      frame->mainWorldScriptContext(),
+                                      extension_dispatcher_.get(),
+                                      0);  // isolated world ID
 }
 
 void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
@@ -638,8 +645,11 @@ void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
 }
 
 void ChromeContentRendererClient::DidCreateIsolatedScriptContext(
-  WebFrame* frame) {
-  EventBindings::HandleContextCreated(frame, true, extension_dispatcher_.get());
+    WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
+  EventBindings::HandleContextCreated(frame,
+                                      context,
+                                      extension_dispatcher_.get(),
+                                      world_id);
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(

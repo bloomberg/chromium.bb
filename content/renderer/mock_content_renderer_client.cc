@@ -5,6 +5,7 @@
 #include "content/renderer/mock_content_renderer_client.h"
 
 #include <string>
+#include "v8/include/v8.h"
 
 namespace content {
 
@@ -80,7 +81,7 @@ void MockContentRendererClient::DidDestroyScriptContext(
 }
 
 void MockContentRendererClient::DidCreateIsolatedScriptContext(
-    WebKit::WebFrame* frame) {
+    WebKit::WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
 }
 
 unsigned long long MockContentRendererClient::VisitedLinkHash(

@@ -2845,9 +2845,10 @@ void RenderView::didDestroyScriptContext(WebFrame* frame) {
   content::GetContentClient()->renderer()->DidDestroyScriptContext(frame);
 }
 
-void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
+void RenderView::didCreateIsolatedScriptContext(
+    WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
   content::GetContentClient()->renderer()->DidCreateIsolatedScriptContext(
-      frame);
+      frame, world_id, context);
 }
 
 void RenderView::didUpdateLayout(WebFrame* frame) {

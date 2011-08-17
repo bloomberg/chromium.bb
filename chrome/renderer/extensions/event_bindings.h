@@ -37,8 +37,9 @@ class EventBindings {
 
   // Handle a script context coming / going away.
   static void HandleContextCreated(WebKit::WebFrame* frame,
-                                   bool content_script,
-                                   ExtensionDispatcher* extension_dispatcher);
+                                   v8::Handle<v8::Context> context,
+                                   ExtensionDispatcher* extension_dispatcher,
+                                   int isolated_world_id);
   static void HandleContextDestroyed(WebKit::WebFrame* frame);
 
   // Calls the given function in each registered context which is listening for

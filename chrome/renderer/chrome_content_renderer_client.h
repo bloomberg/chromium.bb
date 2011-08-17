@@ -62,7 +62,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldPumpEventsDuringCookieMessage() OVERRIDE;
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidDestroyScriptContext(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidCreateIsolatedScriptContext(
+      WebKit::WebFrame* frame, int world_id,
+      v8::Handle<v8::Context> context) OVERRIDE;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;

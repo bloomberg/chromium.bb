@@ -25,6 +25,11 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
+namespace v8 {
+class Context;
+template<class T> class Handle;
+}
+
 namespace content {
 
 // Embedder API for participating in renderer logic.
@@ -90,7 +95,10 @@ class ContentRendererClient {
   // See the corresponding functions in WebKit::WebFrameClient.
   virtual void DidCreateScriptContext(WebKit::WebFrame* frame) = 0;
   virtual void DidDestroyScriptContext(WebKit::WebFrame* frame) = 0;
-  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* frame) = 0;
+  virtual void DidCreateIsolatedScriptContext(
+      WebKit::WebFrame* frame,
+      int world_id,
+      v8::Handle<v8::Context> context) = 0;
 
   // See WebKit::WebKitClient.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,

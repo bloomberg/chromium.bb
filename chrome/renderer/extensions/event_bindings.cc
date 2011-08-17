@@ -287,17 +287,16 @@ static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
 
 void EventBindings::HandleContextCreated(
     WebFrame* frame,
-    bool content_script,
-    ExtensionDispatcher* extension_dispatcher) {
+    v8::Handle<v8::Context> context,
+    ExtensionDispatcher* extension_dispatcher,
+    int isolated_world_id) {
   if (!bindings_registered)
     return;
 
+  bool content_script = isolated_world_id != 0;
+
   v8::HandleScope handle_scope;
   ContextList& contexts = GetContexts();
-  v8::Local<v8::Context> frame_context = frame->mainWorldScriptContext();
-  v8::Local<v8::Context> context = v8::Context::GetCurrent();
-  DCHECK(!context.IsEmpty());
-  DCHECK(bindings_utils::FindContext(context) == contexts.end());
 
   // Figure out the frame's URL.  If the frame is loading, use its provisional
   // URL, since we get this notification before commit.
@@ -315,7 +314,6 @@ void EventBindings::HandleContextCreated(
     // frames.
     // (Unless we're in unit tests, in which case we don't care what the URL
     // is).
-    DCHECK(frame_context.IsEmpty() || frame_context == context);
     if (!in_unit_tests)
       return;
 
@@ -329,7 +327,6 @@ void EventBindings::HandleContextCreated(
   WebFrame* parent_frame = NULL;
 
   if (content_script) {
-    DCHECK(frame_context != context);
     parent_frame = frame;
     // Content script contexts can get GCed before their frame goes away, so
     // set up a GC callback.
