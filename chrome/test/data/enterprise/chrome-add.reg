@@ -90,3 +90,4 @@ Windows Registry Editor Version 5.00
 "ShowHomeButton"=dword:1
 "SyncDisabled"=dword:1
 "DeveloperToolsDisabled"=dword:1
+"TranslateEnabled"=dword:1

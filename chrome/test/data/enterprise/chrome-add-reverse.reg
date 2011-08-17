@@ -35,3 +35,4 @@ Windows Registry Editor Version 5.00
 "SearchSuggestEnabled"=dword:0
 "ShowHomeButton"=dword:0
 "SyncDisabled"=dword:0
+"TranslateEnabled"=dword:0
