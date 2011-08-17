@@ -391,6 +391,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  false);
+    // Increase the memory allowed in a prerendered page above normal settings.
+    // Debug build bots occasionally run against the default limit, and tests
+    // were failing because the prerender was canceled due to memory exhaustion.
+    // http://crbug.com/93076
+    prerender_manager()->mutable_config().max_bytes = 1000 * 1024 * 1024;
     ASSERT_TRUE(test_server()->Start());
   }
 
