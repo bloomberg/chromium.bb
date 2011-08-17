@@ -129,6 +129,9 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
     // be ignored.
     request_->ReceivedContentWasMalformed();
     num_retries_++;
+    // We must set our request_context_getter_ again because
+    // URLFetcher::Core::RetryOrCompleteUrlFetch resets it to NULL...
+    request_->set_request_context(request_context_getter_);
     request_->Start();
   } else {
     request_.reset();
