@@ -33,7 +33,7 @@ namespace {
 
 bool IsValidLocalPath(const std::string& path) {
   // The path must start with '/'
-  if (path.empty() || path[0] != '/')
+  if (path.empty() || path[0] != '/' || path.find("..") != std::string::npos)
     return false;
 
   // The path must contain valid UTF-8 characters.

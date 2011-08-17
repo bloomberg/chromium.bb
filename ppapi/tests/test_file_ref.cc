@@ -5,6 +5,7 @@
 #include "ppapi/tests/test_file_ref.h"
 
 #include <stdio.h>
+#include <vector>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -44,6 +45,7 @@ bool TestFileRef::Init() {
 }
 
 void TestFileRef::RunTest() {
+  RUN_TEST_FORCEASYNC_AND_NOT(Create);
   RUN_TEST_FORCEASYNC_AND_NOT(GetFileSystemType);
   RUN_TEST_FORCEASYNC_AND_NOT(GetName);
   RUN_TEST_FORCEASYNC_AND_NOT(GetPath);
@@ -52,6 +54,36 @@ void TestFileRef::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(QueryAndTouchFile);
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteFileAndDirectory);
   RUN_TEST_FORCEASYNC_AND_NOT(RenameFileAndDirectory);
+}
+
+std::string TestFileRef::TestCreate() {
+  std::vector<std::string> invalid_paths;
+  invalid_paths.push_back("invalid_path");  // no '/' at the first character
+  invalid_paths.push_back("");  // empty path
+  // The following are directory traversal checks
+  invalid_paths.push_back("..");
+  invalid_paths.push_back("/../invalid_path");
+  invalid_paths.push_back("/../../invalid_path");
+  invalid_paths.push_back("/invalid/../../path");
+  const size_t num_invalid_paths = invalid_paths.size();
+
+  pp::FileSystem file_system_pers(
+      instance_, PP_FILESYSTEMTYPE_LOCALPERSISTENT);
+  pp::FileSystem file_system_temp(
+      instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  for (size_t j = 0; j < num_invalid_paths; ++j) {
+    pp::FileRef file_ref_pers(file_system_pers, invalid_paths[j].c_str());
+    if (file_ref_pers.pp_resource() != 0) {
+      return "file_ref_pers expected to be invalid for path: " +
+          invalid_paths[j];
+    }
+    pp::FileRef file_ref_temp(file_system_temp, invalid_paths[j].c_str());
+    if (file_ref_temp.pp_resource() != 0) {
+      return "file_ref_temp expected to be invalid for path: " +
+          invalid_paths[j];
+    }
+  }
+  PASS();
 }
 
 std::string TestFileRef::TestGetFileSystemType() {
