@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "net/base/net_export.h"
 
@@ -21,6 +22,13 @@ namespace net {
 
 class NET_EXPORT OriginBoundCertStore {
  public:
+  // Used by GetAllOriginBoundCerts.
+  struct OriginBoundCertInfo {
+    std::string origin;  // Origin, for instance "https://www.verisign.com:443".
+    std::string private_key;  // DER-encoded PrivateKeyInfo struct.
+    std::string cert;  // DER-encoded certificate.
+  };
+
   virtual ~OriginBoundCertStore() {}
 
   // TODO(rkn): Specify certificate type (RSA or DSA).
@@ -34,10 +42,22 @@ class NET_EXPORT OriginBoundCertStore {
                                   std::string* private_key_result,
                                   std::string* cert_result) = 0;
 
-  // Adds an origin bound cert to the store.
-  virtual bool SetOriginBoundCert(const std::string& origin,
+  // Adds an origin bound cert and the corresponding private key to the store.
+  virtual void SetOriginBoundCert(const std::string& origin,
                                   const std::string& private_key,
                                   const std::string& cert) = 0;
+
+  // Removes an origin bound cert and the corresponding private key from the
+  // store.
+  virtual void DeleteOriginBoundCert(const std::string& origin) = 0;
+
+  // Removes all origin bound certs and the corresponding private keys from
+  // the store.
+  virtual void DeleteAll() = 0;
+
+  // Returns all origin bound certs and the corresponding private keys.
+  virtual void GetAllOriginBoundCerts(
+      std::vector<OriginBoundCertInfo>* origin_bound_certs) = 0;
 
   // Returns the number of certs in the store.
   // Public only for unit testing.

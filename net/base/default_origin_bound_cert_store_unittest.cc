@@ -82,31 +82,101 @@ TEST(DefaultOriginBoundCertStoreTest, TestLoading) {
           "https://www.verisign.com/", "c", "d"));
 
   // Make sure certs load properly.
-  scoped_ptr<DefaultOriginBoundCertStore> store(
-      new DefaultOriginBoundCertStore(persistent_store));
-  EXPECT_EQ(2, store->GetCertCount());
-  EXPECT_TRUE(store->SetOriginBoundCert("https://www.verisign.com/", "e", "f"));
-  EXPECT_EQ(2, store->GetCertCount());
-  EXPECT_TRUE(store->SetOriginBoundCert("https://www.twitter.com/", "g", "h"));
-  EXPECT_EQ(3, store->GetCertCount());
+  DefaultOriginBoundCertStore store(persistent_store.get());
+  EXPECT_EQ(2, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.verisign.com/", "e", "f");
+  EXPECT_EQ(2, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.twitter.com/", "g", "h");
+  EXPECT_EQ(3, store.GetCertCount());
 }
 
 TEST(DefaultOriginBoundCertStoreTest, TestSettingAndGetting) {
-  scoped_ptr<DefaultOriginBoundCertStore> store(
-      new DefaultOriginBoundCertStore(NULL));
+  DefaultOriginBoundCertStore store(NULL);
   std::string private_key, cert;
-  EXPECT_EQ(0, store->GetCertCount());
-  EXPECT_FALSE(store->GetOriginBoundCert("https://www.verisign.com/",
+  EXPECT_EQ(0, store.GetCertCount());
+  EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
                                          &private_key,
                                          &cert));
   EXPECT_TRUE(private_key.empty());
   EXPECT_TRUE(cert.empty());
-  EXPECT_TRUE(store->SetOriginBoundCert("https://www.verisign.com/", "i", "j"));
-  EXPECT_TRUE(store->GetOriginBoundCert("https://www.verisign.com/",
+  store.SetOriginBoundCert("https://www.verisign.com/", "i", "j");
+  EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
                                         &private_key,
                                         &cert));
   EXPECT_EQ("i", private_key);
   EXPECT_EQ("j", cert);
+}
+
+TEST(DefaultOriginBoundCertStoreTest, TestDuplicateCerts) {
+  scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
+  DefaultOriginBoundCertStore store(persistent_store.get());
+
+  std::string private_key, cert;
+  EXPECT_EQ(0, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
+  store.SetOriginBoundCert("https://www.verisign.com/", "c", "d");
+
+  EXPECT_EQ(1, store.GetCertCount());
+  EXPECT_TRUE(store.GetOriginBoundCert("https://www.verisign.com/",
+                                        &private_key,
+                                        &cert));
+  EXPECT_EQ("c", private_key);
+  EXPECT_EQ("d", cert);
+}
+
+TEST(DefaultOriginBoundCertStoreTest, TestDeleteAll) {
+  scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
+  DefaultOriginBoundCertStore store(persistent_store.get());
+
+  EXPECT_EQ(0, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
+  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
+  store.SetOriginBoundCert("https://www.harvard.com/", "e", "f");
+
+  EXPECT_EQ(3, store.GetCertCount());
+  store.DeleteAll();
+  EXPECT_EQ(0, store.GetCertCount());
+}
+
+TEST(DefaultOriginBoundCertStoreTest, TestDelete) {
+  scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
+  DefaultOriginBoundCertStore store(persistent_store.get());
+
+  std::string private_key, cert;
+  EXPECT_EQ(0, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
+  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
+
+  EXPECT_EQ(2, store.GetCertCount());
+  store.DeleteOriginBoundCert("https://www.verisign.com/");
+  EXPECT_EQ(1, store.GetCertCount());
+  EXPECT_FALSE(store.GetOriginBoundCert("https://www.verisign.com/",
+                                         &private_key,
+                                         &cert));
+  EXPECT_TRUE(store.GetOriginBoundCert("https://www.google.com/",
+                                        &private_key,
+                                        &cert));
+  store.DeleteOriginBoundCert("https://www.google.com/");
+  EXPECT_EQ(0, store.GetCertCount());
+  EXPECT_FALSE(store.GetOriginBoundCert("https://www.google.com/",
+                                         &private_key,
+                                         &cert));
+}
+
+TEST(DefaultOriginBoundCertStoreTest, TestGetAll) {
+  scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
+  DefaultOriginBoundCertStore store(persistent_store.get());
+
+  EXPECT_EQ(0, store.GetCertCount());
+  store.SetOriginBoundCert("https://www.verisign.com/", "a", "b");
+  store.SetOriginBoundCert("https://www.google.com/", "c", "d");
+  store.SetOriginBoundCert("https://www.harvard.com/", "e", "f");
+  store.SetOriginBoundCert("https://www.mit.com/", "g", "h");
+
+  EXPECT_EQ(4, store.GetCertCount());
+  std::vector<OriginBoundCertStore::OriginBoundCertInfo> certs;
+  store.GetAllOriginBoundCerts(&certs);
+  EXPECT_EQ(4u, certs.size());
 }
 
 }  // namespace net

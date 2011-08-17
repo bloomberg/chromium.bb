@@ -57,16 +57,20 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
   virtual bool GetOriginBoundCert(const std::string& origin,
                           std::string* private_key_result,
                           std::string* cert_result) OVERRIDE;
-  virtual bool SetOriginBoundCert(const std::string& origin,
+  virtual void SetOriginBoundCert(const std::string& origin,
                           const std::string& private_key,
                           const std::string& cert) OVERRIDE;
+  virtual void DeleteOriginBoundCert(const std::string& origin) OVERRIDE;
+  virtual void DeleteAll() OVERRIDE;
+  virtual void GetAllOriginBoundCerts(
+      std::vector<OriginBoundCertInfo>* origin_bound_certs) OVERRIDE;
   virtual int GetCertCount() OVERRIDE;
 
  private:
   static const size_t kMaxCerts;
 
   // Deletes all of the certs. Does not delete them from |store_|.
-  void DeleteAll();
+  void DeleteAllInMemory();
 
   // Called by all non-static functions to ensure that the cert store has
   // been initialized. This is not done during creating so it doesn't block

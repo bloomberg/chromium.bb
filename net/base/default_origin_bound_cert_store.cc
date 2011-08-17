@@ -44,7 +44,7 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
   return true;
 }
 
-bool DefaultOriginBoundCertStore::SetOriginBoundCert(
+void DefaultOriginBoundCertStore::SetOriginBoundCert(
     const std::string& origin,
     const std::string& private_key,
     const std::string& cert) {
@@ -54,8 +54,44 @@ bool DefaultOriginBoundCertStore::SetOriginBoundCert(
   InternalDeleteOriginBoundCert(origin);
   InternalInsertOriginBoundCert(origin,
                                 new OriginBoundCert(origin, private_key, cert));
+}
 
-  return true;
+void DefaultOriginBoundCertStore::DeleteOriginBoundCert(
+    const std::string& origin) {
+  base::AutoLock autolock(lock_);
+  InitIfNecessary();
+  InternalDeleteOriginBoundCert(origin);
+}
+
+void DefaultOriginBoundCertStore::DeleteAll() {
+  base::AutoLock autolock(lock_);
+  InitIfNecessary();
+  for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
+       it != origin_bound_certs_.end(); ++it) {
+    OriginBoundCert* cert = it->second;
+    if (store_)
+      store_->DeleteOriginBoundCert(*cert);
+    delete cert;
+  }
+  origin_bound_certs_.clear();
+}
+
+void DefaultOriginBoundCertStore::GetAllOriginBoundCerts(
+    std::vector<OriginBoundCertInfo>* origin_bound_certs) {
+  base::AutoLock autolock(lock_);
+  InitIfNecessary();
+  for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
+       it != origin_bound_certs_.end(); ++it) {
+    OriginBoundCertInfo cert_info = {
+      it->second->origin(),
+      it->second->private_key(),
+      it->second->cert()
+    };
+    // TODO(rkn): Make changes so we can simply write
+    // origin_bound_certs->push_back(*it->second). This is probably best done
+    // by unnesting the OriginBoundCert class.
+    origin_bound_certs->push_back(cert_info);
+  }
 }
 
 int DefaultOriginBoundCertStore::GetCertCount() {
@@ -66,14 +102,14 @@ int DefaultOriginBoundCertStore::GetCertCount() {
 }
 
 DefaultOriginBoundCertStore::~DefaultOriginBoundCertStore() {
-  DeleteAll();
+  DeleteAllInMemory();
 }
 
-void DefaultOriginBoundCertStore::DeleteAll() {
+void DefaultOriginBoundCertStore::DeleteAllInMemory() {
   base::AutoLock autolock(lock_);
 
   for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
-      it != origin_bound_certs_.end(); it++) {
+       it != origin_bound_certs_.end(); ++it) {
     delete it->second;
   }
   origin_bound_certs_.clear();
