@@ -624,7 +624,7 @@
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    ...
-   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZNSsC1*KS*
 }
 {
    bug_76386b
@@ -639,14 +639,6 @@
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    fun:_ZNSs9_M_mutateEjjj
-}
-{
-   bug_76386d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   ...
-   fun:_ZNSsC1ERKSsjj
 }
 
 #-----------------------------------------------------------------------
@@ -3751,13 +3743,11 @@
    bug_75051
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
    fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
    fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
    fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
-   fun:_ZN3net18SSLClientSocketNSS21OnHandshakeIOCompleteEi
-   fun:_ZN3net18SSLClientSocketNSS14OnRecvCompleteEi
-   fun:_ZN3net18SSLClientSocketNSS18BufferRecvCompleteEi
 }
 {
    bug_75127a
@@ -4176,19 +4166,6 @@
    fun:_ZN9talk_base4Task4StepEv
    fun:_ZN9talk_base10TaskRunner16InternalRunTasksEb
    fun:_ZN9talk_base10TaskRunner8RunTasksEv
-}
-{
-   bug_80022
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
-   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
-   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
-   fun:_ZN3net13SSLConnectJob6DoLoopEi
-   fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
 }
 {
    bug_80150
@@ -4788,8 +4765,8 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN3net20ClientSocketPoolBaseINS_15*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net19*SocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net20ClientSocketPoolBaseINS_*SocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net*SocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
    fun:_ZN3net18ClientSocketHandle4Init*
    ...
    fun:_ZN3net23ClientSocketPoolManager30InitSocketHandleForHttpRequestERK4GURLRKNS_18HttpRequestHeadersEiNS_15RequestPriorityEPNS_18HttpNetworkSessionERKNS_9ProxyInfoEbbRKNS_9SSLConfigESF_RKNS_11BoundNetLogEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEE
@@ -5270,12 +5247,6 @@
    fun:_ZN3net17URLRequestHttpJob5StartEv
    fun:_ZN3net10URLRequest8StartJobEPNS_13URLRequestJobE
    fun:_ZN3net10URLRequest5StartEv
-   fun:_ZN10URLFetcher4Core15StartURLRequestEv
-   fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
-   fun:_ZN10URLFetcher4Core15StartOnIOThreadEv
-   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
 }
 {
    bug_92876a
@@ -5330,6 +5301,25 @@
    fun:_ZN3net17URLRequestTestJob20ProcessNextOperationEv
    fun:_ZN3net17URLRequestTestJob24ProcessOnePendingMessageEv
    fun:_ZN56ResourceDispatcherHostTest_*8TestBodyEv
+}
+{
+   bug_TODO_crbug_is_down_1
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*SHA1Fingerprint*
+   fun:_ZN3net16CertVerifyResultaSERKS0_
+   fun:_ZN3net12CertVerifier12HandleResultEPNS_15X509CertificateERKSsiiRKNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker7DoReplyEv
+}
+{
+   bug_TODO_crbug_is_down_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMNS_6subtle18TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
+   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN3net18CertVerifierWorker6FinishEv
+   fun:_ZN3net18CertVerifierWorker3RunEv
 }
 
 #-----------------------------------------------------------------------
