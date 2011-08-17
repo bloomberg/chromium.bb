@@ -26,6 +26,18 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   *mem = (void *) NACL_TRAMPOLINE_START;
   result = NaCl_page_alloc_at_addr(mem, addrsp_size);
   *mem = 0;
+#elif NACL_WINDOWS && NACL_BUILD_SUBARCH == 32
+  /*
+   * On 32 bit Windows, a 1 gigabyte block of address space is reserved before
+   * starting up this process to make sure we can create the sandbox. Look for
+   * this pre-reserved block and if found, pass its address to the page
+   * allocation function.
+   */
+  if (0 == NaCl_find_prereserved_sandbox_memory(mem, addrsp_size)) {
+    result = NaCl_page_alloc_at_addr(mem, addrsp_size);
+  } else {
+    result = NaCl_page_alloc(mem, addrsp_size);
+  }
 #else
   result = NaCl_page_alloc(mem, addrsp_size);
 #endif

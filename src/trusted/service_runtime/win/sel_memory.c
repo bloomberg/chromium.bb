@@ -14,6 +14,7 @@
 #include <windows.h>
 #include <string.h>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
@@ -23,6 +24,52 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 #define MSGWIDTH  "25"
+
+#if NACL_BUILD_SUBARCH == 32
+
+/*
+ * This function searches for sandbox memory that has been reserved by
+ * the parent process on our behalf. We pre-reserve the sandbox on 32-bit
+ * systems because otherwise the address space may become fragmented, making
+ * the large sandbox request fail.
+ */
+int   NaCl_find_prereserved_sandbox_memory(void   **p,
+                                           size_t num_bytes) {
+  SYSTEM_INFO sys_info;
+  MEMORY_BASIC_INFORMATION mem;
+  char *start;
+  SIZE_T mem_size;
+
+  GetSystemInfo(&sys_info);
+  start = sys_info.lpMinimumApplicationAddress;
+  while (1) {
+    mem_size = VirtualQuery((LPCVOID)start, &mem, sizeof(mem));
+    if (mem_size == 0)
+      break;
+    CHECK(mem_size == sizeof(mem));
+
+    if (mem.State == MEM_RESERVE &&
+        mem.AllocationProtect == PAGE_NOACCESS &&
+        mem.RegionSize == num_bytes) {
+      if (!VirtualFree(start, 0, MEM_RELEASE)) {
+        DWORD err = GetLastError();
+        NaClLog(LOG_FATAL,
+                "NaCl_find_prereserved_sandbox_memory: VirtualFree(0x%016"
+                NACL_PRIxPTR", 0, MEM_RELEASE) failed "
+                "with error 0x%X\n",
+                (uintptr_t) start, err);
+      }
+      *p = start;
+      return 0;
+    }
+    start += mem.RegionSize;
+    if ((LPVOID)start >= sys_info.lpMaximumApplicationAddress)
+      break;
+  }
+  return -ENOMEM;
+}
+
+#endif  /* NACL_ARCH_CPU_32_BITS */
 
 /*
  * NaCl_page_free: free pages allocated with NaCl_page_alloc.
@@ -48,8 +95,7 @@ void  NaCl_page_free(void     *p,
 }
 
 
-static
-int   NaCl_page_alloc_hint(void    **p,
+int   NaCl_page_alloc_at_addr(void    **p,
                            size_t  num_bytes) {
   SYSTEM_INFO sys_info;
 
@@ -151,7 +197,7 @@ int   NaCl_page_alloc_hint(void    **p,
     *p = addr;
     return 0;
  retry:
-    NaClLog(2, "NaCl_page_alloc_hint: retrying w/o hint\n");
+    NaClLog(2, "NaCl_page_alloc_at_addr: retrying w/o hint\n");
     hint = NULL;
   }
 
@@ -161,7 +207,7 @@ int   NaCl_page_alloc_hint(void    **p,
 int   NaCl_page_alloc(void    **p,
                       size_t  num_bytes) {
   *p = NULL;
-  return NaCl_page_alloc_hint(p, num_bytes);
+  return NaCl_page_alloc_at_addr(p, num_bytes);
 }
 
 /*
@@ -203,7 +249,7 @@ int NaCl_page_alloc_randomized(void   **p,
 
     NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) *p);
-    neg_errno = NaCl_page_alloc_hint(p, size);
+    neg_errno = NaCl_page_alloc_at_addr(p, size);
     if (0 == neg_errno) {
       break;
     }
@@ -213,7 +259,7 @@ int NaCl_page_alloc_randomized(void   **p,
             "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
             -neg_errno);
     *p = 0;
-    neg_errno = NaCl_page_alloc_hint(p, size);
+    neg_errno = NaCl_page_alloc_at_addr(p, size);
   }
   return neg_errno;
 }
