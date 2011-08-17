@@ -150,6 +150,23 @@ extern "C" void NaClPluginLowLevelInitializationComplete(void) {
     sb.Printf("%s", buffer);
   }
   fclose(iob);  // closed desc
+
+  sb.Printf("Opening non-existent file:\n");
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeBySignature(&manifest_channel,
+                                NACL_NAME_SERVICE_LOOKUP,
+                                "foobar/baz", O_RDONLY,
+                                &status, &desc)) {
+    sb.Printf("bogus manifest lookup RPC failed\n");
+    NaClSrpcDtor(&manifest_channel);
+    manifest_contents = new std::string(sb.ToString());
+    return;
+  }
+  sb.Printf("Got descriptor %d, status %d\n", desc, status);
+  if (-1 != desc) {
+    (void) close(desc);
+  }
+
   NaClSrpcDtor(&manifest_channel);
   manifest_contents = new std::string(sb.ToString());
 

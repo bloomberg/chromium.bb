@@ -192,7 +192,8 @@ void ManifestLookupRpc(NaClSrpcRpc* rpc,
 
   NaClLog(0, "ManifestLookupRpc: invoking OpenManifestEntry\n");
   if (!service->reverse_interface()->OpenManifestEntry(fname,
-                                                       &posix_desc)) {
+                                                       &posix_desc)
+      || -1 == posix_desc) {
     NaClLog(0, "ManifestLookupRpc: OpenManifestEntry failed.\n");
     out_args[0]->u.ival = 0;  // ok, but failed.
     out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
