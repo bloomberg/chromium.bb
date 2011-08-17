@@ -143,7 +143,9 @@ class UserController : public views::WidgetDelegate,
   static const int kNewUserUnselectedSize;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(UserControllerTest, GetNameTooltip);
+  FRIEND_TEST_ALL_PREFIXES(UserControllerTest, GetNameTooltipAddUser);
+  FRIEND_TEST_ALL_PREFIXES(UserControllerTest, GetNameTooltipIncognitoUser);
+  FRIEND_TEST_ALL_PREFIXES(UserControllerTest, GetNameTooltipExistingUser);
 
   class ControlsWidgetDelegate;
 

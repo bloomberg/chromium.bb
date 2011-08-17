@@ -6,22 +6,30 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
-// See http://crbug.com/92871 for details.
-TEST(UserControllerTest, DISABLED_GetNameTooltip) {
+TEST(UserControllerTest, GetNameTooltipAddUser) {
   UserController guest_user_controller(NULL, false);
   EXPECT_EQ(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER)),
             guest_user_controller.GetNameTooltip());
+}
 
+TEST(UserControllerTest, GetNameTooltipIncognitoUser) {
   UserController new_user_controller(NULL, true);
   EXPECT_EQ(UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON)),
             new_user_controller.GetNameTooltip());
+}
 
+TEST(UserControllerTest, GetNameTooltipExistingUser) {
+  // We need to have NotificationService and g_browser_process initialized
+  // before we create UserController for existing user.
+  // Otherwise we crash with either SEGFAULT or DCHECK.
+  ScopedTestingBrowserProcess browser_process;
   UserManager::User existing_user;
   existing_user.set_email("someordinaryuser@domain.com");
   UserController existing_user_controller(NULL, existing_user);
