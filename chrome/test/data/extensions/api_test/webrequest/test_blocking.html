@@ -42,7 +42,6 @@ runTests([
       ],
       {},  // filter
       ["blocking"]);
-    console.log("load canc: navigating to b");
     navigateAndWait(getURL("complexLoad/b.html"), function() {
       // Workaround for hanging test. For some reason, if we try to load
       // a new URL in the current tab, it hangs on the buildbot.
@@ -116,7 +115,6 @@ runTests([
       ],
       {}, // filter
       ["blocking"]);
-    console.log("load redir: navigating");
     navigateAndWait(getURL("complexLoad/a.html"));
   },
 
@@ -175,14 +173,10 @@ runTests([
       ],
       {}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
-    console.log("mod headers: 1");
     navigateAndWait(getURLEchoUserAgent(), function() {
-      console.log("mod headers: 2");
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
-        console.log("mod headers: 2.1");
         chrome.test.assertTrue(request.pass, "Request header was not set.");
       });
-      console.log("mod headers: 3");
       chrome.tabs.executeScript(tabId,
         {
           code: "chrome.extension.sendRequest(" +

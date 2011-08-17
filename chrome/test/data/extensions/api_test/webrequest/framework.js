@@ -31,17 +31,12 @@ function getServerURL(path) {
 function navigateAndWait(url, callback) {
   var done = chrome.test.listenForever(chrome.tabs.onUpdated,
       function (_, info, tab) {
-    console.log("tabUpdated: " + info.status + ": " + tab.url);
     if (tab.id == tabId && info.status == "complete") {
       if (callback) callback();
       done();
     }
   });
-  chrome.tabs.update(tabId, {url: url}, function() {
-    console.log("tab updated: " + url);
-    if (chrome.extension.lastError)
-      console.log("last error: " + chrome.extension.lastError.message);
-  });
+  chrome.tabs.update(tabId, {url: url});
 }
 
 // data: array of extected events, each one is a dictionary:
@@ -115,7 +110,6 @@ function checkUserAgent(headers) {
 }
 
 function captureEvent(name, details) {
-  console.log("capture " + name + ": " + details.url);
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
   if (details.tabId == -1 || details.type == "other" ||
