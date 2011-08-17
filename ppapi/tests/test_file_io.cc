@@ -4,7 +4,6 @@
 
 #include "ppapi/tests/test_file_io.h"
 
-#include <stdio.h>
 #include <string.h>
 
 #include "base/memory/scoped_ptr.h"
@@ -256,6 +255,15 @@ std::string TestFileIO::TestReadWriteSetLength() {
   rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, "test_test");
   if (rv != PP_OK)
     return ReportError("FileIO::Write", rv);
+
+  // Check for failing read operation.
+  char buf[256];
+  rv = file_io.Read(0, buf, -1,  // negative number of bytes to read
+                    callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_ERROR_FAILED)
+    return ReportError("FileIO::Read", rv);
 
   // Read the entire file.
   std::string read_buffer;
