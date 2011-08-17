@@ -744,8 +744,8 @@ class TestSDKStage(BuilderStage):
     cros_lib.RunCommand(cmd, cwd=board_location)
 
     # Build a new SDK using the tarball.
-    cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot', '--replace',
-           '--path', tarball_location]
+    cmd = ['cros_sdk', '--download', '--chroot', 'new-sdk-chroot', '--replace',
+           '--url', 'file://' + tarball_location]
     cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 

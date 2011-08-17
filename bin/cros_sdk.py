@@ -66,16 +66,13 @@ def FetchRemoteTarball(url):
   return tarball_dest
 
 
-def BootstrapChroot(chroot_path, stage_path, stage_url, replace):
+def BootstrapChroot(chroot_path, stage_url, replace):
   """Builds a new chroot from source"""
   cmd = MAKE_CHROOT + ['--chroot', chroot_path,
                        '--nousepkg']
 
   stage = None
-  if stage_path:
-    cros_build_lib.RunCommand(['cp', '-f', stage_path, SDK_DIR])
-    stage = os.path.join(SDK_DIR, os.path.basename(stage_path))
-  elif stage_url:
+  if stage_url:
     stage = FetchRemoteTarball(stage_url)
 
   if stage:
@@ -91,33 +88,22 @@ def BootstrapChroot(chroot_path, stage_path, stage_url, replace):
     sys.exit(1)
 
 
-def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
+def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
-  if sdk_path and sdk_url:
-    sys.exit('You can either select path or url, not both!')
-
   if not os.path.exists(SDK_DIR):
     cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR])
 
   # Based on selections, fetch the tarball
-  if sdk_path:
-    print 'Using "%s" as sdk' % sdk_path
-    if not os.path.exists(sdk_path):
-      sys.exit('No such file: %s' % sdk_path)
-
-    cros_build_lib.RunCommand(['cp', '-f', sdk_path, SDK_DIR])
-    sdk = os.path.join(SDK_DIR, os.path.basename(sdk_path))
+  if sdk_url:
+    url = sdk_url
   else:
-    if sdk_url:
-      url = sdk_url
+    arch = GetHostArch()
+    if sdk_version:
+      url = GetArchStageTarball(arch, sdk_version)
     else:
-      arch = GetHostArch()
-      if sdk_version:
-        url = GetArchStageTarball(arch, sdk_version)
-      else:
-        url = GetArchStageTarball(arch)
+      url = GetArchStageTarball(arch)
 
-    sdk = FetchRemoteTarball(url)
+  sdk = FetchRemoteTarball(url)
 
   # TODO(zbehan): Unpack and install
   # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
@@ -170,11 +156,17 @@ def RefreshSudoCredentials():
 
 
 def main():
-  usage="""usage: %prog [options] [--enter VAR1=val1 .. VARn=valn -- <args>]
+  usage="""usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
 
-This script downloads and installs a CrOS SDK. If an SDK already
-exists, it will do nothing at all, and every call will be a noop.
-To replace, use --replace."""
+This script manages a local CrOS SDK chroot. Depending on the flags,
+it can download, build or enter a chroot.
+
+Action taken is the following:
+--enter  (default)  .. Installs and enters a chroot
+--download          .. Just download a chroot (enter if combined with --enter)
+--bootstrap         .. Builds a chroot from source (enter if --enter)
+--delete            .. Removes a chroot
+"""
   sdk_latest_version = GetLatestVersion()
   parser = optparse.OptionParser(usage)
   # Actions:
@@ -184,6 +176,9 @@ To replace, use --replace."""
   parser.add_option('', '--delete',
                     action='store_true', dest='delete', default=False,
                     help=('Delete the current SDK chroot'))
+  parser.add_option('', '--download',
+                    action='store_true', dest='download', default=False,
+                    help=('Download and download a prebuilt SDK'))
   parser.add_option('', '--enter',
                     action='store_true', dest='enter', default=False,
                     help=('Enter the SDK chroot, possibly (re)create first'))
@@ -200,15 +195,13 @@ To replace, use --replace."""
   parser.add_option('', '--chrome_root_mount',
                     dest='chrome_root_mount', default='',
                     help=('Mount chrome into this path inside SDK chroot'))
-  parser.add_option('-p', '--path',
-                    dest='sdk_path', default='',
-                    help=('Use sdk tarball located at this path'))
   parser.add_option('-r', '--replace',
                     action='store_true', dest='replace', default=False,
                     help=('Replace an existing SDK chroot'))
   parser.add_option('-u', '--url',
                     dest='sdk_url', default='',
-                    help=('Use sdk tarball located at this url'))
+                    help=('''Use sdk tarball located at this url.
+                             Use file:// for local files.'''))
   parser.add_option('-v', '--version',
                     dest='sdk_version', default='',
                     help=('Use this sdk version [%s]' % sdk_latest_version))
@@ -219,6 +212,10 @@ To replace, use --replace."""
     print "This needs to be ran outside the chroot"
     sys.exit(1)
 
+  # Default action is --enter, if no other is selected.
+  if not (options.bootstrap or options.download or options.delete):
+    options.enter = True
+
   # Only --enter can process additional args as passthrough commands.
   # Warn and exit for least surprise.
   if len(remaining_arguments) > 0 and not options.enter:
@@ -226,19 +223,24 @@ To replace, use --replace."""
     parser.print_help()
     sys.exit(1)
 
-  # All "actions" can be combined, as they merely modify how is the chroot
+  # Some actions can be combined, as they merely modify how is the chroot
   # going to be made. The only option that hates all others is --delete.
   if options.delete and \
-    (options.enter or options.replace or options.bootstrap):
-    print "--delete cannot be combined with --enter, --replace or --bootstrap"
+    (options.enter or options.download or options.bootstrap):
+    print "--delete cannot be combined with --enter, --download or --bootstrap"
     parser.print_help()
     sys.exit(1)
   # NOTE: --delete is a true hater, it doesn't like other options either, but
   # those will hardly lead to confusion. Nobody can expect to pass --version to
   # delete and actually change something.
 
+  if options.bootstrap and options.download:
+    print "Either --bootstrap or --download, not both"
+    sys.exit(1)
+
   # Bootstrap will start off from a non-selectable stage3 tarball. Attempts to
-  # select sdk by any means are confusing. Warn and exit.
+  # select sdk by version are confusing. Warn and exit. We can still specify a
+  # tarball by path or URL though.
   if options.bootstrap and options.sdk_version:
     print "Cannot use --version when bootstrapping"
     parser.print_help()
@@ -263,12 +265,18 @@ To replace, use --replace."""
     DeleteChroot(chroot_path)
     sys.exit(0)
 
+  # Print a suggestion for replacement, but not if running just --enter.
+  if os.path.exists(chroot_path) and not options.replace and \
+     (options.bootstrap or options.download):
+      print "Chroot already exists. Run with --replace to re-create."
+
+  # Chroot doesn't exist or asked to replace.
   if not os.path.exists(chroot_path) or options.replace:
     if options.bootstrap:
-      BootstrapChroot(chroot_path, options.sdk_path, options.sdk_url,
+      BootstrapChroot(chroot_path, options.sdk_url,
                       options.replace)
     else:
-      CreateChroot(options.sdk_path, options.sdk_url, sdk_version,
+      CreateChroot(options.sdk_url, sdk_version,
                    chroot_path, options.replace)
 
   if options.enter:

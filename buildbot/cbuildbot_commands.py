@@ -150,7 +150,7 @@ def MakeChroot(buildroot, replace, fast, usepkg):
     assert usepkg
     assert fast
     cwd = os.path.join(buildroot, 'chromite', 'bin')
-    cmd = ['./cros_sdk']
+    cmd = ['./cros_sdk', '--download']
   else:
     cwd = os.path.join(buildroot, 'src', 'scripts')
     cmd = ['./make_chroot']
