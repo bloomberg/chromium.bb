@@ -604,7 +604,7 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   tree2_1.role = WebAccessibility::ROLE_WEB_AREA;
 
   WebAccessibility tree2_2;
-  tree2_2.id = 1001;
+  tree2_2.id = 1002;
   tree2_2.role = WebAccessibility::ROLE_BUTTON;
 
   tree2_1.children.push_back(tree2_2);
@@ -614,17 +614,14 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   // Fire another load complete.
   manager->OnAccessibilityNotifications(params);
 
-  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(1001);
+  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(1002);
 
   // Verify the root has not changed.
   EXPECT_EQ(root, manager->GetRoot());
 
-  // And the proper child remains.
+  // And the new child exists.
   EXPECT_EQ(WebAccessibility::ROLE_BUTTON, acc2_2->role());
-  EXPECT_EQ(1001, acc2_2->renderer_id());
-
-  // Verify we don't reuse objects that have changed roles.
-  EXPECT_NE(acc1_2, acc2_2);
+  EXPECT_EQ(1002, acc2_2->renderer_id());
 
   // Ensure we properly cleaned up.
   manager.reset();
