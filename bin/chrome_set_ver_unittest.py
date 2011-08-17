@@ -45,9 +45,28 @@ class DEPSFileTest(mox.MoxTestBase):
     repo_root = cros_lib.FindRepoDir()
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
 
-  def testParseAndRunDEPSFileAndGenerateSymlink(self):
-    """Test resetting of repos, usage of Var's and running of hooks."""
+  def testParseAndRunDEPSFileNoHooks(self):
+    """Test resetting of repos, usage of Var's."""
     chrome_set_ver.main(['-d',
+                         os.path.join(self.test_base, 'test_1/DEPS.git')])
+
+    # Verify repo's were reset properly
+    repos = {'repo1': '8d35063e1836c79c9ef97bf81eb43f450dc111ac',
+             'repo2': 'b2f03c74b48866eb3da5c4cab554c792a70aeda8',
+             'repo3': '8d35063e1836c79c9ef97bf81eb43f450dc111ac',
+             'repo4': 'b2f03c74b48866eb3da5c4cab554c792a70aeda8',}
+
+    for repo, revision in repos.iteritems():
+      repo_path = os.path.join(self.repo_root, 'chromium', 'src', repo)
+      self.assertTrue(cros_lib.GetGitRepoRevision(repo_path) == revision)
+
+    # Verify symlink was generated
+    test_file = 'chromium/src/third_party/cros/TEST'
+    self.assertTrue(os.path.exists(os.path.join(self.repo_root, test_file)))
+
+  def testParseAndRunDEPSFileWithHooks(self):
+    """Test correct operation with --runhooks option."""
+    chrome_set_ver.main(['--runhooks', '-d',
                          os.path.join(self.test_base, 'test_1/DEPS.git')])
 
     # Verify repo's were reset properly
@@ -70,32 +89,6 @@ class DEPSFileTest(mox.MoxTestBase):
     test_file = 'chromium/src/third_party/cros/TEST'
     self.assertTrue(os.path.exists(os.path.join(self.repo_root, test_file)))
 
-  def testOnlyRunHooks(self):
-    """Test runhooks command."""
-    chrome_set_ver.main(['-d',
-                         os.path.join(self.test_base, 'test_1/DEPS.git'),
-                         'runhooks'])
-
-    # Verify repo's were *NOT* reset
-    repos = {'repo1': '8d35063e1836c79c9ef97bf81eb43f450dc111ac',
-             'repo2': 'b2f03c74b48866eb3da5c4cab554c792a70aeda8',
-             'repo3': '8d35063e1836c79c9ef97bf81eb43f450dc111ac',
-             'repo4': 'b2f03c74b48866eb3da5c4cab554c792a70aeda8',}
-
-    for repo, revision in repos.iteritems():
-      repo_path = os.path.join(self.repo_root, 'chromium', 'src', repo)
-      self.assertFalse(cros_lib.GetGitRepoRevision(repo_path) == revision)
-
-    # Verify hooks were run
-    hook1_output = os.path.join(self.repo_root, 'chromium', 'out1')
-    hook2_output = os.path.join(self.repo_root, 'chromium', 'out2')
-    self.assertTrue(os.path.exists(hook1_output))
-    self.assertTrue(os.path.exists(hook2_output))
-
-    # Verify symlink was generated
-    test_file = 'chromium/src/third_party/cros/TEST'
-    self.assertTrue(os.path.exists(os.path.join(self.repo_root, test_file)))
-
   def testErrorOnOverlap(self):
     """Test that an overlapping entry in unix deps causes error."""
     self.assertRaises(AssertionError, chrome_set_ver.main,
@@ -105,15 +98,6 @@ class DEPSFileTest(mox.MoxTestBase):
     """Test that using the 'From' keyword causes error."""
     self.assertRaises(NotImplementedError, chrome_set_ver.main,
                       ['-d', os.path.join(self.test_base, 'test_3/DEPS.git')])
-
-  def testBadCommand(self):
-    """Test that a bad command causes us to quit cleanly."""
-    self.mox.StubOutWithMock(cros_lib, 'Die')
-    cros_lib.Die(mox.IgnoreArg()).AndRaise(TestEndedException)
-    self.mox.ReplayAll()
-    self.assertRaises(TestEndedException, chrome_set_ver.main,
-                      ['-d', os.path.join(self.test_base, 'test_1/DEPS.git'),
-                       'ranhack'])
 
   def tearDown(self):
     os.chdir(self.old_dir)

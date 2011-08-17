@@ -106,24 +106,6 @@ def _RunHooks(chromium_root, hooks):
     cros_lib.RunCommand(hook['action'], cwd=chromium_root)
 
 
-def _ParseCommand(inputs):
-  """Get the command, and quit on erros.
-
-  Args:
-    inputs: A list of positional (non-option) arguments returned by optparse.
-  """
-  cmd = ''
-  if len(inputs) == 1:
-    cmd = inputs[0]
-    if cmd not in _SUPPORTED_COMMANDS:
-      cros_lib.Die('Unsupported command %s.  Use one of:\n%s' %
-                   (cmd, '\n'.join(_SUPPORTED_COMMANDS)))
-  elif len(inputs) > 1:
-    cros_lib.Die('More than one command specified')
-
-  return cmd
-
-
 def _GetParsedDeps(deps_file):
   """Returns the full parsed DEPS file dictionary, and merged deps.
 
@@ -148,16 +130,8 @@ def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
 
-  usage = ('usage: %prog [-d <DEPS.git file>] [command]\n'
-           '\n'
-           'commands:\n'
-           "  runhooks - Only run hooks.  Don't reset dependent repositories.")
-  epilog = ('\n'
-            'When no command is given, defaults to resetting dependent\n'
-            'repositories to revision specified in .DEPS.git file, and runs\n'
-            'the defined hooks.\n')
-
-  parser = optparse.OptionParser(usage=usage, epilog=epilog)
+  usage = 'usage: %prog [-d <DEPS.git file>] [command]'
+  parser = optparse.OptionParser(usage=usage)
 
   # TODO(rcui): have -d accept a URL
   parser.add_option('-d', '--deps', default=None,
@@ -165,16 +139,9 @@ def main(argv=None):
                          '<chrome_src_root>/.DEPS.git'))
   parser.add_option('--internal', action='store_false', dest='internal',
                     default=True, help='Allow chrome-internal URLs')
+  parser.add_option('--runhooks', action='store_true', dest='runhooks',
+                    default=False, help="Run hooks as well.")
   (options, inputs) = parser.parse_args(argv)
-
-  cmd = _ParseCommand(inputs)
-
-  run_reset = True
-  run_hooks = True
-  if cmd == 'runhooks':
-    # The command is currently used by the chromeos-chrome-9999 ebuild.
-    # TODO(rcui): update comment when chrome stable ebuilds also use runhooks.
-    run_reset = False
 
   repo_root = cros_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)
@@ -189,8 +156,8 @@ def main(argv=None):
 
   chromium_root = os.path.dirname(chromium_src_root)
   _CreateCrosSymlink(repo_root)
-  if run_reset: _ResetGitCheckout(chromium_root, merged_deps)
-  if run_hooks: _RunHooks(chromium_root, deps['hooks'])
+  _ResetGitCheckout(chromium_root, merged_deps)
+  if options.runhooks: _RunHooks(chromium_root, deps['hooks'])
 
 
 if __name__ == '__main__':
