@@ -16,6 +16,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
+#define PPB_FILESYSTEM_INTERFACE_1_0 "PPB_FileSystem;1.0"
+#define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the API to create a file system associated with a file.
@@ -30,10 +34,6 @@
  * The <code>PPB_FileSystem</code> struct identifies the file system type
  * associated with a file.
  */
-#define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
-#define PPB_FILESYSTEM_INTERFACE_1_0 "PPB_FileSystem;1.0"
-#define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_1_0
-
 struct PPB_FileSystem {
   /** Create() creates a file system object of the given type.
    *

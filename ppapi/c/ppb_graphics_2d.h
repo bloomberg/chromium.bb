@@ -18,6 +18,10 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
+#define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
+#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
+
 /**
  * @file
  * Defines the <code>PPB_Graphics2D</code> struct representing a 2D graphics
@@ -32,10 +36,6 @@
 /**
  * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
  */
-#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
-#define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
-#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
-
 struct PPB_Graphics2D {
   /**
    * Create() creates a 2D graphics context. The returned graphics context will

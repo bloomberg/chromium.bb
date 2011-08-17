@@ -86,8 +86,14 @@ def GenerateHeader(filenode, pref, inline=True):
     if include == cur_include: continue
     out.Write('#include "%s"\n' % include)
 
+  # Generate all interface defines
+  release = 'M14'
+  out.Write('\n')
+  for node in filenode.GetListOf('Interface'):
+    out.Write( cgen.InterfaceDefs(node) )
+
   # Generate the @file comment
-  out.Write('\n%s\n' % cgen.Comment(fileinfo, prefix='*\n @file'))
+  out.Write('%s\n' % cgen.Comment(fileinfo, prefix='*\n @file'))
 
   # Generate definitions.
   last_group = None

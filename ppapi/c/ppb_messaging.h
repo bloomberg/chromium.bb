@@ -14,6 +14,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
+#define PPB_MESSAGING_INTERFACE_0_1 "PPB_Messaging;0.1"
+#define PPB_MESSAGING_INTERFACE_1_0 "PPB_Messaging;1.0"
+#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the <code>PPB_Messaging</code> interface implemented
@@ -31,10 +35,6 @@
  * and is related to sending messages to JavaScript message event listeners on
  * the DOM element associated with specific module instance.
  */
-#define PPB_MESSAGING_INTERFACE_0_1 "PPB_Messaging;0.1"
-#define PPB_MESSAGING_INTERFACE_1_0 "PPB_Messaging;1.0"
-#define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_0
-
 struct PPB_Messaging {
   /**
    * PostMessage() asynchronously invokes any listeners for message events on

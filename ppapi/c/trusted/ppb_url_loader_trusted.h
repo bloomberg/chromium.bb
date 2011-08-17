@@ -13,6 +13,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_URLLOADERTRUSTED_INTERFACE_0_3 "PPB_URLLoaderTrusted;0.3"
+#define PPB_URLLOADERTRUSTED_INTERFACE PPB_URLLOADERTRUSTED_INTERFACE_0_3
+
 /**
  * @file
  * URL loader trusted interfaces. */
@@ -42,9 +45,6 @@ typedef void (*PP_URLLoaderTrusted_StatusCallback)(
  * @{
  */
 /* Available only to trusted implementations. */
-#define PPB_URLLOADERTRUSTED_INTERFACE_0_3 "PPB_URLLoaderTrusted;0.3"
-#define PPB_URLLOADERTRUSTED_INTERFACE PPB_URLLOADERTRUSTED_INTERFACE_0_3
-
 struct PPB_URLLoaderTrusted {
   /**
    * Grant this URLLoader the capability to make unrestricted cross-origin

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Tue Aug 16 10:08:33 2011. */
+/* From ppb_audio_config.idl modified Wed Aug 17 11:16:34 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -13,6 +13,10 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+
+#define PPB_AUDIO_CONFIG_INTERFACE_0_5 "PPB_AudioConfig;0.5"
+#define PPB_AUDIO_CONFIG_INTERFACE_1_0 "PPB_AudioConfig;1.0"
+#define PPB_AUDIO_CONFIG_INTERFACE PPB_AUDIO_CONFIG_INTERFACE_1_0
 
 /**
  * @file
@@ -65,10 +69,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
  * Audio API</a> for information on using this interface.
  */
-#define PPB_AUDIO_CONFIG_INTERFACE_0_5 "PPB_AudioConfig;0.5"
-#define PPB_AUDIO_CONFIG_INTERFACE_1_0 "PPB_AudioConfig;1.0"
-#define PPB_AUDIO_CONFIG_INTERFACE PPB_AUDIO_CONFIG_INTERFACE_1_0
-
 struct PPB_AudioConfig {
   /**
    * CreateStereo16bit() creates a 16 bit audio configuration resource. The

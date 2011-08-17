@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_messaging.idl modified Mon Jul 18 10:06:08 2011. */
+/* From ppp_messaging.idl modified Wed Jul 13 16:51:47 2011. */
 
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_
@@ -13,6 +13,10 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+
+#define PPP_MESSAGING_INTERFACE_0_1 "PPP_Messaging;0.1"
+#define PPP_MESSAGING_INTERFACE_1_0 "PPP_Messaging;1.0"
+#define PPP_MESSAGING_INTERFACE PPP_MESSAGING_INTERFACE_1_0
 
 /**
  * @file
@@ -32,10 +36,6 @@
  * that you must implement to handle postMessage events on the associated
  * DOM element.
  */
-#define PPP_MESSAGING_INTERFACE_0_1 "PPP_Messaging;0.1"
-#define PPP_MESSAGING_INTERFACE_1_0 "PPP_Messaging;1.0"
-#define PPP_MESSAGING_INTERFACE PPP_MESSAGING_INTERFACE_1_0
-
 struct PPP_Messaging {
   /**
    * HandleMessage() is a function that the browser calls when PostMessage()

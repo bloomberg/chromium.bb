@@ -12,6 +12,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_BUFFER_TRUSTED_INTERFACE_0_1 "PPB_BufferTrusted;0.1"
+#define PPB_BUFFER_TRUSTED_INTERFACE PPB_BUFFER_TRUSTED_INTERFACE_0_1
+
 /**
  * @file
  * This file defines the trusted buffer interface.
@@ -22,9 +25,6 @@
  * @addtogroup Interfaces
  * @{
  */
-#define PPB_BUFFER_TRUSTED_INTERFACE_0_1 "PPB_BufferTrusted;0.1"
-#define PPB_BUFFER_TRUSTED_INTERFACE PPB_BUFFER_TRUSTED_INTERFACE_0_1
-
 struct PPB_BufferTrusted {
   /**
    * Returns the internal shared memory pointer associated with the given

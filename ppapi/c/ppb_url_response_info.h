@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_response_info.idl modified Fri Aug 12 14:54:32 2011. */
+/* From ppb_url_response_info.idl modified Mon Aug 15 11:01:06 2011. */
 
 #ifndef PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 #define PPAPI_C_PPB_URL_RESPONSE_INFO_H_
@@ -13,6 +13,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+
+#define PPB_URLRESPONSEINFO_INTERFACE_0_1 "PPB_URLResponseInfo;0.1"
+#define PPB_URLRESPONSEINFO_INTERFACE_1_0 "PPB_URLResponseInfo;1.0"
+#define PPB_URLRESPONSEINFO_INTERFACE PPB_URLRESPONSEINFO_INTERFACE_1_0
 
 /**
  * @file
@@ -93,10 +97,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLResponseProperty, 4);
  * examining URL responses. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
-#define PPB_URLRESPONSEINFO_INTERFACE_0_1 "PPB_URLResponseInfo;0.1"
-#define PPB_URLRESPONSEINFO_INTERFACE_1_0 "PPB_URLResponseInfo;1.0"
-#define PPB_URLRESPONSEINFO_INTERFACE PPB_URLRESPONSEINFO_INTERFACE_1_0
-
 struct PPB_URLResponseInfo {
   /**
    * IsURLResponseInfo() determines if a response is a

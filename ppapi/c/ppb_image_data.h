@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_image_data.idl modified Mon Aug 15 11:01:06 2011. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -14,6 +14,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
+
+#define PPB_IMAGEDATA_INTERFACE_0_3 "PPB_ImageData;0.3"
+#define PPB_IMAGEDATA_INTERFACE_1_0 "PPB_ImageData;1.0"
+#define PPB_IMAGEDATA_INTERFACE PPB_IMAGEDATA_INTERFACE_1_0
 
 /**
  * @file
@@ -102,10 +106,6 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
  * The <code>PPB_ImageData</code> interface contains pointers to several
  * functions for determining the browser's treatment of image data.
  */
-#define PPB_IMAGEDATA_INTERFACE_0_3 "PPB_ImageData;0.3"
-#define PPB_IMAGEDATA_INTERFACE_1_0 "PPB_ImageData;1.0"
-#define PPB_IMAGEDATA_INTERFACE PPB_IMAGEDATA_INTERFACE_1_0
-
 struct PPB_ImageData {
   /**
    * GetNativeImageDataFormat() returns the browser's preferred format for

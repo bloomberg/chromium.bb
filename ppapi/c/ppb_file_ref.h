@@ -17,6 +17,10 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
+#define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
+#define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
+#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the API to create a file reference or "weak pointer" to a
@@ -33,10 +37,6 @@
  * a file system.  This struct contains a <code>PP_FileSystemType</code>
  * identifier and a file path string.
  */
-#define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
-#define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
-#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
-
 struct PPB_FileRef {
   /**
    * Create() creates a weak pointer to a file in the given file system. File

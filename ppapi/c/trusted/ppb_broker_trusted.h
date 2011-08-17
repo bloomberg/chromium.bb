@@ -15,6 +15,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_BROKER_TRUSTED_INTERFACE_0_2 "PPB_BrokerTrusted;0.2"
+#define PPB_BROKER_TRUSTED_INTERFACE PPB_BROKER_TRUSTED_INTERFACE_0_2
+
 /**
  * @file
  * This file defines the PPB_BrokerTrusted interface, which provides
@@ -37,9 +40,6 @@
  * handle is closed. The handle should be closed before the resource is
  * released.
  */
-#define PPB_BROKER_TRUSTED_INTERFACE_0_2 "PPB_BrokerTrusted;0.2"
-#define PPB_BROKER_TRUSTED_INTERFACE PPB_BROKER_TRUSTED_INTERFACE_0_2
-
 struct PPB_BrokerTrusted {
   /**
    * Returns a trusted broker resource.

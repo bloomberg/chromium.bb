@@ -14,6 +14,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
+#define PPB_VAR_INTERFACE_0_5 "PPB_Var;0.5"
+#define PPB_VAR_INTERFACE_1_0 "PPB_Var;1.0"
+#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the <code>PPB_Var</code> struct.
@@ -27,10 +31,6 @@
 /**
  * PPB_Var API
  */
-#define PPB_VAR_INTERFACE_0_5 "PPB_Var;0.5"
-#define PPB_VAR_INTERFACE_1_0 "PPB_Var;1.0"
-#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_1_0
-
 struct PPB_Var {
   /**
    * AddRef() adds a reference to the given var. If this is not a refcounted

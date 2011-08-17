@@ -383,24 +383,27 @@ class CGen(object):
     self.LogExit('Exit DefineMember')
     return out
 
+  def InterfaceDefs(self, node):
+    out = ''
+    release = 'M14'
+    name = node.GetName()
+    macro = node.GetProperty('macro')
+    if not macro:
+      macro = self.GetMacro(node)
+    label = node.GetLabel()
+    if label:
+      for vers in label.versions:
+        strver = str(vers).replace('.', '_')
+        out += self.GetDefine('%s_%s' % (macro, strver),
+                              '"%s;%s"' % (name, vers))
+        if label.GetRelease(vers) == release:
+          out += self.GetDefine(macro, '%s_%s' % (macro, strver))
+      out += '\n'
+    return out
+
   # Define a Struct.
   def DefineStruct(self, node, prefix='', comment=False):
     out = ''
-    if node.IsA('Interface'):
-      release = 'M14'
-      name = node.GetName()
-      macro = node.GetProperty('macro')
-      if not macro:
-        macro = self.GetMacro(node)
-      label = node.GetLabel()
-      if label:
-        for vers in label.versions:
-          strver = str(vers).replace('.', '_')
-          out += self.GetDefine('%s_%s' % (macro, strver),
-                                '"%s;%s"' % (name, vers))
-          if label.GetRelease(vers) == release:
-            out += self.GetDefine(macro, '%s_%s' % (macro, strver))
-        out += '\n'
 
     self.LogEnter('DefineStruct %s' % node)
     if node.GetProperty('union'):

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Tue Aug  9 09:58:45 2011. */
+/* From ppp_instance.idl modified Mon Aug 15 11:01:06 2011. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -16,6 +16,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
+
+#define PPP_INSTANCE_INTERFACE_1_0 "PPP_Instance;1.0"
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_1_0
 
 /**
  * @file
@@ -35,9 +38,6 @@
  * to handle events such as change of focus or input events (keyboard/mouse)
  * events.
  */
-#define PPP_INSTANCE_INTERFACE_1_0 "PPP_Instance;1.0"
-#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_1_0
-
 struct PPP_Instance {
   /**
    * DidCreate() is a creation handler that is called when a new instance is

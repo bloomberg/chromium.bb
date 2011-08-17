@@ -15,6 +15,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
+#define PPB_URLLOADER_INTERFACE_1_0 "PPB_URLLoader;1.0"
+#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the <strong>PPB_URLLoader</strong> interface for loading
@@ -45,10 +49,6 @@
  * - Then, access the downloaded file using the GetBodyAsFileRef() function of
  * the <code>URLResponseInfo</code> returned in step #4.
  */
-#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
-#define PPB_URLLOADER_INTERFACE_1_0 "PPB_URLLoader;1.0"
-#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_1_0
-
 struct PPB_URLLoader {
   /**
    * Create() creates a new <code>URLLoader</code> object. The

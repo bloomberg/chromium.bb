@@ -15,6 +15,9 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
+#define PPB_CORE_INTERFACE_1_0 "PPB_Core;1.0"
+#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the <code>PPB_Core</code> interface defined by the browser
@@ -32,9 +35,6 @@
  * to memory management, time, and threads on the browser.
  *
  */
-#define PPB_CORE_INTERFACE_1_0 "PPB_Core;1.0"
-#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_1_0
-
 struct PPB_Core {
   /**
    *

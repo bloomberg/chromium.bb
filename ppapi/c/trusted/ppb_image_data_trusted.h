@@ -12,6 +12,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4 "PPB_ImageDataTrusted;0.4"
+#define PPB_IMAGEDATA_TRUSTED_INTERFACE PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4
+
 /**
  * @file
  * This file defines the trusted ImageData interface.
@@ -23,9 +26,6 @@
  * @{
  */
 /** Trusted interface */
-#define PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4 "PPB_ImageDataTrusted;0.4"
-#define PPB_IMAGEDATA_TRUSTED_INTERFACE PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4
-
 struct PPB_ImageDataTrusted {
   /**
    * Returns the internal shared memory pointer associated with the given

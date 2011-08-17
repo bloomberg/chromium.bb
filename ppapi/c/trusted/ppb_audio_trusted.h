@@ -14,6 +14,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_AUDIO_TRUSTED_INTERFACE_0_6 "PPB_AudioTrusted;0.6"
+#define PPB_AUDIO_TRUSTED_INTERFACE PPB_AUDIO_TRUSTED_INTERFACE_0_6
+
 /**
  * @file
  * This file defines the trusted audio interface.
@@ -30,9 +33,6 @@
  * resource returned is an Audio resource; most of the PPB_Audio
  * interface is also usable on this resource.
  */
-#define PPB_AUDIO_TRUSTED_INTERFACE_0_6 "PPB_AudioTrusted;0.6"
-#define PPB_AUDIO_TRUSTED_INTERFACE PPB_AUDIO_TRUSTED_INTERFACE_0_6
-
 struct PPB_AudioTrusted {
   /** Returns an audio resource. */
   PP_Resource (*CreateTrusted)(PP_Instance instance);

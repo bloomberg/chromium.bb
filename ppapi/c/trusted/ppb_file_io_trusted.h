@@ -13,6 +13,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
+#define PPB_FILEIOTRUSTED_INTERFACE_0_4 "PPB_FileIOTrusted;0.4"
+#define PPB_FILEIOTRUSTED_INTERFACE PPB_FILEIOTRUSTED_INTERFACE_0_4
+
 /**
  * @file
  *
@@ -25,9 +28,6 @@
  * @{
  */
 /* Available only to trusted implementations. */
-#define PPB_FILEIOTRUSTED_INTERFACE_0_4 "PPB_FileIOTrusted;0.4"
-#define PPB_FILEIOTRUSTED_INTERFACE PPB_FILEIOTRUSTED_INTERFACE_0_4
-
 struct PPB_FileIOTrusted {
   /**
    * Returns a file descriptor corresponding to the given FileIO object. On

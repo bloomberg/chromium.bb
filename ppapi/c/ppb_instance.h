@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_instance.idl modified Wed Jul 20 11:13:48 2011. */
+/* From ppb_instance.idl modified Mon Aug 15 11:01:06 2011. */
 
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
@@ -14,6 +14,10 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+
+#define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
+#define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
+#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
 
 /**
  * @file
@@ -31,10 +35,6 @@
  * The PPB_Instance interface contains pointers to functions
  * related to the module instance on a web page.
  */
-#define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
-#define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
-#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
-
 struct PPB_Instance {
   /**
    * BindGraphics() binds the given graphics as the current display surface.

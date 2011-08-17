@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Tue Aug 16 10:08:09 2011. */
+/* From ppb_audio.idl modified Wed Aug 17 11:16:34 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -13,6 +13,10 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+
+#define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
+#define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"
+#define PPB_AUDIO_INTERFACE PPB_AUDIO_INTERFACE_1_0
 
 /**
  * @file
@@ -72,10 +76,6 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * ...audio_callback() will now be periodically invoked on a seperate thread...
  * @endcode
  */
-#define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
-#define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"
-#define PPB_AUDIO_INTERFACE PPB_AUDIO_INTERFACE_1_0
-
 struct PPB_Audio {
   /**
    * Create is a pointer to a function that creates an audio resource.

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_input_event.idl modified Thu Aug 11 16:06:41 2011. */
+/* From ppp_input_event.idl modified Wed Aug 17 11:16:34 2011. */
 
 #ifndef PPAPI_C_PPP_INPUT_EVENT_H_
 #define PPAPI_C_PPP_INPUT_EVENT_H_
@@ -13,6 +13,9 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+
+#define PPP_INPUT_EVENT_INTERFACE_0_1 "PPP_InputEvent;0.1"
+#define PPP_INPUT_EVENT_INTERFACE PPP_INPUT_EVENT_INTERFACE_0_1
 
 /**
  * @file
@@ -24,9 +27,6 @@
  * @addtogroup Interfaces
  * @{
  */
-#define PPP_INPUT_EVENT_INTERFACE_0_1 "PPP_InputEvent;0.1"
-#define PPP_INPUT_EVENT_INTERFACE PPP_INPUT_EVENT_INTERFACE_0_1
-
 struct PPP_InputEvent {
   /**
    * Function for receiving input events from the browser.

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Tue Aug 16 09:56:44 2011. */
+/* From ppb_input_event.idl modified Wed Aug 17 11:16:34 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -16,6 +16,19 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
+
+#define PPB_INPUT_EVENT_INTERFACE_1_0 "PPB_InputEvent;1.0"
+#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_1_0
+
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0 "PPB_MouseInputEvent;1.0"
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0
+
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0 "PPB_WheelInputEvent;1.0"
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0
+
+#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0 "PPB_KeyboardInputEvent;1.0"
+#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
+    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0
 
 /**
  * @file
@@ -210,9 +223,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Class, 4);
  * The <code>PPB_InputEvent</code> interface contains pointers to several
  * functions related to generic input events on the browser.
  */
-#define PPB_INPUT_EVENT_INTERFACE_1_0 "PPB_InputEvent;1.0"
-#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_1_0
-
 struct PPB_InputEvent {
   /**
    * RequestInputEvent() requests that input events corresponding to the given
@@ -374,9 +384,6 @@ struct PPB_InputEvent {
  * The <code>PPB_MouseInputEvent</code> interface contains pointers to several
  * functions related to mouse input events.
  */
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0 "PPB_MouseInputEvent;1.0"
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0
-
 struct PPB_MouseInputEvent {
   /**
    * Create() creates a mouse input event with the given parameters. Normally
@@ -454,9 +461,6 @@ struct PPB_MouseInputEvent {
  * The <code>PPB_WheelIputEvent</code> interface contains pointers to several
  * functions related to wheel input events.
  */
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0 "PPB_WheelInputEvent;1.0"
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0
-
 struct PPB_WheelInputEvent {
   /**
    * Create() creates a wheel input event with the given parameters. Normally
@@ -564,10 +568,6 @@ struct PPB_WheelInputEvent {
  * The <code>PPB_KeyboardInputEvent</code> interface contains pointers to
  * several functions related to keyboard input events.
  */
-#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0 "PPB_KeyboardInputEvent;1.0"
-#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
-    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0
-
 struct PPB_KeyboardInputEvent {
   /**
    * Creates a keyboard input event with the given parameters. Normally you

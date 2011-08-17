@@ -17,6 +17,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
+#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
+#define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
+#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
+
 /**
  * @file
  * This file defines the API to create a file i/o object.
@@ -70,10 +74,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
  * The <code>PPB_FileIO</code> struct is used to operate on a regular file
  * (PP_FileType_Regular).
  */
-#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
-#define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
-#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
-
 struct PPB_FileIO {
   /**
    * Create() creates a new FileIO object.
@@ -164,7 +164,7 @@ struct PPB_FileIO {
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion of Read().
    *
-   * @return An The number of bytes read or an error code from
+   * @return An The number of bytes read an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Read() multiple times with a completion
    * callback to queue up parallel reads from the file at different offsets.
@@ -190,9 +190,7 @@ struct PPB_FileIO {
    * @return An The number of bytes written or an error code from
    * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
    * reached. It is valid to call Write() multiple times with a completion
-   * callback to queue up parallel writes to the file at different offsets.  If
-   * bytes_to_write is less than or equal to zero, return value is
-   * PP_ERROR_FAILED.
+   * callback to queue up parallel writes to the file at different offsets.
    */
   int32_t (*Write)(PP_Resource file_io,
                    int64_t offset,
@@ -245,3 +243,4 @@ struct PPB_FileIO {
  */
 
 #endif  /* PPAPI_C_PPB_FILE_IO_H_ */
+
