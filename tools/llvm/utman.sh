@@ -851,13 +851,14 @@ glibc() {
   local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
+  local VER=53376404
   local LIBS2="crt1.o crti.o crtn.o \
                libc.a libc_nonshared.a \
-               libc-2.9.so libc.so libc.so.6 \
-               libm-2.9.so libm.a libm.so libm.so.6 \
-               libdl-2.9.so libdl.so.2 libdl.so libdl.a \
+               libc-2.9.so libc.so libc.so.${VER} \
+               libm-2.9.so libm.a libm.so libm.so.${VER} \
+               libdl-2.9.so libdl.so.${VER} libdl.so libdl.a \
                libpthread-2.9.so libpthread.a libpthread.so \
-               libpthread.so.0 libpthread_nonshared.a \
+               libpthread.so.${VER} libpthread_nonshared.a \
                runnable-ld.so \
                ld-2.9.so"
 
@@ -886,13 +887,13 @@ glibc() {
   # ld-linux has different sonames across 32/64.
   # Create symlinks to make them look the same.
   # TODO(pdox): Can this be fixed in glibc?
-  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.${VER} \
      "${PNACL_X8632_ROOT}"
-  ln -sf ld-linux.so.2 "${PNACL_X8632_ROOT}"/ld-linux-x86-64.so.2
+  ln -sf ld-linux.so.${VER} "${PNACL_X8632_ROOT}"/ld-linux-x86-64.so.${VER}
 
-  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.${VER} \
      "${PNACL_X8664_ROOT}"
-  ln -sf ld-linux-x86-64.so.2 "${PNACL_X8664_ROOT}"/ld-linux.so.2
+  ln -sf ld-linux-x86-64.so.${VER} "${PNACL_X8664_ROOT}"/ld-linux.so.${VER}
 
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
