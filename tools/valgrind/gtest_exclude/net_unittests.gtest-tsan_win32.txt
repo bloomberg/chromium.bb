@@ -32,7 +32,3 @@ X509CertificateTest.IntermediateCARequireExplicitPolicy
 # Time out, see http://crbug.com/68482
 SSLServerSocketTest.*
 X509CertificateTest.TestKnownRoot
-
-# CHECK failure. http://crbug.com/88225
-DnsTransactionTest.FirstTimeoutTest
-

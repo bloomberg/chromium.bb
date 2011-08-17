@@ -186,6 +186,7 @@ SunSpiderTest.Perf
 
 # Valgrind dies on arena assertion, see http://crbug.com/58146
 LoginPromptTest.TestTwoAuths
+UILayoutTest.MediaUILayoutTest
 
 # Can't load a nib under Valgrind, see http://crbug.com/58124
 ImagesTest.AnimatedGIFs
