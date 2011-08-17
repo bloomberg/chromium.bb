@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
@@ -333,8 +334,10 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
-      StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",
-                   dumps_path.value().c_str(), process_type_.c_str(), rand);
+      base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",
+                         dumps_path.value().c_str(),
+                         process_type_.c_str(),
+                         rand);
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
                                       crashing_pid, crash_context,
                                       kCrashContextSize)) {
