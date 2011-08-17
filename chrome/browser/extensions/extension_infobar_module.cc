@@ -33,6 +33,10 @@ bool ShowInfoBarFunction::RunImpl() {
   std::string html_path;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));
 
+  int height = 0;
+  if (args->HasKey(keys::kHeight))
+    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeight, &height));
+
   const Extension* extension = GetExtension();
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
@@ -54,7 +58,7 @@ bool ShowInfoBarFunction::RunImpl() {
 
   tab_contents->AddInfoBar(
       new ExtensionInfoBarDelegate(browser, tab_contents->tab_contents(),
-                                   GetExtension(), url));
+                                   GetExtension(), url, height));
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));

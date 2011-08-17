@@ -33,10 +33,12 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   ExtensionInfoBarDelegate(Browser* browser,
                            TabContents* contents,
                            const Extension* extension,
-                           const GURL& url);
+                           const GURL& url,
+                           int height);
 
   const Extension* extension() { return extension_; }
   ExtensionHost* extension_host() { return extension_host_.get(); }
+  int height() { return height_; }
 
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
@@ -68,6 +70,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
 
   const Extension* extension_;
   NotificationRegistrar registrar_;
+
+  // The requested height of the infobar (in pixels).
+  int height_;
 
   // Whether we are currently animating to close. This is used to ignore
   // ExtensionView::PreferredSizeChanged notifications.

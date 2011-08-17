@@ -17,8 +17,7 @@ class ExtensionResource;
 class ExtensionViewGtk;
 
 class ExtensionInfoBarGtk : public InfoBarGtk,
-                            public ImageLoadingTracker::Observer,
-                            public ExtensionViewGtk::Container {
+                            public ImageLoadingTracker::Observer {
  public:
   ExtensionInfoBarGtk(TabContentsWrapper* owner,
                       ExtensionInfoBarDelegate* delegate);
@@ -27,10 +26,6 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
       SkBitmap* image, const ExtensionResource& resource, int index);
-
-  // ExtensionViewGtk::Container implementation
-  virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
-                                               const gfx::Size& new_size);
 
  private:
   // Build the widgets of the Infobar.

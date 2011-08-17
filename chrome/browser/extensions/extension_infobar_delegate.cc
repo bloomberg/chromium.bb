@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -16,7 +17,8 @@
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
                                                    TabContents* tab_contents,
                                                    const Extension* extension,
-                                                   const GURL& url)
+                                                   const GURL& url,
+                                                   int height)
     : InfoBarDelegate(tab_contents),
       observer_(NULL),
       extension_(extension),
@@ -30,6 +32,18 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
                  Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(browser->profile()));
+
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
+  int default_height = InfoBar::kDefaultBarTargetHeight;
+#elif defined(OS_MACOSX)
+  // TODO(pkasting): Once Infobars have been ported to Mac, we can remove the
+  // ifdefs and just use the Infobar constant below.
+  int default_height = 36;
+#endif
+  height_ = std::max(0, height);
+  height_ = std::min(2 * default_height, height_);
+  if (height_ == 0)
+    height_ = default_height;
 }
 
 ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {

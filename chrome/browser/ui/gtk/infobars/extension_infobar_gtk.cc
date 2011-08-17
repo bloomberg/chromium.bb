@@ -20,7 +20,6 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(TabContentsWrapper* owner,
       tracker_(this),
       delegate_(delegate),
       view_(NULL) {
-  delegate_->extension_host()->view()->SetContainer(this);
   BuildWidgets();
 }
 
@@ -57,7 +56,7 @@ void ExtensionInfoBarGtk::BuildWidgets() {
                                  Extension::EXTENSION_ICON_BITTY),
                        ImageLoadingTracker::DONT_CACHE);
   } else {
-    OnImageLoaded(NULL, icon_resource, 0);  // |image|, |index|.
+    OnImageLoaded(NULL, icon_resource, 0);  // |image|, ..., |index|.
   }
 
   ExtensionHost* extension_host = delegate_->extension_host();
@@ -80,13 +79,6 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
 
   delegate_->extension_host()->view()->render_view_host()->view()
       ->SetSize(new_size);
-}
-
-void ExtensionInfoBarGtk::OnExtensionPreferredSizeChanged(
-    ExtensionViewGtk* view,
-    const gfx::Size& new_size) {
-  // TODO(rafaelw) - Size the InfobarGtk vertically based on the preferred size
-  // of the content.
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {

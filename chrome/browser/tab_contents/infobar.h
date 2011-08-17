@@ -39,6 +39,7 @@ class InfoBar : public ui::AnimationDelegate {
   virtual ~InfoBar();
 
   // Platforms must define these.
+  static const int kDefaultBarTargetHeight;
   static const int kSeparatorLineHeight;
   static const int kDefaultArrowTargetHeight;
   static const int kMaximumArrowTargetHeight;
@@ -74,9 +75,6 @@ class InfoBar : public ui::AnimationDelegate {
   int total_height() const { return arrow_height_ + bar_height_; }
 
  protected:
-  // Platforms must define this.
-  static const int kDefaultBarTargetHeight;
-
   // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 

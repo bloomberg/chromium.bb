@@ -8,7 +8,6 @@
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -18,7 +17,6 @@ class MenuButton;
 }
 
 class ExtensionInfoBar : public InfoBarView,
-                         public ExtensionView::Container,
                          public ImageLoadingTracker::Observer,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::ViewMenuDelegate {
@@ -33,11 +31,6 @@ class ExtensionInfoBar : public InfoBarView,
   virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual int ContentMinimumWidth() const;
-
-  // ExtensionView::Container:
-  virtual void OnExtensionMouseMove(ExtensionView* view);
-  virtual void OnExtensionMouseLeave(ExtensionView* view);
-  virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(SkBitmap* image,

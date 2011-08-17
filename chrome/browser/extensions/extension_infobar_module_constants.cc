@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ namespace extension_infobar_module_constants {
 
 const char kHtmlPath[] = "path";
 const char kTabId[] = "tabId";
+const char kHeight[] = "height";
 
 const char kNoCurrentWindowError[] = "No current browser window was found";
 const char kTabNotFoundError[] = "Specified tab (or default tab) not found";

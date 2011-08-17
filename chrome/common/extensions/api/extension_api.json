@@ -2162,6 +2162,13 @@
               "path": {
                 "type": "string",
                 "description": "The html file that contains the infobar."
+              },
+              "height": {
+                "type": "integer",
+                "description": "The height (in pixels) of the infobar to show. If omitted, the default infobar height will be used.",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 72
               }
             }
           },
