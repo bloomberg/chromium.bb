@@ -407,12 +407,6 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 // static
 bool HostContentSettingsMap::IsSettingAllowedForType(
     ContentSetting setting, ContentSettingsType content_type) {
-  // Intents content settings are hidden behind a switch for now.
-  if (content_type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebIntents))
-    return false;
-
   // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
       setting == CONTENT_SETTING_ALLOW ||
@@ -428,7 +422,6 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
                   switches::kEnableClickToPlay));
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_INTENTS:
       return (setting == CONTENT_SETTING_ASK);
     default:
       return false;

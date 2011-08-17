@@ -5636,21 +5636,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
         Ask me when a site wants to show desktop notifications (recommended)
       </message>
-      <message name="IDS_INTENTS_TAB_LABEL" desc="Label for Intents Windows tab on Content Settings dialog">
-        Web Intents
-      </message>
-      <message name="IDS_INTENTS_HEADER" desc="Header for intent exception management page on Content Settings dialog">
-        Web Intents Exceptions
-      </message>
-      <message name="IDS_INTENTS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing intents to register themselves on all sites.">
-        Allow all sites to register intents
-      </message>
-      <message name="IDS_INTENTS_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for preventing intents to register themselves on any sites.">
-        Do not allow any site to register intents
-      </message>
-      <message name="IDS_INTENTS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure web-intents per-site.">
-        Ask me when a site wants to register intents (recommended)
-      </message>
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>

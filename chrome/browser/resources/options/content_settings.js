@@ -60,10 +60,7 @@ cr.define('options', function() {
       };
 
       if (!templateData.enable_click_to_play)
-        $('click_to_play').hidden = true;
-
-      if (!templateData.enable_web_intents)
-        $('intent-filter').hidden = true;
+        $('click_to_play').style.display = 'none';
     },
   };
 
