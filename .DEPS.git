@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@e0c0dd916054541936bb856294c45e98b568bda6'
+         '@581cde4930351230036a3781d3ffaf96398b8afe'
 }
 
 deps = {
