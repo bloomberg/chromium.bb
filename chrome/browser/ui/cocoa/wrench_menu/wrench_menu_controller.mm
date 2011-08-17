@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
@@ -36,7 +37,7 @@ class ZoomLevelObserver : public NotificationObserver {
   explicit ZoomLevelObserver(WrenchMenuController* controller)
       : controller_(controller) {
     registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                   NotificationService::AllSources());
+                   NotificationService::AllBrowserContextsAndSources());
   }
 
   void Observe(int type,
@@ -44,6 +45,11 @@ class ZoomLevelObserver : public NotificationObserver {
                const NotificationDetails& details) {
     DCHECK_EQ(type, content::NOTIFICATION_ZOOM_LEVEL_CHANGED);
     WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
+    if (wrenchMenuModel->browser()->profile()->GetHostZoomMap() !=
+        Source<HostZoomMap>(source).ptr()) {
+      return;
+    }
+
     wrenchMenuModel->UpdateZoomControls();
     const string16 level =
         wrenchMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
