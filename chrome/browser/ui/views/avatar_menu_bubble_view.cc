@@ -258,6 +258,7 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
 
   add_profile_link_ = new views::Link(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK)));
+  add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   add_profile_link_->SetNormalColor(SkColorSetRGB(0, 0x79, 0xda));
   AddChildView(add_profile_link_);
