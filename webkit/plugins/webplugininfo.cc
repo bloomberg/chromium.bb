@@ -67,4 +67,9 @@ bool IsPluginEnabled(const WebPluginInfo& plugin) {
           plugin.enabled == WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED);
 }
 
+bool IsPepperPlugin(const WebPluginInfo& plugin) {
+  return ((plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ) ||
+          plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
+}
+
 }  // namespace webkit

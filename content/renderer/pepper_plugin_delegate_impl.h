@@ -34,6 +34,7 @@ struct ChannelHandle;
 }
 
 namespace webkit {
+struct WebPluginInfo;
 namespace ppapi {
 class PepperFilePath;
 class PluginInstance;
@@ -127,8 +128,8 @@ class PepperPluginDelegateImpl
   // the second is that the plugin failed to initialize. In this case,
   // |*pepper_plugin_was_registered| will be set to true and the caller should
   // not fall back on any other plugin types.
-  scoped_refptr<webkit::ppapi::PluginModule> CreatePepperPlugin(
-      const FilePath& path,
+  scoped_refptr<webkit::ppapi::PluginModule> CreatePepperPluginModule(
+      const webkit::WebPluginInfo& webplugin_info,
       bool* pepper_plugin_was_registered);
 
   // Called by RenderView to tell us about painting events, these two functions

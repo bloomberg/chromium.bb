@@ -106,6 +106,9 @@ struct WebPluginInfo {
 // Checks whether a plugin is enabled either by the user or by policy.
 bool IsPluginEnabled(const WebPluginInfo& plugin);
 
+// Checks whether a plugin is a Pepper plugin, enabled or disabled.
+bool IsPepperPlugin(const WebPluginInfo& plugin);
+
 }  // namespace webkit
 
 #endif  // WEBKIT_PLUGINS_WEBPLUGININFO_H_

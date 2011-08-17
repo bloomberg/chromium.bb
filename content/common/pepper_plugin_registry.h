@@ -46,6 +46,12 @@ struct PepperPluginInfo {
   webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
 };
 
+// Constructs a PepperPluginInfo from a WebPluginInfo. Returns false if
+// the operation is not possible, in particular the WebPluginInfo::type
+// must be one of the pepper types.
+bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
+                          PepperPluginInfo* pepper_info);
+
 // This class holds references to all of the known pepper plugin modules.
 //
 // It keeps two lists. One list of preloaded in-process modules, and one list
@@ -72,11 +78,12 @@ class PepperPluginRegistry
   // access to the plugins before entering the sandbox.
   static void PreloadModules();
 
-  // Retrieves the information associated with the given plugin path. The
+  // Retrieves the information associated with the given plugin info. The
   // return value will be NULL if there is no such plugin.
   //
   // The returned pointer is owned by the PluginRegistry.
-  const PepperPluginInfo* GetInfoForPlugin(const FilePath& path) const;
+  const PepperPluginInfo* GetInfoForPlugin(
+      const webkit::WebPluginInfo& info);
 
   // Returns an existing loaded module for the given path. It will search for
   // both preloaded in-process or currently active (non crashed) out-of-process

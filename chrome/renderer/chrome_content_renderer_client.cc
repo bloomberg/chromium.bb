@@ -445,8 +445,8 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
     bool pepper_plugin_was_registered = false;
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-        render_view->pepper_delegate()->CreatePepperPlugin(
-            info.path, &pepper_plugin_was_registered));
+        render_view->pepper_delegate()->CreatePepperPluginModule(
+            info, &pepper_plugin_was_registered));
     if (pepper_plugin_was_registered) {
       if (pepper_module) {
         return render_view->CreatePepperPlugin(

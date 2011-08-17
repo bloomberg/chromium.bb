@@ -564,8 +564,8 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
 
   bool pepper_plugin_was_registered = false;
   scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-      pepper_delegate_.CreatePepperPlugin(info.path,
-                                          &pepper_plugin_was_registered));
+      pepper_delegate_.CreatePepperPluginModule(info,
+                                                &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module)
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());

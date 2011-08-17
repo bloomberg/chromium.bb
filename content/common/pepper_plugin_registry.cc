@@ -78,8 +78,12 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
   webkit::WebPluginInfo info;
 
-  info.name = name.empty() ? path.BaseName().LossyDisplayName() :
-      ASCIIToUTF16(name);
+  info.type = is_out_of_process ?
+      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
+      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+
+  info.name = name.empty() ?
+      path.BaseName().LossyDisplayName() : UTF8ToUTF16(name);
   info.path = path;
   info.version = ASCIIToUTF16(version);
   info.desc = ASCIIToUTF16(description);
@@ -104,6 +108,24 @@ PepperPluginInfo::PepperPluginInfo()
 }
 
 PepperPluginInfo::~PepperPluginInfo() {
+}
+
+bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
+                          PepperPluginInfo* pepper_info) {
+  if (!webkit::IsPepperPlugin(webplugin_info))
+    return false;
+
+  pepper_info->is_out_of_process =
+      webplugin_info.type ==
+          webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+
+  pepper_info->enabled =  webkit::IsPluginEnabled(webplugin_info);
+  pepper_info->path = FilePath(webplugin_info.path);
+  pepper_info->name = UTF16ToASCII(webplugin_info.name);
+  pepper_info->description = UTF16ToASCII(webplugin_info.desc);
+  pepper_info->version = UTF16ToASCII(webplugin_info.version);
+  pepper_info->mime_types = webplugin_info.mime_types;
+  return true;
 }
 
 // static
@@ -139,12 +161,22 @@ void PepperPluginRegistry::PreloadModules() {
 }
 
 const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
-    const FilePath& path) const {
+    const webkit::WebPluginInfo& info) {
   for (size_t i = 0; i < plugin_list_.size(); ++i) {
-    if (path == plugin_list_[i].path)
+    if (info.path == plugin_list_[i].path)
       return &plugin_list_[i];
   }
-  return NULL;
+  // We did not find the plugin in our list. But wait! the plugin can also
+  // be a latecomer, as it happens with pepper flash. This information
+  // is actually in |info| and we can use it to construct it and add it to
+  // the list. This same deal needs to be done in the browser side in
+  // PluginService.
+  PepperPluginInfo plugin;
+  if (!MakePepperPluginInfo(info, &plugin))
+    return NULL;
+
+  plugin_list_.push_back(plugin);
+  return &plugin_list_[plugin_list_.size() - 1];
 }
 
 webkit::ppapi::PluginModule* PepperPluginRegistry::GetLiveModule(

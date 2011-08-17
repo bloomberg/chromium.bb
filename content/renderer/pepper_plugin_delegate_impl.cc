@@ -70,6 +70,7 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
+#include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
 
@@ -656,12 +657,13 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>
-PepperPluginDelegateImpl::CreatePepperPlugin(
-    const FilePath& path,
+PepperPluginDelegateImpl::CreatePepperPluginModule(
+    const webkit::WebPluginInfo& webplugin_info,
     bool* pepper_plugin_was_registered) {
   *pepper_plugin_was_registered = true;
 
   // See if a module has already been loaded for this plugin.
+  FilePath path(webplugin_info.path);
   scoped_refptr<webkit::ppapi::PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
   if (module)
@@ -671,7 +673,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(
   // sandbox restrictions. So getting here implies it doesn't exist or should
   // be out of process.
   const PepperPluginInfo* info =
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path);
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
   if (!info) {
     *pepper_plugin_was_registered = false;
     return scoped_refptr<webkit::ppapi::PluginModule>();

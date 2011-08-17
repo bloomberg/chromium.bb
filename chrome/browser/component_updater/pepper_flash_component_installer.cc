@@ -10,10 +10,13 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/pepper_plugin_registry.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -42,6 +45,12 @@ const char kPepperFlashManifestName[] =
 #else  // OS_LINUX, etc.
     "NixFlapper";
 #endif
+
+const char* kFlashPluginName = "Shockwave Flash";
+const char* kFlashPluginSwfMimeType = "application/x-shockwave-flash";
+const char* kFlashPluginSwfExtension = "swf";
+const char* kFlashPluginSplMimeType = "application/futuresplash";
+const char* kFlashPluginSplExtension = "spl";
 
 // The pepper flash plugins are in a directory with this name.
 const FilePath::CharType kPepperFlashBaseDirectory[] =
@@ -82,6 +91,52 @@ bool GetLatestPepperFlashDirectory(FilePath* result, Version* latest) {
 }
 
 }  // namespace
+
+bool MakePepperFlashPluginInfo(const FilePath& flash_path,
+                               const Version& flash_version,
+                               bool out_of_process,
+                               bool enabled,
+                               PepperPluginInfo* plugin_info) {
+  if (!flash_version.IsValid())
+    return false;
+  const std::vector<uint16> ver_nums = flash_version.components();
+  if (ver_nums.size() < 3)
+    return false;
+
+  plugin_info->is_internal = false;
+  plugin_info->is_out_of_process = out_of_process;
+  plugin_info->path = flash_path;
+  plugin_info->name = kFlashPluginName;
+  plugin_info->enabled = enabled;
+
+  // The description is like "Shockwave Flash 10.2 r154".
+  plugin_info->description = StringPrintf("%s %d.%d r%d",
+      kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
+
+  plugin_info->version = flash_version.GetString();
+
+  webkit::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
+                                          kFlashPluginSwfExtension,
+                                          kFlashPluginName);
+  plugin_info->mime_types.push_back(swf_mime_type);
+  webkit::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
+                                          kFlashPluginSplExtension,
+                                          kFlashPluginName);
+  plugin_info->mime_types.push_back(spl_mime_type);
+  return true;
+}
+
+void RegisterPepperFlashWithChrome(const FilePath& path,
+                                   const Version& version) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PepperPluginInfo plugin_info;
+  // Register it as out-of-process and disabled.
+  if (!MakePepperFlashPluginInfo(path, version, true, false, &plugin_info))
+    return;
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
+      plugin_info.ToWebPluginInfo());
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+}
 
 class PepperFlashComponentInstaller : public ComponentInstaller {
  public:
@@ -129,15 +184,18 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   if (!file_util::Move(unpack_path, path))
     return false;
-  // Installation is done. Now update the path service.
+  // Installation is done. Now tell the rest of chrome. Both the path service
+  // and to the plugin service.
   current_version_ = version;
   path = path.Append(kPepperFlashPluginFileName);
   PathService::Override(chrome::FILE_PEPPER_FLASH_PLUGIN, path);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&RegisterPepperFlashWithChrome, path, version));
   return true;
 }
 
-void FinishPepperFlashRegistration(ComponentUpdateService* cus,
-                                   const Version& version) {
+void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
+                                         const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CrxComponent pepflash;
   pepflash.name = "pepper_flash";
@@ -149,7 +207,7 @@ void FinishPepperFlashRegistration(ComponentUpdateService* cus,
   }
 }
 
-void StartPepperFlashRegistration(ComponentUpdateService* cus) {
+void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath path = GetPepperFlashBaseDirectory();
   if (!file_util::PathExists(path)) {
@@ -162,20 +220,22 @@ void StartPepperFlashRegistration(ComponentUpdateService* cus) {
   Version version(kNullVersion);
   if (GetLatestPepperFlashDirectory(&path, &version)) {
     path = path.Append(kPepperFlashPluginFileName);
-    if (file_util::PathExists(path))
-      PathService::Override(chrome::FILE_PEPPER_FLASH_PLUGIN, path);
-    else
+    if (file_util::PathExists(path)) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          NewRunnableFunction(&RegisterPepperFlashWithChrome, path, version));
+    } else {
       version = Version(kNullVersion);
+    }
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&FinishPepperFlashRegistration, cus, version));
+      NewRunnableFunction(&FinishPepperFlashUpdateRegistration, cus, version));
 }
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // TODO(cpu): support Mac and Linux flash pepper.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&StartPepperFlashRegistration, cus));
+      NewRunnableFunction(&StartPepperFlashUpdateRegistration, cus));
 #endif
 }
