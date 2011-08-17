@@ -28,7 +28,12 @@ const int kMinHoverThresholdsMs[] = {
   400,
   500,
   750,
-  1000
+  1000,
+  1500,
+  2000,
+  3000,
+  4000,
+  5000
 };
 
 // Overview of hover-related histograms:
