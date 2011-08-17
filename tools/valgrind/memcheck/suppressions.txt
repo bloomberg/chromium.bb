@@ -5315,6 +5315,22 @@
    fun:_ZN19DownloadManagerTestC2Ev
    fun:_ZN*DownloadManagerTest_*
 }
+{
+   bug_93006c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN23DownloadResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN23BufferedResourceHandler27UseAlternateResourceHandlerEiP15ResourceHandler
+   fun:_ZN23BufferedResourceHandler23CompleteResponseStartedEib
+   fun:_ZN23BufferedResourceHandler15OnReadCompletedEiPi
+   fun:_ZN22ResourceDispatcherHost12CompleteReadEPN3net10URLRequestEPi
+   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEPN3net10URLRequestEi
+   fun:_ZN3net10URLRequest19NotifyReadCompletedEi
+   fun:_ZN3net13URLRequestJob18NotifyReadCompleteEi
+   fun:_ZN3net17URLRequestTestJob20ProcessNextOperationEv
+   fun:_ZN3net17URLRequestTestJob24ProcessOnePendingMessageEv
+   fun:_ZN56ResourceDispatcherHostTest_*8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
