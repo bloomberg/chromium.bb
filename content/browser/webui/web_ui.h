@@ -225,7 +225,10 @@ class WebUIMessageHandler {
   // Extract a string value from a list Value.
   string16 ExtractStringValue(const base::ListValue* value);
 
-  WebUI* web_ui_;
+  // Returns the attached WebUI for this handler.
+  WebUI* web_ui() const { return web_ui_; }
+
+  WebUI* web_ui_;  // TODO(wyck): Make private after merge conflicts go away.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
