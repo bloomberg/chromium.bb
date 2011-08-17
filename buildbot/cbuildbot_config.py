@@ -620,7 +620,7 @@ add_config('x86-mario-release', [internal, full, official, release, {
   'prebuilts' : True,
   'binhost_bucket' : 'gs://chromeos-dev-installer',
   'binhost_key' : 'RELEASE_BINHOST',
-  'binhost_base_url' : 'http://commondatastorage.googleapis.com/chromeos-dev-installer',
+  'binhost_base_url' : 'https://commondatastorage.googleapis.com/chromeos-dev-installer',
   'use_binhost_package_file' : True,
   'git_sync' : False,
 }])
