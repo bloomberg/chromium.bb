@@ -315,10 +315,12 @@ void NewTabUI::Observe(int type,
               prefs::kEnableBookmarkBar)) {
         break;
       }
-      if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-        CallJavascriptFunction("bookmarkBarAttached");
-      else
-        CallJavascriptFunction("bookmarkBarDetached");
+      if (!NTP4Enabled()) {
+        if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
+          CallJavascriptFunction("bookmarkBarAttached");
+        else
+          CallJavascriptFunction("bookmarkBarDetached");
+      }
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
