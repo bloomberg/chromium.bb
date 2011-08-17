@@ -21,8 +21,8 @@ EXTRA_ENV = {
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
   # once we can use llvm's ARM assembler we should use these flags
   #'AS_FLAGS_ARM'   : '-assemble -filetype=obj -arch=arm -triple=armv7a-nacl',
-  'AS_FLAGS_X8632' : '-assemble -filetype=obj -arch=i686 -triple=i686-nacl',
-  'AS_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86_64 -triple=x86_64-nacl',
+  'AS_FLAGS_X8632' : '-assemble -filetype=obj -arch=x86 -triple=i686-nacl',
+  'AS_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86-64 -triple=x86_64-nacl',
 
   'RUN_BITCODE_AS' : '${LLVM_AS} ${input} -o ${output}',
   'RUN_NATIVE_AS' : '${AS_%ARCH%} ${AS_FLAGS_%ARCH%} ${input} -o ${output}',

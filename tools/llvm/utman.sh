@@ -42,8 +42,7 @@ SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
 # Use upstream merging repository
-readonly UTMAN_UPSTREAM=${UTMAN_UPSTREAM:-false}
-readonly UTMAN_UPSTREAM_SKIP_UPDATE=${UTMAN_UPSTREAM_SKIP_UPDATE:-false}
+readonly UTMAN_UPSTREAM=true
 if ${UTMAN_UPSTREAM}; then
   UTMAN_USE_MQ=false
 fi
@@ -242,7 +241,7 @@ fi
 # Current milestones in each repo
 # hg-update-pnacl-sfi uses these
 if ${UTMAN_UPSTREAM}; then
-  readonly UPSTREAM_REV=pnacl-sfi # Update to head of pnacl-sfi
+  readonly UPSTREAM_REV=9c9f150ab926
 else
   readonly LLVM_REV=9ca0d1b53734
   readonly LLVM_GCC_REV=e093fe8c5603
@@ -792,10 +791,8 @@ everything() {
     StepBanner "Updating hg sources via MQ=${UTMAN_USE_MQ}";
     setup-hg-mq
   elif ${UTMAN_UPSTREAM}; then
-    if ! ${UTMAN_UPSTREAM_SKIP_UPDATE}; then
-      StepBanner "Updating upstreaming repository"
-      hg-update-upstream
-    fi
+    StepBanner "Updating upstreaming repository"
+    hg-update-upstream
   else
     StepBanner "Updating all hg sources"
     hg-update-llvm-pnacl-sfi
