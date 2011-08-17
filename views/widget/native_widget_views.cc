@@ -260,8 +260,10 @@ void NativeWidgetViews::ReplaceInputMethod(InputMethod* input_method) {
 }
 
 void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
-  // TODO(beng): actually center.
-  GetView()->SetBounds(0, 0, size.width(), size.height());
+  const gfx::Size parent_size = GetView()->parent()->size();
+  GetView()->SetBounds((parent_size.width() - size.width())/2,
+                       (parent_size.height() - size.height())/2,
+                       size.width(), size.height());
 }
 
 void NativeWidgetViews::GetWindowBoundsAndMaximizedState(
