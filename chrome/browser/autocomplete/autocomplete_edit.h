@@ -428,6 +428,18 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                                     const string16& new_user_text,
                                     size_t caret_position);
 
+  // Tries to start an instant preview for |match|. If instant is not supported,
+  // tries to start a prerender for it instead. Returns true if instant is
+  // supported. |suggested_text| must be non-NULL.
+  bool TryInstantFallbackToPrerender(const AutocompleteMatch& match,
+                                     string16* suggested_text);
+
+  // Starts a prerender for the given |match|.
+  void DoPrerender(const AutocompleteMatch& match);
+
+  // Starts a DNS prefetch for the given |match|.
+  void DoPreconnect(const AutocompleteMatch& match);
+
   // Checks if a given character is a valid space character for accepting
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);

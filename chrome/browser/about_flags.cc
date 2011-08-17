@@ -324,7 +324,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
   },
   {
-    "prerender-from-omnibox",
+    "prerender-from-omnibox",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME,
     IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION,
     kOsAll,

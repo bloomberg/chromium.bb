@@ -4453,7 +4453,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Prerender from omnibox
       </message>
       <message name="IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION" desc="Description for the flag to prerender from the omnibox">
-        Prerender suggestions given in the omnibox.
+        Enables prerendering of suggestions from the Omnibox and predicts appropriate network actions (prerendering, Instant, DNS preconnect) by calculating a confidence value for each Omnibox result.
       </message>
       <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_NAME" desc="Title for the flag to enable prompts for Autofill feedback">
         Send additional Autofill feedback

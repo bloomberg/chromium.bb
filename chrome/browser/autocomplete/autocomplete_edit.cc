@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -32,12 +33,60 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+namespace {
+
+enum PredictAction {
+  PREDICT_ACTION_INSTANT = 0,
+  PREDICT_ACTION_PRERENDER,
+  PREDICT_ACTION_PRECONNECT,
+  PREDICT_ACTION_NONE,
+  LAST_PREDICT_ACTION = PREDICT_ACTION_NONE
+};
+
+// Given a match, return a recommended action.
+PredictAction RecommendPredictAction(const AutocompleteMatch& match) {
+  // TODO(dominich): These numbers are not final and should be tweaked as
+  // confidence calculation is finalized.
+  static const float kConfidenceCutoff[LAST_PREDICT_ACTION] = {
+    0.99f,
+    0.90f,
+    0.10f
+  };
+
+  for (int i = 0; i < LAST_PREDICT_ACTION; ++i)
+    if (match.confidence >= kConfidenceCutoff[i])
+      return static_cast<PredictAction>(i);
+  return PREDICT_ACTION_NONE;
+}
+
+// Return true if the suggestion type warrants a TCP/IP preconnection.
+// i.e., it is now quite likely that the user will select the related domain.
+bool IsPreconnectable(AutocompleteMatch::Type type) {
+  UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", type,
+                            AutocompleteMatch::NUM_TYPES);
+  switch (type) {
+    // Matches using the user's default search engine.
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatch::SEARCH_SUGGEST:
+      // A match that uses a non-default search engine (e.g. for tab-to-search).
+    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+}  // end namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditController
@@ -204,39 +253,38 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 }
 
 void AutocompleteEditModel::OnChanged() {
+  const AutocompleteMatch current_match = CurrentMatch();
   UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence",
-                           CurrentMatch().confidence * 100);
-  InstantController* instant = controller_->GetInstant();
+                           current_match.confidence * 100);
+
+  PredictAction predict_action = PREDICT_ACTION_NONE;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrerenderFromOmnibox)) {
+    predict_action = RecommendPredictAction(current_match);
+    UMA_HISTOGRAM_ENUMERATION("Autocomplete.PredictAction",
+                              predict_action, LAST_PREDICT_ACTION + 1);
+  } else if (!in_revert_ && controller_->GetTabContentsWrapper()) {
+    predict_action = PREDICT_ACTION_INSTANT;
+  }
+
   string16 suggested_text;
-  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
   bool might_support_instant = false;
-  if (!in_revert_ && tab) {
-    if (instant) {
-      if (user_input_in_progress() && popup_->IsOpen()) {
-        AutocompleteMatch current_match = CurrentMatch();
-        if (current_match.destination_url == PermanentURL()) {
-          // The destination is the same as the current url. This typically
-          // happens if the user presses the down error in the omnibox, in which
-          // case we don't want to load a preview.
-          instant->DestroyPreviewContentsAndLeaveActive();
-        } else {
-          instant->Update(tab, current_match, view_->GetText(),
-                          UseVerbatimInstant(), &suggested_text);
-        }
-      } else {
-        instant->DestroyPreviewContents();
-      }
-      might_support_instant = instant->MightSupportInstant();
-    } else if (user_input_in_progress() && popup_->IsOpen()) {
-      // Start Prerender of this page instead.
-      CHECK(tab->tab_contents());
-      prerender::PrerenderManager* prerender_manager =
-          profile_->GetPrerenderManager();
-      if (prerender_manager) {
-        prerender_manager->AddPrerenderFromOmnibox(
-            CurrentMatch().destination_url);
-      }
-    }
+  switch (predict_action) {
+    case PREDICT_ACTION_INSTANT:
+      might_support_instant =
+          TryInstantFallbackToPrerender(current_match, &suggested_text);
+      break;
+    case PREDICT_ACTION_PRERENDER:
+      DoPrerender(current_match);
+      break;
+    case PREDICT_ACTION_PRECONNECT:
+      DoPreconnect(current_match);
+      break;
+    case PREDICT_ACTION_NONE:
+      break;
+    default:
+      NOTREACHED() << "Unexpected predict action: " << predict_action;
+      break;
   }
 
   if (!might_support_instant) {
@@ -816,25 +864,6 @@ void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
     instant->SetOmniboxBounds(bounds);
 }
 
-// Return true if the suggestion type warrants a TCP/IP preconnection.
-// i.e., it is now highly likely that the user will select the related domain.
-static bool IsPreconnectable(AutocompleteMatch::Type type) {
-  UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", type,
-                            AutocompleteMatch::NUM_TYPES);
-  switch (type) {
-    // Matches using the user's default search engine.
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-    // A match that uses a non-default search engine (e.g. for tab-to-search).
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
   const bool was_open = popup_->IsOpen();
   if (default_match_changed) {
@@ -851,10 +880,9 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
             match->fill_into_edit.substr(match->inline_autocomplete_offset);
       }
 
-      if (!match->destination_url.SchemeIs(chrome::kExtensionScheme)) {
-        // Warm up DNS Prefetch cache, or preconnect to a search service.
-        chrome_browser_net::AnticipateOmniboxUrl(match->destination_url,
-                                                 IsPreconnectable(match->type));
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrerenderFromOmnibox)) {
+        DoPreconnect(*match);
       }
 
       // We could prefetch the alternate nav URL, if any, but because there
@@ -1007,6 +1035,60 @@ bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
 
   // Only allow exact keyword match if |keyword| represents a keyword hint.
   return keyword.length() && popup_->GetKeywordForText(keyword, &keyword);
+}
+
+bool AutocompleteEditModel::TryInstantFallbackToPrerender(
+    const AutocompleteMatch& match,
+    string16* suggested_text) {
+  DCHECK(suggested_text);
+  InstantController* instant = controller_->GetInstant();
+
+  if (!instant) {
+    // Fall back to prerendering if necessary and possible.
+    if (user_input_in_progress() && popup_->IsOpen())
+      DoPrerender(match);
+    return false;
+  }
+
+  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+
+  if (user_input_in_progress() && popup_->IsOpen()) {
+    if (match.destination_url == PermanentURL()) {
+      // The destination is the same as the current url. This typically
+      // happens if the user presses the down arrow in the omnibox, in which
+      // case we don't want to load a preview.
+      instant->DestroyPreviewContentsAndLeaveActive();
+    } else {
+      instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
+                      suggested_text);
+    }
+  } else {
+    instant->DestroyPreviewContents();
+  }
+
+  return instant->MightSupportInstant();
+}
+
+void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
+  // Do not prerender if the destination URL is the same as the current URL.
+  if (match.destination_url == PermanentURL())
+    return;
+  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  prerender::PrerenderManager* prerender_manager =
+      tab->profile()->GetPrerenderManager();
+  if (prerender_manager)
+    prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
+}
+
+void AutocompleteEditModel::DoPreconnect(const AutocompleteMatch& match) {
+  if (!match.destination_url.SchemeIs(chrome::kExtensionScheme)) {
+    // Warm up DNS Prefetch cache, or preconnect to a search service.
+    chrome_browser_net::AnticipateOmniboxUrl(match.destination_url,
+                                             IsPreconnectable(match.type));
+    // We could prefetch the alternate nav URL, if any, but because there
+    // can be many of these as a user types an initial series of characters,
+    // the OS DNS cache could suffer eviction problems for minimal gain.
+  }
 }
 
 //  static

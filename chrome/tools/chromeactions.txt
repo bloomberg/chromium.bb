@@ -22,6 +22,7 @@
 0x681dbf08b11af420	AboutFlags_match-preview
 0x0156f26c1be32122	AboutFlags_my-special-feature
 0xb41d9c886871e31a	AboutFlags_page-prerender
+0x735ca25b198de8ab	AboutFlags_prerender-from-omnibox
 0xb33861525ba727a4	AboutFlags_print-preview
 0x75b933619fb87fec	AboutFlags_remoting
 0xb9396e0515186060	AboutFlags_snap-start
