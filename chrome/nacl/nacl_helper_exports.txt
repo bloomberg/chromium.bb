@@ -1,0 +1,10 @@
+# gnu-ld version script for exporting desired symbols from nacl_helper
+#
+
+NACL_HELPER_1_0 {
+	global:
+		nacl_helper_init;
+		nacl_helper_get_1G_address;
+	local:
+		*;
+};

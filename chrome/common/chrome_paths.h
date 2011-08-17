@@ -40,7 +40,7 @@ enum {
                                 // using it.
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
   DIR_MEDIA_LIBS,               // Directory where the Media libraries reside.
-#if !defined(OS_MACOSX) && defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   DIR_POLICY_FILES,             // Directory for system-wide read-only
                                 // policy files that allow sys-admins
                                 // to set policies for chrome. This directory
@@ -68,6 +68,10 @@ enum {
   FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
   FILE_PEPPER_FLASH_PLUGIN,     // Full path to the pepper Flash plugin file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  FILE_NACL_HELPER,             // Full path to Linux nacl_helper executable.
+#endif
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
                                 // library.

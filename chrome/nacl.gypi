@@ -144,10 +144,12 @@
         },
       ],
     }],
-    ['OS=="linux" and touchui == 0', {
+    ['OS=="linux"', {
       'targets': [
         {
-          'target_name': 'nacl_helper',
+          'target_name': 'nacl_helper.so',
+          # 'executable' will be overridden below when we add the -shared
+          # flag; here it prevents gyp from using the --whole-archive flag
           'type': 'executable',
           'include_dirs': [
             '..',
@@ -165,6 +167,35 @@
               ],
             }],
           ],
+          'link_settings': {
+            # NOTE: '-shared' overrides 'executable' above
+            'ldflags': ['-shared',
+                        '-Wl,--version-script=chrome/nacl/nacl_helper_exports.txt',
+                      ],
+          },
+        },
+        {
+          'target_name': 'nacl_helper_bootstrap',
+          'type': 'executable',
+          'dependencies': [
+            'nacl_helper.so',
+          ],
+          'sources': [
+            '../chrome/nacl/nacl_helper_bootstrap_linux.c',
+          ],
+          # TODO(bradchen): Delete the -B argument when Gold supports
+          # -Ttext properly. Until then use ld.bfd.
+          'link_settings': {
+            'ldflags': ['-B', 'tools/ld_bfd',
+                        # Force text segment at 0x10000 (64KB)
+                        # The max-page-size option is needed on x86-64 linux
+                        # where 4K pages are not the default in the BFD linker.
+                        '-Wl,-Ttext-segment,10000,-z,max-page-size=0x1000',
+                        # reference nacl_helper as a shared library
+                        '<(PRODUCT_DIR)/nacl_helper.so',
+                        '-Wl,-rpath,<(SHARED_LIB_DIR)',
+                      ],
+          },
         },
       ],
     }],
