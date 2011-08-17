@@ -9,17 +9,74 @@ This module downloads a tgz, and expands it as needed.
 It supports username and password with basic authentication.
 """
 
+import hashlib
 import os
 import shutil
 import subprocess
 import sys
 import tarfile
+import urllib2
 
 import http_download
 
 
+def _HashFileHandle(fh):
+  """sha1 of a file like object.
+
+  Arguments:
+    fh: file handle like object to hash.
+  Returns:
+    sha1 as a string.
+  """
+  hasher = hashlib.sha1()
+  try:
+    while True:
+      data = fh.read(4096)
+      if not data:
+        break
+      hasher.update(data)
+  finally:
+    fh.close()
+  return hasher.hexdigest()
+
+
+def HashFile(filename):
+  """sha1 a file on disk.
+
+  Arguments:
+    filename: filename to hash.
+  Returns:
+    sha1 as a string.
+  """
+  fh = open(filename, 'rb')
+  return _HashFileHandle(fh)
+
+
+def HashUrl(url):
+  """sha1 the data at an url.
+
+  Arguments:
+    url: url to download from.
+  Returns:
+    sha1 of the data at the url.
+  """
+  fh = urllib2.urlopen(url)
+  return _HashFileHandle(fh)
+
+
+class HashError(Exception):
+  def __init__(self, download_url, expected_hash, actual_hash):
+    self.download_url = download_url
+    self.expected_hash = expected_hash
+    self.actual_hash = actual_hash
+
+  def __str__(self):
+    return 'Got hash "%s" but expected hash "%s" for "%s"' % (
+        self.actual_hash, self.expected_hash, self.download_url)
+
+
 def SyncTgz(url, target, maindir='sdk',
-            username=None, password=None, verbose=True):
+            username=None, password=None, verbose=True, hash=None):
   """Download a file from a remote server.
 
   Args:
@@ -28,6 +85,7 @@ def SyncTgz(url, target, maindir='sdk',
     username: Optional username for download.
     password: Optional password for download (ignored if no username).
     verbose: Flag indicating if status shut be printed.
+    hash: sha1 of expected download (don't check if hash is None).
   """
   shutil.rmtree(target, True)
   tgz_filename = target + '/.tgz'
@@ -36,6 +94,10 @@ def SyncTgz(url, target, maindir='sdk',
     print 'Downloading %s to %s...' % (url, tgz_filename)
   http_download.HttpDownload(url, tgz_filename,
     username=username, password=password, verbose=verbose)
+
+  tgz_hash = HashFile(tgz_filename)
+  if hash and hash != tgz_hash:
+    raise HashError(actual_hash=tgz_hash, expected_hash=hash, download_url=url)
 
   if verbose:
     print 'Extracting from %s...' % tgz_filename

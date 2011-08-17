@@ -68,3 +68,7 @@ def EncodeToolchainUrl(base_url, version, flavor):
 
 def IsArmFlavor(flavor):
   return 'arm' in flavor or 'pnacl' in flavor
+
+
+def IsNaClNewlibFlavor(flavor):
+  return flavor.endswith('_newlib') and not flavor.startswith('pnacl')
