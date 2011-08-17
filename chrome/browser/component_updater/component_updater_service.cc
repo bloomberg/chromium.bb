@@ -151,6 +151,7 @@ struct CrxUpdateItem {
   std::string id;
   base::Time last_check;
   CrxComponent component;
+  Version next_version;
 
   CrxUpdateItem() : status(kNew) {}
 
@@ -269,7 +270,8 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void Install(const CRXContext* context, const FilePath& crx_path);
 
-  void DoneInstalling(ComponentUnpacker::Error error);
+  void DoneInstalling(const std::string& component_id,
+                      ComponentUnpacker::Error error);
 
   size_t ChangeItemStatus(CrxUpdateItem::Status from,
                           CrxUpdateItem::Status to);
@@ -529,7 +531,7 @@ void CrxUpdateService::ProcessPendingItems() {
 // Caled when we got a response from the update server. It consists of an xml
 // document following the omaha update scheme.
 void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
-                                          UpdateContext*) {
+                                          UpdateContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (FetchSuccess(*source)) {
     std::string xml;
@@ -540,6 +542,7 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
     url_fetcher_.reset();
     CrxUpdateService::OnParseUpdateManifestFailed("network error");
   }
+  delete context;
 }
 
 // Parsing the manifest is either done right now for tests or in a sandboxed
@@ -600,6 +603,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     // notifications.
     crx->crx_url = it->crx_url;
     crx->status = CrxUpdateItem::kCanUpdate;
+    crx->next_version = Version(it->version);
     ++update_pending;
 
     NotificationService::current()->Notify(
@@ -670,26 +674,28 @@ void CrxUpdateService::Install(const CRXContext* context,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   ComponentUnpacker
       unpacker(context->pk_hash, crx_path, context->installer);
-  delete context;
   if (!file_util::Delete(crx_path, false)) {
     NOTREACHED() << crx_path.value();
   }
-
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxUpdateService::DoneInstalling,
-                        unpacker.error()),
+                        context->id, unpacker.error()),
       config_->StepDelay());
+  delete context;
 }
 
 // Installation has been completed. Adjust the component status and
 // schedule the next check.
-void CrxUpdateService::DoneInstalling(ComponentUnpacker::Error error) {
+void CrxUpdateService::DoneInstalling(const std::string& component_id,
+                                      ComponentUnpacker::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrxUpdateItem::Status status =
-      (error == ComponentUnpacker::kNone) ? CrxUpdateItem::kUpdated :
-                                            CrxUpdateItem::kNoUpdate;
-  size_t count = ChangeItemStatus(CrxUpdateItem::kUpdating, status);
-  DCHECK_EQ(count, 1ul);
+
+  CrxUpdateItem* item = FindUpdateItemById(component_id);
+  item->status = (error == ComponentUnpacker::kNone) ? CrxUpdateItem::kUpdated :
+                                                       CrxUpdateItem::kNoUpdate;
+  if (item->status == CrxUpdateItem::kUpdated)
+    item->component.version = item->next_version;
+
   ScheduleNextRun(false);
 }
 

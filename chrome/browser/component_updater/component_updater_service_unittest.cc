@@ -280,7 +280,8 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
 // Verify that we can check for updates and install one component. Besides
 // the notifications above NOTIFICATION_COMPONENT_UPDATE_FOUND and
-// NOTIFICATION_COMPONENT_UPDATE_READY should have been fired.
+// NOTIFICATION_COMPONENT_UPDATE_READY should have been fired. We do two loops
+// so the second time arround there should be nothing left to do.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
   MessageLoop message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
@@ -308,23 +309,32 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   component_updater()->RegisterComponent(com1);
   component_updater()->RegisterComponent(com2);
 
-  const char expected_update_url[] =
+  const char expected_update_url_1[] =
       "http://localhost/upd?x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc";
 
+  const char expected_update_url_2[] =
+      "http://localhost/upd?x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc";
+
   const char expected_crx_url[] =
       "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
 
-  interceptor->SetResponse(expected_update_url, header_ok_reply,
+  interceptor->SetResponse(expected_update_url_1, header_ok_reply,
+                           test_file("updatecheck_reply_1.xml"));
+  interceptor->SetResponse(expected_update_url_2, header_ok_reply,
                            test_file("updatecheck_reply_1.xml"));
   interceptor->SetResponse(expected_crx_url, header_ok_reply,
                            test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
+  test_configurator()->SetLoopCount(2);
+
   component_updater()->Start();
   message_loop.Run();
 
-  ASSERT_EQ(4ul, notification_tracker().size());
+  ASSERT_EQ(5ul, notification_tracker().size());
 
   TestNotificationTracker::Event ev1 = notification_tracker().at(1);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev1.type);
@@ -335,8 +345,12 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   TestNotificationTracker::Event ev3 = notification_tracker().at(3);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
+  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
+  EXPECT_EQ(2, interceptor->hit_count());
 
   component_updater()->Stop();
   delete com1.installer;
