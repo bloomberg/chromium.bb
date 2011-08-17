@@ -46,6 +46,9 @@ var ExportView = (function() {
     this.lastBlobURL_ = null;
   }
 
+  // ID for special HTML element in category_tabs.html
+  ExportView.TAB_HANDLE_ID = 'tab-handle-export';
+
   cr.addSingletonGetter(ExportView);
 
   ExportView.prototype = {
@@ -110,7 +113,8 @@ var ExportView = (function() {
       }
       this.setSaveFileStatus('Preparing data...', true);
 
-      createLogDumpAsync(userComments, this.onLogDumpCreated_.bind(this));
+      logutil.createLogDumpAsync(userComments,
+                                 this.onLogDumpCreated_.bind(this));
     },
 
     /**

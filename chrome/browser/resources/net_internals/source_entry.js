@@ -178,7 +178,7 @@ SourceEntry.prototype.getEndTime = function() {
     return (new Date()).getTime();
   } else {
     var endTicks = this.entries_[this.entries_.length - 1].time;
-    return convertTimeTicksToDate(endTicks).getTime();
+    return timeutil.convertTimeTicksToDate(endTicks).getTime();
   }
 };
 
@@ -189,7 +189,7 @@ SourceEntry.prototype.getEndTime = function() {
  */
 SourceEntry.prototype.getDuration = function() {
   var startTicks = this.entries_[0].time;
-  var startTime = convertTimeTicksToDate(startTicks).getTime();
+  var startTime = timeutil.convertTimeTicksToDate(startTicks).getTime();
   var endTime = this.getEndTime();
   return endTime - startTime;
 };

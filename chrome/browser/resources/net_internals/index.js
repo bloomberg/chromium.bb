@@ -13,13 +13,15 @@
 <include src="hsts_view.js"/>
 <include src="browser_bridge.js"/>
 <include src="source_tracker.js"/>
+<include src="resizable_vertical_split_view.js"/>
 <include src="main.js"/>
+<include src="time_util.js"/>
+<include src="log_util.js"/>
 <include src="dns_view.js"/>
 <include src="source_row.js"/>
 <include src="events_view.js"/>
 <include src="details_view.js"/>
 <include src="source_entry.js"/>
-<include src="resizable_vertical_split_view.js"/>
 <include src="top_mid_bottom_view.js"/>
 <include src="timeline_view_painter.js"/>
 <include src="log_view_painter.js"/>
@@ -34,5 +36,5 @@
 <include src="prerender_view.js"/>
 
 document.addEventListener('DOMContentLoaded', function () {
-  onLoaded();  // from main.js
+  MainView.getInstance();  // from main.js
 });

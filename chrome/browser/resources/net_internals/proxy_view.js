@@ -49,6 +49,9 @@ var ProxyView = (function() {
     g_browser.sourceTracker.addObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  ProxyView.TAB_HANDLE_ID = 'tab-handle-proxy';
+
   cr.addSingletonGetter(ProxyView);
 
   ProxyView.prototype = {
@@ -93,9 +96,6 @@ var ProxyView = (function() {
       var original = proxySettings.original;
       var effective = proxySettings.effective;
 
-      if (!original || !effective)
-        return false;
-
       $(ORIGINAL_SETTINGS_DIV_ID).innerText = proxySettingsToString(original);
       $(EFFECTIVE_SETTINGS_DIV_ID).innerText = proxySettingsToString(effective);
       return true;
@@ -110,7 +110,7 @@ var ProxyView = (function() {
       // Add a table row for each bad proxy entry.
       for (var i = 0; i < badProxies.length; ++i) {
         var entry = badProxies[i];
-        var badUntilDate = convertTimeTicksToDate(entry.bad_until);
+        var badUntilDate = timeutil.convertTimeTicksToDate(entry.bad_until);
 
         var tr = addNode($(BAD_PROXIES_TBODY_ID), 'tr');
 

@@ -29,6 +29,28 @@ var netInternalsTest = (function() {
   var TESTING_POLL_INTERVAL_MS = 50;
 
   /**
+   * Map of tab handle names to location hashes.
+   * @type {object.<string, string>}
+   */
+  var hashToTabHandleIdMap = {
+    capture: CaptureView.TAB_HANDLE_ID,
+    export: ExportView.TAB_HANDLE_ID,
+    import: ImportView.TAB_HANDLE_ID,
+    proxy: ProxyView.TAB_HANDLE_ID,
+    events: EventsView.TAB_HANDLE_ID,
+    dns: DnsView.TAB_HANDLE_ID,
+    sockets: SocketsView.TAB_HANDLE_ID,
+    spdy: SpdyView.TAB_HANDLE_ID,
+    httpCache: HttpCacheView.TAB_HANDLE_ID,
+    httpThrottling: HttpThrottlingView.TAB_HANDLE_ID,
+    serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,
+    tests: TestView.TAB_HANDLE_ID,
+    hsts: HSTSView.TAB_HANDLE_ID,
+    logs: LogsView.TAB_HANDLE_ID,
+    prerender: PrerenderView.TAB_HANDLE_ID
+  };
+
+  /**
    * Indicates if the test is complete.
    * @type {boolean}
    */
@@ -192,12 +214,103 @@ var netInternalsTest = (function() {
   }
 
   /**
-   * Switches to the specified tab.
-   * TODO(mmenke): check that the tab visibility changes as expected.
-   * @param {string}: viewId Id of the view to switch to.
+   * Returns the TabEntry with the given id.  Asserts if the tab can't be found.
+   * @param {string}: tabId Id of the TabEntry to get.
+   * @return {TabEntry} The specified TabEntry.
    */
-  function switchToView(viewId) {
-    document.location.hash = '#' + viewId;
+  function getTab(tabId) {
+    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
+    var tab = categoryTabSwitcher.findTabById(tabId);
+    assertNotEquals(tab, undefined, tabId + ' does not exist.');
+    return tab;
+  }
+
+  /**
+   * Returns true if the specified tab's handle is visible, false otherwise.
+   * Asserts if the handle can't be found.
+   * @param {string}: tabId Id of the tab to check.
+   * @return {bool} Whether or not the tab's handle is visible.
+   */
+  function tabHandleIsVisible(tabId) {
+    var tabHandleNode = getTab(tabId).getTabHandleNode();
+    return tabHandleNode.style.display != 'none';
+  }
+
+  /**
+   * Returns the tab id of a tab, given its associated URL hash value.  Asserts
+   *    if |hash| has no associated tab.
+   * @param {string}: hash Hash associated with the tab to return the id of.
+   * @return {string} String identifier of the tab with the given hash.
+   */
+  function getTabId(hash) {
+    assertEquals(typeof hashToTabHandleIdMap[hash], 'string',
+                 'Invalid tab anchor: ' + hash);
+    var tabId = hashToTabHandleIdMap[hash];
+    assertEquals('object', typeof getTab(tabId), 'Invalid tab: ' + tabId);
+    return tabId;
+  }
+
+  /**
+   * Switches to the specified tab.
+   * @param {string}: hash Hash associated with the tab to switch to.
+   */
+  function switchToView(hash) {
+    var tabId = getTabId(hash);
+
+    // Make sure the tab handle is visible, as we only simulate normal usage.
+    expectTrue(tabHandleIsVisible(tabId),
+               tabId + ' does not have a visible tab handle.');
+    var tabHandleNode = getTab(tabId).getTabHandleNode();
+
+    // Simulate a left click.
+    var mouseEvent = document.createEvent('MouseEvents');
+    mouseEvent.initMouseEvent('click', true, true, window,
+                              1, 0, 0, 0, 0,
+                              false, false, false, false, 0, null);
+    $(tabId).dispatchEvent(mouseEvent);
+
+    // Make sure the hash changed.
+    assertEquals('#' + hash, document.location.hash);
+
+    // Run the onhashchange function, so we can test the resulting state.
+    // Otherwise, won't trigger until after we return.
+    window.onhashchange();
+
+    // Make sure only the specified tab is visible.
+    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
+    var tabIds = categoryTabSwitcher.getAllTabIds();
+    for (var i = 0; i < tabIds.length; ++i) {
+      expectEquals(tabIds[i] == tabId,
+                   getTab(tabIds[i]).contentView.isVisible(),
+                   tabIds[i] + ': Unexpected visibility state.');
+    }
+  }
+
+  /**
+   * Checks the visibility of all tab handles against expected values.
+   * @param {object.<string, bool>}: tabVisibilityState Object with a an entry
+   *     for each tab's hash, and a bool indicating if it should be visible or
+   *     not.
+   * @param {bool+}: tourTabs True if tabs expected to be visible should should
+   *     each be navigated to as well.
+   */
+  function checkTabHandleVisibility(tabVisibilityState, tourTabs) {
+    // Check visibility state of all tabs.
+    var tabCount = 0;
+    for (var hash in tabVisibilityState) {
+      var tabId = getTabId(hash);
+      assertEquals('object', typeof getTab(tabId), 'Invalid tab: ' + tabId);
+      expectEquals(tabVisibilityState[hash], tabHandleIsVisible(tabId),
+                   tabId + ' visibility state is unexpected.');
+      if (tourTabs && tabVisibilityState[hash])
+        switchToView(hash);
+      tabCount++;
+    }
+
+    // Check that every tab was listed.
+    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
+    var tabIds = categoryTabSwitcher.getAllTabIds();
+    expectEquals(tabCount, tabIds.length);
   }
 
   // Exported functions.
@@ -206,7 +319,8 @@ var netInternalsTest = (function() {
     runTest: runTest,
     testDone:testDone,
     checkStyledTableRows: checkStyledTableRows,
-    switchToView: switchToView
+    switchToView: switchToView,
+    checkTabHandleVisibility: checkTabHandleVisibility
   };
 })();
 

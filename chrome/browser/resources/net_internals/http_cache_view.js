@@ -30,6 +30,9 @@ var HttpCacheView = (function() {
     g_browser.addHttpCacheInfoObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  HttpCacheView.TAB_HANDLE_ID = 'tab-handle-http-cache';
+
   cr.addSingletonGetter(HttpCacheView);
 
   HttpCacheView.prototype = {

@@ -56,6 +56,8 @@ var ImportView = (function() {
     this.loadedInfoUserComments_ = $(LOADED_INFO_USER_COMMENTS_ID);
   }
 
+  ImportView.TAB_HANDLE_ID = 'tab-handle-import';
+
   cr.addSingletonGetter(ImportView);
 
   ImportView.prototype = {
@@ -148,7 +150,7 @@ var ImportView = (function() {
     },
 
     onLoadLogFile: function(logFile, event) {
-      var result = loadLogFile(event.target.result, logFile.fileName);
+      var result = logutil.loadLogFile(event.target.result, logFile.fileName);
       this.setLoadFileStatus(result, false);
     },
 

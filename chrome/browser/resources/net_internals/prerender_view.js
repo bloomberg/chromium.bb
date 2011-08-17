@@ -32,6 +32,9 @@ var PrerenderView = (function() {
     this.prerenderActiveDiv_ = $(ACTIVE_DIV_ID);
   }
 
+  // ID for special HTML element in category_tabs.html
+  PrerenderView.TAB_HANDLE_ID = 'tab-handle-prerender';
+
   cr.addSingletonGetter(PrerenderView);
 
   PrerenderView.prototype = {

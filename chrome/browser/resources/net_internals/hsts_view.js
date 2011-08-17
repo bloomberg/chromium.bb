@@ -53,6 +53,9 @@ var HSTSView = (function() {
     g_browser.addHSTSObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  HSTSView.TAB_HANDLE_ID = 'tab-handle-hsts';
+
   cr.addSingletonGetter(HSTSView);
 
   HSTSView.prototype = {

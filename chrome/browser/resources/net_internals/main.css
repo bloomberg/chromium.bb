@@ -101,13 +101,13 @@ table.styledTable,
   color: red;
 }
 
-#statusViewForCapture {
+#status-view-for-capture {
   background: red;
   color: #eee;
   padding: 4px;
 }
 
-#statusViewForFile {
+#status-view-for-file {
   background: #88c;
   color: #eee;
   padding: 4px;

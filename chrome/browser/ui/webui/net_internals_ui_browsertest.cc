@@ -125,6 +125,8 @@ void NetInternalsTest::SetUpInProcessBrowserTestFixture() {
                           "net_internals/net_internals_test.js")));
 
   // Add Javascript files needed for individual tests.
+  AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/main.js")));
+  AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_util.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/log_view_painter.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/prerender_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/test_view.js")));
@@ -222,6 +224,28 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverExpectFail) {
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverAssertFail) {
   set_expected_title_(kFailTitle);
   RunTestAndWaitForTitle("NetInternalsObserverAssertFail");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// main.js
+////////////////////////////////////////////////////////////////////////////////
+
+// Checks tabs initialization and switching between tabs.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
+  RunTestAndWaitForTitle("NetInternalsTourTabs");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// log_dump_util.js
+////////////////////////////////////////////////////////////////////////////////
+
+// Checks exporting and importing a log dump, as well as some tab behavior in
+// response to doing this.  Does not actually save the log to a file, just
+// to a string.
+// TODO(mmenke):  Add some checks for the import view.
+// TODO(mmenke):  Add a test for a log created with --log-net-log.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
+  RunTestAndWaitForTitle("NetInternalsExportImportDump");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

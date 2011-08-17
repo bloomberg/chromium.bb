@@ -48,6 +48,9 @@ var LogsView = (function() {
         this.onLogsRefresh_.bind(this));
   }
 
+  // ID for special HTML element in category_tabs.html
+  LogsView.TAB_HANDLE_ID = 'tab-handle-logs';
+
   cr.addSingletonGetter(LogsView);
 
   /**

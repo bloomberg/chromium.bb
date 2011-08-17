@@ -46,6 +46,9 @@ var DnsView = (function() {
     g_browser.addHostResolverInfoObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  DnsView.TAB_HANDLE_ID = 'tab-handle-dns';
+
   cr.addSingletonGetter(DnsView);
 
   DnsView.prototype = {
@@ -106,7 +109,7 @@ var DnsView = (function() {
           }
         }
 
-        var expiresDate = convertTimeTicksToDate(e.expiration);
+        var expiresDate = timeutil.convertTimeTicksToDate(e.expiration);
         var expiresCell = addNode(tr, 'td');
         addTextNode(expiresCell, expiresDate.toLocaleString());
       }

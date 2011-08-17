@@ -30,6 +30,9 @@ var HttpThrottlingView = (function() {
     g_browser.addHttpThrottlingObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  HttpThrottlingView.TAB_HANDLE_ID = 'tab-handle-http-throttling';
+
   cr.addSingletonGetter(HttpThrottlingView);
 
   HttpThrottlingView.prototype = {

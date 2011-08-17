@@ -51,6 +51,9 @@ var SpdyView = (function() {
     this.spdySessionDiv_ = $(SESSION_DIV_ID);
   }
 
+  // ID for special HTML element in category_tabs.html
+  SpdyView.TAB_HANDLE_ID = 'tab-handle-spdy';
+
   cr.addSingletonGetter(SpdyView);
 
   SpdyView.prototype = {

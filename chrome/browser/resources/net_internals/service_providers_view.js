@@ -13,8 +13,6 @@
 var ServiceProvidersView = (function() {
   'use strict';
 
-  var TAB_ID = 'tab-handle-service-providers';
-
   // IDs for special HTML elements in service_providers_view.html
   var MAIN_BOX_ID = 'service-providers-view-tab-content';
   var SERVICE_PROVIDERS_TBODY_ID = 'service-providers-view-tbody';
@@ -33,14 +31,14 @@ var ServiceProvidersView = (function() {
     // Call superclass's constructor.
     superClass.call(this, MAIN_BOX_ID);
 
-    var tab = $(TAB_ID);
-    setNodeDisplay(tab, true);
-
     this.serviceProvidersTbody_ = $(SERVICE_PROVIDERS_TBODY_ID);
     this.namespaceProvidersTbody_ = $(NAMESPACE_PROVIDERS_TBODY_ID);
 
     g_browser.addServiceProvidersObserver(this);
   }
+
+  // ID for special HTML element in category_tabs.html
+  ServiceProvidersView.TAB_HANDLE_ID = 'tab-handle-service-providers';
 
   cr.addSingletonGetter(ServiceProvidersView);
 

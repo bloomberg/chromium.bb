@@ -108,6 +108,9 @@ var EventsView = (function() {
     this.initializeSourceList_();
   }
 
+  // ID for special HTML element in category_tabs.html
+  EventsView.TAB_HANDLE_ID = 'tab-handle-events';
+
   cr.addSingletonGetter(EventsView);
 
   EventsView.prototype = {

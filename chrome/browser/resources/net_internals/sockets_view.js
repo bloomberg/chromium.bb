@@ -42,6 +42,9 @@ var SocketsView = (function() {
     flushSocketsButton.onclick = this.flushSocketPools.bind(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  SocketsView.TAB_HANDLE_ID = 'tab-handle-sockets';
+
   cr.addSingletonGetter(SocketsView);
 
   SocketsView.prototype = {

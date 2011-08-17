@@ -47,6 +47,9 @@ var CaptureView = (function() {
     g_browser.sourceTracker.addObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  CaptureView.TAB_HANDLE_ID = 'tab-handle-capture';
+
   cr.addSingletonGetter(CaptureView);
 
   CaptureView.prototype = {

@@ -41,6 +41,9 @@ var TestView = (function() {
     g_browser.addConnectionTestsObserver(this);
   }
 
+  // ID for special HTML element in category_tabs.html
+  TestView.TAB_HANDLE_ID = 'tab-handle-tests';
+
   cr.addSingletonGetter(TestView);
 
   TestView.prototype = {
