@@ -54,6 +54,18 @@ IPC_STRUCT_BEGIN(PrintMsg_Print_Params)
 
   // True if this is the first preview request, used only for print preview.
   IPC_STRUCT_MEMBER(bool, is_first_request)
+
+  // Specifies if the header and footer should be rendered.
+  IPC_STRUCT_MEMBER(bool, display_header_footer)
+
+  // Date string to be printed as header if requested by the user.
+  IPC_STRUCT_MEMBER(string16, date)
+
+  // Title string to be printed as header if requested by the user.
+  IPC_STRUCT_MEMBER(string16, title)
+
+  // URL string to be printed as footer if requested by the user.
+  IPC_STRUCT_MEMBER(string16, url)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)

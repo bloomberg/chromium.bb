@@ -302,7 +302,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   return FAILED;
 }
 
-PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
+PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     const DictionaryValue& job_settings,
     const PageRanges& ranges) {
   DCHECK(!in_print_job_);
