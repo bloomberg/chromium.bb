@@ -51,6 +51,31 @@ cr.define('login', function() {
     },
 
     /**
+     * Shows/hides loading UI.
+     * @param {boolean} show True to show loading UI.
+     * @private
+     */
+    showLoadingUI_: function(show) {
+      $('gaia-loading').hidden = !show;
+      $('signin-frame').hidden = show;
+      $('signin-right').hidden = show;
+    },
+
+    /**
+     * Whether Gaia is loading.
+     * @type {boolean}
+     */
+    get gaiaLoading() {
+      return !$('gaia-loading').hidden;
+    },
+    set gaiaLoading(loading) {
+      if (loading == this.gaiaLoading)
+        return;
+
+      this.showLoadingUI_(loading);
+    },
+
+    /**
      * Event handler that is invoked just before the frame is shown.
      * @param data {string} Screen init payload. Url of auth extension start
      *        page.
@@ -68,6 +93,8 @@ cr.define('login', function() {
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
+
+      this.gaiaLoading = true;
     },
 
     /**
@@ -89,6 +116,8 @@ cr.define('login', function() {
       var msg = e.data;
       if (msg.method == 'completeLogin' && this.isAuthExtMessage_(e)) {
         chrome.send('completeLogin', [msg.email, msg.password] );
+      } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
+        this.gaiaLoading = false;
       }
     },
 

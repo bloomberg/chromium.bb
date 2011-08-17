@@ -1,13 +1,17 @@
-<div class="step right hidden" id="gaia-signin"><iframe id="signin-frame"
-  src="about:blank"
-  marginwidth="0"
-  marginheight="0"
-  frameborder="0"
-  scrolling="no"></iframe>
-  <div id="signin-right">
-    <div id="createAccount" class="signin-link" 
+<div class="step right hidden" id="gaia-signin">
+  <iframe id="signin-frame" hidden
+    src="about:blank"
+    marginwidth="0"
+    marginheight="0"
+    frameborder="0"
+    scrolling="no"></iframe>
+  <div id="signin-right" hidden>
+    <div id="createAccount" class="signin-link"
       i18n-content="createAccount"></div>
     <div id="guestSignin" class="signin-link"
-      i18n-content="guestSignin"></div>    
+      i18n-content="guestSignin"></div>
+  </div>
+  <div id="gaia-loading">
+    <div class="throbber"></div>
   </div>
 </div>

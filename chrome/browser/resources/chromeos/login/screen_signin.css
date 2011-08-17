@@ -27,15 +27,25 @@
   margin-top: 20px;
 }
 
-#gaia-signin > iframe {
+#signin-frame {
   bottom: 0;
-  display: -webkit-box;
   height: 100%;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
   width: 340px;
+}
+
+#gaia-loading {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 #email,
