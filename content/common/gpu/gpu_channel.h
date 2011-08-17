@@ -122,14 +122,19 @@ class GpuChannel : public IPC::Channel::Listener,
   // TransportTexture to delete and detach itself.
   void DestroyTransportTexture(int32 route_id);
 
+  // Generate a route ID guaranteed to be unique for this channel.
+  int GenerateRouteID();
+
+  // Called to add/remove a listener for a particular message routing ID.
+  void AddRoute(int32 route_id, IPC::Channel::Listener* listener);
+  void RemoveRoute(int32 route_id);
+
  private:
   void OnDestroy();
 
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void HandleDeferredMessages();
-
-  int GenerateRouteID();
 
   // Message handlers.
   void OnInitialize(base::ProcessHandle renderer_process);

@@ -27,6 +27,7 @@ namespace gfx {
 class Size;
 }
 
+class GpuChannelHost;
 class PluginChannelHost;
 class Task;
 
@@ -35,7 +36,7 @@ class Task;
 class CommandBufferProxy : public gpu::CommandBuffer,
                            public IPC::Channel::Listener {
  public:
-  CommandBufferProxy(IPC::Channel::Sender* channel, int route_id);
+  CommandBufferProxy(GpuChannelHost* channel, int route_id);
   virtual ~CommandBufferProxy();
 
   // IPC::Channel::Listener implementation:
@@ -117,14 +118,17 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
-  // The video decoder host corresponding to the stub's video decoder in the GPU
-  // process, if one exists.
-  scoped_refptr<GpuVideoDecodeAcceleratorHost> video_decoder_host_;
+  // Zero or more video decoder hosts owned by this proxy, keyed by their
+  // decoder_route_id.
+  typedef std::map<int, scoped_refptr<GpuVideoDecodeAcceleratorHost> > Decoders;
+  Decoders video_decoder_hosts_;
 
   // The last cached state received from the service.
   State last_state_;
 
-  IPC::Channel::Sender* channel_;
+  // |*this| is owned by |*channel_| and so is always outlived by it, so using a
+  // raw pointer is ok.
+  GpuChannelHost* channel_;
   int route_id_;
   unsigned int flush_count_;
 

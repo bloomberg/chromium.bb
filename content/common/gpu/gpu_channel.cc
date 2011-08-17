@@ -286,6 +286,14 @@ int GpuChannel::GenerateRouteID() {
   return ++last_id;
 }
 
+void GpuChannel::AddRoute(int32 route_id, IPC::Channel::Listener* listener) {
+  router_.AddRoute(route_id, listener);
+}
+
+void GpuChannel::RemoveRoute(int32 route_id) {
+  router_.RemoveRoute(route_id);
+}
+
 void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
   // Initialize should only happen once.
   DCHECK(!renderer_process_);

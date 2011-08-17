@@ -102,6 +102,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
     return transport_texture_service_.get();
   }
 
+  // Called to add/remove a listener for a particular message routing ID.
+  void AddRoute(int32 route_id, IPC::Channel::Listener* listener);
+  void RemoveRoute(int32 route_id);
+
  private:
   State state_;
 

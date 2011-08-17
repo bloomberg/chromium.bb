@@ -12,6 +12,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
@@ -20,7 +21,7 @@
 using gpu::Buffer;
 
 CommandBufferProxy::CommandBufferProxy(
-    IPC::Channel::Sender* channel,
+    GpuChannelHost* channel,
     int route_id)
     : num_entries_(0),
       channel_(channel),
@@ -50,16 +51,15 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (!handled && video_decoder_host_)
-    handled = video_decoder_host_->OnMessageReceived(message);
-
   DCHECK(handled);
   return handled;
 }
 
 void CommandBufferProxy::OnChannelError() {
-  if (video_decoder_host_)
-    video_decoder_host_->OnChannelError();
+  for (Decoders::iterator it = video_decoder_hosts_.begin();
+       it != video_decoder_hosts_.end(); ++it) {
+    it->second->OnChannelError();
+  }
   OnDestroyed(gpu::error::kUnknown);
 }
 
@@ -395,15 +395,22 @@ scoped_refptr<GpuVideoDecodeAcceleratorHost>
 CommandBufferProxy::CreateVideoDecoder(
     const std::vector<int32>& configs,
     media::VideoDecodeAccelerator::Client* client) {
-  video_decoder_host_ = new GpuVideoDecodeAcceleratorHost(
-      channel_, route_id_, client);
-
-  if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, configs))) {
+  int decoder_route_id;
+  if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, configs,
+                                                       &decoder_route_id))) {
     LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
-    video_decoder_host_ = NULL;
+    return NULL;
   }
 
-  return video_decoder_host_;
+  scoped_refptr<GpuVideoDecodeAcceleratorHost> decoder_host =
+      new GpuVideoDecodeAcceleratorHost(channel_, decoder_route_id, client);
+  bool inserted = video_decoder_hosts_.insert(std::make_pair(
+      decoder_route_id, decoder_host)).second;
+  DCHECK(inserted);
+
+  channel_->AddRoute(decoder_route_id, decoder_host.get());
+
+  return decoder_host;
 }
 
 #if defined(OS_MACOSX)

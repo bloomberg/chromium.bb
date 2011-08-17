@@ -386,13 +386,14 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
                            base::SharedMemoryHandle /* transfer_buffer */,
                            uint32 /* size */)
 
-// Create and initialize a hardware video decoder.
-IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_CreateVideoDecoder,
-                           std::vector<int32> /* configs */)
+// Create and initialize a hardware video decoder, returning its new route_id.
+IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
+                           std::vector<int32> /* configs */,
+                           int /* route_id */)
 
-// Release all resources held by the hardware video decoder associated with this
-// stub.
-IPC_SYNC_MESSAGE_ROUTED0_0(GpuCommandBufferMsg_DestroyVideoDecoder)
+// Release all resources held by the named hardware video decoder.
+IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_DestroyVideoDecoder,
+                           int /* route_id */)
 
 // Send from command buffer stub to proxy when window is invalid and must be
 // repainted.

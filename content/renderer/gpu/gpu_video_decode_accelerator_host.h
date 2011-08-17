@@ -11,6 +11,8 @@
 #include "ipc/ipc_channel.h"
 #include "media/video/video_decode_accelerator.h"
 
+class GpuChannelHost;
+
 // This class is used to talk to VideoDecodeAccelerator in the Gpu process
 // through IPC messages.
 class GpuVideoDecodeAcceleratorHost
@@ -18,10 +20,9 @@ class GpuVideoDecodeAcceleratorHost
       public media::VideoDecodeAccelerator,
       public base::NonThreadSafe {
  public:
-  // |router| is used to dispatch IPC messages to this object.
-  // |ipc_sender| is used to send IPC messages to Gpu process.
-  GpuVideoDecodeAcceleratorHost(IPC::Message::Sender* ipc_sender,
-                                int32 command_buffer_route_id,
+  // |channel| is used to send IPC messages to GPU process.
+  GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
+                                int32 decoder_route_id,
                                 media::VideoDecodeAccelerator::Client* client);
   virtual ~GpuVideoDecodeAcceleratorHost();
 
@@ -53,14 +54,13 @@ class GpuVideoDecodeAcceleratorHost
   void OnErrorNotification(uint32 error);
 
   // Sends IPC messages to the Gpu process.
-  IPC::Message::Sender* ipc_sender_;
+  GpuChannelHost* channel_;
 
-  // Route ID for the command buffer associated with the context the GPU Video
-  // Decoder uses.
+  // Route ID for the associated decoder in the GPU process.
   // TODO(fischman): storing route_id's for GPU process entities in the renderer
   // process is vulnerable to GPU process crashing & being respawned, and
   // attempting to use an outdated or reused route id.
-  int32 command_buffer_route_id_;
+  int32 decoder_route_id_;
 
   // Reference to the client that will receive callbacks from the decoder.
   media::VideoDecodeAccelerator::Client* client_;

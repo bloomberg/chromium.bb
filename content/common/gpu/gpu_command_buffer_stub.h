@@ -116,7 +116,7 @@ class GpuCommandBufferStub
 
   void OnCreateVideoDecoder(const std::vector<int32>& configs,
                             IPC::Message* reply_message);
-  void OnDestroyVideoDecoder();
+  void OnDestroyVideoDecoder(int32 decoder_route_id);
 
   void OnSwapBuffers();
   void OnCommandProcessed();
@@ -163,8 +163,9 @@ class GpuCommandBufferStub
   GpuWatchdog* watchdog_;
   ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
-  // The video decoder associated with this stub, if any.
-  scoped_ptr<GpuVideoDecodeAccelerator> video_decoder_;
+  // Zero or more video decoders owned by this stub, keyed by their
+  // decoder_route_id.
+  IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

@@ -107,11 +107,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  // If this message isn't intended for the stub, try to route it to the video
-  // decoder.
-  if (!handled && video_decoder_.get())
-    handled = video_decoder_->OnMessageReceived(message);
-
   DCHECK(handled);
   return handled;
 }
@@ -557,14 +552,19 @@ void GpuCommandBufferStub::ReportState() {
 void GpuCommandBufferStub::OnCreateVideoDecoder(
     const std::vector<int32>& configs,
     IPC::Message* reply_message) {
-  video_decoder_.reset(
-      new GpuVideoDecodeAccelerator(this, route_id_, this));
-  video_decoder_->Initialize(configs, reply_message);
+  int decoder_route_id = channel_->GenerateRouteID();
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
+      reply_message, decoder_route_id);
+  GpuVideoDecodeAccelerator* decoder =
+      new GpuVideoDecodeAccelerator(this, decoder_route_id, this);
+  video_decoders_.AddWithID(decoder, decoder_route_id);
+  channel_->AddRoute(decoder_route_id, decoder);
+  decoder->Initialize(configs, reply_message);
 }
 
-void GpuCommandBufferStub::OnDestroyVideoDecoder() {
-  LOG(ERROR) << "GpuCommandBufferStub::OnDestroyVideoDecoder";
-  video_decoder_.reset();
+void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
+  channel_->RemoveRoute(decoder_route_id);
+  video_decoders_.Remove(decoder_route_id);
 }
 
 #endif  // defined(ENABLE_GPU)

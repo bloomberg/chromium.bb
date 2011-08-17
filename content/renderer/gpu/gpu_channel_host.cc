@@ -179,6 +179,15 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
 #endif
 }
 
+void GpuChannelHost::AddRoute(int32 route_id,
+                              IPC::Channel::Listener* listener) {
+  router_.AddRoute(route_id, listener);
+}
+
+void GpuChannelHost::RemoveRoute(int32 route_id) {
+  router_.RemoveRoute(route_id);
+}
+
 void GpuChannelHost::DestroyCommandBuffer(CommandBufferProxy* command_buffer) {
 #if defined(ENABLE_GPU)
   Send(new GpuChannelMsg_DestroyCommandBuffer(command_buffer->route_id()));

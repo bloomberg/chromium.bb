@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/render_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -17,13 +18,13 @@
 using media::VideoDecodeAccelerator;
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
-    IPC::Message::Sender* ipc_sender,
-    int32 command_buffer_route_id,
+    GpuChannelHost* channel,
+    int32 decoder_route_id,
     VideoDecodeAccelerator::Client* client)
-    : ipc_sender_(ipc_sender),
-      command_buffer_route_id_(command_buffer_route_id),
+    : channel_(channel),
+      decoder_route_id_(decoder_route_id),
       client_(client) {
-  DCHECK(ipc_sender_);
+  DCHECK(channel_);
   DCHECK(client_);
   DCHECK(RenderThread::current());
   DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
@@ -32,7 +33,7 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
-  ipc_sender_ = NULL;
+  channel_ = NULL;
 }
 
 bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
@@ -69,7 +70,7 @@ void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedVideoDecoderMsg_Decode(
-      command_buffer_route_id_, bitstream_buffer.handle(),
+      decoder_route_id_, bitstream_buffer.handle(),
       bitstream_buffer.id(), bitstream_buffer.size()));
 }
 
@@ -87,37 +88,38 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
     sizes.push_back(buffer.size());
   }
   Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(
-      command_buffer_route_id_, buffer_ids, texture_ids, sizes));
+      decoder_route_id_, buffer_ids, texture_ids, sizes));
 }
 
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(
-      command_buffer_route_id_, picture_buffer_id));
+      decoder_route_id_, picture_buffer_id));
 }
 
 void GpuVideoDecodeAcceleratorHost::Flush() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Flush(command_buffer_route_id_));
+  Send(new AcceleratedVideoDecoderMsg_Flush(decoder_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Reset() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Reset(command_buffer_route_id_));
+  Send(new AcceleratedVideoDecoderMsg_Reset(decoder_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Destroy(command_buffer_route_id_));
+  channel_->RemoveRoute(decoder_route_id_);
   client_ = NULL;
+  Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   // After OnChannelError is called, the client should no longer send
   // messages to the gpu channel through this object.
-  DCHECK(ipc_sender_);
-  if (!ipc_sender_ || !ipc_sender_->Send(message)) {
+  DCHECK(channel_);
+  if (!channel_ || !channel_->Send(message)) {
     DLOG(ERROR) << "Send(" << message->type() << ") failed";
     OnErrorNotification(PLATFORM_FAILURE);
   }
