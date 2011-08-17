@@ -53,6 +53,10 @@ var __results;
 var __recording = [];
 var __advance_gesture;
 var __gestures = {
+  none: [
+    {"time_ms":1, "y":0},
+    {"time_ms":5000, "y":0}
+  ],
   steady: [
     {"time_ms":1, "y":0},
     {"time_ms":5, "y":10}
@@ -82,18 +86,31 @@ var __gestures = {
   ],
   mouse_wheel: [
     {"time_ms":1, "y":0},
+    {"time_ms":163.99, "y":0},
     {"time_ms":164, "y":53},
+    {"time_ms":227.99, "y":53},
     {"time_ms":228, "y":106},
+    {"time_ms":259.99, "y":106},
     {"time_ms":260, "y":160},
+    {"time_ms":292.99, "y":160},
     {"time_ms":292, "y":213},
+    {"time_ms":307.99, "y":213},
     {"time_ms":308, "y":266},
+    {"time_ms":324.99, "y":266},
     {"time_ms":325, "y":320},
+    {"time_ms":340.99, "y":320},
     {"time_ms":341, "y":373},
+    {"time_ms":356.99, "y":373},
     {"time_ms":357, "y":426},
+    {"time_ms":372.99, "y":426},
     {"time_ms":373, "y":480},
+    {"time_ms":388.99, "y":480},
     {"time_ms":389, "y":533},
-    {"time_ms":405, "y":640},
-    {"time_ms":421, "y":693}
+    {"time_ms":404.99, "y":533},
+    {"time_ms":405, "y":586},
+    {"time_ms":420.99, "y":586},
+    {"time_ms":421, "y":639},
+    {"time_ms":437.99, "y":639}
   ],
   mac_fling: [
     {"time_ms":1, "y":0},
@@ -228,28 +245,74 @@ function __advance_gesture_recording() {
   return false;
 }
 
+function __scroll_window_to(y) {
+  // Scrolls a window to a new location using window.scrollBy, but avoids
+  // window.scrollTo because of potential animation that may cause. This tracks
+  // the current scrollTop position to avoid forcing layout.
+  //
+  // Returns true if the window actually scrolled.
+  var yfloor = Math.floor(y);
+  if (window.__scrolledTo === undefined) {
+    window.scrollBy(0, yfloor);
+    window.__scrolledTo = yfloor;
+    return true;
+  }
+
+  var delta = yfloor - window.__scrolledTo;
+  if (delta == 0)
+    return false;
+  window.scrollBy(0, delta);
+  window.__scrolledTo = yfloor;
+  return true;
+}
+
 // Returns true if a gesture movement occured.
 function __create_gesture_function(gestures) {
-  var i = 0;
+  var i0 = 0;
   return function() {
-    if (i >= gestures.length) {
+    if (i0 >= gestures.length) {
       __stop();
       return false;
     }
-    var time_ms = new Date().getTime() - __t_start;
-    if (time_ms < gestures[i].time_ms)
+    var time_cur = new Date().getTime() - __t_start;
+    if (time_cur <= gestures[i0].time_ms)
       return false;
 
-    // Skip all gestures that occured within the same time interval.
-    for (i; i < gestures.length && time_ms >= gestures[i].time_ms; ++i);
-    window.scrollBy(0, gestures[i - 1].y - document.body.scrollTop);
-    return true;
-  }
+    // Skip any keyframes that we missed
+    for (i0; i0 < gestures.length && gestures[i0].time_ms < time_cur; ++i0);
+
+    // This loop overshoots by 1, so move back in time by 1
+    i0--;
+    var i1 = i0 + 1;
+
+    if (i1 < gestures.length) {
+      // If i1 exists, interpolate between i0 and i1 y based on time_cur -
+      // gestures[i0].time_ms
+      var time_since_i0_start = time_cur - gestures[i0].time_ms;
+      var time_between_i0_and_i1 = gestures[i1].time_ms -
+          gestures[i0].time_ms;
+      var percent_into_frame = time_since_i0_start / time_between_i0_and_i1;
+      var y_diff_between_i0_and_i1 = gestures[i1].y - gestures[i0].y;
+      var interpolated_y = gestures[i0].y +
+          (percent_into_frame * y_diff_between_i0_and_i1);
+
+      // Skip all gestures that occured within the same time interval.
+      return __scroll_window_to(interpolated_y);
+    } else {
+      // Only generate a frame if we are at the end of the animation.
+      __stop();
+      return false;
+    }
+  };
 }
 
 function __create_repeating_gesture_function(gestures) {
   var dtime_ms = gestures[gestures.length - 1].time_ms;
   var dy = gestures[gestures.length - 1].y;
+
+  // Do not repeat gestures that do not change the Y position.
+  if (dy == 0)
+    return __create_gesture_function(gestures);
 
   // Repeat gestures until a scroll goes out of bounds.
   // Note: modifies a copy of the given gestures array.
@@ -332,6 +395,7 @@ function __start_all() {
 function __stop() {
   __running = false;
   document.title = __old_title;
+  window.__scrolledTo = undefined;
 
   if (__running_all) {
     var results = __calc_results();
