@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 // Most of this code is copied from various classes in
-// src/chrome/browser/policy. In partiuclar, look at
+// src/chrome/browser/policy. In particular, look at
 //
-//   asynchronous_policy_loader.{h,cc}
 //   file_based_policy_loader.{h,cc}
 //   config_dir_policy_provider.{h,cc}
 //
@@ -41,10 +40,6 @@ const FilePath::CharType kPolicyDir[] =
     FILE_PATH_LITERAL("/etc/chromium/policies/managed");
 #endif
 
-// The time interval for rechecking policy. This is our fallback in case the
-// delegate never reports a change to the ReloadObserver.
-const int kFallbackReloadDelayMinutes = 15;
-
 // Amount of time we wait for the files on disk to settle before trying to load
 // them. This alleviates the problem of reading partially written files and
 // makes it possible to batch quasi-simultaneous changes.
@@ -56,14 +51,12 @@ class NatPolicyLinux : public NatPolicy {
  public:
   NatPolicyLinux(base::MessageLoopProxy* message_loop_proxy,
                  const FilePath& config_dir)
-      : message_loop_proxy_(message_loop_proxy),
+      : NatPolicy(message_loop_proxy),
         config_dir_(config_dir),
-        current_nat_enabled_state_(false),
-        first_state_published_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-    // Detach the factory because we ensure that only the |message_loop_proxy_|
-    // thread ever calls methods on this. Also, the API contract of having
-    // to call StopWatching() (which signals completion) after StopWatching()
+    // Detach the factory because we ensure that only the policy thread ever
+    // calls methods on this. Also, the API contract of having to call
+    // StopWatching() (which signals completion) after StartWatching()
     // before this object can be destructed ensures there are no users of
     // this object before it is destructed.
     weak_factory_.DetachFromThread();
@@ -71,17 +64,9 @@ class NatPolicyLinux : public NatPolicy {
 
   virtual ~NatPolicyLinux() {}
 
-  virtual void StartWatching(const NatEnabledCallback& nat_enabled_cb)
-      OVERRIDE {
-    if (!message_loop_proxy_->BelongsToCurrentThread()) {
-      message_loop_proxy_->PostTask(FROM_HERE,
-                                    base::Bind(&NatPolicyLinux::StartWatching,
-                                               base::Unretained(this),
-                                               nat_enabled_cb));
-      return;
-    }
-
-    nat_enabled_cb_ = nat_enabled_cb;
+ protected:
+  virtual void StartWatchingInternal() OVERRIDE {
+    DCHECK(OnPolicyThread());
     watcher_.reset(new base::files::FilePathWatcher());
 
     if (!config_dir_.empty() &&
@@ -99,20 +84,10 @@ class NatPolicyLinux : public NatPolicy {
     ScheduleFallbackReloadTask();
   }
 
-  virtual void StopWatching(base::WaitableEvent* done) OVERRIDE {
-    if (!message_loop_proxy_->BelongsToCurrentThread()) {
-      message_loop_proxy_->PostTask(FROM_HERE,
-                                    base::Bind(&NatPolicyLinux::StopWatching,
-                                               base::Unretained(this), done));
-      return;
-    }
-
+  virtual void StopWatchingInternal() OVERRIDE {
+    DCHECK(OnPolicyThread());
     // Cancel any inflight requests.
-    weak_factory_.InvalidateWeakPtrs();
     watcher_.reset();
-    nat_enabled_cb_.Reset();
-
-    done->Signal();
   }
 
   // Called by FilePathWatcherDelegate.
@@ -123,7 +98,7 @@ class NatPolicyLinux : public NatPolicy {
 
   // Called by FilePathWatcherDelegate.
   virtual void OnFilePathChanged(const FilePath& path) {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(OnPolicyThread());
 
     Reload();
   }
@@ -153,22 +128,8 @@ class NatPolicyLinux : public NatPolicy {
     base::WeakPtr<NatPolicyLinux> policy_watcher_;
   };
 
-  void ScheduleFallbackReloadTask() {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-    ScheduleReloadTask(
-        base::TimeDelta::FromMinutes(kFallbackReloadDelayMinutes));
-  }
-
-  void ScheduleReloadTask(const base::TimeDelta& delay) {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-    message_loop_proxy_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&NatPolicyLinux::Reload, weak_factory_.GetWeakPtr()),
-        delay.InMilliseconds());
-  }
-
   base::Time GetLastModification() {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(OnPolicyThread());
     base::Time last_modification = base::Time();
     base::PlatformFileInfo file_info;
 
@@ -197,7 +158,7 @@ class NatPolicyLinux : public NatPolicy {
 
   // Caller owns the value.
   DictionaryValue* Load() {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(OnPolicyThread());
     // Enumerate the files and sort them lexicographically.
     std::set<FilePath> files;
     file_util::FileEnumerator file_enumerator(config_dir_, false,
@@ -207,7 +168,7 @@ class NatPolicyLinux : public NatPolicy {
       files.insert(config_file_path);
 
     // Start with an empty dictionary and merge the files' contents.
-    DictionaryValue* policy = new DictionaryValue;
+    DictionaryValue* policy = new DictionaryValue();
     for (std::set<FilePath>::iterator config_file_iter = files.begin();
          config_file_iter != files.end(); ++config_file_iter) {
       JSONFileValueSerializer deserializer(*config_file_iter);
@@ -232,7 +193,7 @@ class NatPolicyLinux : public NatPolicy {
   }
 
   void Reload() {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(OnPolicyThread());
     // Check the directory time in order to see whether a reload is required.
     base::TimeDelta delay;
     base::Time now = base::Time::Now();
@@ -241,46 +202,21 @@ class NatPolicyLinux : public NatPolicy {
       return;
     }
 
-    // Load the policy definitions.
-    scoped_ptr<DictionaryValue> new_policy(Load());
-
     // Check again in case the directory has changed while reading it.
     if (!IsSafeToReloadPolicy(now, &delay)) {
       ScheduleReloadTask(delay);
       return;
     }
 
-    // Read out just the host firewall traversal policy.  Name of policy taken
-    // from the generated policy/policy_constants.h file.
-    bool new_nat_enabled_state = false;
-    if (!new_policy->HasKey("RemoteAccessHostFirewallTraversal")) {
-      // If unspecified, the default value of this policy is true.
-      //
-      // TODO(ajwong): Current default to false until we have policy
-      // implemented and verified in all 3 platforms.
-      new_nat_enabled_state = false;
-    } else {
-      // Otherwise, try to parse the value and only change from false if we get
-      // a successful read.
-      base::Value* value;
-      if (new_policy->Get("RemoteAccessHostFirewallTraversal", &value) &&
-          value->IsType(base::Value::TYPE_BOOLEAN)) {
-        CHECK(value->GetAsBoolean(&new_nat_enabled_state));
-      }
-    }
-
-    if (!first_state_published_ ||
-        (new_nat_enabled_state != current_nat_enabled_state_)) {
-      first_state_published_ = true;
-      current_nat_enabled_state_ = new_nat_enabled_state;
-      nat_enabled_cb_.Run(current_nat_enabled_state_);
-    }
+    // Load the policy definitions.
+    scoped_ptr<DictionaryValue> new_policy(Load());
+    UpdateNatPolicy(new_policy.get());
 
     ScheduleFallbackReloadTask();
   }
 
   bool IsSafeToReloadPolicy(const base::Time& now, base::TimeDelta* delay) {
-    DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+    DCHECK(OnPolicyThread());
     DCHECK(delay);
     const base::TimeDelta kSettleInterval =
         base::TimeDelta::FromSeconds(kSettleIntervalSeconds);
@@ -324,12 +260,7 @@ class NatPolicyLinux : public NatPolicy {
   // non-local filesystem involved.
   base::Time last_modification_clock_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   const FilePath config_dir_;
-  NatEnabledCallback nat_enabled_cb_;
-
-  bool current_nat_enabled_state_;
-  bool first_state_published_;
 
   // Allows us to cancel any inflight FileWatcher events or scheduled reloads.
   base::WeakPtrFactory<NatPolicyLinux> weak_factory_;

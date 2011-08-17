@@ -6,36 +6,35 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/scoped_ptr.h"
+#include "base/values.h"
 
 namespace remoting {
 namespace policy_hack {
 
 class NatPolicyMac : public NatPolicy {
  public:
-  NatPolicyMac() {
+  explicit NatPolicyMac(base::MessageLoopProxy* message_loop_proxy)
+     : NatPolicy(message_loop_proxy) {
   }
 
   virtual ~NatPolicyMac() {
   }
 
-  virtual void StartWatching(const NatEnabledCallback& nat_enabled_cb)
-      OVERRIDE {
-    nat_enabled_cb_ = nat_enabled_cb;
-    nat_enabled_cb_.Run(false);
+  virtual void StartWatchingInternal() OVERRIDE {
+    scoped_ptr<base::DictionaryValue> new_policy(new base::DictionaryValue());
+    UpdateNatPolicy(new_policy.get());
   }
 
-  virtual void StopWatching(base::WaitableEvent* done) OVERRIDE {
-    nat_enabled_cb_.Reset();
-    done->Signal();
+  virtual void StopWatchingInternal() OVERRIDE {
   }
 
- private:
-  NatEnabledCallback nat_enabled_cb_;
+  virtual void Reload() OVERRIDE {
+  }
 };
 
 NatPolicy* NatPolicy::Create(base::MessageLoopProxy* message_loop_proxy) {
-  return new NatPolicyMac();
+  return new NatPolicyMac(message_loop_proxy);
 }
 
 }  // namespace policy_hack

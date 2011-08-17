@@ -183,6 +183,7 @@
         'host/plugin/host_script_object.cc',
         'host/plugin/host_script_object.h',
         'host/plugin/policy_hack/nat_policy.h',
+        'host/plugin/policy_hack/nat_policy.cc',
         'host/plugin/policy_hack/nat_policy_linux.cc',
         'host/plugin/policy_hack/nat_policy_mac.mm',
         'host/plugin/policy_hack/nat_policy_win.cc',
