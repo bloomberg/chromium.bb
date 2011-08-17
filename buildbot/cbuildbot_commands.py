@@ -503,7 +503,7 @@ def AddPackagesForPrebuilt(filename):
     package_file = open( filename, 'r')
     # Get only the package name and category. For example, given
     # "app-arch/xz-utils-4.999.9_beta" get "app-arch/xz-utils".
-    reg_ex = re.compile('\w+[-]*\w+/\w+[-]*[a-zA-Z]+')
+    reg_ex = re.compile('[\w-]+/[\w-]+[a-zA-Z]+[0-9]*')
     for line in package_file:
       match = reg_ex.match(line)
       if match is not None:
