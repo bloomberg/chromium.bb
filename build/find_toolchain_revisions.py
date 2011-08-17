@@ -10,9 +10,9 @@ This information is helpful when changing arm_toolchain_version and
 x86_toolchain_version in DEPS.
 """
 
-import httplib2
 import optparse
 import sys
+import urllib2
 
 import toolchainbinaries
 
@@ -21,8 +21,14 @@ TARBALL_VERSION_CHECK_MAX = 30
 
 
 def UrlAvailable(url):
-  response, data = httplib2.Http().request(url, 'HEAD')
-  return response.status == 200
+  try:
+    request = urllib2.Request(url)
+    request.get_method = lambda : 'HEAD'
+    response = urllib2.urlopen(request)
+    response.info()
+  except urllib2.URLError:
+    return False
+  return True
 
 
 def TarballsAvailableForVersion(base, version):
