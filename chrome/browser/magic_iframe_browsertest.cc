@@ -37,10 +37,7 @@ GURL MagicIframeBrowserTest::GetTestURL(const std::string& path) {
 // (silently aborted) when the test iframe is transferred between pages (and
 // the original page closes). This causes the final navigation to not complete
 // and test terminated due to a timeout.
-
-// Currently disabled (http://crbug.com/55200, work in progress).
-IN_PROC_BROWSER_TEST_F(MagicIframeBrowserTest,
-                       DISABLED_TransferIframeCloseWindow) {
+IN_PROC_BROWSER_TEST_F(MagicIframeBrowserTest, TransferIframeCloseWindow) {
   ASSERT_TRUE(test_server()->Start());
   GURL url(GetTestURL("iframe-reparenting-close-window.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 3);

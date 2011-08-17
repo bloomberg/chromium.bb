@@ -395,6 +395,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void OnDataDownloadedACK(int request_id);
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
+  void OnTransferRequestToNewPage(int new_routing_id, int request_id);
   void OnFollowRedirect(int request_id,
                         bool has_new_first_party_for_cookies,
                         const GURL& new_first_party_for_cookies);
