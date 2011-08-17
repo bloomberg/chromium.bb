@@ -468,7 +468,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			key_release = (xcb_key_press_event_t *) prev;
 			key_press = (xcb_key_press_event_t *) event;
 			if ((event->response_type & ~0x80) == XCB_KEY_PRESS &&
-			    key_release->time == key_press->time) {
+			    key_release->time == key_press->time &&
+			    key_release->detail == key_press->detail) {
 				/* Don't deliver the held key release
 				 * event or the new key press event. */
 				free(event);
