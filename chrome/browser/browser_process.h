@@ -231,14 +231,6 @@ class BrowserProcess {
   virtual void SetIPCLoggingEnabled(bool enable) = 0;
 #endif
 
-  const std::string& plugin_data_remover_mime_type() const {
-    return plugin_data_remover_mime_type_;
-  }
-
-  void set_plugin_data_remover_mime_type(const std::string& mime_type) {
-    plugin_data_remover_mime_type_ = mime_type;
-  }
-
   virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
 
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() = 0;
@@ -246,9 +238,6 @@ class BrowserProcess {
   virtual ComponentUpdateService* component_updater() = 0;
 
  private:
-  // Used for testing plugin data removal at shutdown.
-  std::string plugin_data_remover_mime_type_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
 };
 

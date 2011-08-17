@@ -26,18 +26,6 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
  public:
   PluginDataRemoverTest() : InProcessBrowserTest() { }
 
-  virtual void SetUpOnMainThread() {
-    old_plugin_data_remover_mime_type_ =
-        g_browser_process->plugin_data_remover_mime_type();
-    g_browser_process->set_plugin_data_remover_mime_type(
-        kNPAPITestPluginMimeType);
-  }
-
-  virtual void TearDownOnMainThread() {
-    g_browser_process->set_plugin_data_remover_mime_type(
-        old_plugin_data_remover_mime_type_);
-  }
-
   virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event) {
     MessageLoop::current()->Quit();
   }
@@ -50,9 +38,6 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
                                    browser_directory.AppendASCII("plugins"));
 #endif
   }
-
- private:
-  std::string old_plugin_data_remover_mime_type_;
 };
 
 IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
@@ -63,11 +48,4 @@ IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
       plugin_data_remover->StartRemoving(base::Time());
   watcher.StartWatching(event, this);
   ui_test_utils::RunMessageLoop();
-}
-
-IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, AtShutdown) {
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kClearSiteDataOnExit, true);
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kClearPluginLSODataEnabled, true);
 }
