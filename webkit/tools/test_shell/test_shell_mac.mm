@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
@@ -94,7 +95,7 @@ FilePath GetResourcesFilePath() {
 
 // Receives notification that the window is closing so that it can start the
 // tear-down process. Is responsible for deleting itself when done.
-@interface WindowDelegate : NSObject {
+@interface WindowDelegate : NSObject<NSWindowDelegate> {
  @private
   TestShellWebView* m_webView;
 }
