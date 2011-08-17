@@ -151,10 +151,6 @@ void SearchProviderTest::SetUp() {
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   provider_ = new SearchProvider(this, &profile_);
-
-  // Prevent the Instant field trial from kicking in.
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabledOnce, true);
 }
 
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
