@@ -709,7 +709,7 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		c->base.image_target_texture_2d(GL_TEXTURE_2D, image);
-		glTexSubImage(GL_TEXTURE_2D, 0, 0, 0, 64, 64,
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 64,
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
 
 		glDeleteTextures(1, &tex);
