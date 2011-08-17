@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 
 #include "base/tracked.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"

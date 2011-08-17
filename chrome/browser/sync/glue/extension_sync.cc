@@ -10,9 +10,12 @@
 #include "base/tracked.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_util.h"
+#include "chrome/browser/sync/internal_api/read_node.h"
+#include "chrome/browser/sync/internal_api/read_transaction.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
+#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 
 namespace browser_sync {

@@ -16,4 +16,6 @@ include_rules = [
   "+talk/base",
   # sync_notifier depends on the xmpp part of libjingle.
   "+talk/xmpp",
+
+  "-chrome/browser/sync/internal_api",
 ]

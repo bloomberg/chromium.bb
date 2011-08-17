@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -25,7 +24,6 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
 
 namespace {
 

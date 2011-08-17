@@ -15,11 +15,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/http_post_provider_interface.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "content/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;

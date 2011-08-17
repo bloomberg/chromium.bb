@@ -11,9 +11,9 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/common/notification_observer.h"
@@ -24,6 +24,12 @@ class AutofillEntry;
 class AutofillProfileChange;
 class PersonalDataManager;
 class WebDatabase;
+
+namespace sync_api {
+class ReadNode;
+class WriteNode;
+class WriteTransaction;
+}  // namespace sync_api
 
 namespace browser_sync {
 

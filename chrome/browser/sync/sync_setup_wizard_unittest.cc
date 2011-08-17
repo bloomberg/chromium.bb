@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"

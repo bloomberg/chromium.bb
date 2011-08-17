@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 
 #include <algorithm>
+#include <map>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -26,6 +26,8 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/internal_api/base_transaction.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_event_handler.h"

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/weak_handle.h"
 
 namespace tracked_objects {

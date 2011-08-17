@@ -9,7 +9,11 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/internal_api/read_node.h"
+#include "chrome/browser/sync/internal_api/read_transaction.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
+#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 namespace browser_sync {

@@ -11,13 +11,13 @@ include_rules = [
   "+chrome/browser/sync/syncable",
   "+chrome/browser/sync/util",
 
+  # TODO(rlarocque) 19878: Move remaining syncapi-related headers to
+  # internal_api/, then remove this DEPS rule.
+  "+chrome/browser/sync/internal_api",
+
   # this should live in base
   "+chrome/browser/sync/weak_handle.h",
 
-  # unittests need this for mac osx keychain overriding
-  "+chrome/browser/password_manager/encryptor.h",
-
-  "+chrome/common/net/gaia/google_service_auth_error.h",
   "+chrome/common/net/http_return.h",
 
   # various command line flags

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -26,8 +25,9 @@ class ProfileSyncService;
 class WebDatabase;
 
 namespace sync_api {
+class ReadNode;
 class WriteTransaction;
-}
+}  // namespace sync_api
 
 namespace browser_sync {
 

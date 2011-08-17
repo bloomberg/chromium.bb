@@ -5,9 +5,9 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/internal_api/user_share.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"

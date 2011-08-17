@@ -2,47 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 
-#include <algorithm>
-#include <bitset>
-#include <iomanip>
-#include <list>
-#include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
-#include "base/observer_list.h"
-#include "base/sha1.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
-#include "base/threading/thread_checker.h"
-#include "base/time.h"
-#include "base/tracked.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
-#include "chrome/browser/sync/engine/http_post_provider_factory.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/engine/nigori_util.h"
-#include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
-#include "chrome/browser/sync/engine/nudge_source.h"
+#include "chrome/browser/sync/engine/nigori_util.h"
+#include "chrome/browser/sync/engine/syncapi_internal.h"
+#include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
-#include "chrome/browser/sync/engine/syncer.h"
+#include "chrome/browser/sync/internal_api/base_node.h"
+#include "chrome/browser/sync/internal_api/read_node.h"
+#include "chrome/browser/sync/internal_api/read_transaction.h"
+#include "chrome/browser/sync/internal_api/user_share.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
+#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/js/js_event_details.h"
@@ -52,28 +34,17 @@
 #include "chrome/browser/sync/js/js_transaction_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
-#include "chrome/browser/sync/protocol/app_specifics.pb.h"
-#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
-#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
-#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
-#include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/protocol/theme_specifics.pb.h"
-#include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
-#include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/weak_handle.h"
-#include "chrome/common/chrome_switches.h"
 #include "net/base/network_change_notifier.h"
+
+using std::string;
+using std::vector;
 
 using base::TimeDelta;
 using browser_sync::AllStatus;
@@ -82,1060 +53,41 @@ using browser_sync::JsArgList;
 using browser_sync::JsBackend;
 using browser_sync::JsEventDetails;
 using browser_sync::JsEventHandler;
+using browser_sync::JsEventHandler;
 using browser_sync::JsReplyHandler;
 using browser_sync::JsSyncManagerObserver;
 using browser_sync::JsTransactionObserver;
-using browser_sync::MakeWeakHandle;
-using browser_sync::WeakHandle;
+using browser_sync::ModelSafeWorkerRegistrar;
+using browser_sync::kNigoriTag;
 using browser_sync::KeyParams;
 using browser_sync::ModelSafeRoutingInfo;
-using browser_sync::ModelSafeWorker;
-using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::ServerConnectionEvent;
 using browser_sync::ServerConnectionEventListener;
 using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
-using browser_sync::Syncer;
 using browser_sync::SyncScheduler;
-using browser_sync::kNigoriTag;
+using browser_sync::Syncer;
+using browser_sync::WeakHandle;
 using browser_sync::sessions::SyncSessionContext;
-using std::list;
-using std::hex;
-using std::string;
-using std::vector;
-using syncable::Directory;
 using syncable::DirectoryManager;
-using syncable::Entry;
 using syncable::EntryKernelMutationSet;
-using syncable::kEncryptedString;
 using syncable::ModelType;
 using syncable::ModelTypeBitSet;
-using syncable::WriterTag;
 using syncable::SPECIFICS;
-using sync_pb::AutofillProfileSpecifics;
-
-namespace {
 
 typedef GoogleServiceAuthError AuthError;
 
-static const int kThreadExitTimeoutMsec = 60000;
-static const int kSSLPort = 443;
+namespace {
+
 static const int kSyncSchedulerDelayMsec = 250;
 
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
 #endif  // OS_CHROMEOS
 
-}  // namespace
+} // namespace
 
 namespace sync_api {
-
-static const FilePath::CharType kBookmarkSyncUserSettingsDatabase[] =
-    FILE_PATH_LITERAL("BookmarkSyncSettings.sqlite3");
-static const char kDefaultNameForNewNodes[] = " ";
-
-// The list of names which are reserved for use by the server.
-static const char* kForbiddenServerNames[] = { "", ".", ".." };
-
-//////////////////////////////////////////////////////////////////////////
-// Static helper functions.
-
-// Helper function to look up the int64 metahandle of an object given the ID
-// string.
-static int64 IdToMetahandle(syncable::BaseTransaction* trans,
-                            const syncable::Id& id) {
-  syncable::Entry entry(trans, syncable::GET_BY_ID, id);
-  if (!entry.good())
-    return kInvalidId;
-  return entry.Get(syncable::META_HANDLE);
-}
-
-// Checks whether |name| is a server-illegal name followed by zero or more space
-// characters.  The three server-illegal names are the empty string, dot, and
-// dot-dot.  Very long names (>255 bytes in UTF-8 Normalization Form C) are
-// also illegal, but are not considered here.
-static bool IsNameServerIllegalAfterTrimming(const std::string& name) {
-  size_t untrimmed_count = name.find_last_not_of(' ') + 1;
-  for (size_t i = 0; i < arraysize(kForbiddenServerNames); ++i) {
-    if (name.compare(0, untrimmed_count, kForbiddenServerNames[i]) == 0)
-      return true;
-  }
-  return false;
-}
-
-static bool EndsWithSpace(const std::string& string) {
-  return !string.empty() && *string.rbegin() == ' ';
-}
-
-// When taking a name from the syncapi, append a space if it matches the
-// pattern of a server-illegal name followed by zero or more spaces.
-static void SyncAPINameToServerName(const std::wstring& sync_api_name,
-                                    std::string* out) {
-  *out = WideToUTF8(sync_api_name);
-  if (IsNameServerIllegalAfterTrimming(*out))
-    out->append(" ");
-}
-
-// In the reverse direction, if a server name matches the pattern of a
-// server-illegal name followed by one or more spaces, remove the trailing
-// space.
-static void ServerNameToSyncAPIName(const std::string& server_name,
-                                    std::string* out) {
-  CHECK(out);
-  int length_to_copy = server_name.length();
-  if (IsNameServerIllegalAfterTrimming(server_name) &&
-      EndsWithSpace(server_name)) {
-    --length_to_copy;
-  }
-  *out = std::string(server_name.c_str(), length_to_copy);
-}
-
-// Compare the values of two EntitySpecifics, accounting for encryption.
-static bool AreSpecificsEqual(const browser_sync::Cryptographer* cryptographer,
-                              const sync_pb::EntitySpecifics& left,
-                              const sync_pb::EntitySpecifics& right) {
-  // Note that we can't compare encrypted strings directly as they are seeded
-  // with a random value.
-  std::string left_plaintext, right_plaintext;
-  if (left.has_encrypted()) {
-    if (!cryptographer->CanDecrypt(left.encrypted())) {
-      NOTREACHED() << "Attempting to compare undecryptable data.";
-      return false;
-    }
-    left_plaintext = cryptographer->DecryptToString(left.encrypted());
-  } else {
-    left_plaintext = left.SerializeAsString();
-  }
-  if (right.has_encrypted()) {
-    if (!cryptographer->CanDecrypt(right.encrypted())) {
-      NOTREACHED() << "Attempting to compare undecryptable data.";
-      return false;
-    }
-    right_plaintext = cryptographer->DecryptToString(right.encrypted());
-  } else {
-    right_plaintext = right.SerializeAsString();
-  }
-  if (left_plaintext == right_plaintext) {
-    return true;
-  }
-  return false;
-}
-
-// Helper function that converts a PassphraseRequiredReason value to a string.
-std::string PassphraseRequiredReasonToString(
-    PassphraseRequiredReason reason) {
-  switch (reason) {
-    case REASON_PASSPHRASE_NOT_REQUIRED:
-      return "REASON_PASSPHRASE_NOT_REQUIRED";
-    case REASON_ENCRYPTION:
-      return "REASON_ENCRYPTION";
-    case REASON_DECRYPTION:
-      return "REASON_DECRYPTION";
-    case REASON_SET_PASSPHRASE_FAILED:
-      return "REASON_SET_PASSPHRASE_FAILED";
-    default:
-      NOTREACHED();
-      return "INVALID_REASON";
-  }
-}
-
-// Helper function to determine if initial sync had ended for types.
-bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
-                              sync_api::UserShare* share) {
-  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
-                                   share->name);
-  if (!lookup.good()) {
-    DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-    return false;
-  }
-
-  for (syncable::ModelTypeSet::const_iterator i = types.begin();
-       i != types.end(); ++i) {
-    if (!lookup->initial_sync_ended_for_type(*i))
-      return false;
-  }
-  return true;
-}
-
-
-UserShare::UserShare() {}
-
-UserShare::~UserShare() {}
-
-////////////////////////////////////
-// BaseNode member definitions.
-
-BaseNode::BaseNode() : password_data_(new sync_pb::PasswordSpecificsData) {}
-
-BaseNode::~BaseNode() {}
-
-std::string BaseNode::GenerateSyncableHash(
-    syncable::ModelType model_type, const std::string& client_tag) {
-  // blank PB with just the extension in it has termination symbol,
-  // handy for delimiter
-  sync_pb::EntitySpecifics serialized_type;
-  syncable::AddDefaultExtensionValue(model_type, &serialized_type);
-  std::string hash_input;
-  serialized_type.AppendToString(&hash_input);
-  hash_input.append(client_tag);
-
-  std::string encode_output;
-  CHECK(base::Base64Encode(base::SHA1HashString(hash_input), &encode_output));
-  return encode_output;
-}
-
-sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
-    const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
-  if (!specifics.HasExtension(sync_pb::password))
-    return NULL;
-  const sync_pb::PasswordSpecifics& password_specifics =
-      specifics.GetExtension(sync_pb::password);
-  if (!password_specifics.has_encrypted())
-    return NULL;
-  const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
-  scoped_ptr<sync_pb::PasswordSpecificsData> data(
-      new sync_pb::PasswordSpecificsData);
-  if (!crypto->Decrypt(encrypted, data.get()))
-    return NULL;
-  return data.release();
-}
-
-bool BaseNode::DecryptIfNecessary() {
-  if (!GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty())
-      return true;  // Ignore unique folders.
-  const sync_pb::EntitySpecifics& specifics =
-      GetEntry()->Get(syncable::SPECIFICS);
-  if (specifics.HasExtension(sync_pb::password)) {
-    // Passwords have their own legacy encryption structure.
-    scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
-        specifics, GetTransaction()->GetCryptographer()));
-    if (!data.get()) {
-      LOG(ERROR) << "Failed to decrypt password specifics.";
-      return false;
-    }
-    password_data_.swap(data);
-    return true;
-  }
-
-  // We assume any node with the encrypted field set has encrypted data.
-  if (!specifics.has_encrypted())
-    return true;
-
-  const sync_pb::EncryptedData& encrypted =
-      specifics.encrypted();
-  std::string plaintext_data = GetTransaction()->GetCryptographer()->
-      DecryptToString(encrypted);
-  if (plaintext_data.length() == 0 ||
-      !unencrypted_data_.ParseFromString(plaintext_data)) {
-    LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
-      syncable::ModelTypeToString(GetModelType()) << ".";
-    return false;
-  }
-  VLOG(2) << "Decrypted specifics of type "
-          << syncable::ModelTypeToString(GetModelType())
-          << " with content: " << plaintext_data;
-  return true;
-}
-
-const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
-    const syncable::Entry* entry) const {
-  const sync_pb::EntitySpecifics& specifics = entry->Get(SPECIFICS);
-  if (specifics.has_encrypted()) {
-    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) !=
-           syncable::UNSPECIFIED);
-    return unencrypted_data_;
-  } else {
-    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) ==
-           syncable::UNSPECIFIED);
-    return specifics;
-  }
-}
-
-int64 BaseNode::GetParentId() const {
-  return IdToMetahandle(GetTransaction()->GetWrappedTrans(),
-                        GetEntry()->Get(syncable::PARENT_ID));
-}
-
-int64 BaseNode::GetId() const {
-  return GetEntry()->Get(syncable::META_HANDLE);
-}
-
-int64 BaseNode::GetModificationTime() const {
-  return GetEntry()->Get(syncable::MTIME);
-}
-
-bool BaseNode::GetIsFolder() const {
-  return GetEntry()->Get(syncable::IS_DIR);
-}
-
-std::string BaseNode::GetTitle() const {
-  std::string result;
-  // TODO(zea): refactor bookmarks to not need this functionality.
-  if (syncable::BOOKMARKS == GetModelType() &&
-      GetEntry()->Get(syncable::SPECIFICS).has_encrypted()) {
-    // Special case for legacy bookmarks dealing with encryption.
-    ServerNameToSyncAPIName(GetBookmarkSpecifics().title(), &result);
-  } else {
-    ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME),
-                            &result);
-  }
-  return result;
-}
-
-GURL BaseNode::GetURL() const {
-  return GURL(GetBookmarkSpecifics().url());
-}
-
-int64 BaseNode::GetPredecessorId() const {
-  syncable::Id id_string = GetEntry()->Get(syncable::PREV_ID);
-  if (id_string.IsRoot())
-    return kInvalidId;
-  return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
-}
-
-int64 BaseNode::GetSuccessorId() const {
-  syncable::Id id_string = GetEntry()->Get(syncable::NEXT_ID);
-  if (id_string.IsRoot())
-    return kInvalidId;
-  return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
-}
-
-int64 BaseNode::GetFirstChildId() const {
-  syncable::Directory* dir = GetTransaction()->GetLookup();
-  syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
-  syncable::Id id_string =
-      dir->GetFirstChildId(trans, GetEntry()->Get(syncable::ID));
-  if (id_string.IsRoot())
-    return kInvalidId;
-  return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
-}
-
-DictionaryValue* BaseNode::GetSummaryAsValue() const {
-  DictionaryValue* node_info = new DictionaryValue();
-  node_info->SetString("id", base::Int64ToString(GetId()));
-  node_info->SetBoolean("isFolder", GetIsFolder());
-  node_info->SetString("title", GetTitle());
-  node_info->Set("type", ModelTypeToValue(GetModelType()));
-  return node_info;
-}
-
-DictionaryValue* BaseNode::GetDetailsAsValue() const {
-  DictionaryValue* node_info = GetSummaryAsValue();
-  // TODO(akalin): Return time in a better format.
-  node_info->SetString("modificationTime",
-                       base::Int64ToString(GetModificationTime()));
-  node_info->SetString("parentId", base::Int64ToString(GetParentId()));
-  // Specifics are already in the Entry value, so no need to duplicate
-  // it here.
-  node_info->SetString("externalId",
-                       base::Int64ToString(GetExternalId()));
-  node_info->SetString("predecessorId",
-                       base::Int64ToString(GetPredecessorId()));
-  node_info->SetString("successorId",
-                       base::Int64ToString(GetSuccessorId()));
-  node_info->SetString("firstChildId",
-                       base::Int64ToString(GetFirstChildId()));
-  node_info->Set("entry", GetEntry()->ToValue());
-  return node_info;
-}
-
-void BaseNode::GetFaviconBytes(std::vector<unsigned char>* output) const {
-  if (!output)
-    return;
-  const std::string& favicon = GetBookmarkSpecifics().favicon();
-  output->assign(reinterpret_cast<const unsigned char*>(favicon.data()),
-      reinterpret_cast<const unsigned char*>(favicon.data() +
-                                             favicon.length()));
-}
-
-int64 BaseNode::GetExternalId() const {
-  return GetEntry()->Get(syncable::LOCAL_EXTERNAL_ID);
-}
-
-const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
-  DCHECK_EQ(syncable::APPS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::app);
-}
-
-const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
-  DCHECK_EQ(syncable::AUTOFILL, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::autofill);
-}
-
-const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
-  DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  return GetEntitySpecifics().GetExtension(sync_pb::autofill_profile);
-}
-
-const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
-  DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::bookmark);
-}
-
-const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
-  DCHECK_EQ(syncable::NIGORI, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::nigori);
-}
-
-const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
-  DCHECK_EQ(syncable::PASSWORDS, GetModelType());
-  return *password_data_;
-}
-
-const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
-  DCHECK_EQ(syncable::THEMES, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::theme);
-}
-
-const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
-  DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::typed_url);
-}
-
-const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
-  DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::extension);
-}
-
-const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
-  DCHECK_EQ(syncable::SESSIONS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::session);
-}
-
-const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
-  return GetUnencryptedSpecifics(GetEntry());
-}
-
-syncable::ModelType BaseNode::GetModelType() const {
-  return GetEntry()->GetModelType();
-}
-
-void BaseNode::SetUnencryptedSpecifics(
-    const sync_pb::EntitySpecifics& specifics) {
-  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(specifics);
-  DCHECK_NE(syncable::UNSPECIFIED, type);
-  if (GetModelType() != syncable::UNSPECIFIED) {
-    DCHECK_EQ(GetModelType(), type);
-  }
-  unencrypted_data_.CopyFrom(specifics);
-}
-
-////////////////////////////////////
-// WriteNode member definitions
-// Static.
-bool WriteNode::UpdateEntryWithEncryption(
-    browser_sync::Cryptographer* cryptographer,
-    const sync_pb::EntitySpecifics& new_specifics,
-    syncable::MutableEntry* entry) {
-  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
-  DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
-  syncable::ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
-
-  sync_pb::EntitySpecifics generated_specifics;
-  if (type == syncable::PASSWORDS ||        // Has own encryption scheme.
-      type == syncable::NIGORI ||           // Encrypted separately.
-      encrypted_types.count(type) == 0 ||
-      new_specifics.has_encrypted()) {
-    // No encryption required.
-    generated_specifics.CopyFrom(new_specifics);
-  } else {
-    // Encrypt new_specifics into generated_specifics.
-    if (VLOG_IS_ON(2)) {
-      scoped_ptr<DictionaryValue> value(entry->ToValue());
-      std::string info;
-      base::JSONWriter::Write(value.get(), true, &info);
-      VLOG(2) << "Encrypting specifics of type "
-              << syncable::ModelTypeToString(type)
-              << " with content: "
-              << info;
-    }
-    if (!cryptographer->is_initialized())
-      return false;
-    syncable::AddDefaultExtensionValue(type, &generated_specifics);
-    if (!cryptographer->Encrypt(new_specifics,
-                                generated_specifics.mutable_encrypted())) {
-      NOTREACHED() << "Could not encrypt data for node of type "
-                   << syncable::ModelTypeToString(type);
-      return false;
-    }
-  }
-
-  const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  if (AreSpecificsEqual(cryptographer, old_specifics, generated_specifics)) {
-    // Even if the data is the same but the old specifics are encrypted with an
-    // old key, we should go ahead and re-encrypt with the new key.
-    if ((!old_specifics.has_encrypted() &&
-         !generated_specifics.has_encrypted()) ||
-         cryptographer->CanDecryptUsingDefaultKey(old_specifics.encrypted())) {
-      VLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
-              << " already match, dropping change.";
-      return true;
-    }
-    // TODO(zea): Add some way to keep track of how often we're reencrypting
-    // because of a passphrase change.
-  }
-
-  if (generated_specifics.has_encrypted()) {
-    // Overwrite the possibly sensitive non-specifics data.
-    entry->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
-    // For bookmarks we actually put bogus data into the unencrypted specifics,
-    // else the server will try to do it for us.
-    if (type == syncable::BOOKMARKS) {
-      sync_pb::BookmarkSpecifics* bookmark_specifics =
-          generated_specifics.MutableExtension(sync_pb::bookmark);
-      if (!entry->Get(syncable::IS_DIR))
-        bookmark_specifics->set_url(kEncryptedString);
-      bookmark_specifics->set_title(kEncryptedString);
-    }
-  }
-  entry->Put(syncable::SPECIFICS, generated_specifics);
-  syncable::MarkForSyncing(entry);
-  return true;
-}
-
-void WriteNode::SetIsFolder(bool folder) {
-  if (entry_->Get(syncable::IS_DIR) == folder)
-    return;  // Skip redundant changes.
-
-  entry_->Put(syncable::IS_DIR, folder);
-  MarkForSyncing();
-}
-
-void WriteNode::SetTitle(const std::wstring& title) {
-  std::string server_legal_name;
-  SyncAPINameToServerName(title, &server_legal_name);
-
-  string old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
-
-  if (server_legal_name == old_name)
-    return;  // Skip redundant changes.
-
-  // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
-  if (GetEntitySpecifics().has_encrypted())
-    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
-  else
-    entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
-
-  // For bookmarks, we also set the title field in the specifics.
-  // TODO(zea): refactor bookmarks to not need this functionality.
-  if (GetModelType() == syncable::BOOKMARKS) {
-    sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-    new_value.set_title(server_legal_name);
-    SetBookmarkSpecifics(new_value);  // Does it's own encryption checking.
-  }
-
-  MarkForSyncing();
-}
-
-void WriteNode::SetURL(const GURL& url) {
-  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-  new_value.set_url(url.spec());
-  SetBookmarkSpecifics(new_value);
-}
-
-void WriteNode::SetAppSpecifics(
-    const sync_pb::AppSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetAutofillSpecifics(
-    const sync_pb::AutofillSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetAutofillProfileSpecifics(
-    const sync_pb::AutofillProfileSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::autofill_profile)->
-      CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetBookmarkSpecifics(
-    const sync_pb::BookmarkSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetNigoriSpecifics(
-    const sync_pb::NigoriSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::nigori)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetPasswordSpecifics(
-    const sync_pb::PasswordSpecificsData& data) {
-  DCHECK_EQ(syncable::PASSWORDS, GetModelType());
-
-  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-
-  // Idempotency check to prevent unnecessary syncing: if the plaintexts match
-  // and the old ciphertext is encrypted with the most current key, there's
-  // nothing to do here.  Because each encryption is seeded with a different
-  // random value, checking for equivalence post-encryption doesn't suffice.
-  const sync_pb::EncryptedData& old_ciphertext =
-      GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::password).encrypted();
-  scoped_ptr<sync_pb::PasswordSpecificsData> old_plaintext(
-      DecryptPasswordSpecifics(GetEntry()->Get(SPECIFICS), cryptographer));
-  if (old_plaintext.get() &&
-      old_plaintext->SerializeAsString() == data.SerializeAsString() &&
-      cryptographer->CanDecryptUsingDefaultKey(old_ciphertext)) {
-    return;
-  }
-
-  sync_pb::PasswordSpecifics new_value;
-  if (!cryptographer->Encrypt(data, new_value.mutable_encrypted())) {
-    NOTREACHED() << "Failed to encrypt password, possibly due to sync node "
-                 << "corruption";
-    return;
-  }
-
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::password)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetThemeSpecifics(
-    const sync_pb::ThemeSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetSessionSpecifics(
-    const sync_pb::SessionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetEntitySpecifics(
-    const sync_pb::EntitySpecifics& new_value) {
-  syncable::ModelType new_specifics_type =
-      syncable::GetModelTypeFromSpecifics(new_value);
-  DCHECK_NE(new_specifics_type, syncable::UNSPECIFIED);
-  VLOG(1) << "Writing entity specifics of type "
-          << syncable::ModelTypeToString(new_specifics_type);
-  // GetModelType() can be unspecified if this is the first time this
-  // node is being initialized (see PutModelType()).  Otherwise, it
-  // should match |new_specifics_type|.
-  if (GetModelType() != syncable::UNSPECIFIED) {
-    DCHECK_EQ(new_specifics_type, GetModelType());
-  }
-  browser_sync::Cryptographer* cryptographer =
-      GetTransaction()->GetCryptographer();
-
-  // Preserve unknown fields.
-  const sync_pb::EntitySpecifics& old_specifics = entry_->Get(SPECIFICS);
-  sync_pb::EntitySpecifics new_specifics;
-  new_specifics.CopyFrom(new_value);
-  new_specifics.mutable_unknown_fields()->MergeFrom(
-      old_specifics.unknown_fields());
-
-  // Will update the entry if encryption was necessary.
-  if (!UpdateEntryWithEncryption(cryptographer, new_specifics, entry_)) {
-    return;
-  }
-  if (entry_->Get(SPECIFICS).has_encrypted()) {
-    // EncryptIfNecessary already updated the entry for us and marked for
-    // syncing if it was needed. Now we just make a copy of the unencrypted
-    // specifics so that if this node is updated, we do not have to decrypt the
-    // old data. Note that this only modifies the node's local data, not the
-    // entry itself.
-    SetUnencryptedSpecifics(new_value);
-  }
-
-  DCHECK_EQ(new_specifics_type, GetModelType());
-}
-
-void WriteNode::ResetFromSpecifics() {
-  SetEntitySpecifics(GetEntitySpecifics());
-}
-
-void WriteNode::SetTypedUrlSpecifics(
-    const sync_pb::TypedUrlSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetExtensionSpecifics(
-    const sync_pb::ExtensionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetExternalId(int64 id) {
-  if (GetExternalId() != id)
-    entry_->Put(syncable::LOCAL_EXTERNAL_ID, id);
-}
-
-WriteNode::WriteNode(WriteTransaction* transaction)
-    : entry_(NULL), transaction_(transaction) {
-  DCHECK(transaction);
-}
-
-WriteNode::~WriteNode() {
-  delete entry_;
-}
-
-// Find an existing node matching the ID |id|, and bind this WriteNode to it.
-// Return true on success.
-bool WriteNode::InitByIdLookup(int64 id) {
-  DCHECK(!entry_) << "Init called twice";
-  DCHECK_NE(id, kInvalidId);
-  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::GET_BY_HANDLE, id);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
-}
-
-// Find a node by client tag, and bind this WriteNode to it.
-// Return true if the write node was found, and was not deleted.
-// Undeleting a deleted node is possible by ClientTag.
-bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
-                                      const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
-  if (tag.empty())
-    return false;
-
-  const std::string hash = GenerateSyncableHash(model_type, tag);
-
-  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
-}
-
-bool WriteNode::InitByTagLookup(const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
-  if (tag.empty())
-    return false;
-  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::GET_BY_SERVER_TAG, tag);
-  if (!entry_->good())
-    return false;
-  if (entry_->Get(syncable::IS_DEL))
-    return false;
-  syncable::ModelType model_type = GetModelType();
-  DCHECK_EQ(syncable::NIGORI, model_type);
-  return true;
-}
-
-void WriteNode::PutModelType(syncable::ModelType model_type) {
-  // Set an empty specifics of the appropriate datatype.  The presence
-  // of the specific extension will identify the model type.
-  DCHECK(GetModelType() == model_type ||
-         GetModelType() == syncable::UNSPECIFIED);  // Immutable once set.
-
-  sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
-  SetEntitySpecifics(specifics);
-}
-
-// Create a new node with default properties, and bind this WriteNode to it.
-// Return true on success.
-bool WriteNode::InitByCreation(syncable::ModelType model_type,
-                               const BaseNode& parent,
-                               const BaseNode* predecessor) {
-  DCHECK(!entry_) << "Init called twice";
-  // |predecessor| must be a child of |parent| or NULL.
-  if (predecessor && predecessor->GetParentId() != parent.GetId()) {
-    DCHECK(false);
-    return false;
-  }
-
-  syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
-
-  // Start out with a dummy name.  We expect
-  // the caller to set a meaningful name after creation.
-  string dummy(kDefaultNameForNewNodes);
-
-  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::CREATE, parent_id, dummy);
-
-  if (!entry_->good())
-    return false;
-
-  // Entries are untitled folders by default.
-  entry_->Put(syncable::IS_DIR, true);
-
-  PutModelType(model_type);
-
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  PutPredecessor(predecessor);
-
-  return true;
-}
-
-// Create a new node with default properties and a client defined unique tag,
-// and bind this WriteNode to it.
-// Return true on success. If the tag exists in the database, then
-// we will attempt to undelete the node.
-// TODO(chron): Code datatype into hash tag.
-// TODO(chron): Is model type ever lost?
-bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
-                                     const BaseNode& parent,
-                                     const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
-
-  const std::string hash = GenerateSyncableHash(model_type, tag);
-
-  syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
-
-  // Start out with a dummy name.  We expect
-  // the caller to set a meaningful name after creation.
-  string dummy(kDefaultNameForNewNodes);
-
-  // Check if we have this locally and need to undelete it.
-  scoped_ptr<syncable::MutableEntry> existing_entry(
-      new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                 syncable::GET_BY_CLIENT_TAG, hash));
-
-  if (existing_entry->good()) {
-    if (existing_entry->Get(syncable::IS_DEL)) {
-      // Rules for undelete:
-      // BASE_VERSION: Must keep the same.
-      // ID: Essential to keep the same.
-      // META_HANDLE: Must be the same, so we can't "split" the entry.
-      // IS_DEL: Must be set to false, will cause reindexing.
-      //         This one is weird because IS_DEL is true for "update only"
-      //         items. It should be OK to undelete an update only.
-      // MTIME/CTIME: Seems reasonable to just leave them alone.
-      // IS_UNSYNCED: Must set this to true or face database insurrection.
-      //              We do this below this block.
-      // IS_UNAPPLIED_UPDATE: Either keep it the same or also set BASE_VERSION
-      //                      to SERVER_VERSION. We keep it the same here.
-      // IS_DIR: We'll leave it the same.
-      // SPECIFICS: Reset it.
-
-      existing_entry->Put(syncable::IS_DEL, false);
-
-      // Client tags are immutable and must be paired with the ID.
-      // If a server update comes down with an ID and client tag combo,
-      // and it already exists, always overwrite it and store only one copy.
-      // We have to undelete entries because we can't disassociate IDs from
-      // tags and updates.
-
-      existing_entry->Put(syncable::NON_UNIQUE_NAME, dummy);
-      existing_entry->Put(syncable::PARENT_ID, parent_id);
-      entry_ = existing_entry.release();
-    } else {
-      return false;
-    }
-  } else {
-    entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                        syncable::CREATE, parent_id, dummy);
-    if (!entry_->good()) {
-      return false;
-    }
-
-    // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
-    entry_->Put(syncable::UNIQUE_CLIENT_TAG, hash);
-  }
-
-  // We don't support directory and tag combinations.
-  entry_->Put(syncable::IS_DIR, false);
-
-  // Will clear specifics data.
-  PutModelType(model_type);
-
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  PutPredecessor(NULL);
-
-  return true;
-}
-
-bool WriteNode::SetPosition(const BaseNode& new_parent,
-                            const BaseNode* predecessor) {
-  // |predecessor| must be a child of |new_parent| or NULL.
-  if (predecessor && predecessor->GetParentId() != new_parent.GetId()) {
-    DCHECK(false);
-    return false;
-  }
-
-  syncable::Id new_parent_id = new_parent.GetEntry()->Get(syncable::ID);
-
-  // Filter out redundant changes if both the parent and the predecessor match.
-  if (new_parent_id == entry_->Get(syncable::PARENT_ID)) {
-    const syncable::Id& old = entry_->Get(syncable::PREV_ID);
-    if ((!predecessor && old.IsRoot()) ||
-        (predecessor && (old == predecessor->GetEntry()->Get(syncable::ID)))) {
-      return true;
-    }
-  }
-
-  // Atomically change the parent. This will fail if it would
-  // introduce a cycle in the hierarchy.
-  if (!entry_->Put(syncable::PARENT_ID, new_parent_id))
-    return false;
-
-  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  PutPredecessor(predecessor);
-
-  return true;
-}
-
-const syncable::Entry* WriteNode::GetEntry() const {
-  return entry_;
-}
-
-const BaseTransaction* WriteNode::GetTransaction() const {
-  return transaction_;
-}
-
-void WriteNode::Remove() {
-  entry_->Put(syncable::IS_DEL, true);
-  MarkForSyncing();
-}
-
-void WriteNode::PutPredecessor(const BaseNode* predecessor) {
-  syncable::Id predecessor_id = predecessor ?
-      predecessor->GetEntry()->Get(syncable::ID) : syncable::Id();
-  entry_->PutPredecessor(predecessor_id);
-  // Mark this entry as unsynced, to wake up the syncer.
-  MarkForSyncing();
-}
-
-void WriteNode::SetFaviconBytes(const vector<unsigned char>& bytes) {
-  sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-  new_value.set_favicon(bytes.empty() ? NULL : &bytes[0], bytes.size());
-  SetBookmarkSpecifics(new_value);
-}
-
-void WriteNode::MarkForSyncing() {
-  syncable::MarkForSyncing(entry_);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ReadNode member definitions
-ReadNode::ReadNode(const BaseTransaction* transaction)
-    : entry_(NULL), transaction_(transaction) {
-  DCHECK(transaction);
-}
-
-ReadNode::ReadNode() {
-  entry_ = NULL;
-  transaction_ = NULL;
-}
-
-ReadNode::~ReadNode() {
-  delete entry_;
-}
-
-void ReadNode::InitByRootLookup() {
-  DCHECK(!entry_) << "Init called twice";
-  syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
-  entry_ = new syncable::Entry(trans, syncable::GET_BY_ID, trans->root_id());
-  if (!entry_->good())
-    DCHECK(false) << "Could not lookup root node for reading.";
-}
-
-bool ReadNode::InitByIdLookup(int64 id) {
-  DCHECK(!entry_) << "Init called twice";
-  DCHECK_NE(id, kInvalidId);
-  syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
-  entry_ = new syncable::Entry(trans, syncable::GET_BY_HANDLE, id);
-  if (!entry_->good())
-    return false;
-  if (entry_->Get(syncable::IS_DEL))
-    return false;
-  syncable::ModelType model_type = GetModelType();
-  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
-                  model_type == syncable::TOP_LEVEL_FOLDER)
-      << "SyncAPI InitByIdLookup referencing unusual object.";
-  return DecryptIfNecessary();
-}
-
-bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
-                                     const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
-  if (tag.empty())
-    return false;
-
-  const std::string hash = GenerateSyncableHash(model_type, tag);
-
-  entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
-                               syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
-}
-
-const syncable::Entry* ReadNode::GetEntry() const {
-  return entry_;
-}
-
-const BaseTransaction* ReadNode::GetTransaction() const {
-  return transaction_;
-}
-
-bool ReadNode::InitByTagLookup(const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
-  if (tag.empty())
-    return false;
-  syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
-  entry_ = new syncable::Entry(trans, syncable::GET_BY_SERVER_TAG, tag);
-  if (!entry_->good())
-    return false;
-  if (entry_->Get(syncable::IS_DEL))
-    return false;
-  syncable::ModelType model_type = GetModelType();
-  LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
-                  model_type == syncable::TOP_LEVEL_FOLDER)
-      << "SyncAPI InitByTagLookup referencing unusually typed object.";
-  return DecryptIfNecessary();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ReadTransaction member definitions
-ReadTransaction::ReadTransaction(const tracked_objects::Location& from_here,
-                                 UserShare* share)
-    : BaseTransaction(share),
-      transaction_(NULL),
-      close_transaction_(true) {
-  transaction_ = new syncable::ReadTransaction(from_here, GetLookup());
-}
-
-ReadTransaction::ReadTransaction(UserShare* share,
-                                 syncable::BaseTransaction* trans)
-    : BaseTransaction(share),
-      transaction_(trans),
-      close_transaction_(false) {}
-
-ReadTransaction::~ReadTransaction() {
-  if (close_transaction_) {
-    delete transaction_;
-  }
-}
-
-syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
-  return transaction_;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// WriteTransaction member definitions
-WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
-                                   UserShare* share)
-    : BaseTransaction(share),
-      transaction_(NULL) {
-  transaction_ = new syncable::WriteTransaction(from_here, syncable::SYNCAPI,
-                                                GetLookup());
-}
-
-WriteTransaction::~WriteTransaction() {
-  delete transaction_;
-}
-
-syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
-  return transaction_;
-}
 
 SyncManager::ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
@@ -1202,12 +154,6 @@ DictionaryValue* SyncManager::ExtraPasswordChangeRecordData::ToValue() const {
 const sync_pb::PasswordSpecificsData&
     SyncManager::ExtraPasswordChangeRecordData::unencrypted() const {
   return unencrypted_;
-}
-
-syncable::ModelTypeSet GetEncryptedTypes(
-    const sync_api::BaseTransaction* trans) {
-  Cryptographer* cryptographer = trans->GetCryptographer();
-  return cryptographer->GetEncryptedTypes();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1708,7 +654,6 @@ void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
 void SyncManager::UpdateEnabledTypes() {
   data_->UpdateEnabledTypes();
 }
-
 
 bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
   return data_->InitialSyncEndedForAllEnabledTypes();
@@ -2548,7 +1493,6 @@ void SyncManager::SyncInternal::RequestNudge(
         ModelTypeBitSet(), location);
 }
 
-
 void SyncManager::SyncInternal::RequestNudgeForDataType(
     const tracked_objects::Location& nudge_location,
     const ModelType& type) {
@@ -2956,7 +1900,6 @@ void SyncManager::SyncInternal::StoreState(
   lookup->SaveChanges();
 }
 
-
 // Note: it is possible that an observer will remove itself after we have made
 // a copy, but before the copy is consumed. This could theoretically result
 // in accessing a garbage pointer, but can only occur when an about:sync window
@@ -3014,21 +1957,6 @@ void SyncManager::SyncInternal::SaveChanges() {
   lookup->SaveChanges();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// BaseTransaction member definitions
-BaseTransaction::BaseTransaction(UserShare* share)
-    : lookup_(NULL) {
-  DCHECK(share && share->dir_manager.get());
-  lookup_ = new syncable::ScopedDirLookup(share->dir_manager.get(),
-                                          share->name);
-  cryptographer_ = share->dir_manager->GetCryptographer(this);
-  if (!(lookup_->good()))
-    DCHECK(false) << "ScopedDirLookup failed on valid DirManager.";
-}
-BaseTransaction::~BaseTransaction() {
-  delete lookup_;
-}
-
 UserShare* SyncManager::GetUserShare() const {
   return data_->GetUserShare();
 }
@@ -3078,6 +2006,42 @@ void SyncManager::TriggerOnIncomingNotificationForTest(
           std::string());
 
   data_->OnIncomingNotification(model_types_with_payloads);
+}
+
+// Helper function that converts a PassphraseRequiredReason value to a string.
+std::string PassphraseRequiredReasonToString(
+    PassphraseRequiredReason reason) {
+  switch (reason) {
+    case REASON_PASSPHRASE_NOT_REQUIRED:
+      return "REASON_PASSPHRASE_NOT_REQUIRED";
+    case REASON_ENCRYPTION:
+      return "REASON_ENCRYPTION";
+    case REASON_DECRYPTION:
+      return "REASON_DECRYPTION";
+    case REASON_SET_PASSPHRASE_FAILED:
+      return "REASON_SET_PASSPHRASE_FAILED";
+    default:
+      NOTREACHED();
+      return "INVALID_REASON";
+  }
+}
+
+// Helper function to determine if initial sync had ended for types.
+bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
+                              sync_api::UserShare* share) {
+  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
+                                   share->name);
+  if (!lookup.good()) {
+    DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+    return false;
+  }
+
+  for (syncable::ModelTypeSet::const_iterator i = types.begin();
+       i != types.end(); ++i) {
+    if (!lookup->initial_sync_ended_for_type(*i))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace sync_api

@@ -8,5 +8,7 @@ include_rules = [
   "+chrome/browser/sync/sessions",
   "+chrome/browser/sync/syncable",
   "+chrome/browser/sync/util",
+
+  "-chrome/browser/sync/internal_api",
 ]
 

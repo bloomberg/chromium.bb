@@ -21,11 +21,10 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -33,6 +32,7 @@ class Profile;
 class ProfileSyncService;
 
 namespace sync_api {
+class BaseTransaction;
 class ReadNode;
 class WriteNode;
 class WriteTransaction;

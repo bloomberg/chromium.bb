@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
+#include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/chrome_notification_types.h"

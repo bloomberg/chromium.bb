@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 

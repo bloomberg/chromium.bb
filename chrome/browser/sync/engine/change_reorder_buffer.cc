@@ -10,6 +10,7 @@
 #include <utility>  // for pair<>
 #include <vector>
 
+#include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 

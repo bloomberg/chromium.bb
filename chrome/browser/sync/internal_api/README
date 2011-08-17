@@ -1,0 +1,32 @@
+This file defines the "sync API", an interface to the syncer
+backend that exposes (1) the core functionality of maintaining a consistent
+local snapshot of a hierarchical object set; (2) a means to transactionally
+access and modify those objects; (3) a means to control client/server
+synchronization tasks, namely: pushing local object modifications to a
+server, pulling nonlocal object modifications from a server to this client,
+and resolving conflicts that may arise between the two; and (4) an
+abstraction of some external functionality that is to be provided by the
+host environment.
+
+This interface is used as the entry point into the syncer backend
+when the backend is compiled as a library and embedded in another
+application.  A goal for this interface layer is to depend on very few
+external types, so that an application can use the sync backend
+without introducing a dependency on specific types.  A non-goal is to
+have binary compatibility across versions or compilers; this allows the
+interface to use C++ classes.  An application wishing to use the sync API
+should ideally compile the syncer backend and this API as part of the
+application's own build, to avoid e.g. mismatches in calling convention,
+structure padding, or name mangling that could arise if there were a
+compiler mismatch.
+
+The schema of the objects in the sync domain is based on the model, which
+is essentially a hierarchy of items and folders similar to a filesystem,
+but with a few important differences.  The sync API contains fields
+such as URL to easily allow the embedding application to store web
+browser bookmarks.  Also, the sync API allows duplicate titles in a parent.
+Consequently, it does not support looking up an object by title
+and parent, since such a lookup is not uniquely determined.  Lastly,
+unlike a filesystem model, objects in the Sync API model have a strict
+ordering within a parent; the position is manipulable by callers, and
+children of a node can be enumerated in the order of their position.

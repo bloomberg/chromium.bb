@@ -19,14 +19,13 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
+#include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/browser/sync/engine/net/server_connection_manager.h"
-#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 
 class MessageLoop;
 

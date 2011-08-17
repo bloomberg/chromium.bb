@@ -10,9 +10,9 @@
 
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -20,6 +20,12 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
+
+namespace sync_api {
+class ReadNode;
+class WriteNode;
+class WriteTransaction;
+}  // namespace sync_api
 
 namespace browser_sync {
 

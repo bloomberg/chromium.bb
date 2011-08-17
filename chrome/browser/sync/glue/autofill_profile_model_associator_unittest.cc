@@ -4,8 +4,8 @@
 
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/engine/read_node_mock.h"
-#include "chrome/browser/sync/engine/syncapi_mock.h"
+#include "chrome/browser/sync/internal_api/read_node_mock.h"
+#include "chrome/browser/sync/internal_api/syncapi_mock.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_mock.h"

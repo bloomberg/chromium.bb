@@ -16,5 +16,7 @@ include_rules = [
 
   "+chrome/common/random.h",
   "+chrome/common/sqlite_utils.h",
+
+  "-chrome/browser/sync/internal_api",
 ]
 

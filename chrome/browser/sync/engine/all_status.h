@@ -13,8 +13,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {

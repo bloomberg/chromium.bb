@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
 #pragma once
 
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
+#include "chrome/browser/sync/syncable/syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class Profile;

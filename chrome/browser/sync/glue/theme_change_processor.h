@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"

@@ -14,7 +14,8 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/internal_api/base_transaction.h"
+#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 
 namespace sync_api {

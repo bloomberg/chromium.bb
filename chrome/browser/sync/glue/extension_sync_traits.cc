@@ -6,8 +6,8 @@
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_util.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"

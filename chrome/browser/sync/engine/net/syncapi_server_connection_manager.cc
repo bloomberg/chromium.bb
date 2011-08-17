@@ -6,7 +6,6 @@
 
 #include "chrome/browser/sync/engine/http_post_provider_factory.h"
 #include "chrome/browser/sync/engine/http_post_provider_interface.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/net/http_return.h"
 

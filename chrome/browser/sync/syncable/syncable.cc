@@ -27,14 +27,14 @@
 #include <set>
 #include <string>
 
-#include "base/hash_tables.h"
 #include "base/file_util.h"
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/stl_util.h"
 #include "base/time.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
@@ -45,10 +45,10 @@
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/syncable/syncable_enum_conversions.h"
+#include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
 #include "chrome/browser/sync/util/logging.h"
 #include "net/base/escape.h"
