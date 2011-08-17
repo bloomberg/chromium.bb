@@ -14,6 +14,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -847,11 +848,23 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(test_server()->Start());
 
   // Open the new tab, reload.
-  browser()->NewTab();
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        NotificationService::AllSources());
+    browser()->NewTab();
+    observer.Wait();
+  }
   ui_test_utils::RunAllPendingInMessageLoop();
 
-  browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
   // Focus should stay on the location bar.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
@@ -859,8 +872,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
-  browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
@@ -875,8 +894,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
-  browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();

@@ -57,6 +57,7 @@ namespace ui_test_utils {
 namespace {
 
 // Used to block until a navigation completes.
+// TODO(gbillock): this should be merged with TestNavigationObserver
 class NavigationNotificationObserver : public NotificationObserver {
  public:
   NavigationNotificationObserver(const NotificationSource& source,

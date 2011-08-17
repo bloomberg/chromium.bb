@@ -336,12 +336,16 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_OnLoadAndReload) {
   GURL url = pdf_test_server()->GetURL("files/onload_reload.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContents()->controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser()->GetSelectedTabContents()->render_view_host(),
       std::wstring(),
       L"reloadPDF();"));
+  observer.Wait();
 
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_EQ("success", browser()->GetSelectedTabContents()->GetURL().query());
 }
 
