@@ -588,7 +588,8 @@ void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
       // Either |layout_id| or |url| is invalid. Remove the key from |prefs|
       // later.
       layouts_to_remove.push_back(layout_id);
-      LOG(ERROR) << "Removing invalid virtual keyboard pref: layout=" << layout;
+      LOG(ERROR) << "Removing invalid virtual keyboard pref: layout="
+                 << layout_id;
     }
   }
 
