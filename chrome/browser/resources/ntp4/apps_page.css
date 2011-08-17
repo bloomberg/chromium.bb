@@ -118,10 +118,3 @@
   white-space: nowrap;
   -webkit-border-image: url('../ntp/g-button-chocobo.png') 6 10 12 6;
 }
-
-.apps-promo-hide {
-  font-size: 90%;
-  margin-top: 2px;
-  text-decoration: underline;
-  -webkit-margin-start: 5px;
-}

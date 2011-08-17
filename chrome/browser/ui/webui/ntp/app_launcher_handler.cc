@@ -592,6 +592,8 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   // If the user has intentionally hidden the promotion, we'll uninstall all the
   // default apps (we know the user hasn't installed any apps on their own at
   // this point, or the promotion wouldn't have been shown).
+  // TODO(estade): this isn't used right now as we sort out the future of the
+  // apps promo on ntp4.
   if (NewTabUI::NTP4Enabled()) {
     UninstallDefaultApps();
     extension_service_->apps_promo()->HidePromo();

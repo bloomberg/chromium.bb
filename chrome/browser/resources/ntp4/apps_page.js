@@ -243,27 +243,13 @@ cr.define('ntp4', function() {
           this.appsPromoExtras_.querySelector('.apps-promo-heading');
       this.appsPromoLink_ =
           this.appsPromoExtras_.querySelector('.apps-promo-link');
-      this.appsPromoHide_ =
-          this.appsPromoExtras_.querySelector('.apps-promo-hide');
 
       this.appsPromoLogo_ = this.ownerDocument.createElement('img');
       this.appsPromoLogo_.className = 'apps-promo-logo';
       this.appImgContainer_.appendChild(this.appsPromoLogo_);
 
-      this.appsPromoHide_.addEventListener('click',
-                                           this.onHidePromoClicked_.bind(this));
-
       this.appendChild(this.appsPromoExtras_);
       this.appsPromoExtras_.hidden = false;
-    },
-
-    /**
-     * Handles when the "No, thanks" promo link is clicked.
-     * @private
-     */
-    onHidePromoClicked_: function(e) {
-      chrome.send('hideAppsPromo');
-      this.setAppsPromoData(null);
     },
 
     /**
@@ -283,7 +269,6 @@ cr.define('ntp4', function() {
       this.appsPromoHeading_.textContent = data.promoHeader;
       this.appsPromoLink_.href = data.promoLink;
       this.appsPromoLink_.textContent = data.promoButton;
-      this.appsPromoHide_.textContent = data.promoExpire;
       this.appsPromoLogo_.src = data.promoLogo;
     },
 
