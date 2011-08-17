@@ -3933,7 +3933,14 @@
             ],
           },
         }],
-        ['webui_certificate_viewer==0', {
+        ['webui_dialogs == 1', {
+          'defines': [
+            'WEBUI_DIALOGS',
+          ],
+        }],
+        # Exclude WebUI certificate viewer if not POSIX, mac (these OS's have
+        # native certificate viewers) or WebUI dialogs are disabled.
+        ['webui_dialogs == 0 or os_posix == 0 or OS == "mac"', {
           'sources/': [
             ['exclude', '^browser/ui/webui/certificate_viewer.cc'],
             ['exclude', '^browser/ui/webui/certificate_viewer.h'],
@@ -3941,13 +3948,10 @@
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
           ],
         }],
-        ['webui_certificate_viewer==1', {
+        ['webui_dialogs == 1', {
           'sources/': [
             ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
             ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
-          ],
-          'defines': [
-            'WEBUI_CERTIFICATE_VIEWER',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -4595,9 +4599,9 @@
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.h'],
               ],
             }],
-            # Exclude the GTK cert viewer again if webui_certificate_viewer is
+            # Exclude the GTK cert viewer again if webui_dialogs are
             # enabled.
-            ['webui_certificate_viewer==1', {
+            ['webui_dialogs==1', {
               'sources/': [
                 ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
                 ['exclude', '^browser/ui/gtk/certificate_viewer.h'],

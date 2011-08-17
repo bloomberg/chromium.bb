@@ -570,6 +570,8 @@ class Browser : public TabHandlerDelegate,
 
   void OpenBookmarkManager();
   void OpenBookmarkManagerForNode(int64 node_id);
+  void OpenBookmarkManagerEditNode(int64 node_id);
+  void OpenBookmarkManagerAddNodeIn(int64 node_id);
   void ShowAppMenu();
   void ShowHistoryTab();
   void ShowDownloadsTab();
@@ -1139,6 +1141,9 @@ class Browser : public TabHandlerDelegate,
   // Resets |bookmark_bar_state_| based on the active tab. Notifies the
   // BrowserWindow if necessary.
   void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
+
+  // Open the bookmark manager with a defined hash action.
+  void OpenBookmarkManagerWithHash(const std::string& action, int64 node_id);
 
   // Data members /////////////////////////////////////////////////////////////
 

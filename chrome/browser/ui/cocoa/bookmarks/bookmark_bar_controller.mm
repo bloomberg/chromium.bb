@@ -591,6 +591,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
   }
 
+#if defined(WEBUI_DIALOGS)
+  browser_->OpenBookmarkManagerEditNode(node->id());
+#else
   // There is no real need to jump to a platform-common routine at
   // this point (which just jumps back to objc) other than consistency
   // across platforms.
@@ -603,6 +606,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                        node->parent(),
                        BookmarkEditor::EditDetails(node),
                        BookmarkEditor::SHOW_TREE);
+#endif
 }
 
 - (IBAction)cutBookmark:(id)sender {
@@ -680,11 +684,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* parent = [self nodeFromMenuItem:sender];
   if (!parent)
     parent = bookmarkModel_->bookmark_bar_node();
+#if defined(WEBUI_DIALOGS)
+  browser_->OpenBookmarkManagerAddNodeIn(parent->id());
+#else
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        parent,
                        BookmarkEditor::EditDetails(),
                        BookmarkEditor::SHOW_TREE);
+#endif
 }
 
 // Might be called from the context menu over the bar OR over a

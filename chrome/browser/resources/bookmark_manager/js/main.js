@@ -116,6 +116,20 @@ tree.addEventListener('change', function() {
 });
 
 /**
+ * Add an event listener to a node that will remove itself after firing once.
+ * @param {!Element} node The DOM node to add the listener to.
+ * @param {string} name The name of the event listener to add to.
+ * @param {function(Event)} handler Function called when the event fires.
+ */
+function addOneShotEventListener(node, name, handler) {
+  var f = function(e) {
+    handler(e);
+    node.removeEventListener(name, f);
+  };
+  node.addEventListener(name, f);
+}
+
+/**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
  * @param {boolean=} opt_updateHashNow Whether to immediately update the
@@ -150,22 +164,61 @@ function updateParentId(id) {
     tree.selectedItem = bmm.treeLookup[id];
 }
 
-// We listen to hashchange so that we can update the currently shown folder when
-// the user goes back and forward in the history.
-window.onhashchange = function(e) {
+// Process the location hash. This is called onhashchange and when the page is
+// first loaded.
+function processHash() {
   var id = window.location.hash.slice(1);
+  if (!id) {
+    // If we do not have a hash select first item in the tree.
+    id = tree.items[0].bookmarkId;
+  }
 
   var valid = false;
+  if (/^[ae]=/.test(id)) {
+    var command = id[0];
+    id = id.slice(2);
+    if (command == 'e') {
+      // If hash contains e= edit the item specified.
+      chrome.bookmarks.get(id, function(bookmarkNodes) {
+        // Verify the node to edit is a valid node.
+        if (!bookmarkNodes || bookmarkNodes.length != 1)
+          return;
+        var bookmarkNode = bookmarkNodes[0];
+        // After the list reloads edit the desired bookmark.
+        var editBookmark = function(e) {
+          var index = list.dataModel.findIndexById(bookmarkNode.id);
+          if (index != -1) {
+            var sm = list.selectionModel;
+            sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+            scrollIntoViewAndMakeEditable(index);
+          }
+        }
 
-  // In case we got a search hash update the text input and the bmm.treeLookup
-  // to use the new id.
-  if (/^q=/.test(id)) {
+        if (list.parentId == bookmarkNode.parentId)
+          editBookmark();
+        else {
+          // Navigate to the parent folder, once it's loaded edit the bookmark.
+          addOneShotEventListener(list, 'load', editBookmark);
+          updateParentId(bookmarkNode.parentId);
+        }
+      });
+      // We handle the two cases of navigating to the bookmark to be edited
+      // above, don't run the standard navigation code below.
+      return;
+    } else if (command == 'a') {
+      // Once the parent folder is loaded add a page bookmark.
+      addOneShotEventListener(list, 'load', addPage);
+    }
+  } else if (/^q=/.test(id)) {
+    // In case we got a search hash update the text input and the
+    // bmm.treeLookup to use the new id.
     setSearch(id.slice(2));
     valid = true;
   } else if (id == 'recent') {
     valid = true;
   }
 
+  // Navigate to bookmark 'id' (which may be a query of the form q=query).
   if (valid) {
     updateParentId(id);
   } else {
@@ -175,6 +228,12 @@ window.onhashchange = function(e) {
         updateParentId(id);
     });
   }
+};
+
+// We listen to hashchange so that we can update the currently shown folder when
+// the user goes back and forward in the history.
+window.onhashchange = function(e) {
+  processHash();
 };
 
 // Activate is handled by the open-in-same-window-command.
@@ -347,21 +406,7 @@ function getFolder(parentId) {
 tree.addEventListener('load', function(e) {
   // Add hard coded tree items
   tree.add(recentTreeItem);
-
-  // Now we can select a tree item.
-  var hash = window.location.hash.slice(1);
-  if (!hash) {
-    // If we do not have a hash select first item in the tree.
-    hash = tree.items[0].bookmarkId;
-  }
-
-  if (/^q=/.test(hash)) {
-    var searchTerm = hash.slice(2);
-    $('term').value = searchTerm;
-    setSearch(searchTerm);
-  } else {
-    navigateTo(hash);
-  }
+  processHash();
 });
 
 tree.reload();

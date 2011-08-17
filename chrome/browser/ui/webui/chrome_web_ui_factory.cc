@@ -68,7 +68,7 @@
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #endif
 
-#if defined(WEBUI_CERTIFICATE_VIEWER)
+#if defined(WEBUI_DIALOGS) && defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
@@ -146,7 +146,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIBugReportHost)
     return &NewWebUI<BugReportUI>;
-#if defined(WEBUI_CERTIFICATE_VIEWER)
+#if defined(WEBUI_DIALOGS) && defined(OS_POSIX) && !defined(OS_MACOSX)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #endif

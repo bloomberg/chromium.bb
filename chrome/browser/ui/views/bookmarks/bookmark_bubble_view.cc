@@ -362,15 +362,10 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 }
 
 void BookmarkBubbleView::ShowEditor() {
-#if defined(TOUCH_UI)
-  // TODO(saintlou): this brings up a modal window that can't be dismissed
-  // on touch and is tracked in chromium-os by crosbug.com/13899
-  bubble_->set_fade_away_on_close(true);
-  Close();
-#else
   const BookmarkNode* node =
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
 
+#if !defined(WEBUI_DIALOGS)
 #if defined(OS_WIN)
   // Parent the editor to our root ancestor (not the root we're in, as that
   // is the info bubble and will close shortly).
@@ -389,17 +384,23 @@ void BookmarkBubbleView::ShowEditor() {
       static_cast<views::NativeWidgetGtk*>(GetWidget()->native_widget())->
           GetTransientParent());
 #endif
+#endif
 
   // Even though we just hid the window, we need to invoke Close to schedule
   // the delete and all that.
   Close();
 
   if (node) {
+#if defined(WEBUI_DIALOGS)
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    DCHECK(browser);
+    browser->OpenBookmarkManagerEditNode(node->id());
+#else
     BookmarkEditor::Show(parent, profile_, NULL,
                          BookmarkEditor::EditDetails(node),
                          BookmarkEditor::SHOW_TREE);
-  }
 #endif
+  }
 }
 
 void BookmarkBubbleView::ApplyEdits() {

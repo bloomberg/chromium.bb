@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,8 @@ class BookmarkEditor {
   // the user to choose the parent of the node.
   // |parent| gives the initial parent to select in the tree for the node.
   // |parent| is only used if |details.existing_node| is null.
+  // TODO(flackr): Rename this to ShowNative and add cross platform Show method
+  //     which will show a WebUI version of the dialog if --pure-views is set.
   static void Show(gfx::NativeWindow parent_window,
                    Profile* profile,
                    const BookmarkNode* parent,
