@@ -60,6 +60,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
   {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
   {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
+  {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
 };
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
@@ -247,6 +248,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "notifications_allow", IDS_NOTIFICATIONS_ALLOW_RADIO },
     { "notifications_ask", IDS_NOTIFICATIONS_ASK_RADIO },
     { "notifications_block", IDS_NOTIFICATIONS_BLOCK_RADIO },
+    // Intents filter.
+    { "intentsTabLabel", IDS_INTENTS_TAB_LABEL },
+    { "intentsAllow", IDS_INTENTS_ALLOW_RADIO },
+    { "intentsAsk", IDS_INTENTS_ASK_RADIO },
+    { "intentsBlock", IDS_INTENTS_BLOCK_RADIO },
+    { "intents_header", IDS_INTENTS_HEADER },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -255,6 +262,9 @@ void ContentSettingsHandler::GetLocalizedValues(
   localized_strings->SetBoolean("enable_click_to_play",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClickToPlay));
+  localized_strings->SetBoolean("enable_web_intents",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebIntents));
 }
 
 void ContentSettingsHandler::Initialize() {
