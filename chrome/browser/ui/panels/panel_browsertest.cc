@@ -304,10 +304,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
-#define MAYBE_DragPanels DISABLED_DragPanels
-#else
+#if defined(TOOLKIT_GTK) || defined(OS_WIN)
 #define MAYBE_DragPanels DragPanels
+#else
+#define MAYBE_DragPanels DISABLED_DragPanels
 #endif
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
