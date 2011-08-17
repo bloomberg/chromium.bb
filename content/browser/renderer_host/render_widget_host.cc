@@ -881,8 +881,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
-  // Update our knowledge of the RenderWidget's contents size.
-  contents_size_ = params.contents_size;
   // Update our knowledge of the RenderWidget's scroll offset.
   last_scroll_offset_ = params.scroll_offset;
 

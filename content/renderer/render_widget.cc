@@ -831,7 +831,6 @@ void RenderWidget::DoDeferredUpdate() {
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
   params.scroll_offset = GetScrollOffset();
-  params.contents_size = GetContentsSize();
 
   update_reply_pending_ = true;
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
@@ -1247,11 +1246,6 @@ webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(
 gfx::Point RenderWidget::GetScrollOffset() {
   // Bare RenderWidgets don't support scroll offset.
   return gfx::Point(0, 0);
-}
-
-gfx::Size RenderWidget::GetContentsSize() {
-  // Bare RenderWidgets don't support contents size.
-  return gfx::Size(0, 0);
 }
 
 void RenderWidget::SetHidden(bool hidden) {

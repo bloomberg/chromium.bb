@@ -129,11 +129,6 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 @end
 #endif
 
-// Undocumented Lion method to get the pattern for the over-scroll area.
-@interface NSColor (LionSekretAPI)
-+ (NSImage*)_linenPatternImage;
-@end
-
 // NSEvent subtype for scroll gestures events.
 static const short kIOHIDEventTypeScroll = 6;
 
@@ -1752,98 +1747,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
-- (void)fillRect:(NSRect)rect withPattern:(NSImage*)patternImage {
-  if (NSIsEmptyRect(rect))
-    return;
-
-  NSColor* patternColor = [NSColor colorWithPatternImage:patternImage];
-  [patternColor set];
-  NSRectFill(rect);
-}
-
-- (void)drawShadow:(NSShadow*)shadow
-          withRect:(NSRect)rect
-              clip:(NSRect)clipRect {
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-  NSBezierPath* drawingPath = [NSBezierPath bezierPathWithRect:rect];
-  [shadow set];
-  [[NSColor blackColor] set];
-  [[NSBezierPath bezierPathWithRect:clipRect] addClip];
-  [drawingPath fill];
-}
-
-- (NSRect)computeVisibleContentRect {
-  const RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
-  gfx::Point offset = rwh->last_scroll_offset();
-  gfx::Size size = rwh->contents_size();
-  NSRect contentRect =
-      NSMakeRect(-offset.x(), -offset.y(), size.width(), size.height());
-  NSRect frameRect = [self frame];
-  frameRect.origin = NSMakePoint(0, 0);
-  return NSIntersectionRect(frameRect, contentRect);
-}
-
-- (void)fillOverScrollAreas:(NSRect)dirtyRect {
-  if (![NSColor respondsToSelector:@selector(_linenPatternImage)])
-    return;
-
-  // Don't paint over-scroll areas if |contents_size| is empty, which indicates
-  // that the render widget is not a RenderView.
-  if (renderWidgetHostView_->render_widget_host_->contents_size().IsEmpty())
-    return;
-
-  NSRect visibleContentRect = [self computeVisibleContentRect];
-  NSSize frameSize = [self frame].size;
-  bool hasHorizontalOverflow = (NSWidth(visibleContentRect) < frameSize.width);
-  bool hasVerticalOverflow = (NSHeight(visibleContentRect) < frameSize.height);
-
-  if (!hasHorizontalOverflow && !hasVerticalOverflow)
-    return;
-
-  NSRect xRect = NSMakeRect(0,
-                            0,
-                            frameSize.width - NSWidth(visibleContentRect),
-                            frameSize.height);
-  NSRect yRect = NSMakeRect(0,
-                            0,
-                            frameSize.width,
-                            frameSize.height - NSHeight(visibleContentRect));
-  NSImage* background = [NSColor _linenPatternImage];
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowColor:[NSColor blackColor]];
-  [shadow setShadowBlurRadius:5];
-
-  if (hasHorizontalOverflow) {
-    NSRect shadowRect;
-    if (visibleContentRect.origin.x > 0) {
-      shadowRect = xRect;
-      shadowRect.origin.x += NSWidth(shadowRect);
-    } else {
-      xRect.origin.x = NSWidth(visibleContentRect);
-      shadowRect = xRect;
-      shadowRect.origin.x -= 1;
-    }
-    shadowRect.size.width = 1;
-    NSRect intersectRect = NSIntersectionRect(dirtyRect, xRect);
-    [self fillRect:intersectRect withPattern:background];
-    [self drawShadow:shadow.get() withRect:shadowRect clip:intersectRect];
-  }
-
-  if (hasVerticalOverflow) {
-    NSRect shadowRect = visibleContentRect;
-    if (visibleContentRect.origin.y > 0) {
-      yRect.origin.y = NSHeight(visibleContentRect);
-      shadowRect.origin.y = yRect.origin.y - 1;
-    } else {
-      shadowRect.origin.y = yRect.origin.y + NSHeight(yRect);
-    }
-    shadowRect.size.height = 1;
-    NSRect intersectRect = NSIntersectionRect(dirtyRect, yRect);
-    [self fillRect:intersectRect withPattern:background];
-    [self drawShadow:shadow.get() withRect:shadowRect clip:intersectRect];
-  }
-}
-
 - (void)drawRect:(NSRect)dirtyRect {
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
@@ -1918,9 +1821,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     // Fill the remaining portion of the damagedRect with white
     [self fillBottomRightRemainderOfRect:bitmapRect dirtyRect:damagedRect];
-
-    // Fill the over-scroll areas, if any, with the appropriate pattern.
-    [self fillOverScrollAreas:dirtyRect];
 
     if (!renderWidgetHostView_->whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -

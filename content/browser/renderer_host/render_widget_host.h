@@ -367,7 +367,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void ActivateDeferredPluginHandles();
 
   const gfx::Point& last_scroll_offset() const { return last_scroll_offset_; }
-  const gfx::Size& contents_size() const { return contents_size_; }
 
   // Notification that the user has made some kind of input that could
   // perform an action. See OnUserGesture for more details.
@@ -555,13 +554,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // The current size of the RenderWidget.
   gfx::Size current_size_;
-
-  // The size of the underlying contents, including parts that are not visible
-  // due to scrolling. It can be used to calculate the view port bounds using
-  // |last_scroll_offset_|. Note: This size is not always available. In
-  // particular, it is only available for RenderViews after a paint has taken
-  // place. Additionally, it only available on the Mac.
-  gfx::Size contents_size_;
 
   // The current reserved area of the RenderWidget where contents should not be
   // rendered to draw the resize corner, sidebar mini tabs etc.

@@ -250,9 +250,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // scroll offset.
   virtual gfx::Point GetScrollOffset();
 
-  // Gets the dimensions of the content area.
-  virtual gfx::Size GetContentsSize();
-
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our
   // state.
