@@ -107,6 +107,11 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
   cache->Set(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
+
+  NotificationService::current()->Notify(
+    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+    NotificationService::AllSources(),
+    NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {

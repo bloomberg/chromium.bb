@@ -201,15 +201,10 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     window_icon_->Update();
   }
 
-  if (browser_view_->ShouldShowAvatar()) {
-    avatar_button_.reset(new AvatarMenuButton(
-        browser_view_->browser(), !browser_view_->IsOffTheRecord()));
-    AddChildView(avatar_button_.get());
-    UpdateAvatarInfo();
-    if (!browser_view_->IsOffTheRecord()) {
-      registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                     NotificationService::AllSources());
-    }
+  UpdateAvatarInfo();
+  if (!browser_view_->IsOffTheRecord()) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+                   NotificationService::AllSources());
   }
 }
 
@@ -514,7 +509,6 @@ void OpaqueBrowserFrameView::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       UpdateAvatarInfo();
-      LayoutAvatar();
       break;
     default:
       NOTREACHED() << "Got a notification we didn't register for!";
@@ -1153,6 +1147,21 @@ gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,
 }
 
 void OpaqueBrowserFrameView::UpdateAvatarInfo() {
+  if (browser_view_->ShouldShowAvatar()) {
+    if (!avatar_button_.get()) {
+      avatar_button_.reset(new AvatarMenuButton(
+          browser_view_->browser(), !browser_view_->IsOffTheRecord()));
+      AddChildView(avatar_button_.get());
+      frame_->GetRootView()->Layout();
+    }
+  } else if (avatar_button_.get()) {
+    RemoveChildView(avatar_button_.release());
+    frame_->GetRootView()->Layout();
+  }
+
+  if (!avatar_button_.get())
+    return;
+
   if (browser_view_->IsOffTheRecord()) {
     avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
   } else {
