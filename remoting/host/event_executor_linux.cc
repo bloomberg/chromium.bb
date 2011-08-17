@@ -29,11 +29,12 @@ class EventExecutorLinux : public EventExecutor {
   EventExecutorLinux(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorLinux() {};
 
+  bool Init();
+
   virtual void InjectKeyEvent(const KeyEvent* event, Task* done) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent* event, Task* done) OVERRIDE;
 
  private:
-  bool Init();
   MessageLoop* message_loop_;
   Capturer* capturer_;
 
@@ -233,15 +234,14 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   return kUsVkeyToKeysym[keycode];
 }
 
-EventExecutorLinux::EventExecutorLinux(
-    MessageLoop* message_loop, Capturer* capturer)
+EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop,
+                                       Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue),
       width_(0),
       height_(0) {
-  CHECK(Init());
 }
 
 bool EventExecutorLinux::Init() {
@@ -364,7 +364,12 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
 
 EventExecutor* EventExecutor::Create(MessageLoop* message_loop,
                                      Capturer* capturer) {
-  return new EventExecutorLinux(message_loop, capturer);
+  EventExecutorLinux* executor = new EventExecutorLinux(message_loop, capturer);
+  if (!executor->Init()) {
+    delete executor;
+    executor = NULL;
+  }
+  return executor;
 }
 
 }  // namespace remoting

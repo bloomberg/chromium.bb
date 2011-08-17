@@ -78,17 +78,29 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
 
 // static
 DesktopEnvironment* DesktopEnvironment::Create(ChromotingHostContext* context) {
-  Capturer* capturer = Capturer::Create();
-  EventExecutor* event_executor =
-      EventExecutor::Create(context->desktop_message_loop(), capturer);
-  Curtain* curtain = Curtain::Create();
-  DisconnectWindow* disconnect_window = DisconnectWindow::Create();
-  ContinueWindow* continue_window = ContinueWindow::Create();
-  LocalInputMonitor* local_input_monitor = LocalInputMonitor::Create();
+  scoped_ptr<Capturer> capturer(Capturer::Create());
+  scoped_ptr<EventExecutor> event_executor(
+      EventExecutor::Create(context->desktop_message_loop(), capturer.get()));
+  scoped_ptr<Curtain> curtain(Curtain::Create());
+  scoped_ptr<DisconnectWindow> disconnect_window(DisconnectWindow::Create());
+  scoped_ptr<ContinueWindow> continue_window(ContinueWindow::Create());
+  scoped_ptr<LocalInputMonitor> local_input_monitor(
+      LocalInputMonitor::Create());
 
-  return new DesktopEnvironment(context, capturer, event_executor, curtain,
-                                disconnect_window, continue_window,
-                                local_input_monitor);
+  if (capturer.get() == NULL || event_executor.get() == NULL ||
+      curtain.get() == NULL || disconnect_window.get() == NULL ||
+      continue_window.get() == NULL || local_input_monitor.get() == NULL) {
+    LOG(ERROR) << "Unable to create DesktopEnvironment";
+    return NULL;
+  }
+
+  return new DesktopEnvironment(context,
+                                capturer.release(),
+                                event_executor.release(),
+                                curtain.release(),
+                                disconnect_window.release(),
+                                continue_window.release(),
+                                local_input_monitor.release());
 }
 
 DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,

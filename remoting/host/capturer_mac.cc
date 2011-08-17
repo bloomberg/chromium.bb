@@ -131,6 +131,8 @@ class CapturerMac : public Capturer {
   CapturerMac();
   virtual ~CapturerMac();
 
+  bool Init();
+
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
@@ -202,19 +204,6 @@ CapturerMac::CapturerMac()
       last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true) {
-  // TODO(dmaclach): move this initialization out into session_manager,
-  // or at least have session_manager call into here to initialize it.
-  CGError err =
-      CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
-                                      this);
-  DCHECK_EQ(err, kCGErrorSuccess);
-  err = CGScreenRegisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback,
-                                     this);
-  DCHECK_EQ(err, kCGErrorSuccess);
-  err = CGDisplayRegisterReconfigurationCallback(
-      CapturerMac::DisplaysReconfiguredCallback, this);
-  DCHECK_EQ(err, kCGErrorSuccess);
-  ScreenConfigurationChanged();
 }
 
 CapturerMac::~CapturerMac() {
@@ -223,6 +212,32 @@ CapturerMac::~CapturerMac() {
   CGScreenUnregisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback, this);
   CGDisplayRemoveReconfigurationCallback(
       CapturerMac::DisplaysReconfiguredCallback, this);
+}
+
+bool CapturerMac::Init() {
+  CGError err =
+      CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
+                                      this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGRegisterScreenRefreshCallback " << err;
+    return false;
+  }
+
+  err = CGScreenRegisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback,
+                                     this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGScreenRegisterMoveCallback " << err;
+    return false;
+  }
+  err = CGDisplayRegisterReconfigurationCallback(
+      CapturerMac::DisplaysReconfiguredCallback, this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGDisplayRegisterReconfigurationCallback " << err;
+    return false;
+  }
+
+  ScreenConfigurationChanged();
+  return true;
 }
 
 void CapturerMac::ReleaseBuffers() {
@@ -528,7 +543,12 @@ void CapturerMac::DisplaysReconfiguredCallback(
 
 // static
 Capturer* Capturer::Create() {
-  return new CapturerMac();
+  CapturerMac* capturer = new CapturerMac();
+  if (!capturer->Init()) {
+    delete capturer;
+    capturer = NULL;
+  }
+  return capturer;
 }
 
 }  // namespace remoting

@@ -16,6 +16,7 @@ class Capturer;
 class EventExecutor : public protocol::InputStub {
  public:
   // Creates default event executor for the current platform.
+  // Does not take ownership of |message_loop| or |capturer|.
   static EventExecutor* Create(MessageLoop* message_loop,
                                Capturer* capturer);
 };

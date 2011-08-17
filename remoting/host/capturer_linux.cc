@@ -70,6 +70,7 @@ class CapturerLinux : public Capturer {
   CapturerLinux();
   virtual ~CapturerLinux();
 
+  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
 
   // Capturer interface.
   virtual void ScreenConfigurationChanged() OVERRIDE;
@@ -83,8 +84,6 @@ class CapturerLinux : public Capturer {
   virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
-  bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
-
   void InitXDamage();
 
   // Read and handle all currently-pending XEvents.
@@ -171,7 +170,6 @@ CapturerLinux::CapturerLinux()
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
       last_buffer_(NULL) {
-  CHECK(Init());
 }
 
 CapturerLinux::~CapturerLinux() {
@@ -509,7 +507,12 @@ const gfx::Size& CapturerLinux::size_most_recent() const {
 
 // static
 Capturer* Capturer::Create() {
-  return new CapturerLinux();
+  CapturerLinux* capturer = new CapturerLinux();
+  if (!capturer->Init()) {
+    delete capturer;
+    capturer = NULL;
+  }
+  return capturer;
 }
 
 }  // namespace remoting

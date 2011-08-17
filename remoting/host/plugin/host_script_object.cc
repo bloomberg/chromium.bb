@@ -468,6 +468,10 @@ void HostNPScriptObject::FinishConnect(
 
   // Create DesktopEnvironment.
   desktop_environment_.reset(DesktopEnvironment::Create(&host_context_));
+  if (desktop_environment_.get() == NULL) {
+    OnStateChanged(kError);
+    return;
+  }
 
   // Create the Host.
   LOG(INFO) << "Connecting with NAT state: " << nat_traversal_enabled_;

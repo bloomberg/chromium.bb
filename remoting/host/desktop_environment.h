@@ -28,7 +28,7 @@ class DesktopEnvironment {
  public:
   static DesktopEnvironment* Create(ChromotingHostContext* context);
 
-  // DesktopEnvironment takes ownership of all the objects passed the ctor.
+  // DesktopEnvironment takes ownership of all the objects passed in.
   DesktopEnvironment(ChromotingHostContext* context,
                      Capturer* capturer,
                      EventExecutor* event_executor,
