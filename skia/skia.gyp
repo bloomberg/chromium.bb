@@ -71,7 +71,6 @@
         '../third_party/skia/gpu/include/GrColor.h',
         '../third_party/skia/gpu/include/GrConfig.h',
         '../third_party/skia/gpu/include/GrContext.h',
-        '../third_party/skia/gpu/include/GrContext_impl.h',
         '../third_party/skia/gpu/include/GrDrawTarget.h',
         '../third_party/skia/gpu/include/GrFontScaler.h',
         '../third_party/skia/gpu/include/GrGLConfig.h',
