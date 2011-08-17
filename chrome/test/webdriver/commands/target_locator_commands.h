@@ -17,7 +17,7 @@ class DictionaryValue;
 namespace webdriver {
 
 class Response;
-class WebElementId;
+class ElementId;
 
 // Gets the current window handle.
 // REST URL: /session/:sessionId/window_handle
@@ -79,7 +79,7 @@ class SwitchFrameCommand : public WebDriverCommand {
   virtual void ExecutePost(Response* const response);
 
  private:
-  bool GetWebElementParameter(const std::string& key, WebElementId* out) const;
+  bool GetWebElementParameter(const std::string& key, ElementId* out) const;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchFrameCommand);
 };

@@ -12,9 +12,9 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
@@ -42,7 +42,7 @@ bool WebElementCommand::Init(Response* const response) {
 
   // We cannot verify the ID is valid until we execute the command and
   // inject the ID into the in-page cache.
-  element = WebElementId(path_segments_.at(4));
+  element = ElementId(path_segments_.at(4));
   return true;
 }
 
@@ -224,7 +224,7 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
   ListValue args;
   args.Append(element.ToValue());
 
-  WebElementId other_element(path_segments_.at(6));
+  ElementId other_element(path_segments_.at(6));
   args.Append(other_element.ToValue());
 
   Value* result = NULL;

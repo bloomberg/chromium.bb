@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 
 namespace base {
 class DictionaryValue;
@@ -36,7 +36,7 @@ class WebElementCommand : public WebDriverCommand {
 
  protected:
   const std::vector<std::string>& path_segments_;
-  WebElementId element;
+  ElementId element;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebElementCommand);

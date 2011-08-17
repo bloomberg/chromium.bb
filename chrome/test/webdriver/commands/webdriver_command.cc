@@ -11,9 +11,9 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
+#include "chrome/test/webdriver/webdriver_session_manager.h"
 
 namespace webdriver {
 

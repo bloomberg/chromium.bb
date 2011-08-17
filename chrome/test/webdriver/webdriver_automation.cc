@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/automation.h"
+#include "chrome/test/webdriver/webdriver_automation.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

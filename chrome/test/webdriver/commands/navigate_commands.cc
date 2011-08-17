@@ -5,8 +5,8 @@
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 
 namespace webdriver {
 

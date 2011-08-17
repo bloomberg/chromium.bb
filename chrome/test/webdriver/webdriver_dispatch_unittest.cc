@@ -8,9 +8,9 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/http_response.h"
-#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/webdriver_dispatch.h"
+#include "chrome/test/webdriver/webdriver_session_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mongoose/mongoose.h"
 

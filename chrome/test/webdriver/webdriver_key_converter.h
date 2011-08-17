@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/test/webdriver/automation.h"
+#include "chrome/test/webdriver/webdriver_automation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace webdriver {

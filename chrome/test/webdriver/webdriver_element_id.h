@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_WEBDRIVER_WEB_ELEMENT_ID_H_
-#define CHROME_TEST_WEBDRIVER_WEB_ELEMENT_ID_H_
+#ifndef CHROME_TEST_WEBDRIVER_WEBDRIVER_ELEMENT_ID_H_
+#define CHROME_TEST_WEBDRIVER_WEBDRIVER_ELEMENT_ID_H_
 #pragma once
 
 #include <string>
@@ -16,22 +16,22 @@ class Value;
 
 namespace webdriver {
 
-// This class represents a WebDriver WebElement ID. These IDs are mapped to
+// This class represents a WebDriver Element ID. These IDs are mapped to
 // objects in a page in JavaScript.
-class WebElementId {
+class ElementId {
  public:
-  // Creates an invalid WebElementId.
-  WebElementId();
+  // Creates an invalid ElementId.
+  ElementId();
 
-  // Creates a valid |WebElementId| using the ID of an element. An empty string
+  // Creates a valid |ElementId| using the ID of an element. An empty string
   // can be used to refer to the root document of the page.
-  explicit WebElementId(const std::string& id);
+  explicit ElementId(const std::string& id);
 
-  // Creates a |WebElementId| from an element dictionary returned by a WebDriver
+  // Creates a |ElementId| from an element dictionary returned by a WebDriver
   // atom. It will be valid iff the dictionary is correctly constructed.
-  explicit WebElementId(const base::Value* value);
+  explicit ElementId(const base::Value* value);
 
-  ~WebElementId();
+  ~ElementId();
 
   // Returns the appropriate |Value| type to be used to identify the element
   // to a WebDriver atom. The client takes ownership.
@@ -63,11 +63,11 @@ struct LocatorType {
 }  // namespace webdriver
 
 template <>
-struct ValueConversionTraits<webdriver::WebElementId> {
-  static base::Value* CreateValueFrom(const webdriver::WebElementId& t);
+struct ValueConversionTraits<webdriver::ElementId> {
+  static base::Value* CreateValueFrom(const webdriver::ElementId& t);
   static bool SetFromValue(
-      const base::Value* value, webdriver::WebElementId* t);
+      const base::Value* value, webdriver::ElementId* t);
   static bool CanConvert(const base::Value* value);
 };
 
-#endif  // CHROME_TEST_WEBDRIVER_WEB_ELEMENT_ID_H_
+#endif  // CHROME_TEST_WEBDRIVER_WEBDRIVER_ELEMENT_ID_H_

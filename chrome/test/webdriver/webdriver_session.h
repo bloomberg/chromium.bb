@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_WEBDRIVER_SESSION_H_
-#define CHROME_TEST_WEBDRIVER_SESSION_H_
+#ifndef CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_H_
+#define CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_H_
 
 #include <map>
 #include <string>
@@ -14,10 +14,10 @@
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/frame_path.h"
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_automation.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 
 class CommandLine;
 class FilePath;
@@ -121,7 +121,7 @@ class Session {
 
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
-  Error* SendKeys(const WebElementId& element, const string16& keys);
+  Error* SendKeys(const ElementId& element, const string16& keys);
 
   // Sets the file paths to the file upload control under the given location.
   Error* DragAndDropFilePaths(const Point& location,
@@ -164,7 +164,7 @@ class Session {
 
   // Switches to the frame identified by the given |element|. The element must
   // be either an IFRAME or FRAME element.
-  Error* SwitchToFrameWithElement(const WebElementId& element);
+  Error* SwitchToFrameWithElement(const ElementId& element);
 
   // Switches the target frame to the topmost frame.
   void SwitchToTopFrame();
@@ -204,22 +204,22 @@ class Session {
   // constant from |LocatorType|. Returns an error code. If successful,
   // |element| will be set as the found element.
   Error* FindElement(const FrameId& frame_id,
-                     const WebElementId& root_element,
+                     const ElementId& root_element,
                      const std::string& locator,
                      const std::string& query,
-                     WebElementId* element);
+                     ElementId* element);
 
   // Same as above, but finds multiple elements.
   Error* FindElements(const FrameId& frame_id,
-                      const WebElementId& root_element,
+                      const ElementId& root_element,
                       const std::string& locator,
                       const std::string& query,
-                      std::vector<WebElementId>* elements);
+                      std::vector<ElementId>* elements);
 
   // Scroll the element into view and get its location relative to
   // the client's viewport.
   Error* GetElementLocationInView(
-      const WebElementId& element,
+      const ElementId& element,
       Point* location);
 
   // Scroll the element's region into view and get its location relative to
@@ -228,7 +228,7 @@ class Session {
   // an error will be returned if the element is not clickable in the middle
   // of the given region.
   Error* GetElementRegionInView(
-      const WebElementId& element,
+      const ElementId& element,
       const Rect& region,
       bool center,
       bool verify_clickable_at_middle,
@@ -237,69 +237,69 @@ class Session {
   // Gets the size of the element from the given window and frame, even if
   // its display is none.
   Error* GetElementSize(const FrameId& frame_id,
-                        const WebElementId& element,
+                        const ElementId& element,
                         Size* size);
 
   // Gets the size of the element's first client rect. If the element has
   // no client rects, this will return an error.
   Error* GetElementFirstClientRect(const FrameId& frame_id,
-                                   const WebElementId& element,
+                                   const ElementId& element,
                                    Rect* rect);
 
   // Gets the element's effective style for the given property.
   Error* GetElementEffectiveStyle(
       const FrameId& frame_id,
-      const WebElementId& element,
+      const ElementId& element,
       const std::string& prop,
       std::string* value);
 
   // Gets the top and left element border widths for the given frame.
   Error* GetElementBorder(const FrameId& frame_id,
-                          const WebElementId& element,
+                          const ElementId& element,
                           int* border_left,
                           int* border_top);
 
   // Gets whether the element is currently displayed.
   Error* IsElementDisplayed(const FrameId& frame_id,
-                            const WebElementId& element,
+                            const ElementId& element,
                             bool ignore_opacity,
                             bool* is_visible);
 
   // Gets whether the element is currently enabled.
   Error* IsElementEnabled(const FrameId& frame_id,
-                          const WebElementId& element,
+                          const ElementId& element,
                           bool* is_enabled);
 
   // Gets whether the option element is currently selected.
   Error* IsOptionElementSelected(const FrameId& frame_id,
-                                 const WebElementId& element,
+                                 const ElementId& element,
                                  bool* is_selected);
 
   // Set the selection state of the given option element. The option element
   // must support multi selection if |selected| is false.
   Error* SetOptionElementSelected(const FrameId& frame_id,
-                                  const WebElementId& element,
+                                  const ElementId& element,
                                   bool selected);
 
   // Toggles the option element's selection state. The option element should
   // support multi selection.
   Error* ToggleOptionElement(const FrameId& frame_id,
-                             const WebElementId& element);
+                             const ElementId& element);
 
   // Gets the tag name of the given element.
   Error* GetElementTagName(const FrameId& frame_id,
-                           const WebElementId& element,
+                           const ElementId& element,
                            std::string* tag_name);
 
   // Gets the clickable location of the given element. It will be the center
   // location of the element. If the element is not clickable, or if the
   // location cannot be determined, an error will be returned.
-  Error* GetClickableLocation(const WebElementId& element,
+  Error* GetClickableLocation(const ElementId& element,
                               Point* location);
 
   // Gets the attribute of the given element. If there are no errors, the
   // function sets |value| and the caller takes ownership.
-  Error* GetAttribute(const WebElementId& element, const std::string& key,
+  Error* GetAttribute(const ElementId& element, const std::string& key,
                       base::Value** value);
 
   // Waits for all tabs to stop loading. Returns true on success.
@@ -349,25 +349,25 @@ class Session {
       const std::string& script,
       base::ListValue* args);
   Error* FindElementsHelper(const FrameId& frame_id,
-                            const WebElementId& root_element,
+                            const ElementId& root_element,
                             const std::string& locator,
                             const std::string& query,
                             bool find_one,
-                            std::vector<WebElementId>* elements);
+                            std::vector<ElementId>* elements);
   Error* ExecuteFindElementScriptAndParse(const FrameId& frame_id,
-                                          const WebElementId& root_element,
+                                          const ElementId& root_element,
                                           const std::string& locator,
                                           const std::string& query,
                                           bool find_one,
-                                          std::vector<WebElementId>* elements);
+                                          std::vector<ElementId>* elements);
   // Returns an error if the element is not clickable.
   Error* VerifyElementIsClickable(
       const FrameId& frame_id,
-      const WebElementId& element,
+      const ElementId& element,
       const Point& location);
   Error* GetElementRegionInViewHelper(
       const FrameId& frame_id,
-      const WebElementId& element,
+      const ElementId& element,
       const Rect& region,
       bool center,
       bool verify_clickable_at_middle,
@@ -385,10 +385,10 @@ class Session {
   // Time (in ms) of how long to wait while searching for a single element.
   int implicit_wait_;
 
-  // Vector of the |WebElementId|s for each frame of the current target frame
+  // Vector of the |ElementId|s for each frame of the current target frame
   // path. The first refers to the first frame element in the root document.
   // If the target frame is window.top, this will be empty.
-  std::vector<WebElementId> frame_elements_;
+  std::vector<ElementId> frame_elements_;
 
   // Last mouse position. Advanced APIs need this value.
   Point mouse_position_;
@@ -410,4 +410,4 @@ class Session {
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(webdriver::Session);
 
-#endif  // CHROME_TEST_WEBDRIVER_SESSION_H_
+#endif  // CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_H_

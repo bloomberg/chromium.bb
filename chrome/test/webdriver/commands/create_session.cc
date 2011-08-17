@@ -21,9 +21,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/zip.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
+#include "chrome/test/webdriver/webdriver_session_manager.h"
 
 namespace webdriver {
 

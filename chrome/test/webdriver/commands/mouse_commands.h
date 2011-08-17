@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/webelement_commands.h"
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 
 namespace base {
 class DictionaryValue;
@@ -107,7 +107,7 @@ class MoveToCommand : public AdvancedMouseCommand {
 
  private:
   bool has_element_;
-  WebElementId element_;
+  ElementId element_;
   bool has_offset_;
   int x_offset_;
   int y_offset_;

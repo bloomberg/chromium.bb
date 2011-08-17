@@ -6,9 +6,9 @@
 
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 
 namespace webdriver {
 
@@ -51,10 +51,10 @@ void FindElementCommand::ExecutePost(Response* const response) {
 
   // Searching under a custom root if the URL pattern is
   // "/session/$session/element/$id/element(s)"
-  WebElementId root_element(GetPathVariable(4));
+  ElementId root_element(GetPathVariable(4));
 
   if (find_one_element_) {
-    WebElementId element;
+    ElementId element;
     Error* error = session_->FindElement(
         session_->current_target(), root_element, locator, query, &element);
     if (error) {
@@ -63,7 +63,7 @@ void FindElementCommand::ExecutePost(Response* const response) {
     }
     response->SetValue(element.ToValue());
   } else {
-    std::vector<WebElementId> elements;
+    std::vector<ElementId> elements;
     Error* error = session_->FindElements(
         session_->current_target(), root_element, locator, query, &elements);
     if (error) {

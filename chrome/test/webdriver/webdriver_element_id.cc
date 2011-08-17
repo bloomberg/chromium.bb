@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -27,11 +27,11 @@ const char LocatorType::kPartialLinkText[] = "partialLinkText";
 const char LocatorType::kTagName[] = "tagName";
 const char LocatorType::kXpath[] = "xpath";
 
-WebElementId::WebElementId() : is_valid_(false) {}
+ElementId::ElementId() : is_valid_(false) {}
 
-WebElementId::WebElementId(const std::string& id) : id_(id), is_valid_(true) {}
+ElementId::ElementId(const std::string& id) : id_(id), is_valid_(true) {}
 
-WebElementId::WebElementId(const Value* value) {
+ElementId::ElementId(const Value* value) {
   is_valid_ = false;
   if (value->IsType(Value::TYPE_DICTIONARY)) {
     is_valid_ = static_cast<const DictionaryValue*>(value)->
@@ -39,9 +39,9 @@ WebElementId::WebElementId(const Value* value) {
   }
 }
 
-WebElementId::~WebElementId() {}
+ElementId::~ElementId() {}
 
-Value* WebElementId::ToValue() const {
+Value* ElementId::ToValue() const {
   CHECK(is_valid_);
   if (id_.empty())
     return Value::CreateNullValue();
@@ -50,27 +50,27 @@ Value* WebElementId::ToValue() const {
   return element;
 }
 
-bool WebElementId::is_valid() const {
+bool ElementId::is_valid() const {
   return is_valid_;
 }
 
 }  // namespace webdriver
 
-base::Value* ValueConversionTraits<webdriver::WebElementId>::CreateValueFrom(
-    const webdriver::WebElementId& t) {
+base::Value* ValueConversionTraits<webdriver::ElementId>::CreateValueFrom(
+    const webdriver::ElementId& t) {
   return t.ToValue();
 }
 
-bool ValueConversionTraits<webdriver::WebElementId>::SetFromValue(
-    const base::Value* value, webdriver::WebElementId* t) {
-  webdriver::WebElementId id(value);
+bool ValueConversionTraits<webdriver::ElementId>::SetFromValue(
+    const base::Value* value, webdriver::ElementId* t) {
+  webdriver::ElementId id(value);
   if (id.is_valid())
     *t = id;
   return id.is_valid();
 }
 
-bool ValueConversionTraits<webdriver::WebElementId>::CanConvert(
+bool ValueConversionTraits<webdriver::ElementId>::CanConvert(
     const base::Value* value) {
-  webdriver::WebElementId t;
+  webdriver::ElementId t;
   return SetFromValue(value, &t);
 }

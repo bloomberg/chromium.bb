@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_WEBDRIVER_SESSION_MANAGER_H_
-#define CHROME_TEST_WEBDRIVER_SESSION_MANAGER_H_
+#ifndef CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_MANAGER_H_
+#define CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -11,9 +11,10 @@
 #include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "chrome/test/webdriver/session.h"
 
 namespace webdriver {
+
+class Session;
 
 // Session manager keeps track of all of the session that are currently
 // running on the machine under test. With webdriver the user is allowed
@@ -51,4 +52,4 @@ class SessionManager {
 
 }  // namespace webdriver
 
-#endif  // CHROME_TEST_WEBDRIVER_SESSION_MANAGER_H_
+#endif  // CHROME_TEST_WEBDRIVER_WEBDRIVER_SESSION_MANAGER_H_

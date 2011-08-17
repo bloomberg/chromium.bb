@@ -7,9 +7,9 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/web_element_id.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 
 namespace webdriver {
 
@@ -101,7 +101,7 @@ bool SwitchFrameCommand::DoesPost() {
 void SwitchFrameCommand::ExecutePost(Response* const response) {
   std::string id;
   int index = 0;
-  WebElementId element;
+  ElementId element;
   Error* error = NULL;
   if (GetStringParameter("id", &id)) {
     error = session_->SwitchToFrameWithNameOrId(id);
@@ -121,12 +121,12 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
 }
 
 bool SwitchFrameCommand::GetWebElementParameter(const std::string& key,
-                                                WebElementId* out) const {
+                                                ElementId* out) const {
   DictionaryValue* value;
   if (!GetDictionaryParameter(key, &value))
     return false;
 
-  WebElementId id(value);
+  ElementId id(value);
   if (!id.is_valid())
     return false;
 

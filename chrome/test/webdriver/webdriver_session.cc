@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 
 #include <sstream>
 #include <vector>
@@ -33,9 +33,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/value_conversion_util.h"
-#include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "chrome/test/webdriver/webdriver_session_manager.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/webdriver/atoms.h"
 
@@ -189,7 +189,7 @@ Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
   return ExecuteScriptAndParseValue(frame_id, jscript, value);
 }
 
-Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
+Error* Session::SendKeys(const ElementId& element, const string16& keys) {
   bool is_displayed = false;
   Error* error = IsElementDisplayed(
       current_target_, element, true /* ignore_opacity */, &is_displayed);
@@ -556,7 +556,7 @@ Error* Session::SwitchToFrameWithIndex(int index) {
       script, CreateListValueFrom(index));
 }
 
-Error* Session::SwitchToFrameWithElement(const WebElementId& element) {
+Error* Session::SwitchToFrameWithElement(const ElementId& element) {
   // TODO(jleyba): Extract this, and the other frame switch methods to an atom.
   std::string script =
       "function(elem) {"
@@ -710,11 +710,11 @@ Error* Session::CompareBrowserVersion(int client_build_no,
 }
 
 Error* Session::FindElement(const FrameId& frame_id,
-                            const WebElementId& root_element,
+                            const ElementId& root_element,
                             const std::string& locator,
                             const std::string& query,
-                            WebElementId* element) {
-  std::vector<WebElementId> elements;
+                            ElementId* element) {
+  std::vector<ElementId> elements;
   Error* error = FindElementsHelper(
       frame_id, root_element, locator, query, true, &elements);
   if (!error)
@@ -723,16 +723,16 @@ Error* Session::FindElement(const FrameId& frame_id,
 }
 
 Error* Session::FindElements(const FrameId& frame_id,
-                             const WebElementId& root_element,
+                             const ElementId& root_element,
                              const std::string& locator,
                              const std::string& query,
-                             std::vector<WebElementId>* elements) {
+                             std::vector<ElementId>* elements) {
   return FindElementsHelper(
       frame_id, root_element, locator, query, false, elements);
 }
 
 Error* Session::GetElementLocationInView(
-    const WebElementId& element,
+    const ElementId& element,
     Point* location) {
   Size size;
   Error* error = GetElementSize(current_target_, element, &size);
@@ -744,7 +744,7 @@ Error* Session::GetElementLocationInView(
 }
 
 Error* Session::GetElementRegionInView(
-    const WebElementId& element,
+    const ElementId& element,
     const Rect& region,
     bool center,
     bool verify_clickable_at_middle,
@@ -764,9 +764,9 @@ Error* Session::GetElementRegionInView(
        frame_path = frame_path.Parent()) {
     // Find the frame element for the current frame path.
     FrameId frame_id(current_target_.window_id, frame_path.Parent());
-    WebElementId frame_element;
+    ElementId frame_element;
     error = FindElement(
-        frame_id, WebElementId(""),
+        frame_id, ElementId(""),
         LocatorType::kXpath, frame_path.BaseName().value(), &frame_element);
     if (error) {
       std::string context = base::StringPrintf(
@@ -795,7 +795,7 @@ Error* Session::GetElementRegionInView(
 }
 
 Error* Session::GetElementSize(const FrameId& frame_id,
-                               const WebElementId& element,
+                               const ElementId& element,
                                Size* size) {
   return ExecuteScriptAndParse(frame_id,
                                atoms::GET_SIZE,
@@ -805,7 +805,7 @@ Error* Session::GetElementSize(const FrameId& frame_id,
 }
 
 Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
-                                          const WebElementId& element,
+                                          const ElementId& element,
                                           Rect* rect) {
   return ExecuteScriptAndParse(frame_id,
                                atoms::GET_FIRST_CLIENT_RECT,
@@ -816,7 +816,7 @@ Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
 
 Error* Session::GetElementEffectiveStyle(
     const FrameId& frame_id,
-    const WebElementId& element,
+    const ElementId& element,
     const std::string& prop,
     std::string* value) {
   return ExecuteScriptAndParse(frame_id,
@@ -827,7 +827,7 @@ Error* Session::GetElementEffectiveStyle(
 }
 
 Error* Session::GetElementBorder(const FrameId& frame_id,
-                                 const WebElementId& element,
+                                 const ElementId& element,
                                  int* border_left,
                                  int* border_top) {
   std::string border_left_str, border_top_str;
@@ -846,7 +846,7 @@ Error* Session::GetElementBorder(const FrameId& frame_id,
 }
 
 Error* Session::IsElementDisplayed(const FrameId& frame_id,
-                                   const WebElementId& element,
+                                   const ElementId& element,
                                    bool ignore_opacity,
                                    bool* is_displayed) {
   return ExecuteScriptAndParse(frame_id,
@@ -857,7 +857,7 @@ Error* Session::IsElementDisplayed(const FrameId& frame_id,
 }
 
 Error* Session::IsElementEnabled(const FrameId& frame_id,
-                                 const WebElementId& element,
+                                 const ElementId& element,
                                  bool* is_enabled) {
   return ExecuteScriptAndParse(frame_id,
                                atoms::IS_ENABLED,
@@ -867,7 +867,7 @@ Error* Session::IsElementEnabled(const FrameId& frame_id,
 }
 
 Error* Session::IsOptionElementSelected(const FrameId& frame_id,
-                                        const WebElementId& element,
+                                        const ElementId& element,
                                         bool* is_selected) {
   return ExecuteScriptAndParse(
       frame_id,
@@ -878,7 +878,7 @@ Error* Session::IsOptionElementSelected(const FrameId& frame_id,
 }
 
 Error* Session::SetOptionElementSelected(const FrameId& frame_id,
-                                         const WebElementId& element,
+                                         const ElementId& element,
                                          bool selected) {
   return ExecuteScriptAndParse(frame_id,
                                atoms::SET_SELECTED,
@@ -888,7 +888,7 @@ Error* Session::SetOptionElementSelected(const FrameId& frame_id,
 }
 
 Error* Session::ToggleOptionElement(const FrameId& frame_id,
-                                    const WebElementId& element) {
+                                    const ElementId& element) {
   bool is_selected;
   Error* error = IsOptionElementSelected(frame_id, element, &is_selected);
   if (error)
@@ -898,7 +898,7 @@ Error* Session::ToggleOptionElement(const FrameId& frame_id,
 }
 
 Error* Session::GetElementTagName(const FrameId& frame_id,
-                                  const WebElementId& element,
+                                  const ElementId& element,
                                   std::string* tag_name) {
   return ExecuteScriptAndParse(
       frame_id,
@@ -908,7 +908,7 @@ Error* Session::GetElementTagName(const FrameId& frame_id,
       CreateDirectValueParser(tag_name));
 }
 
-Error* Session::GetClickableLocation(const WebElementId& element,
+Error* Session::GetClickableLocation(const ElementId& element,
                                      Point* location) {
   bool is_displayed = false;
   Error* error = IsElementDisplayed(
@@ -932,7 +932,7 @@ Error* Session::GetClickableLocation(const WebElementId& element,
   return NULL;
 }
 
-Error* Session::GetAttribute(const WebElementId& element,
+Error* Session::GetAttribute(const ElementId& element,
                              const std::string& key,
                              Value** value) {
   return ExecuteScriptAndParse(current_target_,
@@ -1131,7 +1131,7 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
   class SwitchFrameValueParser : public ValueParser {
    public:
     SwitchFrameValueParser(
-        bool* found_frame, WebElementId* frame, std::string* xpath)
+        bool* found_frame, ElementId* frame, std::string* xpath)
         : found_frame_(found_frame), frame_(frame), xpath_(xpath) { }
 
     virtual ~SwitchFrameValueParser() { }
@@ -1150,12 +1150,12 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
 
    private:
     bool* found_frame_;
-    WebElementId* frame_;
+    ElementId* frame_;
     std::string* xpath_;
   };
 
   bool found_frame;
-  WebElementId new_frame_element;
+  ElementId new_frame_element;
   std::string xpath;
   Error* error = ExecuteScriptAndParse(
       current_target_, script, "switchFrame", args,
@@ -1172,15 +1172,15 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
 }
 
 Error* Session::FindElementsHelper(const FrameId& frame_id,
-                                   const WebElementId& root_element,
+                                   const ElementId& root_element,
                                    const std::string& locator,
                                    const std::string& query,
                                    bool find_one,
-                                   std::vector<WebElementId>* elements) {
+                                   std::vector<ElementId>* elements) {
   CHECK(root_element.is_valid());
   base::Time start_time = base::Time::Now();
   while (true) {
-    std::vector<WebElementId> temp_elements;
+    std::vector<ElementId> temp_elements;
     Error* error = ExecuteFindElementScriptAndParse(
         frame_id, root_element, locator, query, find_one, &temp_elements);
     if (error)
@@ -1203,16 +1203,16 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
 
 Error* Session::ExecuteFindElementScriptAndParse(
     const FrameId& frame_id,
-    const WebElementId& root_element,
+    const ElementId& root_element,
     const std::string& locator,
     const std::string& query,
     bool find_one,
-    std::vector<WebElementId>* elements) {
+    std::vector<ElementId>* elements) {
   CHECK(root_element.is_valid());
 
   class FindElementsParser : public ValueParser {
    public:
-    explicit FindElementsParser(std::vector<WebElementId>* elements)
+    explicit FindElementsParser(std::vector<ElementId>* elements)
         : elements_(elements) { }
 
     virtual ~FindElementsParser() { }
@@ -1222,7 +1222,7 @@ Error* Session::ExecuteFindElementScriptAndParse(
         return false;
       ListValue* list = static_cast<ListValue*>(value);
       for (size_t i = 0; i < list->GetSize(); ++i) {
-        WebElementId element;
+        ElementId element;
         Value* element_value = NULL;
         if (!list->Get(i, &element_value))
           return false;
@@ -1233,12 +1233,12 @@ Error* Session::ExecuteFindElementScriptAndParse(
       return true;
     }
    private:
-    std::vector<WebElementId>* elements_;
+    std::vector<ElementId>* elements_;
   };
 
   class FindElementParser : public ValueParser {
    public:
-    explicit FindElementParser(std::vector<WebElementId>* elements)
+    explicit FindElementParser(std::vector<ElementId>* elements)
         : elements_(elements) { }
 
     virtual ~FindElementParser() { }
@@ -1246,19 +1246,19 @@ Error* Session::ExecuteFindElementScriptAndParse(
     virtual bool Parse(base::Value* value) const OVERRIDE {
       if (value->IsType(Value::TYPE_NULL))
         return true;
-      WebElementId element;
+      ElementId element;
       bool set = SetFromValue(value, &element);
       if (set)
         elements_->push_back(element);
       return set;
     }
    private:
-    std::vector<WebElementId>* elements_;
+    std::vector<ElementId>* elements_;
   };
 
   DictionaryValue locator_dict;
   locator_dict.SetString(locator, query);
-  std::vector<WebElementId> temp_elements;
+  std::vector<ElementId> temp_elements;
   Error* error = NULL;
   if (find_one) {
     error = ExecuteScriptAndParse(
@@ -1282,7 +1282,7 @@ Error* Session::ExecuteFindElementScriptAndParse(
 
 Error* Session::VerifyElementIsClickable(
     const FrameId& frame_id,
-    const WebElementId& element,
+    const ElementId& element,
     const Point& location) {
   class IsElementClickableParser : public ValueParser {
    public:
@@ -1328,7 +1328,7 @@ Error* Session::VerifyElementIsClickable(
 
 Error* Session::GetElementRegionInViewHelper(
     const FrameId& frame_id,
-    const WebElementId& element,
+    const ElementId& element,
     const Rect& region,
     bool center,
     bool verify_clickable_at_middle,

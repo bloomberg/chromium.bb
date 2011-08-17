@@ -8,10 +8,10 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/web_element_id.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
+#include "chrome/test/webdriver/webdriver_element_id.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
 namespace {
@@ -177,7 +177,7 @@ bool MoveToCommand::Init(Response* const response) {
   has_element_ = GetStringParameter("element", &element_name);
 
   if (has_element_) {
-    element_ = WebElementId(element_name);
+    element_ = ElementId(element_name);
   }
 
   has_offset_ = GetIntegerParameter("xoffset", &x_offset_) &&

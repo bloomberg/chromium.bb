@@ -7,10 +7,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/test/webdriver/commands/set_timeout_commands.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/commands/set_timeout_commands.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webdriver {

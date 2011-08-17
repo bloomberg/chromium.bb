@@ -11,8 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/webdriver/commands/response.h"
-#include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/webdriver_session.h"
 
 namespace webdriver {
 

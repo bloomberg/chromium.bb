@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/webdriver/dispatch.h"
+#include "chrome/test/webdriver/webdriver_dispatch.h"
 
 #include <sstream>
 #include <string>
@@ -18,10 +18,10 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/commands/command.h"
-#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
+#include "chrome/test/webdriver/webdriver_session_manager.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
 namespace webdriver {
