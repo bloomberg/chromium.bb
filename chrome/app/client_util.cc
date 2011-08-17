@@ -188,11 +188,6 @@ MainDllLoader::MainDllLoader() : dll_(NULL) {
 }
 
 MainDllLoader::~MainDllLoader() {
-#ifdef PURIFY
-  // We should never unload the dll. There is only risk and no gain from
-  // doing so. The singleton dtors have been already run by AtExitManager.
-  ::FreeLibrary(dll_);
-#endif
 }
 
 // Loading chrome is an interesting affair. First we try loading from the

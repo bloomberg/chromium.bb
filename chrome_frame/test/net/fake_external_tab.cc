@@ -352,9 +352,7 @@ void CFUrlRequestUnittestRunner::Initialize() {
 
   SuppressErrorDialogs();
   base::debug::SetSuppressDebugUI(true);
-#if !defined(PURIFY)
   logging::SetLogAssertHandler(UnitTestAssertHandler);
-#endif  // !defined(PURIFY)
 
   // Next, do some initialization for NetTestSuite.
   NetTestSuite::InitializeTestThread();

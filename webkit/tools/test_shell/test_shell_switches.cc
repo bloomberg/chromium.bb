@@ -58,10 +58,6 @@ const char kDumpStatsTable[] = "stats";
 // Use a specified cache directory.
 const char kCacheDir[] = "cache-dir";
 
-// When being run through a memory profiler, trigger memory in use dumps at
-// startup and just prior to shutdown.
-const char kDebugMemoryInUse[] = "debug-memory-in-use";
-
 // Enable cookies on the file:// scheme.  --layout-tests also enables this.
 const char kEnableFileCookies[] = "enable-file-cookies";
 

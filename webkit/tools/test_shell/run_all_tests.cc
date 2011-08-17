@@ -74,7 +74,7 @@ class TestShellTestSuite : public base::TestSuite {
     // Some of the individual tests wind up calling TestShell::WaitTestFinished
     // which has a timeout in it.  For these tests, we don't care about
     // a timeout so just set it to be really large.  This is necessary because
-    // we hit those timeouts under Purify and Valgrind.
+    // we hit those timeouts under Valgrind.
     TestShell::SetFileTestTimeout(10 * 60 * 60 * 1000);  // Ten hours.
 
     // Initialize test shell in layout test mode, which will let us load one

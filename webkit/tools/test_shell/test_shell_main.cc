@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
-#include "base/memory/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
@@ -323,12 +322,6 @@ int main(int argc, char* argv[]) {
         base::EventRecorder::current()->StartRecording(script_path);
       if (playback_mode)
         base::EventRecorder::current()->StartPlayback(script_path);
-    }
-
-    if (parsed_command_line.HasSwitch(test_shell::kDebugMemoryInUse)) {
-      base::MemoryDebug::SetMemoryInUseEnabled(true);
-      // Dump all in use memory at startup
-      base::MemoryDebug::DumpAllMemoryInUse();
     }
 
     webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(0));

@@ -166,7 +166,7 @@ void TemplateURLServiceTestUtil::TearDown() {
   }
   TemplateURLRef::SetGoogleBaseURL(NULL);
 
-  // Flush the message loop to make Purify happy.
+  // Flush the message loop to make application verifiers happy.
   message_loop_.RunAllPending();
 }
 

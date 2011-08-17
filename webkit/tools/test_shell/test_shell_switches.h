@@ -25,7 +25,6 @@ extern const char kPlaybackMode[];
 extern const char kNoEvents[];
 extern const char kDumpStatsTable[];
 extern const char kCacheDir[];
-extern const char kDebugMemoryInUse[];
 extern const char kEnableFileCookies[];
 extern const char kAllowScriptsToCloseWindows[];
 extern const char kCheckLayoutTestSystemDeps[];

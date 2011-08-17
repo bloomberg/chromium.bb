@@ -17,10 +17,6 @@ class TestShellPlatformDelegate {
   TestShellPlatformDelegate(const CommandLine& command_line);
   ~TestShellPlatformDelegate();
 
-  // EnableMemoryDebugging: turn on platform memory debugging assistance
-  // (console messages, heap checking, leak detection, etc.).
-  void EnableMemoryDebugging();
-
   // CheckLayoutTestSystemDependencies: check for any system dependencies that
   // can't be easily overridden from within an application (for example, UI or
   // display settings).  Returns false if any dependencies are not met.

@@ -76,7 +76,7 @@ class BookmarkContextMenuTest : public TestingBrowserProcessTest {
     BookmarkBarView::testing_ = false;
 #endif
 
-    // Flush the message loop to make Purify happy.
+    // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
   }
 

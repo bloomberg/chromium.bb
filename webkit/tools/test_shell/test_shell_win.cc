@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
-#include "base/memory/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/resource_util.h"
@@ -567,10 +566,6 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       RemoveWindowFromList(hwnd);
 
       if (TestShell::windowList()->empty() || shell->is_modal()) {
-        // Dump all in use memory just before shutdown if in use memory
-        // debugging has been enabled.
-        base::MemoryDebug::DumpAllMemoryInUse();
-
         MessageLoop::current()->PostTask(FROM_HERE,
                                          new MessageLoop::QuitTask());
       }

@@ -298,7 +298,7 @@ class ResourceDispatcherHostTest : public testing::Test,
 
     ChildProcessSecurityPolicy::GetInstance()->Remove(0);
 
-    // Flush the message loop to make Purify happy.
+    // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
   }
 

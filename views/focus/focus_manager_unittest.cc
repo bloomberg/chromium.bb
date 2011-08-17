@@ -126,7 +126,7 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
       GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
     window_->Close();
 
-    // Flush the message loop to make Purify happy.
+    // Flush the message loop to make application verifiers happy.
     message_loop()->RunAllPending();
   }
 

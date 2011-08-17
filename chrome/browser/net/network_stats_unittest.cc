@@ -19,7 +19,7 @@ class NetworkStatsTest : public PlatformTest {
   NetworkStatsTest() {}
  protected:
   virtual void TearDown() {
-    // Flush the message loop to make Purify happy.
+    // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
   }
   MessageLoopForIO message_loop_;
