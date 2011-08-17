@@ -3969,6 +3969,41 @@ TEST_F(GLES2DecoderTest, GetMultipleIntegervCHROMIUMInvalidArgs) {
   EXPECT_EQ(kSentinel, results[num_results]);  // End of results
 }
 
+TEST_F(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
+  const int kWidth = 16;
+  const int kHeight = 8;
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillRepeatedly(Return(GL_NO_ERROR));
+  for (int ii = 0; ii < 2; ++ii) {
+    if (ii == 0) {
+      EXPECT_CALL(*gl_, TexImage2D(
+          GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
+          GL_UNSIGNED_BYTE, _))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    TexImage2D cmd;
+    cmd.Init(
+        GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
+        GL_UNSIGNED_BYTE, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_CALL(*gl_, TexSubImage2D(
+        GL_TEXTURE_2D, 0, 0, 0, kWidth, kHeight - 1, GL_RGBA, GL_UNSIGNED_BYTE,
+        shared_memory_address_))
+        .Times(1)
+        .RetiresOnSaturation();
+    // Consider this TexSubImage2D command part of the previous TexImage2D
+    // (last GL_TRUE argument). It will be skipped if there are bugs in the
+    // redefinition case.
+    TexSubImage2D cmd2;
+    cmd2.Init(
+        GL_TEXTURE_2D, 0, 0, 0, kWidth, kHeight - 1, GL_RGBA, GL_UNSIGNED_BYTE,
+        kSharedMemoryId, kSharedMemoryOffset, GL_TRUE);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  }
+}
+
 TEST_F(GLES2DecoderTest, TexImage2DGLError) {
   GLenum target = GL_TEXTURE_2D;
   GLint level = 0;

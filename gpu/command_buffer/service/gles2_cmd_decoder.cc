@@ -5751,6 +5751,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
       type == tex_type && format == tex_format;
 
   if (level_is_same && !pixels) {
+    tex_image_2d_failed_ = false;
     return error::kNoError;
   }
 
