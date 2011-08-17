@@ -725,16 +725,17 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) dirp, count);
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(4, " illegal address for directory data\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
+  }
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) dirp, count);
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(4, " illegal address for directory data\n");
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup_unref;
   }
 
   /*
@@ -762,6 +763,8 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
   } else {
     NaClLog(4, "getdents returned %d\n", retval);
   }
+
+cleanup_unref:
   NaClDescUnref(ndp);
 
 cleanup:
@@ -788,14 +791,16 @@ int32_t NaClCommonSysRead(struct NaClAppThread  *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) buf, count);
-  if (kNaClBadAddress == sysaddr) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) buf, count);
+  if (kNaClBadAddress == sysaddr) {
+    NaClDescUnref(ndp);
+    retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
@@ -845,20 +850,21 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
+  ndp = NaClGetDesc(natp->nap, d);
+  if (NULL == ndp) {
+    retval = -NACL_ABI_EBADF;
+    goto cleanup;
+  }
+
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) buf, count);
   if (kNaClBadAddress == sysaddr) {
+    NaClDescUnref(ndp);
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
   NaClLog(4, "In NaClSysWrite(%d, %.*s, %"NACL_PRIdS")\n",
           d, (int) count, (char *) sysaddr, count);
-
-  ndp = NaClGetDesc(natp->nap, d);
-  if (NULL == ndp) {
-    retval = -NACL_ABI_EBADF;
-    goto cleanup;
-  }
 
   /*
    * The maximum length for read and write is INT32_MAX--anything larger and
@@ -904,18 +910,19 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) offp, sizeof offset);
-  if (kNaClBadAddress == sysaddr) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-  offset = *(nacl_abi_off_t volatile *) sysaddr;
-  NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) offp, sizeof offset);
+  if (kNaClBadAddress == sysaddr) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup_unref;
+  }
+  offset = *(nacl_abi_off_t volatile *) sysaddr;
+  NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
 
   retval64 = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
               Seek)(ndp, (nacl_off64_t) offset, whence);
@@ -925,6 +932,7 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
     *(nacl_abi_off_t volatile *) sysaddr = retval64;
     retval = 0;
   }
+cleanup_unref:
   NaClDescUnref(ndp);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -1003,21 +1011,21 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
           " sizeof(struct nacl_abi_stat) = %"NACL_PRIdS" (0x%"NACL_PRIxS")\n",
           sizeof *nasp, sizeof *nasp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) nasp, sizeof *nasp);
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(4, "bad addr\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
     NaClLog(4, "bad desc\n");
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
-  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
-            Fstat)(ndp, (struct nacl_abi_stat *) sysaddr);
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) nasp, sizeof *nasp);
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(4, "bad addr\n");
+    retval = -NACL_ABI_EFAULT;
+  } else {
+    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+              Fstat)(ndp, (struct nacl_abi_stat *) sysaddr);
+  }
 
   NaClDescUnref(ndp);
 cleanup:

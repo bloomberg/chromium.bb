@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -237,9 +237,9 @@ bool test_read(const char *test_file) {
   ret_val = read(-1, out_char, -1);
   if (ret_val != -1)
     return failed(testname, "read(-1, out_char, -1)");
-  // bad address
-  if (EFAULT != errno)
-    return failed(testname, "EFAULT != errno");
+  // bad descriptor
+  if (EBADF != errno)
+    return failed(testname, "EBADF != errno");
 
   // fd OK, buffer OK, count 0
   ret_val = read(fd, out_char, 0);
