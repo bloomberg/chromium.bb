@@ -104,8 +104,16 @@ bool FrontendDataTypeController::Associate() {
   sync_service_->ActivateDataType(type(), model_safe_group(),
                                   change_processor_.get());
   state_ = RUNNING;
+  // FinishStart() invokes the DataTypeManager callback, which can lead to a
+  // call to Stop() if one of the other data types being started generates an
+  // error.
   FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK, FROM_HERE);
-  return true;
+  // Return false if we're not in the RUNNING state (due to Stop() being called
+  // from FinishStart()).
+  // TODO(zea/atwilson): Should we maybe move the call to FinishStart() out of
+  // Associate() and into Start(), so we don't need this logic here? It seems
+  // cleaner to call FinishStart() from Start().
+  return state_ == RUNNING;
 }
 
 void FrontendDataTypeController::StartFailed(

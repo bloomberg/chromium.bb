@@ -106,8 +106,15 @@ void SyncBackendHost::Initialize(
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
   registrar_.workers[GROUP_UI] = new UIModelWorker();
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
-  registrar_.workers[GROUP_HISTORY] = new HistoryModelWorker(
-      profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
+  HistoryService* history_service = profile_->GetHistoryService(
+      Profile::IMPLICIT_ACCESS);
+  if (history_service) {
+    registrar_.workers[GROUP_HISTORY] = new HistoryModelWorker(history_service);
+  } else {
+    LOG(WARNING) << "History store disabled, cannot sync Omnibox History";
+    registrar_.routing_info.erase(syncable::TYPED_URLS);
+  }
+
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that

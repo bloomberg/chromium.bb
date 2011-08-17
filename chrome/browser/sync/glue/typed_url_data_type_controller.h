@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "content/browser/cancelable_request.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -37,8 +38,8 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual ~TypedUrlDataTypeController();
 
   // NonFrontendDataTypeController implementation
-  virtual syncable::ModelType type() const;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const;
+  virtual syncable::ModelType type() const OVERRIDE;
+  virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -57,16 +58,15 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
 
  protected:
   // NonFrontendDataTypeController interface.
-  virtual bool StartModels();
-  virtual bool StartAssociationAsync();
-  virtual void CreateSyncComponents();
-  virtual void StopModels();
-  virtual bool StopAssociationAsync();
+  virtual bool StartAssociationAsync() OVERRIDE;
+  virtual void CreateSyncComponents() OVERRIDE;
+  virtual void StopModels() OVERRIDE;
+  virtual bool StopAssociationAsync() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message);
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  virtual void RecordStartFailure(StartResult result);
+      const std::string& message) OVERRIDE;
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
+  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
  private:
   friend class ControlTask;
@@ -77,6 +77,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   history::HistoryBackend* backend_;
   scoped_refptr<HistoryService> history_service_;
   NotificationRegistrar notification_registrar_;
+  PrefChangeRegistrar pref_registrar_;
 
   // Helper object to make sure we don't leave tasks running on the history
   // thread.

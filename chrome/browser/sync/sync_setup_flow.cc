@@ -47,6 +47,9 @@ void GetArgsForEnterPassphrase(bool tried_creating_explicit_passphrase,
 
 // Returns the next step for the non-fatal error case.
 SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
+  // TODO(sync): Update this error handling to allow different platforms to
+  // display the error appropriately (http://crbug.com/92722) instead of
+  // navigating to a LOGIN state that is not supported on every platform.
   if (service->IsPassphraseRequired()) {
     if (service->IsUsingSecondaryPassphrase())
       return SyncSetupWizard::ENTER_PASSPHRASE;
@@ -438,7 +441,8 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::FATAL_ERROR: {
       // This shows the user the "Could not connect to server" error.
-      // TODO(sync): Update this error messaging.
+      // TODO(sync): Update this error handling to allow different platforms to
+      // display the error appropriately (http://crbug.com/92722).
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       args.SetInteger("error", GoogleServiceAuthError::CONNECTION_FAILED);

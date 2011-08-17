@@ -44,6 +44,7 @@
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 
 using browser_sync::AppChangeProcessor;
 using browser_sync::AppDataTypeController;
@@ -144,8 +145,9 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   }
 
   // TypedUrl sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncTypedUrls)) {
+  // explicitly enabled, and if saving history is not disabled.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
+      command_line_->HasSwitch(switches::kEnableSyncTypedUrls)) {
     pss->RegisterDataTypeController(
         new TypedUrlDataTypeController(this, profile_));
   }
