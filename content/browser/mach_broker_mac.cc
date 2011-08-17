@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mach_ipc_mac.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "content/browser/browser_thread.h"
@@ -20,7 +21,7 @@
 namespace {
 // Prints a string representation of a Mach error code.
 std::string MachErrorCode(kern_return_t err) {
-  return StringPrintf("0x%x %s", err, mach_error_string(err));
+  return base::StringPrintf("0x%x %s", err, mach_error_string(err));
 }
 }  // namespace
 
@@ -225,5 +226,5 @@ std::string MachBroker::GetMachPortName() {
 
   // In non-browser (child) processes, use the parent's pid.
   const pid_t pid = is_child ? getppid() : getpid();
-  return StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
+  return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
 }

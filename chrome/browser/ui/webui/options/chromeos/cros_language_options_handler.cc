@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -198,7 +199,7 @@ void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
 void CrosLanguageOptionsHandler::InputMethodDisableCallback(
     const ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
-  const std::string action = StringPrintf(
+  const std::string action = base::StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);
 }
@@ -206,7 +207,7 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
     const ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
-  const std::string action = StringPrintf(
+  const std::string action = base::StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);
 }
@@ -214,7 +215,7 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
     const ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
-  const std::string action = StringPrintf(
+  const std::string action = base::StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
   UserMetrics::RecordComputedAction(action);
 }

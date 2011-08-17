@@ -17,9 +17,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/string_split.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -363,8 +364,8 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   const std::wstring kOSParam = L"os";
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
-  std::wstring os_version = StringPrintf(L"%d.%d.%d", version_number.major,
-      version_number.minor, version_number.build);
+  std::wstring os_version = base::StringPrintf(L"%d.%d.%d",
+      version_number.major, version_number.minor, version_number.build);
 
   FilePath iexplore;
   if (!PathService::Get(base::DIR_PROGRAM_FILES, &iexplore))

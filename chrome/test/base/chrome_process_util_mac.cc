@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 MacChromeProcessInfoList GetRunningMacProcessInfo(
-    const ChromeProcessList &process_list) {
+    const ChromeProcessList& process_list) {
   MacChromeProcessInfoList result;
 
   // Build up the ps command line
@@ -27,7 +28,7 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
        process_iter != process_list.end();
        ++process_iter) {
     cmdline.push_back("-p");
-    cmdline.push_back(StringPrintf("%d", *process_iter));
+    cmdline.push_back(base::StringPrintf("%d", *process_iter));
   }
 
   // Invoke it

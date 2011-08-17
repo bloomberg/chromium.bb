@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/task.h"
 #include "base/win/registry.h"

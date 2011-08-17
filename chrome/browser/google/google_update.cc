@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
@@ -83,7 +84,8 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id, REFIID interface_id,
                     arraysize(class_id_as_string));
 
     std::wstring elevation_moniker_name =
-        StringPrintf(L"Elevation:Administrator!new:%ls", class_id_as_string);
+        base::StringPrintf(L"Elevation:Administrator!new:%ls",
+                           class_id_as_string);
 
     BIND_OPTS3 bind_opts;
     memset(&bind_opts, 0, sizeof(bind_opts));

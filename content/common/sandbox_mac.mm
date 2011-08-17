@@ -22,6 +22,7 @@ extern "C" {
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

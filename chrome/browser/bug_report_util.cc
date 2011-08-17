@@ -12,6 +12,7 @@
 #include "base/file_version_info.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -158,11 +159,13 @@ void BugReportUtil::SetOSVersion(std::string* os_version) {
 #if defined(OS_WIN)
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   base::win::OSInfo::VersionNumber version_number = os_info->version_number();
-  *os_version = StringPrintf("%d.%d.%d", version_number.major,
-                             version_number.minor, version_number.build);
+  *os_version = base::StringPrintf("%d.%d.%d",
+                                   version_number.major,
+                                   version_number.minor,
+                                   version_number.build);
   int service_pack = os_info->service_pack().major;
   if (service_pack > 0)
-    os_version->append(StringPrintf("Service Pack %d", service_pack));
+    os_version->append(base::StringPrintf("Service Pack %d", service_pack));
 #elif defined(OS_MACOSX)
   *os_version = base::SysInfo::OperatingSystemVersion();
 #else

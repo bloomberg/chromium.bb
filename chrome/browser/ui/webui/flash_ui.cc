@@ -6,6 +6,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"

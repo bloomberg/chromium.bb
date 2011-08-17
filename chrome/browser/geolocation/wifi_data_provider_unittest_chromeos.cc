@@ -1,7 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/geolocation/wifi_data_provider_chromeos.h"
@@ -26,10 +27,10 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
     for (int i = 0; i < ssids; ++i) {
       for (int j = 0; j < aps_per_ssid; ++j) {
         WifiAccessPoint ap;
-        ap.name = StringPrintf("SSID %d", i);
+        ap.name = base::StringPrintf("SSID %d", i);
         ap.channel = i * 10 + j;
-        ap.mac_address = StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
-            i, j, 3, 4, 5, 6);
+        ap.mac_address = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
+                                            i, j, 3, 4, 5, 6);
         ap.signal_strength = j;
         ap.signal_to_noise = i;
         ret.push_back(ap);

@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
@@ -168,10 +169,10 @@ void VersionLoader::Backend::GetVersion(
     if (file_util::GetFileInfo(file_path, &fileinfo)) {
       base::Time::Exploded ctime;
       fileinfo.creation_time.UTCExplode(&ctime);
-      version += StringPrintf("-%02u.%02u.%02u",
-                              ctime.year % 100,
-                              ctime.month,
-                              ctime.day_of_month);
+      version += base::StringPrintf("-%02u.%02u.%02u",
+                                    ctime.year % 100,
+                                    ctime.month,
+                                    ctime.day_of_month);
     }
   }
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -176,7 +177,7 @@ class PowerMenuButton::StatusView : public View {
     canvas->DrawBitmapInt(image, image_x, image_y);
 
     if (draw_percentage_text) {
-      string16 text = UTF8ToUTF16(StringPrintf(
+      string16 text = UTF8ToUTF16(base::StringPrintf(
           "%d%%",
           static_cast<int>(menu_button_->battery_percentage_)));
       int text_h = percentage_font_.GetHeight();

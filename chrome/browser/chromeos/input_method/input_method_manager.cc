@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -841,8 +842,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
     // TODO(zork): Send output to /var/log/ibus.log
     const std::string ibus_daemon_command_line =
-        StringPrintf("%s --panel=disable --cache=none --restart --replace",
-                     kIBusDaemonPath);
+        base::StringPrintf(
+            "%s --panel=disable --cache=none --restart --replace",
+            kIBusDaemonPath);
     if (!LaunchInputMethodProcess(
             ibus_daemon_command_line, &ibus_daemon_process_handle_)) {
       LOG(ERROR) << "Failed to launch " << ibus_daemon_command_line;

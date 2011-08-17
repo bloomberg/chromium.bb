@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 
 #include <queue>
-#include <utility>
 #include <set>
 #include <string>
+#include <utility>
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -15,11 +15,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/logging.h"
-#include "base/string_util.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "content/browser/browser_thread.h"
@@ -382,11 +383,13 @@ std::string CreateFullXkbLayoutName(const std::string& layout_name,
   }
 
   std::string full_xkb_layout_name =
-      StringPrintf("%s+chromeos(%s_%s_%s%s)", layout_name.c_str(),
-                   use_search_key_as_str.c_str(),
-                   use_left_control_key_as_str.c_str(),
-                   use_left_alt_key_as_str.c_str(),
-                   XkbLayoutSets::KeepRightAlt(layout_name) ? "_keepralt" : "");
+      base::StringPrintf(
+          "%s+chromeos(%s_%s_%s%s)",
+          layout_name.c_str(),
+          use_search_key_as_str.c_str(),
+          use_left_control_key_as_str.c_str(),
+          use_left_alt_key_as_str.c_str(),
+          XkbLayoutSets::KeepRightAlt(layout_name) ? "_keepralt" : "");
 
   if ((full_xkb_layout_name.substr(0, 3) != "us+") &&
       (full_xkb_layout_name.substr(0, 3) != "us(")) {

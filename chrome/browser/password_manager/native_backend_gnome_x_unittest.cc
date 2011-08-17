@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
@@ -102,8 +103,9 @@ gpointer mock_gnome_keyring_store_password(
   mock_keyring_items.push_back(
       MockKeyringItem(keyring, display_name, password));
   MockKeyringItem* item = &mock_keyring_items.back();
-  const std::string keyring_desc = keyring ? StringPrintf("keyring %s", keyring)
-                                           : std::string("default keyring");
+  const std::string keyring_desc =
+      keyring ? base::StringPrintf("keyring %s", keyring)
+              : std::string("default keyring");
   VLOG(1) << "Adding item with origin " << display_name
           << " to " << keyring_desc;
   va_list ap;

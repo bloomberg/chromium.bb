@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace {
 
@@ -100,9 +101,9 @@ std::wstring GetUrlHash(const std::wstring& url) {
     // check_sum.
     unsigned char hash_byte = static_cast<unsigned char>(hash_bin[i]);
     checksum += hash_byte;
-    url_hash += StringPrintf(L"%2.2X", static_cast<unsigned>(hash_byte));
+    url_hash += base::StringPrintf(L"%2.2X", static_cast<unsigned>(hash_byte));
   }
-  url_hash += StringPrintf(L"%2.2X", checksum);
+  url_hash += base::StringPrintf(L"%2.2X", checksum);
 
   return url_hash;
 }

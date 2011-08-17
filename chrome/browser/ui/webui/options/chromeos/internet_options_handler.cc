@@ -16,6 +16,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -820,7 +821,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("firmwareRevision", device->firmware_revision());
     dictionary->SetString("hardwareRevision", device->hardware_revision());
     dictionary->SetString("prlVersion",
-                          StringPrintf("%u", device->prl_version()));
+                          base::StringPrintf("%u", device->prl_version()));
     dictionary->SetString("meid", device->meid());
     dictionary->SetString("imei", device->imei());
     dictionary->SetString("mdn", device->mdn());

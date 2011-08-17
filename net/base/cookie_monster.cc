@@ -55,6 +55,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/geolocation/empty_device_data_provider.h"
 #include "content/common/content_switches.h"
@@ -21,10 +22,10 @@ string16 MacAsString16(const uint8 mac_as_int[6]) {
   // Format is XX-XX-XX-XX-XX-XX.
   static const wchar_t* const kMacFormatString =
       L"%02x-%02x-%02x-%02x-%02x-%02x";
-  return WideToUTF16(StringPrintf(kMacFormatString,
-                                  mac_as_int[0], mac_as_int[1],
-                                  mac_as_int[2], mac_as_int[3],
-                                  mac_as_int[4], mac_as_int[5]));
+  return WideToUTF16(base::StringPrintf(kMacFormatString,
+                                        mac_as_int[0], mac_as_int[1],
+                                        mac_as_int[2], mac_as_int[3],
+                                        mac_as_int[4], mac_as_int[5]));
 }
 
 void FetchGatewayIps(std::set<IPAddr>* gateway_ips) {

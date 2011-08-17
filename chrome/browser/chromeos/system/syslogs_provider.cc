@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/common/chrome_switches.h"
@@ -279,7 +280,8 @@ class SyslogsMemoryHandler : public MemoryDetails {
     std::string mem_string;
     for (ProcInfoSet::iterator iter = process_info.begin();
          iter != process_info.end(); ++iter) {
-      mem_string += iter->second + StringPrintf(": %d MB", iter->first) + "\n";
+      mem_string +=
+          iter->second + base::StringPrintf(": %d MB", iter->first) + "\n";
     }
     (*logs_)["mem_usage"] = mem_string;
     // This will call the callback on the calling thread.

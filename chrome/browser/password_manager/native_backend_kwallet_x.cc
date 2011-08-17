@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "content/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -650,7 +650,7 @@ int NativeBackendKWallet::WalletHandle() {
 std::string NativeBackendKWallet::GetProfileSpecificFolderName() const {
   // Originally, the folder name was always just "Chrome Form Data".
   // Now we use it to distinguish passwords for different profiles.
-  return StringPrintf("%s (%d)", kKWalletFolder, profile_id_);
+  return base::StringPrintf("%s (%d)", kKWalletFolder, profile_id_);
 }
 
 void NativeBackendKWallet::MigrateToProfileSpecificLogins() {

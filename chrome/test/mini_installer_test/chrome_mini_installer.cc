@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -29,7 +30,7 @@ ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type,
       has_diff_installer_(false),
       has_full_installer_(false),
       has_prev_installer_(false) {
-  installer_name_ = StringPrintf(L"%ls (%ls)",
+  installer_name_ = base::StringPrintf(L"%ls (%ls)",
       mini_installer_constants::kChromeBuildType, install_type_.c_str());
 }
 

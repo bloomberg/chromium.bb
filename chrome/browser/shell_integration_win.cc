@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -216,7 +217,7 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
     return false;
 
   // Get expected app id from shortcut command line.
-  CommandLine command_line = CommandLine::FromString(StringPrintf(
+  CommandLine command_line = CommandLine::FromString(base::StringPrintf(
       L"\"%ls\" %ls", source.c_str(), arguments.c_str()));
 
   FilePath profile_path;

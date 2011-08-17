@@ -6,7 +6,7 @@
 
 #include "base/pickle.h"
 #include "base/string16.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -355,9 +355,9 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
     }
     case ui::TEXT_HTML: {
       std::string utf8_title = UTF16ToUTF8(nodes[0]->GetTitle());
-      std::string utf8_html = StringPrintf("<a href=\"%s\">%s</a>",
-                                           nodes[0]->url().spec().c_str(),
-                                           utf8_title.c_str());
+      std::string utf8_html = base::StringPrintf("<a href=\"%s\">%s</a>",
+                                                 nodes[0]->url().spec().c_str(),
+                                                 utf8_title.c_str());
       gtk_selection_data_set(selection_data,
                              GetAtomForTarget(ui::TEXT_HTML),
                              kBitsInAByte,
