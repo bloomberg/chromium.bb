@@ -248,12 +248,11 @@ function setupKeyUpEventHandler(key, element, keyUpHandler) {
 /**
  * Create closure for the sendKey function.
  * @param {string} key The key paramater to sendKey.
- * @param {string=} type The type parameter to sendKey.
- * @return {function()} A function which calls sendKey(key, type).
+ * @return {function()} A function which calls sendKey(key).
  */
-function sendKeyFunction(key, type) {
+function sendKeyFunction(key) {
   return function() {
-    sendKey(key, type);
+    sendKey(key);
   };
 }
 
