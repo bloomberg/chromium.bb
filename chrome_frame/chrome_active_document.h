@@ -361,8 +361,6 @@ END_EXEC_COMMAND_MAP()
 
  protected:
   // ChromeFrameActivexBase overrides
-  virtual void OnOpenURL(
-      const GURL& url_to_open, const GURL& referrer, int open_disposition);
   virtual void OnAttachExternalTab(const AttachExternalTabParams& params);
   virtual void OnGoToHistoryEntryOffset(int offset);
   virtual void OnMoveWindow(const gfx::Rect& dimensions);

@@ -389,11 +389,6 @@ class ChromeFrameAutomationClient
   // Url request manager set up.
   void SetUrlFetcher(PluginUrlRequestManager* url_fetcher);
 
-  // Called if the same instance of the ChromeFrameAutomationClient object
-  // is reused.
-  bool Reinitialize(ChromeFrameDelegate* chrome_frame_delegate,
-                    PluginUrlRequestManager* url_fetcher);
-
   // Attaches an existing external tab to this automation client instance.
   void AttachExternalTab(uint64 external_tab_cookie);
   void BlockExternalTab(uint64 cookie);

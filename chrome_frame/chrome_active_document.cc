@@ -19,17 +19,10 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
-#include "base/process_util.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
-#include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/automation_messages.h"
@@ -48,8 +41,6 @@
 
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);
-
-base::ThreadLocalPointer<ChromeActiveDocument> g_active_doc_cache;
 
 bool g_first_launch_by_process_ = true;
 
@@ -73,29 +64,14 @@ ChromeActiveDocument::ChromeActiveDocument()
 }
 
 HRESULT ChromeActiveDocument::FinalConstruct() {
-  // If we have a cached ChromeActiveDocument instance in TLS, then grab
-  // ownership of the cached document's automation client. This is an
-  // optimization to get Chrome active documents to load faster.
-  ChromeActiveDocument* cached_document = g_active_doc_cache.Get();
-  if (cached_document && cached_document->IsValid()) {
-    SetResourceModule();
-    DCHECK(automation_client_.get() == NULL);
-    automation_client_.swap(cached_document->automation_client_);
-    DVLOG(1) << "Reusing automation client instance from " << cached_document;
-    DCHECK(automation_client_.get() != NULL);
-    automation_client_->Reinitialize(this, url_fetcher_.get());
-    is_automation_client_reused_ = true;
-    OnAutomationServerReady();
-  } else {
-    // The FinalConstruct implementation in the ChromeFrameActivexBase class
-    // i.e. Base creates an instance of the ChromeFrameAutomationClient class
-    // and initializes it, which would spawn a new Chrome process, etc.
-    // We don't want to be doing this if we have a cached document, whose
-    // automation client instance can be reused.
-    HRESULT hr = BaseActiveX::FinalConstruct();
-    if (FAILED(hr))
-      return hr;
-  }
+  // The FinalConstruct implementation in the ChromeFrameActivexBase class
+  // i.e. Base creates an instance of the ChromeFrameAutomationClient class
+  // and initializes it, which would spawn a new Chrome process, etc.
+  // We don't want to be doing this if we have a cached document, whose
+  // automation client instance can be reused.
+  HRESULT hr = BaseActiveX::FinalConstruct();
+  if (FAILED(hr))
+    return hr;
 
   InitializeAutomationSettings();
 
@@ -543,13 +519,6 @@ HRESULT ChromeActiveDocument::GetInPlaceFrame(
 HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     IOleClientSite* client_site) {
   if (client_site == NULL) {
-    ChromeActiveDocument* cached_document = g_active_doc_cache.Get();
-    if (cached_document) {
-      DCHECK(this == cached_document);
-      g_active_doc_cache.Set(NULL);
-      cached_document->Release();
-    }
-
     base::win::ScopedComPtr<IDocHostUIHandler> doc_host_handler;
     if (doc_site_)
       doc_host_handler.QueryFrom(doc_site_);
@@ -972,23 +941,6 @@ void ChromeActiveDocument::OnUnload(const GUID* cmd_group_guid,
     out_args->vt = VT_BOOL;
     out_args->boolVal = should_unload ? VARIANT_TRUE : VARIANT_FALSE;
   }
-}
-
-void ChromeActiveDocument::OnOpenURL(const GURL& url_to_open,
-                                     const GURL& referrer,
-                                     int open_disposition) {
-  // If the disposition indicates that we should be opening the URL in the
-  // current tab, then we can reuse the ChromeFrameAutomationClient instance
-  // maintained by the current ChromeActiveDocument instance. We cache this
-  // instance so that it can be used by the new ChromeActiveDocument instance
-  // which may be instantiated for handling the new URL.
-  if (open_disposition == CURRENT_TAB) {
-    // Grab a reference to ensure that the document remains valid.
-    AddRef();
-    g_active_doc_cache.Set(this);
-  }
-
-  BaseActiveX::OnOpenURL(url_to_open, referrer, open_disposition);
 }
 
 void ChromeActiveDocument::OnAttachExternalTab(

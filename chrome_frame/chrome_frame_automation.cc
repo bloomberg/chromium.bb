@@ -1163,34 +1163,6 @@ void ChromeFrameAutomationClient::PrintTab() {
     tab_->PrintAsync();
 }
 
-bool ChromeFrameAutomationClient::Reinitialize(
-    ChromeFrameDelegate* delegate,
-    PluginUrlRequestManager* url_fetcher) {
-  if (url_fetcher_) {
-    // Clean up any outstanding requests
-    url_fetcher_->StopAllRequests();
-    url_fetcher_ = NULL;
-  }
-
-  if (!tab_.get() || !::IsWindow(chrome_window_)) {
-    NOTREACHED();
-    DLOG(WARNING) << "ChromeFrameAutomationClient instance reused "
-                  << "with invalid tab";
-    return false;
-  }
-
-  if (!delegate) {
-    NOTREACHED();
-    return false;
-  }
-
-  chrome_frame_delegate_ = delegate;
-  DeleteAllPendingTasks();
-  SetUrlFetcher(url_fetcher);
-  SetParentWindow(NULL);
-  return true;
-}
-
 void ChromeFrameAutomationClient::AttachExternalTab(
     uint64 external_tab_cookie) {
   DCHECK_EQ(static_cast<TabProxy*>(NULL), tab_.get());
