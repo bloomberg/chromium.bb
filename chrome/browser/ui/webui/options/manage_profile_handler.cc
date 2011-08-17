@@ -76,7 +76,7 @@ void ManageProfileHandler::InitializeDefaultProfileIcons() {
 
 void ManageProfileHandler::SendProfileNames() {
   ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetMutableProfileInfo();
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   DictionaryValue profile_name_dict;
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i)
     profile_name_dict.SetBoolean(UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)),
@@ -94,7 +94,7 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
     return;
 
   ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetMutableProfileInfo();
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
   if (profile_index == std::string::npos)
     return;

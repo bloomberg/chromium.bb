@@ -414,7 +414,7 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
 
 void PersonalOptionsHandler::SendProfilesInfo() {
   ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetMutableProfileInfo();
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   ListValue profile_info_list;
   FilePath current_profile_path =
       web_ui_->tab_contents()->browser_context()->GetPath();

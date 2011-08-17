@@ -503,11 +503,7 @@ ProfileManager::GetSortedProfilesFromDirectoryMap() {
   return profiles;
 }
 
-ProfileInfoInterface& ProfileManager::GetProfileInfo() {
-  return GetMutableProfileInfo();
-}
-
-ProfileInfoCache& ProfileManager::GetMutableProfileInfo() {
+ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
   if (!profile_info_cache_.get()) {
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -518,7 +514,7 @@ ProfileInfoCache& ProfileManager::GetMutableProfileInfo() {
 }
 
 void ProfileManager::AddProfileToCache(Profile* profile) {
-  ProfileInfoCache& cache = GetMutableProfileInfo();
+  ProfileInfoCache& cache = GetProfileInfoCache();
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
 
@@ -557,12 +553,13 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   if (profile)
     BrowserList::CloseAllBrowsersWithProfile(profile);
   profiles_to_delete_.push_back(profile_dir);
-  GetMutableProfileInfo().DeleteProfileFromCache(profile_dir);
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  cache.DeleteProfileFromCache(profile_dir);
 }
 
 // static
 bool ProfileManager::IsMultipleProfilesEnabled() {
-#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)
   return true;
 #endif
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
