@@ -91,10 +91,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // or like-thing in the renderer that the request gets routed to).
   int route_id() const { return route_id_; }
 
-  // The route_id of pending request can change when it is transferred to a new
-  // page (as in iframe transfer using adoptNode JS API).
-  void set_route_id(int route_id) { route_id_ = route_id; }
-
   // The pid of the originating process, if the request is sent on behalf of a
   // another process.  Otherwise it is 0.
   int origin_pid() const { return origin_pid_; }

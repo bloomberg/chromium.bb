@@ -160,13 +160,6 @@ IPC_MESSAGE_ROUTED2(ResourceHostMsg_RequestResource,
 IPC_MESSAGE_ROUTED1(ResourceHostMsg_CancelRequest,
                     int /* request_id */)
 
-// Sets a new routing id for the resource request with the ID given as the
-// parameter. This happens when a pending request is transferred to another
-// page.
-IPC_MESSAGE_CONTROL2(ResourceHostMsg_TransferRequestToNewPage,
-                     int /* new routing_id */,
-                     int /* request_id */)
-
 // Follows a redirect that occured for the resource request with the ID given
 // as the parameter.
 IPC_MESSAGE_ROUTED3(ResourceHostMsg_FollowRedirect,

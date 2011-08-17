@@ -53,7 +53,6 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   virtual void Cancel();
   virtual void SetDefersLoading(bool value);
   virtual void SyncLoad(SyncLoadResponse* response);
-  virtual void UpdateRoutingId(int new_routing_id);
 
  private:
   ResourceLoaderBridge::Peer* peer_;
@@ -223,18 +222,6 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->devtools_info = result.devtools_info;
   response->data.swap(result.data);
   response->download_file_path = result.download_file_path;
-}
-
-void IPCResourceLoaderBridge::UpdateRoutingId(int new_routing_id) {
-  if (request_id_ < 0) {
-    NOTREACHED() << "Trying to update an unstarted request";
-    return;
-  }
-
-  routing_id_ = new_routing_id;
-  dispatcher_->message_sender()->Send(
-      new ResourceHostMsg_TransferRequestToNewPage(new_routing_id,
-                                                   request_id_));
 }
 
 }  // namespace webkit_glue
