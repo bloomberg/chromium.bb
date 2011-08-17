@@ -12680,12 +12680,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
         Lock screen or power off
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_MOVE_TO_END_OF_NEXT_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the end of the next word).">
-        Move to end of next word
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_MOVE_TO_START_OF_PREVIOUS_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the start of the previous word).">
-        Move to start of previous word
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New Incognito window
       </message>
@@ -12697,6 +12691,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         Next window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_NEXT_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the end of the next word).">
+        Next word
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         Open address in new tab
@@ -12718,6 +12715,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         Previous window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the start of the previous word).">
+        Previous word
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_PRINT" desc="The text in the keyboard overlay to explain the shortcut.">
         Print
