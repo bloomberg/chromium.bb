@@ -25,13 +25,23 @@ import common
 # Global symbol table (yuck)
 TheAddressTable = None
 
-# These are functions (using C++ mangled names) that we look for in stack
-# traces. We don't show stack frames while pretty printing when they are below
-# any of the following:
-_TOP_OF_STACK_POINTS = [
-  # Don't show our testing framework.
-  "testing::Test::Run()",
+# These are regexps that define functions (using C++ mangled names)
+# we don't want to see in stack traces while pretty printing
+# or generating suppressions.
+# Just stop printing the stack/suppression frames when the current one
+# matches any of these.
+_BORING_CALLERS = [
+  # TODO(timurrrr): add more boring callers when needed
+
+  # Don't show our testing framework:
   "_ZN7testing4Test3RunEv",
+  "_ZN7testing8internal35HandleExceptionsInMethodIfSupported.*",
+  "_ZN7testing8internal38HandleSehExceptionsInMethodIfSupported.*",
+
+  # Depends on scheduling:
+  "_ZN11MessageLoop3RunEv",
+  "_ZN14RunnableMethod.*",
+
   # Also don't show the internals of libc/pthread.
   "start_thread"
 ]
@@ -95,9 +105,18 @@ def gatherFrames(node, source_dir):
       SRC_FILE_NAME       : getTextOf(frame, SRC_FILE_NAME),
       SRC_LINE            : getTextOf(frame, SRC_LINE)
     }
-    frames += [frame_dict]
-    if frame_dict[FUNCTION_NAME] in _TOP_OF_STACK_POINTS:
+
+    # Ignore this frame and all the following if it's a "boring" function.
+    enough_frames = False
+    for regexp in _BORING_CALLERS:
+      if re.match("^%s$" % regexp, frame_dict[FUNCTION_NAME]):
+        enough_frames = True
+        break
+    if enough_frames:
       break
+
+    frames += [frame_dict]
+
     global TheAddressTable
     if TheAddressTable != None and frame_dict[SRC_LINE] == "":
       # Try using gdb
@@ -265,24 +284,38 @@ class ValgrindError:
     supp = supp.replace("fun:_Znwm", "fun:_Znw*")
     supp = supp.replace("fun:_Znaj", "fun:_Zna*")
     supp = supp.replace("fun:_Znam", "fun:_Zna*")
+
     # Split into lines so we can enforce length limits
     supplines = supp.split("\n")
+    supp = None  # to avoid re-use
 
     # Truncate at line 26 (VG_MAX_SUPP_CALLERS plus 2 for name and type)
     # or at the first 'boring' caller.
     # (https://bugs.kde.org/show_bug.cgi?id=199468 proposes raising
     # VG_MAX_SUPP_CALLERS, but we're probably fine with it as is.)
-    # TODO(dkegel): add more boring callers
-    newlen = 26;
-    for boring_caller in ["   fun:_ZN11MessageLoop3RunEv",
-                          "   fun:_ZN7testing4Test3RunEv"]:
-      try:
-        newlen = min(newlen, supplines.index(boring_caller))
-      except ValueError:
-        pass
+    newlen = min(26, len(supplines));
+
+    # Drop boring frames and all the following.
+    enough_frames = False
+    for frameno in range(newlen):
+      for boring_caller in _BORING_CALLERS:
+        if re.match("^ +fun:%s$" % boring_caller, supplines[frameno]):
+          newlen = frameno
+          enough_frames = True
+          break
+      if enough_frames:
+        break
     if (len(supplines) > newlen):
       supplines = supplines[0:newlen]
       supplines.append("}")
+
+    for frame in range(len(supplines)):
+      # Replace the always-changing anonymous namespace prefix with "*".
+      m = re.match("( +fun:)_ZN.*_GLOBAL__N_.*\.cc_" +
+                   "[0-9a-fA-F]{8}_[0-9a-fA-F]{8}(.*)",
+                   supplines[frame])
+      if m:
+        supplines[frame] = "*".join(m.groups())
 
     output += "\n".join(supplines) + "\n"
 
