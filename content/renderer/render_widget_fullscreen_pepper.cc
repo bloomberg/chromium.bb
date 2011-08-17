@@ -261,6 +261,7 @@ void RenderWidgetFullscreenPepper::Destroy() {
   // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
   plugin_ = NULL;
   Send(new ViewHostMsg_Close(routing_id_));
+  Release();
 }
 
 void RenderWidgetFullscreenPepper::DidChangeCursor(
