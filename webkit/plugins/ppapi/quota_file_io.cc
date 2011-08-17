@@ -224,8 +224,10 @@ QuotaFileIO::~QuotaFileIO() {
 bool QuotaFileIO::Write(
     int64_t offset, const char* buffer, int32_t bytes_to_write,
     WriteCallback* callback) {
-  if (bytes_to_write <= 0)
+  if (bytes_to_write <= 0) {
+    delete callback;
     return false;
+  }
   WriteOperation* op = new WriteOperation(
       this, false, offset, buffer, bytes_to_write, callback);
   return RegisterOperationForQuotaChecks(op);
