@@ -8,6 +8,7 @@
 0x4e8fe1c674de45dd	AboutFlags_conflicting-modules-check
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
 0xdddbf34cee2c636c	AboutFlags_dns-server
+0x3add7fc42803849e	AboutFlags_downloads-new-ui
 0x4eae5ccc2900dffa	AboutFlags_enable-nacl
 0x1a3d598e2cd416a0	AboutFlags_enable-smooth-scrolling
 0x79571e31c2dc4d3c	AboutFlags_experimental-location-features

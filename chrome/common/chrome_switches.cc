@@ -365,6 +365,9 @@ const char kDnsServer[]                     = "dns-server";
 // |DOMAutomationController| to the |AutomationRenderViewHelper|.
 const char kDomAutomationController[]       = "dom-automation";
 
+// Replaces the download shelf with a new experimental UI.
+const char kDownloadsNewUI[]                = "downloads-new-ui";
+
 // Dump any accumualted histograms to the log when browser terminates (requires
 // logging to be enabled to really do anything).  Used by developers and test
 // scripts.

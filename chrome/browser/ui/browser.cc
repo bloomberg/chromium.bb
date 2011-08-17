@@ -3379,6 +3379,15 @@ int Browser::GetExtraRenderViewHeight() const {
   return window_->GetExtraRenderViewHeight();
 }
 
+namespace {
+
+bool DisplayOldDownloadsUI() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDownloadsNewUI);
+}
+
+}  // anonymous namespace
+
 void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
@@ -3393,41 +3402,38 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
   if (!window())
     return;
 
+  if (DisplayOldDownloadsUI()) {
 #if defined(OS_CHROMEOS)
-  // Don't show content browser for extension/theme downloads from gallery.
-  if (download->is_extension_install()) {
+    // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
-    if (service && service->IsDownloadFromGallery(download->GetURL(),
-                                                  download->referrer_url())) {
-      return;
+    if (!download->is_extension_install() ||
+        (service == NULL) ||
+        !service->IsDownloadFromGallery(download->GetURL(),
+                                        download->referrer_url())) {
+      // Open the Active Downloads ui for chromeos.
+      ActiveDownloadsUI::OpenPopup(profile_);
     }
-  }
-  // Open the Active Downloads ui for chromeos.
-  ActiveDownloadsUI::OpenPopup(profile_);
 #else
-  // GetDownloadShelf creates the download shelf if it was not yet created.
-  DownloadShelf* shelf = window()->GetDownloadShelf();
-  shelf->AddDownload(new DownloadItemModel(download));
-
-  // Don't show the animation for "Save file" downloads.
-  if (download->total_bytes() <= 0)
-    return;
-
-  // For non-theme extensions, we don't show the download animation.
-  if (download->is_extension_install() &&
-      !ExtensionService::IsDownloadFromMiniGallery(download->GetURL()))
-    return;
-
-  // Show animation in same window as the download shelf. Download shelf
-  // may not be in the same window that initiated the download, e.g. Panels.
-  TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
-
-  // We make this check for the case of minimized windows, unit tests, etc.
-  if (platform_util::IsVisible(shelf_tab->GetNativeView()) &&
-      ui::Animation::ShouldRenderRichAnimation()) {
-    DownloadStartedAnimation::Show(shelf_tab);
-  }
+    // GetDownloadShelf creates the download shelf if it was not yet created.
+    DownloadShelf* shelf = window()->GetDownloadShelf();
+    shelf->AddDownload(new DownloadItemModel(download));
+    // Don't show the animation for "Save file" downloads.
+    // For non-theme extensions, we don't show the download animation.
+    // Show animation in same window as the download shelf. Download shelf
+    // may not be in the same window that initiated the download, e.g.
+    // Panels.
+    // Don't show the animation if the selected tab is not visible (i.e. the
+    // window is minimized, we're in a unit test, etc.).
+    TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
+    if ((download->total_bytes() > 0) &&
+        (!download->is_extension_install() ||
+         ExtensionService::IsDownloadFromMiniGallery(download->GetURL())) &&
+        platform_util::IsVisible(shelf_tab->GetNativeView()) &&
+        ui::Animation::ShouldRenderRichAnimation()) {
+      DownloadStartedAnimation::Show(shelf_tab);
+    }
 #endif
+  }
 
   // If the download occurs in a new tab, close it.
   if (source->controller().IsInitialNavigation() && tab_count() > 1)

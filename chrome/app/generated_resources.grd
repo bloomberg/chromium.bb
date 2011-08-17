@@ -4233,6 +4233,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MEMORY_WIDGET_DESCRIPTION" desc="Description of the 'Show memory status' lab.">
         Shows the amount of free memory in the status area. Click on the menu for more information about system memory.
       </message>      
+      <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_NAME" desc="Name of the 'New Downloads UI' lab.">
+        New Downloads UI
+      </message>
+      <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION" desc="Description of the 'New Downloads UI' lab.">
+        Shows an experimental new UI instead of the download shelf.
+      </message>
       <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
       </message>

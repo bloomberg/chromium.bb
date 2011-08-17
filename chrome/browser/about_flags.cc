@@ -371,7 +371,15 @@ const Experiment kExperiments[] = {
 #else
     SINGLE_VALUE_TYPE("")
 #endif
-  },};
+  },
+  {
+    "downloads-new-ui",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_DOWNLOADS_NEW_UI_NAME,
+    IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDownloadsNewUI)
+  },
+};
 
 const Experiment* experiments = kExperiments;
 size_t num_experiments = arraysize(kExperiments);
