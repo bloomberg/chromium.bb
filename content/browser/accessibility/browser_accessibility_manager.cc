@@ -116,9 +116,6 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
 
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
   child_id_map_.erase(child_id);
-
-  // TODO(ctguil): Investigate if hit. We should never have a newer entry.
-  DCHECK(renderer_id_to_child_id_map_[renderer_id] == child_id);
   // Make sure we don't overwrite a newer entry (see UpdateNode for a possible
   // corner case).
   if (renderer_id_to_child_id_map_[renderer_id] == child_id)
