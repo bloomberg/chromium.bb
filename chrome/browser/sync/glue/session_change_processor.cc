@@ -286,7 +286,7 @@ void SessionChangeProcessor::StartObserving() {
       NotificationService::AllSources());
   notification_registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      NotificationService::AllSources());
+      NotificationService::AllBrowserContextsAndSources());
 }
 
 void SessionChangeProcessor::StopObserving() {

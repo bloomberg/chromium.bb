@@ -52,7 +52,7 @@ LocaleChangeGuard::~LocaleChangeGuard() {}
 
 void LocaleChangeGuard::OnLogin() {
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
@@ -84,10 +84,12 @@ void LocaleChangeGuard::Observe(int type,
   }
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      // We need to perform locale change check only once, so unsubscribe.
-      registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                        NotificationService::AllSources());
-      Check();
+      if (profile_ == Source<TabContents>(source)->browser_context()) {
+        // We need to perform locale change check only once, so unsubscribe.
+        registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                          NotificationService::AllSources());
+        Check();
+      }
       break;
     }
     case chrome::NOTIFICATION_OWNERSHIP_CHECKED: {
