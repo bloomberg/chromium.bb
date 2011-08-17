@@ -94,6 +94,13 @@ std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
 const InputMethodDescriptor* GetInputMethodDescriptorFromId(
     const std::string& input_method_id);
 
+// Converts an XKB layout ID to an input method descriptor. Returns NULL when
+// |xkb_id| is unknown.
+// Example: "us(dvorak)" => { id: "xkb:us:dvorak:eng", display_name: "US Dv..",
+//                        keyboard_layout: "us(dvorak)", language_code: "eng" }
+const InputMethodDescriptor* GetInputMethodDescriptorFromXkbId(
+    const std::string& xkb_id);
+
 // Converts a language code to a language display name, using the
 // current application locale. MaybeRewriteLanguageName() is called
 // internally.

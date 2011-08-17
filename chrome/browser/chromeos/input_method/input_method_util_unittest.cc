@@ -148,6 +148,17 @@ TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   EXPECT_EQ("zh-CN", descriptor->language_code());
 }
 
+TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromXkbId) {
+  EXPECT_EQ(NULL, GetInputMethodDescriptorFromXkbId("non_existent"));
+
+  const InputMethodDescriptor* descriptor =
+      GetInputMethodDescriptorFromXkbId("us(dvorak)");
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  EXPECT_EQ("xkb:us:dvorak:eng", descriptor->id());
+  EXPECT_EQ("us(dvorak)", descriptor->keyboard_layout());
+  EXPECT_EQ("eng", descriptor->language_code());
+}
+
 TEST_F(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
   EXPECT_EQ(UTF8ToUTF16("suomi"), GetLanguageNativeDisplayNameFromCode("fi"));
 }

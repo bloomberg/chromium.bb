@@ -38,11 +38,14 @@ typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 // Map from input method ID to associated input method descriptor.
 typedef std::map<std::string, InputMethodDescriptor>
     InputMethodIdToDescriptorMap;
+// Map from XKB layout ID to associated input method descriptor.
+typedef std::map<std::string, InputMethodDescriptor> XkbIdToDescriptorMap;
 
 struct IdMaps {
   scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
   scoped_ptr<InputMethodIdToDescriptorMap> id_to_descriptor;
+  scoped_ptr<XkbIdToDescriptorMap> xkb_id_to_descriptor;
 
   // Returns the singleton instance.
   static IdMaps* GetInstance() {
@@ -61,6 +64,7 @@ struct IdMaps {
     language_code_to_ids->clear();
     id_to_language_code->clear();
     id_to_descriptor->clear();
+    xkb_id_to_descriptor->clear();
 
     for (size_t i = 0; i < supported_input_methods->size(); ++i) {
       const InputMethodDescriptor& input_method =
@@ -74,6 +78,10 @@ struct IdMaps {
           std::make_pair(input_method.id(), language_code));
       id_to_descriptor->insert(
           std::make_pair(input_method.id(), input_method));
+      if (IsKeyboardLayout(input_method.id())) {
+        xkb_id_to_descriptor->insert(
+            std::make_pair(input_method.keyboard_layout(), input_method));
+      }
     }
 
     // Go through the languages listed in kExtraLanguages.
@@ -95,7 +103,8 @@ struct IdMaps {
  private:
   IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
              id_to_language_code(new std::map<std::string, std::string>),
-             id_to_descriptor(new InputMethodIdToDescriptorMap) {
+             id_to_descriptor(new InputMethodIdToDescriptorMap),
+             xkb_id_to_descriptor(new XkbIdToDescriptorMap) {
     ReloadMaps();
   }
 
@@ -515,6 +524,14 @@ const InputMethodDescriptor* GetInputMethodDescriptorFromId(
   InputMethodIdToDescriptorMap::const_iterator iter
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
+      NULL : &(iter->second);
+}
+
+const InputMethodDescriptor* GetInputMethodDescriptorFromXkbId(
+    const std::string& xkb_id) {
+  InputMethodIdToDescriptorMap::const_iterator iter
+      = IdMaps::GetInstance()->xkb_id_to_descriptor->find(xkb_id);
+  return (iter == IdMaps::GetInstance()->xkb_id_to_descriptor->end()) ?
       NULL : &(iter->second);
 }
 
