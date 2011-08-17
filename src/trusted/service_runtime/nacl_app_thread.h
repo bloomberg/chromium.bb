@@ -143,6 +143,8 @@ struct NaClAppThread {
   int dynamic_delete_generation;
 };
 
+void NaClAppThreadTeardown(struct NaClAppThread *natp);
+
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       uintptr_t             entry,

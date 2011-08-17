@@ -58,7 +58,7 @@
 {
    exit_status1
    ThreadSanitizer:Race
-   fun:NaClSysCommonThreadSuicide
+   fun:NaClAppThreadTeardown
    fun:NaClCommonSysThreadExit
    fun:NaClSysThread_Exit
    fun:NaClSysThread_ExitDecoder

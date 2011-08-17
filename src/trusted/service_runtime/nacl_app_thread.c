@@ -8,6 +8,7 @@
  * NaCl Server Runtime user thread state.
  */
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 
@@ -62,6 +63,69 @@ void WINAPI NaClThreadLauncher(void *state) {
 
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
 }
+
+
+/*
+ * natp should be thread_self(), called while holding no locks.
+ */
+void NaClAppThreadTeardown(struct NaClAppThread *natp) {
+  struct NaClApp  *nap;
+  size_t          thread_idx;
+  int             process_exit_status;
+
+  /*
+   * mark this thread as dead; doesn't matter if some other thread is
+   * asking us to commit suicide.
+   */
+  NaClLog(3, "NaClAppThreadTeardown(0x%08"NACL_PRIxPTR")\n",
+          (uintptr_t) natp);
+  nap = natp->nap;
+  NaClLog(3, " getting thread table lock\n");
+  NaClXMutexLock(&nap->threads_mu);
+  NaClLog(3, " getting thread lock\n");
+  NaClXMutexLock(&natp->mu);
+  natp->state = NACL_APP_THREAD_DEAD;
+  /*
+   * Remove ourselves from the ldt-indexed global tables.  The ldt
+   * entry is released as part of NaClAppThreadDtor (via
+   * NaClAppThreadDecRef), and if another thread is immediately
+   * created (from some other running thread) we want to be sure that
+   * any ldt-based lookups will not reach this dying thread's data.
+   */
+  thread_idx = NaClGetThreadIdx(natp);
+  nacl_sys[thread_idx] = NULL;
+  nacl_user[thread_idx] = NULL;
+  nacl_thread[thread_idx] = NULL;
+  NaClLog(3, " removing thread from thread table\n");
+  NaClRemoveThreadMu(nap, natp->thread_num);
+  NaClLog(3, " unlocking thread\n");
+  NaClXMutexUnlock(&natp->mu);
+  NaClLog(3, " announcing thread count change\n");
+  NaClXCondVarBroadcast(&nap->threads_cv);
+  NaClLog(3, " unlocking thread table\n");
+  NaClXMutexUnlock(&nap->threads_mu);
+  NaClLog(3, " freeing thread object\n");
+  NaClAppThreadDtor(natp);
+  NaClLog(3, " NaClThreadExit\n");
+
+  NaClXMutexLock(&nap->mu);
+  process_exit_status = nap->exit_status;
+  NaClXMutexUnlock(&nap->mu);
+  /*
+   * There appears to be a race on Windows where the process can sometimes
+   * return a thread exit status instead of the process exit status when
+   * they occur near simultaneously on two separate threads.  Since this is
+   * non-deterministic, we always exit a thread with the current value of the
+   * process exit status to mitigate the possibility of exiting with an
+   * incorrect value.  See BUG= nacl1715
+   */
+  NaClThreadExit(process_exit_status);
+  /* should not return */
+  NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
+  NaClAbort();
+  /* NOTREACHED */
+}
+
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,

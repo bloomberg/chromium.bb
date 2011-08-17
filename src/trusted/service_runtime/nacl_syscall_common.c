@@ -68,67 +68,6 @@ static INLINE size_t  size_min(size_t a, size_t b) {
 
 static int const kKnownInvalidDescNumber = -1;
 
-/*
- * natp should be thread_self(), called while holding no locks.
- */
-void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
-  struct NaClApp  *nap;
-  size_t          thread_idx;
-  int             process_exit_status;
-
-  /*
-   * mark this thread as dead; doesn't matter if some other thread is
-   * asking us to commit suicide.
-   */
-  NaClLog(3, "NaClSysCommonThreadSuicide(0x%08"NACL_PRIxPTR")\n",
-          (uintptr_t) natp);
-  nap = natp->nap;
-  NaClLog(3, " getting thread table lock\n");
-  NaClXMutexLock(&nap->threads_mu);
-  NaClLog(3, " getting thread lock\n");
-  NaClXMutexLock(&natp->mu);
-  natp->state = NACL_APP_THREAD_DEAD;
-  /*
-   * Remove ourselves from the ldt-indexed global tables.  The ldt
-   * entry is released as part of NaClAppThreadDtor (via
-   * NaClAppThreadDecRef), and if another thread is immediately
-   * created (from some other running thread) we want to be sure that
-   * any ldt-based lookups will not reach this dying thread's data.
-   */
-  thread_idx = NaClGetThreadIdx(natp);
-  nacl_sys[thread_idx] = NULL;
-  nacl_user[thread_idx] = NULL;
-  nacl_thread[thread_idx] = NULL;
-  NaClLog(3, " removing thread from thread table\n");
-  NaClRemoveThreadMu(nap, natp->thread_num);
-  NaClLog(3, " unlocking thread\n");
-  NaClXMutexUnlock(&natp->mu);
-  NaClLog(3, " announcing thread count change\n");
-  NaClXCondVarBroadcast(&nap->threads_cv);
-  NaClLog(3, " unlocking thread table\n");
-  NaClXMutexUnlock(&nap->threads_mu);
-  NaClLog(3, " freeing thread object\n");
-  NaClAppThreadDtor(natp);
-  NaClLog(3, " NaClThreadExit\n");
-
-  NaClXMutexLock(&nap->mu);
-  process_exit_status = nap->exit_status;
-  NaClXMutexUnlock(&nap->mu);
-  /*
-   * There appears to be a race on Windows where the process can sometimes
-   * return a thread exit status instead of the process exit status when
-   * they occur near simultaneously on two separate threads.  Since this is
-   * non-deterministic, we always exit a thread with the current value of the
-   * process exit status to mitigate the possibility of exiting with an
-   * incorrect value.  See BUG= nacl1715
-   */
-  NaClThreadExit(process_exit_status);
-  /* should not return */
-  NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
-  NaClAbort();
-  /* NOTREACHED */
-}
-
 void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp) {
   NaClLog(4, "NaClSysCommonThreadSyscallEnter: locking 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) &natp->mu);
@@ -148,7 +87,7 @@ void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp) {
       break;
     case NACL_APP_THREAD_SUICIDE_PENDING:
       NaClXMutexUnlock(&natp->mu);
-      NaClSysCommonThreadSuicide(natp);
+      NaClAppThreadTeardown(natp);
       /* NOTREACHED */
       break;
     case NACL_APP_THREAD_DEAD:
@@ -404,7 +343,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
   NaClXCondVarSignal(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
 
-  NaClSysCommonThreadSuicide(natp);
+  NaClAppThreadTeardown(natp);
   /* NOTREACHED */
   return -NACL_ABI_EINVAL;
 }
@@ -446,7 +385,7 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
     }
   }
 
-  NaClSysCommonThreadSuicide(natp);
+  NaClAppThreadTeardown(natp);
   /* NOTREACHED */
   return -NACL_ABI_EINVAL;
 }
