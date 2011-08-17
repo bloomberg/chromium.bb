@@ -66,6 +66,7 @@ struct wlsc_output {
 	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
 	struct wlsc_matrix matrix;
+	struct wl_list frame_callback_list;
 	int32_t x, y, mm_width, mm_height;
 	pixman_region32_t region;
 	pixman_region32_t previous_damage;

@@ -897,26 +897,31 @@ wlsc_output_repaint(struct wlsc_output *output)
 		fade_output(output, ec->fade.spring.current, &total_damage);
 }
 
+struct wlsc_frame_callback {
+	struct wl_resource resource;
+	struct wl_client *client;
+	struct wl_list link;
+};
+
 static void
 repaint(void *data, int msecs)
 {
 	struct wlsc_output *output = data;
 	struct wlsc_compositor *compositor = output->compositor;
-	struct wlsc_surface *es;
 	struct wlsc_animation *animation, *next;
+	struct wlsc_frame_callback *cb, *cnext;
 
 	wlsc_output_repaint(output);
 	output->repaint_needed = 0;
 	output->repaint_scheduled = 1;
 	output->present(output);
 
-	/* FIXME: Keep the surfaces in an per-output list. */
-	wl_list_for_each(es, &compositor->surface_list, link) {
-		if (es->output == output) {
-			wl_display_post_frame(compositor->wl_display,
-					      &es->surface, msecs);
-		}
+	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
+		wl_client_post_event(cb->client, &cb->resource.object, 
+				     WL_CALLBACK_DONE, msecs);
+		wl_resource_destroy(&cb->resource, cb->client, 0);
 	}
+	wl_list_init(&output->frame_callback_list);
 
 	wl_list_for_each_safe(animation, next,
 			      &compositor->animation_list, link)
@@ -1052,10 +1057,39 @@ surface_damage(struct wl_client *client,
 	wlsc_surface_damage_rectangle(es, x, y, width, height);
 }
 
+static void
+destroy_frame_callback(struct wl_resource *resource, struct wl_client *client)
+{
+	free(resource);
+}
+
+static void
+surface_frame(struct wl_client *client,
+	      struct wl_surface *surface, uint32_t callback)
+{
+	struct wlsc_frame_callback *cb;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+
+	cb = malloc(sizeof *cb);
+	if (cb == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+		
+	cb->resource.object.interface = &wl_callback_interface;
+	cb->resource.object.id = callback;
+	cb->resource.destroy = destroy_frame_callback;
+	wl_list_insert(es->output->frame_callback_list.prev, &cb->link);
+	cb->client = client;
+
+	wl_client_add_resource(client, &cb->resource);
+}
+
 const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
-	surface_damage
+	surface_damage,
+	surface_frame
 };
 
 static void
@@ -1820,6 +1854,7 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->scanout_buffer_destroy_listener.func =
 		output_handle_scanout_buffer_destroy;
 	wl_list_init(&output->scanout_buffer_destroy_listener.link);
+	wl_list_init(&output->frame_callback_list);
 
 	output->object.interface = &wl_output_interface;
 	wl_display_add_object(c->wl_display, &output->object);

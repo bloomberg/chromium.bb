@@ -112,8 +112,10 @@ create_window(struct display *display, int width, int height)
 	return window;
 }
 
+static const struct wl_callback_listener frame_listener;
+
 static void
-redraw(struct wl_surface *surface, void *data, uint32_t time)
+redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 	uint32_t *p;
@@ -130,10 +132,16 @@ redraw(struct wl_surface *surface, void *data, uint32_t time)
 	wl_surface_damage(window->surface,
 			  0, 0, window->width, window->height);
 
-	wl_display_frame_callback(window->display->display,
-				  window->surface,
-				  redraw, window);
+	if (callback)
+		wl_callback_destroy(callback);
+
+	callback = wl_surface_frame(window->surface);
+	wl_callback_add_listener(callback, &frame_listener, window);
 }
+
+static const struct wl_callback_listener frame_listener = {
+	redraw
+};
 
 static void
 compositor_handle_visual(void *data,
@@ -180,19 +188,10 @@ event_mask_update(uint32_t mask, void *data)
 	return 0;
 }
 
-static void
-sync_callback(void *data)
-{
-	int *done = data;
-
-	*done = 1;
-}
-
 static struct display *
 create_display(void)
 {
 	struct display *display;
-	int done;
 
 	display = malloc(sizeof *display);
 	display->display = wl_display_connect(NULL);
@@ -204,9 +203,8 @@ create_display(void)
 
 	wl_display_get_fd(display->display, event_mask_update, display);
 	
-	wl_display_sync_callback(display->display, sync_callback, &done);
 	while (!display->xrgb_visual)
-		wl_display_iterate(display->display, display->mask);
+		wl_display_roundtrip(display->display);
 
 	return display;
 }
@@ -220,7 +218,7 @@ main(int argc, char **argv)
 	display = create_display();
 	window = create_window(display, 250, 250);
 
-	redraw(window->surface, window, 0);
+	redraw(window, NULL, 0);
 
 	while (true)
 		wl_display_iterate(display->display, display->mask);

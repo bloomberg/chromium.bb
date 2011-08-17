@@ -1887,25 +1887,6 @@ init_egl(struct display *d)
 	return 0;
 }
 
-static void
-sync_callback(void *data)
-{
-	int *done = data;
-
-	*done = 1;
-}
-
-static void
-force_roundtrip(struct display *d)
-{
-	int done = 0;
-
-	wl_display_sync_callback(d->display, sync_callback, &done);
-	wl_display_iterate(d->display, WL_DISPLAY_WRITABLE);
-	while (!done)
-		wl_display_iterate(d->display, WL_DISPLAY_READABLE);
-}
-
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
 	       display_global_handler_t handler)
@@ -1966,7 +1947,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
 	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
 	if (!d->premultiplied_argb_visual || !d->rgb_visual) {
-		force_roundtrip(d);
+		wl_display_roundtrip(d->display);
 		if (!d->premultiplied_argb_visual || !d->rgb_visual) {
 			fprintf(stderr, "failed to retreive visuals\n");
 			return NULL;

@@ -190,14 +190,6 @@ init_gl(struct window *window)
 }
 
 static void
-sync_callback(void *data)
-{
-	int *done = data;
-
-	*done = 1;
-}
-
-static void
 create_surface(struct window *window)
 {
 	struct display *display = window->display;
@@ -205,14 +197,11 @@ create_surface(struct window *window)
 	EGLBoolean ret;
 	int done = 0;
 	
+	if (!display->premultiplied_argb_visual)
+		wl_display_roundtrip(display->display);
 	if (!display->premultiplied_argb_visual) {
-		wl_display_sync_callback(display->display, sync_callback, &done);
-		while (!done)
-			wl_display_iterate(display->display, display->mask);
-		if (!display->premultiplied_argb_visual) {
-			fprintf(stderr, "premultiplied argb visual missing\n");
-			exit(1);
-		}
+		fprintf(stderr, "premultiplied argb visual missing\n");
+		exit(1);
 	}
 
 	window->surface = wl_compositor_create_surface(display->compositor);
@@ -235,8 +224,10 @@ create_surface(struct window *window)
 	assert(ret == EGL_TRUE);
 }
 
+static const struct wl_callback_listener frame_listener;
+
 static void
-redraw(struct wl_surface *surface, void *data, uint32_t time)
+redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 	static const GLfloat verts[3][2] = {
@@ -287,10 +278,16 @@ redraw(struct wl_surface *surface, void *data, uint32_t time)
 	glFlush();
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
-	wl_display_frame_callback(window->display->display,
-				  window->surface,
-				  redraw, window);
+	if (callback)
+		wl_callback_destroy(callback);
+
+	callback = wl_surface_frame(window->surface);
+	wl_callback_add_listener(callback, &frame_listener, window);
 }
+
+static const struct wl_callback_listener frame_listener = {
+	redraw
+};
 
 static void
 compositor_handle_visual(void *data,
@@ -356,12 +353,13 @@ main(int argc, char **argv)
 				       display_handle_global, &display);
 
 	wl_display_get_fd(display.display, event_mask_update, &display);
+	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
 
 	init_egl(&display);
 	create_surface(&window);
 	init_gl(&window);
 
-	redraw(window.surface, &window, 0);
+	redraw(&window, NULL, 0);
 
 	while (true)
 		wl_display_iterate(display.display, display.mask);

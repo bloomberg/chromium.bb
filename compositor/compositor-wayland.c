@@ -157,14 +157,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 	return 0;
 }
 
-static void
-frame_callback(struct wl_surface *surface, void *data, uint32_t time)
-{
-	struct wlsc_output *output = data;
-
-	wlsc_output_finish_frame(output, time);
-}
-
 static int
 wayland_output_prepare_render(struct wlsc_output *output_base)
 {
@@ -180,20 +172,32 @@ wayland_output_prepare_render(struct wlsc_output *output_base)
 	return 0;
 }
 
+static void
+frame_done(void *data, struct wl_callback *wl_callback, uint32_t time)
+{
+	struct wlsc_output *output = data;
+
+	wlsc_output_finish_frame(output, time);
+}
+
+static const struct wl_callback_listener frame_listener = {
+	frame_done
+};
+
 static int
 wayland_output_present(struct wlsc_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
 	struct wayland_compositor *c =
 		(struct wayland_compositor *) output->base.compositor;
+	struct wl_callback *callback;
 
 	if (wayland_output_prepare_render(&output->base))
 		return -1;
 
 	eglSwapBuffers(c->base.display, output->egl_surface);
-	wl_display_frame_callback(c->parent.display,
-				  output->parent.surface,
-				  frame_callback, &output->base);
+	callback = wl_surface_frame(output->parent.surface);
+	wl_callback_add_listener(callback, &frame_listener, output);
 
 	return 0;
 }
