@@ -8,7 +8,12 @@
 
 using webkit_glue::PasswordForm;
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, DISABLED_Sanity) {
+#else
 IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, Sanity) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);

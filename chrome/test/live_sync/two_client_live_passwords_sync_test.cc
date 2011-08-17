@@ -13,7 +13,12 @@ using webkit_glue::PasswordForm;
 static const char* kValidPassphrase = "passphrase!";
 
 // TCM ID - 3732277
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_Add) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -27,7 +32,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_Race) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -43,7 +53,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
 }
 
 // TCM ID - 4577932.
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       DISABLED_DisablePasswords) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisablePasswords) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -65,7 +81,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisablePasswords) {
 }
 
 // TCM ID - 4649281.
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_DisableSync) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisableSync) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -86,7 +107,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DisableSync) {
   ASSERT_EQ(1, GetPasswordCount(1));
 }
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       DISABLED_SetPassphrase) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
@@ -98,8 +125,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase."));
 }
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       DISABLED_SetPassphraseAndAddPassword) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
@@ -118,7 +151,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
 }
 
 // TCM ID - 4603879
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_Update) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Update) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -137,7 +175,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Update) {
 }
 
 // TCM ID - 3719309
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_Delete) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Delete) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -158,7 +201,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Delete) {
 }
 
 // TCM ID - 7573511
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_DeleteAll) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DeleteAll) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
@@ -200,8 +248,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FLAKY_Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       DISABLED_SetPassphraseAndThenSetupSync) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseAndThenSetupSync) {
+#endif
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -223,8 +277,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
+// TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       DISABLED_SetPassphraseTwice) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseTwice) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetPassphrase(0, kValidPassphrase, true);
