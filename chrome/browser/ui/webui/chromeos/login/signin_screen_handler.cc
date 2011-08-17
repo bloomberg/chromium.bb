@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -195,7 +196,15 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   // Show sign in screen as soon as we clear the cookie jar.
   DictionaryValue params;
   params.SetString("email", email_);
-  params.SetString("startUrl", kGaiaExtStartPage);
+
+  std::string url = kGaiaExtStartPage;
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  if (!app_locale.empty()) {
+    url.append("?hl=");
+    url.append(app_locale);
+  }
+  params.SetString("startUrl", url);
+
   params.SetBoolean("createAccount",
       UserCrosSettingsProvider::cached_allow_new_user());
   params.SetBoolean("guestSignin",
