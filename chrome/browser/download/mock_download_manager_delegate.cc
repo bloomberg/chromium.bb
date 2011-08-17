@@ -38,3 +38,6 @@ void MockDownloadManagerDelegate::ChooseSavePath(
     const FilePath& suggested_path,
     bool can_save_as_complete) {
 }
+
+void MockDownloadManagerDelegate::DownloadProgressUpdated() {
+}

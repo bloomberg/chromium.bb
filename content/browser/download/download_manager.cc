@@ -344,7 +344,7 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
            << " download = " << download->DebugString(true);
 
   in_progress_[download_id] = download;
-  UpdateAppIcon();  // Reflect entry into in_progress_.
+  UpdateDownloadProgress();  // Reflect entry into in_progress_.
 
   // Rename to intermediate name.
   FilePath download_path;
@@ -382,7 +382,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
     DownloadItem* download = it->second;
     if (download->IsInProgress()) {
       download->Update(size);
-      UpdateAppIcon();  // Reflect size updates.
+      UpdateDownloadProgress();  // Reflect size updates.
       download_history_->UpdateEntry(download);
     }
   }
@@ -504,7 +504,7 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
 
   // Remove the id from in_progress
   in_progress_.erase(download->id());
-  UpdateAppIcon();  // Reflect removal from in_progress_.
+  UpdateDownloadProgress();  // Reflect removal from in_progress_.
 
   download_history_->UpdateEntry(download);
 
@@ -563,7 +563,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
   if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
     in_progress_.erase(it);
     active_downloads_.erase(download_id);
-    UpdateAppIcon();  // Reflect removal from in_progress_.
+    UpdateDownloadProgress();  // Reflect removal from in_progress_.
     download_history_->UpdateEntry(download);
   }
 
@@ -607,7 +607,7 @@ void DownloadManager::OnDownloadError(int32 download_id,
   if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
     in_progress_.erase(download_id);
     active_downloads_.erase(download_id);
-    UpdateAppIcon();  // Reflect removal from in_progress_.
+    UpdateDownloadProgress();  // Reflect removal from in_progress_.
     download_history_->UpdateEntry(download);
   }
 
@@ -617,9 +617,8 @@ void DownloadManager::OnDownloadError(int32 download_id,
           file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
-void DownloadManager::UpdateAppIcon() {
-  if (status_updater_)
-    status_updater_->Update();
+void DownloadManager::UpdateDownloadProgress() {
+  delegate_->DownloadProgressUpdated();
 }
 
 int DownloadManager::RemoveDownloadItems(

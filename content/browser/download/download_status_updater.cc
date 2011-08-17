@@ -5,7 +5,6 @@
 #include "content/browser/download/download_status_updater.h"
 
 #include "base/logging.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/download/download_status_updater_delegate.h"
 
 DownloadStatusUpdater::DownloadStatusUpdater() {
@@ -17,26 +16,17 @@ DownloadStatusUpdater::~DownloadStatusUpdater() {
 void DownloadStatusUpdater::AddDelegate(
     DownloadStatusUpdaterDelegate* delegate) {
   delegates_.insert(delegate);
-  Update();
 }
 
 void DownloadStatusUpdater::RemoveDelegate(
     DownloadStatusUpdaterDelegate* delegate) {
   delegates_.erase(delegate);
-  Update();
 }
 
-void DownloadStatusUpdater::Update() {
-  float progress = 0;
-  bool progress_known = GetProgress(&progress);
-  download_util::UpdateAppIconDownloadProgress(
-      static_cast<int>(GetInProgressDownloadCount()),
-      progress_known,
-      progress);
-}
-
-bool DownloadStatusUpdater::GetProgress(float* progress) {
+bool DownloadStatusUpdater::GetProgress(float* progress,
+                                        int* download_count) {
   *progress = 0;
+  *download_count = GetInProgressDownloadCount();
 
   int64 received_bytes = 0;
   int64 total_bytes = 0;

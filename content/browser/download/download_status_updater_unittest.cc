@@ -82,9 +82,10 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
 TEST_F(DownloadStatusUpdaterTest, Basic) {
   float progress = -1;
-  EXPECT_TRUE(updater_.GetProgress(&progress));
+  int download_count = -1;
+  EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
   EXPECT_FLOAT_EQ(0, progress);
-  EXPECT_EQ(0, updater_.GetInProgressDownloadCount());
+  EXPECT_EQ(0, download_count);
 }
 
 TEST_F(DownloadStatusUpdaterTest, OneDelegate) {
@@ -92,9 +93,10 @@ TEST_F(DownloadStatusUpdaterTest, OneDelegate) {
 
   {
     float progress = -1;
-    EXPECT_TRUE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(0, progress);
-    EXPECT_EQ(0, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(0, download_count);
   }
 
   delegate.set_in_progress_download_count(1);
@@ -103,18 +105,20 @@ TEST_F(DownloadStatusUpdaterTest, OneDelegate) {
 
   {
     float progress = -1;
-    EXPECT_TRUE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(static_cast<float>(1) / 2, progress);
-    EXPECT_EQ(1, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(1, download_count);
   }
 
   delegate.set_is_download_progress_known(false);
 
   {
     float progress = -1;
-    EXPECT_FALSE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_FALSE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(0, progress);
-    EXPECT_EQ(1, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(1, download_count);
   }
 }
 
@@ -124,9 +128,10 @@ TEST_F(DownloadStatusUpdaterTest, MultipleDelegates) {
 
   {
     float progress = -1;
-    EXPECT_TRUE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(0, progress);
-    EXPECT_EQ(0, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(0, download_count);
   }
 
   delegate1->set_in_progress_download_count(1);
@@ -139,26 +144,29 @@ TEST_F(DownloadStatusUpdaterTest, MultipleDelegates) {
 
   {
     float progress = -1;
-    EXPECT_TRUE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(static_cast<float>(1) / 2, progress);
-    EXPECT_EQ(3, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(3, download_count);
   }
 
   delegate1->set_is_download_progress_known(false);
 
   {
     float progress = -1;
-    EXPECT_FALSE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_FALSE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(0, progress);
-    EXPECT_EQ(3, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(3, download_count);
   }
 
   delegate1.reset();
 
   {
     float progress = -1;
-    EXPECT_TRUE(updater_.GetProgress(&progress));
+    int download_count = -1;
+    EXPECT_TRUE(updater_.GetProgress(&progress, &download_count));
     EXPECT_FLOAT_EQ(static_cast<float>(1) / 3, progress);
-    EXPECT_EQ(2, updater_.GetInProgressDownloadCount());
+    EXPECT_EQ(2, download_count);
   }
 }

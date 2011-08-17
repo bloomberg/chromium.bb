@@ -322,8 +322,8 @@ class DownloadManager
   // An error occurred in the download.
   void OnDownloadError(int32 download_id, int64 size, int os_error);
 
-  // Updates the app icon about the overall download progress.
-  void UpdateAppIcon();
+  // Updates the delegate about the overall download progress.
+  void UpdateDownloadProgress();
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();

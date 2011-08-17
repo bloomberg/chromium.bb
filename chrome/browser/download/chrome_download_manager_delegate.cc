@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_picker.h"
 #include "chrome/browser/download/download_history.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_status_updater.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -130,6 +132,19 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
   // Deletes itself.
   new SavePackageFilePicker(
       save_package, suggested_path, can_save_as_complete);
+}
+
+void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {
+  if (!g_browser_process->download_status_updater())
+    return;
+
+  float progress = 0;
+  int download_count = 0;
+  bool progress_known =
+      g_browser_process->download_status_updater()->GetProgress(
+          &progress, &download_count);
+  download_util::UpdateAppIconDownloadProgress(
+      download_count, progress_known, progress);
 }
 
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(

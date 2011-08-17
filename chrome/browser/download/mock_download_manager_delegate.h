@@ -24,6 +24,7 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,
                               bool can_save_as_complete) OVERRIDE;
+  virtual void DownloadProgressUpdated() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_MANAGER_DELEGATE_H_

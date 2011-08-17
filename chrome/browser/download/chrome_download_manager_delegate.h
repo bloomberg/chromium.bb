@@ -34,6 +34,7 @@ class ChromeDownloadManagerDelegate
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,
                               bool can_save_as_complete) OVERRIDE;
+  virtual void DownloadProgressUpdated() OVERRIDE;
 
   void set_download_manager(DownloadManager* dm) { download_manager_ = dm; }
 

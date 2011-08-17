@@ -23,18 +23,12 @@ class DownloadStatusUpdater
   void AddDelegate(DownloadStatusUpdaterDelegate* delegate);
   void RemoveDelegate(DownloadStatusUpdaterDelegate* delegate);
 
-  // Updates the download status based on data from delegates.
-  void Update();
+  // If the progress is known (i.e. we know the final size of all downloads),
+  // returns true and puts a percentage (in range [0-1]) in |progress|. Also
+  // returns the number of current downloads in |download_count|.
+  bool GetProgress(float* progress, int* download_count);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DownloadStatusUpdaterTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(DownloadStatusUpdaterTest, OneDelegate);
-  FRIEND_TEST_ALL_PREFIXES(DownloadStatusUpdaterTest, MultipleDelegates);
-
-  // If the progress is known (i.e. we know the final size of all downloads),
-  // returns true and puts a percentage (in range [0-1]) in |progress|.
-  bool GetProgress(float* progress);
-
   // Returns the number of downloads that are in progress.
   int64 GetInProgressDownloadCount();
 

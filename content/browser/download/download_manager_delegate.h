@@ -47,6 +47,9 @@ class DownloadManagerDelegate {
                               const FilePath& suggested_path,
                               bool can_save_as_complete) = 0;
 
+  // Informs the delegate that the progress of downloads has changed.
+  virtual void DownloadProgressUpdated() = 0;
+
  protected:
   DownloadManagerDelegate() {}
   virtual ~DownloadManagerDelegate() {}
