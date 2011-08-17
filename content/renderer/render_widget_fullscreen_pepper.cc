@@ -38,8 +38,7 @@ class PepperWidget : public WebWidget {
   PepperWidget(webkit::ppapi::PluginInstance* plugin,
                RenderWidgetFullscreenPepper* widget)
       : plugin_(plugin),
-        widget_(widget),
-        cursor_(WebCursorInfo::TypePointer) {
+        widget_(widget) {
   }
 
   virtual ~PepperWidget() {}
@@ -97,7 +96,10 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool handleInputEvent(const WebInputEvent& event) {
-    bool result = plugin_->HandleInputEvent(event, &cursor_);
+    // This cursor info is ignored, we always set the cursor directly from
+    // RenderWidgetFullscreenPepper::DidChangeCursor.
+    WebCursorInfo cursor;
+    bool result = plugin_->HandleInputEvent(event, &cursor);
 
     // For normal web pages, WebViewImpl does input event translations and
     // generates context menu events. Since we don't have a WebView, we need to
@@ -126,7 +128,7 @@ class PepperWidget : public WebWidget {
       if (send_context_menu_event) {
         WebMouseEvent context_menu_event(mouse_event);
         context_menu_event.type = WebInputEvent::ContextMenu;
-        plugin_->HandleInputEvent(context_menu_event, &cursor_);
+        plugin_->HandleInputEvent(context_menu_event, &cursor);
       }
     }
     return result;
@@ -188,7 +190,6 @@ class PepperWidget : public WebWidget {
   scoped_refptr<webkit::ppapi::PluginInstance> plugin_;
   RenderWidgetFullscreenPepper* widget_;
   WebSize size_;
-  WebCursorInfo cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
@@ -260,6 +261,11 @@ void RenderWidgetFullscreenPepper::Destroy() {
   // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
   plugin_ = NULL;
   Send(new ViewHostMsg_Close(routing_id_));
+}
+
+void RenderWidgetFullscreenPepper::DidChangeCursor(
+    const WebKit::WebCursorInfo& cursor) {
+  didChangeCursor(cursor);
 }
 
 webkit::ppapi::PluginDelegate::PlatformContext3D*

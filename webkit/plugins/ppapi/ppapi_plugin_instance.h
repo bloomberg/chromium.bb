@@ -343,6 +343,8 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                        int num_ranges,
                        WebKit::WebCanvas* canvas);
 
+  void DoSetCursor(WebKit::WebCursorInfo* cursor);
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;

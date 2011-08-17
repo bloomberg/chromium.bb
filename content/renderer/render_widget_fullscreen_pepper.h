@@ -35,6 +35,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual void InvalidateRect(const WebKit::WebRect& rect);
   virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect);
   virtual void Destroy();
+  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor);
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D* CreateContext3D();
 
   RendererGLContext* context() const { return context_; }

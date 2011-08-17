@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace WebKit {
+struct WebCursorInfo;
 struct WebRect;
 }  // namespace WebKit
 
@@ -32,6 +33,9 @@ class FullscreenContainer {
   // Destroys the fullscreen window. This also destroys the FullscreenContainer
   // instance.
   virtual void Destroy() = 0;
+
+  // Notifies the container that the mouse cursor has changed.
+  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) = 0;
 
   virtual PluginDelegate::PlatformContext3D* CreateContext3D() = 0;
 };

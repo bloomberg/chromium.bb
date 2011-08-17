@@ -359,7 +359,7 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type,
                                PP_Resource custom_image,
                                const PP_Point* hot_spot) {
   if (type != PP_CURSORTYPE_CUSTOM) {
-    cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+    DoSetCursor(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
     return true;
   }
 
@@ -402,7 +402,7 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type,
   return false;
 #endif
 
-  cursor_.reset(custom_cursor.release());
+  DoSetCursor(custom_cursor.release());
   return true;
 }
 
@@ -1543,6 +1543,12 @@ void PluginInstance::PostMessage(PP_Instance instance, PP_Var message) {
 
 void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {
   delegate()->SubscribeToPolicyUpdates(this);
+}
+
+void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
+  cursor_.reset(cursor);
+  if (fullscreen_container_)
+    fullscreen_container_->DidChangeCursor(*cursor);
 }
 
 }  // namespace ppapi
