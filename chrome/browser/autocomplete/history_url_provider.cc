@@ -653,6 +653,15 @@ bool HistoryURLProvider::FixupExactSuggestion(
   DCHECK(match != NULL);
   DCHECK(matches != NULL);
 
+  // Detect email addresses.  These cases will look like "http://user@site/",
+  // and because the history backend strips auth creds, we'll get a bogus exact
+  // match below if the user has visited "site".
+  if ((input.type() == AutocompleteInput::UNKNOWN) &&
+      input.parts().username.is_nonempty() &&
+      !input.parts().password.is_nonempty() &&
+      !input.parts().path.is_nonempty())
+    return false;
+
   // Tricky corner case: The user has visited intranet site "foo", but not
   // internet site "www.foo.com".  He types in foo (getting an exact match),
   // then tries to hit ctrl-enter.  When pressing ctrl, the what-you-typed

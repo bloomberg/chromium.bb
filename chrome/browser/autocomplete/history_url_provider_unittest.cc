@@ -506,3 +506,8 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
   for (size_t i = 0; i < matches_.size(); ++i)
     EXPECT_EQ(string16::npos, matches_[i].inline_autocomplete_offset);
 }
+
+TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
+  // Visiting foo.com should not make this string be treated as a navigation.
+  RunTest(ASCIIToUTF16("user@foo.com"), string16(), false, NULL, 0);
+}
