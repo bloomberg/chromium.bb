@@ -336,6 +336,21 @@ class EnterpriseTest(pyauto.PyUITest):
     self.assertRaises(pyauto.JSONInterfaceError,
                lambda: self.SetPrefs(pyauto.kManagedDefaultPopupsSetting, 1))
 
+  def testTranslateEnabled(self):
+    """Verify that translate happens if policy enables it."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
+    url = self.GetFileURLForDataPath('translate', 'es', 'google.html')
+    self.NavigateToURL(url)
+    self.assertTrue(self.WaitForInfobarCount(1))
+    translate_info = self.GetTranslateInfo()
+    self.assertEqual('es', translate_info['original_language'])
+    self.assertFalse(translate_info['page_translated'])
+    self.assertTrue(translate_info['can_translate_page'])
+    self.assertTrue('translate_bar' in translate_info)
+    self._CheckIfPrefCanBeModified(pyauto.kEnableTranslate, True, False)
+
 class EnterpriseTestReverse(pyauto.PyUITest):
   """Test for the Enterprise features that uses the opposite values of the
   policies used by above test class 'EnterpriseTest'.
@@ -607,6 +622,16 @@ class EnterpriseTestReverse(pyauto.PyUITest):
                      msg='Popup could not be launched');
     self.assertRaises(pyauto.JSONInterfaceError,
                lambda: self.SetPrefs(pyauto.kManagedDefaultPopupsSetting, 2))
+
+  def testTranslateDisabled(self):
+    """Verify that translate does not happen if policy disables it."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
+    url = self.GetFileURLForDataPath('translate', 'es', 'google.html')
+    self.NavigateToURL(url)
+    self.assertFalse(self.WaitForInfobarCount(1))
+    self._CheckIfPrefCanBeModified(pyauto.kEnableTranslate, False, True)
 
 
 if __name__ == '__main__':
