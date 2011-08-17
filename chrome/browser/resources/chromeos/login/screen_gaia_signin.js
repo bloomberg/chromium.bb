@@ -126,8 +126,9 @@ cr.define('login', function() {
      * @param {boolean} takeFocus True to take focus.
      */
     reset: function(takeFocus) {
-      // Reload and show the sign-in UI.
-      Oobe.showSigninUI();
+      // Reload and show the sign-in UI if needed.
+      if (takeFocus)
+        Oobe.showSigninUI();
     }
   };
 
