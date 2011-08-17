@@ -152,6 +152,8 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
   ASSERT_EQ("http://fooxxutf-8ya/", result.spec());
 }
 
+// Test that setting the prepopulate ID from TemplateURL causes the stored
+// TemplateURLRef to handle parsing the URL parameters differently.
 TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   TemplateURL t_url;
   t_url.SetURL("http://foo{fhqwhgads}", 0, 0);
