@@ -4,7 +4,7 @@ vars = {
   "googlecode_url": "http://%s.googlecode.com/svn",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "93165",
+  "webkit_revision": "93174",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
@@ -179,14 +179,14 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/workers@" +
     Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/fast/events@" +
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/fast/events":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/fast/events@" +
     Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/http/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/http/tests/workers@" +
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/http/tests/workers":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/http/tests/workers@" +
     Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-mac/storage/domstorage":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-mac/storage/domstorage@" +
+  "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-cg-mac/storage/domstorage":
+    Var("webkit_trunk") + "/LayoutTests/platform/chromium-cg-mac/storage/domstorage@" +
     Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/events@" +
