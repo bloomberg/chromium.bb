@@ -1055,7 +1055,18 @@ class TestDialog : public DialogDelegate, public ButtonListener {
         last_pressed_button_(NULL),
         mock_menu_model_(mock_menu_model),
         canceled_(false),
-        oked_(false) {
+        oked_(false),
+        closeable_(false),
+        widget_(NULL) {
+  }
+
+  void TearDown() {
+    // Now we can close safely.
+    closeable_ = true;
+    widget_->Close();
+    widget_ = NULL;
+    // delegate has to be alive while shutting down.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
   // DialogDelegate implementation:
@@ -1082,11 +1093,11 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   // buttons to our heart's content).
   virtual bool Cancel() OVERRIDE {
     canceled_ = true;
-    return false;
+    return closeable_;
   }
   virtual bool Accept() OVERRIDE {
     oked_ = true;
-    return false;
+    return closeable_;
   }
 
   virtual Widget* GetWidget() OVERRIDE {
@@ -1128,6 +1139,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
 
   bool canceled_;
   bool oked_;
+  bool closeable_;
   Widget* widget_;
 };
 
@@ -1148,7 +1160,7 @@ class DefaultButtonTest : public ViewTest {
         cancel_button_(NULL) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     test_dialog_ = new TestDialog(NULL);
     Widget* window =
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
@@ -1160,6 +1172,11 @@ class DefaultButtonTest : public ViewTest {
         static_cast<DialogClientView*>(window->client_view());
     ok_button_ = client_view_->ok_button();
     cancel_button_ = client_view_->cancel_button();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    test_dialog_->TearDown();
+    ViewTest::TearDown();
   }
 
   void SimulatePressingEnterAndCheckDefaultButton(ButtonID button_id) {
@@ -1253,7 +1270,7 @@ class ButtonDropDownTest : public ViewTest {
         button_as_view_(NULL) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     test_dialog_ = new TestDialog(&mock_menu_model_);
     Widget* window =
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
@@ -1263,6 +1280,11 @@ class ButtonDropDownTest : public ViewTest {
     // We have to cast the button back into a View in order to invoke it's
     // OnMouseReleased method.
     button_as_view_ = static_cast<View*>(test_dialog_->button_drop_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    test_dialog_->TearDown();
+    ViewTest::TearDown();
   }
 
   TestDialog* test_dialog_;
