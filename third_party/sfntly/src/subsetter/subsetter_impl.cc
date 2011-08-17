@@ -173,6 +173,7 @@ bool SubsetterImpl::HasName(const char* font_name, Font* font) {
                                      name_table->NameId(i));
         UChar* name_part = name_table->Name(i);
         ConstructName(name_part, &(names[hash_code]), name_table->NameId(i));
+        delete[] name_part;
         break;
       }
       default:
