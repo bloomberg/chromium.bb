@@ -242,8 +242,10 @@ bool ConvertToAutofillFieldType(const AutofillField& field,
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-exp")) {
-    // TODO(isherman): Choose variant based on HTML5 validation regex.
-    *autofill_type = CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
+    if (field.max_length == 5)
+      *autofill_type = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    else
+      *autofill_type = CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
     return true;
   }
 
