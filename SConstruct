@@ -2673,7 +2673,6 @@ irt_variant_tests = [
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
-    'tests/imc_sockets/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',
@@ -2711,9 +2710,7 @@ irt_variant_tests = [
     'tests/time/nacl.scons',
     'tests/tls/nacl.scons',
     'tests/toolchain/nacl.scons',
-    'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
-    'tests/unittests/shared/srpc/nacl.scons',
     'tests/untrusted_check/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
@@ -2728,6 +2725,7 @@ nonvariant_tests = [
     'tests/chrome_extension/nacl.scons',
     'tests/earth/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
+    'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/minnacl/nacl.scons',
@@ -2773,6 +2771,8 @@ nonvariant_tests = [
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
+    'tests/unittests/shared/imc/nacl.scons',
+    'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
 
