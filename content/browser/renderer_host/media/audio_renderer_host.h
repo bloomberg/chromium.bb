@@ -68,6 +68,7 @@
 
 class AudioManager;
 struct AudioParameters;
+class MediaObserver;
 
 namespace content {
 class ResourceContext;
@@ -206,10 +207,17 @@ class AudioRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioOutputController* controller);
 
+  // Return resource_context_->media_observer() or a cached copy thereof.
+  // This is necessary because resource_context_ can be destructed before all
+  // AudioEntries have been deleted. The MediaObserver's lifetime is tied to
+  // that of the IO thread, so this is safe.
+  MediaObserver* media_observer();
+
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
   const content::ResourceContext* resource_context_;
+  MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };
