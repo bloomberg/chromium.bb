@@ -10,7 +10,7 @@
   margin-top: -8px;
   position: absolute;
   /* Height is dynamic, width fixed. */
-  width: 200px;
+  width: 300px;
   z-index: 9999;
 }
 
@@ -20,7 +20,7 @@
   position: relative;
   text-align: left;
   top: 1px;
-  width: 198px;
+  width: 298px;
   z-index: 3;
 }
 

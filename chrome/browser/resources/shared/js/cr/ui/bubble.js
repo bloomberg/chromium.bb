@@ -42,7 +42,7 @@ cr.define('cr.ui', function() {
       this.anchorNode_ = node;
 
       if (!this.hidden)
-        reposition();
+        this.reposition();
     },
 
     /**
