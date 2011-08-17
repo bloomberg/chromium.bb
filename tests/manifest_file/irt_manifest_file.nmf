@@ -1,0 +1,18 @@
+// There should not be CRs in here, just LF termination!
+{
+  "program": {
+    "x86-32": {"url": "irt_manifest_file_test_x86-32.nexe"},
+    "x86-64": {"url": "irt_manifest_file_test_x86-64.nexe"},
+    "arm":    {"url": "irt_manifest_file_test_arm.nexe"}
+  },
+  "files": {
+    "nmf says hello world": {
+      "x86-32": {"url": "irt_manifest_file_test_x86-32.nexe"},
+      "x86-64": {"url": "irt_manifest_file_test_x86-64.nexe"},
+      "arm":    {"url": "irt_manifest_file_test_arm.nexe"}
+    },
+    "test_file": {
+      "portable": {"url": "irt_manifest_file.nmf"}
+    }
+  }
+}

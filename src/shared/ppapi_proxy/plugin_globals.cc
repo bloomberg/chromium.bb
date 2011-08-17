@@ -155,29 +155,23 @@ void PpapiPluginRegisterThreadCreator(
   thread_funcs = *new_funcs;
 }
 
-int PpapiPluginMain() {
-  if (getenv("NACL_LD_ACCEPTS_PLUGIN_CONNECTION") != NULL) {
-    // Send a message to the page to ask it to reinitialise the
-    // plugin's SRPC/PPAPI connection.  This triggers a call to
-    // __startSrpcServices() which in turn calls
-    // StartProxiedExecution() which sets up the PPAPI proxy.  This is
-    // necessary because LoadNaClModule()'s earlier call to
-    // StartSrpcServices() was matched by the dynamic linker before
-    // libppruntime was available.
-    // For background, see:
-    // http://code.google.com/p/nativeclient/issues/detail?id=617
-    // http://code.google.com/p/nativeclient/issues/detail?id=1501
-    // TODO(mseaborn): This is a temporary measure.  Find a less hacky
-    // way to do this.
-    struct NaClImcMsgIoVec iov = { const_cast<char*>("Init"), 4 };
-    struct NaClImcMsgHdr message = { &iov, 1, NULL, 0, 0 };
-    imc_sendmsg(NACL_SEND_FD, &message, 0);
+int IrtInit() {
+  // TODO(halyavin): this is needed for tests without IRT. They do not start
+  // in irt_entry.c where IrtInit is called.
+  static int initialized = 0;
+  if (initialized) {
+    return 0;
   }
-
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
   NaClLogModuleInit();  // Enable NaClLog'ing used by CHECK().
+  initialized = 1;
+  return 0;
+}
+
+int PpapiPluginMain() {
+  IrtInit();
   PpapiPluginRegisterDefaultThreadCreator();
   // Designate this as the main thread for PPB_Core::IsMainThread().
   ppapi_proxy::PluginCore::MarkMainThread();

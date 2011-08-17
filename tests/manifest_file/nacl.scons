@@ -113,3 +113,39 @@ if not env.Bit('irt'):
                          ['chrome_browser_tests'],
                          'run_pm_pi_manifest_file_chrome_browser_test',
                          is_broken=env.PPAPIBrowserTesterIsBroken())
+
+# irt version
+
+irt_mf_nexe_name = 'irt_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+irt_mf_nexe = env.ComponentProgram(irt_mf_nexe_name,
+                                   'irt_manifest_file_test.cc',
+                                   EXTRA_LIBS=['nacl_ppapi_util',
+                                               'weak_ref',
+                                               'ppapi_cpp',
+                                               '${PPAPI_LIBS}',
+                                               'pthread',
+                                               'srpc',
+                                               'platform',
+                                               'gio',
+                                               'imc',
+                                               'imc_syscalls',
+                                               'nacl',
+                                               ])
+env.Publish(irt_mf_nexe_name, 'run',
+            ['irt_manifest_file_test.html',
+             'irt_manifest_file.nmf'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'irt_mf_browser_test.out',
+    url='irt_manifest_file_test.html',
+    files=env.ExtractPublishedFiles(irt_mf_nexe_name),
+    args=['--debug'],
+#    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
+    )
+
+env.AddNodeToTestSuite(node,
+                      ['chrome_browser_tests'],
+                      'run_irt_manifest_file_chrome_browser_test',
+                      is_broken=env.PPAPIBrowserTesterIsBroken())
