@@ -543,8 +543,8 @@ struct CaseInsensitiveStringEquals
     : public std::binary_function<string16, string16, bool>
 {
   bool operator()(const string16& x, const string16& y) const {
-    return std::equal(x.begin(), x.end(), y.begin(),
-                      base::CaseInsensitiveCompare<string16::value_type>());
+    if (x.size() != y.size()) return false;
+    return StringToLowerASCII(x) == StringToLowerASCII(y);
   }
 };
 
