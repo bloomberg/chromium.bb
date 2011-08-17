@@ -43,7 +43,6 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetString(printing::kSettingDeviceName, "dummy");
   dict->SetInteger(printing::kPreviewRequestID, 12345);
   dict->SetBoolean(printing::kIsFirstRequest, true);
-  dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 }
 
 }  // namespace

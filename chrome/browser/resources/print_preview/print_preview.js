@@ -51,9 +51,6 @@ var copiesSettings;
 // Object holding all the layout related settings.
 var layoutSettings;
 
-// Object holding all the header footer related settings.
-var headerFooterSettings;
-
 // Object holding all the color related settings.
 var colorSettings;
 
@@ -107,12 +104,10 @@ function onLoad() {
   pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
   layoutSettings = print_preview.LayoutSettings.getInstance();
-  headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
   printHeader.addEventListeners();
   pageSettings.addEventListeners();
   copiesSettings.addEventListeners();
-  headerFooterSettings.addEventListeners();
   layoutSettings.addEventListeners();
   colorSettings.addEventListeners();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
@@ -316,7 +311,6 @@ function getSettings() {
        'color': colorSettings.isColor(),
        'printToPDF': printToPDF,
        'isFirstRequest' : false,
-       'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
        'requestID': -1};
 
   var printerList = $('printer-list');
@@ -963,6 +957,5 @@ function setDefaultValuesAndRegeneratePreview() {
 <include src="print_header.js"/>
 <include src="page_settings.js"/>
 <include src="copies_settings.js"/>
-<include src="header_footer_settings.js"/>
 <include src="layout_settings.js"/>
 <include src="color_settings.js"/>

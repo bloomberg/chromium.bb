@@ -209,13 +209,7 @@ void PrintWebViewHelper::PrintPageInternal(
   printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
   frame->printPage(params.page_number, canvas.get());
 
-  if (params.params.display_header_footer) {
-    // |page_number| is 0-based, so 1 is added.
-    // The scale factor on Linux is 1.
-    PrintHeaderAndFooter(device, canvas.get(), params.page_number + 1,
-                         print_preview_context_.total_page_count(), 1,
-                         page_layout_in_points, *header_footer_info_);
-  }
+  // TODO(myhuang): We should render the header and the footer.
 
   // Done printing. Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishPage())

@@ -15,15 +15,6 @@ extern const char kSettingColor[];
 extern const char kSettingCopies[];
 extern const char kSettingDeviceName[];
 extern const char kSettingDuplexMode[];
-extern const char kSettingHeaderFooterEnabled[];
-extern const char kSettingHeaderFooterFontFamilyName[];
-extern const char kSettingHeaderFooterFontName[];
-extern const int kSettingHeaderFooterFontSize;
-extern const float kSettingHeaderFooterHorizontalRegions;
-extern const float kSettingHeaderFooterInterstice;
-extern const char kSettingHeaderFooterDate[];
-extern const char kSettingHeaderFooterTitle[];
-extern const char kSettingHeaderFooterURL[];
 extern const char kSettingLandscape[];
 extern const char kSettingPageRange[];
 extern const char kSettingPageRangeFrom[];
@@ -40,19 +31,6 @@ enum DuplexMode {
   SIMPLEX,
   LONG_EDGE,
   SHORT_EDGE,
-};
-
-// Specifies the horizontal alignment of the headers and footers.
-enum HorizontalHeaderFooterPosition {
-  LEFT,
-  CENTER,
-  RIGHT
-};
-
-// Specifies the vertical alignment of the Headers and Footers.
-enum VerticalHeaderFooterPosition {
-  TOP,
-  BOTTOM
 };
 
 }  // namespace printing

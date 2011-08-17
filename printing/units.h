@@ -36,13 +36,6 @@ int ConvertPixelsToPoint(int pixels);
 // Converts from 1 pixel to 1 point using doubles.
 double ConvertPixelsToPointDouble(double pixels);
 
-// Converts from 1 point to 1 pixel using doubles.
-double ConvertPointsToPixelDouble(double points);
-
-// Splits the horizontal width equally into segments with an interstice
-// between each segment. Returns the width of a segment.
-double GetHeaderFooterSegmentWidth(double page_width);
-
 }  // namespace printing
 
 #endif  // PRINTING_UNITS_H_

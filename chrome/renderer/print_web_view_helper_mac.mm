@@ -148,20 +148,6 @@ void PrintWebViewHelper::RenderPage(
     CGContextRef canvasPtr = cgContext;
 #endif
     frame->printPage(page_number, canvasPtr);
-#if defined(USE_SKIA)
-    const PrintMsg_Print_Params& printParams =
-        print_preview_context_.print_params();
-    if (printParams.display_header_footer) {
-      PageSizeMargins page_layout_in_points;
-      GetPageSizeAndMarginsInPoints(frame, page_number, printParams,
-                                    &page_layout_in_points);
-      // |page_number| is 0-based, so 1 is added.
-      PrintHeaderAndFooter(device, canvas.get(), page_number + 1,
-                           print_preview_context_.total_page_count(),
-                           scale_factor, page_layout_in_points,
-                           *header_footer_info_);
-    }
-#endif  // defined(USE_SKIA)
   }
 
   // Done printing. Close the device context to retrieve the compiled metafile.

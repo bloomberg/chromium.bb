@@ -193,10 +193,6 @@ void VectorPlatformDeviceSkia::drawDevice(const SkDraw& draw,
   pdf_device_->drawDevice(draw, real_device, x, y, paint);
 }
 
-void VectorPlatformDeviceSkia::setDrawingArea(SkPDFDevice::DrawingArea area) {
-  pdf_device_->setDrawingArea(area);
-}
-
 #if defined(OS_WIN)
 void VectorPlatformDeviceSkia::DrawToNativeContext(HDC dc,
                                                    int x,

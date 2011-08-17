@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 #include "ui/gfx/rect.h"
@@ -96,14 +94,6 @@ class PrintSettings {
 
   // Updates the orientation and flip the page if needed.
   void SetOrientation(bool landscape);
-
-  // Strings to be printed as headers and footers if requested by the user.
-  string16 date;
-  string16 title;
-  string16 url;
-
-  // True if the user wants headers and footers to be displayed.
-  bool display_header_footer;
 
  private:
   //////////////////////////////////////////////////////////////////////////////

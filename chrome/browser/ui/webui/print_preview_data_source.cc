@@ -95,9 +95,6 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("incrementTitle", IDS_PRINT_PREVIEW_INCREMENT_TITLE);
   AddLocalizedString("decrementTitle", IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   AddLocalizedString("printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
-  AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
-  AddLocalizedString("optionHeaderFooter",
-                     IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);

@@ -73,8 +73,6 @@
         'print_job_constants.h',
         'print_settings.cc',
         'print_settings.h',
-        'print_settings_initializer.cc',
-        'print_settings_initializer.h',
         'print_settings_initializer_gtk.cc',
         'print_settings_initializer_gtk.h',
         'print_settings_initializer_mac.cc',

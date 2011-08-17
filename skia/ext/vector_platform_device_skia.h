@@ -79,12 +79,8 @@ class VectorPlatformDeviceSkia : public PlatformDevice {
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
                           const SkPaint&);
 
-  // Sets the drawing area for the device. Subsequent draw calls are
-  // directed to the specific drawing area (margin or content area).
-  void setDrawingArea(SkPDFDevice::DrawingArea area);
-
  protected:
-  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
+  virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width, 
                                              int height, bool isOpaque,
                                              Usage usage);
 

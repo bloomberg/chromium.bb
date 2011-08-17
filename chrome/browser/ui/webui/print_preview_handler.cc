@@ -493,24 +493,6 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     print_preview_ui->OnPrintPreviewFailed();
     return;
   }
-
-  // Retrieve the page title and url and send it to the renderer process if
-  // headers and footers are to be displayed.
-  bool display_header_footer = false;
-  if (!settings->GetBoolean(printing::kSettingHeaderFooterEnabled,
-                            &display_header_footer)) {
-    NOTREACHED();
-  }
-  if (display_header_footer) {
-    settings->SetString(printing::kSettingHeaderFooterTitle,
-                        initiator_tab->GetTitle());
-    std::string url;
-    NavigationEntry* entry = initiator_tab->controller().GetActiveEntry();
-    if (entry)
-      url = entry->virtual_url().spec();
-    settings->SetString(printing::kSettingHeaderFooterURL, url);
-  }
-
   VLOG(1) << "Print preview request start";
   RenderViewHost* rvh = initiator_tab->render_view_host();
   rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
@@ -539,8 +521,6 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
-
-  settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
   TabContentsWrapper* preview_tab_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());

@@ -98,7 +98,7 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   return OK;
 }
 
-PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
+PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
   DCHECK(!in_print_job_);
 
