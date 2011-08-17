@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 namespace {
@@ -205,21 +205,6 @@ FilePath UTF8ToFilePath(const std::string& str) {
   return FilePath(result);
 }
 
-class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
- public:
-  virtual bool IsStorageProtected(const GURL& origin) {
-    return false;
-  }
-
-  virtual bool IsStorageUnlimited(const GURL& origin) {
-    return true;
-  }
-
-  virtual bool IsFileHandler(const std::string& extension_id) {
-    return true;
-  }
-};
-
 }  // namespace
 
 class FileSystemPathManagerTest : public testing::Test {
@@ -243,7 +228,7 @@ class FileSystemPathManagerTest : public testing::Test {
         base::MessageLoopProxy::current(),
         data_dir_.path(),
         scoped_refptr<quota::SpecialStoragePolicy>(
-            new TestSpecialStoragePolicy()),
+            new quota::MockSpecialStoragePolicy),
         incognito,
         allow_file_access);
 #if defined(OS_CHROMEOS)

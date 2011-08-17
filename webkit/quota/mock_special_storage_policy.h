@@ -33,6 +33,10 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     file_handlers_.insert(id);
   }
 
+  void SetAllUnlimited(bool all_unlimited) {
+      all_unlimited_ = all_unlimited;
+  }
+
   void Reset() {
     protected_.clear();
     unlimited_.clear();
@@ -47,6 +51,8 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;
   std::set<std::string> file_handlers_;
+
+  bool all_unlimited_;
 };
 }  // namespace quota
 

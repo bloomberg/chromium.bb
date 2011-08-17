@@ -14,33 +14,9 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
-namespace {
-
-class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
- public:
-  explicit TestSpecialStoragePolicy(bool unlimited_quota)
-      : unlimited_quota_(unlimited_quota) {}
-
-  virtual bool IsStorageProtected(const GURL& origin) {
-    return false;
-  }
-
-  virtual bool IsStorageUnlimited(const GURL& origin) {
-    return unlimited_quota_;
-  }
-
-  virtual bool IsFileHandler(const std::string& extension_id) {
-    return true;
-  }
-
- private:
-  bool unlimited_quota_;
-};
-
-}  // anonymous namespace
 
 FileSystemTestOriginHelper::FileSystemTestOriginHelper(
     const GURL& origin, FileSystemType type)
@@ -93,10 +69,13 @@ void FileSystemTestOriginHelper::SetUp(
     FileSystemFileUtil* file_util) {
   file_util_ = file_util;
   DCHECK(file_util_);
+  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
+      new quota::MockSpecialStoragePolicy;
+  special_storage_policy->SetAllUnlimited(unlimited_quota);
   file_system_context_ = new FileSystemContext(
       base::MessageLoopProxy::current(),
       base::MessageLoopProxy::current(),
-      new TestSpecialStoragePolicy(unlimited_quota),
+      special_storage_policy,
       quota_manager_proxy,
       base_dir,
       incognito_mode,

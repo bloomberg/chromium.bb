@@ -37,6 +37,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 namespace {
@@ -60,21 +61,6 @@ void FillBuffer(char* buffer, size_t len) {
   }
 }
 
-class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
- public:
-  virtual bool IsStorageProtected(const GURL& origin) {
-    return false;
-  }
-
-  virtual bool IsStorageUnlimited(const GURL& origin) {
-    return true;
-  }
-
-  virtual bool IsFileHandler(const std::string& extension_id) {
-    return true;
-  }
-};
-
 }  // namespace
 
 class FileSystemURLRequestJobTest : public testing::Test {
@@ -87,7 +73,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    special_storage_policy_ = new TestSpecialStoragePolicy();
+    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
     // We use the main thread so that we can get the root path synchronously.
     // TODO(adamk): Run this on the FILE thread we've created as well.
     file_system_context_ =
@@ -216,7 +202,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   ScopedTempDir temp_dir_;
   FilePath origin_root_path_;
-  scoped_refptr<TestSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedCallbackFactory<FileSystemURLRequestJobTest> callback_factory_;
 

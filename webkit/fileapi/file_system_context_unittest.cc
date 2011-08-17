@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -22,21 +23,6 @@ static const char* const kTestOrigins[] = {
   "http://b.com/",
   "http://c.com:1/",
   "file:///",
-};
-
-class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
- public:
-  virtual bool IsStorageProtected(const GURL& origin) {
-    return false;
-  }
-
-  virtual bool IsStorageUnlimited(const GURL& origin) {
-    return origin == GURL(kTestOrigins[1]);
-  }
-
-  virtual bool IsFileHandler(const std::string& extension_id) {
-    return false;
-  }
 };
 
 scoped_refptr<FileSystemContext> NewFileSystemContext(
@@ -81,7 +67,10 @@ TEST(FileSystemContextTest, IsStorageUnlimited) {
   }
 
   // With SpecialStoragePolicy.
-  scoped_refptr<TestSpecialStoragePolicy> policy(new TestSpecialStoragePolicy);
+  scoped_refptr<quota::MockSpecialStoragePolicy> policy(
+      new quota::MockSpecialStoragePolicy);
+  policy->AddUnlimited(GURL(kTestOrigins[1]));
+
   context = NewFileSystemContext(false, false, policy);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
     SCOPED_TRACE(testing::Message() << "IsStorageUnlimited /w policy #"

@@ -33,6 +33,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 namespace {
@@ -40,21 +41,6 @@ namespace {
 // We always use the TEMPORARY FileSystem in this test.
 static const char kFileSystemURLPrefix[] =
     "filesystem:http://remote/temporary/";
-
-class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
- public:
-  virtual bool IsStorageProtected(const GURL& origin) {
-    return false;
-  }
-
-  virtual bool IsStorageUnlimited(const GURL& origin) {
-    return true;
-  }
-
-  virtual bool IsFileHandler(const std::string& extension_id) {
-    return true;
-  }
-};
 
 }  // namespace
 
@@ -70,7 +56,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
     file_thread_proxy_ = base::MessageLoopProxy::current();
 
-    special_storage_policy_ = new TestSpecialStoragePolicy();
+    special_storage_policy_ = new quota::MockSpecialStoragePolicy;
     file_system_context_ =
         new FileSystemContext(
             base::MessageLoopProxy::current(),
@@ -230,7 +216,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   FilePath root_path_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
-  scoped_refptr<TestSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedCallbackFactory<FileSystemDirURLRequestJobTest> callback_factory_;
 
