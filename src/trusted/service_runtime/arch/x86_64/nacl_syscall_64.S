@@ -79,31 +79,32 @@ IDENTIFIER(NaClSyscallSeg):
         movl    _nacl_thread_index_tls_offset(%rip), %eax
         movl    %gs:(%rax), %eax
 #elif NACL_WINDOWS
-       /*
-        * The Windows linker won't insert the correct offset for
-        * nacl_thread_index. Instead, it inserts a 64-bit address, the
-        * bottom 12 bits of which appear to correspond to the TLS
-        * index of the variable.
-        *
-        * TODO(ilewis): replace this hack with code that assembles and links
-        *               correctly.
-        *
-        * NOTE: This code must match the code in platform/win/test_tls.S !!
-        *       If you change this code, please update that file as well.
-        */
-        leaq nacl_thread_index(%rip), %rax
-        mov $0x00000fff, %edx
-        and %edx, %eax
-        mov %eax, %edx
-
         /*
-         * The rest of this code is exactly the same as what
-         * the Microsoft compiler generates--yes, it really is
-         * that complicated.
+         * NOTE: This code should match the code in platform/win/test_tls.S!
+         * If you change this code, please update that file as well.
+         *
+         * The following two lines generate this instruction:
+         *   ba XX XX XX XX    movl $nacl_thread_index@SECREL, %edx
+         *
+         * SECREL is a relocation type which gives the offset of
+         * nacl_thread_index within the TLS template section.  GNU
+         * binutils' assembler does not have a syntax for generating
+         * this relocation as part of an instruction.  It only has the
+         * .secrel32 syntax for generating the relocated value as a
+         * 32-bit literal.  We use this here for generating the
+         * instruction by hand.
+         *
+         * For background, see:
+         * http://code.google.com/p/nativeclient/issues/detail?id=2155
          */
+        .byte 0xba
+        .secrel32 nacl_thread_index
+
         mov _tls_index(%rip), %ecx
         movq %gs:0x58, %rax
+        /* Get the address of this module (executable/DLL)'s TLS area. */
         movq (%rax,%rcx,8), %rax
+        /* Get the value of nacl_thread_index from the TLS area. */
         movl (%rdx,%rax), %eax
 #else
 # error "What OS/compiler is the service runtime being compiled with?"

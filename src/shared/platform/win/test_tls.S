@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .text
 .globl test_tls_asm
 
@@ -5,15 +11,13 @@ test_tls_asm:
   push %rdi
 
   /*
-   * This code must match the code in nacl_syscall_64.S
+   * This code should match the code in nacl_syscall_64.S
    */
 // mov eax, OFFSET FLAT:tlsValue
-  leaq tlsValue(%rip), %rax
-
-// mov edx, eax
-  mov $0x00000fff, %edx
-  and %edx, %eax
-  mov %eax, %edx
+// The following two lines generate this instruction:
+//   ba XX XX XX XX    movl $tlsValue@SECREL, %edx
+  .byte 0xba
+  .secrel32 tlsValue
 
 // mov ecx, DWORD PTR _tls_index
   mov _tls_index(%rip), %ecx
