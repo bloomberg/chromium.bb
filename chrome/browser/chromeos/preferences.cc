@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/system/touchpad_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
@@ -575,13 +576,27 @@ void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
   input_method_manager->ClearAllVirtualKeyboardPreferences();
 
   std::string url;
+  std::vector<std::string> layouts_to_remove;
   for (DictionaryValue::key_iterator iter = virtual_keyboard_pref->begin_keys();
        iter != virtual_keyboard_pref->end_keys();
        ++iter) {
-    const std::string& xkb_layout = *iter;
-    if (!virtual_keyboard_pref->GetString(xkb_layout, &url))
+    const std::string& layout_id = *iter;  // e.g. "us", "handwriting-vk"
+    if (!virtual_keyboard_pref->GetString(layout_id, &url))
       continue;
-    input_method_manager->SetVirtualKeyboardPreference(xkb_layout, GURL(url));
+    if (!input_method_manager->SetVirtualKeyboardPreference(
+            layout_id, GURL(url))) {
+      // Either |layout_id| or |url| is invalid. Remove the key from |prefs|
+      // later.
+      layouts_to_remove.push_back(layout_id);
+      LOG(ERROR) << "Removing invalid virtual keyboard pref: layout=" << layout;
+    }
+  }
+
+  // Remove invalid prefs.
+  DictionaryPrefUpdate updater(prefs, prefs::kLanguagePreferredVirtualKeyboard);
+  DictionaryValue* pref_value = updater.Get();
+  for (size_t i = 0; i < layouts_to_remove.size(); ++i) {
+    pref_value->RemoveWithoutPathExpansion(layouts_to_remove[i], NULL);
   }
 }
 
