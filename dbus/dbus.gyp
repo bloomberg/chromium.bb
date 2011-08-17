@@ -15,8 +15,15 @@
         '../build/linux/system.gyp:dbus',
       ],
       'sources': [
+        'bus.cc',
+        'bus.h',
+        'exported_object.h',
+        'exported_object.cc',
         'message.cc',
         'message.h',
+        'object_proxy.cc',
+        'object_proxy.h',
+        'scoped_dbus_error.h',
       ],
     },
     {
@@ -31,6 +38,10 @@
       'sources': [
         '../base/test/run_all_unittests.cc',
         'message_unittest.cc',
+        'end_to_end_async_unittest.cc',
+        'end_to_end_sync_unittest.cc',
+        'test_service.cc',
+        'test_service.h',
       ],
       'include_dirs': [
         '..',
