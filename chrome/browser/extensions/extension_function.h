@@ -278,7 +278,12 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   scoped_ptr<RenderViewHostTracker> tracker_;
 };
 
-// Extension functions that run on the IO thread.
+// Extension functions that run on the IO thread. This type of function avoids
+// a roundtrip to and from the UI thread (because communication with the
+// extension process happens on the IO thread). It's intended to be used when
+// performance is critical (e.g. the webRequest API which can block network
+// requests). Generally, UIThreadExtensionFunction is more appropriate and will
+// be easier to use and interface with the rest of the browser.
 class IOThreadExtensionFunction : public ExtensionFunction {
  public:
   IOThreadExtensionFunction();
