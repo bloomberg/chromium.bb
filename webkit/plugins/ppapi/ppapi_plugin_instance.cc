@@ -454,7 +454,6 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
       CreateInputEventData(event, &events);
 
       // Each input event may generate more than one PP_InputEvent.
-      ResourceTracker* tracker = ResourceTracker::Get();
       for (size_t i = 0; i < events.size(); i++) {
         if (filtered_input_event_mask_ & event_class)
           events[i].is_filtered = true;
@@ -462,13 +461,10 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
           rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Impl> event_resource(
             new PPB_InputEvent_Impl(this, events[i]));
-        PP_Resource resource = event_resource->GetReference();
+        Resource::ScopedResourceId resource(event_resource);
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
-            pp_instance(), event_resource->GetReference()));
-
-        // Release the reference we took above.
-        tracker->UnrefResource(resource);
+            pp_instance(), resource.id));
       }
     }
   }
