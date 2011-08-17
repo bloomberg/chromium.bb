@@ -11,86 +11,22 @@
   <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
   <meta HTTP-EQUIV="Expires" CONTENT="-1" />
   <script type="text/javascript" src="nacltest.js"></script>
-  <script type="text/javascript" src="dynamic_library_helper.js"></script>
+  <script type="text/javascript" src="ppapi_test_example.js"></script>
 </head>
 
 <body id="body">
-
-<script type="text/javascript">
-//<![CDATA[
-var rpc = new RPCWrapper();
-rpc.startup();
-
-var log = function(message) {
-  rpc.log('test', message);
-};
-
-function $(id) {
-  return document.getElementById(id);
-}
-
-var onWindowLoad = function() {
-  log('in onWindowLoad()');
-  var plugin = $('naclDSOModule');
-  var nexe_names = {
-    'x86-32': './ppapi_test_example_x86-32.nexe',
-    'x86-64': './ppapi_test_example_x86-64.nexe',
-    'arm': './ppapi_test_example_arm.nexe',
-  };
-  var lib_names = {
-    'x86-32': 'lib',
-    'x86-64': 'lib',
-    'arm': 'lib',
-  };
-
-  var onMessage = function(message) {
-    log('Received message: ' + message.data);
-    if (message.data == 'TestSimple:PASSED') {
-      rpc.pass('test');
-    } else {
-      rpc.fail('test', 'Unexpected reply');
-    }
-    rpc.shutdown();
-  };
-  plugin.addEventListener('message', onMessage, false);
-
-  var onPluginStart = function() {
-    log('started OK');
-    plugin.postMessage('TestSimple');
-  };
-
-  // TODO(bradchen): Rewrite this test.
-  // This entire test will be rewritten when the new nexe loading
-  // support is available. In the mean time we wait.
-  var sleepTime = 500; // in milliseconds for setTimeout
-  var maxTries = 100;  // give up after 100 tries == 50 seconds
-  var whenPluginReady = function () {
-    log('in whenPluginReady');
-    if (maxTries == 0) {
-      rpc.client_error("Plugin did not load.");
-      return;
-    }
-    maxTries = maxTries - 1;
-    try {
-      // If the plugin is not ready, the call to __getSandboxISA will
-      // raise an exception, triggering another call after a brief nap.
-      var isa = plugin.__getSandboxISA();
-      startPluginInstance(plugin, lib_names, log, nexe_names, onPluginStart);
-    } catch (err) {
-      setTimeout(whenPluginReady, sleepTime);
-    }
-  }
-  whenPluginReady();
-};
-
-window.onload = onWindowLoad
-//]]>
-</script>
-
 <embed id="naclDSOModule"
        name="naclDSOModule"
+       src="dynamic_library_test.nmf"
        type="application/x-nacl"
        width=0 height=0 />
-
+<script type="text/javascript">
+//<![CDATA[
+var tester = new Tester();
+      setupTests(tester, $('naclDSOModule'));
+      tester.waitFor($('naclDSOModule'));
+      tester.run();
+//]]>
+</script>
 </body>
 </html>

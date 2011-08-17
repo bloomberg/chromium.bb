@@ -1,0 +1,15 @@
+{
+  "program": {
+    "x86-32": {"url": "lib/runnable-ld.so"},
+    "x86-64": {"url": "lib/runnable-ld.so"},
+    "arm":    {"url": "lib/runnable-ld.so"}
+  },
+  "files": {
+// libs
+    "main.nexe" : {
+      "x86-32" : {"url" : "ppapi_test_example_x86-32.nexe"},
+      "x86-64" : {"url" : "ppapi_test_example_x86-64.nexe"},
+      "arm" : {"url" : "ppapi_test_example_arm.nexe"}
+    }
+  }
+}

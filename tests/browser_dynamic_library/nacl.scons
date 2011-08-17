@@ -3,7 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import os
+
 Import('env')
 
 if 'TRUSTED_ENV' not in env:
@@ -11,12 +13,19 @@ if 'TRUSTED_ENV' not in env:
 if env.Bit('nacl_static_link'):
   Return()
 
+def get_lib(lib):
+  libList = glob.glob(os.path.join(env['NACL_SDK_LIB'], lib))
+  if len(libList) != 1:
+    print 'Can not find correct library version for ' + lib
+    Return()
+  return os.path.basename(libList[0])
+
 toolchain_libraries = [
     'runnable-ld.so',
-    'libc.so.6',
-    'libm.so.6',
+    get_lib('libc.so.*'),
+    get_lib('libm.so.*'),
     'libgcc_s.so.1',
-    'libpthread.so.0',
+    get_lib('libpthread.so.*'),
     'libstdc++.so.6',
     ]
 
@@ -33,6 +42,26 @@ if not env.Bit('irt'):
       'libimc_syscalls.so',
       ]
 
+# Replaces "// libs" with all mapped libraries.
+def generate_nmf(env, target, source):
+  target_file_name = str(target[0])
+  source_file_name = str(source[0])
+  source_file = open(source_file_name, 'r')
+  target_file = open(target_file_name, 'w')
+  lines = source_file.readlines()
+  source_file.close()
+  for line in lines:
+    if line.strip() == '// libs':
+      for k,v in env['manifest_mapping']:
+        file_name = env.subst(k)
+        target_file.write('"' + file_name + '" : { "portable" : { "url": "' +
+                          file_name + '"}},')
+        target_file.write('\n')
+    else:
+      target_file.write(line)
+  target_file.close()
+  return 0
+
 def make_mappings(libdir, libs):
   return [('lib/%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
 
@@ -42,18 +71,23 @@ file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
 test_prog_fname = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
 file_mapping.append((test_prog_fname, test_prog))
+file_mapping.append(('dynamic_library_test.nmf',
+                     '${STAGING_DIR}/dynamic_library_test.nmf'))
+file_mapping.append(('ppapi_test_example.js',
+                     '../ppapi_test_example/ppapi_test_example.js'))
 
+nmf_node = env.Command(
+    '${STAGING_DIR}/dynamic_library_test.nmf',
+    'dynamic_library_test.nmf',
+    generate_nmf,
+    manifest_mapping = file_mapping)
 
 node = env.PPAPIBrowserTester(
     'browser_dynamic_library_test.out', url='dynamic_library_test.html',
     files=[env.File('dynamic_library_test.html'),
-           env.File('dynamic_library_helper.js')],
-    map_files=file_mapping,
-    # TODO(mseaborn): We will get some 404 errors because the "tls"
-    # subdir is in nacl-glibc's search path (we should remove it) and
-    # because we're not using an explicit mapping based on a manifest
-    # file yet.
-    args=['--allow_404', '--enable_experimental_js'])
+           env.File('../ppapi_test_example/ppapi_test_example.js'),
+           nmf_node],
+    map_files=file_mapping)
 
 env.AddNodeToTestSuite(node, ['dynamic_library_browser_tests'],
                        'run_browser_dynamic_library_test',
