@@ -37,5 +37,9 @@ BalloonControllerTest.SizesTest
 # http://crbug.com/87839
 LinkInfoBarControllerTest.ShowAndClickLink
 
-# htt://crbug.com/89030
+# http://crbug.com/89030
 ConnectionTesterTest.DeleteWhileInProgress
+
+# http://crbug.com/93245
+GeolocationWifiDataProviderCommonTest.*
+GeolocationGatewayDataProviderCommonTest.*

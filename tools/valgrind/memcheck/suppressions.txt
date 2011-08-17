@@ -1243,7 +1243,7 @@
    fun:sqlite3RunParser
    fun:sqlite3Prepare
    fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare_v2
+   fun:sqlite3_prepare*
 }
 {
    bug_19775_h
@@ -5156,41 +5156,18 @@
    fun:_Znw*
    fun:_ZN3net11AddressList27CreateByCopyingFirstAddressEPK8addrinfo
    fun:_ZNK3net23TCPClientSocketLibevent14GetPeerAddressEPNS_11AddressListE
-   fun:_ZN3net16HttpStreamParser11SendRequestERKSsRKNS_18HttpRequestHeadersEPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net15HttpBasicStream11SendRequestERKNS_18HttpRequestHeadersEPNS_16UploadDataStreamEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
+   ...
    fun:_ZN3net22HttpNetworkTransaction13DoSendRequestEv
    fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
    fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
    fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl7Request13OnStreamReadyEPNS0_3JobERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl3Job21OnStreamReadyCallbackEv
-   fun:_Z16DispatchToMethodIN3net21HttpStreamFactoryImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN27ScopedRunnableMethodFactoryIN3net21HttpStreamFactoryImpl3JobEE14RunnableMethodIMS2_FvvE6Tuple0E3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+   fun:_ZN3net21HttpStreamFactoryImpl7Request*
+   fun:_ZN3net21HttpStreamFactoryImpl3Job*
 }
 {
    bug_92571
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7history16TopSitesDatabase8CreateDBERK8FilePath
-   fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
-   fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
-   fun:_Z16DispatchToMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathES2_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN7history15TopSitesBackendEMS1_FvRK8FilePathE6Tuple1IS2_EE3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
-}
-{
-   bug_92571b
-   Memcheck:Leak
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   ...
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection18ExecuteWithTimeoutEPKcN4base9TimeDeltaE
-   fun:_ZN3sql10Connection12OpenInternalERKSs
-   fun:_ZN3sql10Connection4OpenERK8FilePath
    fun:_ZN7history16TopSitesDatabase8CreateDBERK8FilePath
    fun:_ZN7history16TopSitesDatabase4InitERK8FilePath
    fun:_ZN7history15TopSitesBackend16InitDBOnDBThreadERK8FilePath
@@ -5303,7 +5280,7 @@
    fun:_ZN56ResourceDispatcherHostTest_*8TestBodyEv
 }
 {
-   bug_TODO_crbug_is_down_1
+   bug_93250a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -5313,7 +5290,7 @@
    fun:_ZN3net18CertVerifierWorker7DoReplyEv
 }
 {
-   bug_TODO_crbug_is_down_2
+   bug_93250b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4BindIMNS_6subtle18TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
