@@ -498,10 +498,10 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
     }
     std::string oauth1_token;
     std::string oauth1_secret;
-    if (!has_cookies_ &&
-        ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret)) {
-      // Verify OAuth access token when we find it in the profile and no cookies
-      // available because user is not signing in using extension.
+    if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
+        !has_cookies_) {
+      // Verify OAuth access token when we find it in the profile and always if
+      // if we don't have cookies.
       authenticator_->VerifyOAuth1AccessToken(oauth1_token, oauth1_secret);
     } else {
       // If we don't have it, fetch OAuth1 access token.
