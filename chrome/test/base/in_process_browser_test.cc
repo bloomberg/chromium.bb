@@ -94,17 +94,7 @@ void InProcessBrowserTest::SetUp() {
   ASSERT_TRUE(CreateUserDataDirectory())
       << "Could not create user data directory.";
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // This is not really Windows-specific, the transition is just being done
-  // in stages, and Windows is first. See below for more info.
   DCHECK(!g_browser_process);
-#else
-  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
-  // The unit test suite creates a testingbrowser, but we want the real thing.
-  // Delete the current one. We'll install the testing one in TearDown.
-  delete g_browser_process;
-  g_browser_process = NULL;
-#endif
 
   // Allow subclasses the opportunity to make changes to the default user data
   // dir before running any tests.
@@ -225,16 +215,7 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 }
 
 void InProcessBrowserTest::TearDown() {
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // This is not really Windows-specific, the transition is just being done
-  // in stages, and Windows is first. See below for more info.
   DCHECK(!g_browser_process);
-#else
-  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
-  // Reinstall testing browser process.
-  delete g_browser_process;
-  g_browser_process = new TestingBrowserProcess();
-#endif
 
   browser_shutdown::delete_resources_on_shutdown = true;
 

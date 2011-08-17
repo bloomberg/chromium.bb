@@ -155,13 +155,11 @@ class ScopedTestingBrowserProcess {
   ~ScopedTestingBrowserProcess();
 
   TestingBrowserProcess* get() {
-    return browser_process_.get();
+    return &browser_process_;
   }
 
  private:
-  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
-  // After the transition is over, we should just stack-allocate it.
-  scoped_ptr<TestingBrowserProcess> browser_process_;
+  TestingBrowserProcess browser_process_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTestingBrowserProcess);
 };

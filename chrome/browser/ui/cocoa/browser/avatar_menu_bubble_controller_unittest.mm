@@ -7,6 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/fake_profile_info_interface.h"
+#import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -51,6 +52,8 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   FakeBridge* bridge() { return bridge_; }
 
  private:
+  BrowserTestHelper browser_helper_;
+
   scoped_ptr<AvatarMenuModel::Item> profile1_;
   scoped_ptr<AvatarMenuModel::Item> profile2_;
 

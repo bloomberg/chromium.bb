@@ -62,13 +62,9 @@ class MetricsServiceTest : public UITest {
     FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
     return PrefServiceMockBuilder().WithUserFilePrefs(path).Create();
   }
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // This is not really Windows-specific, the transition is just being done
-  // in stages, and Windows is first. See below for more info.
-  // TODO(phajdan.jr): Remove #ifdef after fixing http://crbug.com/61062.
+
  private:
   NotificationService notification_service_;
-#endif
 };
 
 TEST_F(MetricsServiceTest, CloseRenderersNormally) {

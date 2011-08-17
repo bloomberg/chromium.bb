@@ -111,11 +111,6 @@ void ChromeTestSuite::Initialize() {
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
 
-#if !defined(OS_WIN) && !defined(OS_LINUX)
-  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
-  g_browser_process = new TestingBrowserProcess;
-#endif
-
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);
@@ -158,12 +153,6 @@ void ChromeTestSuite::Shutdown() {
 
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAppBundle(NULL);
-#endif
-
-#if !defined(OS_WIN) && !defined(OS_LINUX)
-  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
-  delete g_browser_process;
-  g_browser_process = NULL;
 #endif
 
   // Tear down shared StatsTable; prevents unit_tests from leaking it.

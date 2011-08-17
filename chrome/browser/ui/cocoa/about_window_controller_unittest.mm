@@ -45,6 +45,7 @@ class AboutWindowControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
+  BrowserTestHelper browser_helper_;
   AboutWindowController* about_window_controller_;
 };
 
