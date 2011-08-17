@@ -118,6 +118,7 @@ void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
   if (mediaplayer_browser_ == NULL) {
     PopupMediaPlayer(creator);
   }
+  current_playlist_.clear();
   current_playlist_.push_back(MediaUrl(url));
   current_position_ = current_playlist_.size() - 1;
   pending_playback_request_ = true;

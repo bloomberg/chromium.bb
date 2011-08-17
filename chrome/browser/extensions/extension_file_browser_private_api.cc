@@ -1054,7 +1054,9 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
        iter != files.end();
        ++iter) {
     FileManagerUtil::ViewItem(*iter,
-                              *(internal_task_id.get()) == kEnqueueTaskId);
+                              *(internal_task_id.get()) == kEnqueueTaskId ||
+                                  // Start the first one, enqueue others.
+                                  iter != files.begin());
   }
   SendResponse(true);
 }
