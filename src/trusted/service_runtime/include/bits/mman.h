@@ -1,13 +1,12 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * NaCl Service Runtime API.
  */
-
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_MMAN_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_MMAN_H_
@@ -25,7 +24,9 @@
 #define NACL_ABI_MAP_SHARING_MASK 0x03
 
 #define NACL_ABI_MAP_FIXED        0x10  /* Interpret addr exactly.  */
-#define NACL_ABI_MAP_ANONYMOUS    0x20  /* Don't use a file.  */
+#define NACL_ABI_MAP_ANON         0x20  /* Don't use a file.  */
+#define NACL_ABI_MAP_ANONYMOUS    NACL_ABI_MAP_ANON  /* Linux alias.  */
+
 #define NACL_ABI_MAP_FAILED       ((void *) -1)
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_MMAN_H_ */
