@@ -49,16 +49,23 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
   if (!node)
     return;
 
+  // We wish to merge the root node with the bookmarks bar node.
+  if (model->is_root_node(node))
+    node = model->bookmark_bar_node();
+
   base::ListValue* items = new base::ListValue();
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
     extension_bookmark_helpers::AddNode(child, items, false);
   }
+  if (node == model->bookmark_bar_node())
+    extension_bookmark_helpers::AddNode(model->other_node(), items, false);
 
   base::ListValue* navigation_items = new base::ListValue();
   while (node) {
-    extension_bookmark_helpers::AddNode(node, navigation_items, false);
+    if (node != model->bookmark_bar_node())
+      extension_bookmark_helpers::AddNode(node, navigation_items, false);
     node = node->parent();
   }
 
