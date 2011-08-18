@@ -59,12 +59,13 @@ struct SerializeObject {
 // 8: Adds support for file range and modification time
 // 9: Adds support for itemSequenceNumbers
 // 10: Adds support for blob
+// 11: Adds support for pageScaleFactor
 // Should be const, but unit tests may modify it.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-int kVersion = 10;
+int kVersion = 11;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -325,6 +326,8 @@ void WriteHistoryItem(
 
   WriteStringVector(item.documentState(), obj);
 
+  if (kVersion >= 11)
+    WriteReal(item.pageScaleFactor(), obj);
   if (kVersion >= 9)
     WriteInteger64(item.itemSequenceNumber(), obj);
   if (kVersion >= 6)
@@ -391,6 +394,8 @@ WebHistoryItem ReadHistoryItem(
 
   item.setDocumentState(ReadStringVector(obj));
 
+  if (obj->version >= 11)
+    item.setPageScaleFactor(ReadReal(obj));
   if (obj->version >= 9)
     item.setItemSequenceNumber(ReadInteger64(obj));
   if (obj->version >= 6)

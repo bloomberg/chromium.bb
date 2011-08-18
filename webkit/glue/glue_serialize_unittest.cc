@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,6 +61,7 @@ class GlueSerializeTest : public testing::Test {
     document_state[1] = WebString::fromUTF8("state2");
     document_state[2] = WebString::fromUTF8("state AWESOME");
     item.setDocumentState(document_state);
+    item.setPageScaleFactor(1.0f);
 
     // Form Data
     if (with_form_data) {
@@ -93,6 +94,7 @@ class GlueSerializeTest : public testing::Test {
     EXPECT_EQ(a.isTargetItem(), b.isTargetItem());
     EXPECT_EQ(a.visitCount(), b.visitCount());
     EXPECT_EQ(string16(a.referrer()), string16(b.referrer()));
+    EXPECT_EQ(a.pageScaleFactor(), b.pageScaleFactor());
 
     const WebVector<WebString>& a_docstate = a.documentState();
     const WebVector<WebString>& b_docstate = b.documentState();
@@ -134,8 +136,8 @@ class GlueSerializeTest : public testing::Test {
 TEST_F(GlueSerializeTest, BackwardsCompatibleTest) {
   const WebHistoryItem& item = MakeHistoryItem(false, false);
 
-  // Make sure version 3 (current version) can read versions 1 and 2.
-  for (int i = 1; i <= 2; i++) {
+  // Make sure version 11 (current version) can read versions 1 through 10.
+  for (int i = 1; i <= 10; i++) {
     std::string serialized_item;
     webkit_glue::HistoryItemToVersionedString(item, i, &serialized_item);
     const WebHistoryItem& deserialized_item =
