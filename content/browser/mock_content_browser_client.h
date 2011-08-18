@@ -107,6 +107,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(RenderViewHost* rvh)  OVERRIDE;
   virtual void ClearCookies(RenderViewHost* rvh)  OVERRIDE;
+  virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

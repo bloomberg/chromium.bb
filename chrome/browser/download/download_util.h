@@ -53,10 +53,6 @@ namespace download_util {
 // Return the default download directory.
 const FilePath& GetDefaultDownloadDirectory();
 
-// Create a temporary file for a download in the user's default download
-// directory and return true if was successful in creating the file.
-bool CreateTemporaryFileForDownload(FilePath* path);
-
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const FilePath& download_path);
 

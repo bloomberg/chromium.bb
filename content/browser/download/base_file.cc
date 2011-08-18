@@ -12,8 +12,8 @@
 #include "crypto/secure_hash.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 
 #if defined(OS_WIN)
 #include "content/browser/safe_util_win.h"
@@ -55,10 +55,18 @@ bool BaseFile::Initialize(bool calculate_hash) {
   if (calculate_hash_)
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
-  if (!full_path_.empty() ||
-      download_util::CreateTemporaryFileForDownload(&full_path_))
-    return Open();
-  return false;
+  if (full_path_.empty()) {
+    FilePath temp_file;
+    FilePath download_dir =
+        content::GetContentClient()->browser()->GetDefaultDownloadDirectory();
+    if (!file_util::CreateTemporaryFileInDir(download_dir, &temp_file) &&
+        !file_util::CreateTemporaryFile(&temp_file)) {
+      return false;
+    }
+    full_path_ = temp_file;
+  }
+
+  return Open();
 }
 
 bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {

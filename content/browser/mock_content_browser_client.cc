@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -217,6 +218,10 @@ void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 }
 
 void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
+}
+
+FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
+  return FilePath();
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

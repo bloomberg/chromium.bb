@@ -141,13 +141,6 @@ const FilePath& GetDefaultDownloadDirectory() {
   return g_default_download_directory.Get().path();
 }
 
-bool CreateTemporaryFileForDownload(FilePath* temp_file) {
-  if (file_util::CreateTemporaryFileInDir(GetDefaultDownloadDirectory(),
-                                          temp_file))
-    return true;
-  return file_util::CreateTemporaryFile(temp_file);
-}
-
 bool DownloadPathIsDangerous(const FilePath& download_path) {
   FilePath desktop_dir;
   if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_dir)) {

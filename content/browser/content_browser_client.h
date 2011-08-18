@@ -262,6 +262,10 @@ class ContentBrowserClient {
   // Clears browser cookies.
   virtual void ClearCookies(RenderViewHost* rvh) = 0;
 
+  // Returns the default download directory.
+  // This can be called on any thread.
+  virtual FilePath GetDefaultDownloadDirectory() = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;
