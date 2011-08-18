@@ -85,6 +85,11 @@ class RepoRepository(object):
   """
   DEFAULT_MANIFEST = 'default'
 
+  JOBS = 4
+  HTTP_TIMEOUT_INTERVAL = '30'
+  HTTP_TIMEOUT_SPEED = '1'
+  SYNC_RETRY = 2
+
   def __init__(self, repo_url, directory, branch=None):
     self.repo_url = repo_url
     self.directory = directory
@@ -135,10 +140,20 @@ class RepoRepository(object):
       if not InARepoRepository(self.directory):
         self.Initialize()
 
+      extra_env = {'GIT_HTTP_LOW_SPEED_LIMIT': self.HTTP_TIMEOUT_SPEED,
+                   'GIT_HTTP_LOW_SPEED_TIME': self.HTTP_TIMEOUT_INTERVAL}
+
       self._ReinitializeIfNecessary(local_manifest)
-      cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '4'],
-                             cwd=self.directory, redirect_stdout=True,
-                             redirect_stderr=True, num_retries=2)
+      for attempt in range(self.SYNC_RETRY):
+        try:
+          cros_lib.RunCommand(['repo', 'sync', '--quiet', '--jobs', str(self.JOBS)],
+                              cwd=self.directory, redirect_stdout=True,
+                              redirect_stderr=True,
+                              extra_env=extra_env)
+          break
+        except cros_lib.RunCommandError:
+          if attempt == self.SYNC_RETRY - 1:
+            raise
       FixExternalRepoPushUrls(self.directory)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
