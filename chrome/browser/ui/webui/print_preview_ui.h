@@ -38,7 +38,8 @@ class PrintPreviewUI : public ChromeWebUI {
   void ClearAllPreviewData();
 
   // Setters
-  void SetInitiatorTabURL(const std::string& initiator_url);
+  void SetInitiatorTabURLAndTitle(const std::string& initiator_url,
+                                  const string16& initiator_tab_title);
 
   // Notifies the Web UI that there is a print preview request. There should be
   // a matching call to OnPreviewDataIsAvailable() or OnPrintPreviewFailed().
@@ -53,11 +54,9 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnDidPreviewPage(int page_number, int preview_request_id);
 
   // Notifies the Web UI renderer that preview data is available.
-  // |expected_pages_count| specifies the total number of pages. |job_title| is
-  // the title of the page being previewed. |preview_request_id| indicates which
-  // request resulted in this response.
+  // |expected_pages_count| specifies the total number of pages.
+  // |preview_request_id| indicates which request resulted in this response.
   void OnPreviewDataIsAvailable(int expected_pages_count,
-                                const string16& job_title,
                                 int preview_request_id);
 
   void OnReusePreviewData(int preview_request_id);
@@ -110,6 +109,10 @@ class PrintPreviewUI : public ChromeWebUI {
   // Store the |initiator_url| in order to display an accurate error message
   // when the initiator tab is closed/crashed.
   std::string initiator_url_;
+
+  // Store the initiator tab title, used for populating the print preview tab
+  // title.
+  string16 initiator_tab_title_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

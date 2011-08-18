@@ -54,8 +54,11 @@ void PrintPreviewUI::ClearAllPreviewData() {
   print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
-void PrintPreviewUI::SetInitiatorTabURL(const std::string& initiator_url) {
+void PrintPreviewUI::SetInitiatorTabURLAndTitle(
+    const std::string& initiator_url,
+    const string16& job_title) {
   initiator_url_ = initiator_url;
+  initiator_tab_title_ = job_title;
 }
 
 void PrintPreviewUI::OnInitiatorTabCrashed() {
@@ -79,8 +82,9 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue modifiable(params.is_modifiable);
   base::FundamentalValue request_id(params.preview_request_id);
+  StringValue title(initiator_tab_title_);
   CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable,
-                         request_id);
+                         request_id, title);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,
@@ -102,7 +106,6 @@ void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
-                                              const string16& job_title,
                                               int preview_request_id) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
@@ -115,10 +118,9 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          expected_pages_count);
     initial_preview_start_time_ = base::TimeTicks();
   }
-  base::StringValue title(job_title);
   base::StringValue ui_identifier(preview_ui_addr_str_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  CallJavascriptFunction("updatePrintPreview", title, ui_identifier,
+  CallJavascriptFunction("updatePrintPreview", ui_identifier,
                          ui_preview_request_id);
 }
 

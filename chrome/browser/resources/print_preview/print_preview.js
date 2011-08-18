@@ -817,12 +817,15 @@ function setPluginPreviewPageCount() {
  *     modified.
  * @param {number} previewResponseId The preview request id that resulted in
  *     this response.
+ * @param {string} jobTitle The print job title
  */
-function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId) {
+function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId,
+                                  jobTitle) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   pageSettings.updateState(pageCount);
   previewModifiable = isModifiable;
+  document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
   cr.dispatchSimpleEvent(document, 'updateSummary');
 }
 
@@ -877,20 +880,15 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
  * Update the print preview when new preview data is available.
  * Create the PDF plugin as needed.
  * Called from PrintPreviewUI::PreviewDataIsAvailable().
- * @param {string} jobTitle The print job title.
  * @param {boolean} modifiable If the preview is modifiable.
  * @param {string} previewUid Preview unique identifier.
  * @param {number} previewResponseId The preview request id that resulted in
  *     this response.
  */
-function updatePrintPreview(jobTitle,
-                            previewUid,
-                            previewResponseId) {
+function updatePrintPreview(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   hasPendingPreviewRequest = false;
-
-  document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.

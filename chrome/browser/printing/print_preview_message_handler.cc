@@ -179,9 +179,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
                                                 data_bytes);
   print_preview_ui->OnPreviewDataIsAvailable(
-      params.expected_pages_count,
-      wrapper->print_view_manager()->RenderSourceName(),
-      params.preview_request_id);
+      params.expected_pages_count, params.preview_request_id);
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {

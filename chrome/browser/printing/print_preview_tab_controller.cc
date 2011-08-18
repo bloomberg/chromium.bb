@@ -222,12 +222,16 @@ void PrintPreviewTabController::OnNavEntryCommitted(
         nav_type == NavigationType::NEW_PAGE &&
         source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
-      // Set the initiator tab url.
+      // Set the initiator tab url and title.
       TabContents* initiator_tab = GetInitiatorTab(tab);
       if (initiator_tab && preview_tab->web_ui()) {
         PrintPreviewUI* print_preview_ui =
             static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-        print_preview_ui->SetInitiatorTabURL(initiator_tab->GetURL().spec());
+        TabContentsWrapper* wrapper =
+            TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+        print_preview_ui->SetInitiatorTabURLAndTitle(
+            initiator_tab->GetURL().spec(),
+            wrapper->print_view_manager()->RenderSourceName());
       }
       return;
     }
