@@ -6,10 +6,12 @@
 
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
@@ -67,25 +69,23 @@ bool IsNewer(const FileInfo& file_rbegin, const FileInfo& file_rend) {
   return (file_rbegin.creation_time_ > file_rend.creation_time_);
 }
 
-bool MiniInstallerTestUtil::GetCommandForTagging(std::wstring *return_command) {
-  FileInfoList file_details;
-  MiniInstallerTestUtil::GetStandaloneInstallerFileName(&file_details);
-  if (file_details.empty())
+bool MiniInstallerTestUtil::GetCommandForTagging(
+    std::wstring *return_command) {
+  std::wstring tagged_installer_path = MiniInstallerTestUtil::GetFilePath(
+      mini_installer_constants::kStandaloneInstaller);
+  FilePath standalone_installer_path;
+  if (!MiniInstallerTestUtil::GetStandaloneInstallerPath(
+          &standalone_installer_path)) {
     return false;
-  if (file_details.at(0).name_.empty())
-    return false;
-  std::wstring standalone_installer_path;
-  standalone_installer_path.assign(
-      mini_installer_constants::kChromeStandAloneInstallerLocation);
-  standalone_installer_path.append(file_details.at(0).name_);
-  return_command->append(mini_installer_constants::kChromeApplyTagExe);
-  return_command->append(L" ");
-  return_command->append(standalone_installer_path);
-  return_command->append(L" ");
-  return_command->append(mini_installer_constants::kStandaloneInstaller);
-  return_command->append(L" ");
-  return_command->append(mini_installer_constants::kChromeApplyTagParameters);
-  VLOG(1) << "Command to run Apply tag: " << return_command->c_str();
+  }
+
+  VLOG(1) << "Tagging command: " << standalone_installer_path.value().c_str();
+  *return_command = base::StringPrintf(L"%ls %ls %ls %ls",
+      mini_installer_constants::kChromeApplyTagExe,
+      standalone_installer_path.value().c_str(),
+      tagged_installer_path.c_str(),
+      mini_installer_constants::kChromeApplyTagParameters);
+  VLOG(1) << "Command to run Apply tag: " << return_command;
   return true;
 }
 
@@ -228,34 +228,38 @@ bool MiniInstallerTestUtil::GetPreviousFullInstaller(
   return file_util::PathExists(installer);
 }
 
-bool MiniInstallerTestUtil::GetStandaloneInstallerFileName(
-    FileInfoList *file_name) {
+bool MiniInstallerTestUtil::GetStandaloneInstallerPath(FilePath* path) {
+  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  std::wstring build =
+      cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
   std::wstring standalone_installer(
       mini_installer_constants::kChromeStandAloneInstallerLocation);
-  standalone_installer.append(L"*.exe");
-  return GetLatestFile(standalone_installer.c_str(),
-                       mini_installer_constants::kUntaggedInstallerPattern,
-                       file_name);
+  standalone_installer.append(L"\\" + build + L"\\win\\");
+
+  // Get the file name.
+  std::vector<std::wstring> tokenizedBuildNumber;
+  Tokenize(build, L".", &tokenizedBuildNumber);
+  std::wstring standalone_installer_filename = base::StringPrintf(
+      L"%ls%ls_%ls.exe", mini_installer_constants::kUntaggedInstallerPattern,
+          tokenizedBuildNumber[2].c_str(), tokenizedBuildNumber[3].c_str());
+  standalone_installer.append(standalone_installer_filename);
+
+  FilePath filename(standalone_installer);
+  if (!file_util::PathExists(filename))
+    return false;
+  *path = filename;
+  return true;
 }
 
 bool MiniInstallerTestUtil::GetStandaloneVersion(
-    std::wstring* return_file_name) {
-  FileInfoList file_details;
-  GetStandaloneInstallerFileName(&file_details);
-  std::wstring file_name = file_details.at(0).name_;
-  // Returned file name will have following convention:
-  // ChromeStandaloneSetup_<build>_<patch>.exe
-  // Following code will extract build, patch details from the file
-  // and concatenate with 1.0 to form the build version.
-  // Patteren followed: 1.0.<build>.<patch>htt
-  file_name = file_name.substr(22, 25);
-  std::wstring::size_type last_dot = file_name.find(L'.');
-  file_name = file_name.substr(0, last_dot);
-  std::wstring::size_type pos = file_name.find(L'_');
-  file_name.replace(pos, 1, L".");
-  file_name = L"3.0." + file_name;
-  return_file_name->assign(file_name.c_str());
-  VLOG(1) << "Standalone installer version: " << file_name.c_str();
+    std::wstring* version) {
+  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  std::wstring build =
+      cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
+  if (build.empty())
+    return false;
+  *version = build;
+  VLOG(1) << "Standalone installer version: " << version;
   return true;
 }
 

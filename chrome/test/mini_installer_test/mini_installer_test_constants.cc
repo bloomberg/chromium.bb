@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,10 @@ const wchar_t kIEProcessName[] = L"IEXPLORE.EXE";
 const wchar_t kChromeMetaInstallerExe[] =
     L"\\\\172.23.44.61\\shared\\chrome_autotest\\beta_build\\ChromeSetup.exe";
 const wchar_t kChromeStandAloneInstallerLocation[] =
-    L"\\\\172.24.6.7\\shares\\googleclient\\nightly\\builds\\"
-    L"Win-OmahaInstallers\\latest\\opt-win\\staging\\";
+    L"\\\\filer\\shares\\chromeclient\\builds\\ChromeSigning";
 const wchar_t kChromeApplyTagExe[] =
-    L"\\\\172.23.44.61\\shared\\chrome_autotest\\ApplyTag.exe";
+    L"\\\\filer\\shares\\googleclient\\save\\builds\\Omaha\\1.3.21.57"
+    L"\\opt\\tests\\ApplyTag.exe";
 const wchar_t kChromeApplyTagParameters[] =
     L"\"appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}"
     L"&appname=Chrome&needsadmin=false\"";

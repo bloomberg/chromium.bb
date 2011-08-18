@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -83,8 +83,8 @@ class MiniInstallerTestUtil {
   static bool GetPreviousFullInstaller(const std::wstring& diff_file,
       std::wstring *previous, bool chrome_frame);
 
-  // This method will return standalone installer file name.
-  static bool GetStandaloneInstallerFileName(FileInfoList *file_name);
+  // Find stand alone installer path.
+  static bool GetStandaloneInstallerPath(FilePath* path);
 
   // This method will get the version number from the filename.
   static bool GetStandaloneVersion(std::wstring* version);
