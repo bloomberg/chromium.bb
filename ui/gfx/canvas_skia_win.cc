@@ -8,7 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/skia_utils_win.h"

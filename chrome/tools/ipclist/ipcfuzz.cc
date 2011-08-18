@@ -9,11 +9,11 @@
 
 #include "base/command_line.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
-#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
@@ -60,7 +60,7 @@ class Fuzzer {
   virtual void FuzzBytes(void* data, int data_len) = 0;
 };
 
-}  // Namespace IPC
+}  // namespace IPC
 
 namespace {
 
@@ -90,7 +90,7 @@ void FuzzStringType(T* value, unsigned int frequency,
   }
 }
 
-}  // Namespace
+}  // namespace
 
 // One such fuzzer implementation.
 class DefaultFuzzer : public IPC::Fuzzer {
@@ -115,8 +115,7 @@ class DefaultFuzzer : public IPC::Fuzzer {
         srand(new_seed);
     }
 
-    if ((env_var = getenv("CHROME_IPC_FUZZING_FREQUENCY")))
-    {
+    if ((env_var = getenv("CHROME_IPC_FUZZING_FREQUENCY"))) {
       unsigned int new_frequency = atoi(env_var);
       if (new_frequency)
         frequency_ = new_frequency;
@@ -685,4 +684,3 @@ extern "C" {
 IPC::ChannelProxy::OutgoingMessageFilter* GetFilter(void) {
   return &g_ipcfuzz;
 }
-

@@ -12,9 +12,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/v2/system-resources.h"

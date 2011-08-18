@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/panels/panel_mouse_watcher_win.h"
 
+#include <windows.h>
+
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-
-#include <windows.h>
 
 namespace {
 
@@ -79,7 +79,7 @@ void PanelMouseWatcherWin::OnMouseAction(int mouse_x, int mouse_y) {
   panel_manager->BringUpOrDownTitlebarForAllMinimizedPanels(bring_up_titlebar);
 }
 
-}
+}  // namespace
 
 void EnsureMouseWatcherStarted() {
   if (!mouse_watcher.get())

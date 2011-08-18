@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/scoped_ptr.h"
 
 namespace IPC {
 class Message;

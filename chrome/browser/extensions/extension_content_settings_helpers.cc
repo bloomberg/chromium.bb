@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/common/url_constants.h"
 
@@ -145,4 +145,3 @@ const char* ContentSettingToString(ContentSetting setting) {
 }
 
 }  // namespace extension_content_settings_helpers
-

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
+#include <algorithm>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"

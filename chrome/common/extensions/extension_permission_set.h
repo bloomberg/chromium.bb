@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/singleton.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 

@@ -7,10 +7,11 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "views/events/event.h"
 #include "views/ime/character_composer.h"

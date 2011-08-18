@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
 class Extension;

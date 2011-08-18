@@ -6,7 +6,6 @@
 #define WEBKIT_CLIENT_IMPL_H_
 
 #include "base/platform_file.h"
-#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #if defined(OS_WIN)

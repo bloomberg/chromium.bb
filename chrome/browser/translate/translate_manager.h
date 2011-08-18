@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"

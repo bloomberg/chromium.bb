@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_LEVELDB_STORAGE_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 #include "third_party/leveldb/include/leveldb/db.h"

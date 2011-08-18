@@ -9,8 +9,8 @@
 #include <map>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

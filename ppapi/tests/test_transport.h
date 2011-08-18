@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "ppapi/tests/test_case.h"
 
 struct PPB_Transport_Dev;
