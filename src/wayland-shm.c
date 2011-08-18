@@ -34,7 +34,7 @@
 #include "wayland-server.h"
 
 struct wl_shm {
-	struct wl_object object;
+	struct wl_resource resource;
 	const struct wl_shm_callbacks *callbacks;
 };
 
@@ -46,7 +46,7 @@ struct wl_shm_buffer {
 };
 
 static void
-destroy_buffer(struct wl_resource *resource, struct wl_client *client)
+destroy_buffer(struct wl_resource *resource)
 {
 	struct wl_shm_buffer *buffer =
 		container_of(resource, struct wl_shm_buffer, buffer.resource);
@@ -59,19 +59,19 @@ destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 }
 
 static void
-shm_buffer_damage(struct wl_client *client, struct wl_buffer *buffer_base,
+shm_buffer_damage(struct wl_client *client, struct wl_resource *resource,
 		  int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
+	struct wl_shm_buffer *buffer = resource->data;
 
-	buffer->shm->callbacks->buffer_damaged(buffer_base, x, y,
+	buffer->shm->callbacks->buffer_damaged(&buffer->buffer, x, y,
 					       width, height);
 }
 
 static void
-shm_buffer_destroy(struct wl_client *client, struct wl_buffer *buffer)
+shm_buffer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(&buffer->resource, client, 0);
+	wl_resource_destroy(resource, 0);
 }
 
 const static struct wl_buffer_interface shm_buffer_interface = {
@@ -94,7 +94,6 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 	buffer->buffer.width = width;
 	buffer->buffer.height = height;
 	buffer->buffer.visual = visual;
-	buffer->buffer.client = client;
 	buffer->stride = stride;
 	buffer->data = data;
 
@@ -103,6 +102,8 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 	buffer->buffer.resource.object.implementation = (void (**)(void))
 		&shm_buffer_interface;
 
+	buffer->buffer.resource.data = buffer;
+	buffer->buffer.resource.client = client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 
 	buffer->shm = shm;
@@ -113,15 +114,16 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 }
 
 static void
-shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
+shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t id, int fd, int32_t width, int32_t height,
 		  uint32_t stride, struct wl_visual *visual)
 {
+	struct wl_shm *shm = resource->data;
 	struct wl_shm_buffer *buffer;
 	void *data;
 
 	if (!visual || visual->object.interface != &wl_visual_interface) {
-		wl_client_post_error(client, &shm->object,
+		wl_client_post_error(client, &shm->resource.object,
 				     WL_SHM_ERROR_INVALID_VISUAL,
 				     "invalid visual");
 		close(fd);
@@ -129,7 +131,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 	}
 
 	if (width < 0 || height < 0 || stride < width) {
-		wl_client_post_error(client, &shm->object,
+		wl_client_post_error(client, &shm->resource.object,
 				     WL_SHM_ERROR_INVALID_STRIDE,
 				     "invalid width, height or stride (%dx%d, %u)",
 				     width, height, stride);
@@ -142,7 +144,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 
 	close(fd);
 	if (data == MAP_FAILED) {
-		wl_client_post_error(client, &shm->object,
+		wl_client_post_error(client, &shm->resource.object,
 				     WL_SHM_ERROR_INVALID_FD,
 				     "failed mmap fd %d", fd);
 		return;
@@ -175,10 +177,11 @@ wl_shm_init(struct wl_display *display,
 	if (!shm)
 		return NULL;
 
-	shm->object.interface = &wl_shm_interface;
-	shm->object.implementation = (void (**)(void)) &shm_interface;
-	wl_display_add_object(display, &shm->object);
-	wl_display_add_global(display, &shm->object, NULL);
+	shm->resource.object.interface = &wl_shm_interface;
+	shm->resource.object.implementation = (void (**)(void)) &shm_interface;
+	shm->resource.data = shm;
+	wl_display_add_object(display, &shm->resource.object);
+	wl_display_add_global(display, &shm->resource.object, NULL);
 
 	shm->callbacks = callbacks;
 

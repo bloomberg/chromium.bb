@@ -104,6 +104,15 @@ void wl_client_post_no_memory(struct wl_client *client);
 void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 void wl_client_flush(struct wl_client *client);
 
+struct wl_resource {
+	struct wl_object object;
+	void (*destroy)(struct wl_resource *resource);
+	struct wl_list link;
+	struct wl_list destroy_listener_list;
+	struct wl_client *client;
+	void *data;
+};
+
 struct wl_visual {
 	struct wl_object object;
 };
@@ -119,23 +128,14 @@ struct wl_shm_callbacks {
 };
 
 struct wl_compositor {
-	struct wl_object object;
+	struct wl_resource resource;
 	struct wl_visual argb_visual;
 	struct wl_visual premultiplied_argb_visual;
 	struct wl_visual rgb_visual;
 };
 
-struct wl_resource {
-	struct wl_object object;
-	void (*destroy)(struct wl_resource *resource,
-			struct wl_client *client);
-	struct wl_list link;
-	struct wl_list destroy_listener_list;
-};
-
 struct wl_buffer {
 	struct wl_resource resource;
-	struct wl_client *client;
 	struct wl_visual *visual;
 	int32_t width, height;
 	uint32_t busy_count;
@@ -150,7 +150,6 @@ struct wl_listener {
 
 struct wl_surface {
 	struct wl_resource resource;
-	struct wl_client *client;
 };
 
 struct wl_grab;
@@ -168,9 +167,12 @@ struct wl_grab {
 };
 
 struct wl_input_device {
-	struct wl_object object;
+	struct wl_resource resource;
+	struct wl_list resource_list;
 	struct wl_compositor *compositor;
+	struct wl_resource *pointer_focus_resource;
 	struct wl_surface *pointer_focus;
+	struct wl_resource *keyboard_focus_resource;
 	struct wl_surface *keyboard_focus;
 	struct wl_array keys;
 	uint32_t pointer_focus_time;
@@ -188,7 +190,7 @@ struct wl_input_device {
 };
 
 struct wl_drag_offer {
-	struct wl_object object;
+	struct wl_resource resource;
 };
 
 struct wl_drag {
@@ -206,7 +208,7 @@ struct wl_drag {
 };
 
 struct wl_selection_offer {
-	struct wl_object object;
+	struct wl_resource resource;
 };
 
 struct wl_selection {
@@ -221,9 +223,7 @@ struct wl_selection {
 };
 
 void
-wl_client_post_event(struct wl_client *client,
-		      struct wl_object *sender,
-		      uint32_t event, ...);
+wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...);
 
 int
 wl_display_set_compositor(struct wl_display *display,
@@ -242,8 +242,7 @@ struct wl_display *
 wl_client_get_display(struct wl_client *client);
 
 void
-wl_resource_destroy(struct wl_resource *resource,
-		    struct wl_client *client, uint32_t time);
+wl_resource_destroy(struct wl_resource *resource, uint32_t time);
 
 void
 wl_input_device_init(struct wl_input_device *device,

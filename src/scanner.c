@@ -527,9 +527,8 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		n = strlen(m->name) + 17;
 		if (is_interface) {
 			printf("struct wl_client *client,\n"
-			       "%sstruct %s *%s",
-			       indent(n),
-			       interface->name, interface->name);
+			       "%sstruct wl_resource *resource",
+			       indent(n));
 		} else {
 			printf("void *data,\n"),
 			printf("%sstruct %s *%s",
@@ -606,7 +605,8 @@ emit_header(struct protocol *protocol, int server)
 	       "#include <stdint.h>\n"
 	       "#include <stddef.h>\n"
 	       "#include \"wayland-util.h\"\n\n"
-	       "struct wl_client;\n\n",
+	       "struct wl_client;\n"
+	       "struct wl_resource;\n\n",
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s);
 
