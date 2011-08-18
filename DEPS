@@ -18,6 +18,18 @@ vars = {
   # revisions here, but it makes checkdeps confused. We should fix checkdeps.
   "nacl_chrome_ppapi_revision": "96903", # native_client/DEPS: chrome_ppapi_rev 
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
+
+  # These hashes need to be updated when nacl_toolchain_revision is changed.
+  # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
+  # new values.
+  "nacl_toolchain_mac_x86_newlib_hash":
+      "be4cc2baf6eb34c8fe155a1bb61e2acd8ca1e924",
+  "nacl_toolchain_win_x86_newlib_hash":
+      "56667d7f653b1005cd5116de3d8e9faf346053cf",
+  "nacl_toolchain_linux_x86_newlib_hash":
+      "5e4876a1fa53c7701cdbeef969a99b3ff0b0ddc5",
+  "nacl_toolchain_revision": "6429",
+
   "libjingle_revision": "77",
   "libvpx_revision": "96377",
   "ffmpeg_revision": "96868",
@@ -413,5 +425,22 @@ hooks = [
                "--nacl_revision", Var("nacl_revision"),
                "--file_hash", "x86_32", Var("nacl_irt_hash_x86_32"),
                "--file_hash", "x86_64", Var("nacl_irt_hash_x86_64")],
+  },
+  {
+    # This downloads binaries for Native Client's newlib toolchain.
+    # Done in lieu of building the toolchain from scratch as it can take
+    # anywhere from 30 minutes to 4 hours depending on platform to build.
+    "pattern": ".",
+    "action": [
+        "python", "src/build/download_nacl_toolchains.py",
+         "--x86-version", Var("nacl_toolchain_revision"),
+         "--nacl-newlib-only",
+         "--file-hash", "mac_x86_newlib",
+             Var("nacl_toolchain_mac_x86_newlib_hash"),
+         "--file-hash", "win_x86_newlib",
+             Var("nacl_toolchain_win_x86_newlib_hash"),
+         "--file-hash", "linux_x86_newlib",
+             Var("nacl_toolchain_linux_x86_newlib_hash"),
+    ],
   },
 ]
