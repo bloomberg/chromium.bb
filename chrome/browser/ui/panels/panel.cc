@@ -348,12 +348,12 @@ void Panel::ShowAppMenu() {
 
 bool Panel::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                    bool* is_keyboard_shortcut) {
-  NOTIMPLEMENTED();
-  return false;
+  return native_panel_->PreHandlePanelKeyboardEvent(event,
+                                                    is_keyboard_shortcut);
 }
 
 void Panel::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  NOTIMPLEMENTED();
+  native_panel_->HandlePanelKeyboardEvent(event);
 }
 
 void Panel::ShowCreateWebAppShortcutsDialog(TabContentsWrapper* tab_contents) {

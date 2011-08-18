@@ -173,6 +173,17 @@ bool PanelBrowserWindowGtk::IsDrawingAttention() const {
   return false;
 }
 
+bool PanelBrowserWindowGtk::PreHandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  return PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void PanelBrowserWindowGtk::HandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  HandleKeyboardEvent(event);
+}
+
 Browser* PanelBrowserWindowGtk::GetPanelBrowser() const {
   return browser();
 }

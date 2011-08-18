@@ -298,6 +298,17 @@ void PanelBrowserView::StopDrawingAttention() {
   GetFrameView()->SchedulePaint();
 }
 
+bool PanelBrowserView::PreHandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  return PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void PanelBrowserView::HandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  HandleKeyboardEvent(event);
+}
+
 Browser* PanelBrowserView::GetPanelBrowser() const {
   return browser();
 }

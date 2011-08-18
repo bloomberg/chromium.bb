@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/panels/panel.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "content/common/native_web_keyboard_event.h"
 
 namespace {
 
@@ -156,6 +157,17 @@ void PanelBrowserWindowCocoa::DrawAttention() {
 bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
   NOTIMPLEMENTED();
   return false;
+}
+
+bool PanelBrowserWindowCocoa::PreHandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void PanelBrowserWindowCocoa::HandlePanelKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  NOTIMPLEMENTED();
 }
 
 Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {

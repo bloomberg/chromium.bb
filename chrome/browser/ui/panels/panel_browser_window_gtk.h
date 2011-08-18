@@ -57,6 +57,11 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
+  virtual bool PreHandlePanelKeyboardEvent(
+      const NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandlePanelKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
 

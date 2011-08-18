@@ -60,6 +60,11 @@ class NativePanel {
   virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void DrawAttention() = 0;
   virtual bool IsDrawingAttention() const = 0;
+  virtual bool PreHandlePanelKeyboardEvent(
+      const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) = 0;
+  virtual void HandlePanelKeyboardEvent(
+      const NativeWebKeyboardEvent& event) = 0;
+
   virtual Browser* GetPanelBrowser() const = 0;
   virtual void DestroyPanelBrowser() = 0;
 };
