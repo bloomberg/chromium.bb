@@ -28,9 +28,9 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_SEM_v0_1, &nacl_irt_sem, sizeof(nacl_irt_sem) },
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls) },
   { NACL_IRT_BLOCKHOOK_v0_1, &nacl_irt_blockhook, sizeof(nacl_irt_blockhook) },
-#ifdef IRT_PPAPI
   { NACL_IRT_RESOURCE_OPEN_v0_1, &nacl_irt_resource_open,
       sizeof(nacl_irt_resource_open) },
+#ifdef IRT_PPAPI
   { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook) },
 #endif
 };

@@ -74,6 +74,7 @@ if env.Bit('target_arm'):
 
 # These go into only one image or the other.
 irt_nonbrowser = ['irt_interfaces.c',
+                  'irt_core_resource.c',
                   ]
 
 irt_browser = ['irt_interfaces_ppapi.c',
