@@ -78,9 +78,9 @@ file_mapping.append(('ppapi_test_example.js',
 
 nmf_node = env.Command(
     '${STAGING_DIR}/dynamic_library_test.nmf',
-    'dynamic_library_test.nmf',
+    ['dynamic_library_test.nmf', '${SCONSTRUCT_DIR}/DEPS'],
     generate_nmf,
-    manifest_mapping = file_mapping)
+    manifest_mapping=file_mapping)
 
 node = env.PPAPIBrowserTester(
     'browser_dynamic_library_test.out', url='dynamic_library_test.html',
