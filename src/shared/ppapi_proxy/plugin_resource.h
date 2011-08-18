@@ -20,6 +20,7 @@ namespace ppapi_proxy {
   F(PluginContext3D) \
   F(PluginFont) \
   F(PluginGraphics2D) \
+  F(PluginGraphics3D) \
   F(PluginImageData) \
   F(PluginInputEvent) \
   F(PluginSurface3D)

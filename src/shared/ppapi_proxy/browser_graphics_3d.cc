@@ -27,7 +27,7 @@ bool VerifyAttribList(nacl_abi_size_t attrib_list_count, int32_t* attrib_list) {
 
   return  (!attrib_list_count /* && !attrib_list*/) ||
       ((attrib_list_count & 1)
-      && (attrib_list[attrib_list_count - 1] == PP_GRAPHICS3DATTRIBVALUE_NONE));
+      && (attrib_list[attrib_list_count - 1] == PP_GRAPHICS3DATTRIB_NONE));
 }
 
 }  // namespace

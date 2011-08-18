@@ -7,7 +7,9 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_opengles_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
@@ -135,6 +137,11 @@ const PPB_CursorControl_Dev* PPBCursorControlDev() {
       GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
 }
 
+const PPB_Graphics3D_Dev* PPBGraphics3DDev() {
+  return reinterpret_cast<const PPB_Graphics3D_Dev*>(
+      GetBrowserInterface(PPB_GRAPHICS_3D_DEV_INTERFACE));
+}
+
 const PPB_Font_Dev* PPBFontDev() {
   return reinterpret_cast<const PPB_Font_Dev*>(
       GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
@@ -143,6 +150,11 @@ const PPB_Font_Dev* PPBFontDev() {
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
+}
+
+const PPB_OpenGLES2_Dev* PPBOpenGLES2Dev() {
+  return reinterpret_cast<const PPB_OpenGLES2_Dev*>(
+      GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE));
 }
 
 const PPB_Scrollbar_Dev* PPBScrollbarDev() {

@@ -34,7 +34,7 @@ PP_Resource Create(PP_Instance instance,
   PP_Resource resource;
   if (attrib_list) {
     attrib_list_size = 1;
-    while (PP_GRAPHICS3DATTRIBVALUE_NONE != attrib_list[attrib_list_size - 1]) {
+    while (PP_GRAPHICS3DATTRIB_NONE != attrib_list[attrib_list_size - 1]) {
       attrib_list_size += 2;
     }
   }

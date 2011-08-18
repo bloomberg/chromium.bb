@@ -6,7 +6,8 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_COMMAND_BUFFER_NACL_H
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/pp_graphics_3d_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
 
 struct PPB_Core;
@@ -16,8 +17,8 @@ struct PPB_Core;
 
 class CommandBufferNacl : public gpu::CommandBuffer {
  public:
-  // This class will addref the context 3d resource using the core interface.
-  CommandBufferNacl(PP_Resource context_3d, const PPB_Core* iface_core);
+  // This class will addref the graphics 3d resource using the core interface.
+  CommandBufferNacl(PP_Resource graphics_3d, const PPB_Core* iface_core);
   virtual ~CommandBufferNacl();
 
   // CommandBuffer implementation.
@@ -46,12 +47,12 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   virtual void SetContextLostReason(gpu::error::ContextLostReason);
 
  private:
-  PP_Resource context_3d_;
+  PP_Resource graphics_3d_;
   const PPB_Core* iface_core_;
   gpu::Buffer buffer_;
   State last_state_;
 
-  static gpu::CommandBuffer::State PpapiToGpuState(PP_Context3DTrustedState s);
+  static gpu::CommandBuffer::State PpapiToGpuState(PP_Graphics3DTrustedState s);
   static gpu::CommandBuffer::State ErrorGpuState();
   static gpu::Buffer BufferFromShm(int shm_handle, uint32_t shm_size);
 };

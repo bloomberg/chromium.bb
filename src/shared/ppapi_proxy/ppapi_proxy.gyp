@@ -25,6 +25,7 @@
         'browser_ppb_find_rpc_server.cc',
         'browser_ppb_font_rpc_server.cc',
         'browser_ppb_graphics_2d_rpc_server.cc',
+        'browser_ppb_graphics_3d_rpc_server.cc',
         'browser_ppb_image_data_rpc_server.cc',
         'browser_ppb_input_event_rpc_server.cc',
         'browser_ppb_instance_rpc_server.cc',

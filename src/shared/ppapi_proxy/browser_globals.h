@@ -9,6 +9,8 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_find_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -106,6 +108,8 @@ const PPB_FileSystem* PPBFileSystemInterface();
 const PPB_Find_Dev* PPBFindInterface();
 const PPB_Font_Dev* PPBFontInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
+const PPB_Graphics3D_Dev* PPBGraphics3DInterface();
+const PPB_Graphics3DTrusted_Dev* PPBGraphics3DTrustedInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_InputEvent* PPBInputEventInterface();

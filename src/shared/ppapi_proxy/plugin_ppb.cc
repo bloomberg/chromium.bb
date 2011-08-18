@@ -19,6 +19,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_find.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_input_event.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
@@ -61,6 +62,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
+  { PPB_GRAPHICS_3D_DEV_INTERFACE, PluginGraphics3D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
   { PPB_INPUT_EVENT_INTERFACE, PluginInputEvent::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
@@ -70,7 +72,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_MESSAGING_INTERFACE, PluginMessaging::GetInterface(), true },
   { PPB_MOUSE_INPUT_EVENT_INTERFACE, PluginInputEvent::GetMouseInterface(),
     true },
-  { PPB_OPENGLES2_DEV_INTERFACE, PluginContext3D::GetOpenGLESInterface(),
+  { PPB_OPENGLES2_DEV_INTERFACE, PluginGraphics3D::GetOpenGLESInterface(),
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },

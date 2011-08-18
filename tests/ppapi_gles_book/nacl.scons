@@ -70,14 +70,17 @@ for demo, sources in gles_book_examples.iteritems():
     env.Publish(nexe_name, 'run',
                 ['ppapi_gles_book.html',
                  nmf_name])
-    test = env.PPAPIBrowserTester('ppapi_gles_book_' + demo + '.out',
-                                  url='ppapi_gles_book.html?manifest='
-                                      + nmf_name,
-                                  files=[nexe,
-                                         env.File(nmf_name),
-                                         env.File('ppapi_gles_book.html')],
-                                  args=['--enable_experimental_js'])
-    env.AddNodeToTestSuite(test,
-                           ['chrome_browser_tests'],
-                           'run_ppapi_gles_book_' + demo + '_test',
-                           is_broken=env.PPAPIBrowserTesterIsBroken())
+    test = env.PPAPIBrowserTester(
+        'ppapi_gles_book_' + demo + '.out',
+        url='ppapi_gles_book.html?manifest=' + nmf_name,
+        files=[nexe,
+               env.File(nmf_name),
+               env.File('ppapi_gles_book.html')],
+        args=['--enable_experimental_js'],
+        browser_flags=['--enable_accelerated_plugins'])
+    env.AddNodeToTestSuite(
+        test,
+        ['chrome_browser_tests'],
+        'run_ppapi_gles_book_' + demo + '_test',
+        is_broken=env.PPAPIBrowserTesterIsBroken() or
+                  env.PPAPIGraphics3DIsBroken())

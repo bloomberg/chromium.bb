@@ -1217,6 +1217,14 @@ def PPAPIBrowserTesterIsBroken(env):
 
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
+# 3D disabled for arm, newlib & pnacl
+def PPAPIGraphics3DIsBroken(env):
+  return (env.Bit('target_arm') or
+          not env.Bit('nacl_glibc') or
+          env.Bit('bitcode'))
+
+pre_base_env.AddMethod(PPAPIGraphics3DIsBroken)
+
 
 def PyAutoTester(env, target, test, files=[], log_verbosity=2,
                  extra_chrome_flags=[], args=[]):
@@ -2738,6 +2746,7 @@ nonvariant_tests = [
     'tests/ppapi_browser/ppb_dev/nacl.scons',
     'tests/ppapi_browser/ppb_file_system/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
+    'tests/ppapi_browser/ppb_graphics3d/nacl.scons',
     'tests/ppapi_browser/ppb_image_data/nacl.scons',
     'tests/ppapi_browser/ppb_instance/nacl.scons',
     'tests/ppapi_browser/ppb_memory/nacl.scons',
@@ -2755,14 +2764,12 @@ nonvariant_tests = [
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',
-    # TODO(dspringer): re-enable these once the 3D ABI has stabilized.  See
-    # http://code.google.com/p/nativeclient/issues/detail?id=2060
+    # TODO(dspringer): re-enable test once the 3D ABI has stabilized. See
+    # http://code.google.com/p/nativeclient/issues/detail?id=2060	
     # 'tests/ppapi_example_gles2/nacl.scons',
     'tests/ppapi_example_post_message/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
-    # TODO(dspringer): re-enable these once the 3D ABI has stabilized.  See
-    # http://code.google.com/p/nativeclient/issues/detail?id=2060
-    # 'tests/ppapi_gles_book/nacl.scons',
+    'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_messaging/nacl.scons',
 
     'tests/ppapi_simple_tests/nacl.scons',

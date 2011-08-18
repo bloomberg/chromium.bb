@@ -1012,6 +1012,221 @@ static void PPB_Graphics2D_FlushDispatcher(
   );
 }
 
+static void PPB_Graphics3D_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.iarr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3D_GetAttribsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.iarr,
+      &(outputs[0]->u.count), outputs[0]->arrays.iarr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_Graphics3D_SetAttribsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.iarr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3D_ResizeBuffersDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_ResizeBuffers(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3D_SwapBuffersDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_SwapBuffers(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3DTrusted_CreateRawDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateRaw(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.iarr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3DTrusted_InitCommandBufferDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_InitCommandBuffer(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3DTrusted_GetRingBufferDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetRingBuffer(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.hval),
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_Graphics3DTrusted_GetStateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetState(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_Graphics3DTrusted_FlushDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_Flush(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_Graphics3DTrusted_FlushSyncDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_FlushSync(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_Graphics3DTrusted_CreateTransferBufferDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateTransferBuffer(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3DTrusted_DestroyTransferBufferDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_DestroyTransferBuffer(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
+static void PPB_Graphics3DTrusted_GetTransferBufferDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetTransferBuffer(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.hval),
+      &(outputs[1]->u.ival)
+  );
+}
+
 static void PPB_Context3D_BindSurfacesDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2225,6 +2440,20 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Graphics2D_Scroll:iCC:", PPB_Graphics2D_ScrollDispatcher },
   { "PPB_Graphics2D_ReplaceContents:ii:", PPB_Graphics2D_ReplaceContentsDispatcher },
   { "PPB_Graphics2D_Flush:ii:i", PPB_Graphics2D_FlushDispatcher },
+  { "PPB_Graphics3D_Create:iiI:i", PPB_Graphics3D_CreateDispatcher },
+  { "PPB_Graphics3D_GetAttribs:iI:Ii", PPB_Graphics3D_GetAttribsDispatcher },
+  { "PPB_Graphics3D_SetAttribs:iI:i", PPB_Graphics3D_SetAttribsDispatcher },
+  { "PPB_Graphics3D_ResizeBuffers:iii:i", PPB_Graphics3D_ResizeBuffersDispatcher },
+  { "PPB_Graphics3D_SwapBuffers:ii:i", PPB_Graphics3D_SwapBuffersDispatcher },
+  { "PPB_Graphics3DTrusted_CreateRaw:iiI:i", PPB_Graphics3DTrusted_CreateRawDispatcher },
+  { "PPB_Graphics3DTrusted_InitCommandBuffer:ii:i", PPB_Graphics3DTrusted_InitCommandBufferDispatcher },
+  { "PPB_Graphics3DTrusted_GetRingBuffer:i:hi", PPB_Graphics3DTrusted_GetRingBufferDispatcher },
+  { "PPB_Graphics3DTrusted_GetState:i:C", PPB_Graphics3DTrusted_GetStateDispatcher },
+  { "PPB_Graphics3DTrusted_Flush:ii:", PPB_Graphics3DTrusted_FlushDispatcher },
+  { "PPB_Graphics3DTrusted_FlushSync:ii:C", PPB_Graphics3DTrusted_FlushSyncDispatcher },
+  { "PPB_Graphics3DTrusted_CreateTransferBuffer:iii:i", PPB_Graphics3DTrusted_CreateTransferBufferDispatcher },
+  { "PPB_Graphics3DTrusted_DestroyTransferBuffer:ii:", PPB_Graphics3DTrusted_DestroyTransferBufferDispatcher },
+  { "PPB_Graphics3DTrusted_GetTransferBuffer:ii:hi", PPB_Graphics3DTrusted_GetTransferBufferDispatcher },
   { "PPB_Context3D_BindSurfaces:iii:i", PPB_Context3D_BindSurfacesDispatcher },
   { "PPB_Surface3D_Create:iiI:i", PPB_Surface3D_CreateDispatcher },
   { "PPB_Surface3D_SwapBuffers:ii:i", PPB_Surface3D_SwapBuffersDispatcher },

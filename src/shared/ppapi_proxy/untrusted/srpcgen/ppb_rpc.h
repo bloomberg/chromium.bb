@@ -455,6 +455,79 @@ class PpbGraphics2DRpcClient {
 
 class PpbGraphics3DRpcClient {
  public:
+  static NaClSrpcError PPB_Graphics3D_Create(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource share_context,
+      nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+      PP_Resource* resource_id);
+  static NaClSrpcError PPB_Graphics3D_GetAttribs(
+      NaClSrpcChannel* channel,
+      PP_Resource context,
+      nacl_abi_size_t input_attrib_list_bytes, int32_t* input_attrib_list,
+      nacl_abi_size_t* output_attrib_list_bytes, int32_t* output_attrib_list,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_Graphics3D_SetAttribs(
+      NaClSrpcChannel* channel,
+      PP_Resource context,
+      nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_Graphics3D_ResizeBuffers(
+      NaClSrpcChannel* channel,
+      PP_Resource context,
+      int32_t width,
+      int32_t height,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_Graphics3D_SwapBuffers(
+      NaClSrpcChannel* channel,
+      PP_Resource context,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_Graphics3DTrusted_CreateRaw(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource share_context,
+      nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+      PP_Resource* resource_id);
+  static NaClSrpcError PPB_Graphics3DTrusted_InitCommandBuffer(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t size,
+      int32_t* success);
+  static NaClSrpcError PPB_Graphics3DTrusted_GetRingBuffer(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      NaClSrpcImcDescType* shm_desc,
+      int32_t* shm_size);
+  static NaClSrpcError PPB_Graphics3DTrusted_GetState(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      nacl_abi_size_t* state_bytes, char* state);
+  static NaClSrpcError PPB_Graphics3DTrusted_Flush(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t put_offset);
+  static NaClSrpcError PPB_Graphics3DTrusted_FlushSync(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t put_offset,
+      nacl_abi_size_t* state_bytes, char* state);
+  static NaClSrpcError PPB_Graphics3DTrusted_CreateTransferBuffer(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t size,
+      int32_t request_id,
+      int32_t* id);
+  static NaClSrpcError PPB_Graphics3DTrusted_DestroyTransferBuffer(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t id);
+  static NaClSrpcError PPB_Graphics3DTrusted_GetTransferBuffer(
+      NaClSrpcChannel* channel,
+      PP_Resource resource_id,
+      int32_t id,
+      NaClSrpcImcDescType* shm_desc,
+      int32_t* shm_size);
   static NaClSrpcError PPB_Context3D_BindSurfaces(
       NaClSrpcChannel* channel,
       PP_Resource context,

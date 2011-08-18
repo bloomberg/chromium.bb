@@ -129,6 +129,7 @@ libppruntime = env.NaClSdkLibrary(
     'plugin_ppb_find.cc',
     'plugin_ppb_font.cc',
     'plugin_ppb_graphics_2d.cc',
+    'plugin_ppb_graphics_3d.cc',
     'plugin_ppb_image_data.cc',
     'plugin_ppb_input_event.cc',
     'plugin_ppb_instance.cc',

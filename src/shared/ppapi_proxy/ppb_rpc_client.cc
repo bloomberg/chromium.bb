@@ -1255,6 +1255,278 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
   return retval;
 }
 
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource share_context,
+    nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+    PP_Resource* resource_id)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_Create:iiI:i",
+      instance,
+      share_context,
+      attrib_list_bytes, attrib_list,
+      resource_id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_GetAttribs(
+    NaClSrpcChannel* channel,
+    PP_Resource context,
+    nacl_abi_size_t input_attrib_list_bytes, int32_t* input_attrib_list,
+    nacl_abi_size_t* output_attrib_list_bytes, int32_t* output_attrib_list,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_GetAttribs:iI:Ii",
+      context,
+      input_attrib_list_bytes, input_attrib_list,
+      output_attrib_list_bytes, output_attrib_list,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_SetAttribs(
+    NaClSrpcChannel* channel,
+    PP_Resource context,
+    nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_SetAttribs:iI:i",
+      context,
+      attrib_list_bytes, attrib_list,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_ResizeBuffers(
+    NaClSrpcChannel* channel,
+    PP_Resource context,
+    int32_t width,
+    int32_t height,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_ResizeBuffers:iii:i",
+      context,
+      width,
+      height,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_SwapBuffers(
+    NaClSrpcChannel* channel,
+    PP_Resource context,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_SwapBuffers:ii:i",
+      context,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_CreateRaw(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource share_context,
+    nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+    PP_Resource* resource_id)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_CreateRaw:iiI:i",
+      instance,
+      share_context,
+      attrib_list_bytes, attrib_list,
+      resource_id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_InitCommandBuffer(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t size,
+    int32_t* success)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_InitCommandBuffer:ii:i",
+      resource_id,
+      size,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_GetRingBuffer(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    NaClSrpcImcDescType* shm_desc,
+    int32_t* shm_size)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_GetRingBuffer:i:hi",
+      resource_id,
+      shm_desc,
+      shm_size
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_GetState(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    nacl_abi_size_t* state_bytes, char* state)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_GetState:i:C",
+      resource_id,
+      state_bytes, state
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_Flush(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t put_offset)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_Flush:ii:",
+      resource_id,
+      put_offset
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_FlushSync(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t put_offset,
+    nacl_abi_size_t* state_bytes, char* state)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_FlushSync:ii:C",
+      resource_id,
+      put_offset,
+      state_bytes, state
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_CreateTransferBuffer(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t size,
+    int32_t request_id,
+    int32_t* id)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_CreateTransferBuffer:iii:i",
+      resource_id,
+      size,
+      request_id,
+      id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_DestroyTransferBuffer(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t id)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_DestroyTransferBuffer:ii:",
+      resource_id,
+      id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3DTrusted_GetTransferBuffer(
+    NaClSrpcChannel* channel,
+    PP_Resource resource_id,
+    int32_t id,
+    NaClSrpcImcDescType* shm_desc,
+    int32_t* shm_size)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3DTrusted_GetTransferBuffer:ii:hi",
+      resource_id,
+      id,
+      shm_desc,
+      shm_size
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3D_BindSurfaces(
     NaClSrpcChannel* channel,
     PP_Resource context,
