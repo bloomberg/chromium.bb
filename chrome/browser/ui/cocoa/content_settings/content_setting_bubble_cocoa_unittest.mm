@@ -55,8 +55,9 @@ ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 // Check that the bubble doesn't crash or leak for any settings type
 TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-      continue;  // Notifications have no bubble.
+    if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+        i == CONTENT_SETTINGS_TYPE_INTENTS)
+      continue;  // Notifications and web intents have no bubble.
 
     ContentSettingsType settingsType = static_cast<ContentSettingsType>(i);
 

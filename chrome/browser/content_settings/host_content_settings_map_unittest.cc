@@ -150,6 +150,8 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -596,6 +598,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -611,6 +615,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
             settings.settings[CONTENT_SETTINGS_TYPE_GEOLOCATION]);
   EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES],
             settings.settings[CONTENT_SETTINGS_TYPE_COOKIES]);
+  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS],
+            settings.settings[CONTENT_SETTINGS_TYPE_INTENTS]);
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
