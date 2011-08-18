@@ -28,16 +28,16 @@
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidator_registry.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_memory_protect.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
-#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-#include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
 /* Flag defining if statistics should be printed for callback validator
  * model.

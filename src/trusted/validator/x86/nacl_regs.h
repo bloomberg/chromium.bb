@@ -14,7 +14,7 @@
 
 #if NACL_TARGET_SUBARCH == 64
 
-#include  "native_client/src/trusted/validator_x86/nacl_regs64.h"
+#include  "native_client/src/trusted/validator/x86/nacl_regs64.h"
 
 #define NACL_REG_TABLE_SIZE NACL_REG_TABLE_SIZE_64
 #define NACL_REGISTER_UNDEFINED NACL_REGISTER_UNDEFINED_64
@@ -27,9 +27,10 @@
 #define NaClRegTableXmm NaClRegTableXmm_64
 #define NaClRegTableC NaClRegTableC_64
 #define NaClRegTableD NaClRegTableD_64
+
 #else
 
-#include  "native_client/src/trusted/validator_x86/nacl_regs32.h"
+#include  "native_client/src/trusted/validator/x86/nacl_regs32.h"
 
 #define NACL_REG_TABLE_SIZE NACL_REG_TABLE_SIZE_32
 #define NACL_REGISTER_UNDEFINED NACL_REGISTER_UNDEFINED_32

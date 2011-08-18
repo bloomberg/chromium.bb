@@ -15,8 +15,9 @@
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/nacl_regs32.h"
-#include "native_client/src/trusted/validator_x86/nacl_regs64.h"
+#include "native_client/src/trusted/validator/x86/nacl_regs.h"
+#include "native_client/src/trusted/validator/x86/nacl_regs32.h"
+#include "native_client/src/trusted/validator/x86/nacl_regs64.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 /* Contains mapping from nacl operand kind, to the

@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_PROTECT_BASE_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_PROTECT_BASE_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__
 
 #include <stdio.h>
 
@@ -53,4 +53,4 @@ void NaClBaseRegisterSummarize(struct NaClValidatorState* state,
                                struct NaClBaseRegisterLocals* locals);
 
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_PROTECT_BASE_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_PROTECT_BASE_H__ */

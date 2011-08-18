@@ -61,7 +61,7 @@
             'target_base': 'ncvalidate_x86_64',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_x86_64'
+            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_x86_64'
           ],
           'hard_dependency': 1,
         },
@@ -73,7 +73,7 @@
           },
           'dependencies': [
             'ncvalidate_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_verbose_x86_64'
+            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_verbose_x86_64'
           ],
           'hard_dependency': 1,
         },
@@ -85,7 +85,7 @@
           'target_name': 'ncvalidate_x86_64',
           'type': 'static_library',
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_x86_64',
           ],
           'variables': {
             'target_base': 'ncvalidate_x86_64',
@@ -98,7 +98,7 @@
           'type': 'static_library',
           'dependencies': [
             'ncvalidate_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncval_reg_sfi_verbose_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_verbose_x86_64',
           ],
           'variables': {
             'target_base': 'ncvalidate_verbose_x86_64',

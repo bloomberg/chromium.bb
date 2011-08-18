@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+import os
+import sys
+Import('env')
+
+#
+#
+# Build x86 only pieces
+#
+#
+if not env.Bit('target_x86'): Return()
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+# TODO(bradchen): eliminate need for the following line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+
+# SFI validator library.
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
+                     ['ncvalidate_iter.c',
+                      'ncvalidator_registry.c',
+                      'nc_cpu_checks.c',
+                      'nc_illegal.c',
+                      'nc_jumps.c',
+                      'nc_opcode_histogram.c',
+                      'nc_protect_base.c',
+                      'nc_memory_protect.c',
+                      'ncvalidate_utils.c',
+                      ])
+
+# Verbose routines of SFI validator library.
+env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi_verbose'),
+                     ['ncvalidate_iter_verbose.c',
+                      ])

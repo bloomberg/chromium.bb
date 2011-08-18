@@ -6,8 +6,8 @@
 
 /* Some useful utilities for validator patterns. */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_UTILS_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_UTILS_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_UTILS_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_UTILS_H__
 
 #include "native_client/src/trusted/validator/x86/decoder/ncopcode_desc.h"
 
@@ -93,4 +93,4 @@ Bool NaClOperandOneZeroExtends(struct NaClInstState* state);
 Bool NaClAssignsRegisterWithZeroExtends(struct NaClInstState* state,
                                         NaClOpKind reg_name);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_UTILS_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_UTILS_H__ */

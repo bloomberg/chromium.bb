@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_MEMORY_PROTECT_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_MEMORY_PROTECT_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__
 
 /* nc_memory_protect.h - For 64-bit mode, verifies that we don't access
  * memory that is out of range.
@@ -51,4 +51,4 @@ void NaClMemoryReferenceValidator(struct NaClValidatorState* state,
                                   struct NaClInstIter* iter,
                                   void* ignore);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_MEMORY_PROTECT_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_MEMORY_PROTECT_H__ */

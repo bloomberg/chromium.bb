@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
-#include "native_client/src/trusted/validator_x86/nacl_regs.h"
+#include "native_client/src/trusted/validator/x86/nacl_regs.h"
 
 #if NACL_TARGET_SUBARCH == 64
 # include "native_client/src/trusted/validator_x86/gen/nc_subregs_64.h"

@@ -11,15 +11,14 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "native_client/src/trusted/validator_x86/nc_jumps.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_trans.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter_internal.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.

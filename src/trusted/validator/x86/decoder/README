@@ -1,0 +1,401 @@
+This directory implements an x86 decoder, from a table of modeled
+instructions.
+
+Note: Currently, this decoder is only used in the x86-64
+validator. However, the plan is to move the x86-32 validator to also
+use this decoder. See
+http://code.google.com/p/nativeclient/issues/detail?id=2154 for more
+details.
+
+ncopcode_desc.{h,c}
+
+        Defines modeled instructions.
+
+nc_decode_tables.h
+
+        Defines the structure of the generated table of modeled
+        instructions.
+
+nc_inst_state.{h,c}
+
+        Defines how to access parsed x86 instructions, and the x86
+        instruction parser.
+
+nc_inst_state_statics.c
+
+        Static routines that should be in nc_inst_state.c, but are
+        included instead. This separation allows our testing code in
+        nc_inst_state_tests.cc to test the static routines.
+
+nc_inst_iter.{h,c}
+
+        Defines an iterator that walks the memory block and parses the
+        instructions in the memory block.
+
+nc_inst_state_internal.h
+
+        Defines the structures used to hold parsed instructions, and
+        an iterator to parse such instructions in a memory block.
+
+ncop_exps.{h,c}
+
+        Defines an expression tree (of arguments) that is (optionally)
+        generated after the instruction is parsed.
+
+nc_inst_trans.{h,c}
+
+        Defines a translator that takes the data in a parsed
+        instruction, and generates the corresponding expression trees
+        defined in ncop_exps.h
+
+ncopcode_insts.enum
+
+        Defines the names of instructions recognized by the decoder.
+
+ncopcode_prefix.enum
+
+        Defines the set of opcode/prefix bytes, besides the last
+        matched byte, that are allowed in x86 instructions.
+
+ncopcode_ocpcode_flags.enum
+
+        Defines the set of bit flags used to define how to decode an
+        x86 instruction.
+
+ncopcode_operand_kind.enum
+
+        Defines the different categories of operands, typically
+        corresponding to operand argument descriptors like $E and $G.
+
+ncopcode_operand_flag.enum
+
+        Defines the set of bit flags used to define additional
+        information about operands of an instructions (such as its
+        set/usage).
+
+ncop_expr_node_kind.enum
+
+        Defines a label used to define each kind of expression node in
+        a translated argument.
+
+ncop_expr_node_flag.enum
+
+        Defines a set of bit flags used to define additional
+        information about each node in a translated argument (such as
+        set/usage).
+
+Modeled Instructions
+--------------------
+
+Textual version(s) of the instructions understood by the validator can
+be found in the following files.
+
+   native_client/src/trusted/validator_x86/testdata/64/modeled_insts.txt
+
+      Defines the set of instructions understood by the (full)
+      decoder.
+
+   native_client/src/trusted/validator_x86/testdata/64/ncval_reg_sfi_modeled_insts.txt
+
+      Defines the set of (partial) isntructions understood by the
+      validator decoder.
+
+There are two types of modeled instructions. The first is "hard coded".
+The second is based on an optional prefix, and an opcode
+sequence.
+
+Hard coded modeled instructions represent explicit byte sequences that
+will be recognized. An example is as follows:
+
+  --- 66 66 66 2e 0f 1f 84 00 00 00 00 00 ---
+  1f                          386
+    Nop
+
+The first line (between the "---" markers) defines the sequence of
+bytes that will be explicitly recognized as an instruction if that
+(exact) sequence is found.
+
+The second line starts with a the opcode value associated with this
+instruction (1f in this case).  It is then followed by a the
+instruction set the matched instruction is in (386 in this case. The
+full set of cases can be found in enum NaClInstType defined in file
+../x86_insts.h).
+
+The third line describes the instruction that is assumed to be
+accepted by that sequence of bytes. In this case (and most cases) it
+is the nop instruction.
+
+If no hard coded instructions match the bytes to be decoded, the more
+general form is used. This form is based on an optional prefix, and an
+opcode sequence. An example is as follows:
+
+  --- 6f ---
+  0f 6f                       MMX OpcodeUsesModRm
+    Movq $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+
+The first line defines the opcode value matched, and is surrounded by
+"---" marks.  Below this marker line are one (or more) instructions
+that can be matched by the same opcode (and optional prefix).
+
+The second line defines an optional prefix and the opcode sequence (0f
+6f in this case). For more details on this sequence, see "Opcode
+Sequences" below.
+
+The optional prefix and opcode sequence is followed by the instruction
+set the instruction is in (MMX in this case. The full set of cases can
+be found in enum NaClInstType defined in file ../x86_insts.h).
+
+The rest of second line are the set of instruction flags that define
+what additional bytes are necessary, and what conditions must be met
+for the instruction to be decoded. If any condition is not met, the
+next instruction in the list is tried. This process is continued until
+a match is found, or none of the instructions apply.
+
+The set of instruction flags that are accepted are defined in file
+ncopcode_opcode_flags.enum.
+
+The third line defines the instruction that is being decoded. It
+follows AMD's (and Intel's) syntax for instructions. If an argument is
+enclosed in curly braces, it represents an implicit argument (i.e. one
+that is used by the instruction but not part of the corresponding
+assembly instruction).
+
+The forms for valid arguments are defined in section "Instruction
+Arguments" below.
+
+The remaining lines of the instructions define the actual rules that
+will be used to extract that argument from the decoded instruction.
+The first element on the line defines the kind of the operand, and
+is specified in file ncopcode_operand_kind.enum. The remaining elements
+on the line are flags associated with that argument, are specified in
+file ncopcode_operand_flags.enum.
+
+Opcode Sequences
+----------------
+
+Each instruction is defined by an opcode sequence, that can be
+prefixed by an optional prefix (i.e. 66, f2, or F3 if it is a
+multi-byte opcode sequence). An example opcode sequence is:
+
+       0f f6
+
+Opcode sequences can also be buried in the modrm byte, or the opcode
+byte.  To clarify this, additional modifiers may be added to the end
+of the sequence.
+
+If the sequence is followed by a "/ n", then n defines the value that
+must be in the reg field of the modrm byte. If the sequence is
+followed by a "/ n / m", then n defines the value that must be in the
+reg field of the modrm byte, while m defines the value that must by in
+the r/m feild if the modrm byte.
+
+If the sequence is followed by a "- rN", then the instruction is one
+that encodes a register selection as part of the opcode. Fegister N
+(0..7) is to be used by the instruction.
+
+If the opcode sequence is of the form "... 0F 0F XX", then XX appears
+as the last byte of the instruction, rather than the next byte after
+the two 0F bytes. This allows us to recognize E3DNOW instructions.
+
+Instruction Arguments
+---------------------
+
+The modeled instructions specify what assembly instructions are
+recognized by the decoder. The form used is based on the AMD (R)
+document 24594-Rev.3.14-September 2007, "AMD64 Architecture
+Programmer's manual Volume 3: General-Purpose and System
+Instructions", and Intel (R) docuements 253666-030US - March 2009,
+"Intel 654 and IA-32 Architectures Software Developer's Manual,
+Volume2A: Instruction Set Reference, A-M" and 253667-030US - March
+2009, "Intel 654 and IA-32 Architectures Software Developer's Manual,
+Volume2B: Instruction Set Reference, N-Z".  In particular, it tries to
+follow the print forms defined by AMD's "Appendex section A.1 -
+Opcode-Syntax Notation", or Intel's "Appendix Section A.2 - Key To
+Abbreviations". These forms are summarized here. For more detailed
+information see
+native_client/src/trusted/validator_x86/ncdecode_forms.h.
+
+A print form describes an argument. If the operand is implicit (i.e.
+it defines a register/memory value effected by the instruction, but is
+not part of the assembly form) it is enclosed in curly braces. If the
+print form corresponds to a register. the register is specified by
+proceeding the name with the "%" prefix.
+
+All other print forms define a set of possible arguments. It begins
+with the character '$', and is followed by a name. The name consists
+of a FORM, followed by a size specification.
+
+Valid FORM's are (note: as mentioned above, these forms follow the
+conventions of both AMD and Intel):
+
+      A - Far pointer is encoded in the instruction.
+
+      C - Control register specified by the ModRM reg field.
+
+      D - Debug register specified by the ModRM reg field.
+
+      E - General purpose register or memory operand specified by the
+          ModRm byte. Memory addresses can be computed from a segment
+          register, SIB byte, and/or displacement.
+
+      F - rFLAGS register.
+
+      G - General purpose register specified by the ModRm reg field.
+
+      I - Immediate value.
+
+      J - The instruction includes a relative offset that is added to
+          the rIP register.
+
+      M - A memory operand specified by the ModRM byte.
+
+      O - The offset of an operand is encoded in the
+          instruction. There is no ModRm byte in the
+          instruction. Complex addressing using the SIB byte cannot be
+          done.
+
+     P - 64-bit MMX register specified by the ModRM reg field.
+
+     PR - 64 bit MMX register specified by the ModRM r/m field. The
+          ModRM mod field must be 11b.
+
+     Q - 64 bit MMX register or memory operand specified by the ModRM
+         byte.  Memory addresses can be computed from a segment
+         register, SIB byte, and/or displacement.
+
+     R - General purpose register specified by the ModRM r/m
+         field. The ModeRm mod field must be 11b.
+
+     S - Segment register specified by the ModRM reg field.
+
+     U - The R/Mfield of the ModR/M byte selects a 128-bit XMM register.
+
+     V - 128-bit XMM register specified by the ModRM reg field.
+
+     VR - 128-bit XMM register specified by the ModRM r/m field. The
+         ModRM mod field must be 11b.
+
+     W - 128 Xmm register or memory operand specified by the ModRm
+         Byte. Memory addresses can be computed from a segment
+         register, SIB byte, and/or displacement.
+
+     X - A memory operand addressed by the DS.rSI registers. Used in
+         string instructions.
+
+     Y - A memory operand addressed by the ES.rDI registers. Used in string
+         instructions.
+
+     r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and
+          the optional registers r8-r15 if REX.b is set, based on the
+          register value embedded in the opcode.
+
+     SG - segment address defined by a G expression and the segment
+          register in the corresponding mnemonic (lds, les, lfs, lgs,
+          lss).
+
+     rAX - The register AX, EAX, or RAX, depending on SIZE.
+
+     rBP - The register BP, EBP, or RBP, depending on SIZE.
+
+     rBX - The register BX, EBX, or RBX, depending on SIZE.
+
+     rCX - The register CX, ECX, or RCX, depending on SIZE.
+
+     rDI - The register DI, EDI, or RDI, depending on SIZE.
+
+     rDX - The register DX, EDX, or RDX, depending on SIZE.
+
+     rSI - The register SI, ESI, or RSI, depending on SIZE.
+
+     rSP - The register SP, ESP, or RSP, depending on SIZE.
+
+Note: r8 is not in the manuals cited above. It has been added to deal
+with instructions with an embedded register in the opcode. In such
+cases, this value allows a single defining call to be used (within a
+for loop), rather than writing eight separate rules (one for each
+possible register value).
+
+
+Valid SIZEs are (note: as mentioned above, these forms follow the
+conventions of both AMD and Intel):
+
+     a - Two 16-bit or 32-bit memory operands, depending on the
+         effective operand size. Used in the BOUND instruction.
+
+     b - A byte, irrespective of the effective operand size.
+
+     d - A doubleword (32-bits), irrespective of the effective operand size.
+
+     dq - A douible-quadword (128 bits), irrespective of the effective
+         operand size.
+
+     p - A 32-bit or 48-bit far pointer, depending on the effective
+         operand size.
+
+     pd - A 128-bit double-precision floating point vector operand
+         (packed double).
+
+     pi - A 64-bit MMX operand (packed integer).
+
+     ps - A 138-bit single precision floating point vector operand
+          (packed single).
+
+     q - A quadword, irrespective of the effective operand size.
+
+     s - A 6-byte or 10-byte pseudo-descriptor.
+
+     sd - A scalar double-precision floating point operand (scalar
+         double).
+
+     si - A scalar doubleword (32-bit) integer operand (scalar
+         integer).
+
+     ss - A scalar single-precision floating-point operand (scalar
+         single).
+
+     w - A word, irrespective of the effective operand size.
+
+     v - A word, doubleword, or quadword, depending on the effective
+        operand size.
+
+     va - A word, doubleword, or quadword, depending on the effective
+         address size.
+
+     vw - A word only when the effective operand size matches.
+
+     vd - A doubleword only when the effective operand size matches.
+
+
+     vq - A quadword only when the effective operand size matches.
+
+     w - A word, irrespective of the effective operand size.
+
+     z - A word if the effective operand size is 16 bits, or a
+         doubleword if the effective operand size is 32 or 64 bits.
+
+     zw - A word only when the effective operand size matches.
+
+     zd - A doubleword only when the effective operand size is 32 or
+         64 bits.
+
+Note: vw, vd, vq, zw, and zd are not in the manuals cited
+above. However, they have been added so that sub-variants of an v/z
+instruction (not specified in the manual) can be specified.
+
+Note: The AMD manual uses some slash notations (such as d/q) which isn't
+explicitly defined. In general, we allow such notation as specified in
+the AMD manual. Depending on the use, it can mean any of the following:
+
+   (1) In 32-bit mode, d is used. In 64-bit mode, q is used.
+
+   (2) only 32-bit or 64-bit values are allowed.
+
+In addition, when the nmemonic name changes based on which value is
+chosen in d/q, we use d/q/d to denote the 32-bit case, and d/q/q to
+denote the 64 bit case.
+
+In addition, this code adds the following special print forms:
+
+      One - The literal constant 1.

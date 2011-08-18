@@ -237,24 +237,6 @@ ncdecode_table = env_decode_table.ComponentProgram(
 
 env.Requires(ncdecode_table, crt)
 
-# SFI validator library.
-env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
-                     ['ncvalidate_iter.c',
-                      'ncvalidator_registry.c',
-                      'nc_cpu_checks.c',
-                      'nc_illegal.c',
-                      'nc_jumps.c',
-                      'nc_opcode_histogram.c',
-                      'nc_protect_base.c',
-                      'nc_memory_protect.c',
-                      'ncvalidate_utils.c',
-                      ])
-
-# Verbose routines of SFI validator library.
-env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi_verbose'),
-                     ['ncvalidate_iter_verbose.c',
-                      ])
-
 # The following are common library components that use elements
 # of both x86-32 and x86-64 validators.
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),

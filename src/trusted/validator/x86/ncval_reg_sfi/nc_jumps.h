@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_JUMPS_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_JUMPS_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_JUMPS_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_JUMPS_H__
 
 /*
  * nc_jumps.h - Implements set of possible jump points, and set of
@@ -80,4 +80,4 @@ void NaClJumpValidatorDestroy(struct NaClValidatorState* state,
 void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
                                     struct NaClInstState* inst);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_JUMPS_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_JUMPS_H__ */

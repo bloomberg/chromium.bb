@@ -12,8 +12,8 @@
  * function.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_ILLEGAL_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_ILLEGAL_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_ILLEGAL_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_ILLEGAL_H__
 
 /* Defines a validator state. */
 struct NaClValidatorState;
@@ -26,4 +26,4 @@ void NaClValidateInstructionLegal(struct NaClValidatorState* state,
                                   struct NaClInstIter* iter,
                                   void* ignore);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_ILLEGAL_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_ILLEGAL_H__ */

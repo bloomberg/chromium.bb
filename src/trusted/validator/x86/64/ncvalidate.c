@@ -9,7 +9,7 @@
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86

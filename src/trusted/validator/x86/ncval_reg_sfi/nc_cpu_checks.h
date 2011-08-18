@@ -13,8 +13,8 @@
  * function.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_CPU_CHECKS_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_CPU_CHECKS_H__
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_CPU_CHECKS_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_CPU_CHECKS_H__
 
 #include <stdio.h>
 
@@ -42,4 +42,4 @@ void NaClCpuCheck(struct NaClValidatorState* state,
                   struct NaClInstIter* iter,
                   struct NaClCpuCheckState* checked_features);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_CPU_CHECKS_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_CPU_CHECKS_H__ */
