@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/audio_device.h"
 
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
@@ -202,6 +203,8 @@ void AudioDevice::Run() {
 }
 
 void AudioDevice::FireRenderCallback() {
+  TRACE_EVENT0("audio", "AudioDevice::FireRenderCallback");
+
   if (callback_) {
     // Update the audio-delay measurement then ask client to render audio.
     callback_->Render(audio_data_, buffer_size_, audio_delay_milliseconds_);
