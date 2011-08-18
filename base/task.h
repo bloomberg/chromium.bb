@@ -217,6 +217,17 @@ class ReleaseTask : public CancelableTask {
   const T* obj_;
 };
 
+// Equivalents for use by base::Bind().
+template<typename T>
+void DeletePointer(T* obj) {
+  delete obj;
+}
+
+template<typename T>
+void ReleasePointer(T* obj) {
+  obj->Release();
+}
+
 // RunnableMethodTraits --------------------------------------------------------
 //
 // This traits-class is used by RunnableMethod to manage the lifetime of the

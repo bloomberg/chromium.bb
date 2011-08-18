@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -32,6 +33,9 @@ class BrowserThreadTest : public testing::Test {
   static void BasicFunction(MessageLoop* message_loop) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
+
+  static void DoNothing() {
   }
 
   class DummyTask : public Task {
@@ -130,6 +134,19 @@ TEST_F(BrowserThreadTest, ReleaseViaMessageLoopProxy) {
   MessageLoop::current()->Run();
 }
 
+TEST_F(BrowserThreadTest, PostTaskAndReply) {
+  // Most of the heavy testing for PostTaskAndReply() is done inside the
+  // MessageLoopProxy test.  This just makes sure we get piped through at all.
+  ASSERT_TRUE(BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&BrowserThreadTest::DoNothing),
+      base::Bind(&MessageLoop::Quit,
+                 base::Unretained(MessageLoop::current()->current()))));
+  MessageLoop::current()->Run();
+}
+
+
 TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
   bool deleted = false;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
@@ -163,4 +180,3 @@ TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
   EXPECT_FALSE(ret);
   EXPECT_TRUE(deleted);
 }
-

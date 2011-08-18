@@ -128,6 +128,12 @@ class BrowserThread : public base::Thread {
       Task* task,
       int64 delay_ms);
 
+  static bool PostTaskAndReply(
+      ID identifier,
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      const base::Closure& reply);
+
   template <class T>
   static bool DeleteSoon(ID identifier,
                          const tracked_objects::Location& from_here,

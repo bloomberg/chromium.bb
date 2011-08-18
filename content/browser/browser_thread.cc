@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_thread.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread_restrictions.h"
@@ -218,6 +219,17 @@ bool BrowserThread::PostNonNestableDelayedTask(
     Task* task,
     int64 delay_ms) {
   return PostTaskHelper(identifier, from_here, task, delay_ms, false);
+}
+
+// static
+bool BrowserThread::PostTaskAndReply(
+    ID identifier,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    const base::Closure& reply) {
+  return GetMessageLoopProxyForThread(identifier)->PostTaskAndReply(from_here,
+                                                                    task,
+                                                                    reply);
 }
 
 // static
