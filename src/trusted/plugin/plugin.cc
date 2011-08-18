@@ -123,8 +123,9 @@ bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
   pp::VarPrivate continuation =
       *static_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
   bool was_successful = plugin->LoadNaClModule(
-      wrapper.get(), &error_info,
-      plugin->MakeLaunchExecutableFromFdCallback(continuation));
+      wrapper.get(),
+      plugin->MakeLaunchExecutableFromFdCallback(continuation),
+      &error_info);
 
   if (!was_successful) {
     error_info.PrependMessage("__launchExecutableFromFd failed: ");
@@ -523,7 +524,7 @@ class ZoomAdapter : public pp::Zoom_Dev {
 bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
                               nacl::DescWrapper** fds, int fds_count) {
   Plugin* plugin = static_cast<Plugin*>(obj);
-  if (plugin->main_service_runtime() == NULL) {
+  if (!plugin->SubprocessIsReady()) {
     params->set_exception_string("No subprocess running");
     return false;
   }
@@ -735,13 +736,9 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
-bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
-                                  NaClSubprocess* subprocess,
-                                  ErrorInfo* error_info,
-                                  pp::CompletionCallback init_done_cb) {
-  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(
-      this,
-      init_done_cb);
+bool Plugin::CreateSelLdrProcess(NaClSubprocess* subprocess,
+                                 ErrorInfo* error_info) {
+  ServiceRuntime* new_service_runtime = new(std::nothrow) ServiceRuntime(this);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
@@ -750,9 +747,17 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                           "sel_ldr init failure " + subprocess->description());
     return false;
   }
+  return new_service_runtime->CreateProcess(error_info);
+}
 
-  bool service_runtime_started =
-      new_service_runtime->Start(wrapper, error_info);
+bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
+                                  NaClSubprocess* subprocess,
+                                  pp::CompletionCallback init_done_cb,
+                                  ErrorInfo* error_info) {
+  bool service_runtime_started = subprocess->service_runtime()->StartNexe(
+      wrapper,
+      init_done_cb,
+      error_info);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
   if (!service_runtime_started) {
@@ -809,15 +814,10 @@ bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            ErrorInfo* error_info,
-                            pp::CompletionCallback init_done_cb) {
-  // Before forking a new sel_ldr process, ensure that we do not leak
-  // the ServiceRuntime object for an existing subprocess, and that any
-  // associated listener threads do not go unjoined because if they
-  // outlive the Plugin object, they will not be memory safe.
-  ShutDownSubprocesses();
-  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, error_info,
-                             init_done_cb))) {
+                            pp::CompletionCallback init_done_cb,
+                            ErrorInfo* error_info) {
+  if (!(LoadNaClModuleCommon(wrapper, &main_subprocess_, init_done_cb,
+                             error_info))) {
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
@@ -878,8 +878,12 @@ NaClSubprocessId Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
     return kInvalidNaClSubprocessId;
   }
 
-  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), error_info,
-                             pp::BlockUntilComplete())
+  if (!CreateSelLdrProcess(nacl_subprocess.get(), error_info)) {
+    return kInvalidNaClSubprocessId;
+  }
+
+  if (!(LoadNaClModuleCommon(wrapper, nacl_subprocess.get(),
+                             pp::BlockUntilComplete(), error_info)
         // We need not wait for the init_done callback.  We can block
         // here in StartSrpcServicesCommon, since helper NaCl modules
         // are spawned from a private thread.
@@ -996,7 +1000,7 @@ bool Plugin::IsForeignMIMEType() const {
 
 bool Plugin::SetAsyncCallback(void* obj, SrpcParams* params) {
   Plugin* plugin = static_cast<Plugin*>(obj);
-  if (plugin->main_service_runtime() == NULL) {
+  if (!plugin->SubprocessIsReady()) {
     params->set_exception_string("No subprocess running");
     return false;
   }
@@ -1093,6 +1097,14 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
                      tolower);
     }
 
+    if (ExperimentalJavaScriptApisAreEnabled()) {
+      AddMethodCall(plugin::UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+      AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
+    }
+
+    // Export a property to allow us to get the last error description.
+    AddPropertyGet(GetLastError, "lastError", "s");
+
     const char* manifest_url = LookupArgument(kSrcManifestAttribute);
     // If the MIME type is foreign, then 'src' will be the URL for the content
     // and 'nacl' will be the URL for the manifest.
@@ -1125,15 +1137,14 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       // Sets src property to full manifest URL.
       RequestNaClManifest(manifest_url);
     }
+    // Launch sel_ldr ASAP so work can be done in parallel with fetching files.
+    ErrorInfo error_info;
+    if (!CreateSelLdrProcess(&main_subprocess_, &error_info)) {
+      ReportLoadError(error_info);
+      // Don't return false - we want the pluging to successfully initialize
+      // so lastError can be read.
+    }
   }
-
-  if (ExperimentalJavaScriptApisAreEnabled()) {
-    AddMethodCall(plugin::UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
-    AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
-  }
-
-  // Export a property to allow us to get the last error description.
-  AddPropertyGet(GetLastError, "lastError", "s");
 
   PLUGIN_PRINTF(("Plugin::Init (status=%d)\n", status));
   return status;
@@ -1364,8 +1375,9 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   bool was_successful = LoadNaClModule(
-      wrapper.get(), &error_info,
-      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
+      wrapper.get(),
+      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
+      &error_info);
 
   if (!was_successful) {
     ReportLoadError(error_info);
@@ -1417,8 +1429,9 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       wrapper(pnacl_.ReleaseTranslatedFD());
   ErrorInfo error_info;
   bool was_successful = LoadNaClModule(
-      wrapper.get(), &error_info,
-      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
+      wrapper.get(),
+      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
+      &error_info);
 
   if (!was_successful) {
     ReportLoadError(error_info);
@@ -1568,6 +1581,7 @@ void Plugin::ReportDeadNexe() {
                          kUnknownBytes);
     CHECK(ppapi_proxy_ != NULL && !ppapi_proxy_->is_valid());
     ShutdownProxy();
+    ShutDownSubprocesses();
   }
   // else LoadNaClModule and NexeFileDidOpen will provide error handling.
   // NOTE: not all crashes during load will make it here.
@@ -1590,6 +1604,12 @@ void Plugin::ShutdownProxy() {
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestBufferReady (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  if (nacl_ready_state() == DONE) {
+    return;
+  }
+  // Make sure we're in the state we expect.
+  CHECK(nacl_ready_state() == OPENED);
+
   ErrorInfo error_info;
   set_manifest_url(nexe_downloader_.url());
   if (pp_error != PP_OK) {
@@ -1627,6 +1647,12 @@ void Plugin::NaClManifestBufferReady(int32_t pp_error) {
 void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
+  if (nacl_ready_state() == DONE) {
+    return;
+  }
+  // Make sure we're in the state we expect.
+  CHECK(nacl_ready_state() == OPENED);
+
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      nexe_downloader_.TimeSinceOpenMilliseconds());
   ErrorInfo error_info;
@@ -2005,6 +2031,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   set_last_error_string(message);
   browser_interface()->AddToConsole(this, message);
   ShutdownProxy();
+  ShutDownSubprocesses();
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent("error",
                        LENGTH_IS_NOT_COMPUTABLE,
@@ -2029,6 +2056,7 @@ void Plugin::ReportLoadAbort() {
   set_last_error_string(error_string);
   browser_interface()->AddToConsole(this, error_string);
   ShutdownProxy();
+  ShutDownSubprocesses();
   // Inform JavaScript that loading was aborted and is complete.
   EnqueueProgressEvent("abort",
                        LENGTH_IS_NOT_COMPUTABLE,

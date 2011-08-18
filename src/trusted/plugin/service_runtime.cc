@@ -319,8 +319,7 @@ void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
   // cls automatically deleted
 }
 
-ServiceRuntime::ServiceRuntime(Plugin* plugin,
-                               pp::CompletionCallback init_done_cb)
+ServiceRuntime::ServiceRuntime(Plugin* plugin)
     : plugin_(plugin),
       browser_interface_(plugin->browser_interface()),
       reverse_service_(NULL),
@@ -328,12 +327,12 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       async_receive_desc_(NULL),
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
-      rev_interface_(new PluginReverseInterface(anchor_, plugin,
-                                                init_done_cb)) {
+      rev_interface_(NULL) {
   NaClSrpcChannelInitialize(&command_channel_);
 }
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
+                                       pp::CompletionCallback init_done_cb,
                                        ErrorInfo* error_info) {
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
                  " (this=%p, subprocess=%p)\n",
@@ -370,6 +369,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
+  rev_interface_ = new PluginReverseInterface(anchor_, plugin_, init_done_cb);
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
@@ -436,22 +436,20 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   return true;
 }
 
-bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
-                 reinterpret_cast<void*>(nacl_desc)));
+bool ServiceRuntime::CreateProcess(ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("ServiceRuntime::CreateProcess\n"));
 
   nacl::scoped_ptr<nacl::SelLdrLauncher>
       tmp_subprocess(new(std::nothrow) nacl::SelLdrLauncher());
   if (NULL == tmp_subprocess.get()) {
-    PLUGIN_PRINTF(("ServiceRuntime::Start (subprocess create failed)\n"));
+    PLUGIN_PRINTF(("ServiceRuntime::CreateProcess (create failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_CREATE_LAUNCHER,
                           "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
   nacl::Handle sockets[3];
   if (!tmp_subprocess->Start(NACL_ARRAY_SIZE(sockets), sockets)) {
-    PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
+    PLUGIN_PRINTF(("ServiceRuntime::CreateProcess (start failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
                           "ServiceRuntime: failed to start");
     return false;
@@ -460,14 +458,22 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   async_receive_desc_.reset(
       plugin()->wrapper_factory()->MakeImcSock(sockets[1]));
   async_send_desc_.reset(plugin()->wrapper_factory()->MakeImcSock(sockets[2]));
-
   subprocess_.reset(tmp_subprocess.release());
-  if (!InitCommunication(nacl_desc, error_info)) {
+  return true;
+}
+
+bool ServiceRuntime::StartNexe(nacl::DescWrapper* nacl_desc,
+                               pp::CompletionCallback init_done_cb,
+                               ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("ServiceRuntime::StartNexe (nacl_desc=%p)\n",
+                 reinterpret_cast<void*>(nacl_desc)));
+
+  if (!InitCommunication(nacl_desc, init_done_cb, error_info)) {
     subprocess_.reset(NULL);
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::StartNexe (return 1)\n"));
   return true;
 }
 
@@ -505,7 +511,11 @@ void ServiceRuntime::Shutdown() {
   if (subprocess_ != NULL) {
     Kill();
   }
-  rev_interface_->ShutDown();
+  if (rev_interface_ != NULL) {
+    rev_interface_->ShutDown();
+    rev_interface_->Unref();
+    rev_interface_ = NULL;
+  }
   anchor_->Abandon();
   // Abandon callbacks, tell service threads to quit if they were
   // blocked waiting for main thread operations to finish.  Note that
@@ -540,7 +550,10 @@ ServiceRuntime::~ServiceRuntime() {
     reverse_service_->Unref();
   }
 
-  rev_interface_->Unref();
+  if (rev_interface_ != NULL) {
+    rev_interface_->Unref();
+    rev_interface_ = NULL;
+  }
 
   anchor_->Unref();
 }
