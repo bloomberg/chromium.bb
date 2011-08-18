@@ -653,6 +653,10 @@ class TestStage(BuilderStage):
                             nowithdebug=self._build_config['nowithdebug'])
 
   def _RunVMTests(self):
+    # VM tests should run with higher priority than other tasks
+    # because they are usually the bottleneck, and don't use much CPU.
+    commands.SetNiceness(foreground=True)
+
     # Build autotest tarball, which is used in archive step.
     if self._build_config['test_mod']:
       filename = None

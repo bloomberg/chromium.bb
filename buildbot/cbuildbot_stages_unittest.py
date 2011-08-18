@@ -466,8 +466,8 @@ class TestStageTest(AbstractStageTest):
     self.fake_results_dir = '/tmp/fake_results_dir'
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg())
-    self.mox.StubOutWithMock(stages.os, 'nice')
-    stages.os.nice(mox.IgnoreArg())
+    self.mox.StubOutWithMock(commands, 'SetNiceness')
+    commands.SetNiceness(foreground=True)
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
     commands.BuildAutotestTarball(mox.IgnoreArg(), mox.IgnoreArg(),
       mox.IgnoreArg())

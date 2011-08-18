@@ -11,6 +11,7 @@ import sys
 import tempfile
 import traceback
 
+from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
 
 _PRINT_INTERVAL = 1
@@ -81,7 +82,7 @@ class BackgroundSteps(multiprocessing.Process):
     """Run the list of steps."""
 
     # Be nice so that foreground processes get CPU if they need it.
-    os.nice(10)
+    commands.SetNiceness(foreground=False)
 
     stdout_fileno = sys.stdout.fileno()
     stderr_fileno = sys.stderr.fileno()

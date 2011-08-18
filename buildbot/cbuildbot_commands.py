@@ -927,6 +927,33 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir):
   return '%s.tar.bz2' % hwqual_name
 
 
+def SetNiceness(foreground):
+  """Set the niceness of this process.
+
+  Args:
+    foreground: If set, the process runs with higher priority. This means
+    that the process will be scheduled more often when accessing resources
+    (e.g. cpu and disk).
+  """
+  pid_str = str(os.getpid())
+  ionice_cmd = ['ionice', '-p', pid_str]
+  renice_cmd = ['sudo', 'renice']
+  if foreground:
+    # Set this program to foreground priority. ionice and negative niceness
+    # is honored by sudo and passed to subprocesses.
+    # Note: -c 2 means best effort.
+    ionice_cmd.extend(['-c', '2', '-n', '0'])
+    renice_cmd.extend(['-n', '-20', '-p', pid_str])
+  else:
+    # Set this program to background priority. Positive niceness isn't
+    # inherited by sudo, so we just set to zero.
+    # Note: -c 3 means idle priority.
+    ionice_cmd.extend(['-c', '3'])
+    renice_cmd.extend(['-n', '0', '-p', pid_str])
+  cros_lib.RunCommand(ionice_cmd, print_cmd=False)
+  cros_lib.RunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
+
+
 def UpdateLatestFile(bot_archive_root, set_version):
   """Update the latest file in archive_root.
 
