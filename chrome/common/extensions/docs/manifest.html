@@ -288,6 +288,8 @@
                 </li><li>
                   <a href="#name">name</a>
                 </li><li>
+                  <a href="#nacl_modules">nacl_modules</a>
+                </li><li>
                   <a href="#permissions">permissions</a>
                 </li><li>
                   <a href="#version">version</a>
@@ -386,6 +388,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="#incognito">incognito</a>": "spanning" <em>or</em> "split",
   "<a href="#key">key</a>": "<em>publicKey</em>",
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
+  "<a href="#nacl_modules">nacl_modules</a>": [...],
   "<a href="omnibox.html">omnibox</a>": { "keyword": "<em>aString</em>" },
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
@@ -621,6 +624,73 @@ and the <a href="https://chrome.google.com/webstore">store</a>.
 You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
+
+
+<h3 id="nacl_modules">nacl_modules</h3>
+
+<p>
+One or more mappings from MIME types to the Native Client module
+that handles each type.
+For example, the bold code in the following snippet
+registers a Native Client module as the content handler
+for the OpenOffice spreadsheet MIME type.
+</p>
+
+<pre>{
+  "name": "Native Client OpenOffice Spreadsheet Viewer",
+  "version": "0.1",
+  "description": "Open OpenOffice spreadsheets, right in your browser.",
+  <b>"nacl_modules": [{
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+  }]</b>
+}
+</pre>
+
+<p>
+The value of "path" is the location of a Native Client manifest
+(a <code>.nmf</code> file)
+within the extension directory.
+For more information on Native Client and <code>.nmf</code> files, see the
+<a href="http://code.google.com/chrome/nativeclient/docs/technical_overview.html">Native Client Technical Overview</a>.
+</p>
+
+<p>
+Each MIME type can be associated with only one <code>.nmf</code> file,
+but a single <code>.nmf</code> file might handle multiple MIME types.
+The following example shows an extension
+with two <code>.nmf</code> files
+that handle three MIME types.
+</p>
+
+<pre>{
+  "name": "Spreadsheet Viewer",
+  "version": "0.1",
+  "description": "Open OpenOffice and Excel spreadsheets, right in your browser.",
+  "nacl_modules": [{
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
+  },
+  {
+    "path": "OpenOfficeViewer.nmf",
+    "mime_type": "application/vnd.oasis.opendocument.spreadsheet-template"
+  },
+  {
+    "path": "ExcelViewer.nmf",
+    "mime_type": "application/excel"
+  }]
+}
+</pre>
+
+<p class="note">
+<strong>Note:</strong>
+You can use Native Client modules in extensions
+without specifying "nacl_modules".
+Use "nacl_modules" only if you want the browser
+to use your Native Client module
+to display a particular type of content.
+</p>
+
 
 <h3 id="permissions">permissions</h3>
 
