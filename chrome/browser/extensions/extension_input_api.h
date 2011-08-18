@@ -22,9 +22,6 @@ class SendKeyboardEventInputFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendKeyboardEvent");
-
- private:
-  views::Widget* GetTopLevelWidget();
 };
 
 #if defined(TOUCH_UI)

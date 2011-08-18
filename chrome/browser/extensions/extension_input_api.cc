@@ -73,9 +73,7 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
   return character;
 }
 
-}  // namespace
-
-views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
+views::Widget* GetTopLevelWidget(Browser* browser) {
   if (views::ViewsDelegate::views_delegate) {
     views::View* view = views::ViewsDelegate::views_delegate->
                         GetDefaultParentView();
@@ -89,7 +87,6 @@ views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
     return login_window;
 #endif
 
-  Browser* browser = GetCurrentBrowser();
   if (!browser)
     return NULL;
 
@@ -101,6 +98,8 @@ views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
       window->GetNativeHandle());
   return browser_view ? browser_view->GetWidget() : NULL;
 }
+
+}  // namespace
 
 bool SendKeyboardEventInputFunction::RunImpl() {
   DictionaryValue* args;
@@ -143,7 +142,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::Widget* widget = GetTopLevelWidget();
+  views::Widget* widget = GetTopLevelWidget(GetCurrentBrowser());
   if (!widget) {
     error_ = kNoValidRecipientError;
     return false;
@@ -212,6 +211,21 @@ bool SendHandwritingStrokeFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(dict->GetDouble("y", &y));
     stroke.push_back(std::make_pair(x, y));
   }
+
+  views::Widget* widget = GetTopLevelWidget(GetCurrentBrowser());
+  views::InputMethod* ime = widget ? widget->GetInputMethod() : NULL;
+  if (ime) {
+    static const views::KeyEvent* dummy_keydown = new views::KeyEvent(
+        ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+    static const views::KeyEvent* dummy_keyup = new views::KeyEvent(
+        ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, 0);
+    // These fake key events are necessary for clearing |suppress_next_result_|
+    // flag in view/ime/input_method_*.cc. Otherwise, clicking a candidate in
+    // the candidate window might be ignored.
+    ime->DispatchKeyEvent(*dummy_keydown);
+    ime->DispatchKeyEvent(*dummy_keyup);
+  }
+
   chromeos::input_method::InputMethodManager::GetInstance()->
       SendHandwritingStroke(stroke);
   return true;
