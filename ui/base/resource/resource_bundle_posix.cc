@@ -4,6 +4,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -12,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/font.h"
 
 namespace ui {
@@ -113,8 +115,12 @@ std::string ResourceBundle::LoadLocaleResources(
     const std::string& pref_locale) {
   DCHECK(!locale_resources_data_) << "locale.pak already loaded";
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
-  FilePath locale_file_path = GetOverriddenPakPath();
-  if (locale_file_path.empty()) {
+  FilePath locale_file_path;
+  CommandLine *command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalePak)) {
+    locale_file_path =
+      command_line->GetSwitchValuePath(switches::kLocalePak);
+  } else {
     locale_file_path = GetLocaleFilePath(app_locale);
   }
   if (locale_file_path.empty()) {

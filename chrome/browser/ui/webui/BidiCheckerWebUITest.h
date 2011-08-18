@@ -16,7 +16,7 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
   virtual ~WebUIBidiCheckerBrowserTest();
 
   // Runs the Bidi Checker on the given page URL. |isRTL| should be true when
-  // the active page locale is RTL.
+  // the active page locale of the page is RTL.
   void RunBidiCheckerOnPage(const char pageURL[], bool isRTL);
 
  protected:
@@ -25,21 +25,5 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture();
 };
-
-// TODO(ofri): Add support for fake bidi on Windows
-#ifndef OS_WIN
-// Base class for BidiChecker-based tests that run with an RTL UI.
-// Preloads the BidiChecker JS library for each test, as well as modifies the
-// active language.
-class WebUIBidiCheckerBrowserTestFakeBidi : public WebUIBidiCheckerBrowserTest {
- public:
-  virtual ~WebUIBidiCheckerBrowserTestFakeBidi();
-
- protected:
-  WebUIBidiCheckerBrowserTestFakeBidi();
-  virtual void SetUpInProcessBrowserTestFixture();
-  virtual void TearDownInProcessBrowserTestFixture();
-};
-#endif  // OS_WIN
 
 #endif  // CHROME_BROWSER_UI_WEBUI_BIDICHECKERWEBUITEST_H_
