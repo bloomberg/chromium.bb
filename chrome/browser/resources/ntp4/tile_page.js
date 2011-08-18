@@ -98,8 +98,6 @@ cr.define('ntp4', function() {
       setCurrentlyDraggingTile(this);
 
       e.dataTransfer.effectAllowed = 'copyMove';
-      // TODO(estade): fill this in.
-      e.dataTransfer.setData('text/plain', 'foo');
 
       // The drag clone is the node we use as a representation during the drag.
       // It's attached to the top level document element so that it floats above
