@@ -21,3 +21,5 @@ Local Modifications:
 
 Added the instructions to |possibleInstructions| for the very short
 malloc_error_break() on 10.5 so that it can be overriden on that platform.
+
+Print errors using fprintf() to stderr, rather than printf() to stdout.
