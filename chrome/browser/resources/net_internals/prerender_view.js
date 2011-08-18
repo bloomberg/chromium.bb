@@ -50,10 +50,17 @@ var PrerenderView = (function() {
       this.prerenderHistoryDiv_.innerHTML = '';
       this.prerenderActiveDiv_.innerHTML = '';
 
+      if (prerenderInfo && ('enabled' in prerenderInfo)) {
+        this.prerenderEnabledSpan_.textContent =
+            prerenderInfo.enabled.toString();
+        if (prerenderInfo.disabled_reason) {
+          this.prerenderEnabledSpan_.textContent +=
+              ' ' + prerenderInfo.disabled_reason;
+        }
+      }
+
       if (!isValidPrerenderInfo(prerenderInfo))
         return false;
-
-      this.prerenderEnabledSpan_.textContent = prerenderInfo.enabled.toString();
 
       var tabPrinter = createHistoryTablePrinter(prerenderInfo.history);
       tabPrinter.toHTML(this.prerenderHistoryDiv_, 'styledTable');

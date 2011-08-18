@@ -649,7 +649,9 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   Value* value = NULL;
   prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
   if (!prerender_manager) {
-    value = new DictionaryValue();
+    DictionaryValue* dict_value = new DictionaryValue();
+    dict_value->SetBoolean("enabled", false);
+    value = dict_value;
   } else {
     value = prerender_manager->GetAsValue();
   }

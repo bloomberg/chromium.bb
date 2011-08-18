@@ -112,10 +112,9 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 
 // static
 bool PrerenderManager::IsPrerenderingPossible() {
-  return
-      GetMode() == PRERENDER_MODE_ENABLED ||
-      GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
-      GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
+  return GetMode() == PRERENDER_MODE_ENABLED ||
+         GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
+         GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
 }
 
 // static
@@ -897,6 +896,9 @@ Value* PrerenderManager::GetAsValue() const {
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled", enabled_);
+  // If prerender is disabled via a flag this method is not even called.
+  if (IsControlGroup())
+    dict_value->SetString("disabled_reason", "(Disabled for testing)");
   return dict_value;
 }
 
