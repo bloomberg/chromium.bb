@@ -6,22 +6,22 @@
 #define CHROME_BROWSER_MOCK_BROWSING_DATA_FILE_SYSTEM_HELPER_H_
 #pragma once
 
+#include <list>
 #include <map>
-#include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
 #include "webkit/fileapi/file_system_types.h"
 
 // Mock for BrowsingDataFileSystemHelper.
-// Use AddFileSystemSamples() or add directly to response_ vector, then call
+// Use AddFileSystemSamples() or add directly to response_ list, then call
 // Notify().
 class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
  public:
   explicit MockBrowsingDataFileSystemHelper(Profile* profile);
 
   virtual void StartFetching(
-      Callback1<const std::vector<FileSystemInfo>& >::Type* callback);
+      Callback1<const std::list<FileSystemInfo>& >::Type* callback);
 
   virtual void CancelNotification();
 
@@ -52,13 +52,13 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
 
   Profile* profile_;
 
-  scoped_ptr<Callback1<const std::vector<FileSystemInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<FileSystemInfo>& >::Type >
       callback_;
 
   // Stores which filesystems exist.
   std::map<const std::string, bool> file_systems_;
 
-  std::vector<FileSystemInfo> response_;
+  std::list<FileSystemInfo> response_;
 };
 
 #endif  // CHROME_BROWSER_MOCK_BROWSING_DATA_FILE_SYSTEM_HELPER_H_

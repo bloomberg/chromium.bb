@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_
 #pragma once
 
+#include <list>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback_old.h"
 #include "base/file_path.h"
@@ -64,7 +64,7 @@ class BrowsingDataLocalStorageHelper
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
-      Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);
+      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
   // Cancels the notification callback (i.e., the window that created it no
   // longer exists).
   // This must be called only in the UI thread.
@@ -82,7 +82,7 @@ class BrowsingDataLocalStorageHelper
   Profile* profile_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<LocalStorageInfo>& >::Type >
       completion_callback_;
 
   // Indicates whether or not we're currently fetching information:
@@ -92,7 +92,7 @@ class BrowsingDataLocalStorageHelper
   bool is_fetching_;
 
   // This only mutates in the WEBKIT thread.
-  std::vector<LocalStorageInfo> local_storage_info_;
+  std::list<LocalStorageInfo> local_storage_info_;
 
  private:
   // Enumerates all local storage files in the WEBKIT thread.
@@ -128,7 +128,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // BrowsingDataLocalStorageHelper methods.
   virtual void StartFetching(
-      Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);
+      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
   virtual void CancelNotification() {}
 
  private:

@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback_old.h"
 #include "base/memory/ref_counted.h"

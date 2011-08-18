@@ -15,7 +15,7 @@ MockBrowsingDataFileSystemHelper::~MockBrowsingDataFileSystemHelper() {
 }
 
 void MockBrowsingDataFileSystemHelper::StartFetching(
-    Callback1<const std::vector<FileSystemInfo>& >::Type* callback) {
+    Callback1<const std::list<FileSystemInfo>& >::Type* callback) {
   callback_.reset(callback);
 }
 

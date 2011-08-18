@@ -27,7 +27,7 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
   explicit BrowsingDataIndexedDBHelperImpl(Profile* profile);
 
   virtual void StartFetching(
-      Callback1<const std::vector<IndexedDBInfo>& >::Type* callback);
+      Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
   virtual void CancelNotification();
   virtual void DeleteIndexedDBFile(const FilePath& file_path);
 
@@ -44,10 +44,10 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
   Profile* profile_;
 
   // This only mutates in the WEBKIT thread.
-  std::vector<IndexedDBInfo> indexed_db_info_;
+  std::list<IndexedDBInfo> indexed_db_info_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::vector<IndexedDBInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type >
       completion_callback_;
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
@@ -70,7 +70,7 @@ BrowsingDataIndexedDBHelperImpl::~BrowsingDataIndexedDBHelperImpl() {
 }
 
 void BrowsingDataIndexedDBHelperImpl::StartFetching(
-    Callback1<const std::vector<IndexedDBInfo>& >::Type* callback) {
+    Callback1<const std::list<IndexedDBInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -238,7 +238,7 @@ bool CannedBrowsingDataIndexedDBHelper::empty() const {
 }
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
-    Callback1<const std::vector<IndexedDBInfo>& >::Type* callback) {
+    Callback1<const std::list<IndexedDBInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -253,7 +253,7 @@ CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
 void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
-  for (std::vector<PendingIndexedDBInfo>::const_iterator
+  for (std::list<PendingIndexedDBInfo>::const_iterator
        info = pending_indexed_db_info_.begin();
        info != pending_indexed_db_info_.end(); ++info) {
     WebSecurityOrigin web_security_origin =
@@ -262,7 +262,7 @@ void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
     std::string security_origin(web_security_origin.toString().utf8());
 
     bool duplicate = false;
-    for (std::vector<IndexedDBInfo>::iterator
+    for (std::list<IndexedDBInfo>::iterator
          indexed_db = indexed_db_info_.begin();
          indexed_db != indexed_db_info_.end(); ++indexed_db) {
       if (indexed_db->origin == security_origin) {

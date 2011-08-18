@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_FILE_SYSTEM_HELPER_H_
 #pragma once
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/callback_old.h"
 #include "base/file_path.h"
@@ -32,7 +32,7 @@ class Profile;
 // the process before completion (it's destroyed, for example) then it must call
 // CancelNotification.
 //
-// The client's callback is passed a vector of FileSystemInfo objects containing
+// The client's callback is passed a list of FileSystemInfo objects containing
 // usage information for each origin's temporary and persistent file systems.
 //
 // Clients may remove an origin's file systems at any time (even before fetching
@@ -76,14 +76,14 @@ class BrowsingDataFileSystemHelper
   static BrowsingDataFileSystemHelper* Create(Profile* profile);
 
   // Starts the process of fetching file system data, which will call |callback|
-  // upon completion, passing it a constant vector of FileSystemInfo objects.
+  // upon completion, passing it a constant list of FileSystemInfo objects.
   // StartFetching must be called only in the UI thread; the provided Callback1
   // will likewise be executed asynchronously on the UI thread.
   //
   // BrowsingDataFileSystemHelper takes ownership of the Callback1, and is
   // responsible for deleting it once it's no longer needed.
   virtual void StartFetching(
-      Callback1<const std::vector<FileSystemInfo>& >::Type* callback) = 0;
+      Callback1<const std::list<FileSystemInfo>& >::Type* callback) = 0;
 
   // Cancels the notification callback associated with StartFetching. Clients
   // that are destroyed before the callback is triggered must call this, and
@@ -138,7 +138,7 @@ class CannedBrowsingDataFileSystemHelper
 
   // BrowsingDataFileSystemHelper methods.
   virtual void StartFetching(
-      Callback1<const std::vector<FileSystemInfo>& >::Type* callback);
+      Callback1<const std::list<FileSystemInfo>& >::Type* callback);
   virtual void CancelNotification();
 
   // Note that this doesn't actually have an implementation for this canned
@@ -158,11 +158,11 @@ class CannedBrowsingDataFileSystemHelper
 
   // Holds the current list of file systems returned to the client after
   // StartFetching is called.
-  std::vector<FileSystemInfo> file_system_info_;
+  std::list<FileSystemInfo> file_system_info_;
 
   // Holds the callback passed in at the beginning of the StartFetching workflow
   // so that it can be triggered via NotifyOnUIThread.
-  scoped_ptr<Callback1<const std::vector<FileSystemInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<FileSystemInfo>& >::Type >
       completion_callback_;
 
   // Indicates whether or not we're currently fetching information: set to true

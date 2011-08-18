@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_MOCK_BROWSING_DATA_QUOTA_HELPER_H_
 #pragma once
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +30,7 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
   virtual ~MockBrowsingDataQuotaHelper();
 
   scoped_ptr<FetchResultCallback> callback_;
-  std::vector<QuotaInfo> response_;
+  std::list<QuotaInfo> response_;
   Profile* profile_;
 };
 

@@ -59,12 +59,12 @@ class StopTestOnCallback {
     DCHECK(database_helper_);
   }
 
-  void Callback(const std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>&
+  void Callback(const std::list<BrowsingDataDatabaseHelper::DatabaseInfo>&
                 database_info_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ASSERT_EQ(1UL, database_info_list.size());
     EXPECT_EQ(std::string(kTestIdentifier1),
-              database_info_list.at(0).origin_identifier);
+              database_info_list.begin()->origin_identifier);
     MessageLoop::current()->Quit();
   }
 
@@ -103,16 +103,20 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataDatabaseHelper::DatabaseInfo> result =
+  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
       callback.result();
 
   ASSERT_EQ(3u, result.size());
-  EXPECT_STREQ(origin_str1, result[0].origin_identifier.c_str());
-  EXPECT_STREQ(db1, result[0].database_name.c_str());
-  EXPECT_STREQ(origin_str1, result[1].origin_identifier.c_str());
-  EXPECT_STREQ(db2, result[1].database_name.c_str());
-  EXPECT_STREQ(origin_str2, result[2].origin_identifier.c_str());
-  EXPECT_STREQ(db3, result[2].database_name.c_str());
+  std::list<BrowsingDataDatabaseHelper::DatabaseInfo>::iterator info =
+      result.begin();
+  EXPECT_STREQ(origin_str1, info->origin_identifier.c_str());
+  EXPECT_STREQ(db1, info->database_name.c_str());
+  info++;
+  EXPECT_STREQ(origin_str1, info->origin_identifier.c_str());
+  EXPECT_STREQ(db2, info->database_name.c_str());
+  info++;
+  EXPECT_STREQ(origin_str2, info->origin_identifier.c_str());
+  EXPECT_STREQ(db3, info->database_name.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
@@ -129,11 +133,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataDatabaseHelper::DatabaseInfo> result =
+  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
       callback.result();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_STREQ(origin_str, result[0].origin_identifier.c_str());
-  EXPECT_STREQ(db, result[0].database_name.c_str());
+  EXPECT_STREQ(origin_str, result.begin()->origin_identifier.c_str());
+  EXPECT_STREQ(db, result.begin()->database_name.c_str());
 }
 }  // namespace

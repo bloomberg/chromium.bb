@@ -71,19 +71,21 @@ class StopTestOnCallback {
   }
 
   void Callback(
-      const std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
+      const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
       local_storage_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // There's no guarantee on the order, ensure these files are there.
     const char* const kTestHosts[] = {"www.chromium.org", "www.google.com"};
     bool test_hosts_found[arraysize(kTestHosts)] = {false, false};
     ASSERT_EQ(arraysize(kTestHosts), local_storage_info.size());
+    typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
+        LocalStorageInfoList;
     for (size_t i = 0; i < arraysize(kTestHosts); ++i) {
-      for (size_t j = 0; j < local_storage_info.size(); ++j) {
-        BrowsingDataLocalStorageHelper::LocalStorageInfo info =
-            local_storage_info.at(j);
-        ASSERT_EQ("http", info.protocol);
-        if (info.host == kTestHosts[i]) {
+      for (LocalStorageInfoList::const_iterator info =
+           local_storage_info.begin(); info != local_storage_info.end();
+           ++info) {
+        ASSERT_EQ("http", info->protocol);
+        if (info->host == kTestHosts[i]) {
           ASSERT_FALSE(test_hosts_found[i]);
           test_hosts_found[i] = true;
         }
@@ -153,12 +155,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
+  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
       callback.result();
 
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(FilePath(file1).value(), result[0].file_path.BaseName().value());
-  EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
+  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator info =
+      result.begin();
+  EXPECT_EQ(FilePath(file1).value(), info->file_path.BaseName().value());
+  info++;
+  EXPECT_EQ(FilePath(file2).value(), info->file_path.BaseName().value());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
@@ -175,10 +180,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
+  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
       callback.result();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(FilePath(file).value(), result[0].file_path.BaseName().value());
+  EXPECT_EQ(FilePath(file).value(),
+            result.begin()->file_path.BaseName().value());
 }
 }  // namespace

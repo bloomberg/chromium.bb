@@ -56,7 +56,7 @@ BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
 }
 
 void BrowsingDataLocalStorageHelper::StartFetching(
-    Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
+    Callback1<const std::list<LocalStorageInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -181,7 +181,7 @@ bool CannedBrowsingDataLocalStorageHelper::empty() const {
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
-    Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
+    Callback1<const std::list<LocalStorageInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -207,7 +207,7 @@ void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
     std::string security_origin(web_security_origin.toString().utf8());
 
     bool duplicate = false;
-    for (std::vector<LocalStorageInfo>::iterator
+    for (std::list<LocalStorageInfo>::iterator
          local_storage = local_storage_info_.begin();
          local_storage != local_storage_info_.end(); ++local_storage) {
       if (local_storage->origin == security_origin) {

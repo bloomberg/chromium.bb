@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_DATABASE_HELPER_H_
 #pragma once
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,7 +57,7 @@ class BrowsingDataDatabaseHelper
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
-      Callback1<const std::vector<DatabaseInfo>& >::Type* callback);
+      Callback1<const std::list<DatabaseInfo>& >::Type* callback);
 
   // Cancels the notification callback (i.e., the window that created it no
   // longer exists).
@@ -77,10 +77,10 @@ class BrowsingDataDatabaseHelper
   void NotifyInUIThread();
 
   // This only mutates in the FILE thread.
-  std::vector<DatabaseInfo> database_info_;
+  std::list<DatabaseInfo> database_info_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::vector<DatabaseInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<DatabaseInfo>& >::Type >
       completion_callback_;
 
   // Indicates whether or not we're currently fetching information:
@@ -128,7 +128,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
 
   // BrowsingDataDatabaseHelper methods.
   virtual void StartFetching(
-      Callback1<const std::vector<DatabaseInfo>& >::Type* callback);
+      Callback1<const std::list<DatabaseInfo>& >::Type* callback);
   virtual void CancelNotification() {}
 
  private:
@@ -153,7 +153,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   mutable base::Lock lock_;
 
   // This may mutate on WEBKIT and UI threads.
-  std::vector<PendingDatabaseInfo> pending_database_info_;
+  std::list<PendingDatabaseInfo> pending_database_info_;
 
   Profile* profile_;
 

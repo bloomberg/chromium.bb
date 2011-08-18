@@ -26,7 +26,7 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // BrowsingDataFileSystemHelper implementation
   explicit BrowsingDataFileSystemHelperImpl(Profile* profile);
   virtual void StartFetching(
-      Callback1<const std::vector<FileSystemInfo>& >::Type* callback);
+      Callback1<const std::list<FileSystemInfo>& >::Type* callback);
   virtual void CancelNotification();
   virtual void DeleteFileSystemOrigin(const GURL& origin);
 
@@ -51,12 +51,12 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
 
   // Holds the current list of file systems returned to the client after
   // StartFetching is called. This only mutates in the FILE thread.
-  std::vector<FileSystemInfo> file_system_info_;
+  std::list<FileSystemInfo> file_system_info_;
 
   // Holds the callback passed in at the beginning of the StartFetching workflow
   // so that it can be triggered via NotifyOnUIThread. This only mutates on the
   // UI thread.
-  scoped_ptr<Callback1<const std::vector<FileSystemInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<FileSystemInfo>& >::Type >
       completion_callback_;
 
   // Indicates whether or not we're currently fetching information: set to true
@@ -79,7 +79,7 @@ BrowsingDataFileSystemHelperImpl::~BrowsingDataFileSystemHelperImpl() {
 }
 
 void BrowsingDataFileSystemHelperImpl::StartFetching(
-    Callback1<const std::vector<FileSystemInfo>& >::Type* callback) {
+    Callback1<const std::list<FileSystemInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -221,7 +221,7 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
   // out that we want to start using this in a context with many, many origins,
   // we should think about reworking the implementation.
   bool duplicate_origin = false;
-  for (std::vector<FileSystemInfo>::iterator
+  for (std::list<FileSystemInfo>::iterator
            file_system = file_system_info_.begin();
        file_system != file_system_info_.end();
        ++file_system) {
@@ -257,7 +257,7 @@ bool CannedBrowsingDataFileSystemHelper::empty() const {
 }
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(
-    Callback1<const std::vector<FileSystemInfo>& >::Type* callback) {
+    Callback1<const std::list<FileSystemInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);

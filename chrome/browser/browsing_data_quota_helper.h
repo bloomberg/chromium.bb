@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_QUOTA_HELPER_H_
 #pragma once
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
@@ -57,7 +57,7 @@ class BrowsingDataQuotaHelper
     int64 persistent_usage;
   };
 
-  typedef std::vector<QuotaInfo> QuotaInfoArray;
+  typedef std::list<QuotaInfo> QuotaInfoArray;
   typedef Callback1<const QuotaInfoArray&>::Type FetchResultCallback;
 
   static BrowsingDataQuotaHelper* Create(Profile* profile);

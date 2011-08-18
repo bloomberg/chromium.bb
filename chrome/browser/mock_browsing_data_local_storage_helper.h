@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_MOCK_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_
 #pragma once
 
+#include <list>
 #include <map>
-#include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 // Mock for BrowsingDataLocalStorageHelper.
-// Use AddLocalStorageSamples() or add directly to response_ vector, then
+// Use AddLocalStorageSamples() or add directly to response_ list, then
 // call Notify().
 class MockBrowsingDataLocalStorageHelper
     : public BrowsingDataLocalStorageHelper {
@@ -21,7 +21,7 @@ class MockBrowsingDataLocalStorageHelper
   explicit MockBrowsingDataLocalStorageHelper(Profile* profile);
 
   virtual void StartFetching(
-      Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);
+      Callback1<const std::list<LocalStorageInfo>& >::Type* callback);
 
   virtual void CancelNotification();
 
@@ -47,12 +47,12 @@ class MockBrowsingDataLocalStorageHelper
 
   Profile* profile_;
 
-  scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<LocalStorageInfo>& >::Type >
       callback_;
 
   std::map<const FilePath::StringType, bool> files_;
 
-  std::vector<LocalStorageInfo> response_;
+  std::list<LocalStorageInfo> response_;
 };
 
 #endif  // CHROME_BROWSER_MOCK_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_

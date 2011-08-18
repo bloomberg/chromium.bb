@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_BROWSING_DATA_HELPER_BROWSERTEST_H_
 #pragma once
 
-#include <vector>
+#include <list>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -24,13 +24,13 @@ class BrowsingDataHelperCallback {
       : has_result_(false) {
   }
 
-  const std::vector<T>& result() {
+  const std::list<T>& result() {
     MessageLoop::current()->Run();
     DCHECK(has_result_);
     return result_;
   }
 
-  void callback(const std::vector<T>& info) {
+  void callback(const std::list<T>& info) {
     result_ = info;
     has_result_ = true;
     MessageLoop::current()->Quit();
@@ -38,7 +38,7 @@ class BrowsingDataHelperCallback {
 
  private:
   bool has_result_;
-  std::vector<T> result_;
+  std::list<T> result_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataHelperCallback);
 };

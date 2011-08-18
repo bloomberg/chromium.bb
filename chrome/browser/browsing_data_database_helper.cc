@@ -56,7 +56,7 @@ BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 }
 
 void BrowsingDataDatabaseHelper::StartFetching(
-    Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
+    Callback1<const std::list<DatabaseInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -193,7 +193,7 @@ bool CannedBrowsingDataDatabaseHelper::empty() const {
 }
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(
-    Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
+    Callback1<const std::list<DatabaseInfo>& >::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
@@ -207,7 +207,7 @@ CannedBrowsingDataDatabaseHelper::~CannedBrowsingDataDatabaseHelper() {}
 
 void CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
-  for (std::vector<PendingDatabaseInfo>::const_iterator
+  for (std::list<PendingDatabaseInfo>::const_iterator
        info = pending_database_info_.begin();
        info != pending_database_info_.end(); ++info) {
     WebSecurityOrigin web_security_origin =
@@ -217,7 +217,7 @@ void CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread() {
         web_security_origin.databaseIdentifier().utf8();
 
     bool duplicate = false;
-    for (std::vector<DatabaseInfo>::iterator database = database_info_.begin();
+    for (std::list<DatabaseInfo>::iterator database = database_info_.begin();
          database != database_info_.end(); ++database) {
       if (database->origin_identifier == origin_identifier &&
           database->database_name == info->name) {

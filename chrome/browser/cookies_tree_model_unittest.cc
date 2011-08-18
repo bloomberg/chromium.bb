@@ -325,6 +325,10 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
 
   cookies_model->DeleteAllStoredObjects();
 
+  // Make sure the nodes are also deleted from the model's cache.
+  // http://crbug.com/43249
+  cookies_model->UpdateSearchResults(std::wstring());
+
   {
     SCOPED_TRACE("After removing");
     EXPECT_EQ(1, cookies_model->GetRoot()->GetTotalNodeCount());

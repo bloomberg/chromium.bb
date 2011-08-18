@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_BROWSING_DATA_INDEXED_DB_HELPER_H_
 #pragma once
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/callback_old.h"
 #include "base/file_path.h"
@@ -64,7 +64,7 @@ class BrowsingDataIndexedDBHelper
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
-      Callback1<const std::vector<IndexedDBInfo>& >::Type* callback) = 0;
+      Callback1<const std::list<IndexedDBInfo>& >::Type* callback) = 0;
   // Cancels the notification callback (i.e., the window that created it no
   // longer exists).
   // This must be called only in the UI thread.
@@ -103,7 +103,7 @@ class CannedBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper methods.
   virtual void StartFetching(
-      Callback1<const std::vector<IndexedDBInfo>& >::Type* callback);
+      Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
   virtual void CancelNotification();
   virtual void DeleteIndexedDBFile(const FilePath& file_path) {}
 
@@ -130,13 +130,13 @@ class CannedBrowsingDataIndexedDBHelper
   mutable base::Lock lock_;
 
   // This may mutate on WEBKIT and UI threads.
-  std::vector<PendingIndexedDBInfo> pending_indexed_db_info_;
+  std::list<PendingIndexedDBInfo> pending_indexed_db_info_;
 
   // This only mutates on the WEBKIT thread.
-  std::vector<IndexedDBInfo> indexed_db_info_;
+  std::list<IndexedDBInfo> indexed_db_info_;
 
   // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::vector<IndexedDBInfo>& >::Type >
+  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type >
       completion_callback_;
 
   // Indicates whether or not we're currently fetching information:

@@ -143,7 +143,6 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
   is_fetching_ = false;
 
   QuotaInfoArray result;
-  result.reserve(quota_info_.size());
 
   for (std::map<std::string, QuotaInfo>::iterator itr = quota_info_.begin();
        itr != quota_info_.end();

@@ -42,12 +42,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
+  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
       callback.result();
 
   ASSERT_EQ(2U, result.size());
-  EXPECT_EQ(FilePath(file1).value(), result[0].file_path.BaseName().value());
-  EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
+  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>::iterator info =
+      result.begin();
+  EXPECT_EQ(FilePath(file1).value(), info->file_path.BaseName().value());
+  info++;
+  EXPECT_EQ(FilePath(file2).value(), info->file_path.BaseName().value());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
@@ -65,10 +68,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   helper->StartFetching(
       NewCallback(&callback, &TestCompletionCallback::callback));
 
-  std::vector<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
+  std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo> result =
       callback.result();
 
   ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(FilePath(file).value(), result[0].file_path.BaseName().value());
+  EXPECT_EQ(FilePath(file).value(),
+            result.begin()->file_path.BaseName().value());
 }
 }  // namespace
