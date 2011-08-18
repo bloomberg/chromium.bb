@@ -30,6 +30,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
  protected:
   enum InstallType {
     INSTALL_TYPE_COMPONENT,
+    INSTALL_TYPE_UNPACKED,
     INSTALL_TYPE_FROM_WEBSTORE,
     INSTALL_TYPE_NON_WEBSTORE,
   };
@@ -45,7 +46,15 @@ class NaClExtensionTest : public ExtensionBrowserTest {
         }
         break;
 
+      case INSTALL_TYPE_UNPACKED:
+        // Install the extension from a folder so it's unpacked.
+        if (LoadExtension(file_path)) {
+          extension = service->GetExtensionById(kExtensionId, false);
+        }
+        break;
+
       case INSTALL_TYPE_FROM_WEBSTORE:
+        // Install native_client.crx from the webstore.
         if (InstallExtensionFromWebstore(file_path, 1)) {
           extension = service->GetExtensionById(last_loaded_extension_id_,
                                                 false);
@@ -53,6 +62,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
         break;
 
       case INSTALL_TYPE_NON_WEBSTORE:
+        // Install native_client.crx but not from the webstore.
         if (ExtensionBrowserTest::InstallExtension(file_path, 1)) {
           extension = service->GetExtensionById(last_loaded_extension_id_,
                                                 false);
@@ -106,6 +116,17 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, ComponentExtension) {
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_COMPONENT);
   ASSERT_TRUE(extension);
+  ASSERT_EQ(extension->location(), Extension::COMPONENT);
+  CheckPluginsCreated(extension, true);
+}
+
+// Test that the NaCl plugin isn't blocked for unpacked extensions.
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
+  ASSERT_TRUE(test_server()->Start());
+
+  const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(extension->location(), Extension::LOAD);
   CheckPluginsCreated(extension, true);
 }
 

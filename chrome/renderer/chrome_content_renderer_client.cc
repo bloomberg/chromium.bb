@@ -426,12 +426,13 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
         // Create the NaCl plugin only if the .nexe is part of an extension
         // that was installed from the Chrome Web Store, or part of a component
-        // extension.
+        // extension, or part of an unpacked extension.
         const Extension* extension =
             extension_dispatcher_->extensions()->GetByURL(nexe_url);
         allow_nacl = extension &&
             (extension->from_webstore() ||
-            extension->location() == Extension::COMPONENT);
+            extension->location() == Extension::COMPONENT ||
+            extension->location() == Extension::LOAD);
       }
 
       if (!allow_nacl) {
