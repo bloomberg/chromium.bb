@@ -220,7 +220,11 @@ TEST_F(UserScriptMasterTest, SkipBOMAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  UserScriptMaster::ScriptReloader::LoadUserScripts(&user_scripts);
+  UserScriptMaster::ScriptReloader* script_reloader =
+      new UserScriptMaster::ScriptReloader(NULL);
+  script_reloader->AddRef();
+  script_reloader->LoadUserScripts(&user_scripts);
+  script_reloader->Release();
 
   EXPECT_EQ(content.substr(3),
             user_scripts[0].js_scripts()[0].GetContent().as_string());
@@ -239,7 +243,11 @@ TEST_F(UserScriptMasterTest, LeaveBOMNotAtTheBeginning) {
   UserScriptList user_scripts;
   user_scripts.push_back(user_script);
 
-  UserScriptMaster::ScriptReloader::LoadUserScripts(&user_scripts);
+  UserScriptMaster::ScriptReloader* script_reloader =
+      new UserScriptMaster::ScriptReloader(NULL);
+  script_reloader->AddRef();
+  script_reloader->LoadUserScripts(&user_scripts);
+  script_reloader->Release();
 
   EXPECT_EQ(content, user_scripts[0].js_scripts()[0].GetContent().as_string());
 }

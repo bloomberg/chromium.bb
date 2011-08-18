@@ -92,3 +92,8 @@ IN_PROC_BROWSER_TEST_F(
       &styles_injected));
   ASSERT_TRUE(styles_injected);
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptCSSLocalization) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/css_l10n")) << message_;
+}

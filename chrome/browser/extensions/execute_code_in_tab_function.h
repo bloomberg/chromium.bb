@@ -33,6 +33,17 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // arguments has been loaded.
   void DidLoadFile(bool success, const std::string& data);
 
+  // Runs on FILE thread. Loads message bundles for the extension and
+  // localizes the CSS data. Calls back DidLoadAndLocalizeFile on the UI thread.
+  void LocalizeCSS(
+      const std::string& data,
+      const std::string& extension_id,
+      const FilePath& extension_path,
+      const std::string& extension_default_locale);
+
+  // Called when contents from the loaded file have been localized.
+  void DidLoadAndLocalizeFile(bool success, const std::string& data);
+
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef.
   bool Execute(const std::string& code_string);

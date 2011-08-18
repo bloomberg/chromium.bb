@@ -79,3 +79,13 @@ bool ExtensionSet::ExtensionBindingsAllowed(const GURL& url) const {
 
   return false;
 }
+
+void ExtensionSet::GetExtensionsPathAndDefaultLocale(
+    std::map<std::string, ExtensionPathAndDefaultLocale>& info) const {
+  info.clear();
+  ExtensionMap::const_iterator i = extensions_.begin();
+  for (; i != extensions_.end(); ++i) {
+    info[i->first] = std::make_pair(i->second->path(),
+                                    i->second->default_locale());
+  }
+}
