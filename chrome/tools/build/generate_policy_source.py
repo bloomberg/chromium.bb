@@ -171,6 +171,8 @@ message PolicyOptions {
     MANDATORY = 0;
     // The user may choose to override the given settings.
     RECOMMENDED = 1;
+    // No policy value is present and the policy should be ignored.
+    UNSET = 2;
   }
   optional PolicyMode mode = 1 [default = MANDATORY];
 }
@@ -306,16 +308,22 @@ def _WritePolicyCode(file, policy):
   file.write('      PolicyMap* destination = mandatory;\n'
              '      if (%s.has_policy_options()) {\n'
              '        switch(%s.policy_options().mode()) {\n' %
-              (proto_name, proto_name))
-  file.write('          case em::PolicyOptions::RECOMMENDED:\n'
+             (proto_name, proto_name))
+  file.write('          case em::PolicyOptions::MANDATORY:\n'
+             '            destination = mandatory;\n'
+             '            break;\n'
+             '          case em::PolicyOptions::RECOMMENDED:\n'
              '            destination = recommended;\n'
              '            break;\n'
-             '          case em::PolicyOptions::MANDATORY:\n'
+             '          case em::PolicyOptions::UNSET:\n'
+             '          default:\n'
+             '            destination = NULL;\n'
              '            break;\n'
              '        }\n'
              '      }\n'
-             '      destination->Set(kPolicy%s, value);\n' %
-              policy['name'])
+             '      if (destination)\n'
+             '        destination->Set(kPolicy%s, value);\n' %
+             policy['name'])
   file.write('    }\n'
              '  }\n')
 

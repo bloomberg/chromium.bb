@@ -148,6 +148,15 @@ TEST_F(UserPolicyCacheTest, DecodePolicy) {
   settings.mutable_policyrefreshrate()->set_policyrefreshrate(5);
   settings.mutable_policyrefreshrate()->mutable_policy_options()->set_mode(
       em::PolicyOptions::RECOMMENDED);
+  settings.mutable_showhomebutton()->set_showhomebutton(true);
+  settings.mutable_showhomebutton()->mutable_policy_options()->set_mode(
+      em::PolicyOptions::UNSET);
+#ifdef NDEBUG
+  // Setting an invalid PolicyMode enum value triggers a DCHECK in protobuf.
+  settings.mutable_homepageisnewtabpage()->set_homepageisnewtabpage(true);
+  settings.mutable_homepageisnewtabpage()->mutable_policy_options()->set_mode(
+      static_cast<em::PolicyOptions::PolicyMode>(-1));
+#endif
   PolicyMap mandatory_policy;
   PolicyMap recommended_policy;
   DecodePolicy(settings, &mandatory_policy, &recommended_policy);
