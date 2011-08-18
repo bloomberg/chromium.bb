@@ -62,27 +62,52 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebGestureEvent;
 
-// Declare symbols that are part of the 10.7 SDK.
+// Declare things that are part of the 10.6 SDK.
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+enum {
+  NSEventTypeBeginGesture     = 19,
+  NSEventTypeEndGesture       = 20
+};
+
+enum {
+  NSEventMaskBeginGesture     = 1 << NSEventTypeBeginGesture,
+  NSEventMaskEndGesture       = 1 << NSEventTypeEndGesture,
+};
+
+typedef unsigned long long NSEventMask;
+
+@class NSTextInputContext;
+@interface NSResponder (AppKitDetails)
+- (NSTextInputContext*)inputContext;
+@end
+#endif  // 10.6
+
+// Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 enum {
-    NSEventPhaseNone        = 0, // event not associated with a phase.
-    NSEventPhaseBegan       = 0x1 << 0,
-    NSEventPhaseStationary  = 0x1 << 1,
-    NSEventPhaseChanged     = 0x1 << 2,
-    NSEventPhaseEnded       = 0x1 << 3,
-    NSEventPhaseCancelled   = 0x1 << 4,
+  NSEventPhaseNone        = 0, // event not associated with a phase.
+  NSEventPhaseBegan       = 0x1 << 0,
+  NSEventPhaseStationary  = 0x1 << 1,
+  NSEventPhaseChanged     = 0x1 << 2,
+  NSEventPhaseEnded       = 0x1 << 3,
+  NSEventPhaseCancelled   = 0x1 << 4,
 };
 typedef NSUInteger NSEventPhase;
 
 enum {
-     NSEventSwipeTrackingLockDirection = 0x1 << 0,
-     NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
+  NSEventSwipeTrackingLockDirection = 0x1 << 0,
+  NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
 };
 typedef NSUInteger NSEventSwipeTrackingOptions;
 
 @interface NSEvent (LionAPI)
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
+
++ (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
+                                   handler:(NSEvent* (^)(NSEvent*))block;
++ (void)removeMonitor:(id)eventMonitor;
 
 - (NSEventPhase)phase;
 - (CGFloat)scrollingDeltaX;
@@ -117,17 +142,6 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (void)cancelChildPopups;
 - (void)checkForPluginImeCancellation;
 @end
-
-// This API was published since 10.6. Provide the declaration so it can be
-// called below when building with the 10.5 SDK.
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-@class NSTextInputContext;
-@interface NSResponder (AppKitDetails)
-- (NSTextInputContext *)inputContext;
-- (void)beginGestureWithEvent:(NSEvent*)event;
-- (void)endGestureWithEvent:(NSEvent*)event;
-@end
-#endif
 
 // NSEvent subtype for scroll gestures events.
 static const short kIOHIDEventTypeScroll = 6;
@@ -1280,21 +1294,42 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 }
 
+- (void)shortCircuitEndGestureWithEvent:(NSEvent*)event {
+  DCHECK(base::mac::IsOSLionOrLater());
+
+  if ([event subtype] != kIOHIDEventTypeScroll)
+    return;
+
+  if (renderWidgetHostView_->render_widget_host_) {
+    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
+  }
+
+  if (endGestureMonitor_) {
+    [NSEvent removeMonitor:endGestureMonitor_];
+    endGestureMonitor_ = nil;
+  }
+}
+
 - (void)beginGestureWithEvent:(NSEvent*)event {
   if (base::mac::IsOSLionOrLater() &&
       [event subtype] == kIOHIDEventTypeScroll &&
       renderWidgetHostView_->render_widget_host_) {
     WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
-  }
-}
 
-- (void)endGestureWithEvent:(NSEvent*)event {
-  if (base::mac::IsOSLionOrLater() &&
-      [event subtype] == kIOHIDEventTypeScroll &&
-      renderWidgetHostView_->render_widget_host_) {
-    WebGestureEvent webEvent = WebInputEventFactory::gestureEvent(event, self);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
+    // Use an NSEvent monitor to get the gesture-end event. This is done in
+    // order to get the gesture-end, even if the view is not visible, which is
+    // not the case with -endGestureWithEvent:. An example scenario where this
+    // may happen is switching tabs while a gesture is in progress.
+    if (!endGestureMonitor_) {
+      endGestureMonitor_ =
+          [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskEndGesture
+              handler:^(NSEvent* blockEvent) {
+                        [self shortCircuitEndGestureWithEvent:blockEvent];
+                        return blockEvent;
+                      }];
+    }
   }
 }
 
@@ -2267,7 +2302,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 - (void)_sendToolTipMouseExited {
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
-  NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
+  NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseExited
                                               location:NSMakePoint(0, 0)
                                          modifierFlags:0
                                              timestamp:0
@@ -2283,7 +2318,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 - (void)_sendToolTipMouseEntered {
   // Nothing matters except window, trackingNumber, and userData.
   int windowNumber = [[self window] windowNumber];
-  NSEvent *fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
+  NSEvent* fakeEvent = [NSEvent enterExitEventWithType:NSMouseEntered
                                               location:NSMakePoint(0, 0)
                                          modifierFlags:0
                                              timestamp:0

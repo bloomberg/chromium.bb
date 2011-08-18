@@ -136,6 +136,9 @@ class RWHVMEditCommandHelper;
   // If the main frame has a horizontal scrollbar.
   // Used for history swiping.
   BOOL hasHorizontalScrollbar_;
+
+  // Event monitor for gesture-end events.
+  id endGestureMonitor_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
