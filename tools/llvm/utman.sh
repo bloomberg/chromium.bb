@@ -851,28 +851,27 @@ glibc() {
   local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
-  local VER=53376404
   local LIBS2="crt1.o crti.o crtn.o \
                libc.a libc_nonshared.a \
-               libc-2.9.so libc.so libc.so.${VER} \
-               libm-2.9.so libm.a libm.so libm.so.${VER} \
-               libdl-2.9.so libdl.so.${VER} libdl.so libdl.a \
+               libc-2.9.so libc.so libc.so.* \
+               libm-2.9.so libm.a libm.so libm.so.* \
+               libdl-2.9.so libdl.so.* libdl.so libdl.a \
                libpthread-2.9.so libpthread.a libpthread.so \
-               libpthread.so.${VER} libpthread_nonshared.a \
+               libpthread.so.* libpthread_nonshared.a \
                runnable-ld.so \
                ld-2.9.so"
 
   for lib in ${LIBS1} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/32/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/32/"${lib} \
        "${PNACL_X8632_ROOT}"
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/"${lib} \
        "${PNACL_X8664_ROOT}"
   done
 
   for lib in ${LIBS2} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/"${lib} \
           "${PNACL_X8632_ROOT}"
-    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/"${lib} \
           "${PNACL_X8664_ROOT}"
   done
 
@@ -887,13 +886,21 @@ glibc() {
   # ld-linux has different sonames across 32/64.
   # Create symlinks to make them look the same.
   # TODO(pdox): Can this be fixed in glibc?
-  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.${VER} \
-     "${PNACL_X8632_ROOT}"
-  ln -sf ld-linux.so.${VER} "${PNACL_X8632_ROOT}"/ld-linux-x86-64.so.${VER}
+  for ldso in "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.*
+  do
+    local ldsobase=$(basename "${ldso}")
+    cp -a "${ldso}" "${PNACL_X8632_ROOT}"
+    ln -sf "${ldsobase}" \
+           "${PNACL_X8632_ROOT}"/${ldsobase/ld-linux/ld-linux-x86-64}
+  done
 
-  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.${VER} \
-     "${PNACL_X8664_ROOT}"
-  ln -sf ld-linux-x86-64.so.${VER} "${PNACL_X8664_ROOT}"/ld-linux.so.${VER}
+  for ldso in "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.*
+  do
+    local ldsobase=$(basename "${ldso}")
+    cp -a "${ldso}" "${PNACL_X8664_ROOT}"
+    ln -sf "${ldsobase}" \
+           "${PNACL_X8664_ROOT}"/${ldsobase/ld-linux-x86-64/ld-linux}
+  done
 
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
