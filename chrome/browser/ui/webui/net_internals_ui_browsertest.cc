@@ -17,9 +17,6 @@
 
 namespace {
 
-const string16 kPassTitle = ASCIIToUTF16("Test Passed");
-const string16 kFailTitle = ASCIIToUTF16("Test Failed");
-
 // Class to handle messages from the renderer needed by certain tests.
 class NetInternalsTestMessageHandler : public WebUIMessageHandler {
  public:
@@ -61,8 +58,6 @@ void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
       ui_test_utils::BROWSER_TEST_NONE);
 }
 
-// Each test involves calls a single Javascript function and then waits for the
-// title to be changed to "Test Passed" or "Test Failed" when done.
 class NetInternalsTest : public WebUIBrowserTest {
  public:
   NetInternalsTest();
@@ -73,22 +68,6 @@ class NetInternalsTest : public WebUIBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
-  // Runs the specified Javascript test function with the specified arguments
-  // and waits for the title to change to "Test Passed" or "Test Failed".
-  void RunTestAndWaitForTitle(const std::string& function_name,
-                              const ListValue& function_arguments);
-
-  // Same as above, with constant number of arguments for easy use.  Will also
-  // free arguments.
-  void RunTestAndWaitForTitle(const std::string& function_name);
-  void RunTestAndWaitForTitle(const std::string& function_name, Value* arg);
-  void RunTestAndWaitForTitle(const std::string& function_name,
-                              Value* arg1, Value* arg2);
-  void RunTestAndWaitForTitle(const std::string& function_name,
-                              Value* arg1, Value* arg2, Value* arg3);
-
-  void set_expected_title_(const string16& value) { expected_title_ = value; }
-
  private:
   virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
     message_handler_.set_browser(browser());
@@ -97,13 +76,10 @@ class NetInternalsTest : public WebUIBrowserTest {
 
   NetInternalsTestMessageHandler message_handler_;
 
-  // The expected title at the end of the test.  Defaults to kPassTitle.
-  string16 expected_title_;
-
   DISALLOW_COPY_AND_ASSIGN(NetInternalsTest);
 };
 
-NetInternalsTest::NetInternalsTest() : expected_title_(kPassTitle) {
+NetInternalsTest::NetInternalsTest() {
 }
 
 NetInternalsTest::~NetInternalsTest() {
@@ -138,92 +114,41 @@ void NetInternalsTest::SetUpOnMainThread() {
                                GURL(chrome::kChromeUINetInternalsURL));
 }
 
-void NetInternalsTest::RunTestAndWaitForTitle(
-    const std::string& function_name,
-    const ListValue& function_arguments) {
-  ui_test_utils::TitleWatcher title_watcher(browser()->GetTabContentsAt(0),
-                                            kPassTitle);
-  title_watcher.AlsoWaitForTitle(kFailTitle);
-
-  ConstValueVector arguments;
-  StringValue function_name_arg(function_name);
-  arguments.push_back(&function_name_arg);
-  arguments.push_back(&function_arguments);
-
-  ASSERT_TRUE(RunJavascriptFunction("netInternalsTest.runTest", arguments));
-  ASSERT_EQ(expected_title_, title_watcher.WaitAndGetTitle());
-}
-
-void NetInternalsTest::RunTestAndWaitForTitle(
-    const std::string& function_name) {
-  ListValue test_arguments;
-  RunTestAndWaitForTitle(function_name, test_arguments);
-}
-
-void NetInternalsTest::RunTestAndWaitForTitle(const std::string& function_name,
-                                              Value* arg) {
-  ListValue test_arguments;
-  test_arguments.Append(arg);
-  RunTestAndWaitForTitle(function_name, test_arguments);
-}
-
-void NetInternalsTest::RunTestAndWaitForTitle(const std::string& function_name,
-                                              Value* arg1, Value* arg2) {
-  ListValue test_arguments;
-  test_arguments.Append(arg1);
-  test_arguments.Append(arg2);
-  RunTestAndWaitForTitle(function_name, test_arguments);
-}
-
-void NetInternalsTest::RunTestAndWaitForTitle(const std::string& function_name,
-                                              Value* arg1, Value* arg2,
-                                              Value* arg3) {
-  ListValue test_arguments;
-  test_arguments.Append(arg1);
-  test_arguments.Append(arg2);
-  test_arguments.Append(arg3);
-  RunTestAndWaitForTitle(function_name, test_arguments);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // net_internals_ui.js
 ////////////////////////////////////////////////////////////////////////////////
 
 // Checks testDone.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsDone) {
-  RunTestAndWaitForTitle("NetInternalsDone");
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsDone"));
 }
 
 // Checks a failed expect statement.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExpectFail) {
-  set_expected_title_(kFailTitle);
-  RunTestAndWaitForTitle("NetInternalsExpectFail");
+  EXPECT_FALSE(RunJavascriptAsyncTest("netInternalsExpectFail"));
 }
 
 // Checks a failed assert statement.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsAssertFail) {
-  set_expected_title_(kFailTitle);
-  RunTestAndWaitForTitle("NetInternalsAssertFail");
+  EXPECT_FALSE(RunJavascriptAsyncTest("netInternalsAssertFail"));
 }
 
 // Checks that testDone works when called by an observer in response to an
 // event.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverDone) {
-  RunTestAndWaitForTitle("NetInternalsObserverDone");
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsObserverDone"));
 }
 
 // Checks that a failed expect works when called by an observer in response
 // to an event.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverExpectFail) {
-  set_expected_title_(kFailTitle);
-  RunTestAndWaitForTitle("NetInternalsObserverExpectFail");
+  EXPECT_FALSE(RunJavascriptAsyncTest("netInternalsObserverExpectFail"));
 }
 
 // Checks that a failed assertion works when called by an observer in response
 // to an event.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverAssertFail) {
-  set_expected_title_(kFailTitle);
-  RunTestAndWaitForTitle("NetInternalsObserverAssertFail");
+  EXPECT_FALSE(RunJavascriptAsyncTest("netInternalsObserverAssertFail"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsObserverAssertFail) {
 
 // Checks tabs initialization and switching between tabs.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
-  RunTestAndWaitForTitle("NetInternalsTourTabs");
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTourTabs"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
 // TODO(mmenke):  Add some checks for the import view.
 // TODO(mmenke):  Add a test for a log created with --log-net-log.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
-  RunTestAndWaitForTitle("NetInternalsExportImportDump");
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsExportImportDump"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,29 +182,29 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
 // the table.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTestViewPassTwice) {
   ASSERT_TRUE(test_server()->Start());
-  RunTestAndWaitForTitle(
-      "NetInternalsTestView",
+  EXPECT_TRUE(RunJavascriptAsyncTest(
+      "netInternalsTestView",
       // URL that results in success.
       Value::CreateStringValue(
           test_server()->GetURL("files/title1.html").spec()),
       // Resulting error code of the first test.
       Value::CreateIntegerValue(net::OK),
       // Number of times to run the test suite.
-      Value::CreateIntegerValue(2));
+      Value::CreateIntegerValue(2)));
 }
 
 // Runs the test suite twice, expecting a failing result the first time.  Checks
 // the first result, the order of events that occur, and the number of rows in
 // the table.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTestViewFailTwice) {
-  RunTestAndWaitForTitle(
-      "NetInternalsTestView",
+  EXPECT_TRUE(RunJavascriptAsyncTest(
+      "netInternalsTestView",
       // URL that results in an error, due to the port.
       Value::CreateStringValue("http://127.0.0.1:7/"),
       // Resulting error code of the first test.
       Value::CreateIntegerValue(net::ERR_UNSAFE_PORT),
       // Number of times to run the test suite.
-      Value::CreateIntegerValue(2));
+      Value::CreateIntegerValue(2)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,27 +214,27 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTestViewFailTwice) {
 // Prerender a page and navigate to it, once prerendering starts.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewSucceed) {
   ASSERT_TRUE(test_server()->Start());
-  RunTestAndWaitForTitle(
-      "NetInternalsPrerenderView",
+  EXPECT_TRUE(RunJavascriptAsyncTest(
+      "netInternalsPrerenderView",
       // URL that can be prerendered.
       Value::CreateStringValue(
           test_server()->GetURL("files/title1.html").spec()),
       Value::CreateBooleanValue(true),
       Value::CreateStringValue(
-          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_USED)));
+          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_USED))));
 }
 
 // Prerender a page that is expected to fail.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewFail) {
   ASSERT_TRUE(test_server()->Start());
-  RunTestAndWaitForTitle(
-      "NetInternalsPrerenderView",
+  EXPECT_TRUE(RunJavascriptAsyncTest(
+      "netInternalsPrerenderView",
       // URL that can't be prerendered, since it triggers a download.
       Value::CreateStringValue(
           test_server()->GetURL("files/download-test1.lib").spec()),
       Value::CreateBooleanValue(false),
       Value::CreateStringValue(
-          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_DOWNLOAD)));
+          prerender::NameFromFinalStatus(prerender::FINAL_STATUS_DOWNLOAD))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -319,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewFail) {
 // Check that we correctly remove cookies and login information.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest,
                        NetInternalsLogViewPainterStripInfo) {
-  RunTestAndWaitForTitle("NetInternalsLogViewPainterStripInfo");
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsLogViewPainterStripInfo"));
 }
 
 }  // namespace

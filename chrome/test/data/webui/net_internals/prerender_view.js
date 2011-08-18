@@ -15,7 +15,7 @@
  * |finalStatus| is the expected status value when the page reaches the
  * history.
  */
-netInternalsTest.test('NetInternalsPrerenderView',
+netInternalsTest.test('netInternalsPrerenderView',
                       function (url, shouldSucceed, finalStatus) {
   // IDs for special HTML elements in prerender_view.html
   var HISTORY_DIV_ID = 'prerender-view-history-div';
@@ -142,7 +142,7 @@ netInternalsTest.test('NetInternalsPrerenderView',
       expectEquals(this.url_, prerenderInfo.history[0].url);
       expectEquals(this.finalStatus_, prerenderInfo.history[0].final_status);
 
-      netInternalsTest.testDone();
+      testDone();
     }
   };
 

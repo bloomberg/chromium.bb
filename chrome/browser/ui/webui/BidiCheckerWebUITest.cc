@@ -46,8 +46,8 @@ void WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(const char pageURL[],
                                                        bool isRTL) {
   ui_test_utils::NavigateToURL(browser(), GURL(pageURL));
   ASSERT_TRUE(RunJavascriptTest("runBidiChecker",
-                                *Value::CreateStringValue(pageURL),
-                                *Value::CreateBooleanValue(isRTL)));
+                                Value::CreateStringValue(pageURL),
+                                Value::CreateBooleanValue(isRTL)));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestMainHistoryPageLTR) {

@@ -6,7 +6,7 @@
  * Exports a log dump to a string and loads it.  Makes sure no errors occur,
  * and checks visibility of tabs aftwards.
  */
-netInternalsTest.test('NetInternalsExportImportDump', function() {
+netInternalsTest.test('netInternalsExportImportDump', function() {
   // Callback passed to |createLogDumpAsync|.  Tries to load the dumped log
   // file, and then checks tab visibility afterwards.
   // @param {string} logDumpText Log dump, as a string.
@@ -32,7 +32,7 @@ netInternalsTest.test('NetInternalsExportImportDump', function() {
     };
 
     netInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
-    netInternalsTest.testDone();
+    testDone();
   }
 
   logutil.createLogDumpAsync('Log dump test', onLogDumpCreated);

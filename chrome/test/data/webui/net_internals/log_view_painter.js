@@ -5,7 +5,7 @@
 /**
  * Tests the behavior of stripCookiesAndLoginInfo.
  */
-netInternalsTest.test('NetInternalsLogViewPainterStripInfo', function() {
+netInternalsTest.test('netInternalsLogViewPainterStripInfo', function() {
   // Each entry in |expectations| is a list consisting of a header element
   // before and after applying the filter.  If the second entry is null, the
   // element should be unmodified.
@@ -78,5 +78,5 @@ netInternalsTest.test('NetInternalsLogViewPainterStripInfo', function() {
       }
     }
   }
-  netInternalsTest.testDone();
+  testDone();
 });

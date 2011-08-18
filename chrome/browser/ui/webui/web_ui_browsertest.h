@@ -49,12 +49,13 @@ class WebUIBrowserTest
 
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.
+  // Takes ownership of Value arguments.
   bool RunJavascriptFunction(const std::string& function_name);
   bool RunJavascriptFunction(const std::string& function_name,
-                             const base::Value& arg);
+                             base::Value* arg);
   bool RunJavascriptFunction(const std::string& function_name,
-                             const base::Value& arg1,
-                             const base::Value& arg2);
+                             base::Value* arg1,
+                             base::Value* arg2);
   bool RunJavascriptFunction(const std::string& function_name,
                              const ConstValueVector& function_arguments);
 
@@ -63,23 +64,28 @@ class WebUIBrowserTest
                           const std::string& test_name);
 
   // Runs a test that may include calls to functions in test_api.js.
+  // Takes ownership of Value arguments.
   bool RunJavascriptTest(const std::string& test_name);
   bool RunJavascriptTest(const std::string& test_name,
-                         const base::Value& arg);
+                         base::Value* arg);
   bool RunJavascriptTest(const std::string& test_name,
-                         const base::Value& arg1,
-                         const base::Value& arg2);
+                         base::Value* arg1,
+                         base::Value* arg2);
   bool RunJavascriptTest(const std::string& test_name,
                          const ConstValueVector& test_arguments);
 
   // Runs a test that may include calls to functions in test_api.js, and waits
-  // for call to asyncTestDone().
+  // for call to asyncTestDone().  Takes ownership of Value arguments.
   bool RunJavascriptAsyncTest(const std::string& test_name);
   bool RunJavascriptAsyncTest(const std::string& test_name,
-                              const base::Value& arg);
+                              base::Value* arg);
   bool RunJavascriptAsyncTest(const std::string& test_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2);
+                              base::Value* arg1,
+                              base::Value* arg2);
+  bool RunJavascriptAsyncTest(const std::string& test_name,
+                              base::Value* arg1,
+                              base::Value* arg2,
+                              base::Value* arg3);
   bool RunJavascriptAsyncTest(const std::string& test_name,
                               const ConstValueVector& test_arguments);
 

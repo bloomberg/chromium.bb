@@ -57,18 +57,18 @@ bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
-                                             const Value& arg) {
+                                             Value* arg) {
   ConstValueVector args;
-  args.push_back(&arg);
+  args.push_back(arg);
   return RunJavascriptFunction(function_name, args);
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
-                                             const Value& arg1,
-                                             const Value& arg2) {
+                                             Value* arg1,
+                                             Value* arg2) {
   ConstValueVector args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
+  args.push_back(arg1);
+  args.push_back(arg2);
   return RunJavascriptFunction(function_name, args);
 }
 
@@ -92,18 +92,18 @@ bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
-                                         const Value& arg) {
+                                         Value* arg) {
   ConstValueVector args;
-  args.push_back(&arg);
+  args.push_back(arg);
   return RunJavascriptTest(test_name, args);
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
-                                         const Value& arg1,
-                                         const Value& arg2) {
+                                         Value* arg1,
+                                         Value* arg2) {
   ConstValueVector args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
+  args.push_back(arg1);
+  args.push_back(arg2);
   return RunJavascriptTest(test_name, args);
 }
 
@@ -119,18 +119,29 @@ bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name) {
 }
 
 bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
-                                         const Value& arg) {
+                                              Value* arg) {
   ConstValueVector args;
-  args.push_back(&arg);
+  args.push_back(arg);
   return RunJavascriptAsyncTest(test_name, args);
 }
 
 bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
-                                         const Value& arg1,
-                                         const Value& arg2) {
+                                              Value* arg1,
+                                              Value* arg2) {
   ConstValueVector args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
+  args.push_back(arg1);
+  args.push_back(arg2);
+  return RunJavascriptAsyncTest(test_name, args);
+}
+
+bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                              Value* arg1,
+                                              Value* arg2,
+                                              Value* arg3) {
+  ConstValueVector args;
+  args.push_back(arg1);
+  args.push_back(arg2);
+  args.push_back(arg3);
   return RunJavascriptAsyncTest(test_name, args);
 }
 
@@ -390,12 +401,12 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
   // Starts a failing test.
   void RunTestFailsAssert() {
     RunJavascriptFunction("runAsync",
-                          *Value::CreateStringValue("testFailsAssert"));
+                          Value::CreateStringValue("testFailsAssert"));
   }
 
   // Starts a passing test.
   void RunTestPasses() {
-    RunJavascriptFunction("runAsync", *Value::CreateStringValue("testPasses"));
+    RunJavascriptFunction("runAsync", Value::CreateStringValue("testPasses"));
   }
 
  protected:
@@ -493,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestSyncOkTestFail) {
 IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncFailsAssert) {
   EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
   ASSERT_FALSE(RunJavascriptAsyncTest(
-      "startAsyncTest", *Value::CreateStringValue("testFailsAssert")));
+      "startAsyncTest", Value::CreateStringValue("testFailsAssert")));
 }
 
 // Test that expectations continue the function, but fail the test.
@@ -502,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncFailsExpect) {
   EXPECT_CALL(message_handler_, HandleTestContinues(::testing::_));
   EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
   ASSERT_FALSE(RunJavascriptAsyncTest(
-      "startAsyncTest", *Value::CreateStringValue("testFailsExpect")));
+      "startAsyncTest", Value::CreateStringValue("testFailsExpect")));
 }
 
 // Test that test continues and passes. (Sync version).
@@ -519,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPasses) {
       .WillOnce(::testing::InvokeWithoutArgs(
           this, &WebUIBrowserAsyncTest::TestDone));
   ASSERT_TRUE(RunJavascriptAsyncTest(
-      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+      "startAsyncTest", Value::CreateStringValue("testPasses")));
 }
 
 // Test that two tests pass.
@@ -534,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPassPass) {
       .WillOnce(::testing::InvokeWithoutArgs(
           this, &WebUIBrowserAsyncTest::TestDone));
   ASSERT_TRUE(RunJavascriptAsyncTest(
-      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+      "startAsyncTest", Value::CreateStringValue("testPasses")));
 }
 
 // Test that first test passes; second fails.
@@ -546,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncPassThenFail) {
           this, &WebUIBrowserAsyncTest::RunTestFailsAssert));
   EXPECT_CALL(message_handler_, HandleTestFails(::testing::_));
   ASSERT_FALSE(RunJavascriptAsyncTest(
-      "startAsyncTest", *Value::CreateStringValue("testPasses")));
+      "startAsyncTest", Value::CreateStringValue("testPasses")));
 }
 
 // Test that testDone() with failure first then sync pass still fails.
@@ -558,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserAsyncTest, TestAsyncDoneFailFirstSyncPass) {
   // Call runAsync directly instead of deferring through startAsyncTest. It will
   // call testDone() on failure, then return.
   ASSERT_FALSE(RunJavascriptAsyncTest(
-      "runAsync", *Value::CreateStringValue("testAsyncDoneFailFirstSyncPass")));
+      "runAsync", Value::CreateStringValue("testAsyncDoneFailFirstSyncPass")));
 }
 
 // Test that calling testDone during RunJavascriptAsyncTest still completes

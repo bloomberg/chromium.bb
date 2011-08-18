@@ -7,7 +7,7 @@
  * |url|, and expects to see |expectedResult| from each iteration.  Checks the
  * order and several fields of the events received.
  */
-netInternalsTest.test('NetInternalsTestView',
+netInternalsTest.test('netInternalsTestView',
                       function(url, expectedResult, totalIterations) {
   // IDs for special HTML elements in test_view.html
   var URL_INPUT_ID = 'test-view-url-input';
@@ -112,7 +112,7 @@ netInternalsTest.test('NetInternalsTestView',
       if (this.completedIterations_ < this.totalIterations_) {
         this.startTestSuite();
       } else {
-        netInternalsTest.testDone();
+        testDone();
       }
     }
   };

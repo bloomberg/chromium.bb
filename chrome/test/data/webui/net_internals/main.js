@@ -7,7 +7,7 @@
  * tabs with visible handles, validating visibility of all other tabs as it
  * goes.
  */
-netInternalsTest.test('NetInternalsTourTabs', function() {
+netInternalsTest.test('netInternalsTourTabs', function() {
   // Prevent sending any events to the browser as we flip through tabs, since
   // this tests is just intended to make sure everything's created and hooked
   // up properly Javascript side.
@@ -34,5 +34,5 @@ netInternalsTest.test('NetInternalsTourTabs', function() {
 
   netInternalsTest.checkTabHandleVisibility(tabVisibilityState, true);
 
-  netInternalsTest.testDone();
+  testDone();
 });
