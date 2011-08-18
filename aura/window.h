@@ -6,6 +6,8 @@
 #define AURA_WINDOW_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
@@ -14,6 +16,7 @@
 class SkCanvas;
 
 namespace ui {
+class Compositor;
 class Layer;
 }
 
@@ -43,7 +46,10 @@ class Window {
 
   void set_delegate(WindowDelegate* d) { delegate_ = d; }
 
-  // Changes the visbility of the window.
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
+
+  // Changes the visibility of the window.
   void SetVisibility(Visibility visibility);
   Visibility visibility() const { return visibility_; }
 
@@ -57,15 +63,24 @@ class Window {
   // Sets the contents of the window.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
-  // If the window is visible its layer is drawn.
-  void Draw();
+  // Draw the window and its children.
+  void DrawTree();
+
+  // Tree operations.
+  // TODO(beng): Child windows are currently not owned by the hierarchy. We
+  //             should change this.
+  void AddChild(Window* child);
+  void RemoveChild(Window* child);
+  Window* parent() { return parent_; }
+
+ private:
+  typedef std::vector<Window*> Windows;
 
   // If SchedulePaint has been invoked on the Window the delegate is notified.
   void UpdateLayerCanvas();
 
- private:
-  // The desktop we're in.
-  Desktop* desktop_;
+  // Draws the Window's contents.
+  void Draw();
 
   WindowDelegate* delegate_;
 
@@ -83,6 +98,15 @@ class Window {
 
   // Bounds of the window in the desktop's coordinate system.
   gfx::Rect bounds_;
+
+  // The Window's parent.
+  // TODO(beng): Implement NULL-ness for toplevels.
+  Window* parent_;
+
+  // Child windows. Topmost is last.
+  Windows children_;
+
+  int id_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

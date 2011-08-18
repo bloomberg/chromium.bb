@@ -4,8 +4,11 @@
 
 #include "aura/window.h"
 
+#include <algorithm>
+
 #include "aura/desktop.h"
 #include "aura/window_delegate.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -14,12 +17,12 @@ namespace aura {
 
 // TODO: do we need to support child windows?
 Window::Window(Desktop* desktop)
-    : desktop_(desktop),
-      delegate_(NULL),
+    : delegate_(NULL),
       visibility_(VISIBILITY_HIDDEN),
-      // TODO: Need to make layers lazily create the texture.
       layer_(new ui::Layer(desktop->compositor())),
-      needs_paint_all_(true) {
+      needs_paint_all_(true),
+      parent_(NULL),
+      id_(-1) {
 }
 
 Window::~Window() {
@@ -30,13 +33,6 @@ void Window::SetVisibility(Visibility visibility) {
     return;
 
   visibility_ = visibility;
-  if (visibility_ == VISIBILITY_SHOWN) {
-    // TODO: move to top of window stack?
-    desktop_->AddWindow(this);
-  } else {
-    // TODO: hide?
-    desktop_->RemoveWindow(this);
-  }
 }
 
 void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
@@ -61,9 +57,29 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
   layer_->SetCanvas(canvas, origin);
 }
 
-void Window::Draw() {
-  if (visibility_ != VISIBILITY_HIDDEN)
-    layer_->Draw();
+void Window::DrawTree() {
+  UpdateLayerCanvas();
+  Draw();
+
+  // First pass updates the layer bitmaps.
+  for (Windows::iterator i = children_.begin(); i != children_.end(); ++i)
+    (*i)->DrawTree();
+}
+
+void Window::AddChild(Window* child) {
+  DCHECK(std::find(children_.begin(), children_.end(), child) ==
+      children_.end());
+  child->parent_ = this;
+  layer_->Add(child->layer_.get());
+  children_.push_back(child);
+}
+
+void Window::RemoveChild(Window* child) {
+  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
+  DCHECK(i != children_.end());
+  child->parent_ = NULL;
+  layer_->Remove(child->layer_.get());
+  children_.erase(i);
 }
 
 void Window::UpdateLayerCanvas() {
@@ -78,6 +94,11 @@ void Window::UpdateLayerCanvas() {
     return;
   if (delegate_)
     delegate_->OnPaint(dirty_rect);
+}
+
+void Window::Draw() {
+  if (visibility_ != VISIBILITY_HIDDEN)
+    layer_->Draw();
 }
 
 }  // namespace aura

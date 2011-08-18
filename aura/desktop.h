@@ -6,8 +6,7 @@
 #define AURA_DESKTOP_H_
 #pragma once
 
-#include <vector>
-
+#include "aura/window.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
@@ -18,10 +17,11 @@ class Size;
 
 namespace ui {
 class Compositor;
-class Window;
 }
 
 namespace aura {
+
+class Window;
 
 // Desktop is responsible for hosting a set of windows.
 class Desktop {
@@ -35,20 +35,12 @@ class Desktop {
   // Compositor we're drawing to.
   ui::Compositor* compositor() { return compositor_.get(); }
 
+  Window* window() { return window_.get(); }
+
  private:
-  friend class Window;
-
-  typedef std::vector<Window*> Windows;
-
-  // Methods invoked by Window.
-  // TODO: move these into an interface that Window uses to talk to Desktop.
-  void AddWindow(Window* window);
-  void RemoveWindow(Window* window);
-
   scoped_refptr<ui::Compositor> compositor_;
 
-  // The windows. Topmost window is last.
-  std::vector<Window*> windows_;
+  scoped_ptr<Window> window_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };
