@@ -627,9 +627,9 @@ class BuildTargetStage(BuilderStage):
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, bot_id, options, build_config, archive_stage):
     super(TestStage, self).__init__(bot_id, options, build_config)
-    self._test_tarball = None
+    self._archive_stage = archive_stage
 
   def _CreateTestRoot(self):
     """Returns a temporary directory for test results in chroot.
@@ -645,19 +645,33 @@ class TestStage(BuilderStage):
     (_, _, relative_path) = test_root.partition(chroot)
     return relative_path
 
-  def GetTestTarball(self):
-    return self._test_tarball
-
-  def _PerformStage(self):
-    if self._build_config['unittests']:
+  def _RunUnitTests(self):
+    if self._build_config['unittests'] and self._options.tests:
       commands.RunUnitTests(self._build_root,
                             self._build_config['board'],
                             full=(not self._build_config['quick_unit']),
                             nowithdebug=self._build_config['nowithdebug'])
 
-    if self._build_config['vm_tests']:
-      test_results_dir = self._CreateTestRoot()
+  def _RunVMTests(self):
+    # VM tests should run with higher priority than other tasks
+    # because they are usually the bottleneck, and don't use much CPU.
+    os.nice(-10)
+
+    # Build autotest tarball, which is used in archive step.
+    if self._build_config['test_mod']:
+      filename = None
       try:
+        filename = commands.BuildAutotestTarball(self._build_root,
+                                                 self._build_config['board'],
+                                                 self.GetImageDirSymlink())
+      finally:
+        if self._archive_stage:
+          self._archive_stage.AutotestTarballReady(filename)
+
+    test_results_dir = None
+    try:
+      if self._build_config['vm_tests'] and self._options.tests:
+        test_results_dir = self._CreateTestRoot()
         commands.RunTestSuite(self._build_root,
                               self._build_config['board'],
                               self.GetImageDirSymlink(),
@@ -671,9 +685,17 @@ class TestStage(BuilderStage):
                                   self.GetImageDirSymlink(),
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
-      finally:
-        self._test_tarball = commands.ArchiveTestResults(self._build_root,
-                                                         test_results_dir)
+    finally:
+      test_tarball = None
+      if test_results_dir:
+        test_tarball = commands.ArchiveTestResults(self._build_root,
+                                                   test_results_dir)
+      if self._archive_stage:
+        self._archive_stage.TestResultsReady(test_tarball)
+
+  def _PerformStage(self):
+    background.RunParallelSteps([self._RunUnitTests,
+                                 self._RunVMTests])
 
 
 class TestHWStage(NonHaltingBuilderStage):
@@ -768,17 +790,35 @@ class ArchiveStage(NonHaltingBuilderStage):
                                         'trybot_archive')
 
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
+    self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
 
-  def TestStageComplete(self, test_results):
-    """Tell Archive Stage that the test stage has completed.
+  def AutotestTarballReady(self, autotest_tarball):
+    """Tell Archive Stage that autotest tarball is ready.
+
+       Args:
+         autotest_tarball: The filename of the autotest tarball.
+    """
+    self._autotest_tarball_queue.put(autotest_tarball)
+
+  def TestResultsReady(self, test_results):
+    """Tell Archive Stage that test results are ready.
 
        Args:
          test_results: The test results tarball from the tests. If no tests
                        results are available, this should be set to None.
     """
     self._test_results_queue.put(test_results)
+
+  def TestStageExited(self):
+    """Tell Archive Stage that test stage has exited.
+
+    If the test phase failed strangely, this failsafe ensures that the archive
+    stage doesn't sit around waiting for data.
+    """
+    self._autotest_tarball_queue.put(None)
+    self._test_results_queue.put(None)
 
   def _BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
@@ -830,8 +870,18 @@ class ArchiveStage(NonHaltingBuilderStage):
   def _GetArchivePath(self):
     return os.path.join(self._bot_archive_root, self._set_version)
 
-  def _GetTestTarball(self):
-    """Get the path to the test tarball."""
+  def _GetAutotestTarball(self):
+    """Get the path to the autotest tarball."""
+    cros_lib.Info('Waiting for autotest tarball...')
+    autotest_tarball = self._autotest_tarball_queue.get()
+    if autotest_tarball:
+      cros_lib.Info('Found autotest tarball at %s...' % autotest_tarball)
+    else:
+      cros_lib.Info('No autotest tarball.')
+    return autotest_tarball
+
+  def _GetTestResults(self):
+    """Get the path to the test results tarball."""
     cros_lib.Info('Waiting for test results dir...')
     test_tarball = self._test_results_queue.get()
     if test_tarball:
@@ -873,7 +923,7 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     def UploadTestResults():
       """Upload test results when they are ready."""
-      test_results = self._GetTestTarball()
+      test_results = self._GetTestResults()
       if test_results:
         if config['archive_build_debug'] and self._WaitForBreakpadSymbols():
           commands.GenerateMinidumpStackTraces(buildroot, board, test_results)
@@ -930,9 +980,10 @@ class ArchiveStage(NonHaltingBuilderStage):
     def ArchiveRegularImages():
       """Build and archive image.zip and the hwqual image."""
 
-      # Build autotest tarball, which is used in image.zip.
       if config['test_mod']:
-        filename = commands.BuildAutotestTarball(buildroot, board, image_dir)
+        # Wait for the autotest tarball to be ready. This tarball will be
+        # included in the zip file.
+        self._GetAutotestTarball()
 
       # Zip up everything in the image directory.
       filename = commands.BuildImageZip(archive_path, image_dir)

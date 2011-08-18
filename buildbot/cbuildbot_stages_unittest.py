@@ -464,9 +464,22 @@ class TestStageTest(AbstractStageTest):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
+    self.mox.StubOutWithMock(background, 'RunParallelSteps')
+    background.RunParallelSteps(mox.IgnoreArg())
+    self.mox.StubOutWithMock(stages.os, 'nice')
+    stages.os.nice(mox.IgnoreArg())
+    self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
+    commands.BuildAutotestTarball(mox.IgnoreArg(), mox.IgnoreArg(),
+      mox.IgnoreArg())
 
   def ConstructStage(self):
-    return stages.TestStage(self.bot_id, self.options, self.build_config)
+    return stages.TestStage(self.bot_id, self.options, self.build_config, None)
+
+  def RunStage(self):
+    stage = self.ConstructStage()
+    stage.Run()
+    stage._RunUnitTests()
+    stage._RunVMTests()
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""

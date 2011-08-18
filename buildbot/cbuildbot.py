@@ -275,22 +275,23 @@ def RunBuildStages(bot_id, options, build_config):
       archive_url = archive_stage.GetDownloadUrl()
       bg.AddStep(archive_stage.Run)
 
-    test_stage = stages.TestStage(bot_id, options, build_config)
+    test_stage = stages.TestStage(bot_id, options, build_config, archive_stage)
     try:
-      # Kick off the background stages. The archive_stage won't finish
-      # until it receives notification that the test results tarball is
-      # ready, so the 'finally' clause below is important.
+      # Kick off the background stages. This is inside a 'finally' clause so
+      # that we guarantee that 'TestStageExited' is always called, even if the
+      # test phase throws an exception and does not pass the right data to
+      # the archive stage.
       if not bg.Empty():
         bg.start()
         bg_started = True
 
-      if options.tests:
-        test_stage.Run()
+      test_stage.Run()
     finally:
       if archive_stage:
-        # Notify the Archive stage that tests have completed.
-        # (If tests didn't run, test_stage.GetTestTarball() returns None.)
-        archive_stage.TestStageComplete(test_stage.GetTestTarball())
+        # Tell the archive_stage not to wait for any more data from the test
+        # phase. If the test phase failed strangely, this failsafe ensures
+        # that the archive stage doesn't sit around waiting for data.
+        archive_stage.TestStageExited()
 
     if options.hw_tests:
       stages.TestHWStage(bot_id, options, build_config).Run()
