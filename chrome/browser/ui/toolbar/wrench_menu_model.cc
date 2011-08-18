@@ -469,7 +469,7 @@ void WrenchMenuModel::Build() {
   AddSeparator();
 
 #if !defined(OS_CHROMEOS)
-  if (ProfileManager::IsMultipleProfilesEnabled()) {
+  if (browser_->profile()->GetOriginalProfile()->IsSyncAccessible()) {
     const string16 short_product_name =
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
     AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(

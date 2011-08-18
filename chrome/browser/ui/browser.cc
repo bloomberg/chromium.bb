@@ -3967,7 +3967,8 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_SYNC_SETUP, profile_->GetOriginalProfile()->IsSyncAccessible());
 
   ExtensionService* extension_service = profile()->GetExtensionService();
   bool enable_extensions =
