@@ -25,7 +25,7 @@ class PPB_Graphics3D_Impl : public Resource,
                                PP_Resource share_context,
                                const int32_t* attrib_list);
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE;
 
   // PPB_Graphics3D_API trusted implementation.

@@ -138,15 +138,11 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 // PPB_Core --------------------------------------------------------------------
 
 void AddRefResource(PP_Resource resource) {
-  if (!ResourceTracker::Get()->AddRefResource(resource)) {
-    DLOG(WARNING) << "AddRefResource()ing a nonexistent resource " << resource;
-  }
+  ResourceTracker::Get()->AddRefResource(resource);
 }
 
 void ReleaseResource(PP_Resource resource) {
-  if (!ResourceTracker::Get()->UnrefResource(resource)) {
-    DLOG(WARNING) << "ReleaseResource()ing a nonexistent resource " << resource;
-  }
+  ResourceTracker::Get()->ReleaseResource(resource);
 }
 
 PP_Time GetTime() {

@@ -6,28 +6,29 @@
 
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
 using ppapi::InputEventData;
 using ppapi::InputEventImpl;
+using ppapi::Resource;
 using ppapi::thunk::PPB_InputEvent_API;
 
 namespace pp {
 namespace proxy {
 
 // The implementation is actually in InputEventImpl.
-class InputEvent : public PluginResource, public InputEventImpl {
+class InputEvent : public Resource, public InputEventImpl {
  public:
   InputEvent(const HostResource& resource, const InputEventData& data);
   virtual ~InputEvent();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;
 
   // InputEventImpl overrides.
@@ -38,7 +39,7 @@ class InputEvent : public PluginResource, public InputEventImpl {
 };
 
 InputEvent::InputEvent(const HostResource& resource, const InputEventData& data)
-    : PluginResource(resource),
+    : Resource(resource),
       InputEventImpl(data) {
 }
 
@@ -122,8 +123,8 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetWheelInputEventInfo() {
 PP_Resource PPB_InputEvent_Proxy::CreateProxyResource(
     PP_Instance instance,
     const InputEventData& data) {
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new InputEvent(HostResource::MakeInstanceOnly(instance), data));
+  return (new InputEvent(HostResource::MakeInstanceOnly(instance), data))->
+      GetReference();
 }
 
 bool PPB_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {

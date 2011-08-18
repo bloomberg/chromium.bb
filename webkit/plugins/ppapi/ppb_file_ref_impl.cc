@@ -97,10 +97,8 @@ PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
     return 0;
   TrimTrailingSlash(&validated_path);
 
-  PPB_FileRef_Impl* file_ref =
-      new PPB_FileRef_Impl(file_system->instance(),
-                           file_system, validated_path);
-  return file_ref->GetReference();
+  return (new PPB_FileRef_Impl(file_system->instance(),
+                               file_system, validated_path))->GetReference();
 }
 
 PPB_FileRef_API* PPB_FileRef_Impl::AsPPB_FileRef_API() {
@@ -176,8 +174,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
   if (!instance()->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
           new FileCallbacks(instance()->module()->AsWeakPtr(),
-                            GetReferenceNoAddRef(), callback,
-                            NULL, NULL, NULL)))
+                            pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -192,8 +189,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
           new FileCallbacks(instance()->module()->AsWeakPtr(),
-                            GetReferenceNoAddRef(), callback,
-                            NULL, NULL, NULL)))
+                            pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -204,8 +200,7 @@ int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
   if (!instance()->delegate()->Delete(
           GetFileSystemURL(),
           new FileCallbacks(instance()->module()->AsWeakPtr(),
-                            GetReferenceNoAddRef(), callback,
-                            NULL, NULL, NULL)))
+                            pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -227,8 +222,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
   if (!instance()->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
           new FileCallbacks(instance()->module()->AsWeakPtr(),
-                            GetReferenceNoAddRef(), callback,
-                            NULL, NULL, NULL)))
+                            pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }

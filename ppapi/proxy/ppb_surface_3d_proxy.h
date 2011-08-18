@@ -12,8 +12,8 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_surface_3d_api.h"
 
 struct PPB_Surface3D_Dev;
@@ -23,13 +23,13 @@ namespace proxy {
 
 class Context3D;
 
-class Surface3D : public PluginResource,
+class Surface3D : public ppapi::Resource,
                   public ppapi::thunk::PPB_Surface3D_API {
  public:
   explicit Surface3D(const ppapi::HostResource& host_resource);
   virtual ~Surface3D();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_Surface3D_API* AsPPB_Surface3D_API() OVERRIDE;
 
   // PPB_Surface3D_API implementation.
@@ -51,11 +51,7 @@ class Surface3D : public PluginResource,
 
   Context3D* context() const { return context_; }
 
-  void set_resource(PP_Resource resource) { resource_ = resource; }
-  PP_Resource resource() const { return resource_; }
-
  private:
-  PP_Resource resource_;
   Context3D* context_;
 
   // In the plugin, this is the current callback set for Flushes. When the

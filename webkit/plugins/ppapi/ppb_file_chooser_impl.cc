@@ -80,9 +80,7 @@ PP_Resource PPB_FileChooser_Impl::Create(
   if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
       (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
     return 0;
-
-  PPB_FileChooser_Impl* chooser = new PPB_FileChooser_Impl(instance, options);
-  return chooser->GetReference();
+  return (new PPB_FileChooser_Impl(instance, options))->GetReference();
 }
 
 PPB_FileChooser_Impl* PPB_FileChooser_Impl::AsPPB_FileChooser_Impl() {
@@ -129,10 +127,8 @@ void PPB_FileChooser_Impl::RegisterCallback(
   DCHECK(callback.func);
   DCHECK(!callback_.get() || callback_->completed());
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
 }
 
 void PPB_FileChooser_Impl::RunCallback(int32_t result) {

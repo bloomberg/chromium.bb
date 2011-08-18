@@ -29,7 +29,7 @@ class PPB_Surface3D_Impl : public Resource,
                             PP_Config3D_Dev config,
                             const int32_t* attrib_list);
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Surface3D_API* AsPPB_Surface3D_API() OVERRIDE;
 
   // PPB_Surface3D_API implementation.

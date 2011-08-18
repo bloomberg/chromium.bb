@@ -32,7 +32,7 @@ class PPB_Widget_Impl : public Resource,
   explicit PPB_Widget_Impl(PluginInstance* instance);
   virtual ~PPB_Widget_Impl();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_Widget_API* AsPPB_Widget_API() OVERRIDE;
 
   // PPB_WidgetAPI implementation.

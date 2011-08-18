@@ -36,7 +36,7 @@ class PPB_FileRef_Impl : public Resource,
   // Resource overrides.
   virtual PPB_FileRef_Impl* AsPPB_FileRef_Impl();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
 
   // PPB_FileRef_API implementation.

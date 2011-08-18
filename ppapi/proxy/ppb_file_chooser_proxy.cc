@@ -12,25 +12,25 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_FileChooser_API;
 
 namespace pp {
 namespace proxy {
 
-class FileChooser : public PluginResource,
+class FileChooser : public Resource,
                     public PPB_FileChooser_API {
  public:
   FileChooser(const HostResource& resource);
   virtual ~FileChooser();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_FileChooser_API* AsPPB_FileChooser_API() OVERRIDE;
 
   // PPB_FileChooser_API implementation.
@@ -55,7 +55,7 @@ class FileChooser : public PluginResource,
 };
 
 FileChooser::FileChooser(const HostResource& resource)
-    : PluginResource(resource),
+    : Resource(resource),
       current_show_callback_(PP_MakeCompletionCallback(NULL, NULL)) {
 }
 
@@ -87,8 +87,9 @@ int32_t FileChooser::Show(PP_CompletionCallback callback) {
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 
   current_show_callback_ = callback;
-  GetDispatcher()->Send(new PpapiHostMsg_PPBFileChooser_Show(
-      INTERFACE_ID_PPB_FILE_CHOOSER, host_resource()));
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBFileChooser_Show(
+          INTERFACE_ID_PPB_FILE_CHOOSER, host_resource()));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -164,8 +165,7 @@ PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
 
   if (result.is_null())
     return 0;
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new FileChooser(result));
+  return (new FileChooser(result))->GetReference();
 }
 
 bool PPB_FileChooser_Proxy::OnMessageReceived(const IPC::Message& msg) {

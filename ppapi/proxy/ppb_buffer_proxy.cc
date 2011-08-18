@@ -20,6 +20,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
@@ -36,7 +37,7 @@ InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
 Buffer::Buffer(const HostResource& resource,
                const base::SharedMemoryHandle& shm_handle,
                uint32_t size)
-    : PluginResource(resource),
+    : Resource(resource),
       shm_(shm_handle, false),
       size_(size),
       mapped_data_(NULL),
@@ -114,8 +115,7 @@ PP_Resource PPB_Buffer_Proxy::AddProxyResource(
     const HostResource& resource,
     base::SharedMemoryHandle shm_handle,
     uint32_t size) {
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new Buffer(resource, shm_handle, size));
+  return (new Buffer(resource, shm_handle, size))->GetReference();
 }
 
 bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {

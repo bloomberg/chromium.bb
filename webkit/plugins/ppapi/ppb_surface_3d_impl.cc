@@ -71,10 +71,8 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (!context_)
     return PP_ERROR_FAILED;
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   swap_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
   if (impl)
     context_->gles2_impl()->SwapBuffers();

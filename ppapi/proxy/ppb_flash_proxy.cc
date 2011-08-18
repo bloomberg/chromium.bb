@@ -14,12 +14,14 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/resource.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
@@ -44,17 +46,17 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
-  PluginResource* image_data = PluginResourceTracker::GetInstance()->
-      GetResourceObject(pp_image_data);
+  Resource* image_data = PluginResourceTracker::GetInstance()->GetResource(
+      pp_image_data);
   if (!image_data)
     return PP_FALSE;
   // The instance parameter isn't strictly necessary but we check that it
   // matches anyway.
-  if (image_data->instance() != instance)
+  if (image_data->pp_instance() != instance)
     return PP_FALSE;
 
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      image_data->instance());
+      image_data->pp_instance());
   if (!dispatcher)
     return PP_FALSE;
 
@@ -96,13 +98,13 @@ PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
 int32_t Navigate(PP_Resource request_id,
                  const char* target,
                  bool from_user_action) {
-  PluginResource* request_object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(request_id);
+  Resource* request_object =
+      PluginResourceTracker::GetInstance()->GetResource(request_id);
   if (!request_object)
     return PP_ERROR_BADRESOURCE;
 
   PluginDispatcher* dispatcher =
-      PluginDispatcher::GetForInstance(request_object->instance());
+      PluginDispatcher::GetForInstance(request_object->pp_instance());
   if (!dispatcher)
     return PP_ERROR_FAILED;
 

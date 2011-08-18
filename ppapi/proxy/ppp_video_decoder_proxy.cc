@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/thunk/enter.h"
@@ -153,7 +154,8 @@ void PPP_VideoDecoder_Proxy::OnMsgNotifyEndOfStream(
     const HostResource& decoder) {
   PP_Resource plugin_decoder = PluginResourceTracker::GetInstance()->
       PluginResourceForHostResource(decoder);
-  ppp_video_decoder_target()->EndOfStream(decoder.instance(), plugin_decoder);
+  ppp_video_decoder_target()->EndOfStream(decoder.instance(),
+                                          plugin_decoder);
 }
 
 void PPP_VideoDecoder_Proxy::OnMsgNotifyError(

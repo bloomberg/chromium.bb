@@ -30,7 +30,7 @@ class PPB_URLResponseInfo_Impl
 
   bool Initialize(const WebKit::WebURLResponse& response);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_URLResponseInfo_API* AsPPB_URLResponseInfo_API() OVERRIDE;
 
   // PPB_URLResponseInfo_API implementation.

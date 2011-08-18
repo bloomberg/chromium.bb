@@ -37,7 +37,7 @@ class PPB_FileIO_Impl : public Resource,
   explicit PPB_FileIO_Impl(PluginInstance* instance);
   virtual ~PPB_FileIO_Impl();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_FileIO_API* AsPPB_FileIO_API() OVERRIDE;
 
   // PPB_FileIO_API implementation.

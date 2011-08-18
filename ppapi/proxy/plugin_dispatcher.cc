@@ -24,12 +24,15 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracker_base.h"
 
 #if defined(OS_POSIX)
 #include "base/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
+
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
@@ -71,6 +74,11 @@ PluginDispatcher* PluginDispatcher::GetForInstance(PP_Instance instance) {
   if (found == g_instance_to_dispatcher->end())
     return NULL;
   return found->second;
+}
+
+// static
+PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
+  return GetForInstance(resource->pp_instance());
 }
 
 // static

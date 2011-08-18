@@ -6,12 +6,12 @@
 #define PPAPI_PROXY_MOCK_RESOURCE_H_
 
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/shared_impl/resource.h"
 
 namespace pp {
 namespace proxy {
 
-class MockResource : public PluginResource {
+class MockResource : public ppapi::Resource {
  public:
   MockResource(const ppapi::HostResource& resource);
   virtual ~MockResource();

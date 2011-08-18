@@ -67,10 +67,8 @@ PP_Resource PPB_DirectoryReader_Impl::Create(PP_Resource directory_ref) {
   EnterResourceNoLock<PPB_FileRef_API> enter(directory_ref, true);
   if (enter.failed())
     return 0;
-
-  PPB_DirectoryReader_Impl* reader = new PPB_DirectoryReader_Impl(
-      static_cast<PPB_FileRef_Impl*>(enter.object()));
-  return reader->GetReference();
+  return (new PPB_DirectoryReader_Impl(
+      static_cast<PPB_FileRef_Impl*>(enter.object())))->GetReference();
 }
 
 PPB_DirectoryReader_API* PPB_DirectoryReader_Impl::AsPPB_DirectoryReader_API() {
@@ -90,13 +88,10 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
   }
 
   PluginInstance* instance = directory_ref_->instance();
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  DCHECK(resource_id != 0);
   if (!instance->delegate()->ReadDirectory(
           directory_ref_->GetFileSystemURL(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            resource_id,
-                            callback, NULL, NULL, this)))
+                            pp_resource(), callback, NULL, NULL, this)))
     return PP_ERROR_FAILED;
 
   return PP_OK_COMPLETIONPENDING;
@@ -128,7 +123,7 @@ bool PPB_DirectoryReader_Impl::FillUpEntry() {
     base::FileUtilProxy::Entry dir_entry = entries_.front();
     entries_.pop();
     if (entry_->file_ref)
-      ResourceTracker::Get()->UnrefResource(entry_->file_ref);
+      ResourceTracker::Get()->ReleaseResource(entry_->file_ref);
     PPB_FileRef_Impl* file_ref =
         new PPB_FileRef_Impl(instance(), directory_ref_->file_system(),
                              FilePathStringToUTF8String(dir_entry.name));

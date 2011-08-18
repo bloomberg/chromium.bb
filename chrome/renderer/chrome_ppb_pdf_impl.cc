@@ -13,6 +13,9 @@
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -208,14 +211,12 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
                                     void* output,
                                     uint32_t* output_length) {
 #if defined(OS_LINUX)
-  scoped_refptr<webkit::ppapi::Resource>
-      resource(webkit::ppapi::ResourceTracker::Get()->GetResource(font_file));
-  if (!resource.get())
+  ppapi::Resource* resource =
+      ppapi::TrackerBase::Get()->GetResourceTracker()->GetResource(font_file);
+  if (!resource)
     return false;
 
-  PrivateFontFile* font = static_cast<PrivateFontFile*>(resource.get());
-  if (!font)
-    return false;
+  PrivateFontFile* font = static_cast<PrivateFontFile*>(resource);
   return font->GetFontTable(table, output, output_length);
 #else
   return false;

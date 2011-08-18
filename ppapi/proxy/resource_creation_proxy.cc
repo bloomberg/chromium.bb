@@ -158,9 +158,8 @@ PP_Resource ResourceCreationProxy::CreateFontObject(
     const PP_FontDescription_Dev* description) {
   if (!ppapi::FontImpl::IsPPFontDescriptionValid(*description))
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new Font(HostResource::MakeInstanceOnly(instance), *description));
+  return (new Font(HostResource::MakeInstanceOnly(instance), *description))->
+      GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
@@ -192,8 +191,7 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   PP_ImageDataDesc desc;
   memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
 
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new ImageData(result, desc, image_handle));
+  return (new ImageData(result, desc, image_handle))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(

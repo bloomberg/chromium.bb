@@ -375,15 +375,15 @@ void ParamTraits<pp::proxy::SerializedFontDescription>::Log(
 
 // static
 void ParamTraits<ppapi::HostResource>::Write(Message* m,
-                                                 const param_type& p) {
+                                             const param_type& p) {
   ParamTraits<PP_Instance>::Write(m, p.instance());
   ParamTraits<PP_Resource>::Write(m, p.host_resource());
 }
 
 // static
 bool ParamTraits<ppapi::HostResource>::Read(const Message* m,
-                                                void** iter,
-                                                param_type* r) {
+                                            void** iter,
+                                            param_type* r) {
   PP_Instance instance;
   PP_Resource resource;
   if (!ParamTraits<PP_Instance>::Read(m, iter, &instance) ||

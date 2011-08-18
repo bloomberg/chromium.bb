@@ -141,18 +141,12 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  if (!resource_id) {
-    NOTREACHED();
-    return PP_ERROR_FAILED;
-  }
-
   int32_t rv = instance()->delegate()->ShowContextMenu(
       instance(), this, gfx::Point(location->x, location->y));
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), resource_id, callback);
+        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
     selected_id_out_ = selected_id_out;
   } else {
     // This should never be completed synchronously successfully.

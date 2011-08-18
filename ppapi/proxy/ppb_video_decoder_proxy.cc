@@ -16,6 +16,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Context3D_API;
@@ -24,16 +25,18 @@ using ppapi::thunk::PPB_VideoDecoder_API;
 namespace pp {
 namespace proxy {
 
-class VideoDecoder : public PluginResource,
+class VideoDecoder : public Resource,
                      public ::ppapi::VideoDecoderImpl {
  public:
+  // You must call Init() before using this class.
+  explicit VideoDecoder(const HostResource& resource);
   virtual ~VideoDecoder();
 
   static VideoDecoder* Create(const HostResource& resource,
                               PP_Resource context3d_id,
                               const PP_VideoConfigElement* config);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
@@ -46,13 +49,10 @@ class VideoDecoder : public PluginResource,
   virtual int32_t Reset(PP_CompletionCallback callback) OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
- protected:
-  virtual void AddRefResource(PP_Resource resource) OVERRIDE;
-  virtual void UnrefResource(PP_Resource resource) OVERRIDE;
-
  private:
   friend class PPB_VideoDecoder_Proxy;
-  explicit VideoDecoder(const HostResource& resource);
+
+  PluginDispatcher* GetDispatcher() const;
 
   // Run the callbacks that were passed into the plugin interface.
   void FlushACK(int32_t result);
@@ -62,24 +62,7 @@ class VideoDecoder : public PluginResource,
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };
 
-VideoDecoder::VideoDecoder(const HostResource& decoder)
-    : PluginResource(decoder) {
-}
-
-VideoDecoder* VideoDecoder::Create(const HostResource& resource,
-                                   PP_Resource context3d_id,
-                                   const PP_VideoConfigElement* config) {
-  if (!context3d_id)
-    return NULL;
-
-  EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
-  if (enter_context.failed())
-    return NULL;
-
-  scoped_refptr<VideoDecoder> decoder(new VideoDecoder(resource));
-  if (decoder->Init(context3d_id, enter_context.object(), config))
-    return decoder.release();
-  return NULL;
+VideoDecoder::VideoDecoder(const HostResource& decoder) : Resource(decoder) {
 }
 
 VideoDecoder::~VideoDecoder() {
@@ -155,12 +138,8 @@ void VideoDecoder::Destroy() {
   ::ppapi::VideoDecoderImpl::Destroy();
 }
 
-void VideoDecoder::AddRefResource(PP_Resource resource) {
-  PluginResourceTracker::GetInstance()->AddRefResource(resource);
-}
-
-void VideoDecoder::UnrefResource(PP_Resource resource) {
-  PluginResourceTracker::GetInstance()->ReleaseResource(resource);
+PluginDispatcher* VideoDecoder::GetDispatcher() const {
+  return PluginDispatcher::GetForResource(this);
 }
 
 void VideoDecoder::ResetACK(int32_t result) {
@@ -257,8 +236,11 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  return PluginResourceTracker::GetInstance()->AddResource(
-      VideoDecoder::Create(result, context3d_id, config));
+  // Need a scoped_refptr to keep the object alive during the Init call.
+  scoped_refptr<VideoDecoder> decoder(new VideoDecoder(result));
+  if (!decoder->Init(context3d_id, enter_context.object(), config))
+    return 0;
+  return decoder->GetReference();
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgCreate(

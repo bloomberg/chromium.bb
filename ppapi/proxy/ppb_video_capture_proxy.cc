@@ -16,7 +16,6 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -25,6 +24,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_BufferTrusted_API;
@@ -145,12 +145,12 @@ PPP_VideoCapture_Dev ppp_video_capture = {
 }  // namespace
 
 class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
-                     public PluginResource {
+                     public Resource {
  public:
   VideoCapture(const HostResource& resource);
   virtual ~VideoCapture();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ppapi::thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
 
   // PPB_VideoCapture_API implementation.
@@ -246,13 +246,17 @@ class VideoCapture : public ppapi::thunk::PPB_VideoCapture_API,
   }
 
  private:
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   uint32_t status_;
   std::vector<bool> buffer_in_use_;
   DISALLOW_COPY_AND_ASSIGN(VideoCapture);
 };
 
 VideoCapture::VideoCapture(const HostResource& resource)
-    : PluginResource(resource),
+    : Resource(resource),
       status_(PP_VIDEO_CAPTURE_STATUS_STOPPED) {
 }
 
@@ -294,9 +298,7 @@ PP_Resource PPB_VideoCapture_Proxy::CreateProxyResource(PP_Instance instance) {
       INTERFACE_ID_PPB_VIDEO_CAPTURE_DEV, instance, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new VideoCapture(result));
+  return (new VideoCapture(result))->GetReference();
 }
 
 bool PPB_VideoCapture_Proxy::OnMessageReceived(const IPC::Message& msg) {

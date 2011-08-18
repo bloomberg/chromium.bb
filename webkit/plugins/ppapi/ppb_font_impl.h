@@ -29,7 +29,7 @@ class PPB_Font_Impl : public Resource,
   static PP_Resource Create(PluginInstance* instance,
                             const PP_FontDescription_Dev& description);
 
-  // ResourceObjectBase.
+  // Resource.
   virtual ::ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
 
   // PPB_Font implementation.

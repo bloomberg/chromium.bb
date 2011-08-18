@@ -314,10 +314,8 @@ void PPB_FileIO_Impl::RegisterCallback(OperationType op,
          (pending_op_ != OPERATION_EXCLUSIVE && pending_op_ == op));
 
   CallbackEntry entry;
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   entry.callback = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   entry.read_buffer = read_buffer;
 
   callbacks_.push(entry);

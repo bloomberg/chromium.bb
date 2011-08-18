@@ -8,14 +8,15 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_url_response_info_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_URLResponseInfo_API;
 
 namespace pp {
@@ -32,13 +33,12 @@ InterfaceProxy* CreateURLResponseInfoProxy(Dispatcher* dispatcher,
 
 // URLResponseInfo -------------------------------------------------------------
 
-class URLResponseInfo : public PluginResource,
-                        public PPB_URLResponseInfo_API {
+class URLResponseInfo : public Resource, public PPB_URLResponseInfo_API {
  public:
   URLResponseInfo(const HostResource& resource);
   virtual ~URLResponseInfo();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual PPB_URLResponseInfo_API* AsPPB_URLResponseInfo_API() OVERRIDE;
 
   // PPB_URLResponseInfo_API implementation.
@@ -50,7 +50,7 @@ class URLResponseInfo : public PluginResource,
 };
 
 URLResponseInfo::URLResponseInfo(const HostResource& resource)
-    : PluginResource(resource) {
+    : Resource(resource) {
 }
 
 URLResponseInfo::~URLResponseInfo() {
@@ -61,10 +61,11 @@ PPB_URLResponseInfo_API* URLResponseInfo::AsPPB_URLResponseInfo_API() {
 }
 
 PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   ReceiveSerializedVarReturnValue result;
-  GetDispatcher()->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
+  dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
       INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), property, &result));
-  return result.Return(GetDispatcher());
+  return result.Return(dispatcher);
 }
 
 PP_Resource URLResponseInfo::GetBodyAsFileRef() {
@@ -73,8 +74,9 @@ PP_Resource URLResponseInfo::GetBodyAsFileRef() {
   // where the file is ready. This will prevent us from having to do this sync
   // IPC here.
   PPBFileRef_CreateInfo create_info;
-  GetDispatcher()->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
+          INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
@@ -104,8 +106,7 @@ const InterfaceProxy::Info* PPB_URLResponseInfo_Proxy::GetInfo() {
 // static
 PP_Resource PPB_URLResponseInfo_Proxy::CreateResponseForResource(
     const HostResource& resource) {
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new URLResponseInfo(resource));
+  return (new URLResponseInfo(resource))->GetReference();
 }
 
 bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -219,7 +219,7 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
     info.buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
     info.data = info.buffer->Map();
     if (!info.data) {
-      ResourceTracker::Get()->UnrefResource(resources[i]);
+      ResourceTracker::Get()->ReleaseResource(resources[i]);
       break;
     }
     buffers_.push_back(info);
@@ -247,7 +247,7 @@ void PPB_VideoCapture_Impl::ReleaseBuffers() {
   ResourceTracker *tracker = ResourceTracker::Get();
   for (size_t i = 0; i < buffers_.size(); ++i) {
     buffers_[i].buffer->Unmap();
-    tracker->UnrefResource(buffers_[i].buffer->GetReferenceNoAddRef());
+    tracker->ReleaseResource(buffers_[i].buffer->pp_resource());
   }
   buffers_.clear();
 }

@@ -10,7 +10,6 @@
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -23,6 +22,7 @@
 #endif
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
@@ -147,9 +147,8 @@ PPB_Instance_FunctionAPI* PPB_Instance_Proxy::AsPPB_Instance_FunctionAPI() {
 
 PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
                                          PP_Resource device) {
-  PluginResource* object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(device);
-  if (!object || object->instance() != instance)
+  Resource* object = PluginResourceTracker::GetInstance()->GetResource(device);
+  if (!object || object->pp_instance() != instance)
     return PP_FALSE;
 
   PP_Bool result = PP_FALSE;

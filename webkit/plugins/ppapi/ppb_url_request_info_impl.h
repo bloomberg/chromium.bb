@@ -29,7 +29,7 @@ class PPB_URLRequestInfo_Impl : public Resource,
   explicit PPB_URLRequestInfo_Impl(PluginInstance* instance);
   virtual ~PPB_URLRequestInfo_Impl();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_URLRequestInfo_API* AsPPB_URLRequestInfo_API() OVERRIDE;
 
   // PPB_URLRequestInfo implementation.

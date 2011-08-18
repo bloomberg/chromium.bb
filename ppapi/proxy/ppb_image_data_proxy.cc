@@ -17,11 +17,13 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
@@ -66,7 +68,7 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
 ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)
-    : PluginResource(resource),
+    : Resource(resource),
       desc_(desc) {
 #if defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));

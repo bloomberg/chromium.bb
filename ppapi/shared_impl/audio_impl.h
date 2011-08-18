@@ -10,7 +10,7 @@
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "ppapi/c/ppb_audio.h"
-#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_api.h"
 
 namespace ppapi {

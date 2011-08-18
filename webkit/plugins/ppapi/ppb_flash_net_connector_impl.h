@@ -22,7 +22,7 @@ class PPB_Flash_NetConnector_Impl
   explicit PPB_Flash_NetConnector_Impl(PluginInstance* instance);
   virtual ~PPB_Flash_NetConnector_Impl();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Flash_NetConnector_API*
       AsPPB_Flash_NetConnector_API() OVERRIDE;
 

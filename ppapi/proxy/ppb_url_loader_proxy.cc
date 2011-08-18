@@ -19,7 +19,6 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
@@ -33,6 +32,7 @@
 #endif
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;
@@ -80,12 +80,12 @@ InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher,
 
 // URLLoader -------------------------------------------------------------------
 
-class URLLoader : public PluginResource, public PPB_URLLoader_API {
+class URLLoader : public Resource, public PPB_URLLoader_API {
  public:
   URLLoader(const HostResource& resource);
   virtual ~URLLoader();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_URLLoader_API* AsPPB_URLLoader_API() OVERRIDE;
 
   // PPB_URLLoader_API implementation.
@@ -121,6 +121,10 @@ class URLLoader : public PluginResource, public PPB_URLLoader_API {
   // The size must be not more than the current size of the buffer.
   void PopBuffer(void* output_buffer, int32_t output_size);
 
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   // Initialized to -1. Will be set to nonnegative values by the UpdateProgress
   // message when the values are known.
   int64_t bytes_sent_;
@@ -147,7 +151,7 @@ class URLLoader : public PluginResource, public PPB_URLLoader_API {
 };
 
 URLLoader::URLLoader(const HostResource& resource)
-    : PluginResource(resource),
+    : Resource(resource),
       bytes_sent_(-1),
       total_bytes_to_be_sent_(-1),
       bytes_received_(-1),
@@ -178,8 +182,8 @@ PPB_URLLoader_API* URLLoader::AsPPB_URLLoader_API() {
 
 int32_t URLLoader::Open(PP_Resource request_id,
                         PP_CompletionCallback callback) {
-  PluginResource* request_object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(request_id);
+  Resource* request_object =
+      PluginResourceTracker::GetInstance()->GetResource(request_id);
   if (!request_object)
     return PP_ERROR_BADARGUMENT;
 
@@ -358,8 +362,7 @@ PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
 // static
 PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
     const HostResource& url_loader_resource) {
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new URLLoader(url_loader_resource));
+  return (new URLLoader(url_loader_resource))->GetReference();
 }
 
 // static

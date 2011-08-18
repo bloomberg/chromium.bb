@@ -41,8 +41,6 @@
         'proxy/plugin_dispatcher.h',
         'proxy/plugin_message_filter.cc',
         'proxy/plugin_message_filter.h',
-        'proxy/plugin_resource.cc',
-        'proxy/plugin_resource.h',
         'proxy/plugin_resource_tracker.cc',
         'proxy/plugin_resource_tracker.h',
         'proxy/plugin_var_serialization_rules.cc',

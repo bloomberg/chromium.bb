@@ -32,7 +32,7 @@ class PPB_Buffer_Impl : public Resource,
   base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
   uint32_t size() const { return size_; }
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
   virtual ::ppapi::thunk::PPB_BufferTrusted_API* AsPPB_BufferTrusted_API();
 

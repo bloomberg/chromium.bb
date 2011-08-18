@@ -15,7 +15,6 @@ namespace pp {
 namespace proxy {
 
 class PluginDispatcher;
-class PluginResource;
 
 class ProxyModule {
  public:

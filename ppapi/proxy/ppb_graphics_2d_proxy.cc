@@ -14,13 +14,13 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_Graphics2D_API;
 
 namespace pp {
@@ -35,15 +35,15 @@ InterfaceProxy* CreateGraphics2DProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class Graphics2D : public PluginResource,
-                   public ::ppapi::thunk::PPB_Graphics2D_API {
+class Graphics2D : public ppapi::Resource,
+                   public ppapi::thunk::PPB_Graphics2D_API {
  public:
   Graphics2D(const HostResource& host_resource,
              const PP_Size& size,
              PP_Bool is_always_opaque);
   virtual ~Graphics2D();
 
-  // ResourceObjectBase.
+  // Resource.
   virtual PPB_Graphics2D_API* AsPPB_Graphics2D_API();
 
   // PPB_Graphics_2D_API.
@@ -60,6 +60,10 @@ class Graphics2D : public PluginResource,
   void FlushACK(int32_t result_code);
 
  private:
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   PP_Size size_;
   PP_Bool is_always_opaque_;
 
@@ -73,7 +77,7 @@ class Graphics2D : public PluginResource,
 Graphics2D::Graphics2D(const HostResource& host_resource,
                        const PP_Size& size,
                        PP_Bool is_always_opaque)
-    : PluginResource(host_resource),
+    : Resource(host_resource),
       size_(size),
       is_always_opaque_(is_always_opaque),
       current_flush_callback_(PP_BlockUntilComplete()) {
@@ -95,10 +99,10 @@ PP_Bool Graphics2D::Describe(PP_Size* size, PP_Bool* is_always_opaque) {
 void Graphics2D::PaintImageData(PP_Resource image_data,
                                 const PP_Point* top_left,
                                 const PP_Rect* src_rect) {
-  PluginResource* image_object = PluginResourceTracker::GetInstance()->
-      GetResourceObject(image_data);
-  //if (!image_object || instance() != image_object->instance())
-  //  return;
+  Resource* image_object = PluginResourceTracker::GetInstance()->
+      GetResource(image_data);
+  if (!image_object || pp_instance() != image_object->pp_instance())
+    return;
 
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
@@ -118,9 +122,9 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
 }
 
 void Graphics2D::ReplaceContents(PP_Resource image_data) {
-  PluginResource* image_object = PluginResourceTracker::GetInstance()->
-      GetResourceObject(image_data);
-  if (!image_object || instance() != image_object->instance())
+  Resource* image_object = PluginResourceTracker::GetInstance()->
+      GetResource(image_data);
+  if (!image_object || pp_instance() != image_object->pp_instance())
     return;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
@@ -183,8 +187,7 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
       &result));
   if (result.is_null())
     return 0;
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new Graphics2D(result, size, is_always_opaque));
+  return (new Graphics2D(result, size, is_always_opaque))->GetReference();
 }
 
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {

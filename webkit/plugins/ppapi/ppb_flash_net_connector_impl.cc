@@ -48,17 +48,11 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  if (!resource_id) {
-    NOTREACHED();
-    return PP_ERROR_FAILED;
-  }
-
   int32_t rv = instance()->delegate()->ConnectTcp(this, host, port);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), resource_id, callback);
+        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;
@@ -87,17 +81,11 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  if (!resource_id) {
-    NOTREACHED();
-    return PP_ERROR_FAILED;
-  }
-
   int32_t rv = instance()->delegate()->ConnectTcpAddress(this, addr);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), resource_id, callback);
+        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;

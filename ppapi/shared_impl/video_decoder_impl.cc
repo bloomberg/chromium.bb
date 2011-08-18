@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/ppb_context_3d_api.h"
 #include "ppapi/thunk/enter.h"
 
@@ -33,7 +34,7 @@ bool VideoDecoderImpl::Init(PP_Resource context3d_id,
 
   DCHECK(!gles2_impl_ && !context3d_id_);
   gles2_impl_ = context3d->GetGLES2Impl();
-  AddRefResource(context3d_id);
+  TrackerBase::Get()->GetResourceTracker()->AddRefResource(context3d_id);
   context3d_id_ = context3d_id;
   return true;
 }
@@ -41,7 +42,7 @@ bool VideoDecoderImpl::Init(PP_Resource context3d_id,
 void VideoDecoderImpl::Destroy() {
   context3d_id_ = 0;
   gles2_impl_ = NULL;
-  UnrefResource(context3d_id_);
+  TrackerBase::Get()->GetResourceTracker()->ReleaseResource(context3d_id_);
 }
 
 bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {

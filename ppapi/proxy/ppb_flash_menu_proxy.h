@@ -6,12 +6,15 @@
 #define PPAPI_PPB_FLASH_MENU_PROXY_H_
 
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
 struct PP_Flash_Menu;
 struct PP_Point;
 struct PPB_Flash_Menu;
+
+namespace ppapi {
+class HostResource;
+}
 
 namespace pp {
 namespace proxy {

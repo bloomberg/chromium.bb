@@ -29,7 +29,7 @@ class PPB_Flash_Menu_Impl : public Resource,
   static PP_Resource Create(PluginInstance* instance,
                             const PP_Flash_Menu* menu_data);
 
-  // ResourceObjectBase.
+  // Resource.
   virtual ::ppapi::thunk::PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
 
   // PPB_Flash_Menu implementation.

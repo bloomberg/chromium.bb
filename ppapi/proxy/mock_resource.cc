@@ -5,12 +5,12 @@
 #include "ppapi/proxy/mock_resource.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
 
-MockResource::MockResource(const HostResource& resource)
-    : PluginResource(resource) {
+MockResource::MockResource(const HostResource& resource) : Resource(resource) {
 }
 
 MockResource::~MockResource() {

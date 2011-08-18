@@ -7,13 +7,13 @@
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_CursorControl_FunctionAPI;
 
@@ -61,9 +61,9 @@ PP_Bool PPB_CursorControl_Proxy::SetCursor(PP_Instance instance,
   // It's legal for the image ID to be null if the type is not custom.
   HostResource cursor_image_resource;
   if (type == PP_CURSORTYPE_CUSTOM) {
-    PluginResource* cursor_image = PluginResourceTracker::GetInstance()->
-        GetResourceObject(custom_image_id);
-    if (!cursor_image || cursor_image->instance() != instance)
+    Resource* cursor_image = PluginResourceTracker::GetInstance()->
+        GetResource(custom_image_id);
+    if (!cursor_image || cursor_image->pp_instance() != instance)
       return PP_FALSE;
     cursor_image_resource = cursor_image->host_resource();
   } else {

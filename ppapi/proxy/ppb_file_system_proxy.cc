@@ -11,7 +11,6 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/enter.h"
@@ -20,6 +19,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_FileSystem_API;
 using ppapi::thunk::ResourceCreationAPI;
@@ -39,12 +39,12 @@ InterfaceProxy* CreateFileSystemProxy(Dispatcher* dispatcher,
 // This object maintains most of the state of the ref in the plugin for fast
 // querying. It's all set in the constructor from the "create info" sent from
 // the host.
-class FileSystem : public PluginResource, public PPB_FileSystem_API {
+class FileSystem : public Resource, public PPB_FileSystem_API {
  public:
   FileSystem(const HostResource& host_resource, PP_FileSystemType type);
   virtual ~FileSystem();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
 
   // PPB_FileSystem_APi implementation.
@@ -65,7 +65,7 @@ class FileSystem : public PluginResource, public PPB_FileSystem_API {
 
 FileSystem::FileSystem(const HostResource& host_resource,
                        PP_FileSystemType type)
-    : PluginResource(host_resource),
+    : Resource(host_resource),
       type_(type),
       called_open_(false),
       current_open_callback_(PP_MakeCompletionCallback(NULL, NULL)) {
@@ -98,8 +98,9 @@ int32_t FileSystem::Open(int64_t expected_size,
 
   current_open_callback_ = callback;
   called_open_ = true;
-  GetDispatcher()->Send(new PpapiHostMsg_PPBFileSystem_Open(
-      INTERFACE_ID_PPB_FILE_SYSTEM, host_resource(), expected_size));
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBFileSystem_Open(
+          INTERFACE_ID_PPB_FILE_SYSTEM, host_resource(), expected_size));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -144,9 +145,7 @@ PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
       INTERFACE_ID_PPB_FILE_SYSTEM, instance, type, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new FileSystem(result, type));
+  return (new FileSystem(result, type))->GetReference();
 }
 
 bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {

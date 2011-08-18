@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/video_decoder_impl.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"

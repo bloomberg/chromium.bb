@@ -26,6 +26,7 @@ class WaitableEvent;
 
 namespace ppapi {
 struct Preferences;
+class Resource;
 }
 
 namespace pp {
@@ -83,6 +84,10 @@ class PluginDispatcher : public Dispatcher {
   // renderers sharing the same plugin. This mapping is maintained by
   // DidCreateInstance/DidDestroyInstance.
   static PluginDispatcher* GetForInstance(PP_Instance instance);
+
+  // Same as GetForInstance but retrieves the instance from the given resource
+  // object as a convenience. Returns NULL on failure.
+  static PluginDispatcher* GetForResource(const ppapi::Resource* resource);
 
   static const void* GetInterfaceFromDispatcher(const char* interface);
 

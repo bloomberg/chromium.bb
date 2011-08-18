@@ -6,33 +6,31 @@
 
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 
 namespace pp {
 namespace proxy {
 
 // The implementation is actually in AudioConfigImpl.
-class AudioConfig : public PluginResource,
-                    public ppapi::AudioConfigImpl {
+class AudioConfig : public Resource, public ppapi::AudioConfigImpl {
  public:
   // Note that you must call Init (on AudioConfigImpl) before using this class.
   AudioConfig(const HostResource& resource);
   virtual ~AudioConfig();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioConfig);
 };
 
-AudioConfig::AudioConfig(const HostResource& resource)
-    : PluginResource(resource) {
+AudioConfig::AudioConfig(const HostResource& resource) : Resource(resource) {
 }
 
 AudioConfig::~AudioConfig() {
@@ -80,7 +78,7 @@ PP_Resource PPB_AudioConfig_Proxy::CreateProxyResource(
       HostResource::MakeInstanceOnly(instance)));
   if (!object->Init(sample_rate, sample_frame_count))
     return 0;
-  return PluginResourceTracker::GetInstance()->AddResource(object);
+  return object->GetReference();
 }
 
 bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -25,7 +25,7 @@ class PPB_LayerCompositor_Impl
 
   static const PPB_LayerCompositor_Dev* GetInterface();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual PPB_LayerCompositor_API* AsPPB_LayerCompositor_API();
 
   // PPB_LayerCompositor_API implementation.

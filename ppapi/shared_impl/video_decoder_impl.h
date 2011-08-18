@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
-#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 
 namespace gpu {
@@ -60,11 +60,6 @@ class VideoDecoderImpl : public thunk::PPB_VideoDecoder_API {
   virtual bool Init(PP_Resource context3d_id,
                     thunk::PPB_Context3D_API* context,
                     const PP_VideoConfigElement* dec_config);
-
-  // TODO(fischman/vrk): Remove accordingly when brettw has merged resource
-  // trackers.
-  virtual void AddRefResource(PP_Resource resource) = 0;
-  virtual void UnrefResource(PP_Resource resource) = 0;
 
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is

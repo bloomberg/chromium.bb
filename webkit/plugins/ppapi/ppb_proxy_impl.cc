@@ -28,10 +28,10 @@ void PluginCrashed(PP_Module module) {
 }
 
 PP_Instance GetInstanceForResource(PP_Resource resource) {
-  scoped_refptr<Resource> obj(ResourceTracker::Get()->GetResource(resource));
+  ::ppapi::Resource* obj = ResourceTracker::Get()->GetResource(resource);
   if (!obj)
     return 0;
-  return obj->instance()->pp_instance();
+  return obj->pp_instance();
 }
 
 void SetReserveInstanceIDCallback(PP_Module module,

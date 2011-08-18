@@ -39,30 +39,6 @@ using ppapi::StringVar;
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
-// We use two methods for creating resources. When the resource initialization
-// is simple and can't fail, just do
-//   return ReturnResource(new PPB_Foo_Impl(instance_, ...));
-// This will set up everything necessary.
-//
-// If the resource is more complex, generally the best thing is to write a
-// static "Create" function on the resource class that returns a PP_Resource
-// or 0 on failure. That helps keep the resource-specific stuff localized and
-// this class very simple.
-PP_Resource ReturnResource(Resource* resource) {
-  // We actually have to keep a ref here since the argument will not be ref'ed
-  // at all if it was just passed in with new (the expected usage). The
-  // returned PP_Resource created by GetReference will hold onto a ref on
-  // behalf of the plugin which will outlive this function. So the end result
-  // will be a Resource with one ref.
-  scoped_refptr<Resource> ref(resource);
-  return resource->GetReference();
-}
-
-}  // namespace
-
-
 ResourceCreationImpl::ResourceCreationImpl(PluginInstance* instance)
     : instance_(instance) {
 }
@@ -94,11 +70,11 @@ PP_Resource ResourceCreationImpl::CreateAudioConfig(
 
 PP_Resource ResourceCreationImpl::CreateAudioTrusted(
     PP_Instance instance_id) {
-  return ReturnResource(new PPB_Audio_Impl(instance_));
+  return (new PPB_Audio_Impl(instance_))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
-  return ReturnResource(new PPB_Broker_Impl(instance_));
+  return (new PPB_Broker_Impl(instance_))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
@@ -136,7 +112,7 @@ PP_Resource ResourceCreationImpl::CreateFileChooser(
 }
 
 PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {
-  return ReturnResource(new PPB_FileIO_Impl(instance_));
+  return (new PPB_FileIO_Impl(instance_))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,
@@ -158,7 +134,7 @@ PP_Resource ResourceCreationImpl::CreateFlashMenu(
 
 PP_Resource ResourceCreationImpl::CreateFlashNetConnector(
     PP_Instance instance) {
-  return ReturnResource(new PPB_Flash_NetConnector_Impl(instance_));
+  return (new PPB_Flash_NetConnector_Impl(instance_))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateFlashTCPSocket(
@@ -274,11 +250,11 @@ PP_Resource ResourceCreationImpl::CreateTransport(PP_Instance instance,
 }
 
 PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
-  return ReturnResource(new PPB_URLLoader_Impl(instance_, false));
+  return (new PPB_URLLoader_Impl(instance_, false))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateURLRequestInfo(PP_Instance instance) {
-  return ReturnResource(new PPB_URLRequestInfo_Impl(instance_));
+  return (new PPB_URLRequestInfo_Impl(instance_))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
@@ -286,7 +262,7 @@ PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
       new PPB_VideoCapture_Impl(instance_);
   if (!video_capture->Init())
     return 0;
-  return ReturnResource(video_capture);
+  return video_capture->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoDecoder(

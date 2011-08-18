@@ -66,10 +66,8 @@ PP_Resource PPB_Graphics3D_Impl::Create(PluginInstance* instance,
                                         const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-
   if (!graphics_3d->Init(share_context, attrib_list))
     return 0;
-
   return graphics_3d->GetReference();
 }
 
@@ -78,10 +76,8 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(PluginInstance* instance,
                                            const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-
   if (!graphics_3d->InitRaw(share_context, attrib_list))
     return 0;
-
   return graphics_3d->GetReference();
 }
 

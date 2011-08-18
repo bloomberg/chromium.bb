@@ -5,11 +5,12 @@
 #ifndef PPAPI_PROXY_PPB_FONT_PROXY_H_
 #define PPAPI_PROXY_PPB_FONT_PROXY_H_
 
-#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/webkit_forwarding.h"
 #include "ppapi/thunk/ppb_font_api.h"
 
@@ -42,7 +43,7 @@ class PPB_Font_Proxy : public ppapi::FunctionGroupBase,
   DISALLOW_COPY_AND_ASSIGN(PPB_Font_Proxy);
 };
 
-class Font : public PluginResource,
+class Font : public ppapi::Resource,
              public ppapi::thunk::PPB_Font_API {
  public:
   // Note that there isn't a "real" resource in the renderer backing a font,
@@ -53,7 +54,7 @@ class Font : public PluginResource,
   Font(const ppapi::HostResource& resource, const PP_FontDescription_Dev& desc);
   virtual ~Font();
 
-  // ResourceObjectBase.
+  // Resource.
   virtual ppapi::thunk::PPB_Font_API* AsPPB_Font_API() OVERRIDE;
 
   // PPB_Font_API implementation.

@@ -8,7 +8,7 @@
 #include "base/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 
 struct PPB_Buffer_Dev;
@@ -21,14 +21,14 @@ namespace pp {
 namespace proxy {
 
 class Buffer : public ppapi::thunk::PPB_Buffer_API,
-               public PluginResource {
+               public ppapi::Resource {
  public:
   Buffer(const ppapi::HostResource& resource,
          const base::SharedMemoryHandle& shm_handle,
          uint32_t size);
   virtual ~Buffer();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
 
   // PPB_Buffer_API implementation.

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 
 namespace ppapi {

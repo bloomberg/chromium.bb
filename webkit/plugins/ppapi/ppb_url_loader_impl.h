@@ -36,11 +36,9 @@ class PPB_URLLoader_Impl : public Resource,
   PPB_URLLoader_Impl(PluginInstance* instance, bool main_document_loader);
   virtual ~PPB_URLLoader_Impl();
 
-  // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_URLLoader_API* AsPPB_URLLoader_API() OVERRIDE;
-
   // Resource overrides.
-  virtual void ClearInstance() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_URLLoader_API* AsPPB_URLLoader_API() OVERRIDE;
+  virtual void InstanceWasDeleted() OVERRIDE;
 
   // PPB_URLLoader_API implementation.
   virtual int32_t Open(PP_Resource request_id,

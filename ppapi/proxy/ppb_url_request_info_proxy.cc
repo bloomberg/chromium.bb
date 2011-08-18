@@ -7,13 +7,13 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_URLRequestInfo_API;
 using ppapi::thunk::ResourceCreationAPI;
@@ -30,7 +30,7 @@ InterfaceProxy* CreateURLRequestInfoProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class URLRequestInfo : public PluginResource,
+class URLRequestInfo : public Resource,
                        public PPB_URLRequestInfo_API {
  public:
   URLRequestInfo(const HostResource& resource);
@@ -49,11 +49,15 @@ class URLRequestInfo : public PluginResource,
       PP_Time expected_last_modified_time) OVERRIDE;
 
  private:
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(URLRequestInfo);
 };
 
 URLRequestInfo::URLRequestInfo(const HostResource& resource)
-    : PluginResource(resource) {
+    : Resource(resource) {
 }
 
 URLRequestInfo::~URLRequestInfo() {
@@ -89,8 +93,8 @@ PP_Bool URLRequestInfo::AppendFileToBody(PP_Resource file_ref,
                                          int64_t start_offset,
                                          int64_t number_of_bytes,
                                          PP_Time expected_last_modified_time) {
-  PluginResource* file_ref_object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(file_ref);
+  Resource* file_ref_object =
+      PluginResourceTracker::GetInstance()->GetResource(file_ref);
   if (!file_ref_object)
     return PP_FALSE;
 
@@ -139,9 +143,7 @@ PP_Resource PPB_URLRequestInfo_Proxy::CreateProxyResource(
       INTERFACE_ID_PPB_URL_REQUEST_INFO, instance, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new URLRequestInfo(result));
+  return (new URLRequestInfo(result))->GetReference();
 }
 
 bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

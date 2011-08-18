@@ -53,7 +53,7 @@ class PPB_VideoDecoder_Impl : public Resource,
                             PP_Resource context3d_id,
                             const PP_VideoConfigElement* config);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
@@ -84,8 +84,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual bool Init(PP_Resource context3d_id,
                     ::ppapi::thunk::PPB_Context3D_API* context,
                     const PP_VideoConfigElement* dec_config) OVERRIDE;
-  virtual void AddRefResource(PP_Resource resource) OVERRIDE;
-  virtual void UnrefResource(PP_Resource resource) OVERRIDE;
 
  private:
   explicit PPB_VideoDecoder_Impl(PluginInstance* instance);

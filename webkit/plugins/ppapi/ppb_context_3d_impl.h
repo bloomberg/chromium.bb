@@ -40,7 +40,7 @@ class PPB_Context3D_Impl : public Resource,
                                PP_Resource share_context,
                                const int32_t* attrib_list);
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Context3D_API* AsPPB_Context3D_API();
 
   // PPB_Context3D_API implementation.

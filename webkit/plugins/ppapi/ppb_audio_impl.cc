@@ -58,7 +58,7 @@ PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
   if (config_id_)
-    ResourceTracker::Get()->UnrefResource(config_id_);
+    ResourceTracker::Get()->ReleaseResource(config_id_);
 
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
   // releases the audio data associated with the pointer. Note however, that

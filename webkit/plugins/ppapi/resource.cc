@@ -14,38 +14,27 @@ namespace webkit {
 namespace ppapi {
 
 Resource::Resource(PluginInstance* instance)
-    : ResourceObjectBase(instance->pp_instance()),
-      resource_id_(0),
+    : ::ppapi::Resource(instance->pp_instance()),
       instance_(instance) {
-  ResourceTracker::Get()->ResourceCreated(this, instance_);
 }
 
 Resource::~Resource() {
-  ResourceTracker::Get()->ResourceDestroyed(this);
 }
 
 PP_Resource Resource::GetReference() {
-  ResourceTracker *tracker = ResourceTracker::Get();
-  if (resource_id_)
-    tracker->AddRefResource(resource_id_);
-  else
-    resource_id_ = tracker->AddResource(this);
-  return resource_id_;
-}
-
-PP_Resource Resource::GetReferenceNoAddRef() const {
-  return resource_id_;
-}
-
-void Resource::ClearInstance() {
-  instance_ = NULL;
+  ResourceTracker* tracker = ResourceTracker::Get();
+  tracker->AddRefResource(pp_resource());
+  return pp_resource();
 }
 
 void Resource::LastPluginRefWasDeleted() {
-  DCHECK(resource_id_ != 0);
   instance()->module()->GetCallbackTracker()->PostAbortForResource(
-      resource_id_);
-  resource_id_ = 0;
+      pp_resource());
+}
+
+void Resource::InstanceWasDeleted() {
+  ::ppapi::Resource::InstanceWasDeleted();
+  instance_ = NULL;
 }
 
 }  // namespace ppapi

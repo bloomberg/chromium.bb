@@ -76,8 +76,8 @@ PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
   return this;
 }
 
-void PPB_URLLoader_Impl::ClearInstance() {
-  Resource::ClearInstance();
+void PPB_URLLoader_Impl::InstanceWasDeleted() {
+  Resource::InstanceWasDeleted();
   loader_.reset();
 }
 
@@ -362,10 +362,8 @@ void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
   DCHECK(callback.func);
   DCHECK(!pending_callback_.get() || pending_callback_->completed());
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   pending_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
 }
 
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
@@ -414,24 +412,17 @@ void PPB_URLLoader_Impl::SaveResponse(const WebURLResponse& response) {
 void PPB_URLLoader_Impl::UpdateStatus() {
   if (status_callback_ &&
       (RecordDownloadProgress() || RecordUploadProgress())) {
-    PP_Resource pp_resource = GetReferenceNoAddRef();
-    if (pp_resource) {
-      // The PP_Resource on the plugin will be NULL if the plugin has no
-      // reference to this object. That's fine, because then we don't need to
-      // call UpdateStatus.
-      //
-      // Here we go through some effort to only send the exact information that
-      // the requestor wanted in the request flags. It would be just as
-      // efficient to send all of it, but we don't want people to rely on
-      // getting download progress when they happen to set the upload progress
-      // flag.
-      status_callback_(
-          instance()->pp_instance(), pp_resource,
-          RecordUploadProgress() ? bytes_sent_ : -1,
-          RecordUploadProgress() ?  total_bytes_to_be_sent_ : -1,
-          RecordDownloadProgress() ? bytes_received_ : -1,
-          RecordDownloadProgress() ? total_bytes_to_be_received_ : -1);
-    }
+    // Here we go through some effort to only send the exact information that
+    // the requestor wanted in the request flags. It would be just as
+    // efficient to send all of it, but we don't want people to rely on
+    // getting download progress when they happen to set the upload progress
+    // flag.
+    status_callback_(
+        instance()->pp_instance(), pp_resource(),
+        RecordUploadProgress() ? bytes_sent_ : -1,
+        RecordUploadProgress() ?  total_bytes_to_be_sent_ : -1,
+        RecordDownloadProgress() ? bytes_received_ : -1,
+        RecordDownloadProgress() ? total_bytes_to_be_received_ : -1);
   }
 }
 

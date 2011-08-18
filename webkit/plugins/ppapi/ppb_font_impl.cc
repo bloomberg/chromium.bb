@@ -62,8 +62,7 @@ PP_Resource PPB_Font_Impl::Create(PluginInstance* instance,
                                   const PP_FontDescription_Dev& description) {
   if (!::ppapi::FontImpl::IsPPFontDescriptionValid(description))
     return 0;
-  scoped_refptr<PPB_Font_Impl> font(new PPB_Font_Impl(instance, description));
-  return font->GetReference();
+  return (new PPB_Font_Impl(instance, description))->GetReference();
 }
 
 ::ppapi::thunk::PPB_Font_API* PPB_Font_Impl::AsPPB_Font_API() {

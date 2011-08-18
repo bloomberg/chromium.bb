@@ -113,10 +113,8 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
 
   started_ = true;
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   connect_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -135,10 +133,8 @@ int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
     return PP_OK;
   }
 
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   next_address_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -170,10 +166,8 @@ int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
       new net::WrappedIOBuffer(static_cast<const char*>(data));
   int result = MapNetError(channel->Read(buffer, len, &channel_read_callback_));
   if (result == PP_OK_COMPLETIONPENDING) {
-    PP_Resource resource_id = GetReferenceNoAddRef();
-    CHECK(resource_id);
     recv_callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), resource_id, callback);
+        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   }
 
   return result;
@@ -196,10 +190,8 @@ int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,
   int result = MapNetError(channel->Write(buffer, len,
                                           &channel_write_callback_));
   if (result == PP_OK_COMPLETIONPENDING) {
-    PP_Resource resource_id = GetReferenceNoAddRef();
-    CHECK(resource_id);
     send_callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), resource_id, callback);
+        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
   }
 
   return result;

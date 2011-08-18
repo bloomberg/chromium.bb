@@ -28,7 +28,7 @@ class PPB_FileSystem_Impl : public Resource,
   static PP_Resource Create(PluginInstance* instance,
                             PP_FileSystemType type);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_FileSystem_API* AsPPB_FileSystem_API() OVERRIDE;
 
   PluginInstance* instance() { return instance_; }

@@ -24,7 +24,7 @@ class PPB_VideoLayer_Impl : public Resource,
   static PP_Resource Create(PluginInstance* instance,
                             PP_VideoLayerMode_Dev mode);
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual PPB_VideoLayer_API* AsPPB_VideoLayer_API() OVERRIDE;
 
   // Derived classes must implement PPB_VideoLayer_API.

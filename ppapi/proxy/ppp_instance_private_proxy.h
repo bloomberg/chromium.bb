@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/shared_impl/host_resource.h"
 
 struct PPP_Instance_Private;
 

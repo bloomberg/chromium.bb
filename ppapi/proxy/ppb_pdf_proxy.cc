@@ -13,23 +13,23 @@
 #include "build/build_config.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_pdf_api.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_PDFFont_API;
 using ppapi::thunk::EnterResource;
 
 namespace pp {
 namespace proxy {
 
-class PrivateFontFile : public PluginResource,
+class PrivateFontFile : public Resource,
                         public PPB_PDFFont_API {
  public:
-  PrivateFontFile(const HostResource& resource) : PluginResource(resource) {
+  PrivateFontFile(const HostResource& resource) : Resource(resource) {
   }
   virtual ~PrivateFontFile() {}
 
@@ -80,9 +80,7 @@ PP_Resource GetFontFileWithFallback(
       INTERFACE_ID_PPB_PDF, instance, desc, charset, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new PrivateFontFile(result));
+  return (new PrivateFontFile(result))->GetReference();
 }
 
 bool GetFontTableForPrivateFontFile(PP_Resource font_file,
@@ -95,7 +93,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
 
   PrivateFontFile* object = static_cast<PrivateFontFile*>(enter.object());
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
+      object->pp_instance());
   if (!dispatcher)
     return false;
 

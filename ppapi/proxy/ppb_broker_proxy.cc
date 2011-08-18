@@ -8,13 +8,13 @@
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_Broker_API;
 
 namespace pp {
@@ -49,12 +49,12 @@ InterfaceProxy* CreateBrokerProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class Broker : public PPB_Broker_API, public PluginResource {
+class Broker : public PPB_Broker_API, public Resource {
  public:
   explicit Broker(const HostResource& resource);
   virtual ~Broker();
 
-  // ResourceObjectBase overries.
+  // Resource overries.
   virtual PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_Broker_API implementation.
@@ -78,8 +78,7 @@ class Broker : public PPB_Broker_API, public PluginResource {
   DISALLOW_COPY_AND_ASSIGN(Broker);
 };
 
-Broker::Broker(const HostResource& resource)
-    : PluginResource(resource),
+Broker::Broker(const HostResource& resource) : Resource(resource),
       called_connect_(false),
       current_connect_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       socket_handle_(base::kInvalidPlatformFileValue) {
@@ -116,8 +115,9 @@ int32_t Broker::Connect(PP_CompletionCallback connect_callback) {
   current_connect_callback_ = connect_callback;
   called_connect_ = true;
 
-  bool success = GetDispatcher()->Send(new PpapiHostMsg_PPBBroker_Connect(
-      INTERFACE_ID_PPB_BROKER, host_resource()));
+  bool success = PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBBroker_Connect(
+          INTERFACE_ID_PPB_BROKER, host_resource()));
   return success ?  PP_OK_COMPLETIONPENDING : PP_ERROR_FAILED;
 }
 
@@ -181,8 +181,7 @@ PP_Resource PPB_Broker_Proxy::CreateProxyResource(PP_Instance instance) {
       INTERFACE_ID_PPB_BROKER, instance, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(new Broker(result));
+  return (new Broker(result))->GetReference();
 }
 
 bool PPB_Broker_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -29,7 +29,7 @@ class PPB_Transport_Impl : public Resource,
                             const char* name,
                             const char* proto);
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Transport_API* AsPPB_Transport_API() OVERRIDE;
 
   // PPB_Transport_API implementation.

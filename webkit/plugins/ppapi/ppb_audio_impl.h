@@ -35,7 +35,7 @@ class PPB_AudioConfig_Impl : public Resource,
                             PP_AudioSampleRate sample_rate,
                             uint32_t sample_frame_count);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
@@ -69,7 +69,7 @@ class PPB_Audio_Impl : public Resource,
   bool Init(PP_Resource config_id,
             PPB_Audio_Callback user_callback, void* user_data);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API();
 
   // PPB_Audio_API implementation.

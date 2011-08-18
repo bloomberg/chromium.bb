@@ -13,7 +13,6 @@
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/thunk/enter.h"
@@ -21,6 +20,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Context3D_API;
@@ -340,7 +340,7 @@ void PepperCommandBuffer::UpdateState(const gpu::CommandBuffer::State& state) {
 // Context3D -------------------------------------------------------------------
 
 Context3D::Context3D(const HostResource& resource)
-    : PluginResource(resource),
+    : Resource(resource),
       draw_(NULL),
       read_(NULL),
       transfer_buffer_id_(0) {
@@ -356,7 +356,7 @@ PPB_Context3D_API* Context3D::AsPPB_Context3D_API() {
 }
 
 bool Context3D::CreateImplementation() {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance());
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return false;
 
@@ -418,9 +418,10 @@ int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
       read_surface ? read_surface->host_resource() : HostResource();
 
   int32_t result;
-  GetDispatcher()->Send(new PpapiHostMsg_PPBContext3D_BindSurfaces(
-      INTERFACE_ID_PPB_CONTEXT_3D,
-      host_resource(), host_draw, host_read, &result));
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBContext3D_BindSurfaces(
+          INTERFACE_ID_PPB_CONTEXT_3D,
+          host_resource(), host_draw, host_read, &result));
   if (result != PP_OK)
     return result;
 
@@ -432,7 +433,9 @@ int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
       // Resize the backing texture to the size of the instance when it is
       // bound.
       // TODO(alokp): This should be the responsibility of plugins.
-      InstanceData* data = GetDispatcher()->GetInstanceData(instance());
+      InstanceData* data =
+          PluginDispatcher::GetForResource(this)->GetInstanceData(
+              pp_instance());
       gles2_impl()->ResizeCHROMIUM(data->position.size.width,
                                    data->position.size.height);
     }
@@ -443,8 +446,8 @@ int32_t Context3D::BindSurfaces(PP_Resource pp_draw, PP_Resource pp_read) {
 }
 
 int32_t Context3D::GetBoundSurfaces(PP_Resource* draw, PP_Resource* read) {
-  *draw = draw_ ? draw_->resource() : 0;
-  *read = read_ ? read_->resource() : 0;
+  *draw = draw_ ? draw_->pp_resource() : 0;
+  *read = read_ ? read_->pp_resource() : 0;
   return PP_OK;
 }
 
@@ -583,7 +586,7 @@ PP_Resource PPB_Context3D_Proxy::Create(PP_Instance instance,
   scoped_refptr<Context3D> context_3d(new Context3D(result));
   if (!context_3d->CreateImplementation())
     return 0;
-  return PluginResourceTracker::GetInstance()->AddResource(context_3d);
+  return context_3d->GetReference();
 }
 
 bool PPB_Context3D_Proxy::OnMessageReceived(const IPC::Message& msg) {

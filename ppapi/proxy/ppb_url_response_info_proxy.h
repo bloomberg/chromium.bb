@@ -31,7 +31,7 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // URLResponseInfo objects are actually created and returned by the
   // URLLoader. This function allows the URLLoader to convert a new
   // HostResource representing a response info to a properly tracked
-  // URLReponseInfo PluginResource. Returns the plugin resource ID for the
+  // URLReponseInfo Resource. Returns the plugin resource ID for the
   // new resource.
   static PP_Resource CreateResponseForResource(
       const ppapi::HostResource& resource);

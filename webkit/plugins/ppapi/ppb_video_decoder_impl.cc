@@ -246,13 +246,6 @@ void PPB_VideoDecoder_Impl::NotifyFlushDone() {
 void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
   NOTREACHED() << "PlatformVideoDecoder::Initialize() is synchronous!";
 }
-void PPB_VideoDecoder_Impl::AddRefResource(PP_Resource resource) {
-  ResourceTracker::Get()->AddRefResource(resource);
-}
-
-void PPB_VideoDecoder_Impl::UnrefResource(PP_Resource resource) {
-  ResourceTracker::Get()->UnrefResource(resource);
-}
 
 }  // namespace ppapi
 }  // namespace webkit

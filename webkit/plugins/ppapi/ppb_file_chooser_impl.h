@@ -35,7 +35,7 @@ class PPB_FileChooser_Impl : public Resource,
   // Resource overrides.
   virtual PPB_FileChooser_Impl* AsPPB_FileChooser_Impl();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_FileChooser_API* AsPPB_FileChooser_API() OVERRIDE;
 
   // Stores the list of selected files.

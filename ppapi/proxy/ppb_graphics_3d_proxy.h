@@ -13,9 +13,9 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 #include "ppapi/shared_impl/graphics_3d_impl.h"
+#include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
 class HostResource;
@@ -24,7 +24,7 @@ class HostResource;
 namespace pp {
 namespace proxy {
 
-class Graphics3D : public PluginResource,
+class Graphics3D : public ppapi::Resource,
                    public ppapi::Graphics3DImpl {
  public:
   explicit Graphics3D(const ppapi::HostResource& resource);
@@ -32,7 +32,7 @@ class Graphics3D : public PluginResource,
 
   bool Init();
 
-  // PluginResource overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() OVERRIDE {
     return this;
   }

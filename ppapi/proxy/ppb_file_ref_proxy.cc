@@ -10,7 +10,6 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
@@ -18,6 +17,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
@@ -35,12 +35,12 @@ InterfaceProxy* CreateFileRefProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class FileRef : public PluginResource, public PPB_FileRef_API {
+class FileRef : public Resource, public PPB_FileRef_API {
  public:
   explicit FileRef(const PPBFileRef_CreateInfo& info);
   virtual ~FileRef();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
 
   // PPB_FileRef_API implementation.
@@ -58,6 +58,10 @@ class FileRef : public PluginResource, public PPB_FileRef_API {
                          PP_CompletionCallback callback) OVERRIDE;
 
  private:
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   PP_FileSystemType file_system_type_;
   PP_Var path_;
   PP_Var name_;
@@ -66,8 +70,8 @@ class FileRef : public PluginResource, public PPB_FileRef_API {
 };
 
 FileRef::FileRef(const PPBFileRef_CreateInfo& info)
-    : PluginResource(info.resource) {
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance());
+    : Resource(info.resource) {
+  Dispatcher* dispatcher = PluginDispatcher::GetForResource(this);
 
   file_system_type_ = static_cast<PP_FileSystemType>(info.file_system_type);
 
@@ -134,10 +138,10 @@ int32_t FileRef::Delete(PP_CompletionCallback callback) {
 
 int32_t FileRef::Rename(PP_Resource new_file_ref,
                         PP_CompletionCallback callback) {
-  PluginResource* new_file_ref_object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(new_file_ref);
+  Resource* new_file_ref_object =
+      PluginResourceTracker::GetInstance()->GetResource(new_file_ref);
   if (!new_file_ref_object ||
-      new_file_ref_object->host_resource().instance() != instance())
+      new_file_ref_object->host_resource().instance() != pp_instance())
     return PP_ERROR_BADRESOURCE;
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Rename(
@@ -169,15 +173,16 @@ const InterfaceProxy::Info* PPB_FileRef_Proxy::GetInfo() {
 // static
 PP_Resource PPB_FileRef_Proxy::CreateProxyResource(PP_Resource file_system,
                                                    const char* path) {
-  PluginResource* file_system_object =
-      PluginResourceTracker::GetInstance()->GetResourceObject(file_system);
+  Resource* file_system_object =
+      PluginResourceTracker::GetInstance()->GetResource(file_system);
   if (!file_system_object)
     return 0;
 
   PPBFileRef_CreateInfo create_info;
-  file_system_object->GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_Create(
-      INTERFACE_ID_PPB_FILE_REF, file_system_object->host_resource(),
-      path, &create_info));
+  PluginDispatcher::GetForResource(file_system_object)->Send(
+      new PpapiHostMsg_PPBFileRef_Create(
+          INTERFACE_ID_PPB_FILE_REF, file_system_object->host_resource(),
+          path, &create_info));
   return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
@@ -228,9 +233,7 @@ PP_Resource PPB_FileRef_Proxy::DeserializeFileRef(
     const PPBFileRef_CreateInfo& serialized) {
   if (serialized.resource.is_null())
     return 0;  // Resource invalid.
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new FileRef(serialized));
+  return (new FileRef(serialized))->GetReference();
 }
 
 void PPB_FileRef_Proxy::OnMsgCreate(const HostResource& file_system,

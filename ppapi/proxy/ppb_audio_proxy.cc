@@ -14,15 +14,16 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/audio_impl.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
@@ -30,7 +31,7 @@ using ppapi::thunk::PPB_AudioConfig_API;
 namespace pp {
 namespace proxy {
 
-class Audio : public PluginResource, public ppapi::AudioImpl {
+class Audio : public Resource, public ppapi::AudioImpl {
  public:
   Audio(const HostResource& audio_id,
         PP_Resource config_id,
@@ -38,7 +39,7 @@ class Audio : public PluginResource, public ppapi::AudioImpl {
         void* user_data);
   virtual ~Audio();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_Audio_API* AsPPB_Audio_API();
 
   // PPB_Audio_API implementation.
@@ -62,7 +63,7 @@ Audio::Audio(const HostResource& audio_id,
              PP_Resource config_id,
              PPB_Audio_Callback callback,
              void* user_data)
-    : PluginResource(audio_id),
+    : Resource(audio_id),
       config_(config_id) {
   SetCallback(callback, user_data);
   PluginResourceTracker::GetInstance()->AddRefResource(config_);
@@ -86,7 +87,7 @@ PP_Bool Audio::StartPlayback() {
   if (playing())
     return PP_TRUE;
   SetStartPlaybackState();
-  PluginDispatcher::GetForInstance(instance())->Send(
+  PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBAudio_StartOrStop(
           INTERFACE_ID_PPB_AUDIO, host_resource(), true));
   return PP_TRUE;
@@ -95,7 +96,7 @@ PP_Bool Audio::StartPlayback() {
 PP_Bool Audio::StopPlayback() {
   if (!playing())
     return PP_TRUE;
-  PluginDispatcher::GetForInstance(instance())->Send(
+  PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBAudio_StartOrStop(
           INTERFACE_ID_PPB_AUDIO, host_resource(), false));
   SetStopPlaybackState();
@@ -179,8 +180,8 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new Audio(result, config_id, audio_callback, user_data));
+  return (new Audio(result, config_id,
+                    audio_callback, user_data))->GetReference();
 }
 
 bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {

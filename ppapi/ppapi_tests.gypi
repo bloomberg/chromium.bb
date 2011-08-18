@@ -195,6 +195,7 @@
         'proxy/ppp_instance_proxy_test.cc',
         'proxy/ppp_messaging_proxy_test.cc',
         'proxy/serialized_var_unittest.cc',
+        'shared_impl/resource_tracker_unittest.cc',
       ],
     },
   ],

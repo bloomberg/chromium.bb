@@ -14,6 +14,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
@@ -324,7 +325,7 @@ InterfaceProxy* CreateGraphics3DProxy(Dispatcher* dispatcher,
 }  // namespace
 
 Graphics3D::Graphics3D(const HostResource& resource)
-    : PluginResource(resource) {
+    : Resource(resource) {
 }
 
 Graphics3D::~Graphics3D() {
@@ -332,7 +333,7 @@ Graphics3D::~Graphics3D() {
 }
 
 bool Graphics3D::Init() {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance());
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return false;
 
@@ -390,7 +391,7 @@ int32 Graphics3D::DoSwapBuffers() {
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
       INTERFACE_ID_PPB_GRAPHICS_3D, host_resource());
   msg->set_unblock(true);
-  GetDispatcher()->Send(msg);
+  PluginDispatcher::GetForResource(this)->Send(msg);
 
   gles2_impl()->SwapBuffers();
   return PP_OK_COMPLETIONPENDING;
@@ -451,8 +452,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   scoped_refptr<Graphics3D> graphics_3d(new Graphics3D(result));
   if (!graphics_3d->Init())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(graphics_3d);
+  return graphics_3d->GetReference();
 }
 
 bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {

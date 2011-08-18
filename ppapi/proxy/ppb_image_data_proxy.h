@@ -5,6 +5,7 @@
 #ifndef PPAPI_PPB_IMAGE_DATA_PROXY_H_
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
+#include "base/scoped_ptr.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -13,9 +14,9 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
 struct PPB_ImageData;
@@ -47,8 +48,8 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 };
 
-class ImageData : public PluginResource,
-                  public ::ppapi::thunk::PPB_ImageData_API,
+class ImageData : public ppapi::Resource,
+                  public ppapi::thunk::PPB_ImageData_API,
                   public ppapi::ImageDataImpl {
  public:
   ImageData(const ppapi::HostResource& resource,
@@ -56,8 +57,8 @@ class ImageData : public PluginResource,
             ImageHandle handle);
   virtual ~ImageData();
 
-  // ResourceObjectBase overrides.
-  virtual ::ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
+  // Resource overrides.
+  virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
 
   // PPB_ImageData API.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;

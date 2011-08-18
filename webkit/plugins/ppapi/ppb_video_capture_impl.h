@@ -35,7 +35,7 @@ class PPB_VideoCapture_Impl : public Resource,
 
   bool Init();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
 
   // PPB_VideoCapture implementation.

@@ -27,7 +27,7 @@ class PPB_Broker_Impl : public Resource,
   explicit PPB_Broker_Impl(PluginInstance* instance);
   virtual ~PPB_Broker_Impl();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_BrokerTrusted implementation.

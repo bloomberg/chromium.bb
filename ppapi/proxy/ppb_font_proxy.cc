@@ -12,13 +12,14 @@
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
-#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
@@ -95,19 +96,20 @@ bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 Font::Font(const HostResource& resource,
            const PP_FontDescription_Dev& desc)
-    : PluginResource(resource),
+    : Resource(resource),
       webkit_event_(false, false) {
   TRACE_EVENT0("ppapi proxy", "Font::Font");
   scoped_refptr<StringVar> face(StringVar::FromPPVar(desc.face));
 
-  WebKitForwarding* forwarding = GetDispatcher()->GetWebKitForwarding();
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
+  WebKitForwarding* forwarding = dispatcher->GetWebKitForwarding();
 
   RunOnWebKitThread(true,
                     base::Bind(&WebKitForwarding::CreateFontForwarding,
                                base::Unretained(forwarding),
                                &webkit_event_, desc,
                                face.get() ? face->value() : std::string(),
-                               GetDispatcher()->preferences(),
+                               dispatcher->preferences(),
                                &font_forwarding_));
 }
 
@@ -221,7 +223,7 @@ int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
 }
 
 void Font::RunOnWebKitThread(bool blocking, const base::Closure& task) {
-  GetDispatcher()->PostToWebKitThread(FROM_HERE, task);
+  PluginDispatcher::GetForResource(this)->PostToWebKitThread(FROM_HERE, task);
   if (blocking)
     webkit_event_.Wait();
 }

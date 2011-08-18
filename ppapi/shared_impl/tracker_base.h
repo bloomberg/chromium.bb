@@ -14,7 +14,7 @@
 namespace ppapi {
 
 class FunctionGroupBase;
-class ResourceObjectBase;
+class ResourceTracker;
 class VarTracker;
 
 // Tracks resource and function APIs, providing a mapping between ID and
@@ -37,20 +37,13 @@ class TrackerBase {
   // Init() first (it should be unnecessary to NULL-check this).
   static TrackerBase* Get();
 
-  // Returns the resource object corresponding to the given ID, or NULL if
-  // there isn't one.
-  virtual ResourceObjectBase* GetResourceAPI(PP_Resource res) = 0;
-
   // Returns the function object corresponding to the given ID, or NULL if
   // there isn't one.
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             pp::proxy::InterfaceID id) = 0;
 
-  // Returns the instance corresponding to the given resource, or 0 if the
-  // resource is invalid.
-  virtual PP_Instance GetInstanceForResource(PP_Resource resource) = 0;
-
   virtual VarTracker* GetVarTracker() = 0;
+  virtual ResourceTracker* GetResourceTracker() = 0;
 };
 
 }  // namespace ppapi

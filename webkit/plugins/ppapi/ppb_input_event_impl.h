@@ -21,7 +21,7 @@ class PPB_InputEvent_Impl : public Resource,
   static PP_Resource Create(PluginInstance* instance,
                             const ::ppapi::InputEventData& data);
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual ::ppapi::thunk::PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;
 
  protected:

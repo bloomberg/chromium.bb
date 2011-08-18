@@ -9,8 +9,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
-#include "ppapi/shared_impl/resource_object_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 
 namespace ppapi {
 namespace thunk {
@@ -77,9 +78,15 @@ template<typename FunctionsT>
 class EnterFunctionGivenResource : public EnterFunction<FunctionsT> {
  public:
   EnterFunctionGivenResource(PP_Resource resource, bool report_error)
-      : EnterFunction<FunctionsT>(
-            TrackerBase::Get()->GetInstanceForResource(resource),
-            report_error) {
+      : EnterFunction<FunctionsT>(GetInstanceForResource(resource),
+                                  report_error) {
+  }
+
+ private:
+  static PP_Instance GetInstanceForResource(PP_Resource resource) {
+    Resource* object =
+        TrackerBase::Get()->GetResourceTracker()->GetResource(resource);
+    return object ? object->pp_instance() : 0;
   }
 };
 
@@ -90,7 +97,8 @@ class EnterResource {
  public:
   EnterResource(PP_Resource resource, bool report_error)
       : object_(NULL) {
-    ResourceObjectBase* base = TrackerBase::Get()->GetResourceAPI(resource);
+    Resource* base =
+        TrackerBase::Get()->GetResourceTracker()->GetResource(resource);
     if (base)
       object_ = base->GetAs<ResourceT>();
     // TODO(brettw) check error and if report_error is set, do something.

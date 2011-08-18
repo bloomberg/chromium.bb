@@ -20,6 +20,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
@@ -42,36 +43,20 @@ class ResourceTrackerTest;
 // us to check resource ID validity and to map them to a specific module.
 //
 // This object is NOT threadsafe.
-class ResourceTracker : public ::ppapi::TrackerBase {
+class ResourceTracker : public ::ppapi::TrackerBase,
+                        public ::ppapi::ResourceTracker {
  public:
   // Returns the pointer to the singleton object.
   static ResourceTracker* Get();
 
   // PP_Resources --------------------------------------------------------------
 
-  // The returned pointer will be NULL if there is no resource. Note that this
-  // return value is a scoped_refptr so that we ensure the resource is valid
-  // from the point of the lookup to the point that the calling code needs it.
-  // Otherwise, the plugin could Release() the resource on another thread and
-  // the object will get deleted out from under us.
-  scoped_refptr<Resource> GetResource(PP_Resource res) const;
-
-  // Increment resource's plugin refcount. See ResourceAndRefCount comments
-  // below.
-  bool AddRefResource(PP_Resource res);
-  bool UnrefResource(PP_Resource res);
-
-  // Returns the number of resources associated with this module.
-  uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
-
   // TrackerBase.
-  virtual ::ppapi::ResourceObjectBase* GetResourceAPI(
-      PP_Resource res) OVERRIDE;
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance pp_instance,
       pp::proxy::InterfaceID id) OVERRIDE;
-  virtual PP_Instance GetInstanceForResource(PP_Resource resource) OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
 
   // PP_Vars -------------------------------------------------------------------
 
@@ -87,6 +72,10 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   // given NPObject for the given instance. See AddNPObjectVar above.
   ::ppapi::NPObjectVar* NPObjectVarForNPObject(PP_Instance instance,
                                                NPObject* np_object);
+
+  // Returns the number of NPObjectVar's associated with the given instance.
+  // Returns 0 if the instance isn't known.
+  int GetLiveNPObjectVarsForInstance(PP_Instance instance) const;
 
   // PP_Modules ----------------------------------------------------------------
 
@@ -130,19 +119,7 @@ class ResourceTracker : public ::ppapi::TrackerBase {
 
   // Prohibit creation other then by the Singleton class.
   ResourceTracker();
-  ~ResourceTracker();
-
-  // Called when a new resource is created and associates it with its
-  // PluginInstance.
-  void ResourceCreated(Resource* resource, PluginInstance* instance);
-
-  // Removes a resource from the resource map.
-  void ResourceDestroyed(Resource* resource);
-
-  // Adds the given resource to the tracker and assigns it a resource ID and
-  // refcount of 1. The assigned resource ID will be returned. Used only by the
-  // Resource class.
-  PP_Resource AddResource(Resource* resource);
+  virtual ~ResourceTracker();
 
   // Force frees all vars and resources associated with the given instance.
   // If delete_instance is true, the instance tracking information will also

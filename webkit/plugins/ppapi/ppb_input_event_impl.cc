@@ -25,9 +25,7 @@ PPB_InputEvent_Impl::PPB_InputEvent_Impl(PluginInstance* instance,
 // static
 PP_Resource PPB_InputEvent_Impl::Create(PluginInstance* instance,
                                         const InputEventData& data) {
-  scoped_refptr<PPB_InputEvent_Impl> event(
-      new PPB_InputEvent_Impl(instance, data));
-  return event->GetReference();
+  return (new PPB_InputEvent_Impl(instance, data))->GetReference();
 }
 
 PPB_InputEvent_API* PPB_InputEvent_Impl::AsPPB_InputEvent_API() {

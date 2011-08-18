@@ -14,6 +14,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Flash_Menu_API;
 using ppapi::thunk::ResourceCreationAPI;
@@ -21,12 +22,12 @@ using ppapi::thunk::ResourceCreationAPI;
 namespace pp {
 namespace proxy {
 
-class FlashMenu : public PPB_Flash_Menu_API, public PluginResource {
+class FlashMenu : public PPB_Flash_Menu_API, public Resource {
  public:
   explicit FlashMenu(const HostResource& resource);
   virtual ~FlashMenu();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_Flash_Menu_API* AsPPB_Flash_Menu_API() OVERRIDE;
 
   // PPB_Flash_Menu_API implementation.
@@ -44,7 +45,7 @@ class FlashMenu : public PPB_Flash_Menu_API, public PluginResource {
 };
 
 FlashMenu::FlashMenu(const HostResource& resource)
-    : PluginResource(resource),
+    : Resource(resource),
       callback_(PP_BlockUntilComplete()),
       selected_id_ptr_(NULL) {
 }
@@ -65,8 +66,9 @@ int32_t FlashMenu::Show(const struct PP_Point* location,
   selected_id_ptr_ = selected_id;
   callback_ = callback;
 
-  GetDispatcher()->Send(new PpapiHostMsg_PPBFlashMenu_Show(
-      INTERFACE_ID_PPB_FLASH_MENU, host_resource(), *location));
+  PluginDispatcher::GetForResource(this)->Send(
+      new PpapiHostMsg_PPBFlashMenu_Show(
+          INTERFACE_ID_PPB_FLASH_MENU, host_resource(), *location));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -122,9 +124,7 @@ PP_Resource PPB_Flash_Menu_Proxy::CreateProxyResource(
       INTERFACE_ID_PPB_FLASH_MENU, instance_id, serialized_menu, &result));
   if (result.is_null())
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new FlashMenu(result));
+  return (new FlashMenu(result))->GetReference();
 }
 
 bool PPB_Flash_Menu_Proxy::OnMessageReceived(const IPC::Message& msg) {

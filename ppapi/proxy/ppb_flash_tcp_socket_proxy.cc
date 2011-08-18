@@ -14,13 +14,14 @@
 #include "base/task.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_tcp_socket_api.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::HostResource;
+using ppapi::Resource;
 using ppapi::thunk::PPB_Flash_TCPSocket_API;
 
 namespace pp {
@@ -58,12 +59,12 @@ InterfaceProxy* CreateFlashTCPSocketProxy(Dispatcher* dispatcher,
 }  // namespace
 
 class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
-                       public PluginResource {
+                       public Resource {
  public:
   FlashTCPSocket(const HostResource& resource, uint32 socket_id);
   virtual ~FlashTCPSocket();
 
-  // ResourceObjectBase overrides.
+  // Resource overrides.
   virtual PPB_Flash_TCPSocket_API* AsPPB_Flash_TCPSocket_API() OVERRIDE;
 
   // PPB_Flash_TCPSocket_API implementation.
@@ -110,6 +111,10 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
 
   bool IsConnected() const;
 
+  PluginDispatcher* GetDispatcher() const {
+    return PluginDispatcher::GetForResource(this);
+  }
+
   // Backend for both Connect() and ConnectWithNetAddress(). To keep things
   // generic, the message is passed in (on error, it's deleted).
   int32_t ConnectWithMessage(IPC::Message* msg,
@@ -135,7 +140,7 @@ class FlashTCPSocket : public PPB_Flash_TCPSocket_API,
 };
 
 FlashTCPSocket::FlashTCPSocket(const HostResource& resource, uint32 socket_id)
-    : PluginResource(resource),
+    : Resource(resource),
       socket_id_(socket_id),
       connection_state_(BEFORE_CONNECT),
       connect_callback_(PP_BlockUntilComplete()),
@@ -420,9 +425,8 @@ PP_Resource PPB_Flash_TCPSocket_Proxy::CreateProxyResource(
       &socket_id));
   if (socket_id == 0)
     return 0;
-
-  return PluginResourceTracker::GetInstance()->AddResource(
-      new FlashTCPSocket(HostResource::MakeInstanceOnly(instance), socket_id));
+  return (new FlashTCPSocket(HostResource::MakeInstanceOnly(instance),
+                             socket_id))->GetReference();
 }
 
 bool PPB_Flash_TCPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {

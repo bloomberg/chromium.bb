@@ -28,7 +28,7 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
 
   virtual ~PPB_Scrollbar_Impl();
 
-  // ResourceObjectBase override.
+  // Resource override.
   virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() OVERRIDE;
 
   // Returns a pointer to the interface implementing PPB_Scrollbar_0_3 that is

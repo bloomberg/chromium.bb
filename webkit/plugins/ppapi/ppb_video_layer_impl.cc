@@ -25,10 +25,7 @@ PP_Resource PPB_VideoLayer_Impl::Create(PluginInstance* instance,
                                         PP_VideoLayerMode_Dev mode) {
   if (mode != PP_VIDEOLAYERMODE_SOFTWARE)
     return 0;
-
-  scoped_refptr<PPB_VideoLayer_Impl> layer(
-      new PPB_VideoLayer_Software(instance));
-  return layer->GetReference();
+  return (new PPB_VideoLayer_Software(instance))->GetReference();
 }
 
 PPB_VideoLayer_API* PPB_VideoLayer_Impl::AsPPB_VideoLayer_API() {

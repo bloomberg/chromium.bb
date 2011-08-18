@@ -69,10 +69,8 @@ int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
   // and BrokerConnected is called before ConnectToPpapiBroker returns.
   // Because it must be created now, it must be aborted and cleared if
   // ConnectToPpapiBroker fails.
-  PP_Resource resource_id = GetReferenceNoAddRef();
-  CHECK(resource_id);
   connect_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), resource_id,
+      instance()->module()->GetCallbackTracker(), pp_resource(),
       connect_callback);
 
   broker_ = instance()->delegate()->ConnectToPpapiBroker(this);

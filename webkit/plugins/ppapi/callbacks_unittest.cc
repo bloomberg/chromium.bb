@@ -202,13 +202,13 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
 
   // Kill resource #1, spin the message loop to run posted calls, and check that
   // things are in the expected states.
-  resource_tracker->UnrefResource(resource_1_id);
+  resource_tracker->ReleaseResource(resource_1_id);
   MessageLoop::current()->RunAllPending();
   resource_1->CheckFinalState();
   resource_2->CheckIntermediateState();
 
   // Kill resource #2.
-  resource_tracker->UnrefResource(resource_2_id);
+  resource_tracker->ReleaseResource(resource_2_id);
   MessageLoop::current()->RunAllPending();
   resource_1->CheckFinalState();
   resource_2->CheckFinalState();
@@ -228,7 +228,7 @@ TEST_F(CallbackResourceTest, Resurrection) {
 
   // Unref it, spin the message loop to run posted calls, and check that things
   // are in the expected states.
-  resource_tracker->UnrefResource(resource_id);
+  resource_tracker->ReleaseResource(resource_id);
   MessageLoop::current()->RunAllPending();
   resource->CheckFinalState();
 
@@ -238,7 +238,7 @@ TEST_F(CallbackResourceTest, Resurrection) {
   resource->CheckFinalState();
 
   // Unref it again and do the same.
-  resource_tracker->UnrefResource(new_resource_id);
+  resource_tracker->ReleaseResource(new_resource_id);
   MessageLoop::current()->RunAllPending();
   resource->CheckFinalState();
 
