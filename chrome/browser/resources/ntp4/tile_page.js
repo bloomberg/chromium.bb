@@ -543,16 +543,14 @@ cr.define('ntp4', function() {
 
       // We need to update the top margin as well.
       this.updateTopMargin_();
-      this.fireLayoutEvent_();
     },
 
     /**
-     * Dispatches the custom pagelayout event. Called after changes to layout so
-     * listeners may update as needed.
+     * Dispatches the custom scrollbarchange event.
      */
-    fireLayoutEvent_: function() {
+    fireScrollbarChangeEvent_: function() {
       var event = document.createEvent('Event');
-      event.initEvent('pagelayout', true, true);
+      event.initEvent('scrollbarchange', true, true);
       this.dispatchEvent(event);
     },
 
@@ -809,6 +807,7 @@ cr.define('ntp4', function() {
 
       this.scrollbar_.style.top = thumbTop + 'px';
       this.scrollbar_.style.height = thumbHeight + 'px';
+      this.fireScrollbarChangeEvent_();
     },
 
     /**

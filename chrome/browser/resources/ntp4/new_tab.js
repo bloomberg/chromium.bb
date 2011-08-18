@@ -426,7 +426,7 @@ cr.define('ntp4', function() {
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
-    eventTracker.add(page, 'pagelayout', onPageLayout);
+    eventTracker.add(page, 'scrollbarchange', onPageScrollbarChange);
   }
 
   /**
@@ -450,7 +450,7 @@ cr.define('ntp4', function() {
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
-    eventTracker.add(page, 'pagelayout', onPageLayout);
+    eventTracker.add(page, 'scrollbarchange', onPageScrollbarChange);
   }
 
   /**
@@ -520,10 +520,10 @@ cr.define('ntp4', function() {
   };
 
   /**
-   * Callback for the 'pagelayout' event.
+   * Callback for the 'scrollbarchange' event.
    * @param {Event} e The event.
    */
-  function onPageLayout(e) {
+  function onPageScrollbarChange(e) {
     if (Array.prototype.indexOf.call(tilePages, e.currentTarget) !=
         cardSlider.currentCard) {
       return;
