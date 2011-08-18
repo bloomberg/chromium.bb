@@ -539,15 +539,8 @@ void TabRendererGtk::StartMiniTabTitleAnimation() {
     mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
-  if (!mini_title_animation_->is_animating()) {
-    mini_title_animation_->StartThrobbing(2);
-  } else if (mini_title_animation_->cycles_remaining() <= 2) {
-    // The title changed while we're already animating. Add at most one more
-    // cycle. This is done in an attempt to smooth out pages that continuously
-    // change the title.
-    mini_title_animation_->set_cycles_remaining(
-        mini_title_animation_->cycles_remaining() + 2);
-  }
+  if (!mini_title_animation_->is_animating())
+    mini_title_animation_->StartThrobbing(-1);
 }
 
 void TabRendererGtk::StopMiniTabTitleAnimation() {
