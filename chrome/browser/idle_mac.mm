@@ -84,16 +84,18 @@ void StopIdleMonitor() {
   g_screenMonitor = nil;
 }
 
-IdleState CalculateIdleState(unsigned int idle_threshold) {
+void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
   if ([g_screenMonitor isScreensaverRunning] ||
-      [g_screenMonitor isScreenLocked])
-    return IDLE_STATE_LOCKED;
+      [g_screenMonitor isScreenLocked]) {
+    notify.Run(IDLE_STATE_LOCKED);
+    return;
+  }
 
   CFTimeInterval idle_time = CGEventSourceSecondsSinceLastEventType(
       kCGEventSourceStateCombinedSessionState,
       kCGAnyInputEventType);
   if (idle_time >= idle_threshold)
-    return IDLE_STATE_IDLE;
-
-  return IDLE_STATE_ACTIVE;
+    notify.Run(IDLE_STATE_IDLE);
+  else
+    notify.Run(IDLE_STATE_ACTIVE);
 }

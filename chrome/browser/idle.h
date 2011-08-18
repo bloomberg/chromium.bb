@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_IDLE_H_
 #pragma once
 
+#include "base/callback.h"
+
 enum IdleState {
   IDLE_STATE_ACTIVE = 0,
   IDLE_STATE_IDLE = 1,   // No activity within threshold.
-  IDLE_STATE_LOCKED = 2  // Only available on supported systems.
+  IDLE_STATE_LOCKED = 2,  // Only available on supported systems.
+  IDLE_STATE_UNKNOWN = 3  // Used when waiting for the Idle state or in error
+                          // conditions
 };
 
 // For MacOSX, InitIdleMonitor needs to be called first to setup the monitor.
@@ -19,6 +23,11 @@ void InitIdleMonitor();
 void StopIdleMonitor();
 #endif
 
-IdleState CalculateIdleState(unsigned int idle_threshold);
+typedef base::Callback<void(IdleState)> IdleCallback;
+
+// Calculate the Idle state and notify the callback.
+void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify);
+// Calculate the Idle state synchronously and return the state.
+IdleState CalculateIdleStateSync(unsigned int idle_threshold);
 
 #endif  // CHROME_BROWSER_IDLE_H_
