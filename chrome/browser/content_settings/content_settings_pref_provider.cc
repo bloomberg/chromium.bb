@@ -1186,11 +1186,11 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
           ContentSettingsPattern::FromURLNoWildcard(secondary_url);
       DCHECK(primary_pattern.IsValid() && secondary_pattern.IsValid());
 
-      SetContentSetting(primary_pattern,
-                        secondary_pattern,
-                        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                        std::string(),
-                        IntToContentSetting(setting_value));
+      UpdatePatternPairsPref(primary_pattern,
+                             secondary_pattern,
+                             CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                             std::string(),
+                             IntToContentSetting(setting_value));
     }
   }
 }
