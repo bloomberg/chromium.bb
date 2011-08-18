@@ -65,7 +65,7 @@ class ResourceTrackerTest : public testing::Test, public TrackerBase {
   // TrackerBase implementation.
   virtual FunctionGroupBase* GetFunctionAPI(
       PP_Instance inst,
-      pp::proxy::InterfaceID id) OVERRIDE {
+      ppapi::proxy::InterfaceID id) OVERRIDE {
     return NULL;
   }
   virtual VarTracker* GetVarTracker() OVERRIDE {

@@ -11,10 +11,9 @@
 #include "ppapi/shared_impl/input_event_impl.h"
 
 namespace ppapi {
-struct InputEventData;
-}
 
-namespace pp {
+struct InputEventData;
+
 namespace proxy {
 
 class PPB_InputEvent_Proxy : public InterfaceProxy {
@@ -38,6 +37,6 @@ class PPB_InputEvent_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_INPUT_EVENT_PROXY_H_

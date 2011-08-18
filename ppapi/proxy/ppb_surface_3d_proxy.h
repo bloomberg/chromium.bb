@@ -18,7 +18,7 @@
 
 struct PPB_Surface3D_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Context3D;
@@ -89,11 +89,11 @@ class PPB_Surface3D_Proxy : public InterfaceProxy {
   void SendSwapBuffersACKToPlugin(int32_t result,
                                   const ppapi::HostResource& surface_3d);
 
-  CompletionCallbackFactory<PPB_Surface3D_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Surface3D_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_SURFACE_3D_PROXY_H_

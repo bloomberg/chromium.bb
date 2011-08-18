@@ -17,7 +17,7 @@ namespace IPC {
 class Message;
 }
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedFlashMenu {
@@ -39,6 +39,6 @@ class SerializedFlashMenu {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_SERIALIZED_FLASH_MENU_H_

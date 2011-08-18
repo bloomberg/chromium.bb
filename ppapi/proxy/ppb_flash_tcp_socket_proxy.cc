@@ -20,11 +20,9 @@
 #include "ppapi/thunk/ppb_flash_tcp_socket_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_Flash_TCPSocket_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 const int32_t kFlashTCPSocketMaxReadSize = 1024 * 1024;
@@ -403,7 +401,7 @@ PPB_Flash_TCPSocket_Proxy::~PPB_Flash_TCPSocket_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Flash_TCPSocket_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_Flash_TCPSocket_Thunk(),
+    thunk::GetPPB_Flash_TCPSocket_Thunk(),
     PPB_FLASH_TCPSOCKET_INTERFACE,
     INTERFACE_ID_PPB_FLASH_TCPSOCKET,
     false,
@@ -501,4 +499,4 @@ void PPB_Flash_TCPSocket_Proxy::OnMsgWriteACK(uint32 /* plugin_dispatcher_id */,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

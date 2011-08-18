@@ -21,7 +21,7 @@ std::string VarToString(const PP_Var& var, const PPB_Var* ppb_var) {
 }
 }  // namespace
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_VarTest : public PluginProxyTest {
@@ -73,5 +73,5 @@ TEST_F(PPB_VarTest, Strings) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 

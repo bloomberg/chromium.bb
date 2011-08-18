@@ -13,7 +13,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -75,4 +75,4 @@ void PPP_Instance_Private_Proxy::OnMsgGetInstanceObject(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

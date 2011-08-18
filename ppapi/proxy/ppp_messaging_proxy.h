@@ -10,7 +10,7 @@
 
 struct PPP_Messaging;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReceiveInput;
@@ -36,6 +36,6 @@ class PPP_Messaging_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_MESSAGING_PROXY_H_

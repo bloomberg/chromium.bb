@@ -16,9 +16,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 
-using ppapi::HostResource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -227,4 +225,4 @@ void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_INTERFACE_ID_H_
 #define PPAPI_PROXY_INTERFACE_ID_H_
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // These numbers must be all small integers. They are used in a lookup table
@@ -70,6 +70,6 @@ enum InterfaceID {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_INTERFACE_ID_H_

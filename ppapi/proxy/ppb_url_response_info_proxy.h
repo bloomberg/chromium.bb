@@ -14,7 +14,7 @@
 
 struct PPB_URLResponseInfo;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 struct PPBFileRef_CreateInfo;
@@ -51,6 +51,6 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_URL_RESPONSE_INFO_PROXY_H_

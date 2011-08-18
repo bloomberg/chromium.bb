@@ -16,14 +16,12 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -161,7 +159,7 @@ PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
 
 const InterfaceProxy::Info* PPB_FileRef_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_FileRef_Thunk(),
+    thunk::GetPPB_FileRef_Thunk(),
     PPB_FILEREF_INTERFACE,
     INTERFACE_ID_PPB_FILE_REF,
     false,
@@ -306,4 +304,4 @@ void PPB_FileRef_Proxy::OnMsgRename(const HostResource& file_ref,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

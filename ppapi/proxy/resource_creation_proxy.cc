@@ -40,12 +40,9 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
-using ppapi::HostResource;
-using ppapi::InputEventData;
-using ppapi::StringVar;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 ResourceCreationProxy::ResourceCreationProxy(Dispatcher* dispatcher)
@@ -395,7 +392,7 @@ void ResourceCreationProxy::OnMsgCreateImageData(
     int32_t handle;
     if (trusted->GetSharedMemory(resource, &handle, &byte_count) == PP_OK) {
 #if defined(OS_WIN)
-      pp::proxy::ImageHandle ih = ImageData::HandleFromInt(handle);
+      ImageHandle ih = ImageData::HandleFromInt(handle);
       *result_image_handle = dispatcher_->ShareHandleWithRemote(ih, false);
 #else
       *result_image_handle = ImageData::HandleFromInt(handle);
@@ -405,4 +402,4 @@ void ResourceCreationProxy::OnMsgCreateImageData(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

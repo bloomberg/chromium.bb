@@ -13,11 +13,9 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_Broker_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -275,4 +273,4 @@ void PPB_Broker_Proxy::ConnectCompleteInHost(int32_t result,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

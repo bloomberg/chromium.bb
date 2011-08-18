@@ -59,7 +59,7 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
 // not preloaded).
 class PepperPluginRegistry
     : public webkit::ppapi::PluginDelegate::ModuleLifetime,
-      public pp::proxy::ProxyChannel::Delegate {
+      public ppapi::proxy::ProxyChannel::Delegate {
  public:
   ~PepperPluginRegistry();
 

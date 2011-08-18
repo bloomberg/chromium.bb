@@ -13,13 +13,11 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Flash_Menu_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class FlashMenu : public PPB_Flash_Menu_API, public Resource {
@@ -116,7 +114,7 @@ PP_Resource PPB_Flash_Menu_Proxy::CreateProxyResource(
     return 0;
 
   HostResource result;
-  pp::proxy::SerializedFlashMenu serialized_menu;
+  SerializedFlashMenu serialized_menu;
   if (!serialized_menu.SetPPMenu(menu_data))
     return 0;
 
@@ -194,4 +192,4 @@ void PPB_Flash_Menu_Proxy::SendShowACKToPlugin(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

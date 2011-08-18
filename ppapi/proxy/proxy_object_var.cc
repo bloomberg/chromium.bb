@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/c/pp_var.h"
 
-using pp::proxy::PluginDispatcher;
+using ppapi::proxy::PluginDispatcher;
 
 namespace ppapi {
 

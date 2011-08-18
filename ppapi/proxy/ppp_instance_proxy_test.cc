@@ -12,7 +12,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -181,5 +181,5 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 

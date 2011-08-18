@@ -11,7 +11,7 @@
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_instance.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // Listens for messages on the I/O thread of the plugin and handles some of
@@ -51,6 +51,6 @@ class PluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PLUGIN_MESSAGE_FILTER_H_

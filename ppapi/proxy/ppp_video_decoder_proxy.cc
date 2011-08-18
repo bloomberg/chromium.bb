@@ -12,10 +12,9 @@
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -167,4 +166,4 @@ void PPP_VideoDecoder_Proxy::OnMsgNotifyError(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/proxy/dispatcher.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 InterfaceProxy::InterfaceProxy(Dispatcher* dispatcher,
@@ -33,4 +33,4 @@ PP_CompletionCallback InterfaceProxy::ReceiveCallback(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

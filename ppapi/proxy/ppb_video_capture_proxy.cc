@@ -23,14 +23,12 @@
 #include "ppapi/thunk/ppb_video_capture_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_BufferTrusted_API;
 using ppapi::thunk::PPB_VideoCapture_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -452,4 +450,4 @@ void PPP_VideoCapture_Proxy::OnMsgOnBufferReady(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

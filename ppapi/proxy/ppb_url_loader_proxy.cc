@@ -31,14 +31,12 @@
 #include <sys/shm.h>
 #endif
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -368,7 +366,7 @@ PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
 // static
 const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_URLLoader_Thunk(),
+    thunk::GetPPB_URLLoader_Thunk(),
     PPB_URLLOADER_INTERFACE,
     INTERFACE_ID_PPB_URL_LOADER,
     false,
@@ -380,7 +378,7 @@ const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetInfo() {
 // static
 const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetTrustedInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk(),
+    thunk::GetPPB_URLLoaderTrusted_Thunk(),
     PPB_URLLOADERTRUSTED_INTERFACE,
     INTERFACE_ID_NONE,  // URL_LOADER is the canonical one.
     false,
@@ -587,4 +585,4 @@ void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

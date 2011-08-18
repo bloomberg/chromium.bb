@@ -13,10 +13,7 @@
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -24,7 +21,7 @@ namespace {
 // When non-NULL, this object overrides the ResourceTrackerSingleton.
 PluginResourceTracker* g_resource_tracker_override = NULL;
 
-::ppapi::TrackerBase* GetTrackerBase() {
+TrackerBase* GetTrackerBase() {
   return PluginResourceTracker::GetInstance();
 }
 
@@ -50,8 +47,7 @@ PluginResourceTracker* PluginResourceTracker::GetInstance() {
 }
 
 // static
-::ppapi::TrackerBase*
-PluginResourceTracker::GetTrackerBaseInstance() {
+TrackerBase* PluginResourceTracker::GetTrackerBaseInstance() {
   return GetInstance();
 }
 
@@ -63,20 +59,19 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   return found->second;
 }
 
-::ppapi::FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(
-    PP_Instance inst,
-    pp::proxy::InterfaceID id) {
+FunctionGroupBase* PluginResourceTracker::GetFunctionAPI(PP_Instance inst,
+                                                         InterfaceID id) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
   if (dispatcher)
     return dispatcher->GetFunctionAPI(id);
   return NULL;
 }
 
-ppapi::VarTracker* PluginResourceTracker::GetVarTracker() {
+VarTracker* PluginResourceTracker::GetVarTracker() {
   return &var_tracker();
 }
 
-ppapi::ResourceTracker* PluginResourceTracker::GetResourceTracker() {
+ResourceTracker* PluginResourceTracker::GetResourceTracker() {
   return this;
 }
 
@@ -112,4 +107,4 @@ void PluginResourceTracker::RemoveResource(Resource* object) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

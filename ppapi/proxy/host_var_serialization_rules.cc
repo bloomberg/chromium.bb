@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/c/ppb_var.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 HostVarSerializationRules::HostVarSerializationRules(
@@ -93,4 +93,4 @@ void HostVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

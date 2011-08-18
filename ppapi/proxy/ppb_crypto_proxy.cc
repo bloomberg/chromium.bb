@@ -8,7 +8,7 @@
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/shared_impl/crypto_impl.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -51,4 +51,4 @@ bool PPB_Crypto_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

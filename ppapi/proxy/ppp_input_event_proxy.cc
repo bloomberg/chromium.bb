@@ -15,11 +15,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
-using ppapi::InputEventData;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_InputEvent_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -112,4 +111,4 @@ void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

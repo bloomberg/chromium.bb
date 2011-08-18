@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -243,7 +243,7 @@ void PPP_Class_Proxy::OnMsgGetProperty(int64 ppp_class, int64 object,
 
 void PPP_Class_Proxy::OnMsgEnumerateProperties(
     int64 ppp_class, int64 object,
-    std::vector<pp::proxy::SerializedVar>* props,
+    std::vector<SerializedVar>* props,
     SerializedVarOutParam exception) {
   NOTIMPLEMENTED();
   // TODO(brettw) implement this.
@@ -295,4 +295,4 @@ void PPP_Class_Proxy::OnMsgDeallocate(int64 ppp_class, int64 object) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

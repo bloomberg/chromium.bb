@@ -11,7 +11,7 @@
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // SerializedVar::Inner --------------------------------------------------------
@@ -540,5 +540,5 @@ SerializedVarTestReader::SerializedVarTestReader(const SerializedVar& var)
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 

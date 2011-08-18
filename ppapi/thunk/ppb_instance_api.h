@@ -53,8 +53,8 @@ class PPB_Instance_FunctionAPI {
   // QueryPolicy.
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) = 0;
 
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_INSTANCE;
+  static const proxy::InterfaceID interface_id =
+      proxy::INTERFACE_ID_PPB_INSTANCE;
 };
 
 }  // namespace thunk

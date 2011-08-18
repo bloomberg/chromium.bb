@@ -16,7 +16,7 @@ namespace IPC {
 class Message;
 }
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Dispatcher;
@@ -455,7 +455,7 @@ class SerializedVarTestReader : public SerializedVar {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_SERIALIZED_VAR_H_
 

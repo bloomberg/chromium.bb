@@ -21,7 +21,7 @@ struct PPB_Graphics2D;
 struct PP_Point;
 struct PP_Rect;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Graphics2D_Proxy : public InterfaceProxy {
@@ -65,11 +65,11 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   void SendFlushACKToPlugin(int32_t result,
                             const ppapi::HostResource& graphics_2d);
 
-  CompletionCallbackFactory<PPB_Graphics2D_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Graphics2D_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_GRAPHICS_2D_PROXY_H_

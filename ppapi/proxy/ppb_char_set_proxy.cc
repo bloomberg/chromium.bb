@@ -14,7 +14,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -109,4 +109,4 @@ void PPB_CharSet_Proxy::OnMsgGetDefaultCharSet(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

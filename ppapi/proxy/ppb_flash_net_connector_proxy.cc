@@ -17,13 +17,11 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Flash_NetConnector_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 std::string NetAddressToString(const PP_Flash_NetAddress& addr) {
@@ -264,7 +262,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcp(
     const std::string& host,
     uint16_t port) {
   ConnectCallbackInfo* info = new ConnectCallbackInfo(resource);
-  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+  pp::CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
   EnterHostFromHostResource<PPB_Flash_NetConnector_API> enter(resource);
@@ -282,7 +280,7 @@ void PPB_Flash_NetConnector_Proxy::OnMsgConnectTcpAddress(
     const HostResource& resource,
     const std::string& net_address_as_string) {
   ConnectCallbackInfo* info = new ConnectCallbackInfo(resource);
-  CompletionCallback callback = callback_factory_.NewOptionalCallback(
+  pp::CompletionCallback callback = callback_factory_.NewOptionalCallback(
       &PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost, info);
 
   PP_Flash_NetAddress net_address;
@@ -341,4 +339,4 @@ void PPB_Flash_NetConnector_Proxy::OnCompleteCallbackInHost(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

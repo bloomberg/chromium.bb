@@ -13,7 +13,7 @@
 struct PP_Picture_Dev;
 struct PP_Size;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPP_VideoDecoder_Proxy : public InterfaceProxy {
@@ -47,6 +47,6 @@ class PPP_VideoDecoder_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_VIDEO_DECODER_PROXY_H_

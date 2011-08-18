@@ -13,7 +13,7 @@
 
 struct PPB_URLRequestInfo;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReceiveInput;
@@ -49,6 +49,6 @@ class PPB_URLRequestInfo_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_URL_REQUEST_INFO_PROXY_H_

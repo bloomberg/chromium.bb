@@ -8,20 +8,18 @@
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/var.h"
 
-namespace pp {
+namespace ppapi {
+
 namespace proxy {
 class PluginDispatcher;
 }  // namespace proxy
-}  // namespace pp
-
-namespace ppapi {
 
 // Tracks a reference to an object var in the plugin side of the proxy. This
 // just stores the dispatcher and host var ID, and provides the interface for
 // integrating this with PP_Var creation.
 class ProxyObjectVar : public Var {
  public:
-  ProxyObjectVar(pp::proxy::PluginDispatcher* dispatcher,
+  ProxyObjectVar(proxy::PluginDispatcher* dispatcher,
                  int32 host_var_id);
 
   virtual ~ProxyObjectVar();
@@ -31,7 +29,7 @@ class ProxyObjectVar : public Var {
   virtual PP_Var GetPPVar() OVERRIDE;
   virtual PP_VarType GetType() const OVERRIDE;
 
-  pp::proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }
+  proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }
   int32 host_var_id() const { return host_var_id_; }
 
   // Expose AssignVarID on Var so the PluginResourceTracker can call us when
@@ -39,7 +37,7 @@ class ProxyObjectVar : public Var {
   void AssignVarID(int32 id);
 
  private:
-  pp::proxy::PluginDispatcher* dispatcher_;
+  proxy::PluginDispatcher* dispatcher_;
   int32 host_var_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyObjectVar);

@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -110,4 +110,4 @@ void BrokerSideDispatcher::OnChannelError() {
 
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

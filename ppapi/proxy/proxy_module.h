@@ -11,7 +11,7 @@
 
 template<typename T> struct DefaultSingletonTraits;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PluginDispatcher;
@@ -39,6 +39,6 @@ class ProxyModule {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PROXY_MODULE_H_

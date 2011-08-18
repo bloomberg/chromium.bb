@@ -15,10 +15,9 @@
 struct PPB_Flash_NetConnector;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class PPB_Flash_NetConnector_Proxy : public InterfaceProxy {
@@ -55,11 +54,11 @@ class PPB_Flash_NetConnector_Proxy : public InterfaceProxy {
 
   void OnCompleteCallbackInHost(int32_t result, ConnectCallbackInfo* info);
 
-  CompletionCallbackFactory<PPB_Flash_NetConnector_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Flash_NetConnector_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FLASH_NET_CONNECTOR_PROXY_H_

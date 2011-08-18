@@ -18,7 +18,7 @@
 struct PP_FileInfo;
 struct PPB_Flash;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 struct PPBFlash_DrawGlyphs_Params;
@@ -42,12 +42,12 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                    PP_Bool on_top);
-  void OnMsgDrawGlyphs(const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
+  void OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
                        PP_Bool* result);
   void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
-  void OnMsgNavigate(const ppapi::HostResource& request_info,
+  void OnMsgNavigate(const HostResource& request_info,
                      const std::string& target,
                      bool from_user_action,
                      int32_t* result);
@@ -58,6 +58,6 @@ class PPB_Flash_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_FLASH_PROXY_H_

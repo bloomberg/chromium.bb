@@ -12,7 +12,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_preferences.cc"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -375,4 +375,4 @@ void TwoWayTest::TearDown() {
 
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

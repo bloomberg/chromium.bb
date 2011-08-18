@@ -16,13 +16,11 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Surface3D_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -102,7 +100,7 @@ PPB_Surface3D_Proxy::~PPB_Surface3D_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Surface3D_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_Surface3D_Thunk(),
+    thunk::GetPPB_Surface3D_Thunk(),
     PPB_SURFACE_3D_DEV_INTERFACE,
     INTERFACE_ID_PPB_SURFACE_3D,
     false,
@@ -195,4 +193,4 @@ void PPB_Surface3D_Proxy::SendSwapBuffersACKToPlugin(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

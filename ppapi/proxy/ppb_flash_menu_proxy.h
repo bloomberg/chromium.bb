@@ -13,10 +13,9 @@ struct PP_Point;
 struct PPB_Flash_Menu;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class SerializedFlashMenu;
@@ -47,11 +46,11 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
                     int32_t result);
   void SendShowACKToPlugin(int32_t result, ShowRequest* request);
 
-  CompletionCallbackFactory<PPB_Flash_Menu_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Flash_Menu_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_FLASH_MENU_PROXY_H_

@@ -18,23 +18,22 @@
 struct PP_Size;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class Dispatcher;
 
-class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
-                              public ::ppapi::thunk::ResourceCreationAPI,
-                              public ::IPC::Channel::Listener,
+class ResourceCreationProxy : public FunctionGroupBase,
+                              public thunk::ResourceCreationAPI,
+                              public IPC::Channel::Listener,
                               public IPC::Message::Sender {
  public:
   explicit ResourceCreationProxy(Dispatcher* dispatcher);
   virtual ~ResourceCreationProxy();
 
-  virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
+  virtual thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
 
   // ResourceCreationAPI (called in plugin).
   virtual PP_Resource CreateAudio(PP_Instance instance,
@@ -133,16 +132,16 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
   void OnMsgCreateAudio(PP_Instance instance,
                         int32_t sample_rate,
                         uint32_t sample_frame_count,
-                        ppapi::HostResource* result);
+                        HostResource* result);
   void OnMsgCreateGraphics2D(PP_Instance instance,
                              const PP_Size& size,
                              PP_Bool is_always_opaque,
-                             ppapi::HostResource* result);
+                             HostResource* result);
   void OnMsgCreateImageData(PP_Instance instance,
                             int32_t format,
                             const PP_Size& size,
                             PP_Bool init_to_zero,
-                            ppapi::HostResource* result,
+                            HostResource* result,
                             std::string* image_data_desc,
                             ImageHandle* result_image_handle);
 
@@ -152,6 +151,6 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_RESOURCE_CREATION_PROXY_H_

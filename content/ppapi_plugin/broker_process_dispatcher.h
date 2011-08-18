@@ -11,7 +11,7 @@
 // Wrapper around a BrokerDispatcher that provides the necessary integration
 // for plugin process management. This class is to avoid direct dependencies
 // from the PPAPI proxy on the Chrome multiprocess infrastructure.
-class BrokerProcessDispatcher : public pp::proxy::BrokerSideDispatcher {
+class BrokerProcessDispatcher : public ppapi::proxy::BrokerSideDispatcher {
  public:
   BrokerProcessDispatcher(base::ProcessHandle remote_process_handle,
                           PP_ConnectInstance_Func connect_instance);

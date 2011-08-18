@@ -22,16 +22,14 @@
 template<typename T> struct DefaultSingletonTraits;
 
 namespace ppapi {
-class Var;
-}
 
-namespace pp {
+class Var;
+
 namespace proxy {
 
 class PluginDispatcher;
 
-class PluginResourceTracker : public ppapi::TrackerBase,
-                              public ppapi::ResourceTracker {
+class PluginResourceTracker : public TrackerBase, public ResourceTracker {
  public:
   // Called by tests that want to specify a specific ResourceTracker. This
   // allows them to use a unique one each time and avoids singletons sticking
@@ -40,12 +38,12 @@ class PluginResourceTracker : public ppapi::TrackerBase,
 
   // Returns the global singleton resource tracker for the plugin.
   static PluginResourceTracker* GetInstance();
-  static ::ppapi::TrackerBase* GetTrackerBaseInstance();
+  static TrackerBase* GetTrackerBaseInstance();
 
   // Given a host resource, maps it to an existing plugin resource ID if it
   // exists, or returns 0 on failure.
   PP_Resource PluginResourceForHostResource(
-      const ppapi::HostResource& resource) const;
+      const HostResource& resource) const;
 
   PluginVarTracker& var_tracker() {
     return var_tracker_test_override_ ? *var_tracker_test_override_
@@ -57,16 +55,15 @@ class PluginResourceTracker : public ppapi::TrackerBase,
   }
 
   // TrackerBase.
-  virtual ppapi::FunctionGroupBase* GetFunctionAPI(
-      PP_Instance inst,
-      pp::proxy::InterfaceID id) OVERRIDE;
-  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
-  virtual ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
+  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
+                                            InterfaceID id) OVERRIDE;
+  virtual VarTracker* GetVarTracker() OVERRIDE;
+  virtual ResourceTracker* GetResourceTracker() OVERRIDE;
 
  protected:
   // ResourceTracker overrides.
-  virtual PP_Resource AddResource(ppapi::Resource* object) OVERRIDE;
-  virtual void RemoveResource(ppapi::Resource* object) OVERRIDE;
+  virtual PP_Resource AddResource(Resource* object) OVERRIDE;
+  virtual void RemoveResource(Resource* object) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<PluginResourceTracker>;
@@ -88,13 +85,13 @@ class PluginResourceTracker : public ppapi::TrackerBase,
   PluginVarTracker* var_tracker_test_override_;
 
   // Map of host instance/resource pairs to a plugin resource ID.
-  typedef std::map<ppapi::HostResource, PP_Resource> HostResourceMap;
+  typedef std::map<HostResource, PP_Resource> HostResourceMap;
   HostResourceMap host_resource_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceTracker);
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PLUGIN_RESOURCE_TRACKER_H_

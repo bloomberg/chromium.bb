@@ -10,9 +10,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
-using ppapi::HostResource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -67,4 +65,4 @@ TEST_F(PluginResourceTrackerTest, PluginResourceForHostResource) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

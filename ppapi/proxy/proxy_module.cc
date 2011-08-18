@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 ProxyModule::ProxyModule() {
@@ -29,4 +29,4 @@ void ProxyModule::SetFlashCommandLineArgs(const std::string& args) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -10,7 +10,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -162,4 +162,4 @@ void PPB_Flash_Clipboard_Proxy::OnMsgWritePlainText(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -353,9 +353,9 @@ void PepperMessageFilter::FlashTCPSocket::Read(int32 bytes_to_read) {
     return;
   }
 
-  if (bytes_to_read > pp::proxy::kFlashTCPSocketMaxReadSize) {
+  if (bytes_to_read > ppapi::proxy::kFlashTCPSocketMaxReadSize) {
     NOTREACHED();
-    bytes_to_read = pp::proxy::kFlashTCPSocketMaxReadSize;
+    bytes_to_read = ppapi::proxy::kFlashTCPSocketMaxReadSize;
   }
 
   read_buffer_ = new net::IOBuffer(bytes_to_read);
@@ -373,9 +373,9 @@ void PepperMessageFilter::FlashTCPSocket::Write(const std::string& data) {
   }
 
   int data_size = data.size();
-  if (data_size > pp::proxy::kFlashTCPSocketMaxWriteSize) {
+  if (data_size > ppapi::proxy::kFlashTCPSocketMaxWriteSize) {
     NOTREACHED();
-    data_size = pp::proxy::kFlashTCPSocketMaxWriteSize;
+    data_size = ppapi::proxy::kFlashTCPSocketMaxWriteSize;
   }
 
   write_buffer_ = new net::IOBuffer(data_size);

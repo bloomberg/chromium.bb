@@ -14,7 +14,7 @@
 struct PP_Point;
 struct PPB_Testing_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Testing_Proxy : public InterfaceProxy {
@@ -45,6 +45,6 @@ class PPB_Testing_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_TESTING_PROXY_H_

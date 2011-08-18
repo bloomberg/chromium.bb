@@ -27,7 +27,7 @@ struct ChannelHandle;
 }
 
 class PpapiThread : public ChildThread,
-                    public pp::proxy::PluginDispatcher::PluginDelegate {
+                    public ppapi::proxy::PluginDispatcher::PluginDelegate {
  public:
   explicit PpapiThread(bool is_broker);
   virtual ~PpapiThread();
@@ -45,7 +45,7 @@ class PpapiThread : public ChildThread,
                                   const base::Closure& task) OVERRIDE;
   virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual uint32 Register(
-      pp::proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
+      ppapi::proxy::PluginDispatcher* plugin_dispatcher) OVERRIDE;
   virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
   // Message handlers.
@@ -66,7 +66,7 @@ class PpapiThread : public ChildThread,
 
   base::ScopedNativeLibrary library_;
 
-  pp::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
+  ppapi::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
 
   // Callback to call when a new instance connects to the broker.
   // Used only when is_broker_.
@@ -89,7 +89,7 @@ class PpapiThread : public ChildThread,
   scoped_ptr<PpapiWebKitThread> webkit_thread_;
 
   // The PluginDispatcher instances contained in the map are not owned by it.
-  std::map<uint32, pp::proxy::PluginDispatcher*> plugin_dispatchers_;
+  std::map<uint32, ppapi::proxy::PluginDispatcher*> plugin_dispatchers_;
   uint32 next_plugin_dispatcher_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);

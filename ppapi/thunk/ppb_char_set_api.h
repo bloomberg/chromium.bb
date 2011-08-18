@@ -27,8 +27,8 @@ class PPB_CharSet_FunctionAPI {
                                    uint32_t* output_length) = 0;
   virtual PP_Var GetDefaultCharSet(PP_Instance instance) = 0;
 
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_CHAR_SET;
+  static const proxy::InterfaceID interface_id =
+      proxy::INTERFACE_ID_PPB_CHAR_SET;
 };
 
 }  // namespace thunk

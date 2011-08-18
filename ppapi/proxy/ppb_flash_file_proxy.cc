@@ -24,10 +24,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -603,7 +600,7 @@ void PPB_Flash_File_ModuleLocal_Proxy::OnMsgQueryFile(PP_Instance instance,
 void PPB_Flash_File_ModuleLocal_Proxy::OnMsgGetDirContents(
     PP_Instance instance,
     const std::string& path,
-    std::vector<pp::proxy::SerializedDirEntry>* entries,
+    std::vector<SerializedDirEntry>* entries,
     int32_t* result) {
   PP_DirContents_Dev* contents = NULL;
   *result = ppb_flash_file_module_local_target()->
@@ -731,4 +728,4 @@ void PPB_Flash_File_FileRef_Proxy::OnMsgQueryFile(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

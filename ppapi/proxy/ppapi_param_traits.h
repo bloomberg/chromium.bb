@@ -23,9 +23,6 @@ namespace ppapi {
 
 class HostResource;
 
-}  // namespace ppapi
-
-namespace pp {
 namespace proxy {
 
 struct PPBFileRef_CreateInfo;
@@ -37,7 +34,7 @@ class SerializedFlashMenu;
 class SerializedVar;
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 namespace IPC {
 
@@ -74,40 +71,40 @@ struct ParamTraits<PP_ObjectProperty> {
 };
 
 template<>
-struct ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params> {
-  typedef pp::proxy::PPBFlash_DrawGlyphs_Params param_type;
+struct ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
+  typedef ppapi::proxy::PPBFlash_DrawGlyphs_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits<pp::proxy::PPBFileRef_CreateInfo> {
-  typedef pp::proxy::PPBFileRef_CreateInfo param_type;
+struct ParamTraits<ppapi::proxy::PPBFileRef_CreateInfo> {
+  typedef ppapi::proxy::PPBFileRef_CreateInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params> {
-  typedef pp::proxy::PPBURLLoader_UpdateProgress_Params param_type;
+struct ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params> {
+  typedef ppapi::proxy::PPBURLLoader_UpdateProgress_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits<pp::proxy::SerializedDirEntry> {
-  typedef pp::proxy::SerializedDirEntry param_type;
+struct ParamTraits<ppapi::proxy::SerializedDirEntry> {
+  typedef ppapi::proxy::SerializedDirEntry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits<pp::proxy::SerializedFontDescription> {
-  typedef pp::proxy::SerializedFontDescription param_type;
+struct ParamTraits<ppapi::proxy::SerializedFontDescription> {
+  typedef ppapi::proxy::SerializedFontDescription param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -122,32 +119,32 @@ struct ParamTraits<ppapi::HostResource> {
 };
 
 template<>
-struct ParamTraits<pp::proxy::SerializedVar> {
-  typedef pp::proxy::SerializedVar param_type;
+struct ParamTraits<ppapi::proxy::SerializedVar> {
+  typedef ppapi::proxy::SerializedVar param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits< std::vector<pp::proxy::SerializedVar> > {
-  typedef std::vector<pp::proxy::SerializedVar> param_type;
+struct ParamTraits< std::vector<ppapi::proxy::SerializedVar> > {
+  typedef std::vector<ppapi::proxy::SerializedVar> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits< std::vector<pp::proxy::PPBFileRef_CreateInfo> > {
-  typedef std::vector<pp::proxy::PPBFileRef_CreateInfo> param_type;
+struct ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> > {
+  typedef std::vector<ppapi::proxy::PPBFileRef_CreateInfo> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template<>
-struct ParamTraits<pp::proxy::SerializedFlashMenu> {
-  typedef pp::proxy::SerializedFlashMenu param_type;
+struct ParamTraits<ppapi::proxy::SerializedFlashMenu> {
+  typedef ppapi::proxy::SerializedFlashMenu param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

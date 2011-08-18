@@ -17,7 +17,7 @@
 
 struct PPB_CursorControl_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_CursorControl_Proxy
@@ -65,6 +65,6 @@ class PPB_CursorControl_Proxy
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_CURSOR_CONTROL_PROXY_H_

@@ -13,7 +13,7 @@
 
 struct PPP_Instance_Private;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReturnValue;
@@ -40,6 +40,6 @@ class PPP_Instance_Private_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_INSTANCE_PRIVATE_PROXY_H_

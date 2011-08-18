@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_id.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Dispatcher;
@@ -73,7 +73,7 @@ class InterfaceProxy : public IPC::Channel::Listener,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_INTERFACE_PROXY_H_
 

@@ -11,7 +11,7 @@
 
 struct PPB_URLUtil_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_URLUtil_Proxy : public InterfaceProxy {
@@ -48,7 +48,7 @@ class PPB_URLUtil_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_URL_UTIL_PROXY_H_
 

@@ -19,11 +19,9 @@
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_Graphics2D_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -35,8 +33,7 @@ InterfaceProxy* CreateGraphics2DProxy(Dispatcher* dispatcher,
 
 }  // namespace
 
-class Graphics2D : public ppapi::Resource,
-                   public ppapi::thunk::PPB_Graphics2D_API {
+class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
  public:
   Graphics2D(const HostResource& host_resource,
              const PP_Size& size,
@@ -163,7 +160,7 @@ PPB_Graphics2D_Proxy::~PPB_Graphics2D_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Graphics2D_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_Graphics2D_Thunk(),
+    thunk::GetPPB_Graphics2D_Thunk(),
     PPB_GRAPHICS_2D_INTERFACE,
     INTERFACE_ID_PPB_GRAPHICS_2D,
     false,
@@ -266,4 +263,4 @@ void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

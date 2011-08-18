@@ -58,7 +58,7 @@ struct ResourceTracker::InstanceData {
 
   // Lazily allocated function proxies for the different interfaces.
   scoped_ptr< ::ppapi::FunctionGroupBase >
-      function_proxies[::pp::proxy::INTERFACE_ID_COUNT];
+      function_proxies[::ppapi::proxy::INTERFACE_ID_COUNT];
 };
 
 // static
@@ -118,7 +118,7 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
 ::ppapi::FunctionGroupBase* ResourceTracker::GetFunctionAPI(
     PP_Instance pp_instance,
-    pp::proxy::InterfaceID id) {
+    ::ppapi::proxy::InterfaceID id) {
   // Get the instance object. This also ensures that the instance data is in
   // the map, since we need it below.
   PluginInstance* instance = GetInstance(pp_instance);
@@ -127,7 +127,7 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
   // The instance one is special, since it's just implemented by the instance
   // object.
-  if (id == pp::proxy::INTERFACE_ID_PPB_INSTANCE)
+  if (id == ::ppapi::proxy::INTERFACE_ID_PPB_INSTANCE)
     return instance;
 
   scoped_ptr< ::ppapi::FunctionGroupBase >& proxy =
@@ -136,19 +136,19 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
     return proxy.get();
 
   switch (id) {
-    case pp::proxy::INTERFACE_ID_PPB_CHAR_SET:
+    case ::ppapi::proxy::INTERFACE_ID_PPB_CHAR_SET:
       proxy.reset(new PPB_CharSet_Impl(instance));
       break;
-    case pp::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
+    case ::ppapi::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
       proxy.reset(new PPB_CursorControl_Impl(instance));
       break;
-    case pp::proxy::INTERFACE_ID_PPB_FIND:
+    case ::ppapi::proxy::INTERFACE_ID_PPB_FIND:
       proxy.reset(new PPB_Find_Impl(instance));
       break;
-    case pp::proxy::INTERFACE_ID_PPB_FONT:
+    case ::ppapi::proxy::INTERFACE_ID_PPB_FONT:
       proxy.reset(new PPB_Font_FunctionImpl(instance));
       break;
-    case pp::proxy::INTERFACE_ID_RESOURCE_CREATION:
+    case ::ppapi::proxy::INTERFACE_ID_RESOURCE_CREATION:
       proxy.reset(new ResourceCreationImpl(instance));
       break;
     default:

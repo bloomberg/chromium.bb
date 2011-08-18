@@ -18,7 +18,7 @@
 
 struct PP_Rect;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReturnValue;
@@ -29,15 +29,14 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   PPP_Instance_Proxy(Dispatcher* dispatcher,
                      const PPP_Instance_Type* target_interface)
       : InterfaceProxy(dispatcher, static_cast<const void*>(target_interface)),
-        combined_interface_(
-            new ::ppapi::PPP_Instance_Combined(*target_interface)) {
+        combined_interface_(new PPP_Instance_Combined(*target_interface)) {
   }
   virtual ~PPP_Instance_Proxy();
 
   // Return the info for the 1.0 (latest, canonical) version of the interface.
   static const Info* GetInfo1_0();
 
-  ::ppapi::PPP_Instance_Combined* ppp_instance_target() const {
+  PPP_Instance_Combined* ppp_instance_target() const {
     return combined_interface_.get();
   }
 
@@ -57,12 +56,12 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                           PP_Bool fullscreen);
   void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
-                               const ppapi::HostResource& url_loader,
+                               const HostResource& url_loader,
                                PP_Bool* result);
-  scoped_ptr< ::ppapi::PPP_Instance_Combined> combined_interface_;
+  scoped_ptr<PPP_Instance_Combined> combined_interface_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_INSTANCE_PROXY_H_

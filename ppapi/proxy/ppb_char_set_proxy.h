@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 struct PPB_CharSet_Dev;
 struct PPB_Core;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReturnValue;
@@ -56,6 +56,6 @@ class PPB_CharSet_Proxy : public ppapi::FunctionGroupBase,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_CHAR_SET_PROXY_H_

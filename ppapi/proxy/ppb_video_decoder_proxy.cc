@@ -15,18 +15,15 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Context3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
-class VideoDecoder : public Resource,
-                     public ::ppapi::VideoDecoderImpl {
+class VideoDecoder : public Resource, public VideoDecoderImpl {
  public:
   // You must call Init() before using this class.
   explicit VideoDecoder(const HostResource& resource);
@@ -68,14 +65,14 @@ VideoDecoder::VideoDecoder(const HostResource& decoder) : Resource(decoder) {
 VideoDecoder::~VideoDecoder() {
 }
 
-::ppapi::thunk::PPB_VideoDecoder_API* VideoDecoder::AsPPB_VideoDecoder_API() {
+PPB_VideoDecoder_API* VideoDecoder::AsPPB_VideoDecoder_API() {
   return this;
 }
 
 int32_t VideoDecoder::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     PP_CompletionCallback callback) {
-  ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API>
+  EnterResourceNoLock<PPB_Buffer_API>
       enter_buffer(bitstream_buffer->data, true);
   if (enter_buffer.failed())
     return PP_ERROR_BADRESOURCE;
@@ -135,7 +132,7 @@ void VideoDecoder::Destroy() {
   FlushCommandBuffer();
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoDecoder_Destroy(
       INTERFACE_ID_PPB_VIDEO_DECODER_DEV, host_resource()));
-  ::ppapi::VideoDecoderImpl::Destroy();
+  VideoDecoderImpl::Destroy();
 }
 
 PluginDispatcher* VideoDecoder::GetDispatcher() const {
@@ -176,7 +173,7 @@ PPB_VideoDecoder_Proxy::~PPB_VideoDecoder_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_VideoDecoder_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_VideoDecoder_Thunk(),
+    thunk::GetPPB_VideoDecoder_Thunk(),
     PPB_VIDEODECODER_DEV_INTERFACE,
     INTERFACE_ID_PPB_VIDEO_DECODER_DEV,
     false,
@@ -218,11 +215,10 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
     return 0;
 
   std::vector<PP_VideoConfigElement> copied;
-  if (!ppapi::VideoDecoderImpl::CopyConfigsToVector(config, &copied))
+  if (!VideoDecoderImpl::CopyConfigsToVector(config, &copied))
     return 0;
 
-  ppapi::thunk::EnterResourceNoLock<PPB_Context3D_API>
-      enter_context(context3d_id, true);
+  EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
   if (enter_context.failed())
     return 0;
   Context3D* ppb_context =
@@ -247,8 +243,8 @@ void PPB_VideoDecoder_Proxy::OnMsgCreate(
     PP_Instance instance, const HostResource& context3d_id,
     const std::vector<PP_VideoConfigElement>& config,
     HostResource* result) {
-  ::ppapi::thunk::EnterFunction< ::ppapi::thunk::ResourceCreationAPI>
-      resource_creation(instance, true);
+  thunk::EnterFunction<thunk::ResourceCreationAPI> resource_creation(instance,
+                                                                     true);
   if (resource_creation.failed())
     return;
 
@@ -264,7 +260,7 @@ void PPB_VideoDecoder_Proxy::OnMsgCreate(
 void PPB_VideoDecoder_Proxy::OnMsgDecode(
     const HostResource& decoder,
     const HostResource& buffer, int32 id, int32 size) {
-  CompletionCallback callback = callback_factory_.NewRequiredCallback(
+  pp::CompletionCallback callback = callback_factory_.NewRequiredCallback(
       &PPB_VideoDecoder_Proxy::SendMsgEndOfBitstreamACKToPlugin, decoder, id);
 
   PP_VideoBitstreamBuffer_Dev bitstream = { id, buffer.host_resource(), size };
@@ -289,14 +285,14 @@ void PPB_VideoDecoder_Proxy::OnMsgReusePictureBuffer(
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgFlush(const HostResource& decoder) {
-  CompletionCallback callback = callback_factory_.NewRequiredCallback(
+  pp::CompletionCallback callback = callback_factory_.NewRequiredCallback(
       &PPB_VideoDecoder_Proxy::SendMsgFlushACKToPlugin, decoder);
   ppb_video_decoder_target()->Flush(
       decoder.host_resource(), callback.pp_completion_callback());
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgReset(const HostResource& decoder) {
-  CompletionCallback callback = callback_factory_.NewRequiredCallback(
+  pp::CompletionCallback callback = callback_factory_.NewRequiredCallback(
       &PPB_VideoDecoder_Proxy::SendMsgResetACKToPlugin, decoder);
   ppb_video_decoder_target()->Reset(
       decoder.host_resource(), callback.pp_completion_callback());
@@ -346,4 +342,4 @@ void PPB_VideoDecoder_Proxy::OnMsgResetACK(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -12,7 +12,7 @@
 
 struct PPB_Console_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Console_Proxy : public InterfaceProxy {
@@ -43,6 +43,6 @@ class PPB_Console_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_CONSOLE_PROXY_H_

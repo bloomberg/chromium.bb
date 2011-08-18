@@ -7,7 +7,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_test_sink.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 ProxyChannel::ProxyChannel(base::ProcessHandle remote_process_handle)
@@ -66,4 +66,4 @@ bool ProxyChannel::Send(IPC::Message* msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -14,10 +14,9 @@ struct PPP_VideoCapture_Dev;
 struct PP_VideoCaptureDeviceInfo_Dev;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class PPB_VideoCapture_Proxy : public InterfaceProxy {
@@ -75,6 +74,6 @@ class PPP_VideoCapture_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_VIDEO_CAPTURE_PROXY_H_

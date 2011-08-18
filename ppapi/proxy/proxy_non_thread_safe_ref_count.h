@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "ppapi/cpp/completion_callback.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // This class is just like ppapi/cpp/non_thread_safe_ref_count.h but rather
@@ -44,6 +44,6 @@ class ProxyNonThreadSafeRefCount {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PROXY_NON_THREAD_SAFE_REF_COUNT_H_

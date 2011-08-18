@@ -20,16 +20,15 @@ struct PPB_Var;
 template<typename T> struct DefaultSingletonTraits;
 
 namespace ppapi {
-class ProxyObjectVar;
-}
 
-namespace pp {
+class ProxyObjectVar;
+
 namespace proxy {
 
 class PluginDispatcher;
 
 // Tracks live strings and objects in the plugin process.
-class PluginVarTracker : public ppapi::VarTracker {
+class PluginVarTracker : public VarTracker {
  public:
   PluginVarTracker();
   ~PluginVarTracker();
@@ -66,7 +65,7 @@ class PluginVarTracker : public ppapi::VarTracker {
 
  protected:
   // VarTracker protected overrides.
-  virtual int32 AddVarInternal(::ppapi::Var* var, AddVarRefMode mode) OVERRIDE;
+  virtual int32 AddVarInternal(Var* var, AddVarRefMode mode) OVERRIDE;
   virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) OVERRIDE;
   virtual void ObjectGettingZeroRef(VarMap::iterator iter) OVERRIDE;
   virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) OVERRIDE;
@@ -96,16 +95,16 @@ class PluginVarTracker : public ppapi::VarTracker {
   // count, so in the creation case the refcount will be 0. It's assumed in
   // this case the caller will either adjust the refcount or the
   // track_with_no_reference_count.
-  PP_Var GetOrCreateObjectVarID(ppapi::ProxyObjectVar* object);
+  PP_Var GetOrCreateObjectVarID(ProxyObjectVar* object);
 
   // Sends an addref or release message to the browser for the given object ID.
-  void SendAddRefObjectMsg(const ppapi::ProxyObjectVar& proxy_object);
-  void SendReleaseObjectMsg(const ppapi::ProxyObjectVar& proxy_object);
+  void SendAddRefObjectMsg(const ProxyObjectVar& proxy_object);
+  void SendReleaseObjectMsg(const ProxyObjectVar& proxy_object);
 
   // Looks up the given host var. If we already know about it, returns a
   // reference to the already-tracked object. If it doesn't creates a new one
   // and returns it. If it's created, it's not added to the map.
-  scoped_refptr<ppapi::ProxyObjectVar> FindOrMakePluginVarFromHostVar(
+  scoped_refptr<ProxyObjectVar> FindOrMakePluginVarFromHostVar(
       const PP_Var& var,
       PluginDispatcher* dispatcher);
 
@@ -117,6 +116,6 @@ class PluginVarTracker : public ppapi::VarTracker {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PLUGIN_VAR_TRACKER_H_

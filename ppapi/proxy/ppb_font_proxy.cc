@@ -18,14 +18,12 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_Font_API;
+using ppapi::thunk::PPB_Font_FunctionAPI;
 using ppapi::thunk::PPB_ImageData_API;
-using ppapi::WebKitForwarding;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -60,7 +58,7 @@ PPB_Font_Proxy::~PPB_Font_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_Font_Thunk(),
+    thunk::GetPPB_Font_Thunk(),
     PPB_FONT_DEV_INTERFACE,
     INTERFACE_ID_PPB_FONT,
     false,
@@ -69,7 +67,7 @@ const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
   return &info;
 }
 
-::ppapi::thunk::PPB_Font_FunctionAPI* PPB_Font_Proxy::AsPPB_Font_FunctionAPI() {
+PPB_Font_FunctionAPI* PPB_Font_Proxy::AsPPB_Font_FunctionAPI() {
   return this;
 }
 
@@ -117,7 +115,7 @@ Font::~Font() {
   RunOnWebKitThread(false, base::Bind(&DeleteFontForwarding, font_forwarding_));
 }
 
-ppapi::thunk::PPB_Font_API* Font::AsPPB_Font_API() {
+PPB_Font_API* Font::AsPPB_Font_API() {
   return this;
 }
 
@@ -229,10 +227,9 @@ void Font::RunOnWebKitThread(bool blocking, const base::Closure& task) {
 }
 
 // static
-void Font::DeleteFontForwarding(
-    ppapi::WebKitForwarding::Font* font_forwarding) {
+void Font::DeleteFontForwarding(WebKitForwarding::Font* font_forwarding) {
   delete font_forwarding;
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

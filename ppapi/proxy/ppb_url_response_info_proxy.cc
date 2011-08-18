@@ -15,11 +15,9 @@
 #include "ppapi/thunk/ppb_url_response_info_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_URLResponseInfo_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -152,4 +150,4 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

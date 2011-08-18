@@ -19,11 +19,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/time_conversion.h"
 
-using ppapi::HostResource;
-using ppapi::TimeToPPTime;
-using ppapi::TimeTicksToPPTimeTicks;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -128,4 +124,4 @@ void PPB_Core_Proxy::OnMsgReleaseResource(const HostResource& resource) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

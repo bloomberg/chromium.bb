@@ -23,10 +23,9 @@
 struct PPB_Audio;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class PPB_Audio_Proxy : public InterfaceProxy {
@@ -82,13 +81,13 @@ class PPB_Audio_Proxy : public InterfaceProxy {
       base::SharedMemoryHandle* foreign_shared_memory_handle,
       uint32_t* shared_memory_length);
 
-  CompletionCallbackFactory<PPB_Audio_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Audio_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Proxy);
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_AUDIO_PROXY_H_

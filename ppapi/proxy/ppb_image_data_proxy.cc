@@ -22,10 +22,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/surface/transport_dib.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -50,7 +47,7 @@ PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_ImageData_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_ImageData_Thunk(),
+    thunk::GetPPB_ImageData_Thunk(),
     PPB_IMAGEDATA_INTERFACE,
     INTERFACE_ID_PPB_IMAGE_DATA,
     false,
@@ -80,7 +77,7 @@ ImageData::ImageData(const HostResource& resource,
 ImageData::~ImageData() {
 }
 
-::ppapi::thunk::PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
+thunk::PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
   return this;
 }
 
@@ -135,4 +132,4 @@ ImageHandle ImageData::HandleFromInt(int32_t i) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

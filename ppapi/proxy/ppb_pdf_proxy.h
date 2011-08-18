@@ -11,7 +11,7 @@
 
 struct PPB_PDF;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 struct SerializedFontDescription;
@@ -42,6 +42,6 @@ class PPB_PDF_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_PDF_PROXY_H_

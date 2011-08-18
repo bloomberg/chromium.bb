@@ -14,10 +14,7 @@
 #include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::StringVar;
-using ppapi::URLUtilImpl;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -213,5 +210,5 @@ void PPB_URLUtil_Proxy::OnMsgGetPluginInstanceURL(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 

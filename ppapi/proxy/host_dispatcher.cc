@@ -14,7 +14,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -272,4 +272,4 @@ ScopedModuleReference::~ScopedModuleReference() {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

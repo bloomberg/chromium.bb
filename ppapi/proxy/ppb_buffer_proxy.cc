@@ -19,10 +19,7 @@
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -48,7 +45,7 @@ Buffer::~Buffer() {
   Unmap();
 }
 
-ppapi::thunk::PPB_Buffer_API* Buffer::AsPPB_Buffer_API() {
+thunk::PPB_Buffer_API* Buffer::AsPPB_Buffer_API() {
   return this;
 }
 
@@ -83,7 +80,7 @@ PPB_Buffer_Proxy::~PPB_Buffer_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Buffer_Proxy::GetInfo() {
   static const Info info = {
-    ppapi::thunk::GetPPB_Buffer_Thunk(),
+    thunk::GetPPB_Buffer_Thunk(),
     PPB_BUFFER_DEV_INTERFACE,
     INTERFACE_ID_PPB_BUFFER,
     false,
@@ -142,8 +139,8 @@ void PPB_Buffer_Proxy::OnMsgCreate(
       ppb_buffer_target()->Create(instance, size);
   if (local_buffer_resource == 0)
     return;
-  ::ppapi::thunk::EnterResourceNoLock< ::ppapi::thunk::PPB_BufferTrusted_API>
-        trusted_buffer(local_buffer_resource, false);
+  thunk::EnterResourceNoLock<thunk::PPB_BufferTrusted_API> trusted_buffer(
+      local_buffer_resource, false);
   if (trusted_buffer.failed())
     return;
   int local_fd;
@@ -166,4 +163,4 @@ void PPB_Buffer_Proxy::OnMsgCreate(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

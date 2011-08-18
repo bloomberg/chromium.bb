@@ -18,12 +18,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_pdf_api.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_PDFFont_API;
 using ppapi::thunk::EnterResource;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PrivateFontFile : public Resource,
@@ -189,4 +187,4 @@ void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

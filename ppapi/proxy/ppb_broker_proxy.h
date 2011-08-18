@@ -15,10 +15,9 @@
 struct PPB_BrokerTrusted;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 class PPB_Broker_Proxy : public InterfaceProxy {
@@ -48,11 +47,11 @@ class PPB_Broker_Proxy : public InterfaceProxy {
   void ConnectCompleteInHost(int32_t result,
                              const ppapi::HostResource& host_resource);
 
-  CompletionCallbackFactory<PPB_Broker_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_Broker_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_BROKER_PROXY_H_

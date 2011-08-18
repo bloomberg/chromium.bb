@@ -17,7 +17,7 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // Base class for plugin and host test harnesses. Tests will not use this
@@ -240,4 +240,4 @@ class TwoWayTest : public testing::Test {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

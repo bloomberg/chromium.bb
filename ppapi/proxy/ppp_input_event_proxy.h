@@ -11,10 +11,9 @@
 struct PPP_InputEvent;
 
 namespace ppapi {
-struct InputEventData;
-}
 
-namespace pp {
+struct InputEventData;
+
 namespace proxy {
 
 class PPP_InputEvent_Proxy : public InterfaceProxy {
@@ -41,6 +40,6 @@ class PPP_InputEvent_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_INPUT_EVENT_PROXY_H_

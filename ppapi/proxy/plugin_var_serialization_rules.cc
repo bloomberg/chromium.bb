@@ -10,9 +10,7 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::StringVar;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 PluginVarSerializationRules::PluginVarSerializationRules()
@@ -144,4 +142,4 @@ void PluginVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -13,13 +13,9 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::InputEventData;
-using ppapi::InputEventImpl;
-using ppapi::Resource;
 using ppapi::thunk::PPB_InputEvent_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // The implementation is actually in InputEventImpl.
@@ -51,7 +47,7 @@ PPB_InputEvent_API* InputEvent::AsPPB_InputEvent_API() {
 }
 
 PP_Var InputEvent::StringToPPVar(const std::string& str) {
-  return ppapi::StringVar::StringToPPVar(0, str);
+  return StringVar::StringToPPVar(0, str);
 }
 
 namespace {
@@ -74,7 +70,7 @@ PPB_InputEvent_Proxy::~PPB_InputEvent_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetInputEventInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_InputEvent_Thunk(),
+    thunk::GetPPB_InputEvent_Thunk(),
     PPB_INPUT_EVENT_INTERFACE,
     INTERFACE_ID_NONE,
     false,
@@ -86,7 +82,7 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetInputEventInfo() {
 // static
 const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetKeyboardInputEventInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk(),
+    thunk::GetPPB_KeyboardInputEvent_Thunk(),
     PPB_KEYBOARD_INPUT_EVENT_INTERFACE,
     INTERFACE_ID_NONE,
     false,
@@ -98,7 +94,7 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetKeyboardInputEventInfo() {
 // static
 const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk(),
+    thunk::GetPPB_MouseInputEvent_Thunk(),
     PPB_MOUSE_INPUT_EVENT_INTERFACE,
     INTERFACE_ID_NONE,
     false,
@@ -110,7 +106,7 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo() {
 // static
 const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetWheelInputEventInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_WheelInputEvent_Thunk(),
+    thunk::GetPPB_WheelInputEvent_Thunk(),
     PPB_WHEEL_INPUT_EVENT_INTERFACE,
     INTERFACE_ID_NONE,
     false,
@@ -134,4 +130,4 @@ bool PPB_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

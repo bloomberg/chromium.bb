@@ -91,7 +91,7 @@
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -283,4 +283,4 @@ void Dispatcher::AddIOThreadMessageFilter(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -40,7 +40,7 @@ class TrackerBase {
   // Returns the function object corresponding to the given ID, or NULL if
   // there isn't one.
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
-                                            pp::proxy::InterfaceID id) = 0;
+                                            proxy::InterfaceID id) = 0;
 
   virtual VarTracker* GetVarTracker() = 0;
   virtual ResourceTracker* GetResourceTracker() = 0;

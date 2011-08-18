@@ -6,7 +6,7 @@
 
 #include "ppapi/shared_impl/opengles2_impl.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -41,4 +41,4 @@ bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -13,7 +13,7 @@
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // The maximum number of bytes that each PpapiHostMsg_PPBFlashTCPSocket_Read
@@ -59,6 +59,6 @@ class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FLASH_TCP_SOCKET_PROXY_H_

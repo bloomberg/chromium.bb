@@ -7,7 +7,7 @@
 
 #include "ppapi/proxy/interface_proxy.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Crypto_Proxy : public InterfaceProxy {
@@ -28,6 +28,6 @@ class PPB_Crypto_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_CRYPTO_PROXY_H_

@@ -9,7 +9,7 @@
 
 struct PPB_Memory_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Memory_Proxy : public InterfaceProxy {
@@ -31,6 +31,6 @@ class PPB_Memory_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_MEMORY_PROXY_H_

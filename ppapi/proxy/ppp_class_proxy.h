@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 struct PPB_Var_Deprecated;
 struct PPP_Class_Deprecated;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVar;
@@ -58,7 +58,7 @@ class PPP_Class_Proxy : public InterfaceProxy {
                         SerializedVarReturnValue result);
   void OnMsgEnumerateProperties(
       int64 ppp_class, int64 object,
-      std::vector<pp::proxy::SerializedVar>* props,
+      std::vector<SerializedVar>* props,
       SerializedVarOutParam exception);
   void OnMsgSetProperty(int64 ppp_class, int64 object,
                         SerializedVarReceiveInput property,
@@ -82,6 +82,6 @@ class PPP_Class_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_CLASS_PROXY_H_

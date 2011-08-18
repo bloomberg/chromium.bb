@@ -20,10 +20,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/resource.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -156,8 +153,7 @@ PP_Var GetCommandLineArgs(PP_Module pp_module) {
       static_cast<const PPB_Var_Deprecated*>(
           PluginDispatcher::GetInterfaceFromDispatcher(
               PPB_VAR_DEPRECATED_INTERFACE));
-  std::string args =
-      pp::proxy::ProxyModule::GetInstance()->GetFlashCommandLineArgs();
+  std::string args = ProxyModule::GetInstance()->GetFlashCommandLineArgs();
   return var_deprecated->VarFromUtf8(pp_module, args.data(), args.length());
 }
 
@@ -232,9 +228,8 @@ void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
   ppb_flash_target()->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
-void PPB_Flash_Proxy::OnMsgDrawGlyphs(
-    const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
-    PP_Bool* result) {
+void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
+                                      PP_Bool* result) {
   *result = PP_FALSE;
 
   PP_FontDescription_Dev font_desc;
@@ -292,4 +287,4 @@ void PPB_Flash_Proxy::OnMsgGetLocalTimeZoneOffset(PP_Instance instance,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -30,19 +30,19 @@ class GLES2Implementation;
 
 }  // namespace gpu
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Surface3D;
 
-class Context3D : public ppapi::Resource,
-                  public ppapi::thunk::PPB_Context3D_API {
+class Context3D : public Resource,
+                  public thunk::PPB_Context3D_API {
  public:
-  explicit Context3D(const ppapi::HostResource& resource);
+  explicit Context3D(const HostResource& resource);
   virtual ~Context3D();
 
   // Resource overrides.
-  virtual ::ppapi::thunk::PPB_Context3D_API* AsPPB_Context3D_API() OVERRIDE;
+  virtual thunk::PPB_Context3D_API* AsPPB_Context3D_API() OVERRIDE;
 
   gpu::gles2::GLES2Implementation* gles2_impl() const {
     return gles2_impl_.get();
@@ -113,34 +113,34 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    PP_Config3D_Dev config,
                    const std::vector<int32_t>& attribs,
-                   ppapi::HostResource* result);
-  void OnMsgBindSurfaces(const ppapi::HostResource& context,
-                         const ppapi::HostResource& draw,
-                         const ppapi::HostResource& read,
+                   HostResource* result);
+  void OnMsgBindSurfaces(const HostResource& context,
+                         const HostResource& draw,
+                         const HostResource& read,
                          int32_t* result);
-  void OnMsgInitialize(const ppapi::HostResource& context,
+  void OnMsgInitialize(const HostResource& context,
                        int32 size,
                        base::SharedMemoryHandle* ring_buffer);
-  void OnMsgGetState(const ppapi::HostResource& context,
+  void OnMsgGetState(const HostResource& context,
                      gpu::CommandBuffer::State* state);
-  void OnMsgFlush(const ppapi::HostResource& context,
+  void OnMsgFlush(const HostResource& context,
                   int32 put_offset,
                   int32 last_known_get,
                   gpu::CommandBuffer::State* state);
-  void OnMsgAsyncFlush(const ppapi::HostResource& context,
+  void OnMsgAsyncFlush(const HostResource& context,
                        int32 put_offset);
-  void OnMsgCreateTransferBuffer(const ppapi::HostResource& context,
+  void OnMsgCreateTransferBuffer(const HostResource& context,
                                  int32 size,
                                  int32* id);
-  void OnMsgDestroyTransferBuffer(const ppapi::HostResource& context,
+  void OnMsgDestroyTransferBuffer(const HostResource& context,
                                   int32 id);
-  void OnMsgGetTransferBuffer(const ppapi::HostResource& context,
+  void OnMsgGetTransferBuffer(const HostResource& context,
                               int32 id,
                               base::SharedMemoryHandle* transfer_buffer,
                               uint32* size);
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_CONTEXT_3D_PROXY_H_

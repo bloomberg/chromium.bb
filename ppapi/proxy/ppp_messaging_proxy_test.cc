@@ -11,9 +11,7 @@
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/shared_impl/var.h"
 
-using ::ppapi::StringVar;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -140,5 +138,5 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 

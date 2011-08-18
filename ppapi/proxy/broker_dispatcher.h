@@ -8,7 +8,7 @@
 #include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/proxy/proxy_channel.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class BrokerDispatcher : public ProxyChannel {
@@ -59,6 +59,6 @@ class BrokerSideDispatcher : public BrokerDispatcher {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_BROKER_DISPATCHER_H_

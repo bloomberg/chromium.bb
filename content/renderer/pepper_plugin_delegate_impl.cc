@@ -343,21 +343,21 @@ class DispatcherWrapper
             base::ProcessHandle plugin_process_handle,
             const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
-            pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
+            ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
 
   // OutOfProcessProxy implementation.
   virtual const void* GetProxiedInterface(const char* name) {
     return dispatcher_->GetProxiedInterface(name);
   }
   virtual void AddInstance(PP_Instance instance) {
-    pp::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
+    ppapi::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
   }
   virtual void RemoveInstance(PP_Instance instance) {
-    pp::proxy::HostDispatcher::RemoveForInstance(instance);
+    ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
   }
 
  private:
-  scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
+  scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
 };
 
 class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
@@ -442,8 +442,8 @@ bool DispatcherWrapper::Init(
     base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& channel_handle,
     PP_Module pp_module,
-    pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface) {
-  dispatcher_.reset(new pp::proxy::HostDispatcher(
+    ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface) {
+  dispatcher_.reset(new ppapi::proxy::HostDispatcher(
       plugin_process_handle, pp_module, local_get_interface));
 
   if (!dispatcher_->InitHostWithChannel(
@@ -467,7 +467,7 @@ bool BrokerDispatcherWrapper::Init(
     base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& channel_handle) {
   dispatcher_.reset(
-      new pp::proxy::BrokerHostDispatcher(plugin_process_handle));
+      new ppapi::proxy::BrokerHostDispatcher(plugin_process_handle));
 
   if (!dispatcher_->InitBrokerWithChannel(PepperPluginRegistry::GetInstance(),
                                           channel_handle,

@@ -7,7 +7,7 @@
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -61,4 +61,4 @@ bool PPB_Memory_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

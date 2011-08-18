@@ -12,7 +12,7 @@
 #include "ppapi/shared_impl/video_decoder_impl.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_VideoDecoder_Proxy : public InterfaceProxy {
@@ -69,13 +69,13 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
   void OnMsgFlushACK(const ppapi::HostResource& decoder, int32_t result);
   void OnMsgResetACK(const ppapi::HostResource& decoder, int32_t result);
 
-  CompletionCallbackFactory<PPB_VideoDecoder_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_VideoDecoder_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Proxy);
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_VIDEO_DECODER_PROXY_H_

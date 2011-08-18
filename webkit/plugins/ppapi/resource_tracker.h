@@ -54,7 +54,7 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   // TrackerBase.
   virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
       PP_Instance pp_instance,
-      pp::proxy::InterfaceID id) OVERRIDE;
+      ::ppapi::proxy::InterfaceID id) OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
 

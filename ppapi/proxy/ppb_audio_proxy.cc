@@ -22,16 +22,14 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
-class Audio : public Resource, public ppapi::AudioImpl {
+class Audio : public Resource, public AudioImpl {
  public:
   Audio(const HostResource& audio_id,
         PP_Resource config_id,
@@ -149,7 +147,7 @@ PPB_Audio_Proxy::~PPB_Audio_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_Audio_Proxy::GetInfo() {
   static const Info info = {
-    ppapi::thunk::GetPPB_Audio_Thunk(),
+    thunk::GetPPB_Audio_Thunk(),
     PPB_AUDIO_INTERFACE,
     INTERFACE_ID_PPB_AUDIO,
     false,
@@ -180,8 +178,8 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  return (new Audio(result, config_id,
-                    audio_callback, user_data))->GetReference();
+  return (new Audio(result, config_id, audio_callback, user_data))->
+      GetReference();
 }
 
 bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -201,8 +199,8 @@ void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
                                   int32_t sample_rate,
                                   uint32_t sample_frame_count,
                                   HostResource* result) {
-  ::ppapi::thunk::EnterFunction< ::ppapi::thunk::ResourceCreationAPI>
-      resource_creation(instance_id, true);
+  thunk::EnterFunction<thunk::ResourceCreationAPI> resource_creation(
+      instance_id, true);
   if (resource_creation.failed())
     return;
 
@@ -342,4 +340,4 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

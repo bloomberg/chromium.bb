@@ -158,5 +158,4 @@ void ResourceTracker::RemoveResource(Resource* object) {
   live_resources_.erase(pp_resource);
 }
 
-
 }  // namespace ppapi

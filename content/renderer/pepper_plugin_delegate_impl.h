@@ -66,7 +66,7 @@ class BrokerDispatcherWrapper {
                              base::SyncSocket::Handle handle);
 
  private:
-  scoped_ptr<pp::proxy::BrokerDispatcher> dispatcher_;
+  scoped_ptr<ppapi::proxy::BrokerDispatcher> dispatcher_;
 };
 
 // This object is NOT thread-safe.

@@ -9,7 +9,7 @@
 
 struct PPB_Var;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_Var_Proxy : public InterfaceProxy {
@@ -31,6 +31,6 @@ class PPB_Var_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_VAR_PROXY_H_

@@ -10,9 +10,7 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::StringVar;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -82,4 +80,4 @@ bool PPB_Var_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

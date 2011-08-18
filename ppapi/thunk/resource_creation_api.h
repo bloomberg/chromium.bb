@@ -123,8 +123,8 @@ class ResourceCreationAPI {
       const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) = 0;
 
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION;
+  static const proxy::InterfaceID interface_id =
+      proxy::INTERFACE_ID_RESOURCE_CREATION;
 };
 
 }  // namespace thunk

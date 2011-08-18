@@ -13,7 +13,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -84,4 +84,4 @@ void PPP_Messaging_Proxy::OnMsgHandleMessage(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

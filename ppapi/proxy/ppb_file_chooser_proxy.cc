@@ -17,11 +17,9 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::PPB_FileChooser_API;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class FileChooser : public Resource,
@@ -139,7 +137,7 @@ PPB_FileChooser_Proxy::~PPB_FileChooser_Proxy() {
 
 const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_FileChooser_Thunk(),
+    thunk::GetPPB_FileChooser_Thunk(),
     PPB_FILECHOOSER_DEV_INTERFACE,
     INTERFACE_ID_PPB_FILE_CHOOSER,
     false,
@@ -239,4 +237,4 @@ void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

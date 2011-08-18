@@ -18,10 +18,9 @@ struct PPB_Flash_File_FileRef;
 struct PPB_Flash_File_ModuleLocal;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 struct SerializedDirEntry;
@@ -65,7 +64,7 @@ class PPB_Flash_File_ModuleLocal_Proxy : public InterfaceProxy {
                       int32_t* result);
   void OnMsgGetDirContents(PP_Instance instance,
                            const std::string& path,
-                           std::vector<pp::proxy::SerializedDirEntry>* entries,
+                           std::vector<SerializedDirEntry>* entries,
                            int32_t* result);
 };
 
@@ -96,6 +95,6 @@ class PPB_Flash_File_FileRef_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_FLASH_FILE_PROXY_H_

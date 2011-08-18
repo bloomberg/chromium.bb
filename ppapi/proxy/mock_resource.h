@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/resource.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class MockResource : public ppapi::Resource {
@@ -21,6 +21,6 @@ class MockResource : public ppapi::Resource {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_MOCK_RESOURCE_H_

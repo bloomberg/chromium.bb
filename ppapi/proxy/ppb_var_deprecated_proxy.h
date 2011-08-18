@@ -13,7 +13,7 @@
 
 struct PPB_Var_Deprecated;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVar;
@@ -82,7 +82,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
                       SerializedVarVectorReceiveInput arg_vector,
                       SerializedVarOutParam exception,
                       SerializedVarReturnValue result);
-  void OnMsgIsInstanceOfDeprecated(pp::proxy::SerializedVarReceiveInput var,
+  void OnMsgIsInstanceOfDeprecated(SerializedVarReceiveInput var,
                                    int64 ppp_class,
                                    int64* ppp_class_data,
                                    PP_Bool* result);
@@ -99,6 +99,6 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_VAR_DEPRECATED_PROXY_H_

@@ -16,7 +16,7 @@
 
 struct PPB_Font_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReturnValue;
@@ -92,6 +92,6 @@ class Font : public ppapi::Resource,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FONT_PROXY_H_

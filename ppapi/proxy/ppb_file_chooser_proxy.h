@@ -18,10 +18,9 @@
 struct PPB_FileChooser_Dev;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 struct PPBFileRef_CreateInfo;
@@ -62,13 +61,13 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   // via IPC and OnMsgChooseComplete will be called there.
   void OnShowCallback(int32_t result, const ppapi::HostResource& chooser);
 
-  CompletionCallbackFactory<PPB_FileChooser_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_FileChooser_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileChooser_Proxy);
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FILE_CHOOSER_PROXY_H_

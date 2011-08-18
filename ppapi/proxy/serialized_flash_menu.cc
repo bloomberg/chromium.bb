@@ -8,7 +8,7 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -169,4 +169,4 @@ bool SerializedFlashMenu::ReadFromMessage(const IPC::Message* m, void** iter) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

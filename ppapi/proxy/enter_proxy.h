@@ -12,7 +12,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // Wrapper around EnterResourceNoLock that takes a host resource. This is used
@@ -23,10 +23,10 @@ namespace proxy {
 // never logs errors since we assume the host is doing reasonable things.
 template<typename ResourceT>
 class EnterPluginFromHostResource
-    : public ::ppapi::thunk::EnterResourceNoLock<ResourceT> {
+    : public thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterPluginFromHostResource(const ppapi::HostResource& host_resource)
-      : ::ppapi::thunk::EnterResourceNoLock<ResourceT>(
+  EnterPluginFromHostResource(const HostResource& host_resource)
+      : thunk::EnterResourceNoLock<ResourceT>(
             PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
                 host_resource),
             false) {
@@ -40,10 +40,10 @@ class EnterPluginFromHostResource
 
 template<typename ResourceT>
 class EnterHostFromHostResource
-    : public ::ppapi::thunk::EnterResourceNoLock<ResourceT> {
+    : public thunk::EnterResourceNoLock<ResourceT> {
  public:
-  EnterHostFromHostResource(const ppapi::HostResource& host_resource)
-      : ::ppapi::thunk::EnterResourceNoLock<ResourceT>(
+  EnterHostFromHostResource(const HostResource& host_resource)
+      : thunk::EnterResourceNoLock<ResourceT>(
             host_resource.host_resource(), false) {
     // Validate that we're in the host rather than the plugin. Otherwise this
     // object will do the wrong thing. In the host, the instance should have
@@ -91,7 +91,7 @@ class EnterHostFromHostResourceForceCallback
   // implementations will use the 1-extra-argument constructor below.
   template<class CallbackFactory, typename Method>
   EnterHostFromHostResourceForceCallback(
-      const ppapi::HostResource& host_resource,
+      const HostResource& host_resource,
       CallbackFactory& factory,
       Method method)
       : EnterHostFromHostResource<ResourceT>(host_resource),
@@ -104,7 +104,7 @@ class EnterHostFromHostResourceForceCallback
   // For callbacks that take an extra parameter as a closure.
   template<class CallbackFactory, typename Method, typename A>
   EnterHostFromHostResourceForceCallback(
-      const ppapi::HostResource& host_resource,
+      const HostResource& host_resource,
       CallbackFactory& factory,
       Method method,
       const A& a)
@@ -146,6 +146,6 @@ class EnterHostFromHostResourceForceCallback
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_ENTER_PROXY_H_

@@ -12,13 +12,11 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_URLRequestInfo_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -122,7 +120,7 @@ PPB_URLRequestInfo_Proxy::~PPB_URLRequestInfo_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_URLRequestInfo_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk(),
+    thunk::GetPPB_URLRequestInfo_Thunk(),
     PPB_URLREQUESTINFO_INTERFACE,
     INTERFACE_ID_PPB_URL_REQUEST_INFO,
     false,
@@ -206,4 +204,4 @@ void PPB_URLRequestInfo_Proxy::OnMsgAppendFileToBody(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

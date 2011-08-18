@@ -18,8 +18,7 @@ class PPB_Font_FunctionAPI {
 
   virtual PP_Var GetFontFamilies(PP_Instance instance) = 0;
 
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_FONT;
+  static const proxy::InterfaceID interface_id = proxy::INTERFACE_ID_PPB_FONT;
 };
 
 // API for font resources.

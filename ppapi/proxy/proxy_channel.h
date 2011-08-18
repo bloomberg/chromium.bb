@@ -20,7 +20,7 @@ namespace IPC {
 class TestSink;
 }
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class VarSerializationRules;
@@ -105,6 +105,6 @@ class ProxyChannel : public IPC::Channel::Listener,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PROXY_CHANNEL_H_

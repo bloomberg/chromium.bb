@@ -11,7 +11,7 @@
 
 struct PPP_Graphics3D_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPP_Graphics3D_Proxy : public InterfaceProxy {
@@ -34,6 +34,6 @@ class PPP_Graphics3D_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPP_GRAPHICS_3D_PROXY_H_

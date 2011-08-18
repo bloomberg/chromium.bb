@@ -11,7 +11,7 @@
 // Wrapper around a PluginDispatcher that provides the necessary integration
 // for plugin process management. This class is to avoid direct dependencies
 // from the PPAPI proxy on the Chrome multiprocess infrastructure.
-class PluginProcessDispatcher : public pp::proxy::PluginDispatcher {
+class PluginProcessDispatcher : public ppapi::proxy::PluginDispatcher {
  public:
   PluginProcessDispatcher(base::ProcessHandle remote_process_handle,
                           GetInterfaceFunc get_interface);

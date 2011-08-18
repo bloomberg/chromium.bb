@@ -21,10 +21,9 @@
 #include "ppapi/proxy/plugin_var_tracker.h"
 
 namespace ppapi {
-class WebKitForwarding;
-}
 
-namespace pp {
+class WebKitForwarding;
+
 namespace proxy {
 
 class VarSerializationRules;
@@ -119,6 +118,6 @@ class Dispatcher : public ProxyChannel {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_DISPATCHER_H_

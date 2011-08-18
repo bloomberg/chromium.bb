@@ -21,9 +21,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::StringVar;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -490,7 +488,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgConstruct(
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
-    pp::proxy::SerializedVarReceiveInput var,
+    SerializedVarReceiveInput var,
     int64 ppp_class,
     int64* ppp_class_data,
     PP_Bool* result) {
@@ -522,4 +520,4 @@ void PPB_Var_Deprecated_Proxy::DoReleaseObject(int64 object_id) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

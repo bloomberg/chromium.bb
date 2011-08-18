@@ -19,7 +19,7 @@
 struct PPB_URLLoader;
 struct PPB_URLLoaderTrusted;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 struct PPBURLLoader_UpdateProgress_Params;
@@ -86,8 +86,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // pointer.
   void OnReadCallback(int32_t result, ReadCallbackInfo* info);
 
-  CompletionCallbackFactory<PPB_URLLoader_Proxy,
-                            ProxyNonThreadSafeRefCount> callback_factory_;
+  pp::CompletionCallbackFactory<PPB_URLLoader_Proxy,
+                                ProxyNonThreadSafeRefCount> callback_factory_;
 
   // Valid only in the host, this lazily-initialized pointer indicates the
   // URLLoaderTrusted interface.
@@ -95,6 +95,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_URL_LOADER_PROXY_H_

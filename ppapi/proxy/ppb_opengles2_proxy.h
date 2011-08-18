@@ -9,7 +9,7 @@
 
 struct PPB_OpenGLES2_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class PPB_OpenGLES2_Proxy : public InterfaceProxy {
@@ -28,6 +28,6 @@ class PPB_OpenGLES2_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PPB_OPENGLES2_PROXY_H_

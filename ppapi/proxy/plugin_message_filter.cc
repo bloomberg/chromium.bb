@@ -6,7 +6,7 @@
 
 #include "ppapi/proxy/ppapi_messages.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 PluginMessageFilter::PluginMessageFilter(
@@ -58,4 +58,4 @@ void PluginMessageFilter::OnMsgReserveInstanceId(PP_Instance instance,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

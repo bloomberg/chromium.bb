@@ -18,13 +18,11 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_FileSystem_API;
 using ppapi::thunk::ResourceCreationAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -123,7 +121,7 @@ PPB_FileSystem_Proxy::~PPB_FileSystem_Proxy() {
 
 const InterfaceProxy::Info* PPB_FileSystem_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_FileSystem_Thunk(),
+    thunk::GetPPB_FileSystem_Thunk(),
     PPB_FILESYSTEM_INTERFACE,
     INTERFACE_ID_PPB_FILE_SYSTEM,
     false,
@@ -197,4 +195,4 @@ void PPB_FileSystem_Proxy::OpenCompleteInHost(
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

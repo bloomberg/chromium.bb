@@ -9,7 +9,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -67,4 +67,4 @@ void PPP_Graphics3D_Proxy::OnMsgContextLost(PP_Instance instance) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -21,8 +21,7 @@ class PPB_Find_FunctionAPI {
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) = 0;
 
-  static const ::pp::proxy::InterfaceID interface_id =
-      ::pp::proxy::INTERFACE_ID_PPB_FIND;
+  static const proxy::InterfaceID interface_id = proxy::INTERFACE_ID_PPB_FIND;
 };
 
 }  // namespace thunk

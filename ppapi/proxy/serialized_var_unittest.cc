@@ -6,7 +6,7 @@
 
 #include "ppapi/proxy/serialized_var.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -188,4 +188,4 @@ TEST_F(SerializedVarTest, PluginReturnValue) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

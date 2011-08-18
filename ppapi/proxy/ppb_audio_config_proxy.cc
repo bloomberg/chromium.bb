@@ -10,21 +10,18 @@
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 // The implementation is actually in AudioConfigImpl.
-class AudioConfig : public Resource, public ppapi::AudioConfigImpl {
+class AudioConfig : public Resource, public AudioConfigImpl {
  public:
   // Note that you must call Init (on AudioConfigImpl) before using this class.
   AudioConfig(const HostResource& resource);
   virtual ~AudioConfig();
 
   // Resource overrides.
-  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
+  virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioConfig);
@@ -36,7 +33,7 @@ AudioConfig::AudioConfig(const HostResource& resource) : Resource(resource) {
 AudioConfig::~AudioConfig() {
 }
 
-::ppapi::thunk::PPB_AudioConfig_API* AudioConfig::AsPPB_AudioConfig_API() {
+thunk::PPB_AudioConfig_API* AudioConfig::AsPPB_AudioConfig_API() {
   return this;
 }
 
@@ -60,7 +57,7 @@ PPB_AudioConfig_Proxy::~PPB_AudioConfig_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_AudioConfig_Proxy::GetInfo() {
   static const Info info = {
-    ::ppapi::thunk::GetPPB_AudioConfig_Thunk(),
+    thunk::GetPPB_AudioConfig_Thunk(),
     PPB_AUDIO_CONFIG_INTERFACE,
     INTERFACE_ID_PPB_AUDIO_CONFIG,
     false,
@@ -88,4 +85,4 @@ bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 SerializedFontDescription::SerializedFontDescription()
@@ -82,4 +82,4 @@ PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
 PPBFlash_DrawGlyphs_Params::~PPBFlash_DrawGlyphs_Params() {}
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

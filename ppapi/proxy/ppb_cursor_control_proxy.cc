@@ -12,12 +12,10 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
-using ppapi::HostResource;
-using ppapi::Resource;
 using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_CursorControl_FunctionAPI;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 namespace {
@@ -40,7 +38,7 @@ PPB_CursorControl_Proxy::~PPB_CursorControl_Proxy() {
 // static
 const InterfaceProxy::Info* PPB_CursorControl_Proxy::GetInfo() {
   static const Info info = {
-    ppapi::thunk::GetPPB_CursorControl_Thunk(),
+    thunk::GetPPB_CursorControl_Thunk(),
     PPB_CURSOR_CONTROL_DEV_INTERFACE,
     INTERFACE_ID_PPB_CURSORCONTROL,
     false,
@@ -169,4 +167,4 @@ void PPB_CursorControl_Proxy::OnMsgCanLockCursor(PP_Instance instance,
 }
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi

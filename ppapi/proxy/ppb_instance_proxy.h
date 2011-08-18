@@ -14,7 +14,7 @@
 #include "ppapi/shared_impl/instance_impl.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReceiveInput;
@@ -97,6 +97,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_INSTANCE_PROXY_H_

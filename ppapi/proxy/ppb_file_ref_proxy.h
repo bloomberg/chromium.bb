@@ -16,10 +16,9 @@
 struct PPB_FileRef_Dev;
 
 namespace ppapi {
-class HostResource;
-}
 
-namespace pp {
+class HostResource;
+
 namespace proxy {
 
 struct PPBFileRef_CreateInfo;
@@ -83,6 +82,6 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FILE_REF_PROXY_H_

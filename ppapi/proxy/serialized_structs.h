@@ -20,7 +20,7 @@
 
 struct PP_FontDescription_Dev;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Dispatcher;
@@ -55,7 +55,7 @@ struct SerializedFontDescription {
                               PP_FontDescription_Dev* desc,
                               bool dest_owns_ref) const;
 
-  pp::proxy::SerializedVar face;
+  SerializedVar face;
   int32_t family;
   uint32_t size;
   int32_t weight;
@@ -129,6 +129,6 @@ typedef int ImageHandle;
 #endif
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_SERIALIZED_STRUCTS_H_

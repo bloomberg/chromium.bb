@@ -11,7 +11,7 @@
 
 struct PPB_Var;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class VarTracker;
@@ -48,6 +48,6 @@ class HostVarSerializationRules : public VarSerializationRules {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_HOST_VAR_SERIALIZATION_RULES_H_

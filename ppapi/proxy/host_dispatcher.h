@@ -27,10 +27,9 @@ class SyncChannel;
 }
 
 namespace ppapi {
-struct Preferences;
-}
 
-namespace pp {
+struct Preferences;
+
 namespace proxy {
 
 class InterfaceProxy;
@@ -52,7 +51,7 @@ class HostDispatcher : public Dispatcher {
   virtual bool InitHostWithChannel(Delegate* delegate,
                                    const IPC::ChannelHandle& channel_handle,
                                    bool is_client,
-                                   const ppapi::Preferences& preferences);
+                                   const Preferences& preferences);
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.
@@ -121,8 +120,7 @@ class HostDispatcher : public Dispatcher {
   // Function proxies created for "new-style" FunctionGroups.
   // TODO(brettw) this is in progress. It should be merged with the target
   // proxies so there is one list to consult.
-  scoped_ptr< ::ppapi::FunctionGroupBase >
-      function_proxies_[INTERFACE_ID_COUNT];
+  scoped_ptr<FunctionGroupBase> function_proxies_[INTERFACE_ID_COUNT];
 
   // Guaranteed non-NULL.
   const PPB_Proxy_Private* ppb_proxy_;
@@ -155,6 +153,6 @@ class ScopedModuleReference {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_HOST_DISPATCHER_H_

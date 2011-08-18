@@ -10,7 +10,7 @@
 
 struct PPB_Flash_Clipboard;
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class SerializedVarReceiveInput;
@@ -46,6 +46,6 @@ class PPB_Flash_Clipboard_Proxy : public InterfaceProxy {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_PPB_FLASH_CLIPBOARD_PROXY_H_

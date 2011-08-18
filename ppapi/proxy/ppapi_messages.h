@@ -78,13 +78,13 @@ IPC_STRUCT_TRAITS_BEGIN(PP_VideoCaptureDeviceInfo_Dev)
   IPC_STRUCT_TRAITS_MEMBER(frames_per_second)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(pp::proxy::PPPVideoCapture_Buffer)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPVideoCapture_Buffer)
   IPC_STRUCT_TRAITS_MEMBER(resource)
   IPC_STRUCT_TRAITS_MEMBER(handle)
   IPC_STRUCT_TRAITS_MEMBER(size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::Preferences)
   IPC_STRUCT_TRAITS_MEMBER(standard_font_family)
   IPC_STRUCT_TRAITS_MEMBER(fixed_font_family)
   IPC_STRUCT_TRAITS_MEMBER(serif_font_family)
@@ -93,7 +93,7 @@ IPC_STRUCT_TRAITS_BEGIN(::ppapi::Preferences)
   IPC_STRUCT_TRAITS_MEMBER(default_fixed_font_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(::ppapi::InputEventData)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)
   IPC_STRUCT_TRAITS_MEMBER(is_filtered)
   IPC_STRUCT_TRAITS_MEMBER(event_type)
   IPC_STRUCT_TRAITS_MEMBER(event_time_stamp)
@@ -138,7 +138,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_ReserveInstanceId,
 
 // Passes the WebKit preferences to the plugin.
 IPC_MESSAGE_CONTROL1(PpapiMsg_SetPreferences,
-                     ::ppapi::Preferences)
+                     ppapi::Preferences)
 
 // Network state notification from the browser for implementing
 // PPP_NetworkState_Dev.
@@ -189,7 +189,7 @@ IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileChooser_ChooseComplete,
     ppapi::HostResource /* chooser */,
     int32_t /* result_code (will be != PP_OK on failure */,
-    std::vector<pp::proxy::PPBFileRef_CreateInfo> /* chosen_files */)
+    std::vector<ppapi::proxy::PPBFileRef_CreateInfo> /* chosen_files */)
 
 // PPB_FileSystem.
 IPC_MESSAGE_ROUTED2(
@@ -246,50 +246,50 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBSurface3D_SwapBuffersACK,
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_HasProperty,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
                            bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_HasMethod,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* method */,
-                           pp::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* method */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
                            bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_GetProperty,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiMsg_PPPClass_EnumerateProperties,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           std::vector<pp::proxy::SerializedVar> /* props */,
-                           pp::proxy::SerializedVar /* out_exception */)
+                           std::vector<ppapi::proxy::SerializedVar> /* props */,
+                           ppapi::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED4_1(PpapiMsg_PPPClass_SetProperty,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* name */,
-                           pp::proxy::SerializedVar /* value */,
-                           pp::proxy::SerializedVar /* out_exception */)
+                           ppapi::proxy::SerializedVar /* name */,
+                           ppapi::proxy::SerializedVar /* value */,
+                           ppapi::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPClass_RemoveProperty,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */)
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED4_2(PpapiMsg_PPPClass_Call,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           pp::proxy::SerializedVar /* method_name */,
-                           std::vector<pp::proxy::SerializedVar> /* args */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* method_name */,
+                           std::vector<ppapi::proxy::SerializedVar> /* args */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_Construct,
                            int64 /* ppp_class */,
                            int64 /* object */,
-                           std::vector<pp::proxy::SerializedVar> /* args */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           std::vector<ppapi::proxy::SerializedVar> /* args */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPClass_Deallocate,
                     int64 /* ppp_class */,
                     int64 /* object */)
@@ -331,17 +331,17 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleDocumentLoad,
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 
 // PPP_Messaging.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
                     PP_Instance /* instance */,
-                    pp::proxy::SerializedVar /* message */)
+                    ppapi::proxy::SerializedVar /* message */)
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPBURLLoader_UpdateProgress,
-                    pp::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
+                    ppapi::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                     ppapi::HostResource /* loader */,
                     int32 /* result */,
@@ -352,7 +352,7 @@ IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPPVideoCapture_OnDeviceInfo,
     ppapi::HostResource /* video_capture */,
     PP_VideoCaptureDeviceInfo_Dev /* info */,
-    std::vector<pp::proxy::PPPVideoCapture_Buffer> /* buffers */)
+    std::vector<ppapi::proxy::PPPVideoCapture_Buffer> /* buffers */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnStatus,
                     ppapi::HostResource /* video_capture */,
                     uint32_t /* status */)
@@ -431,12 +431,12 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBConsole_Log,
                     PP_Instance /* instance */,
                     int /* log_level */,
-                    pp::proxy::SerializedVar /* value */)
+                    ppapi::proxy::SerializedVar /* value */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBConsole_LogWithSource,
                     PP_Instance /* instance */,
                     int /* log_level */,
-                    pp::proxy::SerializedVar /* soruce */,
-                    pp::proxy::SerializedVar /* value */)
+                    ppapi::proxy::SerializedVar /* soruce */,
+                    ppapi::proxy::SerializedVar /* value */)
 
 // PPB_Context3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Create,
@@ -494,7 +494,7 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
 // PPB_CharSet.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCharSet_GetDefaultCharSet,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 
 // PPB_CursorControl.
 IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBCursorControl_SetCursor,
@@ -530,10 +530,10 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileChooser_Show,
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
                            ppapi::HostResource /* file_system */,
                            std::string /* path */,
-                           pp::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
                            ppapi::HostResource /* file_ref */,
-                           pp::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
                     ppapi::HostResource /* file_ref */,
                     PP_Bool /* make_ancestors */,
@@ -567,12 +567,12 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
 // This has to be synchronous becuase the caller may want to composite on
 // top of the resulting text after the call is complete.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_DrawGlyphs,
-                           pp::proxy::PPBFlash_DrawGlyphs_Params /* params */,
+                           ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_Navigate,
                            ppapi::HostResource /* request_info */,
                            std::string /* target */,
@@ -596,11 +596,11 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashClipboard_ReadPlainText,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFlashClipboard_WritePlainText,
                     PP_Instance /* instance */,
                     int /* clipboard_type */,
-                    pp::proxy::SerializedVar /* text */)
+                    ppapi::proxy::SerializedVar /* text */)
 
 // PPB_Flash_File_FileRef.
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,
@@ -644,13 +644,13 @@ IPC_SYNC_MESSAGE_ROUTED2_2(
     PpapiHostMsg_PPBFlashFile_ModuleLocal_GetDirContents,
     PP_Instance /* instance */,
     std::string /* path */,
-    std::vector<pp::proxy::SerializedDirEntry> /* entries */,
+    std::vector<ppapi::proxy::SerializedDirEntry> /* entries */,
     int32_t /* result */)
 
 // PPB_Flash_Menu
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedFlashMenu /* menu_data */,
+                           ppapi::proxy::SerializedFlashMenu /* menu_data */,
                            ppapi::HostResource /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBFlashMenu_Show,
                            ppapi::HostResource /* menu */,
@@ -765,10 +765,10 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
 // PPB_Instance.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetOwnerElementObject,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_BindGraphics,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* device */,
@@ -778,9 +778,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_IsFullFrame,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* script */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* script */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_SetFullscreen,
                            PP_Instance /* instance */,
                            PP_Bool /* fullscreen */,
@@ -798,12 +798,12 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_ClearInputEvents,
                     uint32_t /* event_classes */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_PostMessage,
                     PP_Instance /* instance */,
-                    pp::proxy::SerializedVar /* message */)
+                    ppapi::proxy::SerializedVar /* message */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
     PP_Instance /* instance */,
-    pp::proxy::SerializedFontDescription /* description */,
+    ppapi::proxy::SerializedFontDescription /* description */,
     int32_t /* charset */,
     ppapi::HostResource /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(
@@ -865,7 +865,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLRequestInfo_Create,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLRequestInfo_SetProperty,
                     ppapi::HostResource /* request */,
                     int32_t /* property */,
-                    pp::proxy::SerializedVar /* value */)
+                    ppapi::proxy::SerializedVar /* value */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody,
                     ppapi::HostResource /* request */,
                     std::string /* data */)
@@ -880,19 +880,19 @@ IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody,
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                            ppapi::HostResource /* response */,
                            int32_t /* property */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                            ppapi::HostResource /* response */,
-                           pp::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
 
 // PPB_URLUtil.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_ResolveRelativeToDocument,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* relative */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* relative */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanRequest,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* relative */,
+                           ppapi::proxy::SerializedVar /* relative */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanAccessDocument,
                            PP_Instance /* active */,
@@ -900,10 +900,10 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanAccessDocument,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetDocumentURL,
                            PP_Instance /* active */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL,
                            PP_Instance /* active */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 
 // PPB_Var.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_AddRefObject,
@@ -913,52 +913,52 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_ReleaseObject,
                     int64 /* object_id */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_ConvertType,
                            PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* var */,
+                           ppapi::proxy::SerializedVar /* var */,
                            int /* new_type */,
-                           pp::proxy::SerializedVar /* exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_HasProperty,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_HasMethodDeprecated,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* method */,
-                           pp::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* method */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_GetProperty,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_DeleteProperty,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* property */,
-                           pp::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* property */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBVar_EnumerateProperties,
-                           pp::proxy::SerializedVar /* object */,
-                           std::vector<pp::proxy::SerializedVar> /* props */,
-                           pp::proxy::SerializedVar /* out_exception */)
+                           ppapi::proxy::SerializedVar /* object */,
+                           std::vector<ppapi::proxy::SerializedVar> /* props */,
+                           ppapi::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_SetPropertyDeprecated,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* name */,
-                           pp::proxy::SerializedVar /* value */,
-                           pp::proxy::SerializedVar /* out_exception */)
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* name */,
+                           ppapi::proxy::SerializedVar /* value */,
+                           ppapi::proxy::SerializedVar /* out_exception */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_CallDeprecated,
-                           pp::proxy::SerializedVar /* object */,
-                           pp::proxy::SerializedVar /* method_name */,
-                           std::vector<pp::proxy::SerializedVar> /* args */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* object */,
+                           ppapi::proxy::SerializedVar /* method_name */,
+                           std::vector<ppapi::proxy::SerializedVar> /* args */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_Construct,
-                           pp::proxy::SerializedVar /* object */,
-                           std::vector<pp::proxy::SerializedVar> /* args */,
-                           pp::proxy::SerializedVar /* out_exception */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* object */,
+                           std::vector<ppapi::proxy::SerializedVar> /* args */,
+                           ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_IsInstanceOfDeprecated,
-                           pp::proxy::SerializedVar /* var */,
+                           ppapi::proxy::SerializedVar /* var */,
                            int64 /* object_class */,
                            int64 /* object-data */,
                            PP_Bool /* result */)
@@ -966,7 +966,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVar_CreateObjectDeprecated,
                            PP_Instance /* instance */,
                            int64 /* object_class */,
                            int64 /* object_data */,
-                           pp::proxy::SerializedVar /* result */)
+                           ppapi::proxy::SerializedVar /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_ResourceCreation_Graphics2D,
                            PP_Instance /* instance */,
@@ -980,7 +980,7 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_ResourceCreation_ImageData,
                            PP_Bool /* init_to_zero */,
                            ppapi::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
-                           pp::proxy::ImageHandle /* result */)
+                           ppapi::proxy::ImageHandle /* result */)
 
 // PPB_VideoCapture_Dev.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVideoCapture_Create,

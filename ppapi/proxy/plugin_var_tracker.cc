@@ -13,10 +13,7 @@
 #include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/shared_impl/var.h"
 
-using ppapi::ProxyObjectVar;
-using ppapi::Var;
-
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 PluginVarTracker::HostVar::HostVar(PluginDispatcher* d, int32 i)
@@ -276,4 +273,4 @@ scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(
 }
 
 }  // namesace proxy
-}  // namespace pp
+}  // namespace ppapi

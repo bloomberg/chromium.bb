@@ -51,11 +51,11 @@ PpapiThread::~PpapiThread() {
     return;
 
   // The ShutdownModule/ShutdownBroker function is optional.
-  pp::proxy::ProxyChannel::ShutdownModuleFunc shutdown_function =
+  ppapi::proxy::ProxyChannel::ShutdownModuleFunc shutdown_function =
       is_broker_ ?
-      reinterpret_cast<pp::proxy::ProxyChannel::ShutdownModuleFunc>(
+      reinterpret_cast<ppapi::proxy::ProxyChannel::ShutdownModuleFunc>(
           library_.GetFunctionPointer("PPP_ShutdownBroker")) :
-      reinterpret_cast<pp::proxy::ProxyChannel::ShutdownModuleFunc>(
+      reinterpret_cast<ppapi::proxy::ProxyChannel::ShutdownModuleFunc>(
           library_.GetFunctionPointer("PPP_ShutdownModule"));
   if (shutdown_function)
     shutdown_function();
@@ -114,7 +114,7 @@ bool PpapiThread::SendToBrowser(IPC::Message* msg) {
   return Send(msg);
 }
 
-uint32 PpapiThread::Register(pp::proxy::PluginDispatcher* plugin_dispatcher) {
+uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {
   if (!plugin_dispatcher ||
       plugin_dispatchers_.size() >= std::numeric_limits<uint32>::max()) {
     return 0;
@@ -181,7 +181,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   } else {
     // Get the GetInterface function (required).
     get_plugin_interface_ =
-        reinterpret_cast<pp::proxy::Dispatcher::GetInterfaceFunc>(
+        reinterpret_cast<ppapi::proxy::Dispatcher::GetInterfaceFunc>(
             library.GetFunctionPointer("PPP_GetInterface"));
     if (!get_plugin_interface_) {
       LOG(WARNING) << "No PPP_GetInterface in plugin library";
@@ -200,8 +200,8 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
 #endif
 
     // Get the InitializeModule function (required).
-    pp::proxy::Dispatcher::InitModuleFunc init_module =
-        reinterpret_cast<pp::proxy::Dispatcher::InitModuleFunc>(
+    ppapi::proxy::Dispatcher::InitModuleFunc init_module =
+        reinterpret_cast<ppapi::proxy::Dispatcher::InitModuleFunc>(
             library.GetFunctionPointer("PPP_InitializeModule"));
     if (!init_module) {
       LOG(WARNING) << "No PPP_InitializeModule in plugin library";
@@ -209,7 +209,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
     }
     int32_t init_error = init_module(
         local_pp_module_,
-        &pp::proxy::PluginDispatcher::GetInterfaceFromDispatcher);
+        &ppapi::proxy::PluginDispatcher::GetInterfaceFromDispatcher);
     if (init_error != PP_OK) {
       LOG(WARNING) << "InitModule failed with error " << init_error;
       return;
@@ -249,7 +249,7 @@ void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
     NOTREACHED();
     return;
   }
-  std::map<uint32, pp::proxy::PluginDispatcher*>::iterator dispatcher =
+  std::map<uint32, ppapi::proxy::PluginDispatcher*>::iterator dispatcher =
       plugin_dispatchers_.find(id);
   if (dispatcher != plugin_dispatchers_.end())
     dispatcher->second->OnMessageReceived(msg);
@@ -264,7 +264,7 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
                                     renderer_id);
 
-  pp::proxy::ProxyChannel* dispatcher = NULL;
+  ppapi::proxy::ProxyChannel* dispatcher = NULL;
   bool init_result = false;
   if (is_broker_) {
     BrokerProcessDispatcher* broker_dispatcher =

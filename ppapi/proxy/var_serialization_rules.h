@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace pp {
+namespace ppapi {
 namespace proxy {
 
 class Dispatcher;
@@ -88,6 +88,6 @@ class VarSerializationRules {
 };
 
 }  // namespace proxy
-}  // namespace pp
+}  // namespace ppapi
 
 #endif  // PPAPI_PROXY_VAR_SERIALIZATION_RULES_H_
