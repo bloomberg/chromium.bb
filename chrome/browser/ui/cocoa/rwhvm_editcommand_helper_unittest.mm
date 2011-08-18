@@ -88,7 +88,7 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHost {
 
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
-// TODO(phajdan.jr): file a bug for this when bugtracker is up again.
+// Disabled, http://crbug.com/93286.
 TEST_F(RWHVMEditCommandHelperTest, DISABLED_TestEditingCommandDelivery) {
   RWHVMEditCommandHelper helper;
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
