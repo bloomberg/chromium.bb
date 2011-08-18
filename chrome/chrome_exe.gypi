@@ -451,20 +451,6 @@
             },
           },
         }],
-
-        # Linking to $(IntDir) and then hard-linking back to $(OutDir) is a
-        # workaround to avoid having the .ilk files for chrome.dll and
-        # chrome.exe conflicting. See http://crbug.com/92528 for background.
-        # Only done on 2008 currently because msvs_postbuild isn't implemented
-        # on 2010 yet, and this hack may not be required there anyway.
-        ['OS=="win" and MSVS_VERSION=="2008"', {
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'OutputFile': '$(IntDir)\\chrome.exe',
-            },
-          },
-          'msvs_postbuild': 'tools\\build\\win\\hardlink_failsafe.bat $(IntDir)\\chrome.exe $(OutDir)\\chrome.exe'
-        }],
       ],
     },
   ],

@@ -147,6 +147,7 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
+                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
                   'conditions': [
                     ['optimize_with_syzygy==1', {
                       # When syzygy is enabled we use build chrome_dll as an
@@ -154,12 +155,24 @@
                       # optimizes it to its final location
                       'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
                       'OutputFile': '$(OutDir)\\initial\\chrome.dll',
-                    }, {
-                      'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                    }], ['incremental_chrome_dll==1', {
+                      'OutputFile': '$(OutDir)\\initial\\chrome.dll',
+                      'UseLibraryDependencyInputs': "true",
                     }],
                   ],
                 },
               },
+              'conditions': [
+                ['incremental_chrome_dll==1 and optimize_with_syzygy==0', {
+                  # Linking to a different directory and then hardlinking back
+                  # to OutDir is a workaround to avoid having the .ilk for
+                  # chrome.exe and chrome.dll conflicting. See crbug.com/92528
+                  # for more information. Done on the dll instead of the exe so
+                  # that people launching from VS don't need to modify
+                  # $(TargetPath) for the exe.
+                  'msvs_postbuild': 'tools\\build\\win\\hardlink_failsafe.bat $(OutDir)\\initial\\chrome.dll $(OutDir)\\chrome.dll'
+                }]
+              ]
             }],  # OS=="win"
             ['OS=="mac"', {
               # The main browser executable's name is <(mac_product_name).
