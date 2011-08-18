@@ -140,14 +140,15 @@ for tag, e in ENVIRONMENTS_TO_TRY:
         tag.startswith('opt')):
       is_broken = True
 
-    # After merge to LLVM r137789, all EH tests are failing on ARM,
-    # and some are failing on X86-64
-    if env.Bit('target_arm'):
-      is_broken |= True
-    if (src == 'eh_loop_many.cc' and
-        env.Bit('target_x86_64') and
-        tag.startswith('opt')):
-      is_broken = True
+    # After merge to LLVM r137789, some EH tests are failing on ARM,
+    # and some are failing on X86-64.
+    is_broken |= (src == 'eh_virtual_dtor.cc' and
+                  env.Bit('target_arm') and
+                  tag.startswith('noopt'))
+    is_broken |= (src == 'eh_catch_many.cc' and env.Bit('target_arm'))
+    is_broken |= (src == 'eh_loop_many.cc' and
+                  env.Bit('target_x86_64') and
+                  tag.startswith('opt'))
 
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
