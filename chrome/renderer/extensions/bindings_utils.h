@@ -44,6 +44,9 @@ class ExtensionBase : public v8::Extension {
   virtual v8::Handle<v8::FunctionTemplate>
       GetNativeFunction(v8::Handle<v8::String> name);
 
+  // TODO(jstritar): Used for testing http://crbug.com/91582. Remove when done.
+  ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
+
  protected:
   template<class T>
   static T* GetFromArguments(const v8::Arguments& args) {

@@ -391,7 +391,9 @@ class ExtensionImpl : public ExtensionBase {
     const ::Extension* extension =
         v8_extension->extension_dispatcher_->extensions()->GetByID(
             extension_id);
-    CHECK(extension);
+    CHECK(!extension_id.empty());
+    if (!extension)
+      return v8::Undefined();
 
     v8::Local<v8::Array> page_action_vector = v8::Array::New();
     if (extension->page_action()) {
@@ -572,6 +574,8 @@ class ExtensionImpl : public ExtensionBase {
 v8::Extension* ExtensionProcessBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
+  CHECK_EQ(extension_dispatcher,
+           static_cast<ExtensionImpl*>(extension)->extension_dispatcher());
   return extension;
 }
 

@@ -2445,6 +2445,11 @@ void ExtensionService::Observe(int type,
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Profile* host_profile =
+          Profile::FromBrowserContext(process->browser_context());
+      if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
+          break;
+
       // Valid extension function names, used to setup bindings in renderer.
       std::vector<std::string> function_names;
       ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
@@ -2464,6 +2469,11 @@ void ExtensionService::Observe(int type,
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+      Profile* host_profile =
+          Profile::FromBrowserContext(process->browser_context());
+      if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
+          break;
+
       installed_app_hosts_.erase(process->id());
       break;
     }
