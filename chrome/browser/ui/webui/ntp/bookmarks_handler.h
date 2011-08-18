@@ -8,6 +8,7 @@
 
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class PrefService;
 class Profile;
@@ -34,6 +35,8 @@ class BookmarksHandler : public WebUIMessageHandler,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };
 

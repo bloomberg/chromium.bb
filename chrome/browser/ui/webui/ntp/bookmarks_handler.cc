@@ -30,13 +30,32 @@ void BookmarksHandler::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   // TODO(csilv): Update UI based on changes to bookmark notifications.
+  switch (type) {
+    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
+      registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                        Source<Profile>(Profile::FromWebUI(web_ui_)));
+      HandleGetBookmarksData(NULL);
+      break;
+    }
+  }
 }
 
 void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
+  // At startup, Bookmarks may not be fully loaded. If this is the case,
+  // we'll wait for the notification to arrive.
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  BookmarkModel* model = profile->GetBookmarkModel();
+  if (!model->IsLoaded()) {
+    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                   Source<Profile>(profile));
+    return;
+  }
+
   int64 id;
   std::string id_string;
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
-  if (args->GetString(0, &id_string) && base::StringToInt64(id_string, &id)) {
+  PrefService* prefs = profile->GetPrefs();
+  if (args && args->GetString(0, &id_string) &&
+      base::StringToInt64(id_string, &id)) {
     // A folder ID was requested, so persist this value.
     prefs->SetInt64(prefs::kNTPShownBookmarksFolder, id);
   } else {
@@ -44,7 +63,6 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
     id = prefs->GetInt64(prefs::kNTPShownBookmarksFolder);
   }
 
-  BookmarkModel* model = Profile::FromWebUI(web_ui_)->GetBookmarkModel();
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node)
     return;
