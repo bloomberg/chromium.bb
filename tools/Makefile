@@ -403,7 +403,8 @@ GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
 			    --enable-tls
 
 
-BUILD/stamp-$(CROSSARCH)-pregcc: gcc-extras | SRC/gcc BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
+	$(MAKE) -f $(THISMAKEFILE) gcc-extras
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	cd BUILD/build-pregcc-$(CROSSARCH) && \
@@ -459,8 +460,9 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   the search path will include full gcc stuff that should not be picked.
 # make install:
 #   DESTDIR should be ignored at this step.
-BUILD/stamp-$(CROSSARCH)-pregcc-standalone: gcc-extras \
+BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
   BUILD/stamp-$(CROSSARCH)-binutils | SRC/gcc BUILD
+	$(MAKE) -f $(THISMAKEFILE) gcc-extras
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
 	for f in '$(DESTDIR)$(PREFIX)/$(CROSSARCH)/bin/*'; do \
@@ -658,7 +660,8 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 ##################################################################
 SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 
-BUILD/stamp-$(CROSSARCH)-full-gcc: gcc-extras glibc-adhoc-files
+BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
+	$(MAKE) -f $(THISMAKEFILE) gcc-extras
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
@@ -691,8 +694,9 @@ BUILD/stamp-$(CROSSARCH)-full-gcc: gcc-extras glibc-adhoc-files
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-$(CROSSARCH)-gcc: gcc-extras BUILD/stamp-$(CROSSARCH)-newlib \
+BUILD/stamp-$(CROSSARCH)-gcc: BUILD/stamp-$(CROSSARCH)-newlib \
   | SRC/gcc BUILD
+	$(MAKE) -f $(THISMAKEFILE) gcc-extras
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 	cd BUILD/build-gcc-$(CROSSARCH) && \
