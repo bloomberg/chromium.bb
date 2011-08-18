@@ -11,7 +11,7 @@
 namespace gfx {
 
 // A GLContext that does nothing for unit tests.
-class GLContextStub : public GLContext {
+class GL_EXPORT GLContextStub : public GLContext {
  public:
   GLContextStub();
   virtual ~GLContextStub();

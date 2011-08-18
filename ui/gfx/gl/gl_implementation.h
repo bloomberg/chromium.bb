@@ -10,6 +10,7 @@
 
 #include "base/native_library.h"
 #include "build/build_config.h"
+#include "ui/gfx/gl/gl_export.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
@@ -30,7 +31,7 @@ typedef void* (*GLGetProcAddressProc)(const char* name);
 #endif
 
 // Initialize a particular GL implementation.
-bool InitializeGLBindings(GLImplementation implementation);
+GL_EXPORT bool InitializeGLBindings(GLImplementation implementation);
 
 // Initialize Debug logging wrappers for GL bindings.
 void InitializeDebugGLBindings();
@@ -39,7 +40,7 @@ void InitializeDebugGLBindings();
 void SetGLImplementation(GLImplementation implementation);
 
 // Get the current GL implementation.
-GLImplementation GetGLImplementation();
+GL_EXPORT GLImplementation GetGLImplementation();
 
 // Get the GL implementation with a given name.
 GLImplementation GetNamedGLImplementation(const std::wstring& name);

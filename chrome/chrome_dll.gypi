@@ -662,6 +662,8 @@
           ],
           'defines': [
             '<@(nacl_win64_defines)',
+            # Required to build gl_switches.cc as part of this binary.
+            'GL_IMPLEMENTATION'
           ],
           'sources': [
             'app/chrome_command_ids.h',

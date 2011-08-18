@@ -17,7 +17,7 @@ namespace gfx {
 class GLSurface;
 
 // Encapsulates an OpenGL context, hiding platform specific management.
-class GLContext : public base::RefCounted<GLContext> {
+class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
  public:
   explicit GLContext(GLShareGroup* share_group);
 

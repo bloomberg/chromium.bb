@@ -17,6 +17,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
 #endif
 #include "ui/gfx/size.h"

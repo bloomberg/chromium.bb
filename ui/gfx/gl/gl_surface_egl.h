@@ -29,7 +29,7 @@ typedef struct _XDisplay* EGLNativeDisplayType;
 namespace gfx {
 
 // Interface for EGL surface.
-class GLSurfaceEGL : public GLSurface {
+class GL_EXPORT GLSurfaceEGL : public GLSurface {
  public:
   GLSurfaceEGL();
   virtual ~GLSurfaceEGL();

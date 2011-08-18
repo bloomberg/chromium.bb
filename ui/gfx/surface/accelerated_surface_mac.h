@@ -15,6 +15,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/surface/surface_export.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 // Should not include GL headers in a header file. Forward declare these types
@@ -32,7 +33,7 @@ class Rect;
 // uses a regular dib. There will either be an IOSurface or a TransportDIB,
 // never both.
 
-class AcceleratedSurface {
+class SURFACE_EXPORT AcceleratedSurface {
  public:
   AcceleratedSurface();
   virtual ~AcceleratedSurface();
