@@ -136,7 +136,7 @@ class RepoRepository(object):
         self.Initialize()
 
       self._ReinitializeIfNecessary(local_manifest)
-      cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '8'],
+      cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '4'],
                              cwd=self.directory, redirect_stdout=True,
                              redirect_stderr=True, num_retries=2)
       FixExternalRepoPushUrls(self.directory)
