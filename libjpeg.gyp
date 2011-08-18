@@ -162,10 +162,19 @@
                 'simd/jiss2red-64.asm',
               ],
             }],
+            # The ARM SIMD implementation requires the Neon instruction set.
             [ 'target_arch=="arm"', {
-              'sources': [
-                'simd/jsimd_arm.c',
-                'simd/jsimd_arm_neon.S',
+              'conditions': [
+                [ 'arm_neon==1', {
+                  'sources': [
+                    'simd/jsimd_arm.c',
+                    'simd/jsimd_arm_neon.S',
+                  ],
+                }, {
+                  'sources': [
+                    'simd/jsimd_none.c',
+                  ],
+                }]
               ],
             }],
 
@@ -238,22 +247,26 @@
             {
               'rule_name': 'assemble',
               'extension': 'asm',
-              'inputs': [ '<(yasm_path)', ],
-              'outputs': [
-                '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-              ],
-              'action': [
-                '<(yasm_path)',
-                '<(yasm_format)',
-                '<@(yasm_flags)',
-                '-DRGBX_FILLER_0XFF',
-                '-DSTRICT_MEMORY_ACCESS',
-                '-Isimd/',
-                '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
-                '<(RULE_INPUT_PATH)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
+              'conditions': [
+                [ 'target_arch!="arm"', {
+                  'inputs': [ '<(yasm_path)', ],
+                  'outputs': [
+                    '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
+                  ],
+                  'action': [
+                    '<(yasm_path)',
+                    '<(yasm_format)',
+                    '<@(yasm_flags)',
+                    '-DRGBX_FILLER_0XFF',
+                    '-DSTRICT_MEMORY_ACCESS',
+                    '-Isimd/',
+                    '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
+                    '<(RULE_INPUT_PATH)',
+                  ],
+                  'process_outputs_as_sources': 1,
+                  'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
+                }],
+              ]
             },
           ],
         },
