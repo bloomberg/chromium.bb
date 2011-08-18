@@ -203,7 +203,7 @@ FindBarGtk::FindBarGtk(BrowserWindowGtk* window)
   g_signal_connect(text_entry_, "button-press-event",
                    G_CALLBACK(OnButtonPress), this);
   g_signal_connect(text_entry_, "move-cursor", G_CALLBACK(OnMoveCursor), this);
-  g_signal_connect(text_entry_, "activate", G_CALLBACK(OnActivate), this);
+  g_signal_connect(text_entry_, "activate", G_CALLBACK(OnActivateThunk), this);
   g_signal_connect(text_entry_, "direction-changed",
                    G_CALLBACK(OnWidgetDirectionChanged), this);
   g_signal_connect(text_entry_, "focus-in-event",
@@ -962,9 +962,8 @@ void FindBarGtk::OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
   }
 }
 
-// static
-void FindBarGtk::OnActivate(GtkEntry* entry, FindBarGtk* bar) {
-  bar->FindEntryTextInContents(true);
+void FindBarGtk::OnActivate(GtkWidget* entry) {
+  FindEntryTextInContents(true);
 }
 
 // static

@@ -151,7 +151,7 @@ class FindBarGtk : public FindBar,
                            gboolean selection, FindBarGtk* bar);
 
   // Handles Enter key.
-  static void OnActivate(GtkEntry* entry, FindBarGtk* bar);
+  CHROMEGTK_CALLBACK_0(FindBarGtk, void, OnActivate);
 
   static void OnWidgetDirectionChanged(GtkWidget* widget,
                                        GtkTextDirection previous_direction,
