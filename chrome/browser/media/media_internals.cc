@@ -13,12 +13,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
-// The names of the javascript functions to call with updates.
-static const char kAudioUpdateFunction[] = "media.addAudioStream";
-static const char kDeleteItemFunction[] = "media.onItemDeleted";
-static const char kMediaEventFunction[] = "media.onMediaEvent";
-static const char kSendEverythingFunction[] = "media.onReceiveEverything";
-
 MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
@@ -60,7 +54,7 @@ void MediaInternals::OnMediaEvent(
   dict.SetString("type", media::MediaLog::EventTypeToString(event.type));
   dict.SetDouble("time", event.time.ToDoubleT());
   dict.Set("params", event.params.DeepCopy());
-  SendUpdate(kMediaEventFunction, &dict);
+  SendUpdate("media.onMediaEvent", &dict);
 }
 
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
@@ -75,7 +69,7 @@ void MediaInternals::RemoveObserver(MediaInternalsObserver* observer) {
 
 void MediaInternals::SendEverything() {
   DCHECK(CalledOnValidThread());
-  SendUpdate(kSendEverythingFunction, &data_);
+  SendUpdate("media.onReceiveEverything", &data_);
 }
 
 MediaInternals::MediaInternals() {}
@@ -84,13 +78,13 @@ void MediaInternals::UpdateAudioStream(
     void* host, int stream_id, const std::string& property, Value* value) {
   std::string stream = base::StringPrintf("audio_streams.%p:%d",
                                           host, stream_id);
-  UpdateItem(kAudioUpdateFunction, stream, property, value);
+  UpdateItem("media.addAudioStream", stream, property, value);
 }
 
 void MediaInternals::DeleteItem(const std::string& item) {
   data_.Remove(item, NULL);
   scoped_ptr<Value> value(Value::CreateStringValue(item));
-  SendUpdate(kDeleteItemFunction, value.get());
+  SendUpdate("media.onItemDeleted", value.get());
 }
 
 void MediaInternals::UpdateItem(

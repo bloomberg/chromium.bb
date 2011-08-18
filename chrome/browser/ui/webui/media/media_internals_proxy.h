@@ -10,6 +10,9 @@
 #include "base/string16.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "content/browser/browser_thread.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
 class IOThread;
 class MediaInternalsMessageHandler;
@@ -25,10 +28,17 @@ class Value;
 // threads before destruction.
 class MediaInternalsProxy
     : public MediaInternalsObserver,
-      public base::RefCountedThreadSafe<MediaInternalsProxy>,
-      public ChromeNetLog::ThreadSafeObserverImpl {
+      public base::RefCountedThreadSafe<MediaInternalsProxy,
+                                        BrowserThread::DeleteOnUIThread>,
+      public ChromeNetLog::ThreadSafeObserverImpl,
+      public NotificationObserver {
  public:
   MediaInternalsProxy();
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Register a Handler and start receiving callbacks from MediaInternals.
   void Attach(MediaInternalsMessageHandler* handler);
@@ -50,7 +60,8 @@ class MediaInternalsProxy
                           net::NetLog::EventParameters* params) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<MediaInternalsProxy>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<MediaInternalsProxy>;
   virtual ~MediaInternalsProxy();
 
   // Build a dictionary mapping constant names to values.
@@ -74,6 +85,7 @@ class MediaInternalsProxy
   MediaInternalsMessageHandler* handler_;
   IOThread* io_thread_;
   scoped_ptr<base::ListValue> pending_net_updates_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsProxy);
 };
