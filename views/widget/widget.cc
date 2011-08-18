@@ -296,6 +296,8 @@ void Widget::Init(const InitParams& params) {
     non_client_view_->set_client_view(widget_delegate_->CreateClientView(this));
     SetContentsView(non_client_view_);
     SetInitialBounds(params.bounds);
+    if (params.maximize)
+      Maximize();
     UpdateWindowTitle();
   }
 }

@@ -135,13 +135,13 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
 #if defined(OS_WIN)
   params.native_widget = new views::NativeWidgetWin(window);
-  params.bounds = gfx::Rect(20, 20, 1920, 1200);
 #elif defined(TOOLKIT_USES_GTK)
   params.native_widget = new views::NativeWidgetGtk(window);
+  params.maximize = true;
 #endif
+  params.bounds = gfx::Rect(20, 20, 1920, 1200);
   window->Init(params);
   window->Show();
-  window->Maximize();
 }
 
 void DesktopWindowView::ActivateWidget(Widget* widget) {
