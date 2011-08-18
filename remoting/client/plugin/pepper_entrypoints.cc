@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,9 @@ int32_t PPP_InitializeModule(PP_Module module_id,
     delete module;
     return PP_ERROR_FAILED;
   }
+
+  // Register a global log handler.
+  ChromotingInstance::RegisterLogMessageHandler();
 
   g_module_singleton = module;
   return PP_OK;

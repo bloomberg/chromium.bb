@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -69,6 +70,8 @@ PPP_PolicyUpdate_Dev ChromotingInstance::kPolicyUpdatedInterface = {
 // to the UI. This prevents a potential infinite loop if we encounter an error
 // while sending the log message to the UI.
 static bool g_logging_to_plugin = false;
+static bool g_has_logging_instance = false;
+static base::Lock g_logging_lock;
 static ChromotingInstance* g_logging_instance = NULL;
 static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 
@@ -86,30 +89,20 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 
   log_proxy_ = new TaskThreadProxy(MessageLoop::current());
 
-  // Set up log message handler.
-  // Note that this approach doesn't quite support having multiple instances
-  // of Chromoting running. In that case, the most recently opened tab will
-  // grab all the debug log messages, and when any Chromoting tab is closed
-  // the logging handler will go away.
-  // Since having multiple Chromoting tabs is not a primary use case, and this
-  // is just debug logging, we're punting improving debug log support for that
-  // case.
-  if (g_logging_old_handler == NULL)
-    g_logging_old_handler = logging::GetLogMessageHandler();
-  logging::SetLogMessageHandler(&LogToUI);
-  g_logging_instance = this;
+  // Resister this instance to handle debug log messsages.
+  RegisterLoggingInstance();
 }
 
 ChromotingInstance::~ChromotingInstance() {
   DCHECK(CurrentlyOnPluginThread());
 
   // Detach the log proxy so we don't log anything else to the UI.
+  // This needs to be done before the instance is unregistered for logging.
   log_proxy_->Detach();
 
-  // Remove log message handler.
-  logging::SetLogMessageHandler(g_logging_old_handler);
-  g_logging_old_handler = NULL;
-  g_logging_instance = NULL;
+  // Unregister this instance so that debug log messages will no longer be sent
+  // to it. This will stop all logging in all Chromoting instances.
+  UnregisterLoggingInstance();
 
   if (client_.get()) {
     base::WaitableEvent done_event(true, false);
@@ -372,15 +365,71 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
 }
 
 // static
+void ChromotingInstance::RegisterLogMessageHandler() {
+  base::AutoLock lock(g_logging_lock);
+
+  LOG(INFO) << "Registering global log handler";
+
+  // Record previous handler so we can call it in a chain.
+  g_logging_old_handler = logging::GetLogMessageHandler();
+
+  // Set up log message handler.
+  // This is not thread-safe so we need it within our lock.
+  logging::SetLogMessageHandler(&LogToUI);
+}
+
+void ChromotingInstance::RegisterLoggingInstance() {
+  base::AutoLock lock(g_logging_lock);
+
+  // Register this instance as the one that will handle all logging calls
+  // and display them to the user.
+  // If multiple plugins are run, then the last one registered will handle all
+  // logging for all instances.
+  g_logging_instance = this;
+  g_has_logging_instance = true;
+}
+
+void ChromotingInstance::UnregisterLoggingInstance() {
+  base::AutoLock lock(g_logging_lock);
+
+  // Don't unregister unless we're the currently registered instance.
+  if (this != g_logging_instance)
+    return;
+
+  // Unregister this instance for logging.
+  g_has_logging_instance = false;
+  g_logging_instance = NULL;
+
+  LOG(INFO) << "Unregistering global log handler";
+}
+
+// static
 bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
                                  size_t message_start,
                                  const std::string& str) {
-  if (g_logging_instance) {
-    std::string message = remoting::GetTimestampString();
-    message += (str.c_str() + message_start);
-    g_logging_instance->log_proxy_->Call(
-        base::Bind(&ChromotingInstance::ProcessLogToUI,
-                   base::Unretained(g_logging_instance), message));
+  // Note that we're reading |g_has_logging_instance| outside of a lock.
+  // This lockless read is done so that we don't needlessly slow down global
+  // logging with a lock for each log message.
+  //
+  // This lockless read is safe because:
+  //
+  // Misreading a false value (when it should be true) means that we'll simply
+  // skip processing a few log messages.
+  //
+  // Misreading a true value (when it should be false) means that we'll take
+  // the lock and check |g_logging_instance| unnecessarily. This is not
+  // problematic because we always set |g_logging_instance| inside a lock.
+  if (g_has_logging_instance) {
+    base::AutoLock lock(g_logging_lock);
+    if (g_logging_instance) {
+      std::string message = remoting::GetTimestampString();
+      message += (str.c_str() + message_start);
+      // |log_proxy_| is safe to use here because we detach the proxy before
+      // tearing down the |g_logging_instance|.
+      g_logging_instance->log_proxy_->Call(
+          base::Bind(&ChromotingInstance::ProcessLogToUI,
+                     base::Unretained(g_logging_instance), message));
+    }
   }
 
   if (g_logging_old_handler)

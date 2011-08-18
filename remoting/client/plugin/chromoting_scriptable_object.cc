@@ -206,7 +206,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
     return;
   }
 
-  // Since we're whitelisting the propertie that are settable above, we can
+  // Since we're whitelisting the property that are settable above, we can
   // assume that the property exists in the map.
   properties_[property_names_[property_name]].attribute = value;
 }

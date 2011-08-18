@@ -94,6 +94,22 @@ class ChromotingInstance : public pp::InstancePrivate {
 
   bool DoScaling() const { return scale_to_fit_; }
 
+  // Registers a global log message handler that redirects the log output to
+  // our plugin instance.
+  // This is called by the plugin's PPP_InitializeModule.
+  // Note that no logging will be processed unless a ChromotingInstance has been
+  // registered for logging (see RegisterLoggingInstance).
+  static void RegisterLogMessageHandler();
+
+  // Registers this instance so it processes messages sent by the global log
+  // message handler. This overwrites any previously registered instance.
+  void RegisterLoggingInstance();
+
+  // Unregisters this instance so that debug log messages will no longer be sent
+  // to it. If this instance is not the currently registered logging instance,
+  // then the currently registered instance will stay in effect.
+  void UnregisterLoggingInstance();
+
   // A Log Message Handler that is called after each LOG message has been
   // processed. This must be of type LogMessageHandlerFunction defined in
   // base/logging.h.
