@@ -19,4 +19,5 @@ implementations at run time.
 
 Local Modifications:
 
-None. All local changes have been upstreamed.
+Added the instructions to |possibleInstructions| for the very short
+malloc_error_break() on 10.5 so that it can be overriden on that platform.
