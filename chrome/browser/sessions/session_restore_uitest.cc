@@ -445,11 +445,6 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // breaks NTP background image refreshing, so ThemeSource had to revert to
 // replacing the existing data source.
 TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
-  if (ProxyLauncher::in_process_renderer()) {
-    // No point in running this test in single process mode.
-    return;
-  }
-
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get() != NULL);
   int tab_count;

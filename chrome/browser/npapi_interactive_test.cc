@@ -20,9 +20,6 @@ static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous mousemove works correctly
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   show_window_ = true;
   const FilePath kTestDir(FILE_PATH_LITERAL("npapi"));
   const FilePath test_case(
@@ -42,9 +39,6 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
 
 // Flaky, http://crbug.com/60071.
 TEST_F(NPAPIVisiblePluginTester, FLAKY_GetURLRequest404Response) {
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
                FilePath(FILE_PATH_LITERAL(
                             "npapi/plugin_url_request_404.html"))));

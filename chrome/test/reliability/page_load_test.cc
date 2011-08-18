@@ -364,11 +364,9 @@ class PageLoadTest : public UITest {
             test_page_url, log_file, NULL, g_continuous_load, false);
       }
     } else {
-      // Don't run if single process mode.
-      // Also don't run if running as a standalone program which is for
-      // distributed testing, to avoid mistakenly hitting web sites with many
-      // instances.
-      if (ProxyLauncher::in_process_renderer() || g_stand_alone)
+      // Don't run if running as a standalone program which is for distributed
+      // testing, to avoid mistakenly hitting web sites with many instances.
+      if (g_stand_alone)
         return;
       // For usage 1
       NavigationMetrics metrics;

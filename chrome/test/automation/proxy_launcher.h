@@ -141,61 +141,6 @@ class ProxyLauncher {
     shutdown_type_ = value;
   }
 
-  // Get/Set a flag to run the renderer in-process when running the tests.
-  static bool in_process_renderer() { return in_process_renderer_; }
-  static void set_in_process_renderer(bool value) {
-    in_process_renderer_ = value;
-  }
-
-  // Get/Set a flag to run the renderer outside the sandbox when running tests.
-  static bool no_sandbox() { return no_sandbox_; }
-  static void set_no_sandbox(bool value) {
-    no_sandbox_ = value;
-  }
-
-  // Get/Set a flag to run with DCHECKs enabled in release.
-  static bool enable_dcheck() { return enable_dcheck_; }
-  static void set_enable_dcheck(bool value) {
-    enable_dcheck_ = value;
-  }
-
-  // Get/Set a flag to dump the process memory without crashing on DCHECKs.
-  static bool silent_dump_on_dcheck() { return silent_dump_on_dcheck_; }
-  static void set_silent_dump_on_dcheck(bool value) {
-    silent_dump_on_dcheck_ = value;
-  }
-
-  // Get/Set a flag to disable breakpad handling.
-  static bool disable_breakpad() { return disable_breakpad_; }
-  static void set_disable_breakpad(bool value) {
-    disable_breakpad_ = value;
-  }
-
-  static bool show_error_dialogs() { return show_error_dialogs_; }
-  static void set_show_error_dialogs(bool value) {
-    show_error_dialogs_ = value;
-  }
-
-  static bool full_memory_dump() { return full_memory_dump_; }
-  static void set_full_memory_dump(bool value) {
-    full_memory_dump_ = value;
-  }
-
-  static bool dump_histograms_on_exit() { return dump_histograms_on_exit_; }
-  static void set_dump_histograms_on_exit(bool value) {
-    dump_histograms_on_exit_ = value;
-  }
-
-  static const std::string& js_flags() { return js_flags_; }
-  static void set_js_flags(const std::string& value) {
-    js_flags_ = value;
-  }
-
-  static const std::string& log_level() { return log_level_; }
-  static void set_log_level(const std::string& value) {
-    log_level_ = value;
-  }
-
  protected:
   // Creates an automation proxy.
   virtual AutomationProxy* CreateAutomationProxy(
@@ -245,35 +190,32 @@ class ProxyLauncher {
   // The method for shutting down the browser. Used in ShutdownTest.
   ShutdownType shutdown_type_;
 
-  // True if we're in single process mode.
-  static bool in_process_renderer_;
-
   // If true, runs the renderer outside the sandbox.
-  static bool no_sandbox_;
+  bool no_sandbox_;
 
   // If true, write full memory dump during crash.
-  static bool full_memory_dump_;
+  bool full_memory_dump_;
 
   // If true, a user is paying attention to the test, so show error dialogs.
-  static bool show_error_dialogs_;
+  bool show_error_dialogs_;
 
   // Include histograms in log on exit.
-  static bool dump_histograms_on_exit_;
+  bool dump_histograms_on_exit_;
 
   // Enable dchecks in release mode.
-  static bool enable_dcheck_;
+  bool enable_dcheck_;
 
   // Dump process memory on dcheck without crashing.
-  static bool silent_dump_on_dcheck_;
+  bool silent_dump_on_dcheck_;
 
   // Disable breakpad on the browser.
-  static bool disable_breakpad_;
+  bool disable_breakpad_;
 
   // Flags passed to the JS engine.
-  static std::string js_flags_;
+  std::string js_flags_;
 
   // Logging level.
-  static std::string log_level_;
+  std::string log_level_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyLauncher);
 };

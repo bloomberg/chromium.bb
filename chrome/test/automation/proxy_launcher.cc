@@ -70,21 +70,26 @@ const char ProxyLauncher::kDefaultInterfaceId[] =
     "/var/tmp/ChromeTestingInterface";
 #endif
 
-bool ProxyLauncher::in_process_renderer_ = false;
-bool ProxyLauncher::no_sandbox_ = false;
-bool ProxyLauncher::full_memory_dump_ = false;
-bool ProxyLauncher::show_error_dialogs_ = false;
-bool ProxyLauncher::dump_histograms_on_exit_ = false;
-bool ProxyLauncher::enable_dcheck_ = false;
-bool ProxyLauncher::silent_dump_on_dcheck_ = false;
-bool ProxyLauncher::disable_breakpad_ = false;
-std::string ProxyLauncher::js_flags_ = "";
-std::string ProxyLauncher::log_level_ = "";
-
 ProxyLauncher::ProxyLauncher()
     : process_(base::kNullProcessHandle),
       process_id_(-1),
-      shutdown_type_(WINDOW_CLOSE) {
+      shutdown_type_(WINDOW_CLOSE),
+      no_sandbox_(CommandLine::ForCurrentProcess()->HasSwitch(
+                      switches::kNoSandbox)),
+      full_memory_dump_(CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kFullMemoryCrashReport)),
+      dump_histograms_on_exit_(CommandLine::ForCurrentProcess()->HasSwitch(
+                                   switches::kDumpHistogramsOnExit)),
+      enable_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kEnableDCHECK)),
+      silent_dump_on_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
+                                 switches::kSilentDumpOnDCHECK)),
+      disable_breakpad_(CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kDisableBreakpad)),
+      js_flags_(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                    switches::kJavaScriptFlags)),
+      log_level_(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kLoggingLevel)) {
 }
 
 ProxyLauncher::~ProxyLauncher() {}
@@ -146,10 +151,9 @@ void ProxyLauncher::CloseBrowserAndServer() {
   // Suppress spammy failures that seem to be occurring when running
   // the UI tests in single-process mode.
   // TODO(jhughes): figure out why this is necessary at all, and fix it
-  if (!in_process_renderer_)
-    AssertAppNotRunning(
-        StringPrintf("Unable to quit all browser processes. Original PID %d",
-                     process_id_));
+  AssertAppNotRunning(
+      StringPrintf("Unable to quit all browser processes. Original PID %d",
+                   process_id_));
 
   DisconnectFromRunningBrowser();
 }
@@ -389,8 +393,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
           switches::kEnableErrorDialogs)) {
     command_line->AppendSwitch(switches::kNoErrorDialogs);
   }
-  if (in_process_renderer_)
-    command_line->AppendSwitch(switches::kSingleProcess);
   if (no_sandbox_)
     command_line->AppendSwitch(switches::kNoSandbox);
   if (full_memory_dump_)

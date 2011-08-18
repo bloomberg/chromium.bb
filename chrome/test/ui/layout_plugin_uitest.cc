@@ -70,9 +70,6 @@ TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginInvoke) {
 }
 
 TEST_F(LayoutPluginTester, NPObjectReleasedOnDestruction) {
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   const FilePath test_case(
       FILE_PATH_LITERAL("npobject_released_on_destruction.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);

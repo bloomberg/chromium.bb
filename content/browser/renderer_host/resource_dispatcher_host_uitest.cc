@@ -275,10 +275,6 @@ TEST_F(ResourceDispatcherTest, MAYBE_CrossSiteNoUnloadOn204) {
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
 TEST_F(ResourceDispatcherTest, FAILS_CrossSiteAfterCrash) {
-  // This test only works in multi-process mode
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab(browser_proxy->GetActiveTab());

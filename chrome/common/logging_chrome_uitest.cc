@@ -107,14 +107,8 @@ class AssertionTest : public UITest {
 #define Assertion DISABLED_Assertion
 #endif
 TEST_F(AssertionTest, Assertion) {
-  if (ProxyLauncher::in_process_renderer()) {
-    // in process mode doesn't do the crashing.
-    expected_errors_ = 0;
-    expected_crashes_ = 0;
-  } else {
-    expected_errors_ = EXPECTED_ASSERT_ERRORS;
-    expected_crashes_ = EXPECTED_ASSERT_CRASHES;
-  }
+  expected_errors_ = EXPECTED_ASSERT_ERRORS;
+  expected_crashes_ = EXPECTED_ASSERT_CRASHES;
 }
 #endif  // !defined(NDEBUG)
 
@@ -142,14 +136,8 @@ class CheckFalseTest : public UITest {
 #endif
 // Launch the app in assertion test mode, then close the app.
 TEST_F(CheckFalseTest, CheckFails) {
-  if (ProxyLauncher::in_process_renderer()) {
-    // in process mode doesn't do the crashing.
-    expected_errors_ = 0;
-    expected_crashes_ = 0;
-  } else {
-    expected_errors_ = EXPECTED_ASSERT_ERRORS;
-    expected_crashes_ = EXPECTED_ASSERT_CRASHES;
-  }
+  expected_errors_ = EXPECTED_ASSERT_ERRORS;
+  expected_crashes_ = EXPECTED_ASSERT_CRASHES;
 }
 #endif  // !defined(OFFICIAL_BUILD)
 
@@ -180,13 +168,8 @@ class RendererCrashTest : public UITest {
 #endif
 // Launch the app in renderer crash test mode, then close the app.
 TEST_F(RendererCrashTest, Crash) {
-  if (ProxyLauncher::in_process_renderer()) {
-    // in process mode doesn't do the crashing.
-    expected_crashes_ = 0;
-  } else {
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
-    ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
-    expected_crashes_ = EXPECTED_CRASH_CRASHES;
-  }
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
+  expected_crashes_ = EXPECTED_CRASH_CRASHES;
 }

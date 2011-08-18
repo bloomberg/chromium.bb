@@ -82,10 +82,6 @@ TEST_F(BrowserTest, PosixSessionEnd) {
 // set window.opener to null properly.
 #ifdef CHROME_V8
 TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
-  // This test only works in multi-process mode
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -136,10 +132,6 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 // Tests that non-Gmail-like script redirects (i.e., non-null window.opener) or
 // a same-page-redirect) will not fork a new process.
 TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
-  // This test only works in multi-process mode
-  if (ProxyLauncher::in_process_renderer())
-    return;
-
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());

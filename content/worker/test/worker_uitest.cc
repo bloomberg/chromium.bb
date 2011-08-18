@@ -87,8 +87,7 @@ class WorkerTest : public UILayoutTest {
 
   bool WaitForProcessCountToBe(int tabs, int workers) {
     // The 1 is for the browser process.
-    int number_of_processes = 1 + workers +
-        (ProxyLauncher::in_process_renderer() ? 0 : tabs);
+    int number_of_processes = 1 + workers + tabs;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // On Unix, we also have a zygote process and a sandbox host process.
     number_of_processes += 2;
