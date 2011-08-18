@@ -898,6 +898,14 @@
    fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
    fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
+{
+   Intentional, see http://codereview.chromium.org/7670025
+   Memcheck:Param
+   msync(start)
+   fun:msync$UNIX2003
+   fun:mach_override_ptr
+   fun:_ZN4base33EnableTerminationOnHeapCorruptionEv
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
