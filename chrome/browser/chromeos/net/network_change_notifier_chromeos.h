@@ -8,11 +8,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/task.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
+
+class OnlineStatusReportThreadTask;
 
 class NetworkChangeNotifierChromeos
     : public net::NetworkChangeNotifier,
@@ -24,6 +27,8 @@ class NetworkChangeNotifierChromeos
   virtual ~NetworkChangeNotifierChromeos();
 
  private:
+  friend class OnlineStatusReportThreadTask;
+
   // PowerLibrary::Observer overrides.
   virtual void PowerChanged(PowerLibrary* obj) OVERRIDE;
   virtual void SystemResumed() OVERRIDE;
@@ -38,10 +43,17 @@ class NetworkChangeNotifierChromeos
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
                                 const chromeos::Network* network) OVERRIDE;
 
+  // Initiate online status change reporting.
+  void ReportOnlineStateChange(bool is_online);
+  // Callback from online_notification_task_ when online state notification
+  // is actually scheduled.
+  void OnOnlineStateNotificationFired();
+
   // Updates data members that keep the track the network stack state.
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);
   // Updates network connectivity state.
   void UpdateConnectivityState(const chromeos::Network* network);
+
   // Updates the initial state. Lets us trigger initial eval of the
   // connectivity status without waiting for an event from the connection
   // manager.
@@ -56,6 +68,7 @@ class NetworkChangeNotifierChromeos
   // Current active network's IP address.
   std::string ip_address_;
 
+  OnlineStatusReportThreadTask* online_notification_task_;
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
 };
 

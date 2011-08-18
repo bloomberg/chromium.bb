@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
 
+class IOThread;
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -81,6 +83,8 @@ class SigninScreenHandler : public BaseScreenHandler,
   void Show(bool oobe_ui);
 
  private:
+  friend class ReportDnsCacheClearedOnUIThread;
+
   // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(
       base::DictionaryValue* localized_strings) OVERRIDE;
@@ -100,6 +104,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
+  // Shows signin screen after dns cache and cookie cleanup operations finish.
+  void ShowSigninScreenIfReady();
 
   // Handles confirmation message of user authentication that was performed by
   // the authentication extension.
@@ -138,6 +145,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Kick off cookie / local storage cleanup.
   void StartClearingCookies();
 
+  // Kick off DNS cache flushing.
+  void StartClearingDnsCache();
+  void OnDnsCleared();
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
 
@@ -147,12 +158,19 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Keeps whether screen should be shown for OOBE.
   bool oobe_ui_;
 
+  // True if dns cache cleanup is done.
+  bool dns_cleared_;
+  // True if cookie jar cleanup is done.
+  bool cookies_cleared_;
+
   // True if new user sign in flow is driven by the extension.
   bool extension_driven_;
 
   std::string email_;
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
+
+  CancelableTask* clear_dns_task_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

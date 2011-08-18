@@ -6,8 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/stringprintf.h"
+#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -18,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "net/base/dnsrr_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -59,17 +62,76 @@ std::string SanitizeEmail(const std::string& email) {
 
 namespace chromeos {
 
+// TODO(zelidrag): Make this notification task cancelable and controlled by
+// SigninScreenHandler.
+class ReportDnsCacheClearedOnUIThread : public Task {
+ public:
+  explicit ReportDnsCacheClearedOnUIThread(SigninScreenHandler* handler)
+      : handler_(handler)  {
+  }
+  virtual ~ReportDnsCacheClearedOnUIThread() {}
+
+  // CancelableTask overrides.
+  virtual void Run() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (handler_)
+      handler_->OnDnsCleared();
+  }
+
+ private:
+  SigninScreenHandler* handler_;
+  DISALLOW_COPY_AND_ASSIGN(ReportDnsCacheClearedOnUIThread);
+};
+
+// Clears DNS cache on IO thread.
+class ClearDnsCacheTaskOnIOThread : public CancelableTask {
+ public:
+  ClearDnsCacheTaskOnIOThread(SigninScreenHandler* handler,
+                              IOThread* io_thread)
+      : handler_(handler), io_thread_(io_thread), should_run_(true)  {
+  }
+  virtual ~ClearDnsCacheTaskOnIOThread() {}
+
+  // CancelableTask overrides.
+  virtual void Run() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (!should_run_)
+      return;
+
+    io_thread_->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        new ReportDnsCacheClearedOnUIThread(handler_));
+  }
+
+  virtual void Cancel() OVERRIDE {
+    should_run_ = false;
+  }
+
+ private:
+  SigninScreenHandler* handler_;
+  IOThread* io_thread_;
+  bool should_run_;
+  DISALLOW_COPY_AND_ASSIGN(ClearDnsCacheTaskOnIOThread);
+};
+
+
 SigninScreenHandler::SigninScreenHandler()
     : delegate_(WebUILoginDisplay::GetInstance()),
       show_on_init_(false),
       oobe_ui_(false),
+      dns_cleared_(false),
+      cookies_cleared_(false),
       extension_driven_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUILogin)) {
+              switches::kWebUILogin)),
+      clear_dns_task_(NULL) {
   delegate_->SetWebUIHandler(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
+  if (clear_dns_task_)
+    clear_dns_task_->Cancel();
 }
 
 void SigninScreenHandler::GetLocalizedStrings(
@@ -193,7 +255,23 @@ void SigninScreenHandler::ShowError(int login_attempts,
 }
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
-  // Show sign in screen as soon as we clear the cookie jar.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  cookies_cleared_ = true;
+  ShowSigninScreenIfReady();
+}
+
+void SigninScreenHandler::OnDnsCleared() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  clear_dns_task_ = NULL;
+  dns_cleared_ = true;
+  ShowSigninScreenIfReady();
+}
+
+// Show sign in screen as soon as we clear dns cache the cookie jar.
+void SigninScreenHandler::ShowSigninScreenIfReady() {
+  if (!dns_cleared_ || !cookies_cleared_)
+    return;
+
   DictionaryValue params;
   params.SetString("email", email_);
 
@@ -264,7 +342,7 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     // |args| can be null if it's OOBE.
     if (args)
       args->GetString(0, &email_);
-
+    StartClearingDnsCache();
     StartClearingCookies();
   } else {
     ShowScreen(kSigninScreen, NULL);
@@ -364,7 +442,19 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
   delegate_->CreateAccount();
 }
 
+void SigninScreenHandler::StartClearingDnsCache() {
+  if (!g_browser_process->io_thread())
+    return;
+  dns_cleared_ = false;
+  if (clear_dns_task_)
+    clear_dns_task_->Cancel();
+  clear_dns_task_ = new ClearDnsCacheTaskOnIOThread(
+      this, g_browser_process->io_thread());
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, clear_dns_task_);
+}
+
 void SigninScreenHandler::StartClearingCookies() {
+  cookies_cleared_ = false;
   BrowsingDataRemover* remover = new BrowsingDataRemover(
       Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
       BrowsingDataRemover::EVERYTHING,
