@@ -1429,6 +1429,10 @@ PP_Var PluginInstance::GetOwnerElementObject(PP_Instance instance) {
 PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
                                      PP_Var script,
                                      PP_Var* exception) {
+  // Executing the script may remove the plugin from the DOM, so we need to keep
+  // a reference to ourselves so that we can still process the result after the
+  // WebBindings::evaluate() below.
+  scoped_refptr<PluginInstance> ref(this);
   TryCatch try_catch(module()->pp_module(), exception);
   if (try_catch.has_exception())
     return PP_MakeUndefined();
@@ -1453,8 +1457,6 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   NPVariant result;
   bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
                                   &result);
-  // DANGER! |this| could be deleted at this point if the script removed the
-  // plugin from the DOM.
   if (!ok) {
     // TODO(brettw) bug 54011: The TryCatch isn't working properly and
     // doesn't actually catch this exception.
