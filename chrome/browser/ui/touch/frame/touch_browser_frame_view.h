@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/focus/focus_manager.h"
 
@@ -102,6 +103,7 @@ class TouchBrowserFrameView
   bool focus_listener_added_;
   KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;
+  GURL url_;
 
   scoped_ptr<ui::SlideAnimation> animation_;
 

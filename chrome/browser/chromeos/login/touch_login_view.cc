@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "googleurl/src/gurl.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/transform.h"
 #include "views/controls/textfield/textfield.h"
@@ -132,7 +133,9 @@ void TouchLoginView::InitStatusArea() {
 // TouchLoginView private: -----------------------------------------------------
 
 void TouchLoginView::InitVirtualKeyboard() {
-  keyboard_ = new KeyboardContainerView(profile_, NULL);
+  // TODO(yusukes): Support non-US virtual keyboard on the login screen.
+  keyboard_ = new KeyboardContainerView(profile_, NULL, GURL());
+
   keyboard_->SetVisible(false);
   AddChildView(keyboard_);
 

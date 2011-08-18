@@ -167,7 +167,8 @@ void TouchBrowserFrameView::InitVirtualKeyboard() {
   DCHECK(keyboard_profile) << "Profile required for virtual keyboard.";
 
   keyboard_ = new KeyboardContainerView(keyboard_profile,
-      browser_view()->browser());
+                                        browser_view()->browser(),
+                                        url_);
   keyboard_->SetVisible(false);
   AddChildView(keyboard_);
 }
@@ -366,11 +367,15 @@ void TouchBrowserFrameView::VirtualKeyboardChanged(
     chromeos::input_method::InputMethodManager* manager,
     const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
     const std::string& virtual_keyboard_layout) {
-  if (!keyboard_)
+  const GURL& new_url =
+      virtual_keyboard.GetURLForLayout(virtual_keyboard_layout);
+  if (new_url == url_)
     return;
 
-  const GURL& url = virtual_keyboard.GetURLForLayout(virtual_keyboard_layout);
-  keyboard_->LoadURL(url);
-  VLOG(1) << "VirtualKeyboardChanged: Switched to " << url.spec();
+  url_ = new_url;
+  if (keyboard_)
+    keyboard_->LoadURL(url_);
+  // |keyboard_| can be NULL here. In that case, the |url_| will be used in
+  // InitVirtualKeyboard() later.
 }
 #endif

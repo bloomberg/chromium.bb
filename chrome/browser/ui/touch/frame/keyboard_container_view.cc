@@ -30,12 +30,14 @@ const char KeyboardContainerView::kViewClassName[] =
 ///////////////////////////////////////////////////////////////////////////////
 // KeyboardContainerView, public:
 
-KeyboardContainerView::KeyboardContainerView(Profile* profile, Browser* browser)
+KeyboardContainerView::KeyboardContainerView(
+    Profile* profile, Browser* browser, const GURL& url)
     : dom_view_(new DOMView),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)),
       browser_(browser) {
-  GURL keyboard_url(chrome::kChromeUIKeyboardURL);
+  const GURL keyboard_url(
+      url.is_valid() ? url : GURL(chrome::kChromeUIKeyboardURL));
   dom_view_->Init(profile,
       SiteInstance::CreateSiteInstanceForURL(profile, keyboard_url));
   dom_view_->LoadURL(keyboard_url);

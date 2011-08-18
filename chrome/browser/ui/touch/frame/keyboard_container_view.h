@@ -17,6 +17,7 @@ class Message;
 
 class Browser;
 class DOMView;
+class GURL;
 class Profile;
 
 // A class that contains and decorates the virtual keyboard.
@@ -30,7 +31,7 @@ class KeyboardContainerView : public views::View,
   // Internal class name.
   static const char kViewClassName[];
 
-  KeyboardContainerView(Profile* profile, Browser* browser);
+  KeyboardContainerView(Profile* profile, Browser* browser, const GURL& url);
   virtual ~KeyboardContainerView();
 
   // Overridden from views::View
