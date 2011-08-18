@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -338,6 +339,61 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   // Popup window should be in the app's process.
   EXPECT_TRUE(last_active_browser->GetTabContentsAt(0)->render_view_host()->
       process()->is_extension_process());
+}
+
+// Tests that if we have an app process (path1/container.html) with a non-app
+// iframe (path3/iframe.html), then opening a link from that iframe to a new
+// window to a same-origin non-app URL (path3/empty.html) should keep the window
+// in the app process.
+// This is in contrast to OpenAppFromIframe, since here the popup will not be
+// missing special permissions and should be scriptable from the iframe.
+// See http://crbug.com/92669 for more details.
+IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL base_url = GetTestBaseURL("app_process");
+
+  // Load app and start URL (in the app).
+  const Extension* app =
+      LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  ASSERT_TRUE(app);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      base_url.Resolve("path1/container.html"),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  RenderProcessHost* process =
+      browser()->GetTabContentsAt(0)->render_view_host()->process();
+  EXPECT_TRUE(process->is_extension_process());
+
+  // Wait for popup window to appear.  The new Browser may not have been
+  // added with SetLastActive, in which case we need to show it first.
+  // This is necessary for popup windows without a cross-site transition.
+  if (browser() == BrowserList::GetLastActive()) {
+    // Grab the second window and show it.
+    ASSERT_TRUE(BrowserList::size() == 2);
+    Browser* popup_browser = *(++BrowserList::begin());
+    popup_browser->window()->Show();
+  }
+  Browser* last_active_browser = BrowserList::GetLastActive();
+  EXPECT_TRUE(last_active_browser);
+  ASSERT_NE(browser(), last_active_browser);
+  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  EXPECT_TRUE(newtab);
+  GURL non_app_url = base_url.Resolve("path3/empty.html");
+  if (!newtab->controller().GetLastCommittedEntry() ||
+      newtab->controller().GetLastCommittedEntry()->url() != non_app_url)
+    ui_test_utils::WaitForNavigation(&newtab->controller());
+
+  // Popup window should be in the app's process.
+  RenderProcessHost* popup_process =
+      last_active_browser->GetTabContentsAt(0)->render_view_host()->process();
+  EXPECT_EQ(process, popup_process);
 }
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {

@@ -72,6 +72,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
@@ -89,8 +90,10 @@ using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
@@ -574,13 +577,14 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              const GURL& url,
                                              bool is_content_initiated,
+                                             bool is_initial_navigation,
                                              bool* send_referrer) {
   // If the navigation would cross an app extent boundary, we also need
   // to defer to the browser to ensure process isolation.
   // TODO(erikkay) This is happening inside of a check to is_content_initiated
   // which means that things like the back button won't trigger it.  Is that
   // OK?
-  if (!CrossesExtensionExtents(frame, url))
+  if (!CrossesExtensionExtents(frame, url, is_initial_navigation))
     return false;
 
   // Include the referrer in this case since we're going from a hosted web
@@ -682,25 +686,40 @@ void ChromeContentRendererClient::SetExtensionDispatcher(
   extension_dispatcher_.reset(extension_dispatcher);
 }
 
-bool ChromeContentRendererClient::CrossesExtensionExtents(WebFrame* frame,
-                                                          const GURL& new_url) {
+bool ChromeContentRendererClient::CrossesExtensionExtents(
+    WebFrame* frame,
+    const GURL& new_url,
+    bool is_initial_navigation) {
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
-  // If the URL is still empty, this is a window.open navigation. Check the
-  // opener's URL. In all cases we use the top frame's URL (as opposed to our
-  // frame's) since that's what determines the type of process.
-  // TODO(abarth): This code is super sketchy! Are you sure looking at the
-  // opener is correct here?  This appears to let me steal my opener's
-  // privileges if I can make my URL be "empty."
+  bool is_extension_url = !!extensions->GetByURL(new_url);
   GURL old_url(frame->top()->document().url());
-  if (old_url.is_empty() && frame->opener())
+
+  // If old_url is still empty and this is an initial navigation, then this is
+  // a window.open operation.  We should look at the opener URL.
+  if (is_initial_navigation && old_url.is_empty() && frame->opener()) {
+    // If we're about to open a normal web page from a same-origin opener stuck
+    // in an extension process, we want to keep it in process to allow the
+    // opener to script it.
+    GURL opener_url = frame->opener()->document().url();
+    bool opener_is_extension_url = !!extensions->GetByURL(opener_url);
+    WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
+    if (!is_extension_url &&
+        !opener_is_extension_url &&
+        extension_dispatcher_->is_extension_process() &&
+        opener.canRequest(WebURL(new_url)))
+      return false;
+
+    // In all other cases, we want to compare against the top frame's URL (as
+    // opposed to the opener frame's), since that's what determines the type of
+    // process.  This allows iframes outside an app to open a popup in the app.
     old_url = frame->top()->opener()->top()->document().url();
+  }
 
   // If this is a reload, check whether it has the wrong process type.  We
   // should send it to the browser if it's an extension URL (e.g., hosted app)
   // in a normal process, or if it's a process for an extension that has been
   // uninstalled.
   if (old_url == new_url) {
-    bool is_extension_url = !!extensions->GetByURL(new_url);
     if (is_extension_url != extension_dispatcher_->is_extension_process())
       return true;
   }

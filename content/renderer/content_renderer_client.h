@@ -80,6 +80,7 @@ class ContentRendererClient {
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
                           bool is_content_initiated,
+                          bool is_initial_navigation,
                           bool* send_referrer) = 0;
 
   // Notifies the embedder that the given frame is requesting the resource at

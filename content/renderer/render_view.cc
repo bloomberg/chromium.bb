@@ -2150,8 +2150,10 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
     if (!should_fork) {
       // Give the embedder a chance.
+      bool is_initial_navigation = page_id_ == -1;
       should_fork = content::GetContentClient()->renderer()->ShouldFork(
-          frame, url, is_content_initiated, &send_referrer);
+          frame, url, is_content_initiated, is_initial_navigation,
+          &send_referrer);
     }
 
     if (should_fork) {

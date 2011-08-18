@@ -58,6 +58,7 @@ bool MockContentRendererClient::AllowPopup(const GURL& creator) {
 bool MockContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
                                            const GURL& url,
                                            bool is_content_initiated,
+                                           bool is_initial_navigation,
                                            bool* send_referrer) {
   return false;
 }

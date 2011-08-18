@@ -55,6 +55,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldFork(WebKit::WebFrame* frame,
                           const GURL& url,
                           bool is_content_initiated,
+                          bool is_initial_navigation,
                           bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                const GURL& url,
@@ -99,7 +100,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
-  bool CrossesExtensionExtents(WebKit::WebFrame* frame, const GURL& new_url);
+  bool CrossesExtensionExtents(WebKit::WebFrame* frame,
+                               const GURL& new_url,
+                               bool is_initial_navigation);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
