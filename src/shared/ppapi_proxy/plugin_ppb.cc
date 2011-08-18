@@ -7,7 +7,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include <stdlib.h>
 #include <string.h>
-#include "native_client/src/shared/ppapi_proxy/plugin_context_3d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
@@ -34,7 +33,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_surface_3d.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 
@@ -55,7 +53,6 @@ InterfaceMapElement interface_map[] = {
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
   { PPB_CURSOR_CONTROL_DEV_INTERFACE, PluginCursorControl::GetInterface(),
     true },
-  { PPB_CONTEXT_3D_DEV_INTERFACE, PluginContext3D::GetInterface(), true },
   { PPB_FILEIO_INTERFACE, PluginFileIO::GetInterface(), true },
   { PPB_FILEREF_INTERFACE, PluginFileRef::GetInterface(), true },
   { PPB_FILESYSTEM_INTERFACE, PluginFileSystem::GetInterface(), true },
@@ -76,7 +73,6 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
-  { PPB_SURFACE_3D_DEV_INTERFACE, PluginSurface3D::GetInterface(), true },
   { PPB_TESTING_DEV_INTERFACE, PluginTesting::GetInterface(), true },
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },

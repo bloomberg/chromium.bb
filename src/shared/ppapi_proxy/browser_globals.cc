@@ -202,20 +202,6 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
   return ppb_interface;
 }
 
-const PPB_Context3D_Dev* PPBContext3DInterface() {
-  static const PPB_Context3D_Dev* ppb =
-      static_cast<const PPB_Context3D_Dev*>(
-          GetBrowserInterfaceSafe(PPB_CONTEXT_3D_DEV_INTERFACE));
-  return ppb;
-}
-
-const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface() {
-  static const PPB_Context3DTrusted_Dev* ppb =
-      static_cast<const PPB_Context3DTrusted_Dev*>(
-          GetBrowserInterfaceSafe(PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE));
-  return ppb;
-}
-
 const PPB_Core* PPBCoreInterface() {
   static const PPB_Core* ppb = static_cast<const PPB_Core*>(
       GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
@@ -375,13 +361,6 @@ const PPB_Scrollbar_Dev* PPBScrollbarInterface() {
   static const PPB_Scrollbar_Dev* ppb =
       static_cast<const PPB_Scrollbar_Dev*>(
           GetBrowserInterfaceSafe(PPB_SCROLLBAR_DEV_INTERFACE));
-  return ppb;
-}
-
-const PPB_Surface3D_Dev* PPBSurface3DInterface() {
-  static const PPB_Surface3D_Dev* ppb =
-      static_cast<const PPB_Surface3D_Dev*>(
-          GetBrowserInterfaceSafe(PPB_SURFACE_3D_DEV_INTERFACE));
   return ppb;
 }
 

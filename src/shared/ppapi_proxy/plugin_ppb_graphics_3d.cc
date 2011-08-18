@@ -14,7 +14,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_surface_3d.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"

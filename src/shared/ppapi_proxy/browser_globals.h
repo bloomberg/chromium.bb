@@ -5,8 +5,6 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
-#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
@@ -15,7 +13,6 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_widget_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_zoom_dev.h"
@@ -98,8 +95,6 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // Functions marked "shared" are to be provided by both the browser and the
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
-const PPB_Context3D_Dev* PPBContext3DInterface();
-const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface();
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_CursorControl_Dev* PPBCursorControlInterface();
 const PPB_FileIO* PPBFileIOInterface();
@@ -120,7 +115,6 @@ const PPB_MouseInputEvent* PPBMouseInputEventInterface();
 const PPB_Messaging* PPBMessagingInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
-const PPB_Surface3D_Dev* PPBSurface3DInterface();
 const PPB_Testing_Dev* PPBTestingInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
