@@ -96,6 +96,7 @@ AutomatedUITestBase.IncognitoWindow
 AutomatedUITestBase.Navigate
 AutomatedUITestBase.OpenNewTab
 AutomatedUITestBase.ShowDownloads
+AutomationProxySnapshotTest.LargeSnapshot
 AutomationProxyTest.AcceleratorDownloads
 AutomationProxyTest.AcceleratorExtensions
 AutomationProxyTest.AcceleratorHistory
@@ -173,6 +174,7 @@ WorkerFileSystemTest.FileFromFileEntry
 WorkerFileSystemTest.FileFromFileEntrySync
 WorkerFileSystemTest.FileWriterSyncTruncateExtend
 WorkerFileSystemTest.FileWriterTruncateExtend
+WorkerFileSystemTest.Temporary
 
 # Valgrind dies on bszB assertion, see http://crbug.com/58145
 AutomatedUITestBase.Home
