@@ -79,7 +79,11 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   UMA_HISTOGRAM_TIMES("TextInputClient.Substring",
                       delta * base::Time::kMicrosecondsPerMillisecond);
 
-  return substring_.get();
+
+  // Lookup.framework calls this method repeatedly and expects that repeated
+  // calls don't deallocate previous results immediately. Returning an
+  // autoreleased string is better convention anyway.
+  return [[substring_.get() retain] autorelease];
 }
 
 void TextInputClientMac::SetCharacterIndexAndSignal(NSUInteger index) {

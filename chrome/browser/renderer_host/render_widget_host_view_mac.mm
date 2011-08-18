@@ -2366,7 +2366,7 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
   return [[toolTip_ copy] autorelease];
 }
 
-// Below is our NSTextInput implementation.
+// Below is our NSTextInputClient implementation.
 //
 // When WebHTMLView receives a NSKeyDown event, WebHTMLView calls the following
 // functions to process this event.
@@ -2447,14 +2447,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   thePoint = [self convertPoint:thePoint fromView:nil];
   thePoint.y = NSHeight([self frame]) - thePoint.y;
 
-  NSUInteger point =
+  NSUInteger index =
       TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
           renderWidgetHostView_->render_widget_host_,
           gfx::Point(thePoint.x, thePoint.y));
-  return point;
+  return index;
 }
 
-- (NSRect)firstRectForCharacterRange:(NSRange)theRange {
+- (NSRect)firstRectForCharacterRange:(NSRange)theRange
+                         actualRange:(NSRangePointer)actualRange {
+  // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
+  if (actualRange)
+    *actualRange = theRange;
   NSRect rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
       renderWidgetHostView_->render_widget_host_, theRange);
 
@@ -2479,7 +2483,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return hasMarkedText_ ? markedRange_ : NSMakeRange(NSNotFound, 0);
 }
 
-- (NSAttributedString*)attributedSubstringFromRange:(NSRange)range {
+- (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
+    actualRange:(NSRangePointer)actualRange {
+  // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
+  if (actualRange)
+    *actualRange = range;
   NSAttributedString* str =
       TextInputClientMac::GetInstance()->GetAttributedSubstringFromRange(
           renderWidgetHostView_->render_widget_host_, range);
@@ -2534,10 +2542,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     unmarkTextCalled_ = YES;
 }
 
-- (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange {
+- (void)setMarkedText:(id)string selectedRange:(NSRange)newSelRange
+                              replacementRange:(NSRange)replacementRange {
   // An input method updates the composition string.
   // We send the given text and range to the renderer so it can update the
   // composition node of WebKit.
+  // TODO(suzhe): It's hard for us to support replacementRange without accessing
+  // the full web content.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   int length = [im_text length];
@@ -2595,7 +2606,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   }
 }
 
-- (void)insertText:(id)string {
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
   // An input method has characters to be inserted.
   // Same as Linux, Mac calls this method not only:
   // * when an input method finishs composing text, but also;
@@ -2609,6 +2620,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // Text inserting might be initiated by other source instead of keyboard
   // events, such as the Characters dialog. In this case the text should be
   // sent as an input method event as well.
+  // TODO(suzhe): It's hard for us to support replacementRange without accessing
+  // the full web content. NOTE: If someone adds support for this, make sure
+  // it works with the default range passed in by -insertText: below.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   if (handlingKeyDown_) {
@@ -2620,6 +2634,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // Inserting text will delete all marked text automatically.
   hasMarkedText_ = NO;
+}
+
+- (void)insertText:(id)string {
+  // This is a method on NSTextInput, not NSTextInputClient. But on 10.5, this
+  // gets called anyway. Forward to the right method. http://crbug.com/47890
+  [self insertText:string replacementRange:NSMakeRange(0, 0)];
 }
 
 - (void)viewDidMoveToWindow {

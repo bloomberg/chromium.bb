@@ -34,10 +34,9 @@ class RWHVMEditCommandHelper;
 // RenderWidgetHostViewWin is both the view and the delegate. We split the roles
 // but that means that the view needs to own the delegate and will dispose of it
 // when it's removed from the view system.
-// See http://crbug.com/47890 for why we don't use NSTextInputClient yet.
 @interface RenderWidgetHostViewCocoa
     : BaseView <RenderWidgetHostViewMacOwner,
-                NSTextInput,
+                NSTextInputClient,
                 NSChangeSpelling,
                 BrowserAccessibilityDelegateCocoa> {
  @private
