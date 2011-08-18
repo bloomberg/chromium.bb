@@ -51,7 +51,8 @@ class EnterpriseOAuthEnrollmentScreenHandler
       base::DictionaryValue* localized_strings) OVERRIDE;
 
   // Implements GaiaOAuthConsumer:
-  virtual void OnGetOAuthTokenFailure() OVERRIDE;
+  virtual void OnGetOAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthWrapBridgeSuccess(const std::string& service_scope,

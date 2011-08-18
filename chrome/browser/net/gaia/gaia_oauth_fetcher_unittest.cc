@@ -57,7 +57,8 @@ class MockGaiaOAuthConsumer : public GaiaOAuthConsumer {
   ~MockGaiaOAuthConsumer() {}
 
   MOCK_METHOD1(OnGetOAuthTokenSuccess, void(const std::string& oauth_token));
-  MOCK_METHOD0(OnGetOAuthTokenFailure, void());
+  MOCK_METHOD1(OnGetOAuthTokenFailure,
+               void(const GoogleServiceAuthError& error));
 
   MOCK_METHOD2(OnOAuthGetAccessTokenSuccess, void(const std::string& token,
                                                   const std::string& secret));

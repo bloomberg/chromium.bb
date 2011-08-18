@@ -177,7 +177,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_ENROLLMENT_WORKING));
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure() {
+void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
   ResetAuth();
   ShowFatalAuthError();
 }

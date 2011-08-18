@@ -8,8 +8,14 @@
 
 namespace browser_sync {
 
+// TODO(rickcam): Bug(92948): Remove IsUsingOAuth after ClientLogin is gone
 bool IsUsingOAuth();
+
+// TODO(rickcam): Bug(92948): Remove SyncServiceName post-ClientLogin
 const char* SyncServiceName();
+
+// TODO(rickcam): Bug(92948): Remove SetIsUsingOAuthForTest post-ClientLogin
+void SetIsUsingOAuthForTest(bool is_using_oauth);
 
 }  // namespace browser_sync
 

@@ -512,7 +512,8 @@ namespace {
 void GaiaOAuthFetcher::OnBrowserClosing(Browser* browser,
                                         bool detail) {
   if (browser == popup_) {
-    consumer_->OnGetOAuthTokenFailure();
+    consumer_->OnGetOAuthTokenFailure(
+        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
   }
   popup_ = NULL;
 }
@@ -557,7 +558,8 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
       }
     }
   } else {
-    consumer_->OnGetOAuthTokenFailure();
+    consumer_->OnGetOAuthTokenFailure(
+        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   }
 }
 

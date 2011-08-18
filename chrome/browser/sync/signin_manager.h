@@ -95,7 +95,8 @@ class SigninManager : public GaiaAuthConsumer,
 
   // GaiaOAuthConsumer
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
-  virtual void OnGetOAuthTokenFailure() OVERRIDE;
+  virtual void OnGetOAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(

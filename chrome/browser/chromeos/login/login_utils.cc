@@ -323,7 +323,8 @@ class LoginUtilsImpl : public LoginUtils,
 
   // GaiaOAuthConsumer overrides.
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
-  virtual void OnGetOAuthTokenFailure() OVERRIDE;
+  virtual void OnGetOAuthTokenFailure(
+    const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
@@ -877,7 +878,8 @@ void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
   VLOG(1) << "Got OAuth request token!";
 }
 
-void LoginUtilsImpl::OnGetOAuthTokenFailure() {
+void LoginUtilsImpl::OnGetOAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
   // TODO(zelidrag): Pop up sync setup UI here?
   LOG(WARNING) << "Failed fetching OAuth request token";
 }

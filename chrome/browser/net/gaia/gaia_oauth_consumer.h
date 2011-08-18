@@ -17,7 +17,7 @@ class GaiaOAuthConsumer {
   virtual ~GaiaOAuthConsumer() {}
 
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) {}
-  virtual void OnGetOAuthTokenFailure() {}
+  virtual void OnGetOAuthTokenFailure(const GoogleServiceAuthError& error) {}
 
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
                                             const std::string& secret) {}

@@ -78,6 +78,7 @@ void SigninManager::SetUsername(const std::string& username) {
 
 // static
 void SigninManager::PrepareForSignin() {
+  DCHECK(!browser_sync::IsUsingOAuth());
   DCHECK(username_.empty());
 #if !defined(OS_CHROMEOS)
   // The Sign out should clear the token service credentials.
@@ -89,6 +90,7 @@ void SigninManager::PrepareForSignin() {
 
 // static
 void SigninManager::PrepareForOAuthSignin() {
+  DCHECK(browser_sync::IsUsingOAuth());
   DCHECK(oauth_username_.empty());
 #if !defined(OS_CHROMEOS)
   // The Sign out should clear the token service credentials.
@@ -100,6 +102,7 @@ void SigninManager::PrepareForOAuthSignin() {
 
 // Users must always sign out before they sign in again.
 void SigninManager::StartOAuthSignIn() {
+  DCHECK(browser_sync::IsUsingOAuth());
   PrepareForOAuthSignin();
   oauth_login_.reset(new GaiaOAuthFetcher(this,
                                           profile_->GetRequestContext(),
@@ -114,6 +117,7 @@ void SigninManager::StartSignIn(const std::string& username,
                                 const std::string& password,
                                 const std::string& login_token,
                                 const std::string& login_captcha) {
+  DCHECK(!browser_sync::IsUsingOAuth());
   PrepareForSignin();
   username_.assign(username);
   password_.assign(password);
@@ -142,6 +146,7 @@ void SigninManager::StartSignIn(const std::string& username,
 
 void SigninManager::ProvideSecondFactorAccessCode(
     const std::string& access_code) {
+  DCHECK(!browser_sync::IsUsingOAuth());
   DCHECK(!username_.empty() && !password_.empty() &&
       last_result_.data.empty());
 
@@ -255,9 +260,15 @@ void SigninManager::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
   VLOG(1) << "SigninManager::SigninManager::OnGetOAuthTokenSuccess";
 }
 
-void SigninManager::OnGetOAuthTokenFailure() {
+void SigninManager::OnGetOAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
   DCHECK(browser_sync::IsUsingOAuth());
   LOG(WARNING) << "SigninManager::OnGetOAuthTokenFailure";
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+      Source<Profile>(profile_),
+      Details<const GoogleServiceAuthError>(&error));
+  SignOut();
 }
 
 void SigninManager::OnOAuthGetAccessTokenSuccess(const std::string& token,
@@ -324,6 +335,7 @@ void SigninManager::Observe(int type,
   // If a GAIA service token has become available, use it to pre-login the
   // user to other services that depend on GAIA credentials.
   if (tok_details->service() == GaiaConstants::kGaiaService) {
+    DCHECK(!browser_sync::IsUsingOAuth());
     if (client_login_.get() == NULL) {
       client_login_.reset(new GaiaAuthFetcher(this,
                                               GaiaConstants::kChromeSource,

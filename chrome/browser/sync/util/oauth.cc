@@ -10,15 +10,28 @@
 
 namespace browser_sync {
 
+static bool has_local_override = false;
+static bool local_override = false;
+
+// TODO(rickcam): Bug(92948): Remove IsUsingOAuth post-ClientLogin
 bool IsUsingOAuth() {
+  if (has_local_override)
+    return local_override;
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncOAuth);
 }
 
+// TODO(rickcam): Bug(92948): Remove SyncServiceName post-ClientLogin
 const char* SyncServiceName() {
   return IsUsingOAuth() ?
       GaiaConstants::kSyncServiceOAuth :
       GaiaConstants::kSyncService;
+}
+
+// TODO(rickcam): Bug(92948): Remove SetIsUsingOAuthForTest post-ClientLogin
+void SetIsUsingOAuthForTest(bool is_using_oauth) {
+  has_local_override = true;
+  local_override = is_using_oauth;
 }
 
 }  // namespace browser_sync
