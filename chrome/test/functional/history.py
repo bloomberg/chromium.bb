@@ -312,6 +312,47 @@ class HistoryTest(pyauto.PyUITest):
     self.NavigateToURL(url2, 1)
     self._CheckHistory(title2, url2, 2)
 
+  def testSubmitFormAddsTargetPage(self):
+    """Verify that submitting form adds target page to history list."""
+    url1 = self.GetFileURLForDataPath('History', 'form.html')
+    self.NavigateToURL(url1)
+    self.ExecuteJavascript('document.getElementById("form").submit();'
+                           'window.domAutomationController.send("done");')
+    url2 = self.GetFileURLForDataPath('History', 'target.html')
+
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.getElementById("result").innerHTML'),
+        expect_retval='SUCCESS')
+    self._CheckHistory('Target Page', url2, 2)
+
+  def testOneHistoryTabPerWindow(self):
+    """Verify history shortcut opens only one history tab per window.
+
+    Also, make sure that existing history tab is activated.
+    """
+    # Invoke History.
+    self.RunCommand(pyauto.IDC_SHOW_HISTORY)
+    self.assertEqual('History', self.GetActiveTabTitle(),
+                     msg='History page was not opened.')
+
+    # Open new tab, invoke History again.
+    self.RunCommand(pyauto.IDC_NEW_TAB)
+    self.RunCommand(pyauto.IDC_SHOW_HISTORY)
+
+    # Verify there is only one history tab, and that it is activated.
+    tab0url = self.GetBrowserInfo()['windows'][0]['tabs'][0]['url']
+    self.assertEqual(
+        'chrome://history/', tab0url, msg='Tab 0: expected = %s, actual = %s.'
+            % ('chrome://history/',  tab0url))
+
+    tab1url = self.GetBrowserInfo()['windows'][0]['tabs'][1]['url']
+    self.assertNotEqual(
+        'chrome://history/', tab1url,
+        msg='Tab 1: History page not expected.')
+
+    self.assertEqual('History', self.GetActiveTabTitle(),
+                     msg='History page is not activated.')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
