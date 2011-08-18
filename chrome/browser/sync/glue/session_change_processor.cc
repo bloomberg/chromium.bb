@@ -26,6 +26,18 @@
 
 namespace browser_sync {
 
+namespace {
+// Extract the source SyncedTabDelegate from a NotificationSource originating
+// from a NavigationController, if it exists. Returns |NULL| otherwise.
+SyncedTabDelegate* ExtractSyncedTabDelegate(const NotificationSource& source) {
+  TabContentsWrapper* tab =  TabContentsWrapper::GetCurrentWrapperForContents(
+      Source<NavigationController>(source).ptr()->tab_contents());
+  if (!tab)
+    return NULL;
+  return tab->synced_tab_delegate();
+}
+}
+
 SessionChangeProcessor::SessionChangeProcessor(
     UnrecoverableErrorHandler* error_handler,
     SessionModelAssociator* session_model_associator)
@@ -97,10 +109,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_TAB_CLOSED: {
-      SyncedTabDelegate* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents())->
-              synced_tab_delegate();
+      SyncedTabDelegate* tab = ExtractSyncedTabDelegate(source);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -110,10 +119,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
-      SyncedTabDelegate* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents())->
-              synced_tab_delegate();
+      SyncedTabDelegate* tab = ExtractSyncedTabDelegate(source);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -123,10 +129,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
-      SyncedTabDelegate* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents())->
-              synced_tab_delegate();
+      SyncedTabDelegate* tab = ExtractSyncedTabDelegate(source);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -136,10 +139,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      SyncedTabDelegate* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents())->
-              synced_tab_delegate();
+      SyncedTabDelegate* tab = ExtractSyncedTabDelegate(source);
       if (!tab || tab->profile() != profile_) {
         return;
       }
