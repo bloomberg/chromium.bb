@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
@@ -13,14 +14,14 @@
 #include "views/view.h"
 #include "views/widget/widget_delegate.h"
 
-class ConstrainedHtmlDelegateWin : public TabContentsContainer,
-                                   public ConstrainedHtmlUIDelegate,
-                                   public ConstrainedWindowDelegate,
-                                   public HtmlDialogTabContentsDelegate {
+class ConstrainedHtmlDelegateViews : public TabContentsContainer,
+                                     public ConstrainedHtmlUIDelegate,
+                                     public ConstrainedWindowDelegate,
+                                     public HtmlDialogTabContentsDelegate {
  public:
-  ConstrainedHtmlDelegateWin(Profile* profile,
-                             HtmlDialogUIDelegate* delegate);
-  ~ConstrainedHtmlDelegateWin();
+  ConstrainedHtmlDelegateViews(Profile* profile,
+                               HtmlDialogUIDelegate* delegate);
+  ~ConstrainedHtmlDelegateViews();
 
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
@@ -40,6 +41,10 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   }
   virtual const views::Widget* GetWidget() const OVERRIDE {
     return View::GetWidget();
+  }
+
+  virtual std::wstring GetWindowTitle() const OVERRIDE {
+    return UTF16ToWideHack(html_delegate_->GetDialogTitle());
   }
 
   // HtmlDialogTabContentsDelegate interface.
@@ -74,7 +79,7 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   ConstrainedWindow* window_;
 };
 
-ConstrainedHtmlDelegateWin::ConstrainedHtmlDelegateWin(
+ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
     Profile* profile,
     HtmlDialogUIDelegate* delegate)
     : HtmlDialogTabContentsDelegate(profile),
@@ -92,14 +97,14 @@ ConstrainedHtmlDelegateWin::ConstrainedHtmlDelegateWin(
                                           PageTransition::START_PAGE);
 }
 
-ConstrainedHtmlDelegateWin::~ConstrainedHtmlDelegateWin() {
+ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {
 }
 
-HtmlDialogUIDelegate* ConstrainedHtmlDelegateWin::GetHtmlDialogUIDelegate() {
+HtmlDialogUIDelegate* ConstrainedHtmlDelegateViews::GetHtmlDialogUIDelegate() {
   return html_delegate_;
 }
 
-void ConstrainedHtmlDelegateWin::OnDialogClose() {
+void ConstrainedHtmlDelegateViews::OnDialogClose() {
   window_->CloseConstrainedWindow();
 }
 
@@ -108,8 +113,8 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     TabContents* container) {
-  ConstrainedHtmlDelegateWin* constrained_delegate =
-      new ConstrainedHtmlDelegateWin(profile, delegate);
+  ConstrainedHtmlDelegateViews* constrained_delegate =
+      new ConstrainedHtmlDelegateViews(profile, delegate);
   ConstrainedWindow* constrained_window =
       container->CreateConstrainedDialog(constrained_delegate);
   constrained_delegate->set_window(constrained_window);

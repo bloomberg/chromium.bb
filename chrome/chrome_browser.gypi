@@ -3137,7 +3137,7 @@
         'browser/ui/views/compact_nav/compact_options_bar.cc',
         'browser/ui/views/compact_nav/compact_options_bar.h',
         'browser/ui/views/constrained_html_delegate_gtk.cc',
-        'browser/ui/views/constrained_html_delegate_win.cc',
+        'browser/ui/views/constrained_html_delegate_views.cc',
         'browser/ui/views/constrained_window_views.cc',
         'browser/ui/views/constrained_window_views.h',
         'browser/ui/views/content_setting_bubble_contents.cc',
