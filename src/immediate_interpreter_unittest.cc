@@ -377,23 +377,24 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   hwprops.supports_t5r2 = 1;
   ii.SetHardwareProperties(hwprops);
   ii.ResetSameFingersState(0);
-  ii.UpdatePalmState(hardware_state[3]);
-  ids = ii.GetGesturingFingers(hardware_state[3]);
-  EXPECT_EQ(3, ids.size());
+  ii.UpdatePalmState(hardware_state[2]);
+  ids = ii.GetGesturingFingers(hardware_state[2]);
+  EXPECT_EQ(2, ids.size());
   EXPECT_TRUE(ids.end() != ids.find(91));
   EXPECT_TRUE(ids.end() != ids.find(92));
-  EXPECT_TRUE(ids.end() != ids.find(93));
 }
 
 namespace {
-set<short, kMaxFingers> MkSet() { return set<short, kMaxFingers>(); }
-set<short, kMaxFingers> MkSet(short the_id) {
-  set<short, kMaxFingers> ret;
+set<short, kMaxGesturingFingers> MkSet() {
+  return set<short, kMaxGesturingFingers>();
+}
+set<short, kMaxGesturingFingers> MkSet(short the_id) {
+  set<short, kMaxGesturingFingers> ret;
   ret.insert(the_id);
   return ret;
 }
-set<short, kMaxFingers> MkSet(short id1, short id2) {
-  set<short, kMaxFingers> ret;
+set<short, kMaxGesturingFingers> MkSet(short id1, short id2) {
+  set<short, kMaxGesturingFingers> ret;
   ret.insert(id1);
   ret.insert(id2);
   return ret;

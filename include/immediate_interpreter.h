@@ -21,7 +21,7 @@ namespace gestures {
 // Currently it simply does very basic pointer movement.
 
 static const int kMaxFingers = 5;
-static const int kMaxGesturingFingers = 5;
+static const int kMaxGesturingFingers = 2;
 static const int kMaxTapFingers = 5;
 
 class TapRecord {
@@ -187,7 +187,7 @@ class ImmediateInterpreter : public Interpreter {
   set<short, kMaxFingers> palm_;  // tracking ids of known palms
   set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
   // tracking ids of known non-palms
-  set<short, kMaxGesturingFingers> pointing_;
+  set<short, kMaxFingers> pointing_;
 
   // Tap-to-click
   // The current state:

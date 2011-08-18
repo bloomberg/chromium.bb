@@ -287,8 +287,7 @@ struct GetGesturingFingersCompare {
 set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
     const HardwareState& hwstate) const {
   const size_t kMaxSize = 2;  // We support up to 2 finger gestures
-  if (pointing_.size() <= kMaxSize ||
-      (hw_props_.supports_t5r2 && pointing_.size() > 2))
+  if (pointing_.size() <= kMaxSize)
     return pointing_;
 
   const FingerState* fs[hwstate.finger_cnt];
@@ -317,7 +316,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     current_gesture_type_ = kGestureTypeMove;
     return;
   }
-  if (hw_props_.supports_t5r2 && gs_fingers.size() > 2) {
+  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2) {
     current_gesture_type_ = kGestureTypeScroll;
     return;
   }

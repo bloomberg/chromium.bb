@@ -34,6 +34,10 @@ class set {
   set(const set<Elt, kMaxSize>& that) {
     *this = that;
   }
+  template<int kThatSize>
+  set(const set<Elt, kThatSize>& that) {
+    *this = that;
+  }
 
   const_iterator begin() const { return buffer_; }
   const_iterator end() const {
