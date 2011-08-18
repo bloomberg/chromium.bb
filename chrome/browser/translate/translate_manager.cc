@@ -326,15 +326,19 @@ void TranslateManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = Source<Profile>(source).ptr();
+      PrefService* pref_service = Source<Profile>(source).ptr()->GetPrefs();
       notification_registrar_.Remove(this,
                                      chrome::NOTIFICATION_PROFILE_DESTROYED,
                                      source);
-      size_t count = accept_languages_.erase(profile->GetPrefs());
+      size_t count = accept_languages_.erase(pref_service);
       // We should know about this profile since we are listening for
       // notifications on it.
-      DCHECK(count > 0);
-      pref_change_registrar_.Remove(prefs::kAcceptLanguages, this);
+      DCHECK(count == 1u);
+      PrefChangeRegistrar* pref_change_registrar =
+          pref_change_registrars_[pref_service];
+      count = pref_change_registrars_.erase(pref_service);
+      DCHECK(count == 1u);
+      delete pref_change_registrar;
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
@@ -442,8 +446,6 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
     return;
-
-  pref_change_registrar_.Init(prefs);
 
   // Allow disabling of translate from the command line to assist with
   // automated browser testing.
@@ -662,7 +664,12 @@ bool TranslateManager::IsAcceptLanguage(TabContents* tab,
     notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                                 Source<Profile>(profile));
     // Also start listening for changes in the accept languages.
-    pref_change_registrar_.Add(prefs::kAcceptLanguages, this);
+    DCHECK(pref_change_registrars_.find(pref_service) ==
+           pref_change_registrars_.end());
+    PrefChangeRegistrar* pref_change_registrar = new PrefChangeRegistrar;
+    pref_change_registrar->Init(pref_service);
+    pref_change_registrar->Add(prefs::kAcceptLanguages, this);
+    pref_change_registrars_[pref_service] = pref_change_registrar;
 
     iter = accept_languages_.find(pref_service);
   }
