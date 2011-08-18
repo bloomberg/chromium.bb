@@ -48,7 +48,11 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
         callback_(callback) {}
 
  private:
-  virtual ~RequestQuotaInfoBarDelegate() {}
+  virtual ~RequestQuotaInfoBarDelegate() {
+    if (callback_.get())
+      context_->DispatchCallbackOnIOThread(
+          callback_.release(), QuotaPermissionContext::kResponseCancelled);
+  }
 
   virtual bool ShouldExpire(
       const content::LoadCommittedDetails& details)
