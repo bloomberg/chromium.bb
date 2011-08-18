@@ -4,6 +4,10 @@
 
 #include "chrome/common/extensions/extension_constants.h"
 
+#include "base/command_line.h"
+#include "base/string_util.h"
+#include "chrome/common/chrome_switches.h"
+
 namespace extension_manifest_keys {
 
 const char* kAllFrames = "all_frames";
@@ -431,4 +435,19 @@ const char* kAccessExtensionPath =
     "/usr/share/chromeos-assets/accessibility/extensions";
 const char* kChromeVoxDirectoryName = "access_chromevox";
 #endif
+
+std::string GetWebstoreLaunchURL() {
+  std::string gallery_prefix = extension_urls::kGalleryBrowsePrefix;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
+    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kAppsGalleryURL);
+  if (EndsWith(gallery_prefix, "/", true))
+    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
+  return gallery_prefix;
+}
+
+std::string GetWebstoreItemDetailURLPrefix() {
+  return GetWebstoreLaunchURL() + "/detail/";
+}
+
 }

@@ -96,6 +96,7 @@ class ExtensionTabHelper : public TabContentsObserver,
   // Message handlers.
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnInstallApplication(const WebApplicationInfo& info);
+  void OnInlineWebstoreInstall(const std::string& webstore_item_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // App extensions related methods:

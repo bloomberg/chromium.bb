@@ -2337,17 +2337,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   return true;
 }
 
-// static
-std::string Extension::ChromeStoreLaunchURL() {
-  std::string gallery_prefix = extension_urls::kGalleryBrowsePrefix;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
-    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kAppsGalleryURL);
-  if (EndsWith(gallery_prefix, "/", true))
-    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
-  return gallery_prefix;
-}
-
 GURL Extension::GetHomepageURL() const {
   if (homepage_url_.is_valid())
     return homepage_url_;
@@ -2355,10 +2344,7 @@ GURL Extension::GetHomepageURL() const {
   if (!UpdatesFromGallery())
     return GURL();
 
-  // TODO(erikkay): This may not be entirely correct with the webstore.
-  // I think it will have a mixture of /extensions/detail and /webstore/detail
-  // URLs.  Perhaps they'll handle this nicely with redirects?
-  GURL url(ChromeStoreLaunchURL() + std::string("/detail/") + id());
+  GURL url(extension_misc::GetWebstoreItemDetailURLPrefix() + id());
   return url;
 }
 
@@ -2729,7 +2715,8 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   // like extensions removing the "report abuse" link).
   // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
   // against the store app extent?
-  if ((page_url.host() == GURL(Extension::ChromeStoreLaunchURL()).host()) &&
+  GURL store_url(extension_misc::GetWebstoreLaunchURL());
+  if ((page_url.host() == store_url.host()) &&
       !CanExecuteScriptEverywhere() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowScriptingGallery)) {

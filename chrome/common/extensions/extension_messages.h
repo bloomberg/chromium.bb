@@ -310,6 +310,10 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_DidGetApplicationInfo,
                     int32 /* page_id */,
                     WebApplicationInfo)
 
-// Sent by the renderer to implement chrome.app.installApplication().
+// Sent by the renderer to implement chrome.app.install().
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_InstallApplication,
                     WebApplicationInfo)
+
+// Sent by the renderer to implement chrome.webstore.install().
+IPC_MESSAGE_ROUTED1(ExtensionHostMsg_InlineWebstoreInstall,
+                    std::string /* Web Store item ID */)

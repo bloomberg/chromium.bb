@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script>
+  var NO_LINK_EXCEPTION = 'No Chrome Web Store item link found.';
+  var INVALID_URL_EXCEPTION = 'Invalid Chrome Web Store item URL.';
+
+  function checkNoLinkFound(expectedException) {
+    try {
+      chrome.webstore.install();
+      console.log('Exception should have been thrown');
+      window.domAutomationController.send(false);
+      return;
+    } catch (err) {
+      if (err != expectedException) {
+        console.log('Unexpected exception thrown: ' + err);
+        window.domAutomationController.send(false);
+      }
+    }
+  }
+
+  function runTest() {
+    // Definitely no link.
+    checkNoLinkFound(NO_LINK_EXCEPTION);
+
+    // Empty link.
+    var linkNode = document.createElement('link');
+    document.getElementsByTagName('head')[0].appendChild(linkNode);
+    checkNoLinkFound(NO_LINK_EXCEPTION);
+
+    // Wrong type, right URL.
+    linkNode.rel = 'stylesheet';
+    linkNode.href = 'http://cws.com/detail/abc';
+    checkNoLinkFound(NO_LINK_EXCEPTION);
+
+    // Right type, wrong URL.
+    linkNode.rel = 'chrome-webstore-item';
+    linkNode.href = 'http://app.com/detail/abc';
+    checkNoLinkFound(INVALID_URL_EXCEPTION);
+
+    // Non-item CWS URL
+    linkNode.href = 'http://cws.com/someotherpage/abc';
+    checkNoLinkFound(INVALID_URL_EXCEPTION);
+
+    // Extra CWS URL parameters
+    linkNode.href = 'http://cws.com/detail/abc?foo=bar';
+    checkNoLinkFound(INVALID_URL_EXCEPTION);
+
+    // Successful installation is tested elsewhere
+    window.domAutomationController.send(true);
+  }
+</script>
+
+</body>
+</html>

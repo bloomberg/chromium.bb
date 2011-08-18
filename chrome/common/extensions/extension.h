@@ -356,13 +356,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
 
-  // Returns the url prefix for the extension/apps gallery. Can be set via the
-  // --apps-gallery-url switch. The URL returned will not contain a trailing
-  // slash. Do not use this as a prefix/extent for the store.  Instead see
-  // ExtensionService::GetWebStoreApp or
-  // ExtensionService::IsDownloadFromGallery
-  static std::string ChromeStoreLaunchURL();
-
   // Adds an extension to the scripting whitelist. Used for testing only.
   static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
   static const ScriptingWhitelist* GetScriptingWhitelist();

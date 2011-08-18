@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -84,6 +85,11 @@ void ExtensionDispatcher::WebKitInitialized() {
   }
 
   RegisterExtension(extensions_v8::ChromeAppExtension::Get(this), false);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInlineWebstoreInstall)) {
+    RegisterExtension(extensions_v8::ChromeWebstoreExtension::Get(), false);
+  }
 
   // Add v8 extensions related to chrome extensions.
   RegisterExtension(ExtensionProcessBindings::Get(this), true);

@@ -6,6 +6,8 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 
 // Keys used in JSON representation of extensions.
@@ -418,6 +420,18 @@ namespace extension_misc {
     UNLOAD_REASON_UPDATE,     // Extension is being updated to a newer version.
     UNLOAD_REASON_UNINSTALL,  // Extension is being uninstalled.
   };
+
+  // Returns the URL prefix for the extension/apps gallery. Can be set via the
+  // --apps-gallery-url switch. The URL returned will not contain a trailing
+  // slash. Do not use this as a prefix/extent for the store.  Instead see
+  // ExtensionService::GetWebStoreApp or
+  // ExtensionService::IsDownloadFromGallery
+  std::string GetWebstoreLaunchURL();
+
+  // Returns the URL prefix for an item in the extension/app gallery. This URL
+  // will contain a trailing slash and should be concatenated with an item ID
+  // to get the item detail URL.
+  std::string GetWebstoreItemDetailURLPrefix();
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

@@ -26,7 +26,7 @@ namespace webkit_glue {
 class ResourceFetcher;
 }
 
-// Filters extension related messages sent to RenderViews.
+// RenderView-level plumbing for extension features.
 class ExtensionHelper : public RenderViewObserver,
                         public RenderViewObserverTracker<ExtensionHelper> {
  public:
@@ -40,6 +40,8 @@ class ExtensionHelper : public RenderViewObserver,
   // definition out of optional meta tags in the page.
   bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
                                                 string16* error);
+
+  void InlineWebstoreInstall(std::string webstore_item_id);
 
   int browser_window_id() const { return browser_window_id_; }
   ViewType::Type view_type() const { return view_type_; }

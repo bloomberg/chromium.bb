@@ -102,6 +102,11 @@ bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
   return true;
 }
 
+void ExtensionHelper::InlineWebstoreInstall(std::string webstore_item_id) {
+  Send(new ExtensionHostMsg_InlineWebstoreInstall(
+      routing_id(), webstore_item_id));
+}
+
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)

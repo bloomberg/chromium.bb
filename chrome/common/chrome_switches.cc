@@ -438,6 +438,10 @@ const char kEnableFullScreen[]              = "enable-fullscreen";
 // if we need to update thumbnails.
 const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
 
+// Enables web developers to initiate inline installation of Chrome Web Store
+// items.
+const char kEnableInlineWebstoreInstall[]   = "enable-inline-webstore-install";
+
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will
 // allow support independent of application testing.

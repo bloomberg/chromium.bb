@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -12,7 +13,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -123,6 +126,8 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnDidGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InstallApplication,
                         OnInstallApplication)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
+                        OnInlineWebstoreInstall)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -140,6 +145,24 @@ void ExtensionTabHelper::OnDidGetApplicationInfo(
 void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
   if (wrapper_->delegate())
     wrapper_->delegate()->OnInstallApplication(wrapper_, info);
+}
+
+void ExtensionTabHelper::OnInlineWebstoreInstall(
+    const std::string& webstore_item_id) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInlineWebstoreInstall)) {
+    return;
+  }
+
+  // For now there is no inline installation UI, we just open the item's Web
+  // Store page in a new tab.
+  GURL webstore_item_url =
+      GURL(extension_misc::GetWebstoreItemDetailURLPrefix() + webstore_item_id);
+  GetBrowser()->OpenURL(OpenURLParams(
+      webstore_item_url,
+      GetBrowser()->GetSelectedTabContents()->GetURL(),
+      NEW_FOREGROUND_TAB,
+      PageTransition::AUTO_BOOKMARK));
 }
 
 void ExtensionTabHelper::OnRequest(
