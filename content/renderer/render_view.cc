@@ -4462,6 +4462,14 @@ WebKit::WebPageVisibilityState RenderView::visibilityState() const {
   return current_state;
 }
 
+void RenderView::startActivity(const WebKit::WebString& action,
+                               const WebKit::WebString& type,
+                               const WebKit::WebString& data,
+                               int intent_id) {
+  RenderThread::current()->Send(new ViewHostMsg_WebIntentDispatch(
+      routing_id_, action, type, data, intent_id));
+}
+
 bool RenderView::IsNonLocalTopLevelNavigation(
     const GURL& url, WebKit::WebFrame* frame, WebKit::WebNavigationType type) {
   // Must be a top level frame.

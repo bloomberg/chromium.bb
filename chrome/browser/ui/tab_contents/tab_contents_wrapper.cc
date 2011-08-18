@@ -424,6 +424,8 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
                         OnRegisterIntentHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
+                        OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
@@ -622,6 +624,21 @@ void TabContentsWrapper::OnRegisterIntentHandler(const string16& action,
   intent.type = type;
   intent.title = title;
   AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab_contents(), intent));
+}
+
+void TabContentsWrapper::OnWebIntentDispatch(const IPC::Message& message,
+                                             const string16& action,
+                                             const string16& type,
+                                             const string16& data,
+                                             int intent_id) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
+  DLOG(INFO) << "Browser tab contents received intent:"
+             << "\naction=" << UTF16ToASCII(action)
+             << "\ntype=" << UTF16ToASCII(type)
+             << "\nrenderer_id=" << message.routing_id()
+             << "\nid=" << intent_id;
 }
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {

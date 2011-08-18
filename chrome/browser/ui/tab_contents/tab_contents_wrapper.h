@@ -19,6 +19,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/common/notification_registrar.h"
 
+namespace IPC {
+class Message;
+}
+
 namespace prerender {
 class PrerenderObserver;
 }
@@ -248,6 +252,11 @@ class TabContentsWrapper : public TabContentsObserver,
                                const string16& type,
                                const string16& href,
                                const string16& title);
+  void OnWebIntentDispatch(const IPC::Message& message,
+                           const string16& action,
+                           const string16& type,
+                           const string16& data,
+                           int intent_id);
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
   void OnDidBlockDisplayingInsecureContent();

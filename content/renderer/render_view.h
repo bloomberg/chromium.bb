@@ -440,6 +440,10 @@ class RenderView : public RenderWidget,
                                      const WebKit::WebString& href,
                                      const WebKit::WebString& title);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
+  virtual void startActivity(const WebKit::WebString& action,
+                             const WebKit::WebString& type,
+                             const WebKit::WebString& data,
+                             int intent_id);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
