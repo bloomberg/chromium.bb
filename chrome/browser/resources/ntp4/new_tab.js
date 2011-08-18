@@ -447,6 +447,8 @@ cr.define('ntp4', function() {
 
     dotList.insertBefore(newDot, bookmarksPage.navigationDot);
     page.navigationDot = newDot;
+    if (infoBubble)
+      window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
     eventTracker.add(page, 'pagelayout', onPageLayout);
   }
