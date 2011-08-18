@@ -290,7 +290,7 @@ bool InMemoryURLIndex::RestoreFromCacheFile() {
 }
 
 bool InMemoryURLIndex::SaveToCacheFile() {
-  // FIXME(mrossetti): Move File IO to another thread.
+  // TODO(mrossetti): Move File IO to another thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
@@ -301,13 +301,10 @@ bool InMemoryURLIndex::SaveToCacheFile() {
     return false;
   }
 
-  // Write the cache to a file then swap it for the old cache, if any, and
-  // delete the old cache.
+  // TODO(mrossetti): Write the cache to a file then swap it for the old cache,
+  // if any, and delete the old cache.
   FilePath file_path;
   if (!GetCacheFilePath(&file_path))
-    return false;
-  file_util::ScopedFILE file(file_util::OpenFile(file_path, "w"));
-  if (!file.get())
     return false;
 
   int size = data.size();
