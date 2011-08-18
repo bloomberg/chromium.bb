@@ -391,6 +391,15 @@ TEST_F(AutofillProfileTest, CreateInferredLabels) {
   EXPECT_EQ(string16(), labels[0]);
   EXPECT_EQ(string16(), labels[1]);
 
+  suggested_fields.clear();
+  // In our implementation we always display NAME_FULL for NAME_MIDDLE_INITIAL
+  suggested_fields.push_back(NAME_MIDDLE_INITIAL);
+  // One field at least, from suggested fields - no filter.
+  AutofillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        UNKNOWN_TYPE, 1, &labels);
+  EXPECT_EQ(ASCIIToUTF16("John Doe"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Jane Doe"), labels[1]);
+
   // One field at least, from suggested fields - filter same as the first non-
   // unknown suggested field.
   suggested_fields.clear();

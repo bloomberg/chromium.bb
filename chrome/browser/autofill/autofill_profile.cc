@@ -29,7 +29,7 @@ namespace {
 AutofillFieldType GetEquivalentFieldTypeCollapsingNames(
     AutofillFieldType field_type) {
   if (field_type == NAME_FIRST || field_type == NAME_MIDDLE ||
-      field_type == NAME_LAST)
+      field_type == NAME_LAST || field_type == NAME_MIDDLE_INITIAL)
     return NAME_FULL;
 
   return AutofillType::GetEquivalentFieldType(field_type);
