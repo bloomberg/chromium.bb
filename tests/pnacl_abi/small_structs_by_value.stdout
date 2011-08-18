@@ -1,8 +1,8 @@
 target triple = "armv7-none-linux-gnueabi"
 
 %struct.TWO_CHARS = type { i8, i8 }
-%struct.TWO_INTS = type { i32, i32 }
 %struct.TWO_SHORTS = type { i16, i16 }
+%struct.TWO_INTS = type { i32, i32 }
 
 define void @bar_chars(%struct.TWO_CHARS %z) nounwind {
 entry:
