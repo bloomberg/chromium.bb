@@ -163,7 +163,7 @@ static IMP gOriginalNSBundleLoadIMP = NULL;
     // Input managers are deprecated, would only be loaded under specific
     // circumstances, and are entirely unavailable to 64-bit processes.
     // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSInputManager
-    @"Input Managers/",
+    @"InputManagers/",
 #endif  // __LP64__
 
     // Don't load third-party scripting additions either.
