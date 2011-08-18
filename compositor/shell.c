@@ -77,7 +77,7 @@ static const struct wl_grab_interface move_grab_interface = {
 };
 
 static void
-shell_move(struct wl_client *client, struct wl_shell *shell,
+shell_move(struct wl_client *client, struct wl_resource *resource,
 	   struct wl_surface *surface,
 	   struct wl_input_device *device, uint32_t time)
 {
@@ -112,6 +112,7 @@ struct wlsc_resize_grab {
 	int32_t dx, dy, width, height;
 	struct wlsc_surface *surface;
 	struct wl_shell *shell;
+	struct wl_resource resource;
 };
 
 static void
@@ -139,9 +140,9 @@ resize_grab_motion(struct wl_grab *grab,
 		height = resize->height;
 	}
 
-	wl_client_post_event(surface->client, &resize->shell->object,
-			     WL_SHELL_CONFIGURE, time, resize->edges,
-			     surface, width, height);
+	wl_resource_post_event(&resize->resource,
+			       WL_SHELL_CONFIGURE, time, resize->edges,
+			       surface, width, height);
 }
 
 static void
@@ -171,10 +172,11 @@ static const struct wl_grab_interface resize_grab_interface = {
 };
 
 static void
-shell_resize(struct wl_client *client, struct wl_shell *shell,
+shell_resize(struct wl_client *client, struct wl_resource *resource,
 	     struct wl_surface *surface,
 	     struct wl_input_device *device, uint32_t time, uint32_t edges)
 {
+	struct wl_shell *shell = resource->data;
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wlsc_resize_grab *resize;
 	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
@@ -196,6 +198,9 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	resize->height = es->height;
 	resize->surface = es;
 	resize->shell = shell;
+
+	resize->resource.object = resource->object;
+	resize->resource.client = client;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
@@ -238,7 +243,7 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 
 static void
 shell_set_toplevel(struct wl_client *client,
-		   struct wl_shell *wl_shell,
+		   struct wl_resource *resource,
 		   struct wl_surface *surface)
 
 {
@@ -263,7 +268,7 @@ shell_set_toplevel(struct wl_client *client,
 
 static void
 shell_set_transient(struct wl_client *client,
-		    struct wl_shell *wl_shell,
+		    struct wl_resource *resource,
 		    struct wl_surface *surface,
 		    struct wl_surface *parent,
 		    int x, int y, uint32_t flags)
@@ -283,7 +288,7 @@ shell_set_transient(struct wl_client *client,
 
 static void
 shell_set_fullscreen(struct wl_client *client,
-		     struct wl_shell *wl_shell,
+		     struct wl_resource *resource,
 		     struct wl_surface *surface)
 
 {
@@ -306,7 +311,7 @@ shell_set_fullscreen(struct wl_client *client,
 }
 
 static void
-destroy_drag(struct wl_resource *resource, struct wl_client *client)
+destroy_drag(struct wl_resource *resource)
 {
 	struct wl_drag *drag =
 		container_of(resource, struct wl_drag, resource);
@@ -331,31 +336,30 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 		return;
 
 	if (drag->drag_focus &&
-	    (!surface || drag->drag_focus->client != surface->client))
-		wl_client_post_event(drag->drag_focus->client,
-				      &drag->drag_offer.object,
+	    (!surface ||
+	     drag->drag_focus->resource.client != surface->resource.client))
+		wl_resource_post_event(&drag->drag_offer.resource,
 				      WL_DRAG_OFFER_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
 
 	if (surface &&
 	    (!drag->drag_focus ||
-	     drag->drag_focus->client != surface->client)) {
-		wl_client_post_global(surface->client,
-				      &drag->drag_offer.object);
-
+	     drag->drag_focus->resource.client != surface->resource.client)) {
+		wl_client_post_global(surface->resource.client,
+				      &drag->drag_offer.resource.object);
+		
+		drag->drag_offer.resource.client = surface->resource.client;
 		end = drag->types.data + drag->types.size;
 		for (p = drag->types.data; p < end; p++)
-			wl_client_post_event(surface->client,
-					      &drag->drag_offer.object,
-					      WL_DRAG_OFFER_OFFER, *p);
+			wl_resource_post_event(&drag->drag_offer.resource,
+					       WL_DRAG_OFFER_OFFER, *p);
 	}
 
 	if (surface) {
-		wl_client_post_event(surface->client,
-				     &drag->drag_offer.object,
-				     WL_DRAG_OFFER_POINTER_FOCUS,
-				     time, surface,
-				     x, y, sx, sy);
+		wl_resource_post_event(&drag->drag_offer.resource,
+				       WL_DRAG_OFFER_POINTER_FOCUS,
+				       time, surface,
+				       x, y, sx, sy);
 
 	}
 
@@ -370,9 +374,10 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 }
 
 static void
-drag_offer_accept(struct wl_client *client,
-		  struct wl_drag_offer *offer, uint32_t time, const char *type)
+drag_offer_accept(struct wl_client *client, struct wl_resource *resource,
+		  uint32_t time, const char *type)
 {
+	struct wl_drag_offer *offer = resource->data;
 	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 	char **p, **end;
 
@@ -391,28 +396,27 @@ drag_offer_accept(struct wl_client *client,
 		if (type && strcmp(*p, type) == 0)
 			drag->type = *p;
 
-	wl_client_post_event(drag->source->client, &drag->resource.object,
-			     WL_DRAG_TARGET, drag->type);
+	wl_resource_post_event(&drag->resource, WL_DRAG_TARGET, drag->type);
 }
 
 static void
 drag_offer_receive(struct wl_client *client,
-		   struct wl_drag_offer *offer, int fd)
+		   struct wl_resource *resource, int fd)
 {
+	struct wl_drag_offer *offer = resource->data;
 	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 
-	wl_client_post_event(drag->source->client, &drag->resource.object,
-			     WL_DRAG_FINISH, fd);
+	wl_resource_post_event(&drag->resource, WL_DRAG_FINISH, fd);
 	close(fd);
 }
 
 static void
-drag_offer_reject(struct wl_client *client, struct wl_drag_offer *offer)
+drag_offer_reject(struct wl_client *client, struct wl_resource *resource)
 {
+	struct wl_drag_offer *offer = resource->data;
 	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
 
-	wl_client_post_event(drag->source->client, &drag->resource.object,
-			     WL_DRAG_REJECT);
+	wl_resource_post_event(&drag->resource, WL_DRAG_REJECT);
 }
 
 static const struct wl_drag_offer_interface drag_offer_interface = {
@@ -422,8 +426,10 @@ static const struct wl_drag_offer_interface drag_offer_interface = {
 };
 
 static void
-drag_offer(struct wl_client *client, struct wl_drag *drag, const char *type)
+drag_offer(struct wl_client *client,
+	   struct wl_resource *resource, const char *type)
 {
+	struct wl_drag *drag = resource->data;
 	char **p;
 
 	p = wl_array_add(&drag->types, sizeof *p);
@@ -444,10 +450,9 @@ drag_grab_motion(struct wl_grab *grab,
 	es = pick_surface(grab->input_device, &sx, &sy);
 	wl_drag_set_pointer_focus(drag, &es->surface, time, x, y, sx, sy);
 	if (es)
-		wl_client_post_event(es->surface.client,
-				     &drag->drag_offer.object,
-				     WL_DRAG_OFFER_MOTION,
-				     time, x, y, sx, sy);
+		wl_resource_post_event(&drag->drag_offer.resource,
+				       WL_DRAG_OFFER_MOTION,
+				       time, x, y, sx, sy);
 }
 
 static void
@@ -465,9 +470,8 @@ drag_grab_end(struct wl_grab *grab, uint32_t time)
 	int32_t sx, sy;
 
 	if (drag->target)
-		wl_client_post_event(drag->target,
-				     &drag->drag_offer.object,
-				     WL_DRAG_OFFER_DROP);
+		wl_resource_post_event(&drag->drag_offer.resource,
+				       WL_DRAG_OFFER_DROP);
 
 	wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
 
@@ -485,10 +489,11 @@ static const struct wl_grab_interface drag_grab_interface = {
 
 static void
 drag_activate(struct wl_client *client,
-	      struct wl_drag *drag,
+	      struct wl_resource *resource,
 	      struct wl_surface *surface,
 	      struct wl_input_device *device, uint32_t time)
 {
+	struct wl_drag *drag = resource->data;
 	struct wl_display *display = wl_client_get_display (client);
 	struct wlsc_surface *target;
 	int32_t sx, sy;
@@ -501,11 +506,11 @@ drag_activate(struct wl_client *client,
 
 	drag->source = surface;
 
-	drag->drag_offer.object.interface = &wl_drag_offer_interface;
-	drag->drag_offer.object.implementation =
+	drag->drag_offer.resource.object.interface = &wl_drag_offer_interface;
+	drag->drag_offer.resource.object.implementation =
 		(void (**)(void)) &drag_offer_interface;
 
-	wl_display_add_object(display, &drag->drag_offer.object);
+	wl_display_add_object(display, &drag->drag_offer.resource.object);
 
 	target = pick_surface(device, &sx, &sy);
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
@@ -514,10 +519,9 @@ drag_activate(struct wl_client *client,
 }
 
 static void
-drag_destroy(struct wl_client *client, struct wl_drag *drag)
+drag_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(&drag->resource, client,
-			    wlsc_compositor_get_time());
+	wl_resource_destroy(resource, wlsc_compositor_get_time());
 }
 
 static const struct wl_drag_interface drag_interface = {
@@ -540,7 +544,7 @@ drag_handle_surface_destroy(struct wl_listener *listener,
 
 static void
 shell_create_drag(struct wl_client *client,
-		  struct wl_shell *shell, uint32_t id)
+		  struct wl_resource *resource, uint32_t id)
 {
 	struct wl_drag *drag;
 
@@ -575,29 +579,27 @@ wlsc_selection_set_focus(struct wlsc_shell *shell,
 		return;
 
 	if (selection->selection_focus != NULL)
-		wl_client_post_event(selection->selection_focus->client,
-				     &selection->selection_offer.object,
+		wl_resource_post_event(&selection->selection_offer.resource,
 				     WL_SELECTION_OFFER_KEYBOARD_FOCUS,
 				     NULL);
 
 	if (surface) {
-		wl_client_post_global(surface->client,
-				      &selection->selection_offer.object);
+		wl_client_post_global(surface->resource.client,
+				      &selection->selection_offer.resource.object);
 
+		selection->selection_offer.resource.client = surface->resource.client;
 		end = selection->types.data + selection->types.size;
 		for (p = selection->types.data; p < end; p++)
-			wl_client_post_event(surface->client,
-					     &selection->selection_offer.object,
-					     WL_SELECTION_OFFER_OFFER, *p);
+			wl_resource_post_event(&selection->selection_offer.resource,
+					       WL_SELECTION_OFFER_OFFER, *p);
 
 		wl_list_remove(&selection->selection_focus_listener.link);
 		wl_list_insert(surface->resource.destroy_listener_list.prev,
 			       &selection->selection_focus_listener.link);
 
-		wl_client_post_event(surface->client,
-				     &selection->selection_offer.object,
-				     WL_SELECTION_OFFER_KEYBOARD_FOCUS,
-				     selection->input_device);
+		wl_resource_post_event(&selection->selection_offer.resource,
+				       WL_SELECTION_OFFER_KEYBOARD_FOCUS,
+				       selection->input_device);
 	}
 
 	selection->selection_focus = surface;
@@ -610,15 +612,15 @@ wlsc_selection_set_focus(struct wlsc_shell *shell,
 
 static void
 selection_offer_receive(struct wl_client *client,
-			struct wl_selection_offer *offer,
+			struct wl_resource *resource,
 			const char *mime_type, int fd)
 {
+	struct wl_selection_offer *offer = resource->data;
 	struct wl_selection *selection =
 		container_of(offer, struct wl_selection, selection_offer);
 
-	wl_client_post_event(selection->client,
-			     &selection->resource.object,
-			     WL_SELECTION_SEND, mime_type, fd);
+	wl_resource_post_event(&selection->resource,
+			       WL_SELECTION_SEND, mime_type, fd);
 	close(fd);
 }
 
@@ -628,8 +630,9 @@ static const struct wl_selection_offer_interface selection_offer_interface = {
 
 static void
 selection_offer(struct wl_client *client,
-		struct wl_selection *selection, const char *type)
+		struct wl_resource *resource, const char *type)
 {
+	struct wl_selection *selection = resource->data;
 	char **p;
 
 	p = wl_array_add(&selection->types, sizeof *p);
@@ -641,9 +644,10 @@ selection_offer(struct wl_client *client,
 
 static void
 selection_activate(struct wl_client *client,
-		   struct wl_selection *selection,
+		   struct wl_resource *resource,
 		   struct wl_input_device *device, uint32_t time)
 {
+	struct wl_selection *selection = resource->data;
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wl_display *display = wl_client_get_display (client);
 	struct wlsc_compositor *compositor =
@@ -651,17 +655,17 @@ selection_activate(struct wl_client *client,
 
 	selection->input_device = device;
 
-	selection->selection_offer.object.interface =
+	selection->selection_offer.resource.object.interface =
 		&wl_selection_offer_interface;
-	selection->selection_offer.object.implementation =
+	selection->selection_offer.resource.object.implementation =
 		(void (**)(void)) &selection_offer_interface;
 
-	wl_display_add_object(display, &selection->selection_offer.object);
+	wl_display_add_object(display,
+			      &selection->selection_offer.resource.object);
 
 	if (wd->selection) {
-		wl_client_post_event(wd->selection->client,
-				     &wd->selection->resource.object,
-				     WL_SELECTION_CANCELLED);
+		wl_resource_post_event(&wd->selection->resource,
+				       WL_SELECTION_CANCELLED);
 	}
 	wd->selection = selection;
 
@@ -670,10 +674,9 @@ selection_activate(struct wl_client *client,
 }
 
 static void
-selection_destroy(struct wl_client *client, struct wl_selection *selection)
+selection_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(&selection->resource, client,
-			    wlsc_compositor_get_time());
+	wl_resource_destroy(resource, wlsc_compositor_get_time());
 }
 
 static const struct wl_selection_interface selection_interface = {
@@ -683,7 +686,7 @@ static const struct wl_selection_interface selection_interface = {
 };
 
 static void
-destroy_selection(struct wl_resource *resource, struct wl_client *client)
+destroy_selection(struct wl_resource *resource)
 {
 	struct wl_selection *selection =
 		container_of(resource, struct wl_selection, resource);
@@ -711,7 +714,7 @@ selection_handle_surface_destroy(struct wl_listener *listener,
 
 static void
 shell_create_selection(struct wl_client *client,
-		       struct wl_shell *shell, uint32_t id)
+		       struct wl_resource *resource, uint32_t id)
 {
 	struct wl_selection *selection;
 
@@ -752,21 +755,19 @@ static void
 move_binding(struct wl_input_device *device, uint32_t time,
 	     uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 
 	if (surface == NULL)
 		return;
 
-	shell_move(NULL, shell, &surface->surface, device, time);
+	shell_move(NULL, NULL, &surface->surface, device, time);
 }
 
 static void
 resize_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 	uint32_t edges = 0;
@@ -792,7 +793,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	else
 		edges |= WL_SHELL_RESIZE_BOTTOM;
 
-	shell_resize(NULL, shell, &surface->surface, device, time, edges);
+	shell_resize(NULL, NULL, &surface->surface, device, time, edges);
 }
 
 static void

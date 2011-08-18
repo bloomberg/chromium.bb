@@ -28,7 +28,7 @@ struct screenshooter {
 
 static void
 screenshooter_shoot(struct wl_client *client,
-		    struct screenshooter *shooter,
+		    struct wl_resource *resource,
 		    struct wl_output *output_base, struct wl_buffer *buffer)
 {
 	struct wlsc_output *output = (struct wlsc_output *) output_base;

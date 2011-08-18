@@ -49,14 +49,13 @@
  */
 
 struct xserver {
-	struct wl_object object;
+	struct wl_resource resource;
 };
 
 struct wlsc_xserver {
 	struct wl_display *wl_display;
 	struct wl_event_loop *loop;
 	struct wl_event_source *sigchld_source;
-	struct wl_client *client;
 	int abstract_fd;
 	struct wl_event_source *abstract_source;
 	int unix_fd;
@@ -408,10 +407,8 @@ wlsc_wm_create(struct wlsc_xserver *wxs)
 		return NULL;
 	}
 
-	wl_client_post_event(wxs->client,
-			     &wxs->xserver.object,
-			     XSERVER_CLIENT, sv[1]);
-	wl_client_flush(wxs->client);
+	wl_resource_post_event(&wxs->xserver.resource, XSERVER_CLIENT, sv[1]);
+	wl_client_flush(wxs->xserver.resource.client);
 	close(sv[1]);
 	
 	/* xcb_connect_to_fd takes ownership of the fd. */
@@ -463,15 +460,15 @@ wlsc_wm_destroy(struct wlsc_wm *wm)
 
 static void
 wlsc_xserver_bind(struct wl_client *client,
-		  struct wl_object *global,
-		  uint32_t version)
+		  struct wl_object *global, uint32_t version)
 {
 	struct wlsc_xserver *wxs =
-		container_of(global, struct wlsc_xserver, xserver.object);
+		container_of(global, struct wlsc_xserver,
+			     xserver.resource.object);
 
 	/* If it's a different client than the xserver we launched,
 	 * don't start the wm. */
-	if (client != wxs->client)
+	if (client != wxs->xserver.resource.client)
 		return;
 
 	wxs->wm = wlsc_wm_create(wxs);
@@ -479,13 +476,11 @@ wlsc_xserver_bind(struct wl_client *client,
 		fprintf(stderr, "failed to create wm\n");
 	}
 
-	wl_client_post_event(wxs->client,
-			     &wxs->xserver.object,
-			     XSERVER_LISTEN_SOCKET, wxs->abstract_fd);
+	wl_resource_post_event(&wxs->xserver.resource,
+			       XSERVER_LISTEN_SOCKET, wxs->abstract_fd);
 
-	wl_client_post_event(wxs->client,
-			     &wxs->xserver.object,
-			     XSERVER_LISTEN_SOCKET, wxs->unix_fd);
+	wl_resource_post_event(&wxs->xserver.resource,
+			       XSERVER_LISTEN_SOCKET, wxs->unix_fd);
 }
 
 static int
@@ -533,7 +528,8 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		fprintf(stderr, "forked X server, pid %d\n", mxs->process.pid);
 
 		close(sv[1]);
-		mxs->client = wl_client_create(mxs->wl_display, sv[0]);
+		mxs->xserver.resource.client =
+			wl_client_create(mxs->wl_display, sv[0]);
 
 		wlsc_watch_process(&mxs->process);
 
@@ -572,6 +568,7 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 		container_of(process, struct wlsc_xserver, process);
 
 	mxs->process.pid = 0;
+	mxs->xserver.resource.client = NULL;
 
 	mxs->abstract_source =
 		wl_event_loop_add_fd(mxs->loop, mxs->abstract_fd,
@@ -597,15 +594,14 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 }
 
 static void
-xserver_set_window_id(struct wl_client *client, struct xserver *xserver,
+xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_surface *surface, uint32_t id)
 {
-	struct wlsc_xserver *wxs =
-		container_of(xserver, struct wlsc_xserver, xserver);
+	struct wlsc_xserver *wxs = resource->data;
 	struct wlsc_wm *wm = wxs->wm;
 	struct wlsc_wm_window *window;
 
-	if (client != wxs->client)
+	if (client != wxs->xserver.resource.client)
 		return;
 
 	window = wl_hash_table_lookup(wm->window_hash, id);
@@ -798,12 +794,12 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 				     WL_EVENT_READABLE,
 				     wlsc_xserver_handle_event, mxs);
 
-	mxs->xserver.object.interface = &xserver_interface;
-	mxs->xserver.object.implementation =
+	mxs->xserver.resource.object.interface = &xserver_interface;
+	mxs->xserver.resource.object.implementation =
 		(void (**)(void)) &xserver_implementation;
-	wl_display_add_object(display, &mxs->xserver.object);
-	wl_display_add_global(display,
-			      &mxs->xserver.object, wlsc_xserver_bind);
+	wl_display_add_object(display, &mxs->xserver.resource.object);
+	wl_display_add_global(display, &mxs->xserver.resource.object,
+			      wlsc_xserver_bind);
 
 	compositor->wxs = mxs;
 

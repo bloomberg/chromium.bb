@@ -241,7 +241,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	surface->surface.client = NULL;
+	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
 	surface->visual = NULL;
@@ -339,7 +339,7 @@ wlsc_compositor_get_time(void)
 }
 
 static void
-destroy_surface(struct wl_resource *resource, struct wl_client *client)
+destroy_surface(struct wl_resource *resource)
 {
 	struct wlsc_surface *surface =
 		container_of(resource, struct wlsc_surface, surface.resource);
@@ -704,10 +704,8 @@ wlsc_buffer_post_release(struct wl_buffer *buffer)
 	if (buffer == NULL || --buffer->busy_count > 0)
 		return;
 
-	assert(buffer->client != NULL);
-	wl_client_post_event(buffer->client,
-			     &buffer->resource.object,
-			     WL_BUFFER_RELEASE);
+	assert(buffer->resource.client != NULL);
+	wl_resource_post_event(&buffer->resource, WL_BUFFER_RELEASE);
 }
 
 WL_EXPORT void
@@ -899,7 +897,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 struct wlsc_frame_callback {
 	struct wl_resource resource;
-	struct wl_client *client;
 	struct wl_list link;
 };
 
@@ -917,11 +914,9 @@ repaint(void *data, int msecs)
 	output->present(output);
 
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
-		wl_client_post_event(cb->client, &cb->resource.object, 
-				     WL_CALLBACK_DONE, msecs);
-		wl_resource_destroy(&cb->resource, cb->client, 0);
+		wl_resource_post_event(&cb->resource, WL_CALLBACK_DONE, msecs);
+		wl_resource_destroy(&cb->resource, 0);
 	}
-	wl_list_init(&output->frame_callback_list);
 
 	wl_list_for_each_safe(animation, next,
 			      &compositor->animation_list, link)
@@ -986,11 +981,9 @@ wlsc_compositor_fade(struct wlsc_compositor *compositor, float tint)
 }
 
 static void
-surface_destroy(struct wl_client *client,
-		struct wl_surface *surface)
+surface_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(&surface->resource, client,
-			    wlsc_compositor_get_time());
+	wl_resource_destroy(resource, wlsc_compositor_get_time());
 }
 
 WL_EXPORT void
@@ -1020,10 +1013,10 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_surface *surface, struct wl_buffer *buffer,
+	       struct wl_resource *resource, struct wl_buffer *buffer,
 	       int32_t x, int32_t y)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *es = resource->data;
 
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
@@ -1042,33 +1035,36 @@ surface_attach(struct wl_client *client,
 		wlsc_surface_configure(es, es->x + x, es->y + y,
 				       buffer->width, buffer->height);
 
-	wlsc_buffer_attach(buffer, surface);
+	wlsc_buffer_attach(buffer, &es->surface);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
 }
 
 static void
 surface_damage(struct wl_client *client,
-	       struct wl_surface *surface,
+	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *es = resource->data;
 
 	wlsc_surface_damage_rectangle(es, x, y, width, height);
 }
 
 static void
-destroy_frame_callback(struct wl_resource *resource, struct wl_client *client)
+destroy_frame_callback(struct wl_resource *resource)
 {
+	struct wlsc_frame_callback *cb = resource->data;
+
+	wl_list_remove(&cb->link);
 	free(resource);
 }
 
 static void
 surface_frame(struct wl_client *client,
-	      struct wl_surface *surface, uint32_t callback)
+	      struct wl_resource *resource, uint32_t callback)
 {
 	struct wlsc_frame_callback *cb;
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *es = resource->data;
 
 	cb = malloc(sizeof *cb);
 	if (cb == NULL) {
@@ -1079,8 +1075,9 @@ surface_frame(struct wl_client *client,
 	cb->resource.object.interface = &wl_callback_interface;
 	cb->resource.object.id = callback;
 	cb->resource.destroy = destroy_frame_callback;
+	cb->resource.client = client;
+	cb->resource.data = cb;
 	wl_list_insert(es->output->frame_callback_list.prev, &cb->link);
-	cb->client = client;
 
 	wl_client_add_resource(client, &cb->resource);
 }
@@ -1140,9 +1137,9 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 
 static void
 compositor_create_surface(struct wl_client *client,
-			  struct wl_compositor *compositor, uint32_t id)
+			  struct wl_resource *resource, uint32_t id)
 {
-	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
+	struct wlsc_compositor *ec = resource->data;
 	struct wlsc_surface *surface;
 
 	surface = wlsc_surface_create(ec, 0, 0, 0, 0);
@@ -1157,7 +1154,7 @@ compositor_create_surface(struct wl_client *client,
 	surface->surface.resource.object.interface = &wl_surface_interface;
 	surface->surface.resource.object.implementation =
 		(void (**)(void)) &surface_interface;
-	surface->surface.client = client;
+	surface->surface.resource.data = surface;
 
 	wl_client_add_resource(client, &surface->surface.resource);
 }
@@ -1182,7 +1179,7 @@ pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 	struct wlsc_surface *es;
 
 	wl_list_for_each(es, &ec->surface_list, link) {
-		if (es->surface.client == NULL)
+		if (es->surface.resource.client == NULL)
 			continue;
 		wlsc_surface_transform(es, device->x, device->y, sx, sy);
 		if (0 <= *sx && *sx < es->width &&
@@ -1203,22 +1200,26 @@ motion_grab_motion(struct wl_grab *grab,
 	struct wlsc_surface *es =
 		(struct wlsc_surface *) device->input_device.pointer_focus;
 	int32_t sx, sy;
+	struct wl_resource *resource;
 
-	wlsc_surface_transform(es, x, y, &sx, &sy);
-	wl_client_post_event(es->surface.client,
-			     &device->input_device.object,
-			     WL_INPUT_DEVICE_MOTION,
-			     time, x, y, sx, sy);
+	resource = grab->input_device->pointer_focus_resource;
+	if (resource) {
+		wlsc_surface_transform(es, x, y, &sx, &sy);
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
+				       time, x, y, sx, sy);
+	}
 }
 
 static void
 motion_grab_button(struct wl_grab *grab,
 		   uint32_t time, int32_t button, int32_t state)
 {
-	wl_client_post_event(grab->input_device->pointer_focus->client,
-			     &grab->input_device->object,
-			     WL_INPUT_DEVICE_BUTTON,
-			     time, button, state);
+	struct wl_resource *resource;
+
+	resource = grab->input_device->pointer_focus_resource;
+	if (resource)
+		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
+				       time, button, state);
 }
 
 static void
@@ -1330,11 +1331,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 		wl_input_device_set_pointer_focus(device,
 						  &es->surface,
 						  time, x, y, sx, sy);
-		if (es)
-			wl_client_post_event(es->surface.client,
-					     &device->object,
-					     WL_INPUT_DEVICE_MOTION,
-					     time, x, y, sx, sy);
+		if (device->pointer_focus_resource)
+			wl_resource_post_event(device->pointer_focus_resource,
+					       WL_INPUT_DEVICE_MOTION,
+					       time, x, y, sx, sy);
 	}
 
 	wlsc_surface_damage_below(wd->sprite);
@@ -1518,10 +1518,9 @@ notify_key(struct wl_input_device *device,
 		*k = key;
 	}
 
-	if (device->keyboard_focus != NULL)
-		wl_client_post_event(device->keyboard_focus->client,
-				     &device->object,
-				     WL_INPUT_DEVICE_KEY, time, key, state);
+	if (device->keyboard_focus_resource)
+		wl_resource_post_event(device->keyboard_focus_resource,
+				       WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
 WL_EXPORT void
@@ -1583,7 +1582,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 			update_modifier_state(wd, *k, 1);
 		}
 
-		if (es->surface.client)
+		if (es->surface.resource.client)
 			wl_input_device_set_keyboard_focus(&wd->input_device,
 							   &es->surface, time);
 	} else {
@@ -1600,18 +1599,17 @@ notify_keyboard_focus(struct wl_input_device *device,
 
 static void
 input_device_attach(struct wl_client *client,
-		    struct wl_input_device *device_base,
+		    struct wl_resource *resource,
 		    uint32_t time,
 		    struct wl_buffer *buffer, int32_t x, int32_t y)
 {
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) device_base;
+	struct wlsc_input_device *device = resource->data;
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
 	if (device->input_device.pointer_focus == NULL)
 		return;
-	if (device->input_device.pointer_focus->client != client)
+	if (device->input_device.pointer_focus->resource.client != client)
 		return;
 
 	if (buffer == NULL) {
@@ -1633,11 +1631,14 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 {
 	wl_input_device_init(&device->input_device, &ec->compositor);
 
-	device->input_device.object.interface = &wl_input_device_interface;
-	device->input_device.object.implementation =
+	device->input_device.resource.object.interface = &wl_input_device_interface;
+	device->input_device.resource.object.implementation =
 		(void (**)(void)) &input_device_interface;
-	wl_display_add_object(ec->wl_display, &device->input_device.object);
-	wl_display_add_global(ec->wl_display, &device->input_device.object, NULL);
+	device->input_device.resource.data = device;
+	wl_display_add_object(ec->wl_display,
+			      &device->input_device.resource.object);
+	wl_display_add_global(ec->wl_display,
+			      &device->input_device.resource.object, NULL);
 
 	device->sprite = wlsc_surface_create(ec,
 					     device->input_device.x,
@@ -1660,23 +1661,26 @@ wlsc_output_post_geometry(struct wl_client *client,
 			  struct wl_object *global, uint32_t version)
 {
 	struct wlsc_output *output =
-		container_of(global, struct wlsc_output, object);
+		container_of(global, struct wlsc_output, resource.object);
 	struct wlsc_mode *mode;
 
-	wl_client_post_event(client, global,
-			     WL_OUTPUT_GEOMETRY,
-			     output->x,
-			     output->y,
-			     output->mm_width,
-			     output->mm_height,
-			     output->subpixel,
-			     output->make, output->model);
+	output->resource.client = client;
+	wl_resource_post_event(&output->resource,
+			       WL_OUTPUT_GEOMETRY,
+			       output->x,
+			       output->y,
+			       output->mm_width,
+			       output->mm_height,
+			       output->subpixel,
+			       output->make, output->model);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
-		wl_client_post_event(client, global,
-				     WL_OUTPUT_MODE,
-				     mode->flags,
-				     mode->width, mode->height, mode->refresh);
+		wl_resource_post_event(&output->resource,
+				       WL_OUTPUT_MODE,
+				       mode->flags,
+				       mode->width,
+				       mode->height,
+				       mode->refresh);
 	}
 }
 
@@ -1796,7 +1800,7 @@ wlsc_output_destroy(struct wlsc_output *output)
 {
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
-	destroy_surface(&output->background->surface.resource, NULL);
+	destroy_surface(&output->background->surface.resource);
 }
 
 WL_EXPORT void
@@ -1856,9 +1860,9 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	wl_list_init(&output->scanout_buffer_destroy_listener.link);
 	wl_list_init(&output->frame_callback_list);
 
-	output->object.interface = &wl_output_interface;
-	wl_display_add_object(c->wl_display, &output->object);
-	wl_display_add_global(c->wl_display, &output->object,
+	output->resource.object.interface = &wl_output_interface;
+	wl_display_add_object(c->wl_display, &output->resource.object);
+	wl_display_add_global(c->wl_display, &output->resource.object,
 			      wlsc_output_post_geometry);
 }
 
