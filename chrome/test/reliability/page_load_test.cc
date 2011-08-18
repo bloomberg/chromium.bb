@@ -67,6 +67,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/reliability/page_load_test.h"
 #include "chrome/test/ui/ui_test.h"
+#include "content/common/notification_service.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "v8/include/v8-testing.h"
@@ -669,6 +670,8 @@ class PageLoadTest : public UITest {
     test_dir = test_dir.AppendASCII("sample_pages");
     return test_dir;
   }
+
+  NotificationService notification_service_;
 
   // The pathname of Chrome's crash dumps directory.
   FilePath crash_dumps_dir_path_;
