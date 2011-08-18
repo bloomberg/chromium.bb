@@ -157,7 +157,7 @@ class ShardRunner(threading.Thread):
           chars.close()
           chars = cStringIO.StringIO()
       if self.current_test:
-        self.ReportFailure("INCOMPLETE", prefix, self.current_test)
+        self.ReportFailure("INCOMPLETE", self.current_test)
       self.supervisor.ShardIndexCompleted(index)
       if shard.returncode != 0:
         self.supervisor.LogShardFailure(index)
