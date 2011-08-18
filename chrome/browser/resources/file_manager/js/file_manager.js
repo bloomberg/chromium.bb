@@ -2638,10 +2638,6 @@ FileManager.prototype = {
       return false;
     }
 
-    // Rename already in progress.
-    if (this.renameInput_.currentEntry)
-      return false;
-
     // Didn't click on the label.
     if (!event.srcElement.classList.contains('filename-label'))
       return false;
@@ -2654,14 +2650,21 @@ FileManager.prototype = {
 
     var now = new Date();
     var path = event.srcElement.entry.fullPath;
+    var lastLabelClick = this.lastLabelClick_;
+    this.lastLabelClick_ = {path: path, date: now};
 
-    if (this.lastLabelClick_ && this.lastLabelClick_.path == path) {
-      var delay = now - this.lastLabelClick_.date;
-      if (delay > 500 && delay < 2000)
+    // Rename already in progress.
+    if (this.renameInput_.currentEntry)
+      return false;
+
+    if (lastLabelClick && lastLabelClick.path == path) {
+      var delay = now - lastLabelClick.date;
+      if (delay > 500 && delay < 2000) {
+        this.lastLabelClick_ = null;
         return true;
+      }
     }
 
-    this.lastLabelClick_ = {path: path, date: now};
     return false;
   };
 
@@ -2750,7 +2753,6 @@ FileManager.prototype = {
 
   FileManager.prototype.cancelRename_ = function(event) {
     this.renameInput_.currentEntry = null;
-    this.lastLabelClick_ = null;
 
     if (this.renameInput_.parentNode)
       this.renameInput_.parentNode.removeChild(this.renameInput_);

@@ -37,6 +37,8 @@
         <include name="IDR_FILE_MANAGER_ID3_PARSER" file="file_manager/js/id3_parser.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PARALLEL" file="file_manager/js/function_parallel.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_SEQUENCE" file="file_manager/js/function_sequence.js" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PREVIEW_ICON" file="file_manager/images/icon_preview_16x16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIA_PLAY_ICON" file="file_manager/images/icon_play_16x16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIA_ENQUEUE_ICON" file="file_manager/images/icon_add_to_queue_16x16.png" type="BINDATA" />
