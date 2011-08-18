@@ -496,7 +496,7 @@ build-runtime() {
   local platforms=$1
   local runtime_pieces=$2
   for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons ${runtime_pieces} [${platform}]@@@"
+    echo "build-runtime: scons ${runtime_pieces} [${platform}]"
     (cd ${NACL_ROOT};
       ${SCONS_COMMON} platform=${platform} ${runtime_pieces})
   done
@@ -506,7 +506,7 @@ build-libs-nacl() {
   local platforms=$1
   shift 1
   for platform in ${platforms} ; do
-    echo "@@@BUILD_STEP scons build_lib [${platform}] $* @@@"
+    echo "build-libs-nacl: scons build_lib [${platform}] $*"
     (cd ${NACL_ROOT};
       ${SCONS_COMMON} platform=${platform} build_lib "$@")
   done
