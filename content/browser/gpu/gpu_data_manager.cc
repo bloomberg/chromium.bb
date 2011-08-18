@@ -225,6 +225,9 @@ void GpuDataManager::AppendRendererCommandLine(
   if ((flags & GpuFeatureFlags::kGpuFeatureAcceleratedCompositing) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedCompositing))
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+  if ((flags & GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas) &&
+      !command_line->HasSwitch(switches::kDisableAccelerated2dCanvas))
+    command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 }
 
 void GpuDataManager::SetBuiltInGpuBlacklist(GpuBlacklist* built_in_list) {
