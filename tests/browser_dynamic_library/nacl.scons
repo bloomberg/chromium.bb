@@ -91,4 +91,4 @@ node = env.PPAPIBrowserTester(
 
 env.AddNodeToTestSuite(node, ['dynamic_library_browser_tests'],
                        'run_browser_dynamic_library_test',
-                       is_broken=True or env.PPAPIBrowserTesterIsBroken())
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

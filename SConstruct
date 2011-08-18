@@ -716,6 +716,7 @@ Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('pepper_browser_tests', [])
 Alias('chrome_browser_tests', [])
+Alias('dynamic_library_browser_tests', [])
 Alias('pyauto_tests', [])
 
 Alias('unit_tests', 'small_tests')
@@ -890,9 +891,6 @@ pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 # This has to appear after the "platform logic" steps above so it
 # can test target_x86_64.
 def IrtIsBroken(env):
-  if env.Bit('nacl_glibc'):
-    # The glibc startup code is not yet compatible with IRT.
-    return True
   return False
 
 pre_base_env.AddMethod(IrtIsBroken)
