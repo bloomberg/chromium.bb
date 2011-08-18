@@ -117,12 +117,12 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
    * they occur near simultaneously on two separate threads.  Since this is
    * non-deterministic, we always exit a thread with the current value of the
    * process exit status to mitigate the possibility of exiting with an
-   * incorrect value.  See BUG= nacl1715
+   * incorrect value.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=1715
    */
   NaClThreadExit(process_exit_status);
-  /* should not return */
-  NaClLog(LOG_ERROR, "INCONCEIVABLE!\n");
-  NaClAbort();
+  NaClLog(LOG_FATAL,
+          "NaClAppThreadTeardown: NaClThreadExit() should not return\n");
   /* NOTREACHED */
 }
 
