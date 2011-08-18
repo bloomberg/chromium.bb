@@ -59,12 +59,12 @@ class CppBoundClass {
   CppVariant* GetAsCppVariant();
 
   // Given a WebFrame, BindToJavascript builds the NPObject that will represent
-  // the class and binds it to the frame's window under the given name.  This
-  // should generally be called from the WebView delegate's
-  // WindowObjectCleared(). A class so bound will be accessible to JavaScript
-  // as window.<classname>. The owner of the CppBoundObject is responsible for
-  // keeping the object around while the frame is alive, and for destroying it
-  // afterwards.
+  // this CppBoundClass object and binds it to the frame's window under the
+  // given name.  This should generally be called from the WebView delegate's
+  // WindowObjectCleared(). This CppBoundClass object will be accessible to
+  // JavaScript as window.<classname>. The owner of this CppBoundClass object is
+  // responsible for keeping it around while the frame is alive, and for
+  // destroying it afterwards.
   void BindToJavascript(WebKit::WebFrame* frame, const std::string& classname);
 
   // The type of callbacks.
