@@ -25,12 +25,31 @@ function filtersForPage(pageName, isRTL) {
       ],
       // Filters for RTL UI
       "RTL" : [
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
+        bidichecker.FilterFactory.atText("Google")
       ]
     },
     "chrome://settings/autofill" : {
       "LTR" : [
         // BUG: http://code.google.com/p/chromium/issues/detail?id=82267
         bidichecker.FilterFactory.atText("משה ב כהן, דרך מנחם בגין")
+      ],
+      "RTL" : [
+        // BUG: http://code.google.com/p/chromium/issues/detail?id=90322
+        bidichecker.FilterFactory.atText(
+            "Milton C. Waddams, 4120 Freidrich Lane")
+      ]
+    },
+    "chrome://plugins" : {
+      "RTL" : [
+        // False positive
+        bidichecker.FilterFactory.atText("x")
+      ]
+    },
+    "chrome://newtab/" : {
+      "RTL" : [
+      // BUG: http://code.google.com/p/chromium/issues/detail?id=93339
+        bidichecker.FilterFactory.atText("Chrome Web Store")
       ]
     }
   };

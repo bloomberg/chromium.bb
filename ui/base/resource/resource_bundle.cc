@@ -4,6 +4,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
@@ -11,6 +12,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -100,6 +102,14 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
   CHECK(g_shared_instance_ != NULL);
   return *g_shared_instance_;
+}
+
+void ResourceBundle::OverrideLocalePak(FilePath pak_path) {
+  overridden_pak_path_ = pak_path;
+}
+
+FilePath& ResourceBundle::GetOverriddenPakPath() {
+  return overridden_pak_path_;
 }
 
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
@@ -196,6 +206,11 @@ ResourceBundle::ResourceBundle()
       resources_data_(NULL),
       large_icon_resources_data_(NULL),
       locale_resources_data_(NULL) {
+  CommandLine *command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalePak)) {
+    OverrideLocalePak(
+                      command_line->GetSwitchValuePath(switches::kLocalePak));
+  }
 }
 
 void ResourceBundle::FreeImages() {
