@@ -13,6 +13,42 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 
+extern "C" {
+
+// Work around http://crbug.com/93191, a really nasty memory smasher bug.
+// On Mac OS X 10.7 ("Lion"), ATS writes to memory it doesn't own.
+// SendDeactivateFontsInContainerMessage, called by ATSFontDeactivate,
+// may trash memory whenever dlsym(RTLD_DEFAULT,
+// "_CTFontManagerUnregisterFontForData") returns NULL. In that case, it tries
+// to locate that symbol in the CoreText framework, doing some extremely
+// sloppy string handling resulting in a likelihood that the string
+// "Text.framework/Versions/A/CoreText" will be written over memory that it
+// doesn't own. The kicker here is that Apple dlsym always inserts its own
+// leading underscore, so ATS actually winds up looking up a
+// __CTFontManagerUnregisterFontForData symbol, which doesn't even exist in
+// CoreText. It's only got the single-underscore variant corresponding to an
+// underscoreless extern "C" name.
+//
+// Providing a single-underscored extern "C" function by this name results in
+// a __CTFontManagerUnregisterFontForData symbol that, as long as it's public
+// (not private extern) and unstripped, ATS will find. If it finds it, it
+// avoids making amateur string mistakes that ruin everyone else's good time.
+//
+// Since ATS wouldn't normally be able to call this function anyway, it's just
+// left as a no-op here.
+//
+// This file seems as good as any other to place this function. It was chosen
+// because it already interfaces with ATS for other reasons.
+//
+// SendDeactivateFontsInContainerMessage on 10.6 ("Snow Leopard") appears to
+// share this bug but this sort of memory corruption wasn't detected until
+// 10.7. The implementation in 10.5 ("Leopard") does not have this problem.
+__attribute__((visibility("default")))
+void _CTFontManagerUnregisterFontForData(NSUInteger, int) {
+}
+
+}  // extern "C"
+
 // static
 bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
                                     base::SharedMemory* font_data,
