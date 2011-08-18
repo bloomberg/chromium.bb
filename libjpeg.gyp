@@ -172,7 +172,7 @@
                   ],
                 }, {
                   'sources': [
-                    'simd/jsimd_none.c',
+                    'jsimd_none.c',
                   ],
                 }]
               ],
