@@ -43,6 +43,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
+  // Returns the height of the panel in minimized state.
+  static int MinimizedPanelHeight();
+
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
@@ -153,7 +156,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Retrieves the drawing metrics based on the current painting state.
   SkColor GetTitleColor(PaintState paint_state) const;
-  gfx::Font* GetTitleFont(PaintState paint_state) const;
+  gfx::Font* GetTitleFont() const;
   SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
   // Make settings button visible if either of the conditions is met:

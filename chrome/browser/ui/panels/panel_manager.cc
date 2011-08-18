@@ -356,3 +356,7 @@ void PanelManager::RemoveAll() {
        iter != panels_.rend(); ++iter)
     (*iter)->Close();
 }
+
+bool PanelManager::is_dragging_panel() const {
+  return dragging_panel_index_ != kInvalidPanelIndex;
+}

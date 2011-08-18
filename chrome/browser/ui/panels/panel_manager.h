@@ -46,6 +46,7 @@ class PanelManager {
   void BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up);
 
   int num_panels() const { return panels_.size(); }
+  bool is_dragging_panel() const;
 
  private:
   friend class PanelBrowserTest;

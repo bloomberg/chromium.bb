@@ -219,11 +219,6 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     EXPECT_TRUE(IsMouseWatcherStarted());
     EXPECT_FALSE(panel1->IsActive());
     WaitTillBoundsAnimationFinished(browser_view1);
-    // TODO(jianli): Enable the following checks after the patch to support
-    // minimizing window to 3-pixel line is landed.
-    //EXPECT_FALSE(frame_view1->close_button_->IsVisible());
-    //EXPECT_FALSE(frame_view1->title_icon_->IsVisible());
-    //EXPECT_FALSE(frame_view1->title_label_->IsVisible());
 
     panel1->SetExpansionState(Panel::TITLE_ONLY);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
@@ -287,6 +282,18 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
         panel3->GetBounds().right() - 1, panel3->GetBounds().bottom() + 10));
     EXPECT_FALSE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
         0, 0));
+
+    // Test that the panel in title-only state should not be minimized
+    // regardless of the current mouse position when the panel is being dragged.
+    panel1->SetExpansionState(Panel::TITLE_ONLY);
+    EXPECT_FALSE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
+        0, 0));
+    browser_view1->OnTitlebarMousePressed(panel1->GetBounds().origin());
+    browser_view1->OnTitlebarMouseDragged(
+        panel1->GetBounds().origin().Subtract(gfx::Point(5, 5)));
+    EXPECT_TRUE(panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
+        0, 0));
+    browser_view1->OnTitlebarMouseReleased();
 
     panel1->Close();
     EXPECT_TRUE(IsMouseWatcherStarted());
@@ -406,10 +413,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   // Validate that the controls should be updated when the activation state is
   // changed.
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_ACTIVE);
-  gfx::Font title_label_font1 = frame_view->title_label_->font();
+  SkColor title_label_color1 = frame_view->title_label_->GetColor();
   frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
-  gfx::Font title_label_font2 = frame_view->title_label_->font();
-  EXPECT_NE(title_label_font1.GetStyle(), title_label_font2.GetStyle());
+  SkColor title_label_color2 = frame_view->title_label_->GetColor();
+  EXPECT_NE(title_label_color1, title_label_color2);
 
   browser_view->panel()->Close();
 }

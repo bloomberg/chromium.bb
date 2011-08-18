@@ -17,10 +17,7 @@
 
 namespace {
 // This value is experimental and subjective.
-const int kSetBoundsAnimationMs = 200;
-
-// The panel can be fully minimized to 3-pixel lines.
-const int kFullyMinimizedHeight = 3;
+const int kSetBoundsAnimationMs = 180;
 
 // Delay before click-to-minimize is allowed after the attention has been
 // cleared.
@@ -196,7 +193,7 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       height = GetFrameView()->NonClientTopBorderHeight();
       break;
     case Panel::MINIMIZED:
-      height = kFullyMinimizedHeight;
+      height = PanelBrowserFrameView::MinimizedPanelHeight();
 
       // Start the mouse watcher so that we can bring up the minimized panels.
       // TODO(jianli): Need to support mouse watching in ChromeOS.
@@ -356,7 +353,9 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
 }
 
 bool PanelBrowserView::OnTitlebarMouseCaptureLost() {
-  return EndDragging(true);
+  if (mouse_dragging_)
+    return EndDragging(true);
+  return true;
 }
 
 bool PanelBrowserView::EndDragging(bool cancelled) {

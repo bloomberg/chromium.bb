@@ -62,6 +62,11 @@ bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
   if (expansion_state_ == Panel::EXPANDED)
     return false;
 
+  // If the panel is showing titlebar only, we want to keep it up when it is
+  // being dragged.
+  if (expansion_state_ == Panel::TITLE_ONLY && manager()->is_dragging_panel())
+    return true;
+
   // Let the native panel decide.
   return native_panel_->ShouldBringUpPanelTitlebar(mouse_x, mouse_y);
 }
