@@ -128,94 +128,6 @@ int get_manifest_channel(struct NaClSrpcChannel **result) {
   return error;
 }
 
-/*
- * Name enumeration.
- */
-static pthread_mutex_t names_mutex = PTHREAD_MUTEX_INITIALIZER;
-char *names_data = NULL;
-int names_data_size;
-char **names;
-int names_size;
-
-static void construct_names_pointers(void) {
-  int alloc_size;
-  int i;
-  int len;
-  char **new_names;
-  alloc_size = 8;
-  names = malloc(sizeof(char*) * alloc_size);
-  names_size = 0;
-  for (i = 0; i < names_data_size; ) {
-    if (names_size == alloc_size) {
-      new_names = malloc(sizeof(char*) * 2 * alloc_size);
-      memmove(new_names, names, sizeof(char*) * alloc_size);
-      free(names);
-      names = new_names;
-    }
-    names[names_size] = names_data + i;
-    names_size++;
-    len = strlen(names_data + i);
-    i += len + 1;
-  }
-}
-
-static int load_names_lock(void) {
-  int nbytes;
-  struct NaClSrpcChannel *manifest_channel;
-  int error;
-  if (names_data != NULL) {
-    return 0;
-  }
-  error = get_manifest_channel(&manifest_channel);
-  if (0 != error) {
-    return error;
-  }
-  nbytes = 4096;
-  names_data = malloc(nbytes);
-  while (1) {
-    names_data_size = nbytes;
-    if (NACL_SRPC_RESULT_OK !=
-        NaClSrpcInvokeBySignature(manifest_channel, NACL_NAME_SERVICE_LIST,
-                                  &names_data_size, names_data)) {
-      print_error("manifest list RPC failed\n");
-      return EIO;
-    }
-    if (names_data_size < nbytes - 1024) {
-      break;
-    }
-    free(names_data);
-    nbytes *= 2;
-    names_data = malloc(nbytes);
-  }
-  construct_names_pointers();
-  return 0;
-}
-
-static int load_names(void) {
-  int status;
-  pthread_mutex_lock(&names_mutex);
-  status = load_names_lock();
-  pthread_mutex_unlock(&names_mutex);
-  return status;
-}
-
-static int resource_exists(const char *file, int *result) {
-  int i;
-  int status;
-  status = load_names();
-  if (status != 0) {
-    return status;
-  }
-  for (i = 0; i < names_size; i++) {
-    if (0 == strcmp(file, names[i])) {
-      *result = 1;
-      return 0;
-    }
-  }
-  *result = 0;
-  return 0;
-}
-
 char kFiles[] = "files/";
 int kFilesLen = 6;
 /*
@@ -223,7 +135,6 @@ int kFilesLen = 6;
  */
 static int irt_open_resource(const char *file, int *fd) {
   int status;
-  int file_exists;
   struct NaClSrpcChannel *manifest_channel;
   status = get_manifest_channel(&manifest_channel);
   if (0 != status) {
@@ -236,13 +147,6 @@ static int irt_open_resource(const char *file, int *fd) {
   } else {
     strcat(path, file);
   }
-  status = resource_exists(path + kFilesLen, &file_exists);
-  if (0 != status) {
-    return status;
-  }
-  if (0 == file_exists) {
-    return ENOENT;
-  }
   pthread_mutex_lock(&manifest_service_mutex);
   if (NACL_SRPC_RESULT_OK == NaClSrpcInvokeBySignature(
       manifest_channel, NACL_NAME_SERVICE_LOOKUP, path, O_RDONLY,
@@ -251,6 +155,9 @@ static int irt_open_resource(const char *file, int *fd) {
   }
   pthread_mutex_unlock(&manifest_service_mutex);
   free(path);
+  if (-1 == *fd) {
+    return ENOENT;
+  }
   return status;
 }
 
