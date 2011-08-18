@@ -387,8 +387,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   int alignment;
   ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment);
-  if (alignment & ThemeService::ALIGN_RIGHT)
-    localized_strings.SetString("themegravity", "right");
+  localized_strings.SetString("themegravity",
+      (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
   const int shown_sections = ShownSectionsHandler::GetShownSections(
