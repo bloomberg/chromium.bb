@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,16 +44,16 @@ TEST_F(CertVerifierTest, CacheHit) {
   CertVerifier verifier(time_service);
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -63,7 +63,7 @@ TEST_F(CertVerifierTest, CacheHit) {
   ASSERT_EQ(0u, verifier.cache_hits());
   ASSERT_EQ(0u, verifier.inflight_joins());
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   // Synchronous completion.
   ASSERT_NE(ERR_IO_PENDING, error);
@@ -82,9 +82,9 @@ TEST_F(CertVerifierTest, InflightJoin) {
   CertVerifier verifier(time_service);
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
@@ -94,11 +94,11 @@ TEST_F(CertVerifierTest, InflightJoin) {
   TestCompletionCallback callback2;
   CertVerifier::RequestHandle request_handle2;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result2,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result2,
                           &callback2, &request_handle2);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle2 != NULL);
@@ -119,16 +119,16 @@ TEST_F(CertVerifierTest, ExpiredCacheEntry) {
   CertVerifier verifier(time_service);
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -139,7 +139,7 @@ TEST_F(CertVerifierTest, ExpiredCacheEntry) {
   ASSERT_EQ(0u, verifier.inflight_joins());
 
   // Before expiration, should have a cache hit.
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   // Synchronous completion.
   ASSERT_NE(ERR_IO_PENDING, error);
@@ -153,7 +153,7 @@ TEST_F(CertVerifierTest, ExpiredCacheEntry) {
   ASSERT_EQ(1u, verifier.GetCacheSize());
   current_time += base::TimeDelta::FromMinutes(60);
   time_service->set_current_time(current_time);
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -173,16 +173,16 @@ TEST_F(CertVerifierTest, FullCache) {
   CertVerifier verifier(time_service);
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -196,7 +196,7 @@ TEST_F(CertVerifierTest, FullCache) {
 
   for (unsigned i = 0; i < kCacheSize; i++) {
     std::string hostname = base::StringPrintf("www%d.example.com", i + 1);
-    error = verifier.Verify(google_cert, hostname, 0, &verify_result,
+    error = verifier.Verify(test_cert, hostname, 0, &verify_result,
                             &callback, &request_handle);
     ASSERT_EQ(ERR_IO_PENDING, error);
     ASSERT_TRUE(request_handle != NULL);
@@ -210,7 +210,7 @@ TEST_F(CertVerifierTest, FullCache) {
   ASSERT_EQ(kCacheSize, verifier.GetCacheSize());
   current_time += base::TimeDelta::FromMinutes(60);
   time_service->set_current_time(current_time);
-  error = verifier.Verify(google_cert, "www999.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www999.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -228,16 +228,16 @@ TEST_F(CertVerifierTest, CancelRequest) {
   CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
   ExplodingCallback exploding_callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &exploding_callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
@@ -248,7 +248,7 @@ TEST_F(CertVerifierTest, CancelRequest) {
   // worker thread) is likely to complete by the end of this test.
   TestCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
-    error = verifier.Verify(google_cert, "www2.example.com", 0, &verify_result,
+    error = verifier.Verify(test_cert, "www2.example.com", 0, &verify_result,
                             &callback, &request_handle);
     ASSERT_EQ(ERR_IO_PENDING, error);
     ASSERT_TRUE(request_handle != NULL);
@@ -262,16 +262,16 @@ TEST_F(CertVerifierTest, CancelRequestThenQuit) {
   CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> google_cert(
-      ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "ok_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
 
   int error;
   CertVerifyResult verify_result;
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+  error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
                           &callback, &request_handle);
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
