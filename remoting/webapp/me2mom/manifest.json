@@ -1,7 +1,7 @@
 {
-  "name": "__MSG_productNameAndVersion__ NAME_SUFFIX",
+  "name": "__MSG_PRODUCT_NAME_AND_VERSION__ NAME_SUFFIX",
   "version": "1.0.UNIQUE_VERSION",
-  "description": "__MSG_webappDescription__",
+  "description": "__MSG_PRODUCT_DESCRIPTION__",
   "default_locale": "en",
   "app": {
     "launch": {

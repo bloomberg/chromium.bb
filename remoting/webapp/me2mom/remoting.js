@@ -39,11 +39,11 @@ remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
 /** @enum {string} */
 remoting.ClientError = {
-  NO_RESPONSE: 'errorNoResponse',
-  INVALID_ACCESS_CODE: 'errorInvalidAccessCode',
-  MISSING_PLUGIN: 'errorMissingPlugin',
-  OAUTH_FETCH_FAILED: 'errorOAuthFailed',
-  OTHER_ERROR: 'errorGeneric'
+  NO_RESPONSE: 'ERROR_NO_RESPONSE',
+  INVALID_ACCESS_CODE: 'ERROR_INVALID_ACCESS_CODE',
+  MISSING_PLUGIN: 'ERROR_MISSING_PLUGIN',
+  OAUTH_FETCH_FAILED: 'ERROR_AUTHENTICATION_FAILED',
+  OTHER_ERROR: 'ERROR_GENERIC'
 };
 
 /**
@@ -275,9 +275,9 @@ remoting.decrementAccessCodeTimeout_ = function() {
 }
 
 remoting.updateAccessCodeTimeoutElement_ = function() {
-  var pad = (remoting.accessCodeExpiresIn < 10) ? '0' : '';
-  document.getElementById('seconds-remaining').innerText =
-      pad + remoting.accessCodeExpiresIn;
+  var pad = (remoting.accessCodeExpiresIn < 10) ? '0:0' : '0:';
+  l10n.localizeElement(document.getElementById('seconds-remaining'),
+                       pad + remoting.accessCodeExpiresIn);
   if (!updateTimeoutStyles_()) {
     disableTimeoutCountdown_();
   }
@@ -611,7 +611,7 @@ remoting.promptClose = function() {
        remoting.currentMode != remoting.AppMode.HOST_UNSHARED) ||
       remoting.getMajorMode() == remoting.AppMode.IN_SESSION ||
       remoting.currentMode == remoting.AppMode.CLIENT_CONNECTING) {
-    var result = chrome.i18n.getMessage('closePrompt');
+    var result = chrome.i18n.getMessage('CLOSE_PROMPT');
     return result;
   }
 }

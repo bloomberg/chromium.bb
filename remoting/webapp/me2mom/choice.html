@@ -22,7 +22,7 @@ found in the LICENSE file.
     <script src="plugin_settings.js"></script>
     <script src="remoting.js"></script>
     <script src="xhr.js"></script>
-    <title i18n-content="productName"></title>
+    <title i18n-content="PRODUCT_NAME"></title>
   </head>
 
   <body onBeforeUnload="return remoting.promptClose();"
@@ -44,13 +44,13 @@ found in the LICENSE file.
       <span id="email-status">
         <span id="current-email"></span>
         (<a href="#" onclick="remoting.clearOAuth2();"
-                i18n-content="logoutButton"></a>)
+                i18n-content="LOGOUT_BUTTON"></a>)
       </span>
     </div>
 
     <div class="top-secondary" data-ui-mode="auth client host">
       <a href="#" onclick="remoting.toggleDebugLog();"
-         i18n-content="debugButton"></a>
+         i18n-content="DEBUG_BUTTON"></a>
     </div>
 
     <div id="session-toolbar"
@@ -58,15 +58,15 @@ found in the LICENSE file.
          class="toolbar-container"
          hidden>
       <div class="toolbar-border">
-        <span id="session-status-message" i18n-content="labelConnected"></span>
+        <span id="session-status-message" i18n-content="LABEL_CONNECTED"></span>
         <strong id="connected-to"></strong>
         <button type="button" onclick="remoting.disconnect();"
-                i18n-content="disconnectButton"></button>
+                i18n-content="DISCONNECT_BUTTON"></button>
         <span class="end-align">
           <button type="button" onclick="remoting.toggleDebugLog();"
-                  i18n-content="debugButton"></button>
+                  i18n-content="DEBUG_BUTTON"></button>
           <button type="button" onclick="remoting.toggleScaleToFit();"
-                  i18n-content="scaleButton"></button>
+                  i18n-content="SCALE_BUTTON"></button>
         </span>
       </div>
       <div class="toolbar-stub">
@@ -79,11 +79,11 @@ found in the LICENSE file.
       <header class="choice-header">
         <img id="icon" src="chromoting128.png">
         <h1 class="icon-label">
-          <span i18n-content="productName">
-          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="modeAuthorize"
+          <span i18n-content="PRODUCT_NAME">
+          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="MODE_AUTHORIZE"
                                            data-ui-mode="auth">
-          </span><span i18n-content="modeConnect" data-ui-mode="client">
-          </span><span i18n-content="modeShare" data-ui-mode="host">
+          </span><span i18n-content="MODE_CONNECT" data-ui-mode="client">
+          </span><span i18n-content="MODE_SHARE" data-ui-mode="host">
           </span>
         </h1>
       </header>
@@ -91,60 +91,59 @@ found in the LICENSE file.
       <img id="divider-top" src="dividertop.png">
 
       <div id="auth-panel" data-ui-mode="auth">
-        <div class="description" i18n-content="messageAuthorize"></div>
+        <div class="description" i18n-content="DESCRIPTION_AUTHORIZE"></div>
         <div class="centered-button">
           <button id="auth-button" class="big-button"
                   type="button" onclick="remoting.oauth2.doAuthRedirect();"
-                  i18n-content="continueButton"></button>
+                  i18n-content="CONTINUE_BUTTON"></button>
         </div>
       </div> <!-- auth-panel -->
 
       <div id="host-panel" data-ui-mode="host">
 
         <div data-ui-mode="host.unshared">
-          <div class="description" i18n-content="descriptionShare"></div>
+          <div class="description" i18n-content="DESCRIPTION_SHARE"></div>
           <div class="centered-button">
             <button id="share-button" class="big-button"
                     type="button" onclick="remoting.tryShare();"
-                    i18n-content="shareButton"></button>
+                    i18n-content="SHARE_BUTTON"></button>
           </div>
         </div> <!-- host.unshared -->
 
         <div data-ui-mode="host.waiting-for-code" class="message"
-             i18n-content="messageGenerating">
+             i18n-content="MESSAGE_GENERATING">
         </div> <!-- host.waiting-for-code -->
 
         <div data-ui-mode="host.waiting-for-connection">
-          <div class="description" i18n-content="instructionsShareAbove"></div>
+          <div class="description" i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
           <div id="access-code-display" dir="ltr"></div>
           <div id="access-code-countdown-container">
             <div id="access-code-countdown" class="expiring" hidden>
-              <span i18n-content="accessCodeTimer"></span>
-              0:<span id="seconds-remaining"></span>
+              <span id="seconds-remaining" i18n-content="ACCESS_CODE_TIMER"></span>
             </div>
           </div>
-          <div class="description" i18n-content="instructionsShareBelow"></div>
+          <div class="description" i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
         </div> <!-- host.waiting-for-connection -->
 
         <div data-ui-mode="host.shared">
           <div id="host-shared-message" class="message"
-               i18n-content="messageShared"></div>
+               i18n-content="MESSAGE_SHARED"></div>
           <div class="centered-button">
             <button type="button" class="big-button"
                     onclick="remoting.cancelShare();"
-                    i18n-content="stopSharingButton">
+                    i18n-content="STOP_SHARING_BUTTON">
             </button>
           </div>
         </div> <!-- host.shared -->
 
         <div data-ui-mode="host.share-failed" class="message">
           <span id="unable-to-get-token" class="error-state"
-               i18n-content="unableToGetToken">
+               i18n-content="ERROR_UNABLE_TO_GET_TOKEN">
           </span>
           <div class="centered-button">
             <button type="button" class="big-button"
                     onclick="remoting.setMode('host.unshared');"
-                    i18n-content="ok">
+                    i18n-content="OK">
             </button>
           </div>
         </div> <!-- host.share-failed -->
@@ -155,13 +154,13 @@ found in the LICENSE file.
 
       <div id="client-panel" data-ui-mode="client">
         <div data-ui-mode="client.unconnected">
-          <div class="description" i18n-content="descriptionConnect"></div>
+          <div class="description" i18n-content="DESCRIPTION_CONNECT"></div>
           <div id="access-code-entry-row">
             <form action="" onsubmit="remoting.tryConnect(); return false;">
-              <label for="access-code-entry" i18n-content="accessCode"></label>
+              <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
               <input id="access-code-entry" type="text"/>
               <button id="connect-button" class="big-button"
-                      type="submit" i18n-content="connectButton"></button>
+                      type="submit" i18n-content="CONNECT_BUTTON"></button>
             </form>
           </div> <!-- code-entry-row -->
         </div> <!-- client.unconnected -->
@@ -172,7 +171,7 @@ found in the LICENSE file.
              Cancel button in the footer.
           -->
         <div data-ui-mode="client.connecting" class="message"
-             i18n-content="verifyingCode">
+             i18n-content="VERIFYING_CODE">
         </div> <!-- client.connecting -->
 
         <div data-ui-mode="client.connect-failed"
@@ -181,12 +180,12 @@ found in the LICENSE file.
         </div> <!-- client.connect-failed -->
 
         <div data-ui-mode="client.session-finished"
-             class="message" i18n-content="messageSessionFinished">
+             class="message" i18n-content="MESSAGE_SESSION_FINISHED">
         </div> <!-- client.session-finished -->
 
         <div data-ui-mode="client.connect-failed client.session-finished"
              class="centered-button">
-          <button type="button" class="big-button" i18n-content="ok"
+          <button type="button" class="big-button" i18n-content="OK"
                   onclick="remoting.setMode(
                                remoting.AppMode.CLIENT_UNCONNECTED);">
           </button>
@@ -198,30 +197,28 @@ found in the LICENSE file.
 
       <footer class="choice-footer">
         <div id="client-footer-text" data-ui-mode="client.unconnected">
-          <span i18n-content="footerClient1"></span><a
-           class="switch-mode" href="#" i18n-content="footerClient2"
-           onclick="remoting.setAppMode(remoting.AppMode.HOST);"></a><span
-           i18n-content="footerClient3"></span>
+          <span i18n-content="FOOTER_CLIENT"
+                i18n-value-1="<a href='#' onclick='remoting.setAppMode(remoting.AppMode.HOST);'>"
+                i18n-value-2="</a>"></span>
         </div> <!-- client-footer-text -->
 
         <div id="client-footer-text-cros" data-ui-mode="client.unconnected"
-             i18n-content="footerCrOS">
+             i18n-content="FOOTER_CHROME_OS">
         </div> <!-- client-footer-text-cros -->
 
         <div id="host-footer-text" data-ui-mode="host.unshared">
-          <span i18n-content="footerHost1"></span><a
-           class="switch-mode" href="#" i18n-content="footerHost2"
-           onclick="remoting.setAppMode(remoting.AppMode.CLIENT);"></a><span
-           i18n-content="footerHost3"></span>
+          <span i18n-content="FOOTER_HOST"
+                i18n-value-1="<a href='#' onclick='remoting.setAppMode(remoting.AppMode.CLIENT);'>"
+                i18n-value-2="</a>"></span>
         </div> <!-- host-footer-text -->
 
         <div id="waiting-footer"
              data-ui-mode="host.waiting-for-connection host.waiting-for-code">
           <img src="spinner.gif">
-          <span class="waiting icon-label" i18n-content="footerWaiting"></span>
+          <span class="waiting icon-label" i18n-content="FOOTER_WAITING"></span>
           <button id="cancel-button" class="big-button"
                   onclick="remoting.cancelPendingOperation();"
-                  i18n-content="cancel">
+                  i18n-content="CANCEL">
           </button>
         </div> <!-- waiting-footer -->
       </footer>

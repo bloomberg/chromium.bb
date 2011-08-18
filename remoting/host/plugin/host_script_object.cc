@@ -648,22 +648,23 @@ void HostNPScriptObject::LocalizeStrings() {
   ui_strings->direction =
       direction == "rtl" ? remoting::UiStrings::RTL
                          : remoting::UiStrings::LTR;
-  LocalizeString("productName", NULL, &ui_strings->product_name);
-  LocalizeString("disconnectButton", NULL, &ui_strings->disconnect_button_text);
+  LocalizeString("PRODUCT_NAME", NULL, &ui_strings->product_name);
+  LocalizeString("DISCONNECT_BUTTON", NULL,
+                 &ui_strings->disconnect_button_text);
   LocalizeString(
 #if defined(OS_WIN)
-      "disconnectButtonPlusShortcutWindows",
+      "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
 #elif defined(OS_MAC)
-      "disconnectButtonPlusShortcutMacOSX",
+      "DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X",
 #else
-      "disconnectButtonPlusShortcutLinux",
+      "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
 #endif
       NULL, &ui_strings->disconnect_button_text_plus_shortcut);
-  LocalizeString("continuePrompt", NULL, &ui_strings->continue_prompt);
-  LocalizeString("continueButton", NULL, &ui_strings->continue_button_text);
-  LocalizeString("stopSharingButton", NULL,
+  LocalizeString("CONTINUE_PROMPT", NULL, &ui_strings->continue_prompt);
+  LocalizeString("CONTINUE_BUTTON", NULL, &ui_strings->continue_button_text);
+  LocalizeString("STOP_SHARING_BUTTON", NULL,
                  &ui_strings->stop_sharing_button_text);
-  LocalizeString("messageShared", client_username_.c_str(),
+  LocalizeString("MESSAGE_SHARED", client_username_.c_str(),
                  &ui_strings->disconnect_message);
 }
 

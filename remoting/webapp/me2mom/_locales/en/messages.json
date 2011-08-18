@@ -1,143 +1,157 @@
 {
-  "accessCode": {
+  "ACCESS_CODE": {
     "message": "Access code",
-    "description": "Label for the access code entry box"
+    "description": "Label for the access code entry box. This is where the client user enters the code that permits access to the host."
   },
-  "accessCodeTimer": {
-    "message": "This access code will expire in",
-    "description": "Text preceding the access code timer"
+  "ACCESS_CODE_TIMER": {
+    "message": "This access code will expire in $timeout$",
+    "description": "Text displayed when the access code is due to time out within 30 seconds.",
+    "placeholders": {
+      "timeout": {
+        "content": "$1",
+        "example": "0:30"
+      }
+    }
   },
-  "cancel": {
+  "CANCEL": {
     "message": "Cancel",
-    "description": "Label for general-purpose Cancel buttons"
+    "description": "Label for general-purpose Cancel buttons."
   },
-  "closePrompt": {
+  "CLOSE_PROMPT": {
     "message": "Navigating away from this page will end your Chromoting session.",
     "description": "Message shown when the Chromoting client tab is closed while a connection is active."
   },
-  "connectButton": {
+  "CONNECT_BUTTON": {
     "message": "Connect",
-    "description": "Label for the connect button"
+    "description": "Label for the connect button. Clicking this button will start the Chromoting session if the access code is correct."
   },
-  "continueButton": {
+  "CONTINUE_BUTTON": {
     "message": "Continue",
-    "description": "Label for the continue button on the pre-authorization page"
+    "description": "Label for the continue button on the pre-authorization page. Clicking this button takes the user to the standard Google Accounts authorization page."
   },
-  "continuePrompt": {
+  "CONTINUE_PROMPT": {
     "message": "You are currently sharing this machine with another user. Please confirm that you want to continue sharing.",
-    "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it"
+    "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it."
   },
-  "debugButton": {
+  "DEBUG_BUTTON": {
     "message": "Debug Log",
-    "description": "Label for the debug log button"
+    "description": "Label for the debug log button. Clicking this button reveals log of debug messages at the bottom of the page."
   },
-  "descriptionConnect": {
-    "message": "Have the user whose computer you wish to access click ‘Share this computer’ and then have them read their access code to you.",
-    "description": "Description for the client app"
-  },
-  "descriptionShare": {
-    "message": "With Chromoting you can easily let another Chrome user see and control your computer.",
-    "description": "Description for the host app"
-  },
-  "disconnectButton": {
-    "message": "Disconnect",
-    "description": "Label for the disconnect button"
-  },
-  "disconnectButtonPlusShortcutLinux": {
-    "message": "Disconnect (Ctrl+Alt+Esc)",
-    "description": "Shortcut for the disconnect action on Linux"
-  },
-  "disconnectButtonPlusShortcutMacOSX": {
-    "message": "Disconnect (⌥⌃⎋)",
-    "description": "Shortcut for the disconnect action on Mac OS X. This probably doesn't need localizing since it is common practise on this platform to refer to the keys involved using symbols."
-  },
-  "disconnectButtonPlusShortcutWindows": {
-    "message": "Disconnect (Ctrl+Alt+Esc)",
-    "description": "Shortcut for the disconnect action on Windows"
-  },
-  "errorGeneric": {
-    "message": "An error occurred.",
-    "description": "Generic error message"
-  },
-  "errorInvalidAccessCode": {
-    "message": "Invalid access code.",
-    "description": "Error displayed if an invalid access code is entered"
-  },
-  "errorMissingPlugin": {
-    "message": "The viewer plugin is missing or out-of-date. Please upgrade to a more recent version of Chrome.",
-    "description": "Error displayed if the client plugin fails to load"
-  },
-  "errorNoResponse": {
-    "message": "Failed to get response from server.",
-    "description": "Error displayed if an XHR request comes back empty"
-  },
-  "errorOAuthFailed": {
-    "message": "Unable to fetch OAuth2 token. Try logging out and re-authorizing.",
-    "description": "Error displayed if the OAuth2 token cannot be refreshed"
-  },
-  "footerClient1": {
-    "message": "Click here to ",
-    "description": "Instructions to switch to host mode (first part, before the hyperlink--can be empty)"
-  },
-  "footerClient2": {
-    "message": "share this computer",
-    "description": "Instructions to switch to host mode (second part, hyperlinked--must not be empty)"
-  },
-  "footerClient3": {
-    "message": " with another user.",
-    "description": "Instructions to switch to host mode (third part, after the hyperlink--can be empty)"
-  },
-  "footerCrOS": {
-    "message": "Currently Hosting is not supported on Chromebooks. Hosting is supported on Windows, Mac OS X and Linux.",
-    "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink"
-  },
-  "footerHost1": {
-    "message": "Click here to ",
-    "description": "Instructions to switch to client mode (first part, before the hyperlink--can be empty)"
-  },
-  "footerHost2": {
-    "message": "access a shared computer",
-    "description": "Instructions to switch to client mode (second part, hyperlinked--must not be empty)"
-  },
-  "footerHost3": {
-    "message": ".",
-    "description": "Instructions to switch to client mode (third part, after the hyperlink--can be empty)"
-  },
-  "footerWaiting": {
-    "message": "waiting for connection…",
-    "description": "Footer text at the host when waiting for a client to connect"
-  },
-  "instructionsShareAbove": {
-    "message": "To begin sharing your desktop, read out the access code below to the person who will be assisting you.",
-    "description": "Instructions shown above the access code when it is ready to be conveyed to the client"
-  },
-  "instructionsShareBelow": {
-    "message": "Once they enter the code your sharing session will begin.",
-    "description": "Instructions shown below the access code when it is ready to be conveyed to the client"
-  },
-  "labelConnected": {
-    "message": "Connected:",
-    "description": "String displayed in front of the host in the in-session toolbar"
-  },
-  "logoutButton": {
-    "message": "Logout",
-    "description": "Logout button, visible if the user has authenticated"
-  },
-  "messageAuthorize": {
+  "DESCRIPTION_AUTHORIZE": {
     "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
-    "description": "Text shown when the app first starts, or if the access token is invalidated"
+    "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
   },
-  "messageGenerating": {
+  "DESCRIPTION_CONNECT": {
+    "message": "Have the user whose computer you wish to access click ‘Share this computer’ and then have them read their access code to you.",
+    "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started."
+  },
+  "DESCRIPTION_SHARE": {
+    "message": "With Chromoting you can easily let another Chrome user see and control your computer.",
+    "description": "Description for the host app. This is shown to the host above the 'Share' button user before the client connects."
+  },
+  "DISCONNECT_BUTTON": {
+    "message": "Disconnect",
+    "description": "Label for the disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support."
+  },
+  "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX": {
+    "message": "Disconnect (Ctrl+Alt+Esc)",
+    "description": "Label for the disconnect button including the Linux keyboard shortcut."
+  },
+  "DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X": {
+    "message": "Disconnect (⌥⌃⎋)",
+    "description": "Label for the disconnect button including the Mac OS X keyboard shortcut."
+  },
+  "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS": {
+    "message": "Disconnect (Ctrl+Alt+Esc)",
+    "description": "Label for the disconnect button including the Windows keyboard shortcut."
+  },
+  "ERROR_GENERIC": {
+    "message": "An error occurred.",
+    "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
+  },
+  "ERROR_INVALID_ACCESS_CODE": {
+    "message": "Invalid access code.",
+    "description": "Error displayed if an invalid access code is entered."
+  },
+  "ERROR_MISSING_PLUGIN": {
+    "message": "The viewer plugin is missing or out-of-date. Please upgrade to a more recent version of Chrome.",
+    "description": "Error displayed if the client plugin fails to load. The most common reason for this is that the web-app is being used in a version of Chrome that doesn't support it."
+  },
+  "ERROR_NO_RESPONSE": {
+    "message": "Failed to get response from server.",
+    "description": "Error displayed by the client if the server does not respond to a network request."
+  },
+  "ERROR_AUTHENTICATION_FAILED": {
+    "message": "Authentication failed. Try logging out and re-authorizing.",
+    "description": "Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem."
+  },
+  "ERROR_UNABLE_TO_GET_TOKEN": {
+    "message": "Unable to get access token.",
+    "description": "Error message displayed if an access token could not be generated."
+  },
+  "FOOTER_CLIENT": {
+    "message": "Click here to $linkBegin$share this computer$linkEnd$ with another user.",
+    "description": "Instructions and hyperlink to switch from client mode to host mode.",
+    "placeholders": {
+      "linkBegin": {
+        "content": "$1",
+        "example": "<a href=...>"
+      },
+      "linkEnd": {
+        "content": "$2",
+        "example": "</a>"
+      }
+    }
+  },
+  "FOOTER_CHROME_OS": {
+    "message": "Currently Hosting is not supported on Chromebooks. Hosting is supported on Windows, Mac OS X and Linux.",
+    "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."
+  },
+  "FOOTER_HOST": {
+    "message": "Click here to $linkBegin$access a shared computer$linkEnd$.",
+    "description": "Instructions and hyperlink to switch from host mode to client mode.",
+    "placeholders": {
+      "linkBegin": {
+        "content": "$1",
+        "example": "<a href=...>"
+      },
+      "linkEnd": {
+        "content": "$2",
+        "example": "</a>"
+      }
+    }
+  },
+  "FOOTER_WAITING": {
+    "message": "waiting for connection…",
+    "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
+  },
+  "INSTRUCTIONS_SHARE_ABOVE": {
+    "message": "To begin sharing your desktop, read out the access code below to the person who will be assisting you.",
+    "description": "Instructions shown above the access code when it is ready to be conveyed to the client."
+  },
+  "INSTRUCTIONS_SHARE_BELOW": {
+    "message": "Once they enter the code your sharing session will begin.",
+    "description": "Instructions shown below the access code when it is ready to be conveyed to the client."
+  },
+  "LABEL_CONNECTED": {
+    "message": "Connected:",
+    "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
+  },
+  "LOGOUT_BUTTON": {
+    "message": "Logout",
+    "description": "Logout button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
+  },
+  "MESSAGE_GENERATING": {
     "message": "Generating access code…",
-    "description": "Text shown while generating an access code"
+    "description": "Text shown while generating an access code."
   },
-  "messageSessionFinished": {
+  "MESSAGE_SESSION_FINISHED": {
     "message": "You are no longer connected to the remote desktop.",
-    "description": "Message displayed when the client has (been) disconnected"
+    "description": "Message displayed when the client has disconnected."
   },
-  "messageShared": {
-    "message": "Your desktop is currently being shared with $USER$.",
-    "description": "Message shown on the host computer while a session is active",
+  "MESSAGE_SHARED": {
+    "message": "Your desktop is currently being shared with $user$.",
+    "description": "Message shown on the host computer while a session is active informing them who is connected.",
     "placeholders": {
       "user": {
         "content": "$1",
@@ -145,50 +159,48 @@
       }
     }
   },
-  "modeAuthorize": {
+  "MODE_AUTHORIZE": {
     "message": "Authorize",
-    "description": "Sub-title for the one-time authorization step"
+    "description": "Sub-title for the one-time authorization step. Displayed after the product name and separated by a chevron."
   },
-  "modeConnect": {
+  "MODE_CONNECT": {
     "message": "Connect",
-    "description": "Sub-title for the client app"
+    "description": "Sub-title for the client app. Displayed after the product name and separated by a chevron."
   },
-  "modeShare": {
+  "MODE_SHARE": {
     "message": "Share",
-    "description": "Sub-title for the host app"
+    "description": "Sub-title for the host app. Displayed after the product name and separated by a chevron."
   },
-  "ok": {
+  "OK": {
     "message": "OK",
-    "description": "Label for general-purpose OK buttons"
+    "description": "Label for general-purpose OK buttons."
   },
-  "productName": {
-    "message": "Chromoting"
-  },
-  "productNameAndVersion": {
-    "message": "Chromoting v1.0"
-  },
-  "scaleButton": {
-    "message": "Fit Screen",
-    "description": "Label for the scaling button"
-  },
-  "shareButton": {
-    "message": "Share This Computer",
-    "description": "Label for the share button"
-  },
-  "stopSharingButton": {
-    "message": "Stop Sharing",
-    "description": "Label for the 'stop sharing' button"
-  },
-  "unableToGetToken": {
-    "message": "Unable to get access token.",
-    "description": "Error message displayed if an access token could not be generated"
-  },
-  "verifyingCode": {
-    "message": "Verifying access code…",
-    "description": "Message displayed while the access code is verified"
-  },
-  "webappDescription": {
+  "PRODUCT_DESCRIPTION": {
     "message": "Remote support in Chrome.",
-    "description": "Web-app description"
+    "description": "Web-app description. Displayed in Chrome's extensions page."
+  },
+  "PRODUCT_NAME": {
+    "message": "Chromoting",
+    "description": "The product name. Displayed in various Chrome page, including the New Tab page, and displayed prominently on the app's main page."
+  },
+  "PRODUCT_NAME_AND_VERSION": {
+    "message": "Chromoting v1.0",
+    "description": "The product name and version number. Displayed in Chrome's extensions page."
+  },
+  "SCALE_BUTTON": {
+    "message": "Fit Screen",
+    "description": "Label for the scaling button. Clicking this toggles between scale-to-fit and 1:1 mode. This is displayed in a tool-bar with limited horizontal space; please try to keep the translation under 20 characters."
+  },
+  "SHARE_BUTTON": {
+    "message": "Share This Computer",
+    "description": "Label for the share button on the host-side. Clicking this button generates an access code to be conveyed to the client."
+  },
+  "STOP_SHARING_BUTTON": {
+    "message": "Stop Sharing",
+    "description": "Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client."
+  },
+  "VERIFYING_CODE": {
+    "message": "Verifying access code…",
+    "description": "Message displayed on the client while the access code is verified."
   }
 }
