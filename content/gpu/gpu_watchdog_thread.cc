@@ -9,7 +9,10 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 
 #include "base/compiler_specific.h"
+#include "base/process_util.h"
+#include "base/process.h"
 #include "build/build_config.h"
+#include "content/common/result_codes.h"
 
 namespace {
 const int64 kCheckPeriod = 2000;
@@ -186,12 +189,12 @@ void GpuWatchdogThread::OnCheck() {
   message_loop()->PostDelayedTask(
       FROM_HERE,
       method_factory_->NewRunnableMethod(
-          &GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang),
+          &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang),
       timeout_);
 }
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
-void GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang() {
+void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
@@ -200,7 +203,7 @@ void GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang() {
     message_loop()->PostDelayedTask(
         FROM_HERE,
         method_factory_->NewRunnableMethod(
-            &GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang),
+            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang),
         timeout_ - time_since_arm);
     return;
   }
@@ -217,12 +220,11 @@ void GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang() {
     return;
   }
 
-  // Make sure the timeout period is on the stack before crashing.
-  volatile int timeout = timeout_;
-
-  // For minimal developer annoyance, don't keep crashing.
-  static bool crashed = false;
-  if (crashed)
+  // For minimal developer annoyance, don't keep terminating. You need to skip
+  // the call to base::Process::Terminate below in a debugger for this to be
+  // useful.
+  static bool terminated = false;
+  if (terminated)
     return;
 
 #if defined(OS_WIN)
@@ -233,8 +235,8 @@ void GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang() {
   LOG(ERROR) << "The GPU process hung. Terminating after "
              << timeout_ << " ms.";
 
-  volatile int* null_pointer = NULL;
-  *null_pointer = timeout;
+  base::Process current_process(base::GetCurrentProcessHandle());
+  current_process.Terminate(content::RESULT_CODE_HUNG);
 
-  crashed = true;
+  terminated = true;
 }

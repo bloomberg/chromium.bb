@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/result_codes.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "ipc/ipc_channel_handle.h"
@@ -484,10 +485,16 @@ void GpuProcessHost::OnChildDied() {
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             DIED_FIRST_TIME + g_gpu_crash_count,
                             GPU_PROCESS_LIFETIME_EVENT_MAX);
-  base::TerminationStatus status = GetChildTerminationStatus(NULL);
+
+  int exit_code;
+  base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
                             status,
                             base::TERMINATION_STATUS_MAX_ENUM);
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
+                            exit_code,
+                            content::RESULT_CODE_LAST_CODE);
+
   BrowserChildProcessHost::OnChildDied();
 }
 
