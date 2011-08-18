@@ -495,6 +495,26 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   if (sandbox::SBOX_ALL_OK != result)
     return 0;
 
+  // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
+  // address space to prevent later failure due to address space fragmentation
+  // from .dll loading. The NaCl process will attempt to locate this space by
+  // scanning the address space using VirtualQuery.
+  // TODO(bbudge) Handle the --no-sandbox case.
+  // http://code.google.com/p/nativeclient/issues/detail?id=2131
+  if (type == ChildProcessInfo::NACL_LOADER_PROCESS &&
+      (base::win::OSInfo::GetInstance()->wow64_status() ==
+          base::win::OSInfo::WOW64_DISABLED)) {
+    const SIZE_T kOneGigabyte = 1 << 30;
+    void *nacl_mem = VirtualAllocEx(target.hProcess,
+                                    NULL,
+                                    kOneGigabyte,
+                                    MEM_RESERVE,
+                                    PAGE_NOACCESS);
+    if (!nacl_mem) {
+      DLOG(WARNING) << "Failed to reserve address space for Native Client";
+    }
+  }
+
   ResumeThread(target.hThread);
   CloseHandle(target.hThread);
   process = target.hProcess;
