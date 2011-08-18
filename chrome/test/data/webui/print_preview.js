@@ -166,13 +166,7 @@ GEN(' protected:');
 GEN('  // WebUIBrowserTest override.');
 GEN('  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {');
 GEN('    WebUIBrowserTest::SetUpCommandLine(command_line);');
-GEN('#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)');
-GEN('    // Don\'t enable the flag for chrome builds, which should be on by ' +
-    'default.');
 GEN('    command_line->AppendSwitch(switches::kEnablePrintPreview);');
-GEN('#else');
-GEN('    ASSERT_TRUE(switches::IsPrintPreviewEnabled());');
-GEN('#endif');
 GEN('  }');
 GEN('');
 GEN('};');

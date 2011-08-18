@@ -359,11 +359,8 @@ extern const char kWebSocketLiveExperimentHost[];
 extern const char kExposePrivateExtensionApi[];
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 extern const char kDisablePrintPreview[];
-#else
 extern const char kEnablePrintPreview[];
-#endif
 
 bool IsPrintPreviewEnabled();
 

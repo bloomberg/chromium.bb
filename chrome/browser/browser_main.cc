@@ -1545,6 +1545,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (!parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
 
+  // Enable print preview once for supported platforms.
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+  local_state->RegisterBooleanPref(prefs::kPrintingPrintPreviewEnabledOnce,
+                                   false,
+                                   PrefService::UNSYNCABLE_PREF);
+  if (!local_state->GetBoolean(prefs::kPrintingPrintPreviewEnabledOnce)) {
+    local_state->SetBoolean(prefs::kPrintingPrintPreviewEnabledOnce, true);
+    about_flags::SetExperimentEnabled(local_state, "print-preview", true);
+  }
+#endif
+
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());

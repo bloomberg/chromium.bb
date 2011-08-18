@@ -555,6 +555,12 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
+// Enable print preview once for supported platforms.
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+const char kPrintingPrintPreviewEnabledOnce[] =
+    "printing.print_preview_enabled_once";
+#endif
+
 #if defined(TOOLKIT_USES_GTK)
 // GTK specific preference on whether we should match the system GTK theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";

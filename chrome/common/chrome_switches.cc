@@ -1206,21 +1206,18 @@ const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 // Disable print preview (Not exposed via about:flags. Only used for testing.)
 const char kDisablePrintPreview[]           = "disable-print-preview";
 
-bool IsPrintPreviewEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview);
-}
-#else
 // Enable print preview (no PDF viewer, thus not supported with Chromium).
+// kDisablePrintPreview overrides this.
 const char kEnablePrintPreview[]            = "enable-print-preview";
 
 bool IsPrintPreviewEnabled() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisablePrintPreview))
+    return false;
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnablePrintPreview);
 }
-#endif
 
 bool IsInBrowserThumbnailingEnabled() {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
