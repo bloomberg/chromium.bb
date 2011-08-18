@@ -191,6 +191,12 @@ struct NaClApp {
   int                       threads_launching;
 
   /*
+   * An array of NaCl syscall handlers. The length of the array must be
+   * at least NACL_MAX_SYSCALLS.
+   */
+  struct NaClSyscallTableEntry *syscall_table;
+
+  /*
    * Name service must launch after mu, cv, vm_hole_may_exit,
    * threads_launching are initialized.
    */
@@ -310,6 +316,21 @@ struct NaClApp {
 
 
 void  NaClAppIncrVerbosity(void);
+
+/*
+ * Initializes a NaCl application with the default parameters
+ * and the specified syscall table.
+ *
+ * nap is a pointer to the NaCl object that is being filled in.
+ *
+ * table is the NaCl syscall table. The syscall table must contain at least
+ * NACL_MAX_SYSCALLS valid entries.
+ *
+ * Caution! Syscall handlers must be extremely careful with respect to
+ * argument validation, including time-of-check vs time-of-use defense, etc.
+ */
+int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
+                                struct NaClSyscallTableEntry *table) NACL_WUR;
 
 int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
 

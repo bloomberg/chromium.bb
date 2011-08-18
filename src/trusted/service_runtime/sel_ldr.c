@@ -41,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -67,7 +68,8 @@ static int ShouldEnableDynamicLoading() {
   return !IsEnvironmentVariableSet("NACL_DISABLE_DYNAMIC_LOADING");
 }
 
-int NaClAppCtor(struct NaClApp  *nap) {
+int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
+                                struct NaClSyscallTableEntry *table) {
   struct NaClDescEffectorLdr  *effp;
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
@@ -150,6 +152,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->vm_hole_may_exist = 0;
   nap->threads_launching = 0;
+
+  nap->syscall_table = table;
 
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
   nap->module_may_start = 0;  /* only when secure_service != NULL */
@@ -245,6 +249,10 @@ int NaClAppCtor(struct NaClApp  *nap) {
   DynArrayDtor(&nap->threads);
  cleanup_none:
   return 0;
+}
+
+int NaClAppCtor(struct NaClApp *nap) {
+  return NaClAppWithSyscallTableCtor(nap, nacl_syscall);
 }
 
 size_t  NaClAlignPad(size_t val, size_t align) {

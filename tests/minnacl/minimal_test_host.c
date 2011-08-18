@@ -15,9 +15,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/tests/minnacl/minimal_test_syscalls.h"
 
-
-struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
-
 static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
   printf("Error: entered an unexpected syscall!\n");
@@ -40,26 +37,18 @@ static int32_t MySyscallExit(struct NaClAppThread *natp) {
   _exit(0);
 }
 
-/*
- * This overrides the function in service_runtime, which is somewhat hacky.
- * TODO(mseaborn): It would be cleaner if we could have per-sandbox syscall
- * tables.
- */
-void NaClSyscallTableInit() {
-  int index;
-  for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
-    nacl_syscall[index].handler = NotImplementedDecoder;
-  }
-  nacl_syscall[TEST_SYSCALL_INVOKE].handler = MySyscallInvoke;
-  nacl_syscall[TEST_SYSCALL_EXIT].handler = MySyscallExit;
-}
-
-
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
   /* sel_ldr_standard.c currently requires at least 1 argument. */
   char *untrusted_argv[] = {"blah"};
+  struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
+  int index;
+  for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
+    syscall_table[index].handler = NotImplementedDecoder;
+  }
+  syscall_table[TEST_SYSCALL_INVOKE].handler = MySyscallInvoke;
+  syscall_table[TEST_SYSCALL_EXIT].handler = MySyscallExit;
 
   if (argc != 2) {
     NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
@@ -72,7 +61,7 @@ int main(int argc, char **argv) {
     NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
   }
 
-  if (!NaClAppCtor(&app)) {
+  if (!NaClAppWithSyscallTableCtor(&app, syscall_table)) {
     NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
   }
 

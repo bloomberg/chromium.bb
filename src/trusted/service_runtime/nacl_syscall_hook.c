@@ -132,7 +132,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
 #if !BENCHMARK
     NaClLog(4, "making system call %"NACL_PRIdS", "
             "handler 0x%08"NACL_PRIxPTR"\n",
-            sysnum, (uintptr_t) nacl_syscall[sysnum].handler);
+            sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
 #endif
     /*
      * syscall_args is used by Decoder functions in
@@ -144,7 +144,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
      * user stack.
      */
     natp->syscall_args = (uintptr_t *) sp_sys;
-    natp->sysret = (*nacl_syscall[sysnum].handler)(natp);
+    natp->sysret = (*(nap->syscall_table[sysnum].handler))(natp);
   }
 #if !BENCHMARK
   NaClLog(4,
