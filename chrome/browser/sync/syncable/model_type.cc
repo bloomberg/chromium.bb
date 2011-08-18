@@ -476,58 +476,58 @@ void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
 // TODO(akalin): Figure out a better way to do these mappings.
 
 namespace {
-const char kBookmarkint[] = "BOOKMARK";
-const char kPreferenceint[] = "PREFERENCE";
-const char kPasswordint[] = "PASSWORD";
-const char kAutofillint[] = "AUTOFILL";
-const char kThemeint[] = "THEME";
-const char kTypedUrlint[] = "TYPED_URL";
-const char kExtensionint[] = "EXTENSION";
-const char kNigoriint[] = "NIGORI";
-const char kAppint[] = "APP";
-const char kSearchEngineint[] = "SEARCH_ENGINE";
-const char kSessionint[] = "SESSION";
-const char kAutofillProfileint[] = "AUTOFILL_PROFILE";
+const char kBookmarkNotificationType[] = "BOOKMARK";
+const char kPreferenceNotificationType[] = "PREFERENCE";
+const char kPasswordNotificationType[] = "PASSWORD";
+const char kAutofillNotificationType[] = "AUTOFILL";
+const char kThemeNotificationType[] = "THEME";
+const char kTypedUrlNotificationType[] = "TYPED_URL";
+const char kExtensionNotificationType[] = "EXTENSION";
+const char kNigoriNotificationType[] = "NIGORI";
+const char kAppNotificationType[] = "APP";
+const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
+const char kSessionNotificationType[] = "SESSION";
+const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
 }  // namespace
 
-bool RealModelTypeToint(ModelType model_type,
+bool RealModelTypeToNotificationType(ModelType model_type,
                                      std::string* notification_type) {
   switch (model_type) {
     case BOOKMARKS:
-      *notification_type = kBookmarkint;
+      *notification_type = kBookmarkNotificationType;
       return true;
     case PREFERENCES:
-      *notification_type = kPreferenceint;
+      *notification_type = kPreferenceNotificationType;
       return true;
     case PASSWORDS:
-      *notification_type = kPasswordint;
+      *notification_type = kPasswordNotificationType;
       return true;
     case AUTOFILL:
-      *notification_type = kAutofillint;
+      *notification_type = kAutofillNotificationType;
       return true;
     case THEMES:
-      *notification_type = kThemeint;
+      *notification_type = kThemeNotificationType;
       return true;
     case TYPED_URLS:
-      *notification_type = kTypedUrlint;
+      *notification_type = kTypedUrlNotificationType;
       return true;
     case EXTENSIONS:
-      *notification_type = kExtensionint;
+      *notification_type = kExtensionNotificationType;
       return true;
     case NIGORI:
-      *notification_type = kNigoriint;
+      *notification_type = kNigoriNotificationType;
       return true;
     case APPS:
-      *notification_type = kAppint;
+      *notification_type = kAppNotificationType;
       return true;
     case SEARCH_ENGINES:
-      *notification_type = kSearchEngineint;
+      *notification_type = kSearchEngineNotificationType;
       return true;
     case SESSIONS:
-      *notification_type = kSessionint;
+      *notification_type = kSessionNotificationType;
       return true;
     case AUTOFILL_PROFILE:
-      *notification_type = kAutofillProfileint;
+      *notification_type = kAutofillProfileNotificationType;
       return true;
     default:
       break;
@@ -536,42 +536,42 @@ bool RealModelTypeToint(ModelType model_type,
   return false;
 }
 
-bool intToRealModelType(const std::string& notification_type,
+bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type) {
-  if (notification_type == kBookmarkint) {
+  if (notification_type == kBookmarkNotificationType) {
     *model_type = BOOKMARKS;
     return true;
-  } else if (notification_type == kPreferenceint) {
+  } else if (notification_type == kPreferenceNotificationType) {
     *model_type = PREFERENCES;
     return true;
-  } else if (notification_type == kPasswordint) {
+  } else if (notification_type == kPasswordNotificationType) {
     *model_type = PASSWORDS;
     return true;
-  } else if (notification_type == kAutofillint) {
+  } else if (notification_type == kAutofillNotificationType) {
     *model_type = AUTOFILL;
     return true;
-  } else if (notification_type == kThemeint) {
+  } else if (notification_type == kThemeNotificationType) {
     *model_type = THEMES;
     return true;
-  } else if (notification_type == kTypedUrlint) {
+  } else if (notification_type == kTypedUrlNotificationType) {
     *model_type = TYPED_URLS;
     return true;
-  } else if (notification_type == kExtensionint) {
+  } else if (notification_type == kExtensionNotificationType) {
     *model_type = EXTENSIONS;
     return true;
-  } else if (notification_type == kNigoriint) {
+  } else if (notification_type == kNigoriNotificationType) {
     *model_type = NIGORI;
     return true;
-  } else if (notification_type == kAppint) {
+  } else if (notification_type == kAppNotificationType) {
     *model_type = APPS;
     return true;
-  } else if (notification_type == kSearchEngineint) {
+  } else if (notification_type == kSearchEngineNotificationType) {
     *model_type = SEARCH_ENGINES;
     return true;
-  } else if (notification_type == kSessionint) {
+  } else if (notification_type == kSessionNotificationType) {
     *model_type = SESSIONS;
     return true;
-  } else if (notification_type == kAutofillProfileint) {
+  } else if (notification_type == kAutofillProfileNotificationType) {
     *model_type = AUTOFILL_PROFILE;
     return true;
   }

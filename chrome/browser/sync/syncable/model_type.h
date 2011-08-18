@@ -159,13 +159,13 @@ void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time);
 // subscribing to server-issued notifications).  Returns true iff
 // |model_type| was a real model type and |notification_type| was
 // filled in.
-bool RealModelTypeToint(ModelType model_type,
+bool RealModelTypeToNotificationType(ModelType model_type,
                                      std::string* notification_type);
 
 // Converts a notification type to a real model type.  Returns true
 // iff |notification_type| was the notification type of a real model
 // type and |model_type| was filled in.
-bool intToRealModelType(const std::string& notification_type,
+bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type);
 
 // Returns true if |model_type| is a real datatype
