@@ -145,7 +145,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // is ignored.
   void PauseSession(bool pause);
 
-  UiStrings* ui_strings() { return &ui_strings_; }
+  const UiStrings& ui_strings() { return ui_strings_; }
+
+  // Set localized strings. Must be called before host is started.
+  void SetUiStrings(const UiStrings& ui_strings);
 
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;

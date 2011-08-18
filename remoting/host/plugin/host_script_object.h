@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/string16.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "remoting/base/plugin_message_loop_proxy.h"
@@ -135,8 +136,7 @@ class HostNPScriptObject : public HostStatusObserver {
   // a string->string mapping with one optional substitution parameter. Stores
   // the translation in |result| and returns true on success, or leaves it
   // unchanged and returns false on failure.
-  bool LocalizeString(const char* tag, const char* substitution,
-                      std::string* result);
+  bool LocalizeString(const char* tag, string16* result);
 
   // Helper function for executing InvokeDefault on an NPObject, and ignoring
   // the return value.

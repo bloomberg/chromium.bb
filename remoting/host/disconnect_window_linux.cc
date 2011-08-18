@@ -8,6 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/ui_strings.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -36,7 +38,7 @@ class DisconnectWindowLinux : public DisconnectWindow {
  private:
   CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, void, OnResponse, int);
 
-  void CreateWindow(UiStrings* ui_strings);
+  void CreateWindow(const UiStrings& ui_strings);
 
   ChromotingHost* host_;
   GtkWidget* disconnect_window_;
@@ -53,14 +55,15 @@ DisconnectWindowLinux::DisconnectWindowLinux()
 DisconnectWindowLinux::~DisconnectWindowLinux() {
 }
 
-void DisconnectWindowLinux::CreateWindow(UiStrings* ui_strings) {
+void DisconnectWindowLinux::CreateWindow(const UiStrings& ui_strings) {
   if (disconnect_window_) return;
 
   disconnect_window_ = gtk_dialog_new_with_buttons(
-      ui_strings->product_name.c_str(),
+      UTF16ToUTF8(ui_strings.product_name).c_str(),
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
-      ui_strings->disconnect_button_text_plus_shortcut.c_str(), GTK_RESPONSE_OK,
+      UTF16ToUTF8(ui_strings.disconnect_button_text_plus_shortcut).c_str(),
+      GTK_RESPONSE_OK,
       NULL);
 
   GtkWindow* window = GTK_WINDOW(disconnect_window_);
@@ -94,11 +97,13 @@ void DisconnectWindowLinux::CreateWindow(UiStrings* ui_strings) {
 }
 
 void DisconnectWindowLinux::Show(ChromotingHost* host,
-                                 const std::string& /* unused */) {
+                                 const std::string& username) {
   host_ = host;
   CreateWindow(host->ui_strings());
-  gtk_label_set_text(GTK_LABEL(message_),
-                     host->ui_strings()->disconnect_message.c_str());
+
+  string16 text = ReplaceStringPlaceholders(
+      host->ui_strings().disconnect_message, UTF8ToUTF16(username), NULL);
+  gtk_label_set_text(GTK_LABEL(message_), UTF16ToUTF8(text).c_str());
   gtk_window_present(GTK_WINDOW(disconnect_window_));
 }
 

@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_UI_STRINGS_H_
 #define REMOTING_HOST_UI_STRINGS_H_
 
-#include <string>
+#include "base/string16.h"
 
 // This struct contains localized strings to be displayed in host dialogs.
 // For the web-app, these are loaded from the appropriate messages.json
@@ -27,28 +27,25 @@ struct UiStrings {
   Direction direction;
 
   // The product name (Chromoting or Chrome Remote Desktop).
-  std::string product_name;
+  string16 product_name;
 
   // The message in the disconnect dialog.
-  std::string disconnect_message;
+  string16 disconnect_message;
 
   // The label on the disconnect dialog button, without the keyboard shortcut.
-  std::string disconnect_button_text;
+  string16 disconnect_button_text;
 
   // The label on the disconnect dialog button, with the keyboard shortcut.
-  std::string disconnect_button_text_plus_shortcut;
-
-  // The keyboard shortcut for disconnecting clients.
-  std::string disconnect_button_shortcut;
+  string16 disconnect_button_text_plus_shortcut;
 
   // The confirmation prompt displayed by the continue window.
-  std::string continue_prompt;
+  string16 continue_prompt;
 
   // The label on the 'Continue' button of the continue window.
-  std::string continue_button_text;
+  string16 continue_button_text;
 
   // The label on the 'Stop Sharing' button of the continue window.
-  std::string stop_sharing_button_text;
+  string16 stop_sharing_button_text;
 };
 
 }

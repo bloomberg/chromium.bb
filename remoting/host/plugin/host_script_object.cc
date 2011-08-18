@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/utf_string_conversions.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/util.h"
 #include "remoting/host/chromoting_host.h"
@@ -350,7 +352,6 @@ void HostNPScriptObject::OnClientAuthenticated(
   if (pos != std::string::npos)
     client_username_.replace(pos, std::string::npos, "");
   LOG(INFO) << "Client " << client_username_ << " connected.";
-  LocalizeStrings();
   OnStateChanged(kConnected);
 }
 
@@ -481,6 +482,8 @@ void HostNPScriptObject::FinishConnect(
   host_->AddStatusObserver(this);
   host_->AddStatusObserver(register_request_.get());
   host_->set_it2me(true);
+
+  LocalizeStrings();
 
   // Start the Host.
   host_->Start();
@@ -642,15 +645,13 @@ void HostNPScriptObject::SetException(const std::string& exception_string) {
 }
 
 void HostNPScriptObject::LocalizeStrings() {
-  UiStrings* ui_strings = host_->ui_strings();
-  std::string direction;
-  LocalizeString("@@bidi_dir", NULL, &direction);
-  ui_strings->direction =
-      direction == "rtl" ? remoting::UiStrings::RTL
-                         : remoting::UiStrings::LTR;
-  LocalizeString("PRODUCT_NAME", NULL, &ui_strings->product_name);
-  LocalizeString("DISCONNECT_BUTTON", NULL,
-                 &ui_strings->disconnect_button_text);
+  UiStrings ui_strings;
+  string16 direction;
+  LocalizeString("@@bidi_dir", &direction);
+  ui_strings.direction = UTF16ToUTF8(direction) == "rtl" ?
+      remoting::UiStrings::RTL : remoting::UiStrings::LTR;
+  LocalizeString("PRODUCT_NAME", &ui_strings.product_name);
+  LocalizeString("DISCONNECT_BUTTON", &ui_strings.disconnect_button_text);
   LocalizeString(
 #if defined(OS_WIN)
       "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
@@ -659,28 +660,22 @@ void HostNPScriptObject::LocalizeStrings() {
 #else
       "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
 #endif
-      NULL, &ui_strings->disconnect_button_text_plus_shortcut);
-  LocalizeString("CONTINUE_PROMPT", NULL, &ui_strings->continue_prompt);
-  LocalizeString("CONTINUE_BUTTON", NULL, &ui_strings->continue_button_text);
-  LocalizeString("STOP_SHARING_BUTTON", NULL,
-                 &ui_strings->stop_sharing_button_text);
-  LocalizeString("MESSAGE_SHARED", client_username_.c_str(),
-                 &ui_strings->disconnect_message);
+      &ui_strings.disconnect_button_text_plus_shortcut);
+  LocalizeString("CONTINUE_PROMPT", &ui_strings.continue_prompt);
+  LocalizeString("CONTINUE_BUTTON", &ui_strings.continue_button_text);
+  LocalizeString("STOP_SHARING_BUTTON",
+                 &ui_strings.stop_sharing_button_text);
+  LocalizeString("MESSAGE_SHARED", &ui_strings.disconnect_message);
+
+  host_->SetUiStrings(ui_strings);
 }
 
-bool HostNPScriptObject::LocalizeString(const char* tag,
-                                        const char* substitution,
-                                        std::string* result) {
+bool HostNPScriptObject::LocalizeString(const char* tag, string16* result) {
   NPVariant args[2];
   STRINGZ_TO_NPVARIANT(tag, args[0]);
-  int arg_count = 1;
-  if (substitution) {
-    STRINGZ_TO_NPVARIANT(substitution, args[1]);
-    ++arg_count;
-  }
   NPVariant np_result;
   bool is_good = g_npnetscape_funcs->invokeDefault(
-      plugin_, localize_func_.get(), &args[0], arg_count, &np_result);
+      plugin_, localize_func_.get(), &args[0], 1, &np_result);
   if (!is_good) {
     LOG(ERROR) << "Localization failed for " << tag;
     return false;
@@ -691,7 +686,7 @@ bool HostNPScriptObject::LocalizeString(const char* tag,
     LOG(ERROR) << "Missing translation for " << tag;
     return false;
   }
-  *result = translation;
+  *result = UTF8ToUTF16(translation);
   return true;
 }
 
