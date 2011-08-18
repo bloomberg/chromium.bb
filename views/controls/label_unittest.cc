@@ -306,7 +306,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY, flags);
 
   // Left aligned text.
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
@@ -319,7 +319,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY, flags);
 
   // Right aligned text.
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
@@ -332,7 +332,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY, flags);
 
   // Test single line drawing with a border.
   gfx::Insets border(39, 34, 8, 96);
@@ -362,7 +362,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY, flags);
 
   // Left aligned text with border.
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
@@ -375,7 +375,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_LTR_DIRECTIONALITY, flags);
 
   // Right aligned text.
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
@@ -388,7 +388,7 @@ TEST(LabelTest, DrawSingleLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2 , text_bounds.y());
   EXPECT_EQ(required_size.width(), text_bounds.width());
   EXPECT_EQ(required_size.height(), text_bounds.height());
-  EXPECT_EQ(0, flags);
+  EXPECT_EQ(gfx::Canvas::FORCE_RTL_DIRECTIONALITY, flags);
 }
 
 // On Linux the underlying pango routines require a max height in order to
@@ -422,14 +422,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(extra.height() / 2, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+  int expected_flags = gfx::Canvas::MULTI_LINE |
+                       gfx::Canvas::TEXT_ALIGN_CENTER |
+                       gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_CENTER |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
   gfx::Rect center_bounds(text_bounds);
 
@@ -442,14 +441,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(extra.height() / 2, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+  expected_flags = gfx::Canvas::MULTI_LINE |
+                   gfx::Canvas::TEXT_ALIGN_LEFT |
+                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_LEFT |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
 
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
@@ -461,14 +459,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(extra.height() / 2, text_bounds.y());
   EXPECT_GT(text_bounds.width(), kMinTextDimension);
   EXPECT_GT(text_bounds.height(), kMinTextDimension);
+  expected_flags = gfx::Canvas::MULTI_LINE |
+                   gfx::Canvas::TEXT_ALIGN_RIGHT |
+                   gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_RIGHT |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
 
   // Test multiline drawing with a border.
@@ -492,14 +489,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2, text_bounds.y());
   EXPECT_EQ(center_bounds.width(), text_bounds.width());
   EXPECT_EQ(center_bounds.height(), text_bounds.height());
+  expected_flags = gfx::Canvas::MULTI_LINE |
+                   gfx::Canvas::TEXT_ALIGN_CENTER |
+                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_CENTER, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_CENTER |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
 
   label.SetHorizontalAlignment(Label::ALIGN_LEFT);
@@ -511,14 +507,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2, text_bounds.y());
   EXPECT_EQ(center_bounds.width(), text_bounds.width());
   EXPECT_EQ(center_bounds.height(), text_bounds.height());
+  expected_flags = gfx::Canvas::MULTI_LINE |
+                   gfx::Canvas::TEXT_ALIGN_LEFT |
+                   gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_LEFT, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_LEFT |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
 
   label.SetHorizontalAlignment(Label::ALIGN_RIGHT);
@@ -530,14 +525,13 @@ TEST(LabelTest, DrawMultiLineString) {
   EXPECT_EQ(border.top() + extra.height() / 2, text_bounds.y());
   EXPECT_EQ(center_bounds.width(), text_bounds.width());
   EXPECT_EQ(center_bounds.height(), text_bounds.height());
+  expected_flags = gfx::Canvas::MULTI_LINE |
+                   gfx::Canvas::TEXT_ALIGN_RIGHT |
+                   gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
 #if defined(OS_WIN)
-  EXPECT_EQ(gfx::Canvas::MULTI_LINE | gfx::Canvas::TEXT_ALIGN_RIGHT, flags);
+  EXPECT_EQ(expected_flags, flags);
 #else
-  EXPECT_EQ(
-      gfx::Canvas::MULTI_LINE |
-      gfx::Canvas::TEXT_ALIGN_RIGHT |
-      gfx::Canvas::NO_ELLIPSIS,
-      flags);
+  EXPECT_EQ(expected_flags | gfx::Canvas::NO_ELLIPSIS, flags);
 #endif
 }
 

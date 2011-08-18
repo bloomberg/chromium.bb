@@ -112,12 +112,15 @@ int ComputeFormatFlags(int flags, const string16& text) {
   // first character with strong directionality. If the directionality of the
   // first character with strong directionality in the text is LTR, the
   // alignment is set to DT_LEFT, and the directionality should not be set as
-  // DT_RTLREADING.
+  // DT_RTLREADING. If the directionality of the first character with strong
+  // directionality in the text is RTL, its alignment is set to DT_RIGHT, and
+  // its directionality is set as DT_RTLREADING through
+  // FORCE_RTL_DIRECTIONALITY.
   //
   // This heuristic doesn't work for Chrome UI strings since even in RTL
   // locales, some of those might start with English text but we know they're
-  // localized so we always want them to be right aligned, and their
-  // directionality should be set as DT_RTLREADING.
+  // localized so their directionality should be set as DT_RTLREADING if it
+  // contains strong RTL characters.
   //
   // Caveat: If the string is purely LTR, don't set DTL_RTLREADING since when
   // the flag is set, LRE-PDF don't have the desired effect of rendering
@@ -126,11 +129,13 @@ int ComputeFormatFlags(int flags, const string16& text) {
   // Note that if the caller is explicitly requesting displaying the text
   // using RTL directionality then we respect that and pass DT_RTLREADING to
   // ::DrawText even if the locale is LTR.
-  if ((flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY) ||
-      (base::i18n::IsRTL() &&
-       (f & DT_RIGHT) && base::i18n::StringContainsStrongRTLChars(text))) {
+  int force_rtl = (flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY);
+  int force_ltr = (flags & gfx::Canvas::FORCE_LTR_DIRECTIONALITY);
+  bool is_rtl = base::i18n::IsRTL();
+  bool string_contains_strong_rtl_chars =
+      base::i18n::StringContainsStrongRTLChars(text);
+  if (force_rtl || (!force_ltr && is_rtl && string_contains_strong_rtl_chars))
     f |= DT_RTLREADING;
-  }
 
   return f;
 }
