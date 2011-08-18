@@ -196,6 +196,8 @@ class InputMethodIBus::PendingKeyEvent {
   ui::EventType type_;
   int flags_;
   ui::KeyboardCode key_code_;
+  uint16 character_;
+  uint16 unmodified_character_;
 
   guint32 ibus_keyval_;
 
@@ -215,6 +217,8 @@ InputMethodIBus::PendingKeyEvent::PendingKeyEvent(InputMethodIBus* input_method,
       type_(key.type()),
       flags_(key.flags()),
       key_code_(key.key_code()),
+      character_(key.GetCharacter()),
+      unmodified_character_(key.GetUnmodifiedCharacter()),
       ibus_keyval_(ibus_keyval) {
   DCHECK(input_method_);
 
@@ -244,6 +248,10 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
   }
 #endif
   KeyEvent key(type_, key_code_, flags_);
+  if (key_code_ == ui::VKEY_UNKNOWN) {
+    key.set_character(character_);
+    key.set_unmodified_character(unmodified_character_);
+  }
   input_method_->ProcessKeyEventPostIME(key, ibus_keyval_, handled);
 }
 
