@@ -41,6 +41,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -249,6 +250,32 @@ TEST_F(PluginTest, Silverlight) {
              TestTimeouts::action_max_timeout_ms(), false);
 }
 
+namespace {
+
+class TestURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  explicit TestURLRequestContextGetter() {
+    io_message_loop_proxy_ = base::MessageLoopProxy::current();
+  }
+  virtual net::URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_;
+  }
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+    return io_message_loop_proxy_;
+  }
+
+ protected:
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
+ private:
+  virtual ~TestURLRequestContextGetter() {}
+
+  scoped_refptr<net::URLRequestContext> context_;
+};
+
+}  // namespace
 // This class provides functionality to test the plugin installer download
 // file functionality.
 class PluginInstallerDownloadTest
@@ -265,7 +292,10 @@ class PluginInstallerDownloadTest
     download_helper_ = new PluginDownloadUrlHelper(
         initial_download_path_.spec(), NULL,
         static_cast<PluginDownloadUrlHelper::DownloadDelegate*>(this));
-    download_helper_->InitiateDownload(new TestURLRequestContext);
+    TestURLRequestContextGetter* context_getter =
+        new TestURLRequestContextGetter;
+    download_helper_->InitiateDownload(context_getter,
+                                       context_getter->GetIOMessageLoopProxy());
 
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, new MessageLoop::QuitTask,

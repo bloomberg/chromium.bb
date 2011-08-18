@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_plugin_message_filter.h"
 
 #include "chrome/browser/browser_process.h"
+#include "content/browser/browser_thread.h"
 #include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/plugin_process_host.h"
@@ -42,11 +43,21 @@ bool ChromePluginMessageFilter::Send(IPC::Message* message) {
 #if defined(OS_WIN)
 void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
                                               gfx::NativeWindow caller_window) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(OnDownloadUrlOnFileThread, url, caller_window));
+}
+
+void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(
+    const std::string& url,
+    gfx::NativeWindow caller_window) {
   PluginDownloadUrlHelper* download_url_helper =
       new PluginDownloadUrlHelper(url, caller_window, NULL);
   download_url_helper->InitiateDownload(
-      Profile::Deprecated::GetDefaultRequestContext()->GetURLRequestContext());
+      Profile::Deprecated::GetDefaultRequestContext(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
+
 #endif
 
 void ChromePluginMessageFilter::OnGetPluginFinderUrl(

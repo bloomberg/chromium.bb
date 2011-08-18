@@ -11,6 +11,8 @@
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
+#include "base/message_loop_proxy.h"
+#include "content/common/url_fetcher.h"
 #include "net/base/file_stream.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/native_widget_types.h"
@@ -18,8 +20,7 @@
 // The PluginDownloadUrlHelper is used to handle one download URL request
 // from the plugin. Each download request is handled by a new instance
 // of this class.
-class PluginDownloadUrlHelper : public net::URLRequest::Delegate {
-  static const int kDownloadFileBufferSize = 32768;
+class PluginDownloadUrlHelper : public URLFetcher::Delegate {
  public:
   // The delegate receives notification about the status of downloads
   // initiated.
@@ -36,30 +37,23 @@ class PluginDownloadUrlHelper : public net::URLRequest::Delegate {
                           PluginDownloadUrlHelper::DownloadDelegate* delegate);
   ~PluginDownloadUrlHelper();
 
-  void InitiateDownload(net::URLRequestContext* request_context);
+  void InitiateDownload(net::URLRequestContextGetter* request_context,
+                        base::MessageLoopProxy* file_thread_proxy);
 
-  // net::URLRequest::Delegate
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info);
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     int cert_error,
-                                     net::X509Certificate* cert);
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const net::URLRequestStatus& status,
+                                  int response_code,
+                                  const net::ResponseCookies& cookies,
+                                  const std::string& data) {}
+  virtual void OnURLFetchComplete(const URLFetcher* source);
 
   void OnDownloadCompleted(net::URLRequest* request);
 
  protected:
-  void DownloadCompletedHelper(bool success);
-
   // The download file request initiated by the plugin.
-  net::URLRequest* download_file_request_;
-  // Handle to the downloaded file.
-  scoped_ptr<net::FileStream> download_file_;
-  // The full path of the downloaded file.
-  FilePath download_file_path_;
-  // The buffer passed off to net::URLRequest::Read.
-  scoped_refptr<net::IOBuffer> download_file_buffer_;
+  scoped_ptr<URLFetcher> download_file_fetcher_;
   // TODO(port): this comment doesn't describe the situation on Posix.
   // The window handle for sending the WM_COPYDATA notification,
   // indicating that the download completed.

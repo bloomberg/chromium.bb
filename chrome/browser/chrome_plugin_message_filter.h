@@ -30,6 +30,9 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #if defined(OS_WIN)
   void OnDownloadUrl(const std::string& url,
                      gfx::NativeWindow caller_window);
+  // Helper function to issue the download request on the file thread.
+  static void OnDownloadUrlOnFileThread(const std::string& url,
+                                        gfx::NativeWindow caller_window);
 #endif
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
 

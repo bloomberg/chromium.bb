@@ -8,160 +8,63 @@
 #include <windows.h>
 
 #include "base/file_util.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(
     const std::string& download_url,
     gfx::NativeWindow caller_window,
     PluginDownloadUrlHelper::DownloadDelegate* delegate)
-    : download_file_request_(NULL),
-      download_file_buffer_(new net::IOBuffer(kDownloadFileBufferSize)),
+    : download_file_fetcher_(NULL),
       download_file_caller_window_(caller_window),
       download_url_(download_url),
       delegate_(delegate) {
-  memset(download_file_buffer_->data(), 0, kDownloadFileBufferSize);
-  download_file_.reset(new net::FileStream());
 }
 
 PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
-  if (download_file_request_) {
-    delete download_file_request_;
-    download_file_request_ = NULL;
-  }
 }
 
 void PluginDownloadUrlHelper::InitiateDownload(
-    net::URLRequestContext* request_context) {
-  download_file_request_ = new net::URLRequest(GURL(download_url_), this);
-  download_file_request_->set_context(request_context);
-  download_file_request_->Start();
+    net::URLRequestContextGetter* request_context,
+    base::MessageLoopProxy* file_thread_proxy) {
+  download_file_fetcher_.reset(
+      new URLFetcher(GURL(download_url_), URLFetcher::GET, this));
+  download_file_fetcher_->set_request_context(request_context);
+  download_file_fetcher_->SaveResponseToTemporaryFile(file_thread_proxy);
+  download_file_fetcher_->Start();
 }
 
-void PluginDownloadUrlHelper::OnAuthRequired(
-    net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
-  net::URLRequest::Delegate::OnAuthRequired(request, auth_info);
-  DownloadCompletedHelper(false);
-}
-
-void PluginDownloadUrlHelper::OnSSLCertificateError(
-    net::URLRequest* request,
-    int cert_error,
-    net::X509Certificate* cert) {
-  net::URLRequest::Delegate::OnSSLCertificateError(request, cert_error, cert);
-  DownloadCompletedHelper(false);
-}
-
-void PluginDownloadUrlHelper::OnResponseStarted(net::URLRequest* request) {
-  if (!download_file_->IsOpen()) {
-    // This is safe because once the temp file has been safely created, an
-    // attacker can't drop a symlink etc into place.
-    file_util::CreateTemporaryFile(&download_file_path_);
-    download_file_->Open(download_file_path_,
-                         base::PLATFORM_FILE_CREATE_ALWAYS |
-                         base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE);
-    if (!download_file_->IsOpen()) {
-      NOTREACHED();
-      OnDownloadCompleted(request);
-      return;
-    }
-  }
-  if (!request->status().is_success()) {
-    OnDownloadCompleted(request);
-  } else {
-    // Initiate a read.
-    int bytes_read = 0;
-    if (!request->Read(download_file_buffer_, kDownloadFileBufferSize,
-                       &bytes_read)) {
-      // If the error is not an IO pending, then we're done
-      // reading.
-      if (!request->status().is_io_pending()) {
-        OnDownloadCompleted(request);
-      }
-    } else if (bytes_read == 0) {
-      OnDownloadCompleted(request);
-    } else {
-      OnReadCompleted(request, bytes_read);
-    }
-  }
-}
-
-void PluginDownloadUrlHelper::OnReadCompleted(net::URLRequest* request,
-                                              int bytes_read) {
-  DCHECK(download_file_->IsOpen());
-
-  if (bytes_read == 0) {
-    OnDownloadCompleted(request);
-    return;
-  }
-
-  int request_bytes_read = bytes_read;
-
-  while (request->status().is_success()) {
-    int bytes_written = download_file_->Write(download_file_buffer_->data(),
-        request_bytes_read, NULL);
-    DCHECK((bytes_written < 0) || (bytes_written == request_bytes_read));
-
-    if ((bytes_written < 0) || (bytes_written != request_bytes_read)) {
-      DownloadCompletedHelper(false);
-      break;
-    }
-
-    // Start reading
-    request_bytes_read = 0;
-    if (!request->Read(download_file_buffer_, kDownloadFileBufferSize,
-                       &request_bytes_read)) {
-      if (!request->status().is_io_pending()) {
-        // If the error is not an IO pending, then we're done
-        // reading.
-        OnDownloadCompleted(request);
-      }
-      break;
-    } else if (request_bytes_read == 0) {
-      OnDownloadCompleted(request);
-      break;
-    }
-  }
-}
-
-void PluginDownloadUrlHelper::OnDownloadCompleted(net::URLRequest* request) {
-  bool success = true;
-  if (!request->status().is_success()) {
-    success = false;
-  } else if (!download_file_->IsOpen()) {
-    success = false;
-  }
-
-  DownloadCompletedHelper(success);
-}
-
-void PluginDownloadUrlHelper::DownloadCompletedHelper(bool success) {
-  if (download_file_->IsOpen()) {
-      download_file_.reset();
-  }
+void PluginDownloadUrlHelper::OnURLFetchComplete(const URLFetcher* source) {
+  bool success = source->status().is_success();
+  FilePath response_file;
 
   if (success) {
-    FilePath new_download_file_path =
-      download_file_path_.DirName().AppendASCII(
-          download_file_request_->url().ExtractFileName());
+    if (source->GetResponseAsFilePath(true, &response_file)) {
+      FilePath new_download_file_path =
+          response_file.DirName().AppendASCII(
+              download_file_fetcher_->url().ExtractFileName());
 
-    file_util::Delete(new_download_file_path, false);
+      file_util::Delete(new_download_file_path, false);
 
-    if (!file_util::ReplaceFileW(download_file_path_,
-                                 new_download_file_path)) {
-      DLOG(ERROR) << "Failed to rename file:"
-                  << download_file_path_.value()
-                  << " to file:"
-                  << new_download_file_path.value();
+      if (!file_util::ReplaceFileW(response_file,
+                                   new_download_file_path)) {
+        DLOG(ERROR) << "Failed to rename file:"
+                    << response_file.value()
+                    << " to file:"
+                    << new_download_file_path.value();
+      } else {
+        response_file = new_download_file_path;
+      }
     } else {
-      download_file_path_ = new_download_file_path;
+      NOTREACHED() << "Failed to download the plugin installer.";
+      success = false;
     }
   }
 
   if (delegate_) {
-    delegate_->OnDownloadCompleted(download_file_path_, success);
+    delegate_->OnDownloadCompleted(response_file, success);
   } else {
-    std::wstring path = download_file_path_.value();
+    std::wstring path = response_file.value();
     COPYDATASTRUCT download_file_data = {0};
     download_file_data.cbData =
         static_cast<unsigned long>((path.length() + 1) * sizeof(wchar_t));
@@ -173,7 +76,6 @@ void PluginDownloadUrlHelper::DownloadCompletedHelper(bool success) {
                     reinterpret_cast<LPARAM>(&download_file_data));
     }
   }
-
   // Don't access any members after this.
   delete this;
 }
