@@ -555,6 +555,12 @@ cr.define('ntp4', function() {
     pageSwitcherRight.style.width =
         (page.sideMargin - scrollbarWidth + 13) + 'px';
     pageSwitcherRight.style.right = scrollbarWidth + 'px';
+
+    var offsetTop = page.querySelector('.tile-page-content').offsetTop + 'px';
+    pageSwitcherLeft.style.top = offsetTop;
+    pageSwitcherRight.style.top = offsetTop;
+    pageSwitcherLeft.style.paddingBottom = offsetTop;
+    pageSwitcherRight.style.paddingBottom = offsetTop;
   }
 
   /**

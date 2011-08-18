@@ -201,10 +201,11 @@ html[dir='rtl'] #attribution {
 .page-switcher {
   background-color: transparent;
   border: none;
+  bottom: 0;
   font-size: 40px;
-  height: 100%;
   padding: 0;
   position: absolute;
+  margin: 0;
   max-width: 150px;
   min-width: 90px;
   opacity: 0.3;
