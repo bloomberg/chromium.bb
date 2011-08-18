@@ -121,19 +121,23 @@ void MetricsHandler::HandleRecordAction(const ListValue* args) {
 
 void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
   std::string histogram_name;
-  CHECK(args->GetString(0, &histogram_name));
-
   double value;
-  CHECK(args->GetDouble(1, &value));
-  int int_value = static_cast<int>(value);
-
   double boundary_value;
-  CHECK(args->GetDouble(2, &boundary_value));
-  int int_boundary_value = static_cast<int>(boundary_value);
+  if (!args->GetString(0, &histogram_name) ||
+      !args->GetDouble(1, &value) ||
+      !args->GetDouble(2, &boundary_value)) {
+    NOTREACHED();
+    return;
+  }
 
-  CHECK_LE(int_boundary_value, 4000);
-  CHECK_LE(int_value, int_boundary_value);
-  CHECK_LE(0, int_value);
+  int int_value = static_cast<int>(value);
+  int int_boundary_value = static_cast<int>(boundary_value);
+  if (int_boundary_value >= 4000 ||
+      int_value > int_boundary_value ||
+      int_value < 0) {
+    NOTREACHED();
+    return;
+  }
 
   int bucket_count = int_boundary_value;
   while (bucket_count >= 100) {
