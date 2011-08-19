@@ -284,10 +284,16 @@ NSDictionary* attributeToMethodNameMap = nil;
          i < browserAccessibility_->indirect_child_ids().size();
          ++i) {
       int32 child_id = browserAccessibility_->indirect_child_ids()[i];
-      BrowserAccessibilityCocoa* child =
-          browserAccessibility_->manager()->GetFromRendererID(child_id)->
-              toBrowserAccessibilityCocoa();
-      [children_ addObject:child];
+      BrowserAccessibility* child =
+          browserAccessibility_->manager()->GetFromRendererID(child_id);
+
+      // This only became necessary as a result of crbug.com/93095. It should be
+      // a DCHECK in the future.
+      if (child) {
+        BrowserAccessibilityCocoa* child_cocoa =
+            child->toBrowserAccessibilityCocoa();
+        [children_ addObject:child_cocoa];
+      }
     }
   }
   return children_;

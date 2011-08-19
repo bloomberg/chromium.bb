@@ -359,8 +359,8 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
 
   // If the node has changed roles, don't reuse a BrowserAccessibility
   // object, that could confuse a screen reader.
-  if (instance && instance->role() != src.role)
-    instance = NULL;
+  // TODO(dtseng): Investigate when this gets hit; See crbug.com/93095.
+  DCHECK(!instance || instance->role() == src.role);
 
   // If we're reusing a node, it should already be detached from a parent
   // and any children. If not, that means we have a serious bug somewhere,
