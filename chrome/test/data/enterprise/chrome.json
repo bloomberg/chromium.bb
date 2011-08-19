@@ -36,6 +36,7 @@
   "DisabledPluginsExceptions": ["Chrome PDF Viewer"],
   "DnsPrefetchingEnabled": true,
   "DownloadDirectory": "Downloads",
+  "EditBookmarksEnabled": true,
   "EnableAuthNegotiatePort": false,
   "EnabledPlugins": ["Java"],
   "ExtensionInstallBlacklist": ["extension_id1", "extension_id2"],

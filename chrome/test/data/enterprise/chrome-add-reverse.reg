@@ -25,6 +25,7 @@ Windows Registry Editor Version 5.00
 "DeveloperToolsDisabled"=dword:0
 "DisableSpdy"=dword:0
 "DnsPrefetchingEnabled"=dword:0
+"EditBookmarksEnabled"=dword:0
 "IncognitoEnabled"=dword:0
 "InstantEnabled"=dword:0
 "JavascriptEnabled"=dword:1

@@ -79,6 +79,7 @@ Windows Registry Editor Version 5.00
 "DisableSpdy"=dword:1
 "DnsPrefetchingEnabled"=dword:1
 "DownloadDirectory"="Downloads"
+"EditBookmarksEnabled"=dword:1
 "IncognitoEnabled"=dword:1
 "InstantEnabled"=dword:1
 "JavascriptEnabled"=dword:1

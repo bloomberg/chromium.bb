@@ -174,6 +174,14 @@ class EnterpriseTest(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     self._CheckIfPrefCanBeModified(pyauto.kPasswordManagerEnabled, True, False)
+  
+  def testPasswordManagerNotAllowShowPasswords(self):
+    """Verify that password manager preference not to show passwords 
+    cannot be modified."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kPasswordManagerAllowShowPasswords,
+                                   False, True)
 
   # Tests for options in Under the Hood
   def testPrivacyPrefs(self):
@@ -350,6 +358,12 @@ class EnterpriseTest(pyauto.PyUITest):
     self.assertTrue(translate_info['can_translate_page'])
     self.assertTrue('translate_bar' in translate_info)
     self._CheckIfPrefCanBeModified(pyauto.kEnableTranslate, True, False)
+  
+  def testEditBookmarksEnabled(self):
+    """Verify that bookmarks can be edited if policy sets it."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, True, False)
 
 class EnterpriseTestReverse(pyauto.PyUITest):
   """Test for the Enterprise features that uses the opposite values of the
@@ -508,6 +522,14 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     self._CheckIfPrefCanBeModified(pyauto.kPasswordManagerEnabled, False, True)
+  
+  def testPasswordManagerAllowShowPasswords(self):
+    """Verify that password manager preference to show passwords 
+    cannot be modified."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kPasswordManagerAllowShowPasswords,
+                                   True, False)
 
   # Tests for options in Under the Hood
   def testPrivacyPrefs(self):
@@ -633,6 +655,12 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     self.assertFalse(self.WaitForInfobarCount(1))
     self._CheckIfPrefCanBeModified(pyauto.kEnableTranslate, False, True)
 
+  def testEditBookmarksDisabled(self):
+    """Verify that bookmarks cannot be edited if policy sets it."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+    self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, False, True)
+   
 
 if __name__ == '__main__':
   pyauto_functional.Main()
