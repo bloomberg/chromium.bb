@@ -343,20 +343,22 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	struct arg *a, *ret;
 	int has_destructor, has_destroy;
 
-	/* We provide a hand written constructor for the display object */
-	if (strcmp(interface->name, "wl_display") != 0)
-		printf("static inline struct %s *\n"
-		       "%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
-		       "{\n"
-		       "\twl_display_bind(display, id, \"%s\", version);\n\n"
-		       "\treturn (struct %s *)\n"
-		       "\t\twl_proxy_create_for_id(display, &%s_interface, id);\n"
-		       "}\n\n",
-		       interface->name,
-		       interface->name,
-		       interface->name,
-		       interface->name,
-		       interface->name);
+	/* We provide a hand written functions for the display object */
+	if (strcmp(interface->name, "wl_display") == 0)
+		return;
+
+	printf("static inline struct %s *\n"
+	       "%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
+	       "{\n"
+	       "\twl_display_bind(display, id, \"%s\", version);\n\n"
+	       "\treturn (struct %s *)\n"
+	       "\t\twl_proxy_create_for_id(display, &%s_interface, id);\n"
+	       "}\n\n",
+	       interface->name,
+	       interface->name,
+	       interface->name,
+	       interface->name,
+	       interface->name);
 
 	printf("static inline void\n"
 	       "%s_set_user_data(struct %s *%s, void *user_data)\n"
@@ -390,8 +392,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		exit(EXIT_FAILURE);
 	}
 
-	/* And we have a hand-written display destructor */
-	if (!has_destructor && strcmp(interface->name, "wl_display") != 0)
+	if (!has_destructor)
 		printf("static inline void\n"
 		       "%s_destroy(struct %s *%s)\n"
 		       "{\n"

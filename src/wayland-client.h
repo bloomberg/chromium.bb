@@ -44,6 +44,10 @@ int wl_proxy_add_listener(struct wl_proxy *proxy,
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 void *wl_proxy_get_user_data(struct wl_proxy *proxy);
 
+void wl_display_bind(struct wl_display *display,
+		     uint32_t id, const char *interface, uint32_t version);
+struct wl_callback *wl_display_sync(struct wl_display *display);
+
 #include "wayland-client-protocol.h"
 
 #define WL_DISPLAY_READABLE 0x01
