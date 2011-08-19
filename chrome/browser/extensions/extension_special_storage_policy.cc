@@ -5,11 +5,15 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 
 #include "base/logging.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 
-ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy() {}
+ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
+    HostContentSettingsMap* host_content_settings_map)
+    : host_content_settings_map_(host_content_settings_map) {}
 
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
 
@@ -23,6 +27,14 @@ bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   base::AutoLock locker(lock_);
   return unlimited_extensions_.Contains(origin);
+}
+
+bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
+  if (host_content_settings_map_ == NULL)
+    return false;
+  ContentSetting content_setting = host_content_settings_map_->
+      GetCookieContentSetting(origin, origin, true);
+  return (content_setting == CONTENT_SETTING_SESSION_ONLY);
 }
 
 bool ExtensionSpecialStoragePolicy::IsFileHandler(

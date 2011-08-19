@@ -22,6 +22,7 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
 
   virtual bool IsStorageProtected(const GURL& origin);
   virtual bool IsStorageUnlimited(const GURL& origin);
+  virtual bool IsStorageSessionOnly(const GURL& origin);
   virtual bool IsFileHandler(const std::string& extension_id);
 
   void AddProtected(const GURL& origin) {
@@ -32,6 +33,10 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
     unlimited_.insert(origin);
   }
 
+  void AddSessionOnly(const GURL& origin) {
+    session_only_.insert(origin);
+  }
+
   void AddFileHandler(const std::string& id) {
     file_handlers_.insert(id);
   }
@@ -39,12 +44,14 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   void Reset() {
     protected_.clear();
     unlimited_.clear();
+    session_only_.clear();
     file_handlers_.clear();
   }
 
  private:
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;
+  std::set<GURL> session_only_;
   std::set<std::string> file_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionSpecialStoragePolicy);

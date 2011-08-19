@@ -42,6 +42,10 @@ class SpecialStoragePolicy
   // file handler.
   virtual bool IsFileHandler(const std::string& extension_id) = 0;
 
+  // Some origins are only allowed to store session-only data which is deleted
+  // when the session ends.
+  virtual bool IsStorageSessionOnly(const GURL& origin) = 0;
+
   // Adds/removes an observer, the policy does not take
   // ownership of the observer. Should only be called on the IO thread.
   void AddObserver(Observer* observer);

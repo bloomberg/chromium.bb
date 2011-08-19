@@ -14,18 +14,21 @@
 #include "webkit/quota/special_storage_policy.h"
 
 class Extension;
+class HostContentSettingsMap;
 
 // Special rights are granted to 'extensions' and 'applications'. The
 // storage subsystems and the browsing data remover query this interface
 // to determine which origins have these rights.
 class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
-  ExtensionSpecialStoragePolicy();
+  explicit ExtensionSpecialStoragePolicy(
+      HostContentSettingsMap* host_content_settings_map);
 
   // SpecialStoragePolicy methods used by storage subsystems and the browsing
   // data remover. These methods are safe to call on any thread.
   virtual bool IsStorageProtected(const GURL& origin);
   virtual bool IsStorageUnlimited(const GURL& origin);
+  virtual bool IsStorageSessionOnly(const GURL& origin);
   virtual bool IsFileHandler(const std::string& extension_id);
 
   // Methods used by the ExtensionService to populate this class.
@@ -61,6 +64,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   SpecialCollection protected_apps_;
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SPECIAL_STORAGE_POLICY_H_

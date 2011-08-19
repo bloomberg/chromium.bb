@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 
-MockExtensionSpecialStoragePolicy::MockExtensionSpecialStoragePolicy() {}
+MockExtensionSpecialStoragePolicy::MockExtensionSpecialStoragePolicy()
+    : ExtensionSpecialStoragePolicy(NULL) {}
+
 MockExtensionSpecialStoragePolicy::~MockExtensionSpecialStoragePolicy() {}
 
 bool MockExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
@@ -13,6 +15,11 @@ bool MockExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 
 bool MockExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   return unlimited_.find(origin) != unlimited_.end();
+}
+
+bool MockExtensionSpecialStoragePolicy::IsStorageSessionOnly(
+    const GURL& origin) {
+  return session_only_.find(origin) != session_only_.end();
 }
 
 bool MockExtensionSpecialStoragePolicy::IsFileHandler(

@@ -118,7 +118,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, EmptyPolicy) {
   const GURL kExtensionUrl("chrome-extension://bar");
 
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy);
+      new ExtensionSpecialStoragePolicy(NULL));
 
   ASSERT_FALSE(policy->IsStorageUnlimited(kHttpUrl));
   ASSERT_FALSE(policy->IsStorageUnlimited(kHttpUrl));  // test cached result
@@ -133,7 +133,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, EmptyPolicy) {
 TEST_F(ExtensionSpecialStoragePolicyTest, AppWithProtectedStorage) {
   scoped_refptr<Extension> extension(CreateProtectedApp());
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy);
+      new ExtensionSpecialStoragePolicy(NULL));
   policy->GrantRightsForExtension(extension);
   EXPECT_FALSE(policy->IsStorageUnlimited(extension->url()));
   EXPECT_FALSE(policy->IsStorageUnlimited(GURL("http://explicit/")));
@@ -152,7 +152,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, AppWithProtectedStorage) {
 TEST_F(ExtensionSpecialStoragePolicyTest, AppWithUnlimitedStorage) {
   scoped_refptr<Extension> extension(CreateUnlimitedApp());
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy);
+      new ExtensionSpecialStoragePolicy(NULL));
   policy->GrantRightsForExtension(extension);
   EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit/")));
   EXPECT_TRUE(policy->IsStorageProtected(GURL("http://explicit:6000/")));
@@ -181,7 +181,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
   scoped_refptr<Extension> protected_app(CreateProtectedApp());
   scoped_refptr<Extension> unlimited_app(CreateUnlimitedApp());
   scoped_refptr<ExtensionSpecialStoragePolicy> policy(
-      new ExtensionSpecialStoragePolicy);
+      new ExtensionSpecialStoragePolicy(NULL));
   policy->GrantRightsForExtension(protected_app);
   policy->GrantRightsForExtension(unlimited_app);
 

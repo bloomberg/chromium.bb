@@ -663,6 +663,9 @@ ProfileImpl::~ProfileImpl() {
             true));
   }
 
+  if (webkit_context_.get())
+    webkit_context_->DeleteSessionOnlyData();
+
   StopCreateSessionServiceTimer();
 
   // Remove pref observers
@@ -827,8 +830,10 @@ ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
 
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
-  if (!extension_special_storage_policy_.get())
-    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy();
+  if (!extension_special_storage_policy_.get()) {
+    extension_special_storage_policy_ =
+        new ExtensionSpecialStoragePolicy(GetHostContentSettingsMap());
+  }
   return extension_special_storage_policy_.get();
 }
 

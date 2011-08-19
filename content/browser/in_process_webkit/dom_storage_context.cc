@@ -198,6 +198,29 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   }
 }
 
+void DOMStorageContext::DeleteSessionOnlyData() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+
+  // Make sure that we don't delete a database that's currently being accessed
+  // by unloading all of the databases temporarily.
+  PurgeMemory();
+
+  file_util::FileEnumerator file_enumerator(
+      data_path_.Append(kLocalStorageDirectory), false,
+      file_util::FileEnumerator::FILES);
+  for (FilePath path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    GURL origin(WebSecurityOrigin::createFromDatabaseIdentifier(
+        webkit_glue::FilePathToWebString(path.BaseName())).toString());
+    if (!special_storage_policy_->IsStorageSessionOnly(origin))
+      continue;
+    if (special_storage_policy_->IsStorageProtected(origin))
+      continue;
+
+    file_util::Delete(path, false);
+  }
+}
+
 void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 

@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -80,6 +81,11 @@ class DOMStorageContext {
   // are not deleted by this method.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
+  // Delete any local storage files which are allowed to be stored only until
+  // the end of the session. Protected origins, per the SpecialStoragePolicy,
+  // are not deleted by this method.
+  void DeleteSessionOnlyData();
+
   // Deletes a single local storage file.
   void DeleteLocalStorageFile(const FilePath& file_path);
 
@@ -108,6 +114,9 @@ class DOMStorageContext {
 #endif
 
  private:
+
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageTest, SessionOnly);
+
   // Get the local storage instance.  The object is owned by this class.
   DOMStorageNamespace* CreateLocalStorage();
 

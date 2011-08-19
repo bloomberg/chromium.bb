@@ -69,6 +69,10 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   // last modified on or after the following time.
   void DeleteDataModifiedSince(const base::Time& cutoff);
 
+  // Tell all children (where applicable) to delete any objects that are allowed
+  // to be stored only until the end of the session.
+  void DeleteSessionOnlyData();
+
   // Delete the session storage namespace associated with this id.  Can be
   // called from any thread.
   void DeleteSessionStorageNamespace(int64 session_storage_namespace_id);
