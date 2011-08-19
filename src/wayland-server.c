@@ -62,12 +62,12 @@ struct wl_client {
 	uint32_t id_count;
 	uint32_t mask;
 	struct wl_list link;
+	struct wl_hash_table *objects;
 };
 
 struct wl_display {
 	struct wl_resource resource;
 	struct wl_event_loop *loop;
-	struct wl_hash_table *objects;
 	int run;
 
 	struct wl_list callback_list;
@@ -154,7 +154,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (len < size)
 			break;
 
-		resource = wl_hash_table_lookup(client->display->objects, p[0]);
+		resource = wl_hash_table_lookup(client->objects, p[0]);
 		if (resource == NULL) {
 			wl_client_post_error(client,
 					     &client->display->resource.object,
@@ -180,8 +180,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		message = &object->interface->methods[opcode];
 		closure = wl_connection_demarshal(client->connection, size,
-						  client->display->objects,
-						  message);
+						  client->objects, message);
 		len -= size;
 
 		if (closure == NULL && errno == EINVAL) {
@@ -271,8 +270,20 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
+	client->objects = wl_hash_table_create();
+	if (client->objects == NULL) {
+		wl_connection_destroy(client->connection);
+		free(client);
+		return NULL;
+	}
+
 	client->display_resource.object = display->resource.object;
 	client->display_resource.client = client;
+	client->display_resource.data = &display->resource;
+
+	wl_hash_table_insert(client->objects,
+			     client->display_resource.object.id,
+			     &client->display_resource);
 
 	wl_list_insert(display->client_list.prev, &client->link);
 
@@ -298,8 +309,7 @@ wl_client_add_resource(struct wl_client *client,
 	resource->client = client;
 	wl_list_init(&resource->destroy_listener_list);
 
-	wl_hash_table_insert(client->display->objects,
-			     resource->object.id, resource);
+	wl_hash_table_insert(client->objects, resource->object.id, resource);
 	wl_list_insert(client->resource_list.prev, &resource->link);
 }
 
@@ -323,7 +333,7 @@ wl_client_post_global(struct wl_client *client, struct wl_object *object)
 WL_EXPORT void
 wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 {
-	struct wl_display *display = resource->client->display;
+	struct wl_client *client = resource->client;
 	struct wl_listener *l, *next;
 
 	wl_list_for_each_safe(l, next, &resource->destroy_listener_list, link)
@@ -331,7 +341,7 @@ wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 
 	wl_list_remove(&resource->link);
 	if (resource->object.id > 0)
-		wl_hash_table_remove(display->objects, resource->object.id);
+		wl_hash_table_remove(client->objects, resource->object.id);
 	resource->destroy(resource);
 }
 
@@ -345,6 +355,7 @@ wl_client_destroy(struct wl_client *client)
 	wl_list_for_each_safe(resource, tmp, &client->resource_list, link)
 		wl_resource_destroy(resource, 0);
 
+	wl_hash_table_destroy(client->objects);
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
 	wl_list_remove(&client->link);
@@ -549,6 +560,10 @@ display_bind(struct wl_client *client,
 				     "invalid object %d", id);
 	else if (global->bind)
 		global->bind(client, global->object, version);
+
+	wl_hash_table_insert(client->objects,
+			     global->object->id, global->object);
+		
 }
 
 static void
@@ -590,13 +605,6 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	display->objects = wl_hash_table_create();
-	if (display->objects == NULL) {
-		wl_event_loop_destroy(display->loop);
-		free(display);
-		return NULL;
-	}
-
 	wl_list_init(&display->callback_list);
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
@@ -612,7 +620,6 @@ wl_display_create(void)
 
 	wl_display_add_object(display, &display->resource.object);
 	if (wl_display_add_global(display, &display->resource.object, NULL)) {
-		wl_hash_table_destroy(display->objects);
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
@@ -628,7 +635,6 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_global *global, *gnext;
 
   	wl_event_loop_destroy(display->loop);
- 	wl_hash_table_destroy(display->objects);
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		close(s->fd);
 		unlink(s->addr.sun_path);
@@ -647,7 +653,6 @@ WL_EXPORT void
 wl_display_add_object(struct wl_display *display, struct wl_object *object)
 {
 	object->id = display->id++;
-	wl_hash_table_insert(display->objects, object->id, object);
 }
 
 WL_EXPORT int
