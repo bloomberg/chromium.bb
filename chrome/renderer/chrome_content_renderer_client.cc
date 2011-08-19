@@ -101,9 +101,6 @@ using WebKit::WebVector;
 
 namespace {
 
-const char* kNaClPluginMimeType = "application/x-nacl";
-const char* kNaClPluginManifestAttribute = "nacl";
-
 // Constants for UMA statistic collection.
 static const char kPluginTypeMismatch[] = "Plugin.PluginTypeMismatch";
 static const char kApplicationOctetStream[] = "application/octet-stream";
@@ -403,7 +400,12 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
     // Enforce Chrome WebStore restriction on the Native Client plugin.
     if (info.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) {
       bool allow_nacl = cmd->HasSwitch(switches::kEnableNaCl);
+      // TODO(elijahtaylor) Remove this #if when crbug.com/92964 is fixed.
+#if !(defined(OS_LINUX) && ARCH_CPU_32_BITS)
       if (!allow_nacl) {
+        const char* kNaClPluginMimeType = "application/x-nacl";
+        const char* kNaClPluginManifestAttribute = "nacl";
+
         GURL nexe_url;
         if (actual_mime_type == kNaClPluginMimeType) {
           nexe_url = url;  // Normal embedded NaCl plugin.
@@ -437,6 +439,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
             extension->location() == Extension::COMPONENT ||
             extension->location() == Extension::LOAD);
       }
+#endif // !(defined(OS_LINUX) && ARCH_CPU_32_BITS)
 
       if (!allow_nacl) {
         // TODO(bbudge) Webkit will crash if this is a full-frame plug-in and

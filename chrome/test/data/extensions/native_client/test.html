@@ -39,6 +39,9 @@ the plugin was created or blocked in either case.
 
 </head>
 <body>
+  <script>
+      setListeners(document.body);
+  </script>
   <embed id="embedded"
          class="naclModule"
          type="application/x-nacl"
@@ -49,8 +52,5 @@ the plugin was created or blocked in either case.
          type="application/pdf"
          src="test.pdf">
   </embed>
-  <script>
-      setListeners(document.body);
-  </script>
 </body>
 </html>
