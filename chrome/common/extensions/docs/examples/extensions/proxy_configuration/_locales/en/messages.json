@@ -36,6 +36,10 @@
     "description": "Error message used as popup title."
   },
   "errorProxyError": {
+    "message": "ProxyError: $1.",
+    "description": "Error message displayed in popup when an error occurs."
+  },
+  "errorProxyDetailedError": {
     "message": "ProxyError: $1. $2.",
     "description": "Error message displayed in popup when an error occurs."
   },

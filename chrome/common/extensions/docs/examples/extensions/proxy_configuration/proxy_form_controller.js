@@ -575,7 +575,7 @@ ProxyFormController.prototype = {
         success.classList.remove('visible');
       else
         window.close();
-    }, 3000);
+    }, 4000);
   },
 
 
@@ -608,7 +608,10 @@ ProxyFormController.prototype = {
       case ProxyFormController.ProxyTypes.FIXED:
         var config = {mode: 'fixed_servers'};
         if (this.singleProxy) {
-          config.rules = {singleProxy: this.singleProxy};
+          config.rules = {
+            singleProxy: this.singleProxy,
+            bypassList: this.bypassList
+          };
         } else {
           config.rules = {
             proxyForHttp: this.httpProxy,
@@ -781,8 +784,9 @@ ProxyFormController.prototype = {
       console.error(error);
       // TODO(mkwst): Do something more interesting
       this.generateAlert_(
-          chrome.i18n.getMessage('errorProxyError',
-                                 [error.error, error.details]),
+          chrome.i18n.getMessage(
+              error.details ? 'errorProxyDetailedError' : 'errorProxyError',
+              [error.error, error.details]),
           false);
     }
   }

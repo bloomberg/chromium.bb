@@ -174,15 +174,16 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 350px;
+      width: 500px;
       padding: 20px;
-      margin: -80px 0 0 -195px;
+      margin: -80px 0 0 -270px;
       opacity: 0;
       background: rgba(0, 0, 0, 0.75);
       border-radius: 5px;
       color: #FFF;
       font: 1.5em/1.2 Helvetica Neue, sans-serif;
       -webkit-transition: all 1.0s ease;
+      -webkit-transform: scale(0);
     }
       .overlay a {
         color:  #FFF;
@@ -190,6 +191,7 @@
 
     .overlay.visible {
       opacity: 1;
+      -webkit-transform: scale(1);
     }
   </style>
 </head>
