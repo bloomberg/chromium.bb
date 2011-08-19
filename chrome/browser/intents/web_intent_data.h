@@ -8,6 +8,7 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include <iosfwd>
 
 // Describes the relevant elements of a WebIntent.
 struct WebIntentData {
@@ -21,5 +22,8 @@ struct WebIntentData {
   string16 type;  // MIME type of data accepted by service.
   string16 title;  // The title of the service.
 };
+
+// Printing operator - helps gtest produce readable error messages.
+std::ostream& operator<<(std::ostream& os, const WebIntentData& intent);
 
 #endif  // CHROME_BROWSER_INTENTS_WEB_INTENT_DATA_H_

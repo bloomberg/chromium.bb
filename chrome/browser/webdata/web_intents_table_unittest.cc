@@ -8,6 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/web_intent_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_paths.h"
@@ -19,8 +20,20 @@ namespace {
 GURL test_url("http://google.com/");
 string16 test_action = ASCIIToUTF16("http://webintents.org/intents/share");
 string16 test_action_2 = ASCIIToUTF16("http://webintents.org/intents/view");
+string16 test_title = ASCIIToUTF16("Test WebIntent");
+string16 test_title_2 = ASCIIToUTF16("Test WebIntent #2");
 string16 mime_image = ASCIIToUTF16("image/*");
 string16 mime_video = ASCIIToUTF16("video/*");
+
+WebIntentData MakeIntent(const GURL& url, const string16& action,
+                         const string16& type, const string16& title) {
+  WebIntentData intent;
+  intent.service_url = url;
+  intent.action = action;
+  intent.type = type;
+  intent.title = title;
+  return intent;
+}
 
 class WebIntentsTableTest : public testing::Test {
  protected:
@@ -47,10 +60,8 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
   EXPECT_EQ(0U, intents.size());
 
   // Now adding one.
-  WebIntentData intent;
-  intent.service_url = test_url;
-  intent.action = test_action;
-  intent.type = mime_image;
+  WebIntentData intent = MakeIntent(test_url, test_action, mime_image,
+                                    test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   // Make sure that intent can now be fetched
@@ -71,13 +82,12 @@ TEST_F(WebIntentsTableTest, SetGetDeleteIntent) {
 TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   std::vector<WebIntentData> intents;
 
-  WebIntentData intent;
-  intent.service_url = test_url;
-  intent.action = test_action;
-  intent.type = mime_image;
+  WebIntentData intent = MakeIntent(test_url, test_action, mime_image,
+                                    test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   intent.type = mime_video;
+  intent.title = test_title_2;
   EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   // Recover stored intents from DB.
@@ -91,6 +101,7 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
   EXPECT_EQ(intent, intents[1]);
 
   intent.type = mime_image;
+  intent.title = test_title;
   EXPECT_EQ(intent, intents[0]);
 }
 
@@ -98,13 +109,12 @@ TEST_F(WebIntentsTableTest, SetMultipleIntents) {
 TEST_F(WebIntentsTableTest, GetAllIntents) {
   std::vector<WebIntentData> intents;
 
-  WebIntentData intent;
-  intent.service_url = test_url;
-  intent.action = test_action;
-  intent.type = mime_image;
+  WebIntentData intent = MakeIntent(test_url, test_action, mime_image,
+                                    test_title);
   EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   intent.action = test_action_2;
+  intent.title = test_title_2;
   EXPECT_TRUE(IntentsTable()->SetWebIntent(intent));
 
   // Recover stored intents from DB.
@@ -118,6 +128,7 @@ TEST_F(WebIntentsTableTest, GetAllIntents) {
   EXPECT_EQ(intent, intents[1]);
 
   intent.action = test_action;
+  intent.title = test_title;
   EXPECT_EQ(intent, intents[0]);
 }
 } // namespace
