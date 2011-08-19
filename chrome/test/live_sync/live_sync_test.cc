@@ -112,7 +112,8 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
-      test_server_handle_(base::kNullProcessHandle) {
+      test_server_handle_(base::kNullProcessHandle),
+      enable_notifications_(true) {
   InProcessBrowserTest::set_show_window(true);
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
@@ -270,7 +271,8 @@ bool LiveSyncTest::SetupClients() {
         base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
     clients_.push_back(
-        new ProfileSyncServiceHarness(GetProfile(i), username_, password_));
+        new ProfileSyncServiceHarness(GetProfile(i), username_, password_,
+                                      enable_notifications_));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
     ui_test_utils::WaitForBookmarkModelToLoad(
         GetProfile(i)->GetBookmarkModel());
@@ -380,25 +382,27 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
   cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
   VLOG(1) << "Started local python test server at " << sync_service_url;
 
-  int xmpp_port = 0;
-  if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
-    LOG(ERROR) << "Could not find valid xmpp_port value";
-    return false;
-  }
-  if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
-    LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
-    return false;
-  }
+  if (enable_notifications_) {
+    int xmpp_port = 0;
+    if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
+      LOG(ERROR) << "Could not find valid xmpp_port value";
+      return false;
+    }
+    if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
+      LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
+      return false;
+    }
 
-  net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
-  xmpp_host_port_pair.set_port(xmpp_port);
-  xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
+    net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
+    xmpp_host_port_pair.set_port(xmpp_port);
+    xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
 
-  if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
-    cl->AppendSwitchASCII(switches::kSyncNotificationHost,
-                          xmpp_host_port_pair.ToString());
-    // The local XMPP server only supports insecure connections.
-    cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
+    if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
+      cl->AppendSwitchASCII(switches::kSyncNotificationHost,
+                            xmpp_host_port_pair.ToString());
+      // The local XMPP server only supports insecure connections.
+      cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
+    }
   }
 
   return true;
@@ -489,6 +493,15 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
+void LiveSyncTest::DisableNotifications() {
+  // TODO(akalin): It would be better to assert that the test server
+  // hasn't been started yet.  That would require adding an
+  // IsStarted() method to TestServer.
+  ASSERT_TRUE(profiles_.empty());
+  ASSERT_TRUE(clients_.empty());
+  enable_notifications_ = false;
+}
+
 bool LiveSyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
 }
@@ -512,24 +525,24 @@ void LiveSyncTest::TriggerMigrationDoneError(
     joiner = '&';
   }
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(ASCIIToUTF16("Migration: 200"),
-            browser()->GetSelectedTabContents()->GetTitle());
+  ASSERT_EQ("Migration: 200",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 
 void LiveSyncTest::TriggerBirthdayError() {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/birthdayerror";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(ASCIIToUTF16("Birthday error"),
-            browser()->GetSelectedTabContents()->GetTitle());
+  ASSERT_EQ("Birthday error",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 
 void LiveSyncTest::TriggerTransientError() {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/transienterror";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(ASCIIToUTF16("Transient error"),
-            browser()->GetSelectedTabContents()->GetTitle());
+  ASSERT_EQ("Transient error",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 
 void LiveSyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,

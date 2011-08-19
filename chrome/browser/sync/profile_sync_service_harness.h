@@ -32,7 +32,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
-                            const std::string& password);
+                            const std::string& password,
+                            bool expected_notifications_enabled);
 
   virtual ~ProfileSyncServiceHarness();
 
@@ -270,6 +271,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
+
+  // The expected value of GetStatus().notifications_enabled.
+  bool expected_notifications_enabled_;
 
   // Used for logging.
   const std::string profile_debug_name_;

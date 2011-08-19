@@ -19,6 +19,109 @@ using bookmarks_helper::IndexedURLTitle;
 using preferences_helper::BooleanPrefMatches;
 using preferences_helper::ChangeBooleanPref;
 
+// Tests to make sure that the migration cycle works properly,
+// i.e. doesn't stall.
+
+class MigrationCycleTest : public LiveSyncTest {
+ public:
+  MigrationCycleTest() : LiveSyncTest(SINGLE_CLIENT) {}
+  virtual ~MigrationCycleTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MigrationCycleTest);
+};
+
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, PrefsOnly) {
+  if (!ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
+
+  DisableNotifications();
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Phase 1: Trigger a preference migration on the server.
+  syncable::ModelTypeSet migrate_types;
+  migrate_types.insert(syncable::PREFERENCES);
+  TriggerMigrationDoneError(migrate_types);
+
+  // Phase 2: Modify a pref (to trigger migration) and wait for a sync
+  // cycle.
+  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
+  // 93167.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
+}
+
+// TODO(akalin): Fails due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, FAILS_PrefsNigori) {
+  if (!ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
+
+  DisableNotifications();
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Phase 1: Trigger a preference and nigori migration on the server.
+  {
+    syncable::ModelTypeSet migrate_types;
+    migrate_types.insert(syncable::PREFERENCES);
+    TriggerMigrationDoneError(migrate_types);
+  }
+  {
+    syncable::ModelTypeSet migrate_types;
+    migrate_types.insert(syncable::NIGORI);
+    TriggerMigrationDoneError(migrate_types);
+  }
+
+  // Phase 2: Modify a pref (to trigger migration) and wait for a sync
+  // cycle.
+  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
+  // 93167.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
+}
+
+// TODO(akalin): Fails due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, FAILS_BookmarksPrefs) {
+  if (!ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
+
+  DisableNotifications();
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Phase 1: Trigger a bookmark and preference migration on the
+  // server.
+  {
+    syncable::ModelTypeSet migrate_types;
+    migrate_types.insert(syncable::BOOKMARKS);
+    TriggerMigrationDoneError(migrate_types);
+  }
+  {
+    syncable::ModelTypeSet migrate_types;
+    migrate_types.insert(syncable::PREFERENCES);
+    TriggerMigrationDoneError(migrate_types);
+  }
+
+  // Phase 2: Modify a bookmark (to trigger migration) and wait for a
+  // sync cycle.
+  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
+  // 93167.
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
+}
+
+// TODO(akalin): Add tests where the migration trigger is a poll or a
+// nudge from notifications.
+
 class MigrationErrorsTest : public LiveSyncTest {
  public:
   MigrationErrorsTest() : LiveSyncTest(TWO_CLIENT) {}

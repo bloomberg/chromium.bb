@@ -355,6 +355,9 @@ void SyncBackendHost::ConfigureDataTypes(
                               pending_config_mode_state_.get());
   }
 
+  // Cleanup disabled types before starting configuration so that
+  // callers can assume that the data types are cleaned up once
+  // configuration is done.
   if (!types_to_remove.empty()) {
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,

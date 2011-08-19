@@ -95,7 +95,8 @@ bool StateChangeTimeoutEvent::Abort() {
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     Profile* profile,
     const std::string& username,
-    const std::string& password)
+    const std::string& password,
+    bool expected_notifications_enabled)
     : waiting_for_encryption_type_(syncable::UNSPECIFIED),
       wait_state_(INITIAL_WAIT_STATE),
       profile_(profile),
@@ -103,6 +104,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       timestamp_match_partner_(NULL),
       username_(username),
       password_(password),
+      expected_notifications_enabled_(expected_notifications_enabled),
       profile_debug_name_(profile->GetDebugName()) {
   if (IsSyncAlreadySetup()) {
     service_ = profile_->GetProfileSyncService();
@@ -120,7 +122,9 @@ ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
     NOTREACHED() << "Profile has never signed into sync.";
     return NULL;
   }
-  return new ProfileSyncServiceHarness(profile, "", "");
+  return new ProfileSyncServiceHarness(
+      profile, "", "",
+      /* expected_notifications_enabled */ true);
 }
 
 void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
@@ -616,7 +620,8 @@ bool ProfileSyncServiceHarness::IsSynced() {
   bool is_synced = snap &&
       snap->num_blocking_conflicting_updates == 0 &&
       ServiceIsPushingChanges() &&
-      GetStatus().notifications_enabled &&
+      (GetStatus().notifications_enabled ==
+       expected_notifications_enabled_) &&
       !service()->HasUnsyncedItems() &&
       !snap->has_more_to_sync &&
       snap->unsynced_count == 0 &&

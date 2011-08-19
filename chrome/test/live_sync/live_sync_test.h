@@ -126,6 +126,11 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Disable outgoing network connections for the given profile.
   virtual void DisableNetwork(Profile* profile);
 
+  // Disable notifications for the current test.  Must be called
+  // before the test server is started (i.e., before either of
+  // SetupSync() or SetupClients() is called).
+  void DisableNotifications();
+
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();
@@ -265,6 +270,9 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // URLFetcher factory used to contact sync server.
   scoped_ptr<URLFetcherFactory> integration_factory_;
+
+  // Whether or not to use notifications for the current test.
+  bool enable_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };

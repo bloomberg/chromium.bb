@@ -897,7 +897,7 @@ void SyncScheduler::HandleConsecutiveContinuationError(
   TimeDelta length = delay_provider_->GetDelay(
       IsBackingOff() ? wait_interval_->length : TimeDelta::FromSeconds(1));
 
-  SVLOG(2) << "In handle continuation error with"
+  SVLOG(2) << "In handle continuation error with "
            << SyncSessionJob::GetPurposeString(old_job.purpose)
            << " job. The time delta(ms) is "
            << length.InMilliseconds();
