@@ -18,13 +18,15 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-# Add pylib/gyp to the import path (so tests can import their dependencies).
-sys.path.append(os.path.join(test._cwd, 'pylib', 'gyp'))
+# Add pylib to the import path (so tests can import their dependencies).
+# This is consistant with the path.append done in the top file "gyp".
+sys.path.append(os.path.join(test._cwd, 'pylib'))
 
 # Add new test suites here.
 files_to_test = [
     'pylib/gyp/MSVSSettings_test.py',
     'pylib/gyp/easy_xml_test.py',
+    'pylib/gyp/generator/msvs_test.py',
 ]
 
 # Collect all the suites from the above files.

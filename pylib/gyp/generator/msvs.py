@@ -1071,7 +1071,17 @@ def _GetLibraries(spec):
   libraries = spec.get('libraries', [])
   # Strip out -l, as it is not used on windows (but is needed so we can pass
   # in libraries that are assumed to be in the default library path).
-  return [re.sub('^(\-l)', '', lib) for lib in libraries]
+  # Also remove duplicate entries, leaving only the last duplicate, while
+  # preserving order.
+  found = set()
+  unique_libraries_list = []
+  for entry in reversed(libraries):
+    library = re.sub('^\-l', '', entry)
+    if library not in found:
+      found.add(library)
+      unique_libraries_list.append(library)
+  unique_libraries_list.reverse()
+  return unique_libraries_list
 
 
 def _GetOutputFilePathAndTool(spec):
@@ -1643,7 +1653,6 @@ def _ShardTargets(target_list, target_dicts):
     shards = int(target_dicts[t].get('msvs_shard', 0))
     if shards:
       targets_to_shard[t] = shards
-  print targets_to_shard
   # Shard target_list.
   new_target_list = []
   for t in target_list:
