@@ -37,11 +37,11 @@ class PInfo(object):
 
   __slots__ = [
       'category',            # Package category only
+      # TODO(mtennant): Rename 'cpv' to 'curr_cpv' or similar.
       'cpv',                 # Current full cpv (revision included)
       'cpv_cmp_upstream',    # 0 = current, >0 = outdated, <0 = futuristic
       'emerge_ok',           # True if upgraded_cpv is emergeable
       'emerge_output',       # Output from pretend emerge of upgraded_cpv
-      'emerge_stable',       # TODO: get rid of this one
       'latest_upstream_cpv', # Latest (non-stable ok) upstream cpv
       'overlay',             # Overlay package currently in
       'package',             # category/package_name
@@ -51,7 +51,9 @@ class PInfo(object):
       'stable_upstream_cpv', # Latest stable upstream cpv
       'state',               # One of utable.UpgradeTable.STATE_*
       'upgraded_cpv',        # If upgraded, it is to this cpv
+      'upgraded_stable',     # Boolean. If upgraded_cpv, indicates if stable.
       'upstream_cpv',        # latest/stable upstream cpv according to request
+      'user_arg',            # Original user arg for this pkg, if applicable
       'version_rev',         # Just revision (e.g. 'r1').  '' if no revision
       ]
 
@@ -69,6 +71,11 @@ class Upgrader(object):
   OPT_SLOTS = ['amend', 'csv_file', 'no_upstream_cache', 'rdeps',
                'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
 
+  EQUERY_CMD = 'equery'
+  EMERGE_CMD = 'emerge'
+  PORTAGEQ_CMD = 'portageq'
+  BOARD_CMDS = set([EQUERY_CMD, EMERGE_CMD, PORTAGEQ_CMD])
+
   __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
                '_args',         # Commandline arguments (all portage targets)
                '_curr_arch',    # Architecture for current board run
@@ -84,6 +91,7 @@ class Upgrader(object):
                '_no_upstream_cache', # Boolean.  Delete upstream cache when done
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
+               '_stable_regexp',# Regexp stable bit from 'equery list' output
                '_stable_repo',  # Path to portage-stable
                '_stable_repo_stashed', # True if portage-stable has a git stash
                '_stable_repo_status', # git status report at start of run
@@ -121,6 +129,9 @@ class Upgrader(object):
     self._porttree = None
     self._emptydir = None
     self._deps_graph = None
+
+    # Pre-compiled regexps for speed.
+    self._stable_regexp = re.compile(r'^\[...\]\s*\[.(.)\]\s+\S+$')
 
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
@@ -173,10 +184,7 @@ class Upgrader(object):
       return True
 
     if self._upgrade:
-      # See if this package was directly requested at command line.
-      for pkg in self._args:
-        if pkg == info['package'] or pkg == info['package_name']:
-          return True
+      return bool('user_arg' in info)
 
     return False
 
@@ -232,13 +240,25 @@ class Upgrader(object):
                                    portage.versions.pkgsplit(cpv2))
 
   @staticmethod
-  def _GetPkgFromCpv(cpv):
-    """Returns just category/package string from a full |cpv|."""
+  def _GetCatPkgFromCpv(cpv):
+    """Returns category/package_name from a full |cpv|.
+
+    If |cpv| is incomplete, may return only the package_name.
+
+    If package_name cannot be determined, return None.
+    """
     if not cpv:
       return None
 
-    (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
-    return '%s/%s' % (cat, pn)
+    # Result is None or (cat, pn, version, rev)
+    result = portage.versions.catpkgsplit(cpv)
+    if result:
+      # This appears to be a quirk of portage? Category string == 'null'.
+      if result[0] is None or result[0] == 'null':
+        return result[1]
+      return '%s/%s' % (result[0], result[1])
+
+    return None
 
   @staticmethod
   def _GetVerRevFromCpv(cpv):
@@ -246,11 +266,16 @@ class Upgrader(object):
     if not cpv:
       return None
 
-    (cat, pn, version, rev) = portage.versions.catpkgsplit(cpv)
-    if rev != 'r0':
-      return '%s-%s' % (version, rev)
-    else:
-      return version
+    # Result is None or (cat, pn, version, rev)
+    result = portage.versions.catpkgsplit(cpv)
+    if result:
+      (version, rev) = result[2:4]
+      if rev != 'r0':
+        return '%s-%s' % (version, rev)
+      else:
+        return version
+
+    return None
 
   def _RunGit(self, repo, command, redirect_stdout=False,
               combine_stdout_stderr=False):
@@ -339,6 +364,15 @@ class Upgrader(object):
     else:
       return None
 
+  def _GetBoardCmd(self, cmd):
+    """Return the board-specific version of |cmd|, if applicable."""
+    if cmd in self.BOARD_CMDS:
+      # Host "board is a special case.
+      if self._curr_board != self.HOST_BOARD:
+        return '%s-%s' % (cmd, self._curr_board)
+
+    return cmd
+
   def _IsEmergeable(self, cpv, stable_only):
     """Indicate whether |cpv| can be emerged on current board.
 
@@ -354,10 +388,7 @@ class Upgrader(object):
     """
     envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
 
-    emerge = 'emerge'
-    if self._curr_board != self.HOST_BOARD:
-      emerge = 'emerge-%s' % self._curr_board
-
+    emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p', '=' + cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
@@ -371,10 +402,7 @@ class Upgrader(object):
     """Returns current cpv on |_curr_board| that matches |pkg|, or None."""
     envvars = self._GenPortageEnvvars(self._curr_arch, False)
 
-    equery = 'equery'
-    if self._curr_board != self.HOST_BOARD:
-      equery = 'equery-%s' % self._curr_board
-
+    equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', pkg]
     cmd_result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                      extra_env=envvars, print_cmd=False,
@@ -389,6 +417,31 @@ class Upgrader(object):
     else:
       return None
 
+  def _IsStable(self, cpv):
+    """Return True if given cpv is stable for current arch, False otherwise."""
+
+    envvars = self._GenPortageEnvvars(self._curr_arch, False)
+
+    equery = self._GetBoardCmd('equery')
+    cmd = [equery, '--no-pipe', 'list', '-op', cpv]
+    result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
+                                 extra_env=envvars, print_cmd=False,
+                                 redirect_stdout=True,
+                                 combine_stdout_stderr=True,
+                                 )
+    output = result.output.strip()
+
+    # Expect output like one of these two cases (~ is for unstable):
+    # [-P-] [ ~] sys-fs/fuse-2.7.3:0
+    # [-P-] [  ] sys-fs/fuse-2.7.3:0
+    for line in output.split('\n'):
+      match = self._stable_regexp.search(line)
+      if match:
+        return '~' != match.group(1)
+
+    raise RuntimeError("Unable to determine whether %s is stable from equery "
+                       "output:\n%s" % (cpv, output))
+
   def _VerifyEbuildOverlay(self, cpv, overlay, stable_only):
     """Raises exception if ebuild for |cpv| is not from |overlay|.
 
@@ -402,10 +455,7 @@ class Upgrader(object):
     # 'git checkout cros/gentoo'.  This is just a sanity check.
     envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
 
-    equery = 'equery'
-    if self._curr_board != self.HOST_BOARD:
-      equery = 'equery-%s' % self._curr_board
-
+    equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, 'which', cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
@@ -449,6 +499,14 @@ class Upgrader(object):
     # Only one level of stashing expected/supported.
     if self._stable_repo_stashed:
       self._RunGit(self._stable_repo, 'stash pop',
+                   redirect_stdout=True, combine_stdout_stderr=True)
+      self._stable_repo_stashed = False
+
+  def _DropAnyStashedChanges(self):
+    """Drop any stashed changes in stable repo."""
+    # Only one level of stashing expected/supported.
+    if self._stable_repo_stashed:
+      self._RunGit(self._stable_repo, 'stash drop',
                    redirect_stdout=True, combine_stdout_stderr=True)
       self._stable_repo_stashed = False
 
@@ -568,16 +626,18 @@ class Upgrader(object):
   def _AppendPackageRow(self, info):
     """Add a row to status table for the package in |info|."""
     cpv = info['cpv']
-    upstream_cpv = info['upstream_cpv']
-    upstream_ver = Upgrader._GetVerRevFromCpv(upstream_cpv)
     upgraded_cpv = info['upgraded_cpv']
 
     upgraded_ver = ''
     if upgraded_cpv:
-      if info['emerge_ok']:
-        upgraded_ver = upstream_ver
-      else:
-        upgraded_ver = '(emerge fails)' + upstream_ver
+      upgraded_ver = Upgrader._GetVerRevFromCpv(upgraded_cpv)
+
+      # "~" Prefix means the upgraded version is not stable on this arch.
+      if not info['upgraded_stable']:
+        upgraded_ver = '~' + upgraded_ver
+
+      if not info['emerge_ok']:
+        upgraded_ver = '(emerge fails)' + upgraded_ver
 
     # Assemble 'depends on' and 'required by' strings.
     depsstr = NOT_APPLICABLE
@@ -638,43 +698,46 @@ class Upgrader(object):
     info['latest_upstream_cpv'] = self._FindUpstreamCPV(catpkg,
                                                         unstable_ok=True)
 
-    # The upstream version can be either latest stable or latest overall.
-    if not self._unstable_ok:
-      upstream_cpv = info['stable_upstream_cpv']
-    else:
-      upstream_cpv = info['latest_upstream_cpv']
-    info['upstream_cpv'] = upstream_cpv
+    # The upstream version can be either latest stable or latest overall,
+    # or specified explicitly by the user at the command line.  In the latter
+    # case, 'upstream_cpv' will already be set.
+    if not info['upstream_cpv']:
+      if not self._unstable_ok:
+        info['upstream_cpv'] = info['stable_upstream_cpv']
+      else:
+        info['upstream_cpv'] = info['latest_upstream_cpv']
 
     # Perform the actual upgrade, if requested.
     info['cpv_cmp_upstream'] = None
     info['upgraded_cpv'] = None
-    if upstream_cpv:
+    if info['upstream_cpv']:
       # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
-      info['cpv_cmp_upstream'] = Upgrader._CmpCpv(upstream_cpv, cpv)
+      info['cpv_cmp_upstream'] = Upgrader._CmpCpv(info['upstream_cpv'], cpv)
 
       # Determine whether upgrade of this package is requested.
       if self._PkgUpgradeRequested(info):
-        if self._PkgUpgradeStaged(upstream_cpv):
-          oper.Info('Determined that %s is already staged.' % upstream_cpv)
-          info['upgraded_cpv'] = upstream_cpv
+        if self._PkgUpgradeStaged(info['upstream_cpv']):
+          oper.Info('Determined that %s is already staged.' %
+                    info['upstream_cpv'])
+          info['upgraded_cpv'] = info['upstream_cpv']
         elif info['cpv_cmp_upstream'] > 0:
-          oper.Info('Copying %s from upstream.' % upstream_cpv)
-          info['upgraded_cpv'] = self._CopyUpstreamPackage(upstream_cpv)
+          oper.Info('Copying %s from upstream.' % info['upstream_cpv'])
+          info['upgraded_cpv'] = self._CopyUpstreamPackage(info['upstream_cpv'])
 
     return bool(info['upgraded_cpv'])
 
   def _VerifyPackageUpgrade(self, info):
     """Verify that the upgraded package in |info| passes checks."""
-    # Verify that upgraded package can be emerged (and save emerge output).
-    upgraded_stable = info['upgraded_cpv'] == info['stable_upstream_cpv']
+    # Verify that upgraded package can be emerged and save results.
+    info['upgraded_stable'] = self._IsStable(info['upgraded_cpv'])
     (em_ok, em_cmd, em_out) = self._IsEmergeable(info['upgraded_cpv'],
-                                                 upgraded_stable)
+                                                 info['upgraded_stable'])
     info['emerge_ok'] = em_ok
     info['emerge_cmd'] = em_cmd
     info['emerge_output'] = em_out
 
     self._VerifyEbuildOverlay(info['upstream_cpv'], self.STABLE_OVERLAY_NAME,
-                              upgraded_stable)
+                              info['upgraded_stable'])
 
   def _PackageReport(self, info):
     """Report on whatever was done with package in |info|."""
@@ -803,13 +866,36 @@ class Upgrader(object):
     except AttributeError:
       return None
 
-  def _GetCurrentVersions(self, emerge_args):
-    """Returns a list of cpvs of the current package dependencies.
+  def _CreateInfoFromCPV(self, cpv, cpv_key=None):
+    """Return a basic info object created from |cpv|."""
+    info = {}
+    self._FillInfoFromCPV(info, cpv, cpv_key)
+    return info
 
-    The dependencies are taken from giving |emerge_args| to (parallel_)emerge.
+  def _FillInfoFromCPV(self, info, cpv, cpv_key=None):
+    """Flesh out |info| from |cpv|."""
+    pkg = Upgrader._GetCatPkgFromCpv(cpv)
+    (cat, pn) = pkg.split('/')
+
+    info['cpv'] = None
+    info['upstream_cpv'] = None
+
+    info['package'] = pkg
+    info['package_name'] = pn
+    info['category'] = cat
+
+    if cpv_key:
+      info[cpv_key] = cpv
+
+  def _GetCurrentVersions(self, target_infolist):
+    """Returns a list of pkg infos of the current package dependencies.
+
+    The dependencies are taken from giving the 'package' values in each
+    info of |target_infolist| to (parallel_)emerge.
 
     The returned list is ordered such that the dependencies of any mentioned
-    cpv occur earlier in the list."""
+    package occur earlier in the list."""
+    emerge_args = [info['package'] for info in target_infolist]
     argv = self._GenParallelEmergeArgv(emerge_args)
 
     deps = parallel_emerge.DepGraphGenerator()
@@ -820,99 +906,138 @@ class Upgrader(object):
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
 
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
-    cpv_list = Upgrader._GetPreOrderDepGraph(self._deps_graph)
-    cpv_list.reverse()
-    return cpv_list
+    cpvlist = Upgrader._GetPreOrderDepGraph(self._deps_graph)
+    cpvlist.reverse()
 
-  def _GetInfoListWithOverlays(self, cpvlist):
-    """Returns a list of cpv/overlay info maps corresponding to |cpvlist|."""
     infolist = []
     for cpv in cpvlist:
-      # No need to report or try to upgrade chromeos-base packages.
-      if cpv.startswith('chromeos-base/'): continue
-
-      dbapi = self._GetPortageDBAPI()
-      ebuild_path = dbapi.findname2(cpv)[0]
-      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
-      ver_rev = pv.replace(pn + '-', '')
-      slot, = dbapi.aux_get(cpv, ['SLOT'])
-
-      infolist.append({'cpv': cpv, 'slot': slot, 'overlay': overlay,
-                       'package': '%s/%s' % (cat, pn), 'version_rev': ver_rev,
-                       'category': cat, 'package_name': pn, 'package_ver': pv})
+      # See if this cpv was in target_infolist
+      is_target = False
+      for info in target_infolist:
+        if cpv == info['cpv']:
+          infolist.append(info)
+          is_target = True
+          break
+      if not is_target:
+        infolist.append(self._CreateInfoFromCPV(cpv, cpv_key='cpv'))
 
     return infolist
 
-  def _CreateUpstreamOnlyPkgInfo(self, arg):
-    """Create package info hash from given target |arg|.
+  def _FinalizeLocalInfolist(self, orig_infolist):
+    """Filters and fleshes out |orig_infolist|, returns new list.
 
-    |arg| is assumed to represent an upstream package that is not found
-    in our overlays right now.  Create as much of the info object as possible.
+    Each info object is assumed to have entries for:
+    'cpv', 'package', 'package_name', 'category'
     """
-    info = {'cpv': None, 'slot': NOT_APPLICABLE, 'overlay': NOT_APPLICABLE,
-            'version_rev': NOT_APPLICABLE, 'package_ver': NOT_APPLICABLE}
+    infolist = []
+    for info in orig_infolist:
+      # No need to report or try to upgrade chromeos-base packages.
+      if info['category'] == 'chromeos-base': continue
 
-    # TODO(mtennant): upcoming issue crosbug.com/19253 will need any version
-    # info from arg to be saved somehow, too.
+      dbapi = self._GetPortageDBAPI()
+      ebuild_path = dbapi.findname2(info['cpv'])[0]
+      (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
+      ver_rev = pv.replace(pn + '-', '')
+      slot, = dbapi.aux_get(info['cpv'], ['SLOT'])
 
-    (cat, pn) = (None, None)
-    split = portage.versions.catpkgsplit(arg)
-    if split:
-      (cat, pn, version, rev) = split
-    elif arg.find('/') > 0:
-      (cat, pn) = arg.split('/')
+      info['slot'] = slot
+      info['overlay'] = overlay
+      info['version_rev'] = ver_rev
+      info['package_ver'] = pv
 
-    info['package'] = '%s/%s' % (cat, pn)
-    info['category'] = cat
-    info['package_name'] = pn
+      infolist.append(info)
 
-    return info
+    return infolist
 
-  # TODO(mtennant): The local_cpv and upstream_cpv information gathered
-  # in this routine for verification purposes is re-gathered later during
-  # _UpgradePackage.  Consider saving the results somehow to avoid this
-  # duplication of work.  For a future changelist.
-  def _ResolveAndVerifyArgs(self, args):
+  def _FinalizeUpstreamInfolist(self, infolist):
+    """Adds missing values in each upstream info in |infolist|, returns list."""
+
+    for info in infolist:
+      info['slot'] = NOT_APPLICABLE
+      info['overlay'] = NOT_APPLICABLE
+      info['version_rev'] = NOT_APPLICABLE
+      info['package_ver'] = NOT_APPLICABLE
+
+    return infolist
+
+  def _ResolveAndVerifyArgs(self, args, upgrade_mode):
     """Resolve |args| to full pkgs, and check validity of each.
 
     Each argument will be resolved to a full category/packagename, if possible,
     by looking in both the local overlays and the upstream overlay.  Any
     argument that cannot be resolved will raise a RuntimeError.
 
-    Return tuple with two entries:
-    List of resolved packages found locally (using current board).
-    List of resolved packages found upstream (can overlap with local list).
+    Arguments that specify a specific version of a package are only
+    allowed when |upgrade_mode| is True.
 
+    The 'world' target is handled as a local package.
+
+    Any errors will raise a RuntimeError.
+
+    Return list of package infos, one for each argument.  Each will have:
+    'user_arg' = Original command line argument package was resolved from
+    'package'  = Resolved category/package_name
+    'package_name' = package_name
+    'category' = category (None for 'world' target)
+    Packages found in local overlays will also have:
+    'cpv'      = Current cpv ('world' for 'world' target)
+    Packages found upstream will also have:
+    'upstream_cpv' = Upstream cpv
     """
-    local_pkgs = []
-    upstream_pkgs = []
+    infolist = []
 
     for arg in args:
+      info = {'user_arg': arg}
+
       if arg == WORLD_TARGET:
         # The 'world' target is a special case.  Consider it a valid target
         # locally, but not an upstream package.
-        local_pkgs.append(arg)
+        info['package'] = arg
+        info['package_name'] = arg
+        info['category'] = None
+        info['cpv'] = arg
       else:
-        local_cpv = self._FindCurrentCPV(arg)
+        catpkg = Upgrader._GetCatPkgFromCpv(arg)
+        verrev = Upgrader._GetVerRevFromCpv(arg)
+
+        if verrev and not upgrade_mode:
+          raise RuntimeError("Specifying specific versions is only allowed "
+                             "in upgrade mode.  Don't know what to do with "
+                             "'%s'." % arg)
+
+        # Local cpv search ignores version in argument, if any.  If version is
+        # in argument, though, it *must* be found upstream.
+        local_arg = catpkg if catpkg else arg
+
+        local_cpv = self._FindCurrentCPV(local_arg)
         upstream_cpv = self._FindUpstreamCPV(arg, self._unstable_ok)
 
-        if local_cpv:
-          pkg = Upgrader._GetPkgFromCpv(local_cpv)
-          local_pkgs.append(pkg)
+        if not upstream_cpv and verrev:
+          # See if --unstable-ok is required for this upstream version.
+          if not self._unstable_ok and self._FindUpstreamCPV(arg, True):
+            raise RuntimeError("Upstream '%s' is unstable on %s.  Re-run with "
+                               "--unstable-ok option?" % (arg, self._curr_arch))
+          else:
+            raise RuntimeError("Unable to find '%s' upstream on %s." %
+                               (arg, self._curr_arch))
 
-        if upstream_cpv:
-          pkg = Upgrader._GetPkgFromCpv(upstream_cpv)
-          upstream_pkgs.append(pkg)
+        any_cpv = local_cpv if local_cpv else upstream_cpv
+        if any_cpv:
+          self._FillInfoFromCPV(info, any_cpv)
 
         if local_cpv and upstream_cpv:
           oper.Info("Resolved '%s' to '%s' (local) and '%s' (upstream)" %
                     (arg, local_cpv, upstream_cpv))
+          info['cpv'] = local_cpv
+          info['upstream_cpv'] = upstream_cpv
         elif local_cpv:
           oper.Info("Resolved '%s' to '%s' (local)" %
                     (arg, local_cpv))
+          info['cpv'] = local_cpv
         elif upstream_cpv:
           oper.Info("Resolved '%s' to '%s' (upstream)" %
                     (arg, upstream_cpv))
+          info['upstream_cpv'] = upstream_cpv
         else:
           msg = ("Unable to resolve '%s' as a package either local or upstream."
                  % arg)
@@ -921,7 +1046,9 @@ class Upgrader(object):
 
           raise RuntimeError(msg)
 
-    return (local_pkgs, upstream_pkgs)
+      infolist.append(info)
+
+    return infolist
 
   def PrepareToRun(self):
     """Checkout upstream gentoo if necessary, and any other prep steps."""
@@ -999,25 +1126,29 @@ class Upgrader(object):
       pkg_keys = {} # key=cpv, value=set of arches that need keyword overwrite
 
       # First determine how many unique upgraded versions there are.
-      upgraded_vers = set()
+      upgraded_versset = set()
+      upgraded_verslist = []
       for arch in self._master_archs:
         upgraded_ver = row[upgraded_cols[arch]]
         if upgraded_ver:
+          # Remove ~ prefix if found, and remember as unstable.
+          upgraded_stable = True
+          if upgraded_ver[0] == '~':
+            upgraded_stable = False
+            upgraded_ver = upgraded_ver[1:]
+
           # This package has been upgraded for this arch.
-          upgraded_vers.add(upgraded_ver)
+          upgraded_versset.add(upgraded_ver)
+          upgraded_verslist.append(upgraded_ver)
 
           # Is this upgraded version unstable for this arch?  If so, save
           # arch under upgraded_cpv as one that will need a package.keywords
-          # entry.  Check by comparing against stable upstream version.
-          tmp_col = utable.UpgradeTable.COL_STABLE_UPSTREAM_VER
-          upstream_stable_col = utable.UpgradeTable.GetColumnName(tmp_col, arch)
-          upstream_stable_ver = row[upstream_stable_col]
-          if upgraded_ver != upstream_stable_ver:
+          # entry.
+          if not upgraded_stable:
             upgraded_cpv = pkg + '-' + upgraded_ver
             cpv_key = pkg_keys.get(upgraded_cpv, set())
             cpv_key.add(arch)
             pkg_keys[upgraded_cpv] = cpv_key
-
 
           # Save the overlay this package is originally from, if the overlay
           # is not a Portage overlay (e.g. chromiumos-overlay).
@@ -1029,19 +1160,18 @@ class Upgrader(object):
               ovrly != self.STABLE_OVERLAY_NAME):
             pkg_overlays[pkg] = ovrly
 
-      if len(upgraded_vers) == 1:
+      if len(upgraded_versset) == 1:
         # Upgrade is the same across all archs.
-        upgraded_ver = upgraded_vers.pop()
+        upgraded_ver = upgraded_versset.pop()
         arch_str = ', '.join(sorted(self._master_archs))
         pkg_commit_line = ('Upgraded %s to version %s on %s' %
                            (pkg, upgraded_ver, arch_str))
-      elif len(upgraded_vers) > 1:
+
+      elif len(upgraded_versset) > 1:
         # Iterate again, and specify arch for each upgraded version.
         tokens = []
-        for arch in self._master_archs:
-          upgraded_ver = row[upgraded_cols[arch]]
-          if upgraded_ver:
-            tokens.append('%s on %s' % (upgraded_ver, arch))
+        for upgraded_ver in upgraded_verslist:
+          tokens.append('%s on %s' % (upgraded_ver, arch))
         pkg_commit_line = ('Upgraded %s to versions %s' %
                            (pkg, ' AND '.join(tokens)))
 
@@ -1082,7 +1212,7 @@ class Upgrader(object):
                      '\n'.join(lines))
       oper.Info('\n'
                 'To remove any individual file above from commit do:\n'
-                ' cd %s; git reset HEAD^ <filepath>; rm <filepath>;'
+                ' cd %s; git reset HEAD~ <filepath>; rm <filepath>;'
                 ' git commit --amend; cd -' %
                 self._stable_repo)
 
@@ -1099,7 +1229,7 @@ class Upgrader(object):
 
       oper.Info('\n'
                 'If you wish to undo all the changes to %s:\n'
-                ' cd %s; git reset --hard HEAD^; cd -' %
+                ' cd %s; git reset --hard HEAD~; cd -' %
                 (self.STABLE_OVERLAY_NAME, self._stable_repo))
 
   def PreRunChecks(self):
@@ -1130,27 +1260,32 @@ class Upgrader(object):
     if self._AnyChangesStaged():
       self._StashChanges()
 
-    (local_pkgs, upstream_pkgs) = self._ResolveAndVerifyArgs(self._args)
-    upstream_only_pkgs = [p for p in upstream_pkgs if p not in local_pkgs]
-    if not upgrade_mode and upstream_only_pkgs:
-      # This means that not all arguments were found in local source, which is
-      # only allowed in upgrade mode.
-      upstream_only_pkgs = [p for p in upstream_pkgs if p not in local_pkgs]
-      msg = ("The following packages were not found in current overlays"
-             " (but they do exist upstream):\n%s" %
-             '\n'.join(upstream_only_pkgs))
-      raise RuntimeError(msg)
+    try:
+      target_infolist = self._ResolveAndVerifyArgs(self._args, upgrade_mode)
+      upstream_only_infolist = [i for i in target_infolist if not i['cpv']]
+      if not upgrade_mode and upstream_only_infolist:
+        # This means that not all arguments were found in local source, which is
+        # only allowed in upgrade mode.
+        msg = ("The following packages were not found in current overlays"
+               " (but they do exist upstream):\n%s" %
+               '\n'.join([info['arg'] for info in upstream_only_infolist]))
+        raise RuntimeError(msg)
 
-    cpvlist = self._GetCurrentVersions(local_pkgs)
-    infolist = self._GetInfoListWithOverlays(cpvlist)
+      local_target_infolist = [i for i in target_infolist if i['cpv']]
+      full_infolist = self._GetCurrentVersions(local_target_infolist)
+      full_infolist = self._FinalizeLocalInfolist(full_infolist)
 
-    # Append any command line targets that were not found in current overlays.
-    # The idea is that they will still be found upstream for upgrading.
-    for pkg in upstream_only_pkgs:
-      infolist.append(self._CreateUpstreamOnlyPkgInfo(pkg))
+      # Append any command line targets that were not found in current overlays.
+      # The idea is that they will still be found upstream for upgrading.
+      if upgrade_mode:
+        tmp_list = self._FinalizeUpstreamInfolist(upstream_only_infolist)
+        full_infolist = full_infolist + tmp_list
 
-    self._UnstashAnyChanges()
-    self._UpgradePackages(infolist)
+      self._UnstashAnyChanges()
+      self._UpgradePackages(full_infolist)
+
+    finally:
+      self._DropAnyStashedChanges()
 
     # Merge tables together after each run.
     self._master_cnt += 1
@@ -1193,7 +1328,7 @@ def main():
             'commonly accepted by Portage tools.  For example:\n'
             ' category/package_name\n'
             ' package_name\n'
-            ' category/package_name-version\n'
+            ' category/package_name-version (upgrade mode only)\n'
             '\n'
             'Status report mode will report on the status of the specified '
             'packages relative to upstream,\nwithout making any changes. '
@@ -1201,24 +1336,32 @@ def main():
             'targets such as "chromeos" or "chromeos-dev". '
             'The --to-csv option is often used in this mode.\n'
             'The --unstable-ok option in this mode will make '
-            'the upstream comparison consider unstable versions, also.\n'
+            'the upstream comparison (e.g. "needs update") be\n'
+            'relative to the latest upstream version, stable or not.\n'
             '\n'
             'Upgrade mode will attempt to upgrade the specified '
-            'packages to the latest upstream version.\nUnlike with --upgrade, '
-            'if --upgrade-deep is specified, then the package dependencies\n'
-            'will also be upgraded. In upgrade mode, it is ok if the '
-            'specified packages only exist upstream.\n'
+            'packages to one of the following versions:\n'
+            '1) The version specified in argument (e.g. foo/bar-1.2.3)\n'
+            '2) The latest stable version upstream (the default)\n'
+            '3) The latest overall version upstream (with --unstable-ok)\n'
+            '\n'
+            'Unlike with --upgrade, if --upgrade-deep is specified, '
+            'then the package dependencies will also be upgraded.\n'
+            'In upgrade mode, it is ok if the specified packages only '
+            'exist upstream.\n'
             '\n'
             'Status report mode examples:\n'
-            '> cros_portage_upgrade --board=tegra2_aebl:x86-mario '
+            '> cros_portage_upgrade --board=arm-generic:x86-generic '
             '--to-csv=cros-aebl.csv chromeos\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--to-csv=cros_test-mario chromeos chromeos-dev chromeos-test\n'
             'Upgrade mode examples:\n'
-            '> cros_portage_upgrade --board=tegra2_aebl:x86-mario '
+            '> cros_portage_upgrade --board=arm-generic:x86-generic '
             '--upgrade sys-devel/gdb virtual/yacc\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--upgrade-deep gdata\n'
+            '> cros_portage_upgrade --board=x86-generic --upgrade '
+            'media-libs/libpng-1.2.45\n'
             '\n'
             )
 
