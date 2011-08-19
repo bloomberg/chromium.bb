@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/user_script_master.h"
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -19,10 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
 
@@ -47,12 +44,6 @@ static bool GetDeclarationValue(const base::StringPiece& line,
 UserScriptMaster::ScriptReloader::ScriptReloader(UserScriptMaster* master)
     : master_(master) {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&master_thread_id_));
-
-  // Gather extensions information needed for localization.
-  if (master && master->profile_ && master->profile_->GetExtensionInfoMap()) {
-    const ExtensionInfoMap* info_map = master->profile_->GetExtensionInfoMap();
-    info_map->extensions().GetExtensionsPathAndDefaultLocale(extensions_info_);
-  }
 }
 
 // static
@@ -169,8 +160,7 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
   Release();
 }
 
-static bool LoadScriptContent(UserScript::File* script_file,
-                              const SubstitutionMap* localization_messages) {
+static bool LoadScriptContent(UserScript::File* script_file) {
   std::string content;
   const FilePath& path = ExtensionResource::GetFilePath(
       script_file->extension_root(), script_file->relative_path());
@@ -185,16 +175,6 @@ static bool LoadScriptContent(UserScript::File* script_file,
     return false;
   }
 
-  // Localize the content.
-  if (localization_messages) {
-    std::string error;
-    ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
-        *localization_messages, &content, &error);
-    if (!error.empty()) {
-      LOG(WARNING) << "Failed to replace messages in script: " << error;
-    }
-  }
-
   // Remove BOM from the content.
   std::string::size_type index = content.find(kUtf8ByteOrderMark);
   if (index == 0) {
@@ -206,35 +186,22 @@ static bool LoadScriptContent(UserScript::File* script_file,
   return true;
 }
 
+// static
 void UserScriptMaster::ScriptReloader::LoadUserScripts(
     UserScriptList* user_scripts) {
   for (size_t i = 0; i < user_scripts->size(); ++i) {
     UserScript& script = user_scripts->at(i);
-    scoped_ptr<SubstitutionMap> localization_messages(
-        GetLocalizationMessages(script.extension_id()));
     for (size_t k = 0; k < script.js_scripts().size(); ++k) {
       UserScript::File& script_file = script.js_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file, NULL);
+        LoadScriptContent(&script_file);
     }
     for (size_t k = 0; k < script.css_scripts().size(); ++k) {
       UserScript::File& script_file = script.css_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file, localization_messages.get());
+        LoadScriptContent(&script_file);
     }
   }
-}
-
-SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
-    std::string extension_id) {
-  if (extensions_info_.find(extension_id) == extensions_info_.end()) {
-    return NULL;
-  }
-
-  return extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
-      extensions_info_[extension_id].first,
-      extension_id,
-      extensions_info_[extension_id].second);
 }
 
 // Pickle user scripts and return pointer to the shared memory.

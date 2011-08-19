@@ -6,7 +6,6 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -19,8 +18,6 @@
 // Only one extension can be in the set with a given ID.
 class ExtensionSet {
  public:
-  typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
-
   ExtensionSet();
   ~ExtensionSet();
 
@@ -59,10 +56,6 @@ class ExtensionSet {
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const GURL& url) const;
-
-  // Populates map with the path and default locale for all extension IDs.
-  void GetExtensionsPathAndDefaultLocale(
-      std::map<std::string, ExtensionPathAndDefaultLocale>& info) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionSetTest, ExtensionSet);
