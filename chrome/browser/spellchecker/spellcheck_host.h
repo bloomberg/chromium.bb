@@ -9,9 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "content/browser/browser_thread.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 class Profile;
 class RenderProcessHost;
@@ -47,6 +52,13 @@ class SpellCheckHost
     : public base::RefCountedThreadSafe<SpellCheckHost,
                                         BrowserThread::DeleteOnFileThread> {
  public:
+  // Event types used for reporting the status of this class and its derived
+  // classes to browser tests.
+  enum EventType {
+    BDICT_NOTINITIALIZED,
+    BDICT_CORRUPTED,
+  };
+
   virtual ~SpellCheckHost() {}
 
   // Creates the instance of SpellCheckHost implementation object.
@@ -92,6 +104,23 @@ class SpellCheckHost
   // has some dependencies in l10n util that need porting first.
   static int GetSpellCheckLanguages(Profile* profile,
                                     std::vector<std::string>* languages);
+
+ protected:
+  // Signals the event attached by AttachTestEvent() to report the specified
+  // event to browser tests. This function is called by this class and its
+  // derived classes to report their status. This function does not do anything
+  // when we do not set an event to |status_event_|.
+  static bool SignalStatusEvent(EventType type);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(SpellCheckHostBrowserTest, DeleteCorruptedBDICT);
+
+  // Attaches an event so browser tests can listen the status events.
+  static void AttachStatusEvent(base::WaitableEvent* status_event);
+
+  // Waits until a spellchecker updates its status. This function returns
+  // immediately when we do not set an event to |status_event_|.
+  static EventType WaitStatusEvent();
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HOST_H_

@@ -5,12 +5,22 @@
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 
 #include "base/string_split.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host_impl.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
+
+namespace {
+
+// An event used by browser tests to receive status events from this class and
+// its derived classes.
+base::WaitableEvent* g_status_event = NULL;
+SpellCheckHost::EventType g_status_type = SpellCheckHost::BDICT_NOTINITIALIZED;
+
+}  // namespace
 
 // static
 scoped_refptr<SpellCheckHost> SpellCheckHost::Create(
@@ -70,4 +80,31 @@ int SpellCheckHost::GetSpellCheckLanguages(
       return i;
   }
   return -1;
+}
+
+// static
+bool SpellCheckHost::SignalStatusEvent(SpellCheckHost::EventType status_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (!g_status_event)
+    return false;
+  g_status_type = status_type;
+  g_status_event->Signal();
+  return true;
+}
+
+// static
+void SpellCheckHost::AttachStatusEvent(base::WaitableEvent* status_event) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  g_status_event = status_event;
+}
+
+// static
+SpellCheckHost::EventType SpellCheckHost::WaitStatusEvent() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (g_status_event)
+    g_status_event->Wait();
+  return g_status_type;
 }

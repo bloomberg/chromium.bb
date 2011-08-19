@@ -211,10 +211,20 @@ void SpellCheckHostImpl::InitializeInternal() {
   if (!observer_)
     return;
 
-  file_ = base::CreatePlatformFile(
-      bdict_file_path_,
-      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,
-      NULL, NULL);
+  if (!VerifyBDict(bdict_file_path_)) {
+    DCHECK_EQ(file_, base::kInvalidPlatformFileValue);
+    file_util::Delete(bdict_file_path_, false);
+
+    // Notify browser tests that this dictionary is corrupted. We also skip
+    // downloading the dictionary when we run this function on browser tests.
+    if (SignalStatusEvent(BDICT_CORRUPTED))
+      tried_to_download_ = true;
+  } else {
+    file_ = base::CreatePlatformFile(
+        bdict_file_path_,
+        base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,
+        NULL, NULL);
+  }
 
   // File didn't exist. Download it.
   if (file_ == base::kInvalidPlatformFileValue && !tried_to_download_ &&
@@ -386,6 +396,20 @@ void SpellCheckHostImpl::SaveDictionaryData() {
 
   data_.clear();
   Initialize();
+}
+
+bool SpellCheckHostImpl::VerifyBDict(const FilePath& path) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Read the dictionary file and scan its data. We need to close this file
+  // after scanning its data so we can delete it and download a new dictionary
+  // from our dictionary-download server if it is corrupted.
+  file_util::MemoryMappedFile map;
+  if (!map.Initialize(path))
+    return false;
+
+  return hunspell::BDict::Verify(
+      reinterpret_cast<const char*>(map.data()), map.length());
 }
 
 SpellCheckHostMetrics* SpellCheckHostImpl::GetMetrics() const {

@@ -2614,6 +2614,7 @@
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_service_browsertest.cc',
         'browser/speech/speech_input_bubble_browsertest.cc',
+        'browser/spellchecker/spellcheck_host_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
@@ -2834,6 +2835,11 @@
           'sources': [
             'browser/spellchecker/spellcheck_message_filter_browsertest.cc',
             '../content/renderer/external_popup_menu_unittest.cc',
+          ],
+          'sources!': [
+            # TODO(hbono): This test depends on hunspell and we cannot run it on
+            # Mac, which does not use hunspell by default.
+            'browser/spellchecker/spellcheck_host_browsertest.cc',
           ],
         }, { # else: OS != "mac"
           'sources!': [

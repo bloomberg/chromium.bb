@@ -112,6 +112,11 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Saves |data_| to disk. Run on the file thread.
   void SaveDictionaryData();
 
+  // Verifies the specified BDict file exists and it is sane. This function
+  // should be called before opening the file so we can delete it and download a
+  // new dictionary if it is corrupted.
+  bool VerifyBDict(const FilePath& path) const;
+
   // May be NULL.
   SpellCheckHostObserver* observer_;
 
