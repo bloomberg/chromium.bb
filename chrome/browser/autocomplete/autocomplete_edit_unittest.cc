@@ -108,32 +108,32 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
     const char* expected_url;
   } input[] = {
     // Test that http:// is inserted if all text is selected.
-    { "a.b/c", 0, true, "a.b/c", "http://a.b/c", true, "http://a.b/c" },
+    { "a.de/b", 0, true, "a.de/b", "http://a.de/b", true, "http://a.de/b" },
 
     // Test that http:// is inserted if the host is selected.
-    { "a.b/c", 0, false, "a.b/", "http://a.b/", true, "http://a.b/" },
+    { "a.de/b", 0, false, "a.de/", "http://a.de/", true, "http://a.de/" },
 
     // Tests that http:// is inserted if the path is modified.
-    { "a.b/c", 0, false, "a.b/d", "http://a.b/d", true, "http://a.b/d" },
+    { "a.de/b", 0, false, "a.de/c", "http://a.de/c", true, "http://a.de/c" },
 
     // Tests that http:// isn't inserted if the host is modified.
-    { "a.b/c", 0, false, "a.c/", "a.c/", false, "" },
+    { "a.de/b", 0, false, "a.com/b", "a.com/b", false, "" },
 
     // Tests that http:// isn't inserted if the start of the selection is 1.
-    { "a.b/c", 1, false, "a.b/", "a.b/", false, "" },
+    { "a.de/b", 1, false, "a.de/b", "a.de/b", false, "" },
 
     // Tests that http:// isn't inserted if a portion of the host is selected.
-    { "a.com/", 0, false, "a.co", "a.co", false, "" },
+    { "a.de/", 0, false, "a.d", "a.d", false, "" },
 
     // Tests that http:// isn't inserted for an https url after the user nukes
     // https.
     { "https://a.com/", 0, false, "a.com/", "a.com/", false, "" },
 
     // Tests that http:// isn't inserted if the user adds to the host.
-    { "a.b/", 0, false, "a.bc/", "a.bc/", false, "" },
+    { "a.de/", 0, false, "a.de.com/", "a.de.com/", false, "" },
 
     // Tests that we don't get double http if the user manually inserts http.
-    { "a.b/", 0, false, "http://a.b/", "http://a.b/", true, "http://a.b/" },
+    { "a.de/", 0, false, "http://a.de/", "http://a.de/", true, "http://a.de/" },
   };
   ScopedTestingBrowserProcess browser_process;
   TestingOmniboxView view;

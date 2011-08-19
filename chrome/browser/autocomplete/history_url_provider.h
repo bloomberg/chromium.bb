@@ -215,6 +215,12 @@ class HistoryURLProvider : public HistoryProvider {
                             AutocompleteMatch* match,
                             history::HistoryMatches* matches) const;
 
+  // Helper function for FixupExactSuggestion, this returns true if the input
+  // corresponds to some intranet URL where the user has previously visited the
+  // host in question.  In this case the input should be treated as a URL.
+  bool CanFindIntranetURL(history::URLDatabase* db,
+                          const AutocompleteInput& input) const;
+
   // Determines if |match| is suitable for inline autocomplete, and promotes it
   // if so.
   bool PromoteMatchForInlineAutocomplete(

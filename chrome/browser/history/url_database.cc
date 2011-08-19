@@ -291,7 +291,7 @@ bool URLDatabase::InitIconMappingEnumeratorForEverything(
   return true;
 }
 
-void URLDatabase::AutocompleteForPrefix(const string16& prefix,
+bool URLDatabase::AutocompleteForPrefix(const string16& prefix,
                                         size_t max_results,
                                         bool typed_only,
                                         std::vector<history::URLRow>* results) {
@@ -317,7 +317,7 @@ void URLDatabase::AutocompleteForPrefix(const string16& prefix,
   sql::Statement statement(
       GetDB().GetCachedStatement(sql::StatementID(__FILE__, line), sql));
   if (!statement)
-    return;
+    return false;
 
   // We will find all strings between "prefix" and this string, which is prefix
   // followed by the maximum character size. Use 8-bit strings for everything
@@ -337,6 +337,7 @@ void URLDatabase::AutocompleteForPrefix(const string16& prefix,
     if (info.url().is_valid())
       results->push_back(info);
   }
+  return !results->empty();
 }
 
 bool URLDatabase::FindShortestURLFromBase(const std::string& base,

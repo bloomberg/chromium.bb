@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,8 +21,8 @@ using base::Time;
 using base::TimeDelta;
 
 struct TestURLInfo {
-  std::string url;
-  std::string title;
+  const char* url;
+  const char* title;
   int visit_count;
   int typed_count;
 } test_db[] = {
@@ -312,21 +313,18 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // (the redirect set below will also increment the visit counts). We want
   // the results to be in A,B,C order. Note also that our visit counts are
   // all high enough so that domain synthesizing won't get triggered.
-  struct RedirectCase {
+  struct TestCase {
     const char* url;
     int count;
-  };
-  static const RedirectCase redirect[] = {
+  } test_cases[] = {
     {"http://redirects/A", 30},
     {"http://redirects/B", 20},
     {"http://redirects/C", 10}
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(redirect); i++) {
-    history_service_->AddPageWithDetails(GURL(redirect[i].url),
-                                         UTF8ToUTF16("Title"),
-                                         redirect[i].count, redirect[i].count,
-                                         Time::Now(), false,
-                                         history::SOURCE_BROWSED);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+    history_service_->AddPageWithDetails(GURL(test_cases[i].url),
+        UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
+        Time::Now(), false, history::SOURCE_BROWSED);
   }
 
   // Create a B->C->A redirect chain, but set the visit counts such that they
@@ -334,12 +332,11 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // search for the most recent visit when looking for redirects, so this will
   // be found even though the previous visits had no redirects.
   history::RedirectList redirects_to_a;
-  redirects_to_a.push_back(GURL(redirect[1].url));
-  redirects_to_a.push_back(GURL(redirect[2].url));
-  redirects_to_a.push_back(GURL(redirect[0].url));
-  history_service_->AddPage(GURL(redirect[0].url), NULL, 0, GURL(),
-                            PageTransition::TYPED, redirects_to_a,
-                            history::SOURCE_BROWSED, true);
+  redirects_to_a.push_back(GURL(test_cases[1].url));
+  redirects_to_a.push_back(GURL(test_cases[2].url));
+  redirects_to_a.push_back(GURL(test_cases[0].url));
+  history_service_->AddPage(GURL(test_cases[0].url), NULL, 0, GURL(),
+      PageTransition::TYPED, redirects_to_a, history::SOURCE_BROWSED, true);
 
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default
@@ -347,7 +344,8 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   const string16 typing(ASCIIToUTF16("http://redirects/"));
   const std::string expected_results[] = {
     UTF16ToUTF8(typing),
-    redirect[0].url};
+    test_cases[0].url,
+  };
   RunTest(typing, string16(), true, expected_results,
           arraysize(expected_results));
 }
@@ -510,4 +508,28 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
 TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   // Visiting foo.com should not make this string be treated as a navigation.
   RunTest(ASCIIToUTF16("user@foo.com"), string16(), false, NULL, 0);
+}
+
+TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
+  struct TestCase {
+    const char* input;
+    bool has_output;
+  } test_cases[] = {
+    { "fooey", false },
+    { "fooey/", true },
+    { "fooey/a", false },
+    { "fooey/a b", false },
+    { "gooey", true },
+    { "gooey/", true },
+    { "gooey/a", true },
+    { "gooey/a b", true },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    const std::string output[1] = {
+      URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec()
+    };
+    RunTest(ASCIIToUTF16(test_cases[i].input), string16(), false,
+        test_cases[i].has_output ? output : NULL,
+        test_cases[i].has_output ? 1 : 0);
+  }
 }

@@ -353,11 +353,6 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (host_info.family == url_canon::CanonHostInfo::IPV6)
     return URL;
 
-  // Now that we've ruled out invalid ports and queries that look like they have
-  // a port, the presence of a port means this is likely a URL.
-  if (parts->port.is_nonempty())
-    return URL;
-
   // Presence of a password means this is likely a URL.  Note that unless the
   // user has typed an explicit "http://" or similar, we'll probably think that
   // the username is some unknown scheme, and bail out in the scheme-handling
@@ -365,35 +360,31 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (parts->password.is_nonempty())
     return URL;
 
-  // The host doesn't look like a number, so see if the user's given us a path.
-  if (parts->path.is_nonempty()) {
-    // Most inputs with paths are URLs, even ones without known registries (e.g.
-    // intranet URLs).  However, if there's no known registry and the path has
-    // a space, this is more likely a query with a slash in the first term
-    // (e.g. "ps/2 games") than a URL.  We can still open URLs with spaces in
-    // the path by escaping the space, and we will still inline autocomplete
-    // them if users have typed them in the past, but we default to searching
-    // since that's the common case.
-    return ((registry_length == 0) &&
-            (text.substr(parts->path.begin, parts->path.len).find(' ') !=
-                string16::npos)) ? UNKNOWN : URL;
-  }
-
-  // If we reach here with a username, our input looks like "user@host".
-  // Because there is no scheme explicitly specified, we think this is more
-  // likely an email address than an HTTP auth attempt.  Hence, we search by
-  // default and let users correct us on a case-by-case basis.
-  if (parts->username.is_nonempty())
-    return UNKNOWN;
-
-  // We have a bare host string.  If it has a known TLD, it's probably a URL.
-  if (registry_length != 0)
+  // Trailing slashes force the input to be treated as a URL.
+  if (parts->path.len == 1)
     return URL;
 
-  // No TLD that we know about.  This could be:
-  // * A string that the user wishes to add a desired_tld to to get a URL.  If
-  //   we reach this point, we know there's no known TLD on the string, so the
-  //   fixup code will be willing to add one; thus this is a URL.
+  // If we reach here with a username, but no port or path, our input looks like
+  // "user@host".  Because there is no scheme explicitly specified, we think
+  // this is more likely an email address than an HTTP auth attempt.  Hence, we
+  // search by default and let users correct us on a case-by-case basis.
+  if (parts->username.is_nonempty() && !parts->port.is_nonempty() &&
+      !parts->path.is_nonempty())
+    return UNKNOWN;
+
+  // If the host has a known TLD, it's probably a URL.  Also special-case
+  // "localhost" as a known hostname.
+  if ((registry_length != 0) || (host == ASCIIToUTF16("localhost")))
+    return URL;
+
+  // If we reach this point, we know there's no known TLD on the input, so if
+  // the user wishes to add a desired_tld, the fixup code will oblige; thus this
+  // is a URL.
+  if (!desired_tld.empty())
+    return REQUESTED_URL;
+
+  // No scheme, username, password, port, path, and no known TLD on the host.
+  // This could be:
   // * A single word "foo"; possibly an intranet site, but more likely a search.
   //   This is ideally an UNKNOWN, and we can let the Alternate Nav URL code
   //   catch our mistakes.
@@ -403,11 +394,10 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   //   distinguish this case from:
   // * A "URL-like" string that's not really a URL (like
   //   "browser.tabs.closeButtons" or "java.awt.event.*").  This is ideally a
-  //   QUERY.  Since the above case and this one are indistinguishable, and this
-  //   case is likely to be much more common, just say these are both UNKNOWN,
-  //   which should default to the right thing and let users correct us on a
-  //   case-by-case basis.
-  return desired_tld.empty() ? UNKNOWN : REQUESTED_URL;
+  //   QUERY.  Since this is indistinguishable from the case above, and this
+  //   case is much more likely, claim these are UNKNOWN, which should default
+  //   to the right thing and let users correct us on a case-by-case basis.
+  return UNKNOWN;
 }
 
 // static
@@ -431,7 +421,8 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     // Obtain the URL prefixed by view-source and parse it.
     string16 real_url(text.substr(after_scheme_and_colon));
     url_parse::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL, NULL);
+    AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL,
+                             NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url_parse::Component(

@@ -164,11 +164,12 @@ class URLDatabase {
 
   // Autocomplete --------------------------------------------------------------
 
-  // Fills the given array with URLs matching the given prefix. They will be
+  // Fills the given array with URLs matching the given prefix.  They will be
   // sorted by typed count, then by visit count, then by visit date (most recent
   // first) up to the given maximum number.  If |typed_only| is true, only urls
-  // that have been typed once are returned. Called by HistoryURLProvider.
-  void AutocompleteForPrefix(const string16& prefix,
+  // that have been typed once are returned.  For caller convenience, returns
+  // whether any results were found.  Called by HistoryURLProvider.
+  bool AutocompleteForPrefix(const string16& prefix,
                              size_t max_results,
                              bool typed_only,
                              std::vector<URLRow>* results);

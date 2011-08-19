@@ -25,6 +25,7 @@
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
+#include "net/base/registry_controlled_domain.h"
 
 namespace {
 
@@ -242,7 +243,7 @@ float CalculateConfidence(const history::HistoryMatch& match,
   return (0.5f * typed_score) + (0.3f * visit_score) + (0.2f * innermost_score);
 }
 
-}  // namespace history
+}  // namespace
 
 HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
@@ -662,33 +663,37 @@ bool HistoryURLProvider::FixupExactSuggestion(
       !input.parts().path.is_nonempty())
     return false;
 
-  // Tricky corner case: The user has visited intranet site "foo", but not
-  // internet site "www.foo.com".  He types in foo (getting an exact match),
-  // then tries to hit ctrl-enter.  When pressing ctrl, the what-you-typed
-  // match ("www.foo.com") doesn't show up in history, and thus doesn't get a
-  // promoted relevance, but a different match from the input ("foo") does, and
-  // gets promoted for inline autocomplete.  Thus instead of getting
-  // "www.foo.com", the user still gets "foo" (and, before hitting enter,
-  // probably gets an odd-looking inline autocomplete of "/").
-  //
-  // We detect this crazy case as follows:
-  // * If the what-you-typed match is not in the history DB,
-  // * and the user has specified a TLD,
-  // * and the input _without_ the TLD _is_ in the history DB,
-  // * ...then just before pressing "ctrl" the best match we supplied was the
-  //   what-you-typed match, so stick with it by promoting this.
   history::URLRow info;
   MatchType type = INLINE_AUTOCOMPLETE;
   if (!db->GetRowForURL(match->destination_url, &info)) {
-    if (input.desired_tld().empty())
-      return false;
-    GURL destination_url(URLFixerUpper::FixupURL(UTF16ToUTF8(input.text()),
-                                                 std::string()));
-    if (!db->GetRowForURL(destination_url, NULL))
-      return false;
-
-    // If we got here, then we hit the tricky corner case.  Make sure that
-    // |info| corresponds to the right URL.
+    if (CanFindIntranetURL(db, input)) {
+      // The user typed an intranet hostname that they've visited (albeit with a
+      // different port and/or path) before.  Continuing ensures this input will
+      // be treated as a navigation.
+    } else {
+      // Tricky corner case: The user has visited intranet site "foo", but not
+      // internet site "www.foo.com".  He types in foo (getting an exact match),
+      // then tries to hit ctrl-enter.  When pressing ctrl, the what-you-typed
+      // match ("www.foo.com") doesn't show up in history, and thus doesn't get
+      // a promoted relevance, but a different match from the input ("foo")
+      // does, and gets promoted for inline autocomplete.  Thus instead of
+      // getting "www.foo.com", the user still gets "foo" (and, before hitting
+      // enter, probably gets an odd-looking inline autocomplete of "/").
+      //
+      // We detect this crazy case as follows:
+      // * If the what-you-typed match is not in the history DB,
+      // * and the user has specified a TLD,
+      // * and the input _without_ the TLD _is_ in the history DB,
+      // * ...then just before pressing "ctrl" the best match we supplied was
+      //   the what-you-typed match, so stick with it by promoting this.
+      if (input.desired_tld().empty())
+        return false;
+      GURL destination_url(URLFixerUpper::FixupURL(UTF16ToUTF8(input.text()),
+                                                   std::string()));
+      if (!db->GetRowForURL(destination_url, NULL))
+        return false;
+      // If we got here, then we hit the tricky corner case.
+    }
     info = history::URLRow(match->destination_url);
   } else {
     // We have data for this match, use it.
@@ -715,6 +720,31 @@ bool HistoryURLProvider::FixupExactSuggestion(
   // Put it on the front of the HistoryMatches for redirect culling.
   EnsureMatchPresent(info, string16::npos, false, matches, true);
   return true;
+}
+
+bool HistoryURLProvider::CanFindIntranetURL(
+    history::URLDatabase* db,
+    const AutocompleteInput& input) const {
+  if ((input.type() != AutocompleteInput::UNKNOWN) ||
+      !LowerCaseEqualsASCII(input.scheme(), chrome::kHttpScheme))
+    return false;
+  DCHECK(input.parts().host.is_nonempty());
+  const string16 host(input.text().substr(input.parts().host.begin,
+                                          input.parts().host.len));
+  if (net::RegistryControlledDomainService::GetRegistryLength(
+      UTF16ToUTF8(host), false) != 0)
+    return false;
+  std::vector<history::URLRow> dummy;
+  for (history::Prefixes::const_iterator i(prefixes_.begin());
+       i != prefixes_.end(); ++i) {
+    if ((i->num_components == 1) &&
+        (db->AutocompleteForPrefix(i->prefix + host + ASCIIToUTF16("/"), 1,
+                                   true, &dummy) ||
+         db->AutocompleteForPrefix(i->prefix + host + ASCIIToUTF16(":"), 1,
+                                   true, &dummy)))
+      return true;
+  }
+  return false;
 }
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
@@ -782,7 +812,7 @@ void HistoryURLProvider::CullPoorMatches(
     history::HistoryMatches* matches) const {
   const base::Time& threshold(history::AutocompleteAgeThreshold());
   for (history::HistoryMatches::iterator i(matches->begin());
-       i != matches->end();) {
+       i != matches->end(); ) {
     if (RowQualifiesAsSignificant(i->url_info, threshold))
       ++i;
     else
