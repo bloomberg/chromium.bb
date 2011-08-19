@@ -626,10 +626,20 @@ class BuildTargetStage(BuilderStage):
     os.symlink(latest_image, cbuildbot_image_link)
 
 
-class TestStage(BuilderStage):
-  """Stage that performs testing steps."""
+class UnitTestStage(BuilderStage):
+  """Run unit tests."""
+  def _PerformStage(self):
+    if self._build_config['unittests'] and self._options.tests:
+      commands.RunUnitTests(self._build_root,
+                            self._build_config['board'],
+                            full=(not self._build_config['quick_unit']),
+                            nowithdebug=self._build_config['nowithdebug'])
+
+
+class VMTestStage(BuilderStage):
+  """Run autotests in a virtual machine."""
   def __init__(self, bot_id, options, build_config, archive_stage):
-    super(TestStage, self).__init__(bot_id, options, build_config)
+    super(VMTestStage, self).__init__(bot_id, options, build_config)
     self._archive_stage = archive_stage
 
   def _CreateTestRoot(self):
@@ -646,14 +656,7 @@ class TestStage(BuilderStage):
     (_, _, relative_path) = test_root.partition(chroot)
     return relative_path
 
-  def _RunUnitTests(self):
-    if self._build_config['unittests'] and self._options.tests:
-      commands.RunUnitTests(self._build_root,
-                            self._build_config['board'],
-                            full=(not self._build_config['quick_unit']),
-                            nowithdebug=self._build_config['nowithdebug'])
-
-  def _RunVMTests(self):
+  def _PerformStage(self):
     # VM tests should run with higher priority than other tasks
     # because they are usually the bottleneck, and don't use much CPU.
     commands.SetNiceness(foreground=True)
@@ -693,10 +696,6 @@ class TestStage(BuilderStage):
                                                    test_results_dir)
       if self._archive_stage:
         self._archive_stage.TestResultsReady(test_tarball)
-
-  def _PerformStage(self):
-    background.RunParallelSteps([self._RunUnitTests,
-                                 self._RunVMTests])
 
 
 class TestHWStage(NonHaltingBuilderStage):

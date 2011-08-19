@@ -275,7 +275,9 @@ def RunBuildStages(bot_id, options, build_config):
       archive_url = archive_stage.GetDownloadUrl()
       bg.AddStep(archive_stage.Run)
 
-    test_stage = stages.TestStage(bot_id, options, build_config, archive_stage)
+    vm_test_stage = stages.VMTestStage(bot_id, options, build_config,
+                                       archive_stage)
+    unit_test_stage = stages.UnitTestStage(bot_id, options, build_config)
     try:
       # Kick off the background stages. This is inside a 'finally' clause so
       # that we guarantee that 'TestStageExited' is always called, even if the
@@ -285,7 +287,7 @@ def RunBuildStages(bot_id, options, build_config):
         bg.start()
         bg_started = True
 
-      test_stage.Run()
+      background.RunParallelSteps([vm_test_stage.Run, unit_test_stage.Run])
     finally:
       if archive_stage:
         # Tell the archive_stage not to wait for any more data from the test
@@ -305,7 +307,7 @@ def RunBuildStages(bot_id, options, build_config):
     else:
       build_and_test_success = True
 
-  except stages.BuildException:
+  except (stages.BuildException, background.BackgroundException):
     # We skipped out of this build block early, all we need to do.
     pass
 

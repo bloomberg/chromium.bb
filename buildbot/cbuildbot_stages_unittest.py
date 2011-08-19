@@ -458,14 +458,12 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class TestStageTest(AbstractStageTest):
+class VMTestStageTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
-    self.mox.StubOutWithMock(background, 'RunParallelSteps')
-    background.RunParallelSteps(mox.IgnoreArg())
     self.mox.StubOutWithMock(commands, 'SetNiceness')
     commands.SetNiceness(foreground=True)
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
@@ -473,32 +471,23 @@ class TestStageTest(AbstractStageTest):
       mox.IgnoreArg())
 
   def ConstructStage(self):
-    return stages.TestStage(self.bot_id, self.options, self.build_config, None)
-
-  def RunStage(self):
-    stage = self.ConstructStage()
-    stage.Run()
-    stage._RunUnitTests()
-    stage._RunVMTests()
+    return stages.VMTestStage(self.bot_id, self.options, self.build_config,
+                              None)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
-    self.build_config['quick_unit'] = False
     self.build_config['quick_vm'] = False
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
 
-    self.mox.StubOutWithMock(commands, 'RunUnitTests')
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    commands.RunUnitTests(self.build_root, self.build_config['board'],
-                          full=True, nowithdebug=mox.IgnoreArg())
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
@@ -515,18 +504,14 @@ class TestStageTest(AbstractStageTest):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
-    self.build_config['quick_unit'] = True
     self.build_config['quick_vm'] = True
 
-    self.mox.StubOutWithMock(commands, 'RunUnitTests')
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    self.mox.StubOutWithMock(stages.TestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    stages.TestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
-    commands.RunUnitTests(self.build_root, self.build_config['board'],
-                          full=False, nowithdebug=mox.IgnoreArg())
+    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
@@ -535,6 +520,36 @@ class TestStageTest(AbstractStageTest):
                           full=False)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+class UnitTestStageTest(AbstractStageTest):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    AbstractStageTest.setUp(self)
+    self.bot_id = 'x86-generic-full'
+    self.build_config = config.config[self.bot_id].copy()
+    self.mox.StubOutWithMock(commands, 'RunUnitTests')
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+  def ConstructStage(self):
+    return stages.UnitTestStage(self.bot_id, self.options, self.build_config)
+
+  def testQuickTests(self):
+    self.build_config['quick_unit'] = True
+    commands.RunUnitTests(self.build_root, self.build_config['board'],
+                          full=False, nowithdebug=mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testFullTests(self):
+    """Tests if full unit and cros_au_test_harness tests are run correctly."""
+    self.build_config['quick_unit'] = False
+    commands.RunUnitTests(self.build_root, self.build_config['board'],
+                          full=True, nowithdebug=mox.IgnoreArg())
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
