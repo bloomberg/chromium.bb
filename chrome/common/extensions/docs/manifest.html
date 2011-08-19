@@ -290,6 +290,8 @@
                 </li><li>
                   <a href="#nacl_modules">nacl_modules</a>
                 </li><li>
+                  <a href="#offline_enabled">offline_enabled</a>
+                </li><li>
                   <a href="#permissions">permissions</a>
                 </li><li>
                   <a href="#version">version</a>
@@ -389,6 +391,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="#key">key</a>": "<em>publicKey</em>",
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
   "<a href="#nacl_modules">nacl_modules</a>": [...],
+  "<a href="#offline_enabled">offline_enabled</a>": true,
   "<a href="omnibox.html">omnibox</a>": { "keyword": "<em>aString</em>" },
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
@@ -625,7 +628,6 @@ You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
 
-
 <h3 id="nacl_modules">nacl_modules</h3>
 
 <p>
@@ -691,6 +693,13 @@ to use your Native Client module
 to display a particular type of content.
 </p>
 
+<h3 id="offline_enabled">offline_enabled</h3>
+
+<p>
+Whether the app or extension is expected to work offline. When Chrome detects
+that it is offline, apps with this field set to true will be highlighted
+on the New Tab page.
+</p>
 
 <h3 id="permissions">permissions</h3>
 
