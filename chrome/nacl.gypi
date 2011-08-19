@@ -79,52 +79,27 @@
           '<@(nacl_defines)',
         ],
       },
-      'actions': [
-        {
-          'action_name': 'nacl_irt',
-          'message': 'Building NaCl IRT',
-          'variables': {
-            'irt_build_cmd': [
-              'python', 'build_nacl_irt.py', '--outdir', '<(PRODUCT_DIR)',
-            ],
-            'irt_inputs_cmd':
-                'python build_nacl_irt.py --inputs',
-          },
-          'conditions': [
-            ['OS=="win"', {
-              'inputs': [
-                '<!@(<(irt_inputs_cmd) --platform=x86-32 --platform=x86-64)',
-              ],
-              'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-                          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe'],
-              'action': [
-                '<@(irt_build_cmd)',
-                '--platform', 'x86-32',
-                '--platform', 'x86-64',
-              ],
-            }, {
-              'conditions': [
-                ['target_arch=="ia32"', {
-                  'inputs': [
-                    '<!@(<(irt_inputs_cmd) --platform=x86-32)',
-                  ],
-                  'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_32.nexe'],
-                  'action': [
-                    '<@(irt_build_cmd)', '--platform', 'x86-32',
-                  ],
-                }, {  # target_arch=="x64"
-                  'inputs': [
-                    '<!@(<(irt_inputs_cmd) --platform=x86-64)',
-                  ],
-                  'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_64.nexe'],
-                  'action': [
-                    '<@(irt_build_cmd)', '--platform', 'x86-64',
-                  ],
-                }],
-              ],
-            }],
-          ],
-        },
+      'conditions': [
+        ['target_arch=="ia32"', {
+           'copies': [
+             {
+               'destination': '<(PRODUCT_DIR)',
+               'files': [
+                 '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
+               ],
+             },
+           ],
+        }],
+        ['target_arch=="x64" or OS=="win"', {
+           'copies': [
+             {
+               'destination': '<(PRODUCT_DIR)',
+               'files': [
+                 '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
+               ],
+             },
+           ],
+        }],
       ],
     },
   ],
