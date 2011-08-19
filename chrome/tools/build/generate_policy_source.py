@@ -303,8 +303,6 @@ def _WritePolicyCode(file, policy):
   file.write('    const em::%s& %s = policy.%s();\n' %
              (proto_type, proto_name, membername))
   file.write('    if (%s.has_%s()) {\n' % (proto_name, membername))
-  file.write('      Value* value = %s(%s.%s());\n' %
-             (_CreateValue(policy['type']), proto_name, membername))
   file.write('      PolicyMap* destination = mandatory;\n'
              '      if (%s.has_policy_options()) {\n'
              '        switch(%s.policy_options().mode()) {\n' %
@@ -321,10 +319,12 @@ def _WritePolicyCode(file, policy):
              '            break;\n'
              '        }\n'
              '      }\n'
-             '      if (destination)\n'
-             '        destination->Set(kPolicy%s, value);\n' %
-             policy['name'])
-  file.write('    }\n'
+             '      if (destination) {\n')
+  file.write('        Value* value = %s(%s.%s());\n' %
+             (_CreateValue(policy['type']), proto_name, membername))
+  file.write('        destination->Set(kPolicy%s, value);\n' % policy['name'])
+  file.write('      }\n'
+             '    }\n'
              '  }\n')
 
 

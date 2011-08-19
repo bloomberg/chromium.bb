@@ -1765,9 +1765,3 @@
    fun:net::URLRequestTestJob::ProcessOnePendingMessage
    fun:ResourceDispatcherHostTest_*
 }
-{
-   bug_93437
-   Heapcheck:Leak
-   fun:base::Value::CreateBooleanValue
-   fun:policy::DecodePolicy
-}
