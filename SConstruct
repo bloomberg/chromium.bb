@@ -930,6 +930,9 @@ def DualLibrary(env, lib_name, *args, **kwargs):
   if env.Bit('target_x86_64') and env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
     env_shared.Append(CCFLAGS=['-fPIC'])
+    # -fPIE overrides -fPIC, and shared libraries should not be linked
+    # -as executables
+    env_shared.FilterOut(CCFLAGS=['-fPIE'])
     env_shared.ComponentLibrary(lib_name + '_shared', shared_objs, **kwargs)
 
 
@@ -2765,7 +2768,7 @@ nonvariant_tests = [
     'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',
     # TODO(dspringer): re-enable test once the 3D ABI has stabilized. See
-    # http://code.google.com/p/nativeclient/issues/detail?id=2060	
+    # http://code.google.com/p/nativeclient/issues/detail?id=2060
     # 'tests/ppapi_example_gles2/nacl.scons',
     'tests/ppapi_example_post_message/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
