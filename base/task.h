@@ -473,14 +473,6 @@ class RunnableFunction : public Task {
   }
 
   virtual void Run() {
-    // TODO(apatrick): Remove this ASAP. This ensures that the function pointer
-    // is available in minidumps for the purpose of diagnosing
-    // http://crbug.com/81449.
-    Function function = function_;
-    base::debug::Alias(&function);
-    Params params = params_;
-    base::debug::Alias(&params);
-
     if (function_)
       DispatchToFunction(function_, params_);
   }
