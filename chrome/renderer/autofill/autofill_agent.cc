@@ -334,7 +334,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   // the website.
   const WebFormElement form = element.form();
   if (!element.isEnabled() || element.isReadOnly() ||
-      (!element.autoComplete() && !form.isNull() && form.autoComplete()) ||
+      (!element.autoComplete() && (form.isNull() || form.autoComplete())) ||
       !element.isTextField() || element.isPasswordField() ||
       !element.suggestedValue().isEmpty())
     return;
