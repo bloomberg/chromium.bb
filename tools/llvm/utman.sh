@@ -90,7 +90,7 @@ fi
 readonly LIBMODE_NEWLIB
 readonly LIBMODE_GLIBC
 
-readonly SB_LIBMODE=${SB_LIBMODE:-newlib}
+readonly SB_JIT=${SB_JIT:-false}
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
@@ -1970,8 +1970,8 @@ check-sb-arch() {
 LLVM_SB_SETUP=false
 llvm-sb-setup() {
   local flags=""
-  if [ ${SB_LIBMODE} == "glibc" ]; then
-    llvm-sb-setup-naclgcc "$@"
+  if ${SB_JIT}; then
+    llvm-sb-setup-jit "$@"
     return
   fi
 
@@ -2004,6 +2004,8 @@ llvm-sb-setup() {
   # Speed things up by avoiding an intermediate step
   flags+=" --pnacl-skip-ll"
 
+  LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized"
+
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
@@ -2015,7 +2017,7 @@ llvm-sb-setup() {
     LDFLAGS="") # TODO(pdox): Support -s
 }
 
-llvm-sb-setup-naclgcc() {
+llvm-sb-setup-jit() {
   local flags=""
 
   if ${LLVM_SB_SETUP} && [ $# -eq 0 ]; then
@@ -2033,20 +2035,17 @@ llvm-sb-setup-naclgcc() {
   check-sb-arch ${LLVM_SB_ARCH}
   check-sb-mode ${LLVM_SB_MODE}
 
-  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.naclgcc"
-  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}.naclgcc"
+  LLVM_SB_LOG_PREFIX="llvm.sb.${LLVM_SB_ARCH}.${LLVM_SB_MODE}.jit"
+  LLVM_SB_OBJDIR="${TC_BUILD}/llvm-sb-${LLVM_SB_ARCH}-${LLVM_SB_MODE}.jit"
   case ${LLVM_SB_MODE} in
     srpc)    flags+=" -DNACL_SRPC" ;;
     nonsrpc) ;;
   esac
 
   local naclgcc_root="";
-  if [ ${SB_LIBMODE} == "glibc" ]; then
-    naclgcc_root=${NNACL_GLIBC_ROOT}
-  else
-    naclgcc_root=${NNACL_ROOT}
-  fi
+  naclgcc_root=${NNACL_GLIBC_ROOT}
 
+  LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized"
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${naclgcc_root}/bin/i686-nacl-ar" \
@@ -2123,13 +2122,12 @@ llvm-sb-configure() {
         "${LLVM_SB_CONFIGURE_ENV[@]}" \
         --prefix=${installdir} \
         --host=nacl \
-        --disable-jit \
-        --enable-optimized \
         --target=${CROSS_TARGET_ARM} \
         --enable-targets=${targets} \
         --enable-pic=no \
         --enable-static \
-        --enable-shared=no
+        --enable-shared=no \
+        ${LLVM_SB_EXTRA_CONFIG_FLAGS}
   spopd
 }
 
@@ -2155,7 +2153,9 @@ llvm-sb-make() {
   fi
 
   local use_tcmalloc=0
-  if ${LIBMODE_NEWLIB} && [ ${SB_LIBMODE} == "newlib" ]; then
+  if ${LIBMODE_NEWLIB} && ! ${SB_JIT}; then
+    # only use tcmalloc with newlib (glibc malloc should be pretty good)
+    # (also, SB_JIT implies building with glibc, but for now it uses nacl-gcc)
     use_tcmalloc=1
   fi
 
@@ -2166,7 +2166,7 @@ llvm-sb-make() {
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 USE_TCMALLOC=$use_tcmalloc \
+      make USE_TCMALLOC=$use_tcmalloc \
            ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
@@ -2191,7 +2191,7 @@ llvm-sb-install() {
 
   spopd
 
-  if [ ${SB_LIBMODE} == "newlib" ]; then
+  if ! ${SB_JIT} ; then
     translate-and-install-sb-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
   else
     install-naclgcc-tool ${LLVM_SB_ARCH} ${LLVM_SB_MODE} llc
