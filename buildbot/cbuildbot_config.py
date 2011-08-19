@@ -282,6 +282,13 @@ release = {
   'push_image' : True,
   'upload_symbols' : True,
   'nowithdebug' : True,
+  'overlays' : 'public',
+  'prebuilts' : True,
+  'binhost_bucket' : 'gs://chromeos-dev-installer',
+  'binhost_key' : 'RELEASE_BINHOST',
+  'binhost_base_url' : 'https://commondatastorage.googleapis.com/chromeos-dev-installer',
+  'use_binhost_package_file' : True,
+  'git_sync' : False,
   # --official
   # --officialversion
 }
@@ -611,14 +618,6 @@ add_config('arm-tegra2_seaboard-tangent-private-bin',
 
 add_config('x86-mario-release', [internal, full, official, release, {
   'board' : 'x86-mario',
-  # TODO(arkaitzr): move these options to 'release' once they have been tested.
-  'overlays' : 'public',
-  'prebuilts' : True,
-  'binhost_bucket' : 'gs://chromeos-dev-installer',
-  'binhost_key' : 'RELEASE_BINHOST',
-  'binhost_base_url' : 'https://commondatastorage.googleapis.com/chromeos-dev-installer',
-  'use_binhost_package_file' : True,
-  'git_sync' : False,
 }])
 
 add_config('x86-alex-release', [internal, full, official, release, {
