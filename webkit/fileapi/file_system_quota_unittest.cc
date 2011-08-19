@@ -16,14 +16,12 @@
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -33,10 +31,9 @@ const int kFileOperationStatusNotSet = 1;
 class FileSystemQuotaTest : public testing::Test {
  public:
   FileSystemQuotaTest()
-      : quota_file_util_(QuotaFileUtil::CreateDefault()),
-        local_file_util_(new LocalFileSystemFileUtil(quota_file_util_)),
+      : local_file_util_(
+            new LocalFileSystemFileUtil(QuotaFileUtil::CreateDefault())),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        file_path_cost_(0),
         status_(kFileOperationStatusNotSet),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1),
@@ -92,32 +89,25 @@ class FileSystemQuotaTest : public testing::Test {
     return file_util::DirectoryExists(PlatformPath(virtual_path));
   }
 
-  int64 ComputeFilePathCost(const FilePath& file_path) {
-    return quota_file_util_->ComputeFilePathCost(file_path);
+  FilePath CreateVirtualTemporaryFileInDir(const FilePath& virtual_dir_path) {
+    FilePath absolute_dir_path(PlatformPath(virtual_dir_path));
+    FilePath absolute_file_path;
+    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(absolute_dir_path,
+                                                    &absolute_file_path));
+    return virtual_dir_path.Append(absolute_file_path.BaseName());
   }
 
-  void CreateVirtualDirectory(const FilePath& virtual_path) {
-    operation()->CreateDirectory(URLForPath(virtual_path), false, false);
-    MessageLoop::current()->RunAllPending();
-    file_path_cost_ += ComputeFilePathCost(virtual_path);
+  FilePath CreateVirtualTemporaryDirInDir(const FilePath& virtual_dir_path) {
+    FilePath absolute_parent_dir_path(PlatformPath(virtual_dir_path));
+    FilePath absolute_child_dir_path;
+    EXPECT_TRUE(file_util::CreateTemporaryDirInDir(absolute_parent_dir_path,
+                                                   FILE_PATH_LITERAL(""),
+                                                   &absolute_child_dir_path));
+    return virtual_dir_path.Append(absolute_child_dir_path.BaseName());
   }
 
-  void CreateVirtualFile(const FilePath& virtual_path) {
-    operation()->CreateFile(URLForPath(virtual_path), false);
-    MessageLoop::current()->RunAllPending();
-    file_path_cost_ += ComputeFilePathCost(virtual_path);
-  }
-
-  void set_file_path_cost(int64 file_path_cost) {
-    file_path_cost_ = file_path_cost;
-  }
-
-  int64 file_path_cost() const {
-    return file_path_cost_;
-  }
-
-  void AddToFilePathCost(int64 addition) {
-    file_path_cost_ += addition;
+  FilePath CreateVirtualTemporaryDir() {
+    return CreateVirtualTemporaryDirInDir(FilePath());
   }
 
   FilePath child_dir_path_;
@@ -131,12 +121,9 @@ class FileSystemQuotaTest : public testing::Test {
 
   ScopedTempDir work_dir_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
-  QuotaFileUtil* quota_file_util_;
   scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
 
   base::ScopedCallbackFactory<FileSystemQuotaTest> callback_factory_;
-
-  int64 file_path_cost_;
 
   // For post-operation status.
   int status_;
@@ -144,7 +131,6 @@ class FileSystemQuotaTest : public testing::Test {
   int64 usage_;
   int64 quota_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaTest);
 };
 
@@ -241,24 +227,17 @@ void FileSystemQuotaTest::OnGetUsageAndQuota(
 }
 
 void FileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
-  child_dir_path_ = virtual_path.AppendASCII("childdir");
-  CreateVirtualDirectory(child_dir_path_);
-  child_file1_path_ = virtual_path.AppendASCII("childfile1");
-  CreateVirtualFile(child_file1_path_);
-  child_file2_path_ = virtual_path.AppendASCII("childlongfile2");
-  CreateVirtualFile(child_file2_path_);
-  grandchild_file1_path_ = child_dir_path_.AppendASCII("grchildfile1");
-  CreateVirtualFile(grandchild_file1_path_);
-  grandchild_file2_path_ = child_dir_path_.AppendASCII("grchildlongfile2");
-  CreateVirtualFile(grandchild_file2_path_);
+  child_dir_path_ = CreateVirtualTemporaryDirInDir(virtual_path);
+  child_file1_path_ = CreateVirtualTemporaryFileInDir(virtual_path);
+  child_file2_path_ = CreateVirtualTemporaryFileInDir(virtual_path);
+  grandchild_file1_path_ = CreateVirtualTemporaryFileInDir(child_dir_path_);
+  grandchild_file2_path_ = CreateVirtualTemporaryFileInDir(child_dir_path_);
 }
 
 TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
-  FilePath src_dir_path = FilePath(FILE_PATH_LITERAL("src"));
-  CreateVirtualDirectory(src_dir_path);
+  FilePath src_dir_path(CreateVirtualTemporaryDir());
   PrepareFileSet(src_dir_path);
-  FilePath dest_dir_path = FilePath(FILE_PATH_LITERAL("dest"));
-  CreateVirtualDirectory(dest_dir_path);
+  FilePath dest_dir_path(CreateVirtualTemporaryDir());
 
   EXPECT_EQ(0, ActualSize());
 
@@ -269,19 +248,16 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   MessageLoop::current()->RunAllPending();
 
   const int64 all_file_size = 5000 + 400 + 30 + 2;
-  const int64 usage_file_size = FileSystemUsageCache::kUsageFileSize;
 
   EXPECT_EQ(all_file_size, ActualSize());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(),
-            SizeInUsageFile());
+  EXPECT_EQ(all_file_size, SizeInUsageFile());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(), usage());
+  EXPECT_EQ(all_file_size, usage());
   ASSERT_LT(all_file_size, quota());
 
   operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path));
   MessageLoop::current()->RunAllPending();
-  AddToFilePathCost(-ComputeFilePathCost(src_dir_path));
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path.Append(
@@ -291,21 +267,18 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
       grandchild_file1_path_.BaseName())));
 
   EXPECT_EQ(all_file_size, ActualSize());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(),
-            SizeInUsageFile());
+  EXPECT_EQ(all_file_size, SizeInUsageFile());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(), usage());
+  EXPECT_EQ(all_file_size, usage());
   ASSERT_LT(all_file_size, quota());
 }
 
 TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
-  FilePath src_dir_path = FilePath(FILE_PATH_LITERAL("src"));
-  CreateVirtualDirectory(src_dir_path);
+  FilePath src_dir_path(CreateVirtualTemporaryDir());
   PrepareFileSet(src_dir_path);
-  FilePath dest_dir1_path = FilePath(FILE_PATH_LITERAL("dest1"));
-  CreateVirtualDirectory(dest_dir1_path);
-  FilePath dest_dir2_path = FilePath(FILE_PATH_LITERAL("destnonexisting2"));
+  FilePath dest_dir1_path(CreateVirtualTemporaryDir());
+  FilePath dest_dir2_path(CreateVirtualTemporaryDir());
 
   EXPECT_EQ(0, ActualSize());
 
@@ -318,23 +291,16 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   const int64 child_file_size = 8000 + 700;
   const int64 grandchild_file_size = 60 + 5;
   const int64 all_file_size = child_file_size + grandchild_file_size;
-  const int64 usage_file_size = FileSystemUsageCache::kUsageFileSize;
 
   EXPECT_EQ(all_file_size, ActualSize());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(),
-            SizeInUsageFile());
+  EXPECT_EQ(all_file_size, SizeInUsageFile());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(all_file_size + usage_file_size + file_path_cost(), usage());
+  EXPECT_EQ(all_file_size, usage());
   ASSERT_LT(all_file_size, quota());
 
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir1_path));
   MessageLoop::current()->RunAllPending();
-  AddToFilePathCost(ComputeFilePathCost(child_dir_path_) +
-                    ComputeFilePathCost(child_file1_path_) +
-                    ComputeFilePathCost(child_file2_path_) +
-                    ComputeFilePathCost(grandchild_file1_path_) +
-                    ComputeFilePathCost(grandchild_file2_path_));
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(src_dir_path.Append(
@@ -350,86 +316,23 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
       grandchild_file1_path_.BaseName())));
 
   EXPECT_EQ(2 * all_file_size, ActualSize());
-  EXPECT_EQ(2 * all_file_size + usage_file_size + file_path_cost(),
-            SizeInUsageFile());
+  EXPECT_EQ(2 * all_file_size, SizeInUsageFile());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(2 * all_file_size + usage_file_size + file_path_cost(), usage());
+  EXPECT_EQ(2 * all_file_size, usage());
   ASSERT_LT(2 * all_file_size, quota());
 
   operation()->Copy(URLForPath(child_dir_path_), URLForPath(dest_dir2_path));
   MessageLoop::current()->RunAllPending();
-  AddToFilePathCost(ComputeFilePathCost(dest_dir2_path) +
-                    ComputeFilePathCost(grandchild_file1_path_) +
-                    ComputeFilePathCost(grandchild_file2_path_));
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
 
-  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size,
-      ActualSize());
-  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size + usage_file_size +
-            file_path_cost(), SizeInUsageFile());
+  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size, ActualSize());
+  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size, SizeInUsageFile());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size + usage_file_size +
-            file_path_cost(), usage());
+  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size, usage());
   ASSERT_LT(2 * child_file_size + 3 * grandchild_file_size, quota());
-}
-
-void FileSystemObfuscatedQuotaTest::SetUp() {
-  ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
-  FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
-  file_util::CreateDirectory(filesystem_dir_path);
-
-  quota_manager_ = new quota::QuotaManager(
-      false /* is_incognito */,
-      filesystem_dir_path,
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      NULL);
-
-  file_system_context_ = new FileSystemContext(
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      new quota::MockSpecialStoragePolicy(),
-      quota_manager_->proxy(),
-      filesystem_dir_path,
-      false /* incognito */,
-      true /* allow_file_access_from_files */,
-      false /* unlimitedquota */,
-      NULL);
-
-  test_helper_.SetUp(file_system_context_,
-                     NULL /* sandbox_provider's internal file_util */);
-}
-
-TEST_F(FileSystemObfuscatedQuotaTest, TestRevokeUsageCache) {
-  FilePath dir_path = FilePath(FILE_PATH_LITERAL("test"));
-  CreateVirtualDirectory(dir_path);
-  PrepareFileSet(dir_path);
-
-  operation()->Truncate(URLForPath(child_file1_path_), 3000);
-  operation()->Truncate(URLForPath(child_file2_path_), 400);
-  operation()->Truncate(URLForPath(grandchild_file1_path_), 10);
-  operation()->Truncate(URLForPath(grandchild_file2_path_), 6);
-  MessageLoop::current()->RunAllPending();
-
-  const int64 all_file_size = 3000 + 400 + 10 + 6;
-
-  EXPECT_EQ(all_file_size + file_path_cost(), SizeInUsageFile());
-  GetUsageAndQuotaFromQuotaManager();
-  EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(all_file_size + file_path_cost(), usage());
-  ASSERT_LT(all_file_size, quota());
-
-  RevokeUsageCache();
-  EXPECT_EQ(-1, SizeInUsageFile());
-
-  GetUsageAndQuotaFromQuotaManager();
-  EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
-  EXPECT_EQ(all_file_size + file_path_cost(), SizeInUsageFile());
-  EXPECT_EQ(all_file_size + file_path_cost(), usage());
-  ASSERT_LT(all_file_size, quota());
 }
 
 }  // namespace fileapi

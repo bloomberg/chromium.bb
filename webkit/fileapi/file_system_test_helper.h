@@ -61,6 +61,8 @@ class FileSystemTestOriginHelper {
 
   int64 GetCachedOriginUsage() const;
   bool RevokeUsageCache() const;
+
+  // This doesn't work with OFSFU.
   int64 ComputeCurrentOriginUsage() const;
 
   FileSystemOperation* NewOperation(

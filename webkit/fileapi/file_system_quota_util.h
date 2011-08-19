@@ -69,7 +69,6 @@ class FileSystemQuotaUtil {
                                            fileapi::FileSystemType type) = 0;
 
   // Called by quota file util.
-  // Returns the amount of data used for the origin for usage tracking.
   virtual void UpdateOriginUsageOnFileThread(quota::QuotaManagerProxy* proxy,
                                              const GURL& origin_url,
                                              fileapi::FileSystemType type,
@@ -83,12 +82,12 @@ class FileSystemQuotaUtil {
       fileapi::FileSystemType type) = 0;
 
   // Called by quota_file_util or file_writer_delegate.
-  // Called before an write operation modifies the origin's storage data.
+  // Called before a write operation modifies the origin's storage data.
   virtual void StartUpdateOriginOnFileThread(const GURL& origin_url,
                                              fileapi::FileSystemType type) = 0;
 
   // Called by quota_file_util or file_writer_delegate.
-  // Called after an write operation modifies the origin's storage data.
+  // Called after a write operation modifies the origin's storage data.
   virtual void EndUpdateOriginOnFileThread(const GURL& origin_url,
                                            fileapi::FileSystemType type) = 0;
 

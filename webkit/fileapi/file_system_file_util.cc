@@ -136,13 +136,10 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
 }
 
 PlatformFileError FileSystemFileUtil::CreateDirectory(
-    FileSystemOperationContext* fs_context,
+    FileSystemOperationContext* unused,
     const FilePath& file_path,
     bool exclusive,
     bool recursive) {
-  if (fs_context->do_not_write_actually())
-    return base::PLATFORM_FILE_OK;
-
   // If parent dir of file doesn't exist.
   if (!recursive && !file_util::PathExists(file_path.DirName()))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -253,21 +250,26 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
      (context->src_type() == context->dest_type());
   FileSystemFileUtil* dest_util = context->dest_file_system_file_util();
   DCHECK(dest_util);
-  if (same_file_system)
+  scoped_ptr<FileSystemOperationContext> local_dest_context;
+  FileSystemOperationContext* dest_context = NULL;
+  if (same_file_system) {
+    dest_context = context;
     DCHECK(context->src_file_system_file_util() ==
          context->dest_file_system_file_util());
-  // All the single-path virtual FSFU methods expect the context information
-  // to be in the src_* variables, not the dest_* variables, so we have to
-  // make a new context if we want to call them on the dest_file_path.
-  scoped_ptr<FileSystemOperationContext> dest_context(
-      context->CreateInheritedContextForDest());
+  } else {
+    local_dest_context.reset(context->CreateInheritedContextForDest());
+    // All the single-path virtual FSFU methods expect the context information
+    // to be in the src_* variables, not the dest_* variables, so we have to
+    // make a new context if we want to call them on the dest_file_path.
+    dest_context = local_dest_context.get();
+  }
 
   // Exits earlier if the source path does not exist.
   if (!PathExists(context, src_file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // The parent of the |dest_file_path| does not exist.
-  if (!ParentExists(dest_context.get(), dest_util, dest_file_path))
+  if (!ParentExists(dest_context, dest_util, dest_file_path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // It is an error to try to copy/move an entry into its child.
@@ -275,14 +277,14 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // Now it is ok to return if the |dest_file_path| does not exist.
-  if (!dest_util->PathExists(dest_context.get(), dest_file_path))
+  if (!dest_util->PathExists(dest_context, dest_file_path))
     return base::PLATFORM_FILE_OK;
 
   // |src_file_path| exists and is a directory.
   // |dest_file_path| exists and is a file.
   bool src_is_directory = DirectoryExists(context, src_file_path);
   bool dest_is_directory =
-      dest_util->DirectoryExists(dest_context.get(), dest_file_path);
+      dest_util->DirectoryExists(dest_context, dest_file_path);
   if (src_is_directory && !dest_is_directory)
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
@@ -301,14 +303,16 @@ FileSystemFileUtil::PerformCommonCheckAndPreparationForMoveAndCopy(
     // the file_util's Copy or Move method doesn't perform overwrite
     // on all platforms, so we delete the destination directory here.
     // TODO(kinuko): may be better to change the file_util::{Copy,Move}.
-    PlatformFileError error = dest_util->Delete(
-        dest_context.get(), dest_file_path, false /* recursive */);
-    context->ImportAllowedBytesGrowth(*dest_context);
-    if (base::PLATFORM_FILE_OK != error) {
-      if (!dest_util->IsDirectoryEmpty(dest_context.get(), dest_file_path))
+    if (base::PLATFORM_FILE_OK !=
+        dest_util->Delete(dest_context, dest_file_path,
+                          false /* recursive */)) {
+      if (!dest_util->IsDirectoryEmpty(dest_context, dest_file_path))
         return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
+    // Reflect changes in usage back to the original context.
+    if (!same_file_system)
+      context->set_allowed_bytes_growth(dest_context->allowed_bytes_growth());
   }
   return base::PLATFORM_FILE_OK;
 }
@@ -342,6 +346,9 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
       const FilePath& dest_file_path,
       bool copy) {
   FileSystemFileUtil* dest_util = context->dest_file_system_file_util();
+  // All the single-path virtual FSFU methods expect the context information to
+  // be in the src_* variables, not the dest_* variables, so we have to make a
+  // new context if we want to call them on the dest_file_path.
   scoped_ptr<FileSystemOperationContext> dest_context(
       context->CreateInheritedContextForDest());
 
@@ -356,9 +363,10 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
   if (!dest_util->DirectoryExists(dest_context.get(), dest_file_path)) {
     PlatformFileError error = dest_util->CreateDirectory(dest_context.get(),
         dest_file_path, false, false);
-    context->ImportAllowedBytesGrowth(*dest_context);
     if (error != base::PLATFORM_FILE_OK)
       return error;
+    // Reflect changes in usage back to the original context.
+    context->set_allowed_bytes_growth(dest_context->allowed_bytes_growth());
   }
 
   scoped_ptr<AbstractFileEnumerator> file_enum(
@@ -369,21 +377,15 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
     src_file_path.AppendRelativePath(src_file_path_each, &dest_file_path_each);
 
     if (file_enum->IsDirectory()) {
-      scoped_ptr<FileSystemOperationContext> new_directory_context(
-          dest_context->CreateInheritedContextWithNewVirtualPaths(
-              dest_file_path_each, FilePath()));
-      PlatformFileError error = dest_util->CreateDirectory(
-          new_directory_context.get(), dest_file_path_each, false, false);
-      context->ImportAllowedBytesGrowth(*new_directory_context);
+      PlatformFileError error = dest_util->CreateDirectory(dest_context.get(),
+          dest_file_path_each, false, false);
       if (error != base::PLATFORM_FILE_OK)
         return error;
+      // Reflect changes in usage back to the original context.
+      context->set_allowed_bytes_growth(dest_context->allowed_bytes_growth());
     } else {
-      scoped_ptr<FileSystemOperationContext> copy_context(
-          context->CreateInheritedContextWithNewVirtualPaths(
-              src_file_path_each, dest_file_path_each));
       PlatformFileError error = CopyOrMoveFileHelper(
-          copy_context.get(), src_file_path_each, dest_file_path_each, copy);
-      context->ImportAllowedBytesGrowth(*copy_context);
+          context, src_file_path_each, dest_file_path_each, copy);
       if (error != base::PLATFORM_FILE_OK)
         return error;
     }
@@ -394,6 +396,7 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveDirectory(
     if (error != base::PLATFORM_FILE_OK)
       return error;
   }
+
   return base::PLATFORM_FILE_OK;
 }
 
@@ -469,12 +472,7 @@ PlatformFileError FileSystemFileUtil::DeleteDirectoryRecursive(
       directories.push(file_path_each);
     } else {
       // DeleteFile here is the virtual overridden member function.
-      scoped_ptr<FileSystemOperationContext> inherited_context(
-          context->CreateInheritedContextWithNewVirtualPaths(
-              file_path_each, FilePath()));
-      PlatformFileError error =
-          DeleteFile(inherited_context.get(), file_path_each);
-      context->ImportAllowedBytesGrowth(*inherited_context);
+      PlatformFileError error = DeleteFile(context, file_path_each);
       if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
         return base::PLATFORM_FILE_ERROR_FAILED;
       else if (error != base::PLATFORM_FILE_OK)
@@ -483,12 +481,7 @@ PlatformFileError FileSystemFileUtil::DeleteDirectoryRecursive(
   }
 
   while (!directories.empty()) {
-    scoped_ptr<FileSystemOperationContext> inherited_context(
-        context->CreateInheritedContextWithNewVirtualPaths(
-            directories.top(), FilePath()));
-    PlatformFileError error =
-        DeleteSingleDirectory(inherited_context.get(), directories.top());
-    context->ImportAllowedBytesGrowth(*inherited_context);
+    PlatformFileError error = DeleteSingleDirectory(context, directories.top());
     if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
       return base::PLATFORM_FILE_ERROR_FAILED;
     else if (error != base::PLATFORM_FILE_OK)

@@ -185,6 +185,13 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // and destroys the database on the disk.
   bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
 
+  // Computes a cost for storing a given file in the obfuscated FSFU.
+  // As the cost of a file is independent of the cost of its parent directories,
+  // this ignores all but the BaseName of the supplied path.  In order to
+  // compute the cost of adding a multi-segment directory recursively, call this
+  // on each path segment and add the results.
+  static int64 ComputeFilePathCost(const FilePath& path);
+
  private:
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;

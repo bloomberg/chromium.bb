@@ -101,24 +101,7 @@ class FileSystemOperationContext {
 
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
-  // TODO(dmikurube): Eliminate this flag eventually.
-  // This flag is temporarily prepared to allow ObfuscatedFSFU to account
-  // directories' cost without making actual directories.  This should be
-  // dealed with more fundamentally.
-  void set_do_not_write_actually(
-      bool do_not_write_actually) {
-    do_not_write_actually_ = do_not_write_actually;
-  }
-
-  bool do_not_write_actually() const {
-    return do_not_write_actually_;
-  }
-
   FileSystemOperationContext* CreateInheritedContextForDest() const;
-  FileSystemOperationContext* CreateInheritedContextWithNewVirtualPaths(
-      const FilePath& new_src_virtual_path,
-      const FilePath& new_dest_virtual_path) const;
-  void ImportAllowedBytesGrowth(const FileSystemOperationContext& other);
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
@@ -133,7 +116,6 @@ class FileSystemOperationContext {
   FileSystemType src_type_;  // Also used for any single-path operation.
   FileSystemType dest_type_;
   int64 allowed_bytes_growth_;
-  bool do_not_write_actually_;
 
   // Used for delayed operation by quota.
   FilePath src_virtual_path_;  // Also used for any single-path operation.

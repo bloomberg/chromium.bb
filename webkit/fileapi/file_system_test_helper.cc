@@ -91,19 +91,11 @@ void FileSystemTestOriginHelper::SetUp(
       ValidateFileSystemRootAndGetPathOnFileThread(
           origin_, type_, FilePath(), true /* create */);
 
-  // Initialize the usage cache file.
+  // Initialize the usage cache file.  This code assumes that we're either using
+  // OFSFU or we've mocked it out in the sandbox provider.
   FilePath usage_cache_path = file_system_context_->path_manager()
       ->sandbox_provider()->GetUsageCachePathForOriginAndType(origin_, type_);
   FileSystemUsageCache::UpdateUsage(usage_cache_path, 0);
-
-  // We expect the origin directory to be always empty, except for possibly
-  // the usage cache file.  We record the initial usage file size here
-  // (it will be either 0 or kUsageFileSize) so that later we can compute
-  // how much the size of the origin directory has grown.
-  initial_usage_size_ = file_util::ComputeDirectorySize(
-      GetOriginRootPath());
-
-  FileSystemUsageCache::UpdateUsage(usage_cache_path, initial_usage_size_);
 }
 
 void FileSystemTestOriginHelper::TearDown() {
@@ -149,11 +141,10 @@ bool FileSystemTestOriginHelper::RevokeUsageCache() const {
 }
 
 int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
-  // Depending on the file_util GetOriginRootPath() may include usage
-  // cache file size or may not.  Here we subtract the initial size to
-  // make it work for multiple file_utils.
-  return file_util::ComputeDirectorySize(GetOriginRootPath()) -
-      initial_usage_size_;
+  int64 size = file_util::ComputeDirectorySize(GetOriginRootPath());
+  if (file_util::PathExists(GetUsageCachePath()))
+    size -= FileSystemUsageCache::kUsageFileSize;
+  return size;
 }
 
 FileSystemOperation* FileSystemTestOriginHelper::NewOperation(

@@ -64,6 +64,10 @@ class FileSystemFileUtilTest : public testing::Test {
 
   FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {
     FileSystemOperationContext* context = helper->NewOperationContext();
+    // We need to allocate quota for paths for
+    // TestCrossFileSystemCopyMoveHelper, since it calls into OFSFU, which
+    // charges quota for paths.
+    context->set_allowed_bytes_growth(1024 * 1024);
     return context;
   }
 
@@ -117,6 +121,7 @@ class FileSystemFileUtilTest : public testing::Test {
     copy_context->set_dest_origin_url(dest_helper.origin());
     copy_context->set_src_type(src_helper.type());
     copy_context->set_dest_type(dest_helper.type());
+    copy_context->set_allowed_bytes_growth(1024 * 1024); // OFSFU path quota.
 
     if (copy)
       ASSERT_EQ(base::PLATFORM_FILE_OK,

@@ -17,6 +17,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/obfuscated_file_system_file_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_types.h"
@@ -195,6 +196,10 @@ class FileSystemQuotaClientTest : public testing::Test {
             path, files[i].origin_url, files[i].type));
         if (path.empty()) {
           // Create the usage cache.
+          // HACK--we always create the root [an empty path] first.  If we
+          // create it later, this will fail due to a quota mismatch.  If we
+          // call this before we create the root, it succeeds, but hasn't
+          // actually created the cache.
           ASSERT_EQ(0, GetOriginUsage(
               quota_client, files[i].origin_url, files[i].type));
         }
@@ -205,6 +210,10 @@ class FileSystemQuotaClientTest : public testing::Test {
     }
   }
 
+  // This is a bit fragile--it depends on the test data always creating a
+  // directory before adding a file or directory to it, so that we can just
+  // count the basename of each addition.  A recursive creation of a path, which
+  // created more than one directory in a single shot, would break this.
   int64 ComputeFilePathsCostForOriginAndType(const TestFile* files,
                                              int num_files,
                                              const std::string& origin_url,
@@ -215,9 +224,8 @@ class FileSystemQuotaClientTest : public testing::Test {
           GURL(files[i].origin_url) == GURL(origin_url)) {
         FilePath path = FilePath().AppendASCII(files[i].name);
         if (!path.empty()) {
-          // TODO(dmikurube): Use QuotaFileUtil in the actual -FileUtil stack.
-          scoped_ptr<QuotaFileUtil> file_util(QuotaFileUtil::CreateDefault());
-          file_paths_cost += file_util->ComputeFilePathCost(path);
+          file_paths_cost +=
+              ObfuscatedFileSystemFileUtil::ComputeFilePathCost(path);
         }
       }
     }
@@ -286,8 +294,7 @@ TEST_F(FileSystemQuotaClientTest, NoFileTest) {
   InitializeOriginFiles(quota_client.get(), kFiles, ARRAYSIZE_UNSAFE(kFiles));
 
   for (int i = 0; i < 2; i++) {
-    EXPECT_EQ(0,
-        GetOriginUsage(quota_client.get(), kDummyURL1, kTemporary));
+    EXPECT_EQ(0, GetOriginUsage(quota_client.get(), kDummyURL1, kTemporary));
   }
 }
 

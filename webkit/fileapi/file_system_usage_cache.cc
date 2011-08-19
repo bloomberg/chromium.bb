@@ -74,6 +74,9 @@ int FileSystemUsageCache::AtomicUpdateUsageByDelta(
   // TODO(dmikurube): Make sure that usage_file_path is available.
   fs_usage = Read(usage_file_path, &dirty);
 
+  if (fs_usage < 0)
+    return -1;
+
   return Write(usage_file_path, dirty, fs_usage + delta);
 }
 
@@ -144,4 +147,4 @@ int FileSystemUsageCache::Write(const FilePath& usage_file_path,
     return -1;
 }
 
-}
+}  // namespace fileapi
