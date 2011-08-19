@@ -1046,9 +1046,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   previous_annotation_column_width_ = annotation_column_width;
 
   // Clear the existing candidate_views if any.
-  for (size_t i = 0; i < candidate_views_.size(); ++i) {
-    candidate_area_contents->RemoveChildView(candidate_views_[i]);
-  }
+  candidate_area_contents->RemoveAllChildViews(true);
   candidate_views_.clear();
 
   views::GridLayout* layout = new views::GridLayout(candidate_area_contents);
