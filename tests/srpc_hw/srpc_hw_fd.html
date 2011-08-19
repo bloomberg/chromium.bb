@@ -56,13 +56,14 @@ function loadAndTestMethods(tester, server) {
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
 
     <embed type="application/x-nacl" id="nacl_server"
-           name="nacl_module" width="0" height="0"/>
+           name="nacl_module" width="0" height="0" src="srpc_hw.nmf" />
 
     <script type="text/javascript">
       //<![CDATA[
       var tester = new Tester();
       var server = $('nacl_server');
       loadAndTestMethods(tester, server);
+      tester.waitFor(server);
       tester.run();
       //]]>
     </script>

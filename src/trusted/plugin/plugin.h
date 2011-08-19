@@ -127,9 +127,8 @@ class Plugin : public pp::InstancePrivate {
   // mechanism(s) take over.
   //
   // Updates nacl_module_origin() and nacl_module_url().
-  bool LoadNaClModule(nacl::DescWrapper* wrapper,
-                      pp::CompletionCallback init_done_cb,
-                      ErrorInfo* error_info);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
+                      pp::CompletionCallback init_done_cb);
 
   // Finish hooking interfaces up, after low-level initialization is
   // complete.
@@ -341,10 +340,6 @@ class Plugin : public pp::InstancePrivate {
     return main_subprocess_.service_runtime();
   }
 
-  bool SubprocessIsReady() const {
-    return nacl_ready_state_ == DONE && main_service_runtime() != NULL;
-  }
-
   // Setting the properties and methods exported.
   void AddPropertyGet(RpcFunction function_ptr,
                       const char* name,
@@ -364,15 +359,12 @@ class Plugin : public pp::InstancePrivate {
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
 
-  // Create process containing sel_ldr.  This does not send a nexe.
-  bool CreateSelLdrProcess(NaClSubprocess* subprocess, ErrorInfo* error_info);
-
   // Help load a nacl module, from the file specified in wrapper.
   // This will fully initialize the |subprocess| if the load was successful.
   bool LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                             NaClSubprocess* subprocess,
-                            pp::CompletionCallback init_done_cb,
-                            ErrorInfo* error_info);
+                            ErrorInfo* error_info,
+                            pp::CompletionCallback init_done_cb);
   bool StartSrpcServices(NaClSubprocess* subprocess, ErrorInfo* error_info);
   bool StartSrpcServicesCommon(NaClSubprocess* subprocess,
                                ErrorInfo* error_info);

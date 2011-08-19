@@ -140,18 +140,16 @@ class ServiceRuntime {
  public:
   // TODO(sehr): This class should also implement factory methods, using the
   // Start method below.
-  ServiceRuntime(Plugin* plugin);
+  ServiceRuntime(Plugin* plugin,
+                 pp::CompletionCallback init_done_cb);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
-  // Spawn a sel_ldr instance in a new process.
-  bool CreateProcess(ErrorInfo* error_info);
-
-  // Establish an SrpcClient to sel_ldr and send a nexe.  The nexe to be started
-  // is passed through |nacl_file_desc|.  On success, returns true.  On failure,
-  // returns false and |error_string| is set to something describing the error.
-  bool StartNexe(nacl::DescWrapper* nacl_file_desc,
-                 pp::CompletionCallback init_done_cb, ErrorInfo* error_info);
+  // Spawn a sel_ldr instance and establish an SrpcClient to it.  The nexe
+  // to be started is passed through |nacl_file_desc|.  On success, returns
+  // true.  On failure, returns false and |error_string| is set to something
+  // describing the error.
+  bool Start(nacl::DescWrapper* nacl_file_desc, ErrorInfo* error_info);
 
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
@@ -166,9 +164,7 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool InitCommunication(nacl::DescWrapper* shm,
-                         pp::CompletionCallback init_done_cb,
-                         ErrorInfo* error_info);
+  bool InitCommunication(nacl::DescWrapper* shm, ErrorInfo* error_info);
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
