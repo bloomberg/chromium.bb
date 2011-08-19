@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/plugin_prefs.h"
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -15,63 +17,115 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
+namespace {
+
+class PluginPrefsWrapper : public ProfileKeyedService {
+ public:
+  explicit PluginPrefsWrapper(scoped_refptr<PluginPrefs> plugin_prefs)
+      : plugin_prefs_(plugin_prefs) {}
+  virtual ~PluginPrefsWrapper() {}
+
+  PluginPrefs* plugin_prefs() { return plugin_prefs_.get(); }
+
+ private:
+  // ProfileKeyedService methods:
+  virtual void Shutdown() OVERRIDE {
+    plugin_prefs_->ShutdownOnUIThread();
+  }
+
+  scoped_refptr<PluginPrefs> plugin_prefs_;
+};
+
+}
+
 // How long to wait to save the plugin enabled information, which might need to
 // go to disk.
 #define kPluginUpdateDelayMs (60 * 1000)
 
-PluginUpdater::PluginUpdater()
-    : notify_pending_(false) {
+class PluginPrefs::Factory : public ProfileKeyedServiceFactory {
+ public:
+  static Factory* GetInstance();
+
+  PluginPrefsWrapper* GetWrapperForProfile(Profile* profile);
+
+ private:
+  friend struct DefaultSingletonTraits<Factory>;
+
+  Factory();
+  virtual ~Factory() {}
+
+  // ProfileKeyedServiceFactory methods:
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() OVERRIDE { return true; }
+  virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
+  virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
+};
+
+// static
+void PluginPrefs::Initialize() {
+  Factory::GetInstance();
 }
 
-DictionaryValue* PluginUpdater::CreatePluginFileSummary(
+// static
+PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
+  PluginPrefs* plugin_prefs =
+      Factory::GetInstance()->GetWrapperForProfile(profile)->plugin_prefs();
+  DCHECK(plugin_prefs);
+  return plugin_prefs;
+}
+
+DictionaryValue* PluginPrefs::CreatePluginFileSummary(
     const webkit::WebPluginInfo& plugin) {
   DictionaryValue* data = new DictionaryValue();
   data->SetString("path", plugin.path.value());
   data->SetString("name", plugin.name);
   data->SetString("version", plugin.version);
-  data->SetBoolean("enabled", webkit::IsPluginEnabled(plugin));
+  data->SetBoolean("enabled", IsPluginEnabled(plugin));
   return data;
 }
 
-// static
-ListValue* PluginUpdater::GetPluginGroupsData() {
-  std::vector<webkit::npapi::PluginGroup> plugin_groups;
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(true, &plugin_groups);
-
-  // Construct DictionaryValues to return to the UI
-  ListValue* plugin_groups_data = new ListValue();
-  for (size_t i = 0; i < plugin_groups.size(); ++i) {
-    plugin_groups_data->Append(plugin_groups[i].GetDataForUI());
-  }
-  return plugin_groups_data;
-}
-
-void PluginUpdater::EnablePluginGroup(bool enable, const string16& group_name) {
+void PluginPrefs::EnablePluginGroup(bool enable, const string16& group_name) {
   webkit::npapi::PluginList::Singleton()->EnableGroup(enable, group_name);
   NotifyPluginStatusChanged();
 }
 
-void PluginUpdater::EnablePlugin(bool enable,
-                                 const FilePath::StringType& path) {
-  FilePath file_path(path);
+void PluginPrefs::EnablePlugin(bool enable, const FilePath& path) {
   if (enable)
-    webkit::npapi::PluginList::Singleton()->EnablePlugin(file_path);
+    webkit::npapi::PluginList::Singleton()->EnablePlugin(path);
   else
-    webkit::npapi::PluginList::Singleton()->DisablePlugin(file_path);
+    webkit::npapi::PluginList::Singleton()->DisablePlugin(path);
 
   NotifyPluginStatusChanged();
 }
 
-void PluginUpdater::Observe(int type,
+bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) {
+  // If enabling NaCl, make sure the plugin is also enabled. See bug
+  // http://code.google.com/p/chromium/issues/detail?id=81010 for more
+  // information.
+  // TODO(dspringer): When NaCl is on by default, remove this code.
+  if ((plugin.name ==
+       ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName)) &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
+    return true;
+  }
+  return webkit::IsPluginEnabled(plugin);
+}
+
+void PluginPrefs::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
@@ -80,21 +134,21 @@ void PluginUpdater::Observe(int type,
     NOTREACHED();
     return;
   }
+  DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
   if (*pref_name == prefs::kPluginsDisabledPlugins ||
       *pref_name == prefs::kPluginsDisabledPluginsExceptions ||
       *pref_name == prefs::kPluginsEnabledPlugins) {
-    PrefService* pref_service = Source<PrefService>(source).ptr();
     const ListValue* disabled_list =
-        pref_service->GetList(prefs::kPluginsDisabledPlugins);
+        prefs_->GetList(prefs::kPluginsDisabledPlugins);
     const ListValue* exceptions_list =
-        pref_service->GetList(prefs::kPluginsDisabledPluginsExceptions);
+        prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions);
     const ListValue* enabled_list =
-        pref_service->GetList(prefs::kPluginsEnabledPlugins);
+        prefs_->GetList(prefs::kPluginsEnabledPlugins);
     UpdatePluginsStateFromPolicy(disabled_list, exceptions_list, enabled_list);
   }
 }
 
-void PluginUpdater::UpdatePluginsStateFromPolicy(
+void PluginPrefs::UpdatePluginsStateFromPolicy(
     const ListValue* disabled_list,
     const ListValue* exceptions_list,
     const ListValue* enabled_list) {
@@ -114,8 +168,8 @@ void PluginUpdater::UpdatePluginsStateFromPolicy(
   NotifyPluginStatusChanged();
 }
 
-void PluginUpdater::ListValueToStringSet(const ListValue* src,
-                                         std::set<string16>* dest) {
+void PluginPrefs::ListValueToStringSet(const ListValue* src,
+                                       std::set<string16>* dest) {
   DCHECK(src);
   DCHECK(dest);
   ListValue::const_iterator end(src->end());
@@ -128,15 +182,16 @@ void PluginUpdater::ListValueToStringSet(const ListValue* src,
   }
 }
 
-void PluginUpdater::SetProfile(Profile* profile) {
+void PluginPrefs::SetProfile(Profile* profile) {
+  prefs_ = profile->GetPrefs();
   bool update_internal_dir = false;
   FilePath last_internal_dir =
-  profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
+      prefs_->GetFilePath(prefs::kPluginsLastInternalDirectory);
   FilePath cur_internal_dir;
   if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
       cur_internal_dir != last_internal_dir) {
     update_internal_dir = true;
-    profile->GetPrefs()->SetFilePath(
+    prefs_->SetFilePath(
         prefs::kPluginsLastInternalDirectory, cur_internal_dir);
   }
 
@@ -147,16 +202,16 @@ void PluginUpdater::SetProfile(Profile* profile) {
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
   FilePath::StringType pdf_path_str = pdf_path.value();
-  if (!profile->GetPrefs()->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
+  if (!prefs_->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
     // We switched to the internal pdf plugin being on by default, and so we
     // need to force it to be enabled.  We only want to do it this once though,
     // i.e. we don't want to enable it again if the user disables it afterwards.
-    profile->GetPrefs()->SetBoolean(prefs::kPluginsEnabledInternalPDF, true);
+    prefs_->SetBoolean(prefs::kPluginsEnabledInternalPDF, true);
     force_enable_internal_pdf = true;
   }
 
   {  // Scoped update of prefs::kPluginsPluginsList.
-    ListPrefUpdate update(profile->GetPrefs(), prefs::kPluginsPluginsList);
+    ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
     ListValue* saved_plugins_list = update.Get();
     if (saved_plugins_list && !saved_plugins_list->empty()) {
       for (ListValue::const_iterator it = saved_plugins_list->begin();
@@ -221,17 +276,17 @@ void PluginUpdater::SetProfile(Profile* profile) {
   // Build the set of policy enabled/disabled plugin patterns once and cache it.
   // Don't do this in the constructor, there's no profile available there.
   const ListValue* disabled_plugins =
-      profile->GetPrefs()->GetList(prefs::kPluginsDisabledPlugins);
+      prefs_->GetList(prefs::kPluginsDisabledPlugins);
   const ListValue* disabled_exception_plugins =
-      profile->GetPrefs()->GetList(prefs::kPluginsDisabledPluginsExceptions);
+      prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions);
   const ListValue* enabled_plugins =
-      profile->GetPrefs()->GetList(prefs::kPluginsEnabledPlugins);
+      prefs_->GetList(prefs::kPluginsEnabledPlugins);
   UpdatePluginsStateFromPolicy(disabled_plugins,
                                disabled_exception_plugins,
                                enabled_plugins);
 
   registrar_.RemoveAll();
-  registrar_.Init(profile->GetPrefs());
+  registrar_.Init(prefs_);
   registrar_.Add(prefs::kPluginsDisabledPlugins, this);
   registrar_.Add(prefs::kPluginsDisabledPluginsExceptions, this);
   registrar_.Add(prefs::kPluginsEnabledPlugins, this);
@@ -246,49 +301,77 @@ void PluginUpdater::SetProfile(Profile* profile) {
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that
     // plugins are loaded after 30s by the metrics service.
-    UpdatePreferences(profile, kPluginUpdateDelayMs);
+    UpdatePreferences(kPluginUpdateDelayMs);
   }
 }
 
-void PluginUpdater::Shutdown() {
+void PluginPrefs::ShutdownOnUIThread() {
+  prefs_ = NULL;
   registrar_.RemoveAll();
 }
 
-void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
-  BrowserThread::PostDelayedTask(
-    BrowserThread::FILE,
-    FROM_HERE,
-    NewRunnableFunction(
-        &PluginUpdater::GetPreferencesDataOnFileThread, profile), delay_ms);
+// static
+PluginPrefs::Factory* PluginPrefs::Factory::GetInstance() {
+  return Singleton<PluginPrefs::Factory>::get();
 }
 
-void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
+PluginPrefsWrapper* PluginPrefs::Factory::GetWrapperForProfile(
+    Profile* profile) {
+  return static_cast<PluginPrefsWrapper*>(GetServiceForProfile(profile, true));
+}
+
+PluginPrefs::Factory::Factory()
+    : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
+}
+
+ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
+      Profile* profile) const {
+  scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
+  plugin_prefs->SetProfile(profile);
+  return new PluginPrefsWrapper(plugin_prefs);
+}
+
+PluginPrefs::PluginPrefs() : notify_pending_(false) {
+}
+
+PluginPrefs::~PluginPrefs() {
+}
+
+void PluginPrefs::UpdatePreferences(int delay_ms) {
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      NewRunnableMethod(this, &PluginPrefs::GetPreferencesDataOnFileThread),
+      delay_ms);
+}
+
+void PluginPrefs::GetPreferencesDataOnFileThread() {
   std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
-
   std::vector<webkit::npapi::PluginGroup> groups;
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);
 
-  BrowserThread::PostTask(
-    BrowserThread::UI,
-    FROM_HERE,
-    NewRunnableFunction(&PluginUpdater::OnUpdatePreferences,
-                        static_cast<Profile*>(profile),
+  webkit::npapi::PluginList* plugin_list =
+      webkit::npapi::PluginList::Singleton();
+  plugin_list->GetPlugins(&plugins);
+  plugin_list->GetPluginGroups(false, &groups);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PluginPrefs::OnUpdatePreferences,
                         plugins, groups));
 }
 
-void PluginUpdater::OnUpdatePreferences(
-    Profile* profile,
-    const std::vector<webkit::WebPluginInfo>& plugins,
-    const std::vector<webkit::npapi::PluginGroup>& groups) {
-  ListPrefUpdate update(profile->GetPrefs(), prefs::kPluginsPluginsList);
+void PluginPrefs::OnUpdatePreferences(
+    std::vector<webkit::WebPluginInfo> plugins,
+    std::vector<webkit::npapi::PluginGroup> groups) {
+  if (!prefs_)
+    return;
+
+  ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
   ListValue* plugins_list = update.Get();
   plugins_list->Clear();
 
   FilePath internal_dir;
   if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
-    profile->GetPrefs()->SetFilePath(prefs::kPluginsLastInternalDirectory,
-                                     internal_dir);
+    prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
 
   // Add the plugin files.
   for (size_t i = 0; i < plugins.size(); ++i) {
@@ -317,30 +400,25 @@ void PluginUpdater::OnUpdatePreferences(
   }
 }
 
-void PluginUpdater::NotifyPluginStatusChanged() {
+void PluginPrefs::NotifyPluginStatusChanged() {
   if (notify_pending_)
     return;
   notify_pending_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&PluginUpdater::OnNotifyPluginStatusChanged));
+      NewRunnableMethod(this, &PluginPrefs::OnNotifyPluginStatusChanged));
 }
 
-void PluginUpdater::OnNotifyPluginStatusChanged() {
-  GetInstance()->notify_pending_ = false;
+void PluginPrefs::OnNotifyPluginStatusChanged() {
+  notify_pending_ = false;
   NotificationService::current()->Notify(
       content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-      Source<PluginUpdater>(GetInstance()),
+      Source<PluginPrefs>(this),
       NotificationService::NoDetails());
 }
 
 /*static*/
-PluginUpdater* PluginUpdater::GetInstance() {
-  return Singleton<PluginUpdater>::get();
-}
-
-/*static*/
-void PluginUpdater::RegisterPrefs(PrefService* prefs) {
+void PluginPrefs::RegisterPrefs(PrefService* prefs) {
   FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,

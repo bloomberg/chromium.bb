@@ -59,6 +59,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -3406,6 +3407,7 @@ void TestingAutomationProvider::GetPluginsInfo(
   }
   std::vector<webkit::WebPluginInfo> plugins;
   webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
   ListValue* items = new ListValue;
   for (std::vector<webkit::WebPluginInfo>::const_iterator it =
            plugins.begin();
@@ -3416,7 +3418,7 @@ void TestingAutomationProvider::GetPluginsInfo(
     item->SetString("path", it->path.value());
     item->SetString("version", it->version);
     item->SetString("desc", it->desc);
-    item->SetBoolean("enabled", webkit::IsPluginEnabled(*it));
+    item->SetBoolean("enabled", plugin_prefs->IsPluginEnabled(*it));
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
     for (std::vector<webkit::WebPluginMimeType>::const_iterator type_it =

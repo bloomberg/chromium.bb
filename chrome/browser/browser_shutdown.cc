@@ -24,7 +24,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -140,8 +139,6 @@ void Shutdown() {
   // time to get here. If you have something that *must* happen on end session,
   // consider putting it in BrowserProcessImpl::EndSession.
   PrefService* prefs = g_browser_process->local_state();
-
-  PluginUpdater::GetInstance()->Shutdown();
 
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics)
