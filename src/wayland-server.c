@@ -544,26 +544,24 @@ wl_input_device_update_grab(struct wl_input_device *device,
 
 static void
 display_bind(struct wl_client *client,
-	     struct wl_resource *resource, uint32_t id,
-	     const char *interface, uint32_t version)
+	     struct wl_resource *resource, uint32_t name,
+	     const char *interface, uint32_t version, uint32_t id)
 {
 	struct wl_global *global;
 	struct wl_display *display = resource->data;
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (global->object->id == id)
+		if (global->object->id == name)
 			break;
 
 	if (&global->link == &display->global_list)
 		wl_client_post_error(client, &client->display->resource.object,
 				     WL_DISPLAY_ERROR_INVALID_OBJECT,
-				     "invalid object %d", id);
+				     "invalid global %d", name);
 	else if (global->bind)
-		global->bind(client, global->object, version);
+		global->bind(client, global->object, version, id);
 
-	wl_hash_table_insert(client->objects,
-			     global->object->id, global->object);
-		
+	wl_hash_table_insert(client->objects, id, global->object);
 }
 
 static void
@@ -849,12 +847,14 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 
 static void
 compositor_bind(struct wl_client *client,
-		struct wl_object *global, uint32_t version)
+		struct wl_object *global, uint32_t version, uint32_t id)
 {
 	struct wl_compositor *compositor =
 		container_of(global, struct wl_compositor, resource.object);
 
 	compositor->resource.client = client;
+	compositor->resource.object.id = id;
+
 	wl_resource_post_event(&compositor->resource,
 			       WL_COMPOSITOR_TOKEN_VISUAL,
 			       &compositor->argb_visual.object,

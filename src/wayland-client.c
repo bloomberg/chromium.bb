@@ -122,10 +122,10 @@ wl_display_remove_global_listener(struct wl_display *display,
 }
 
 WL_EXPORT struct wl_proxy *
-wl_proxy_create_for_id(struct wl_display *display,
-		       const struct wl_interface *interface, uint32_t id)
+wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 {
 	struct wl_proxy *proxy;
+	struct wl_display *display = factory->display;
 
 	proxy = malloc(sizeof *proxy);
 	if (proxy == NULL)
@@ -133,19 +133,11 @@ wl_proxy_create_for_id(struct wl_display *display,
 
 	proxy->object.interface = interface;
 	proxy->object.implementation = NULL;
-	proxy->object.id = id;
+	proxy->object.id = wl_display_allocate_id(display);
 	proxy->display = display;
 	wl_hash_table_insert(display->objects, proxy->object.id, proxy);
 
 	return proxy;
-}
-
-WL_EXPORT struct wl_proxy *
-wl_proxy_create(struct wl_proxy *factory,
-		const struct wl_interface *interface)
-{
-	return wl_proxy_create_for_id(factory->display, interface,
-				      wl_display_allocate_id(factory->display));
 }
 
 WL_EXPORT void
@@ -367,8 +359,6 @@ wl_display_connect(const char *name)
 		return NULL;
 	}
 
-	wl_display_bind(display, 1, "wl_display", 1);
-
 	return display;
 }
 
@@ -524,12 +514,20 @@ wl_display_allocate_id(struct wl_display *display)
 	return display->id++;
 }
 
-WL_EXPORT void
+WL_EXPORT void *
 wl_display_bind(struct wl_display *display,
-		uint32_t id, const char *interface, uint32_t version)
+		uint32_t name, const struct wl_interface *interface)
 {
-	wl_proxy_marshal(&display->proxy,
-			 WL_DISPLAY_BIND, id, interface, version);
+	struct wl_proxy *proxy;
+
+	proxy = wl_proxy_create(&display->proxy, interface);
+	if (proxy == NULL)
+		return NULL;
+
+	wl_proxy_marshal(&display->proxy, WL_DISPLAY_BIND,
+			 name, interface->name, interface->version, proxy);
+
+	return proxy;
 }
 
 WL_EXPORT struct wl_callback *

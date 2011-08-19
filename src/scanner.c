@@ -347,19 +347,6 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	if (strcmp(interface->name, "wl_display") == 0)
 		return;
 
-	printf("static inline struct %s *\n"
-	       "%s_create(struct wl_display *display, uint32_t id, uint32_t version)\n"
-	       "{\n"
-	       "\twl_display_bind(display, id, \"%s\", version);\n\n"
-	       "\treturn (struct %s *)\n"
-	       "\t\twl_proxy_create_for_id(display, &%s_interface, id);\n"
-	       "}\n\n",
-	       interface->name,
-	       interface->name,
-	       interface->name,
-	       interface->name,
-	       interface->name);
-
 	printf("static inline void\n"
 	       "%s_set_user_data(struct %s *%s, void *user_data)\n"
 	       "{\n"

@@ -31,9 +31,10 @@
        It is used for internal wayland protocol features. -->
   <interface name="wl_display" version="1">
     <request name="bind">
-      <arg name="id" type="uint"/>
+      <arg name="name" type="uint"/>
       <arg name="interface" type="string"/>
       <arg name="version" type="uint"/>
+      <arg name="id" type="new_id" interface="wl_object"/>
     </request>
 
     <!-- sync is an just an echo, which will reply with a key event.
