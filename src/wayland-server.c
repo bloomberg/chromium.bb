@@ -58,7 +58,6 @@ struct wl_client {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	struct wl_resource *display_resource;
-	struct wl_list resource_list;
 	uint32_t id_count;
 	uint32_t mask;
 	struct wl_list link;
@@ -286,9 +285,6 @@ wl_client_create(struct wl_display *display, int fd)
 
 	wl_list_insert(display->client_list.prev, &client->link);
 
-	wl_list_init(&client->resource_list);
-
-
 	return client;
 }
 
@@ -303,9 +299,7 @@ wl_client_add_resource(struct wl_client *client,
 
 	resource->client = client;
 	wl_list_init(&resource->destroy_listener_list);
-
 	wl_hash_table_insert(client->objects, resource->object.id, resource);
-	wl_list_insert(client->resource_list.prev, &resource->link);
 }
 
 WL_EXPORT void
@@ -315,31 +309,37 @@ wl_client_post_no_memory(struct wl_client *client)
 			     WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
+static void
+destroy_resource(void *element, void *data)
+{
+	struct wl_resource *resource = element;
+ 	struct wl_listener *l, *next;
+	uint32_t *time = data;
+
+	wl_list_for_each_safe(l, next, &resource->destroy_listener_list, link)
+		l->func(l, resource, *time);
+
+	if (resource->destroy)
+		resource->destroy(resource);
+}
+
 WL_EXPORT void
 wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 {
 	struct wl_client *client = resource->client;
-	struct wl_listener *l, *next;
 
-	wl_list_for_each_safe(l, next, &resource->destroy_listener_list, link)
-		l->func(l, resource, time);
-
-	wl_list_remove(&resource->link);
-	if (resource->object.id > 0)
-		wl_hash_table_remove(client->objects, resource->object.id);
-	resource->destroy(resource);
+	destroy_resource(resource, &time);
+	wl_hash_table_remove(client->objects, resource->object.id);
 }
 
 WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
-	struct wl_resource *resource, *tmp;
+	uint32_t time = 0;
 
 	printf("disconnect from client %p\n", client);
 
-	wl_list_for_each_safe(resource, tmp, &client->resource_list, link)
-		wl_resource_destroy(resource, 0);
-
+	wl_hash_table_for_each(client->objects, destroy_resource, &time);
 	wl_hash_table_destroy(client->objects);
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
@@ -886,8 +886,6 @@ compositor_bind(struct wl_client *client,
 			       WL_COMPOSITOR_TOKEN_VISUAL,
 			       compositor->rgb_visual.name,
 			       WL_COMPOSITOR_VISUAL_XRGB32);
-
-	wl_list_insert(client->resource_list.prev, &resource->link);
 }
 
 static void
