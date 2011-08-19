@@ -338,9 +338,8 @@ class BuildBoardTest(AbstractStageTest):
     os.path.isdir(os.path.join(self.build_root, '.repo')).AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
-                        fast=True,
                         replace=True,
-                        usepkg=True)
+                        use_sdk=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -366,9 +365,8 @@ class BuildBoardTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
-                        fast=True,
                         replace=True,
-                        usepkg=True)
+                        use_sdk=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -395,9 +393,8 @@ class BuildBoardTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(True)
     commands.MakeChroot(buildroot=self.build_root,
-                        fast=True,
                         replace=True,
-                        usepkg=True)
+                        use_sdk=True)
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)
     commands.SetupBoard(self.build_root,
@@ -439,8 +436,7 @@ class BuildBoardTest(AbstractStageTest):
     os.path.isdir(os.path.join(self.build_root, 'chroot')).AndReturn(False)
     commands.MakeChroot(buildroot=self.build_root,
                         replace=self.build_config['chroot_replace'],
-                        fast=self.build_config['fast'],
-                        usepkg=self.build_config['usepkg_chroot'])
+                        use_sdk=self.build_config['use_sdk'])
 
     os.path.isdir(os.path.join(self.build_root, 'chroot', 'build',
                                self.build_config['board'])).AndReturn(False)

@@ -115,17 +115,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   if enter_chroot:
-    # TODO(zbehan): Remove this hack. crosbug.com/17474
-    if os.environ.get('USE_CROS_SDK') == '1':
-      cmd = ['../../chromite/bin/cros_sdk', '--enter', '--'] + cmd
-      insert_pos = 3
-    else:
-      cmd = ['./enter_chroot.sh', '--'] + cmd
-      insert_pos = 1
+    cmd = ['cros_sdk', '--'] + cmd
 
     if extra_env:
       for (key, value) in extra_env.items():
-        cmd.insert(insert_pos, '%s=%s' % (key, value))
+        cmd.insert(2, '%s=%s' % (key, value))
 
   elif extra_env:
     if env is not None:
@@ -620,11 +614,7 @@ def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   if redirect_stderr:  stderr = subprocess.PIPE
   if input:  stdin = subprocess.PIPE
   if enter_chroot:
-    # TODO(zbehan): Remove this hack. crosbug.com/17474
-    if os.environ.get('USE_CROS_SDK') == '1':
-      cmd = ['../../chromite/bin/cros_sdk', '--enter', '--'] + cmd
-    else:
-      cmd = ['./enter_chroot.sh', '--'] + cmd
+    cmd = ['cros_sdk', '--'] + cmd
 
   # Print out the command before running.
   if print_cmd:

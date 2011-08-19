@@ -522,8 +522,7 @@ class BuildBoardStage(BuilderStage):
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
-          fast=self._build_config['fast'],
-          usepkg=self._build_config['usepkg_chroot'])
+          use_sdk=self._build_config['use_sdk'])
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 

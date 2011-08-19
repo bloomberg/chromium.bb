@@ -142,31 +142,18 @@ def ManifestCheckout(buildroot, tracking_branch, next_manifest, url):
   repo.ExportManifest('/dev/stderr')
 
 
-def MakeChroot(buildroot, replace, fast, usepkg):
+def MakeChroot(buildroot, replace, use_sdk):
   """Wrapper around make_chroot."""
-  # TODO(zbehan): Remove this hack. crosbug.com/17474
-  if os.environ.get('USE_CROS_SDK') == '1':
-    # We assume these two are on for cros_sdk. Fail out if they aren't.
-    assert usepkg
-    assert fast
-    cwd = os.path.join(buildroot, 'chromite', 'bin')
-    cmd = ['./cros_sdk', '--download']
+  cmd = ['cros_sdk']
+  if use_sdk:
+    cmd.append('--download')
   else:
-    cwd = os.path.join(buildroot, 'src', 'scripts')
-    cmd = ['./make_chroot']
-
-    if not usepkg:
-      cmd.append('--nousepkg')
-
-    if fast:
-      cmd.append('--fast')
-    else:
-      cmd.append('--nofast')
+    cmd.append('--bootstrap')
 
   if replace:
     cmd.append('--replace')
 
-  cros_lib.OldRunCommand(cmd, cwd=cwd)
+  cros_lib.OldRunCommand(cmd, cwd=buildroot)
 
 
 def RunChrootUpgradeHooks(buildroot):

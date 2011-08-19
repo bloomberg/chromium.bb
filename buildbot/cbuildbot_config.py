@@ -51,7 +51,7 @@ hw_tests_reimage -- Whether to reimage the remote device before running
                     hw_tests.
 
 fast -- Use parallel_emerge for faster (but slightly more risky) builds.
-usepkg_chroot -- Use binary packages for make_chroot. (emerge --usepkg)
+use_sdk -- Use SDK as opposed to building the chroot from source.
 usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
 usepkg_build_packages -- Use binary packages for build_packages.
 nowithdebug -- Pass the --nowithdebug flag to build_packages (sets the sets
@@ -88,7 +88,6 @@ use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
 
 latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
 gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
-use_sdk -- Use cros_sdk to create and manage chroot.
 trybot_list -- List this config when user runs cbuildbot with --list option
                without the --all flag.
 description -- The description string to print out for config when user runs
@@ -140,7 +139,6 @@ default = {
   'useflags' : None,
   'chromeos_official' : False,
   'fast' : True,
-  'usepkg_chroot' : True,
   'usepkg_setup_board' : True,
   'usepkg_build_packages' : True,
   'nowithdebug' : False,
@@ -186,7 +184,6 @@ default = {
   'prebuilts' : True,
 
   'use_sdk' : True,
-  'usepkg_chroot' : True,
 
   'trybot_list' : False,
   'description' : None,
@@ -319,7 +316,6 @@ add_config('chromiumos-sdk', [full, {
   'build_type' : constants.CHROOT_BUILDER_TYPE,
 
   'use_sdk' : False,
-  'usepkg_chroot' : False,
 }])
 
 add_config('refresh-packages', [default, {
