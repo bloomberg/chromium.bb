@@ -11,14 +11,14 @@ namespace aura {
 
 namespace {
 
-bool IsClientMouseEvent(const views::NativeEvent& native_event) {
+bool IsClientMouseEvent(const NativeEvent& native_event) {
   return native_event.message == WM_MOUSELEAVE ||
       native_event.message == WM_MOUSEHOVER ||
       (native_event.message >= WM_MOUSEFIRST &&
       native_event.message <= WM_MOUSELAST);
 }
 
-bool IsNonClientMouseEvent(const views::NativeEvent& native_event) {
+bool IsNonClientMouseEvent(const NativeEvent& native_event) {
   return native_event.message == WM_NCMOUSELEAVE ||
       native_event.message == WM_NCMOUSEHOVER ||
       (native_event.message >= WM_NCMOUSEMOVE &&
