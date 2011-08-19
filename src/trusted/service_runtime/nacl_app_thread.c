@@ -104,6 +104,12 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClXCondVarBroadcast(&nap->threads_cv);
   NaClLog(3, " unlocking thread table\n");
   NaClXMutexUnlock(&nap->threads_mu);
+  if (NULL != nap->debug_stub_callbacks) {
+    NaClLog(3, " notifying the debug stub of the thread exit\n");
+    nap->debug_stub_callbacks->thread_exit_hook(natp);
+  }
+  NaClLog(3, " unregistering signal stack\n");
+  NaClSignalStackUnregister();
   NaClLog(3, " freeing thread object\n");
   NaClAppThreadDtor(natp);
   NaClLog(3, " NaClThreadExit\n");
@@ -192,15 +198,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
    * the thread must not be still running, else this crashes the system
    */
 
-  /*
-   * Notify the debug stub that we are done with this thread
-   */
-  if (NULL != natp->nap->debug_stub_callbacks) {
-    natp->nap->debug_stub_callbacks->thread_exit_hook(natp);
-  }
-
   NaClThreadDtor(&natp->thread);
-  NaClSignalStackUnregister();
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;
   NaClTlsFree(natp);
