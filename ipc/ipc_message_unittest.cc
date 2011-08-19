@@ -38,6 +38,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   input.Set("null", Value::CreateNullValue());
   input.Set("bool", Value::CreateBooleanValue(true));
   input.Set("int", Value::CreateIntegerValue(42));
+  input.SetWithoutPathExpansion("int.with.dot", Value::CreateIntegerValue(43));
 
   scoped_ptr<DictionaryValue> subdict(new DictionaryValue());
   subdict->Set("str", Value::CreateStringValue("forty two"));

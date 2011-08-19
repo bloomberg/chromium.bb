@@ -114,7 +114,7 @@ static bool ReadDictionaryValue(const Message* m, void** iter,
     if (!ReadParam(m, iter, &key) ||
         !ReadValue(m, iter, &subval, recursion + 1))
       return false;
-    value->Set(key, subval);
+    value->SetWithoutPathExpansion(key, subval);
   }
 
   return true;
