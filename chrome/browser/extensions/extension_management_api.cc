@@ -209,15 +209,16 @@ class SafeManifestJSONParser : public UtilityProcessHost::Client {
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
-    utility_host_->Send(new UtilityMsg_ParseJSON(manifest_));
+    utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeManifestJSONParser, message)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Succeeded,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
                           OnJSONParseSucceeded)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed, OnJSONParseFailed)
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
+                          OnJSONParseFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;

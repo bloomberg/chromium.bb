@@ -67,8 +67,8 @@ bool InsecureContentInfoBarDelegate::Cancel() {
 
   int32 routing_id = tab_contents_->routing_id();
   tab_contents_->Send((type_ == DISPLAY) ? static_cast<IPC::Message*>(
-      new ViewMsg_SetAllowDisplayingInsecureContent(routing_id, true)) :
-      new ViewMsg_SetAllowRunningInsecureContent(routing_id, true));
+      new ChromeViewMsg_SetAllowDisplayingInsecureContent(routing_id, true)) :
+      new ChromeViewMsg_SetAllowRunningInsecureContent(routing_id, true));
   return true;
 }
 

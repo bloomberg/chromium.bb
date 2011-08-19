@@ -131,7 +131,7 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
       render_view->webview()->mainFrame()->isProcessingUserGesture()) {
     GURL osd_url(name);
     if (!osd_url.is_empty()) {
-      render_view->Send(new ViewHostMsg_PageHasOSDD(
+      render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
           render_view->routing_id(), render_view->page_id(), osd_url,
           provider_type));
     }
@@ -157,7 +157,7 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
   search_provider::InstallState install = search_provider::DENIED;
   GURL inquiry_url = GURL(name);
   if (!inquiry_url.is_empty()) {
-      render_view->Send(new ViewHostMsg_GetSearchProviderInstallState(
+      render_view->Send(new ChromeViewHostMsg_GetSearchProviderInstallState(
           render_view->routing_id(),
           webframe->document().url(),
           inquiry_url,

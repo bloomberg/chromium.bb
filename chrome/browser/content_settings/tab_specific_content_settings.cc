@@ -407,7 +407,7 @@ bool TabSpecificContentSettings::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -429,7 +429,7 @@ void TabSpecificContentSettings::RenderViewCreated(
   Profile* profile =
       Profile::FromBrowserContext(tab_contents()->browser_context());
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  render_view_host->Send(new ViewMsg_SetDefaultContentSettings(
+  render_view_host->Send(new ChromeViewMsg_SetDefaultContentSettings(
       map->GetDefaultContentSettings()));
 }
 
@@ -468,9 +468,9 @@ void TabSpecificContentSettings::Observe(int type,
     Profile* profile =
         Profile::FromBrowserContext(tab_contents()->browser_context());
     HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-    Send(new ViewMsg_SetDefaultContentSettings(
+    Send(new ChromeViewMsg_SetDefaultContentSettings(
         map->GetDefaultContentSettings()));
-    Send(new ViewMsg_SetContentSettingsForCurrentURL(
+    Send(new ChromeViewMsg_SetContentSettingsForCurrentURL(
         entry_url, map->GetContentSettings(entry_url, entry_url)));
   }
 }

@@ -142,7 +142,7 @@ int HistogramSynchronizer::NotifyAllRenderers(
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     if (!it.GetCurrentValue()->Send(
-        new ViewMsg_GetRendererHistograms(sequence_number)))
+        new ChromeViewMsg_GetRendererHistograms(sequence_number)))
       DecrementPendingRenderers(sequence_number);
   }
 

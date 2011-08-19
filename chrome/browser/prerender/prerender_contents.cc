@@ -378,8 +378,9 @@ void PrerenderContents::Observe(int type,
         // first navigation, so there's no need to send the message just after
         // the TabContents is created.
         new_render_view_host->Send(
-            new ViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
-                                          true));
+            new ChromeViewMsg_SetIsPrerendering(
+                new_render_view_host->routing_id(),
+                true));
       }
       break;
     }

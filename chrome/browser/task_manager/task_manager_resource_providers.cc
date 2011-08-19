@@ -109,7 +109,7 @@ TaskManagerRendererResource::~TaskManagerRendererResource() {
 
 void TaskManagerRendererResource::Refresh() {
   if (!pending_stats_update_) {
-    render_view_host_->Send(new ViewMsg_GetCacheResourceStats);
+    render_view_host_->Send(new ChromeViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
   }
   if (!pending_fps_update_) {
@@ -118,7 +118,7 @@ void TaskManagerRendererResource::Refresh() {
     pending_fps_update_ = true;
   }
   if (!pending_v8_memory_allocated_update_) {
-    render_view_host_->Send(new ViewMsg_GetV8HeapStats);
+    render_view_host_->Send(new ChromeViewMsg_GetV8HeapStats);
     pending_v8_memory_allocated_update_ = true;
   }
 }

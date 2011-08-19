@@ -53,12 +53,12 @@ class TranslateHelperTest : public RenderViewTest {
                                 std::string* target_lang,
                                 TranslateErrors::Type* error) {
     const IPC::Message* message = render_thread_.sink().
-        GetUniqueMessageMatching(ViewHostMsg_PageTranslated::ID);
+        GetUniqueMessageMatching(ChromeViewHostMsg_PageTranslated::ID);
     if (!message)
       return false;
     Tuple4<int, std::string, std::string, TranslateErrors::Type>
         translate_param;
-    ViewHostMsg_PageTranslated::Read(message, &translate_param);
+    ChromeViewHostMsg_PageTranslated::Read(message, &translate_param);
     if (page_id)
       *page_id = translate_param.a;
     if (original_lang)
@@ -304,10 +304,10 @@ TEST_F(RenderViewTest, TranslatablePage) {
   LoadHTML("<html><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_TranslateLanguageDetermined::Param params;
-  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_TRUE(params.b);  // Translatable should be true.
   render_thread_.sink().ClearMessages();
 
@@ -316,9 +316,9 @@ TEST_F(RenderViewTest, TranslatablePage) {
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_FALSE(params.b);  // Translatable should be false.
   render_thread_.sink().ClearMessages();
 
@@ -327,9 +327,9 @@ TEST_F(RenderViewTest, TranslatablePage) {
            "<body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_FALSE(params.b);  // Translatable should be false.
 }
 
@@ -344,10 +344,10 @@ TEST_F(RenderViewTest, LanguageMetaTag) {
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_TranslateLanguageDetermined::Param params;
-  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("es", params.a);
   render_thread_.sink().ClearMessages();
 
@@ -357,8 +357,8 @@ TEST_F(RenderViewTest, LanguageMetaTag) {
            "</head><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
   message = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("fr", params.a);
 }

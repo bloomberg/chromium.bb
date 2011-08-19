@@ -21,9 +21,10 @@ VisitedLinkSlave::~VisitedLinkSlave() {
 bool VisitedLinkSlave::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VisitedLinkSlave, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_VisitedLink_NewTable,
+                        OnUpdateVisitedLinks)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_VisitedLink_Add, OnAddVisitedLinks)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

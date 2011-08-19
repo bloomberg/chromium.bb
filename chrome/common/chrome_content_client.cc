@@ -288,7 +288,7 @@ bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
   // Any Chrome-specific messages that must be allowed to be sent from swapped
   // out renderers.
   switch (msg->type()) {
-    case ViewHostMsg_DomOperationResponse::ID:
+    case ChromeViewHostMsg_DomOperationResponse::ID:
       return true;
     default:
       break;
@@ -302,7 +302,7 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
   // CanSendWhileSwappedOut) that must be handled by the browser when sent from
   // swapped out renderers.
   switch (msg.type()) {
-    case ViewHostMsg_Snapshot::ID:
+    case ChromeViewHostMsg_Snapshot::ID:
       return true;
     default:
       break;

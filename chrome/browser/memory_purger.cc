@@ -152,5 +152,5 @@ void MemoryPurger::PurgeRenderers() {
 // static
 void MemoryPurger::PurgeRendererForHost(RenderProcessHost* host) {
   // Direct the renderer to free everything it can.
-  host->Send(new ViewMsg_PurgeMemory());
+  host->Send(new ChromeViewMsg_PurgeMemory());
 }

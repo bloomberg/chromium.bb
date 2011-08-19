@@ -308,7 +308,7 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
   // Get the pid of the NaCl process
   base::ProcessId nacl_process_id = base::GetProcId(handle());
 
-  ViewHostMsg_LaunchNaCl::WriteReplyParams(
+  ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
       reply_msg_, handles_for_renderer, nacl_process_handle, nacl_process_id);
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;

@@ -152,11 +152,11 @@ void MemoryMenuButton::SendCommandToRenderers(int id) {
        !it.IsAtEnd(); it.Advance()) {
     switch (id) {
       case TOGGLE_PROFILING_ITEM:
-        it.GetCurrentValue()->Send(new ViewMsg_SetTcmallocHeapProfiling(
+        it.GetCurrentValue()->Send(new ChromeViewMsg_SetTcmallocHeapProfiling(
             started, std::string(kProfileDumpFilePrefix)));
         break;
       case DUMP_PROFILING_ITEM:
-        it.GetCurrentValue()->Send(new ViewMsg_WriteTcmallocHeapProfile(
+        it.GetCurrentValue()->Send(new ChromeViewMsg_WriteTcmallocHeapProfile(
             GetProfileDumpFilePath(
                 base::GetProcId(it.GetCurrentValue()->GetHandle()))));
         break;

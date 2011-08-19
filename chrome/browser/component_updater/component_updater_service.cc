@@ -210,9 +210,9 @@ class CrxUpdateService : public ComponentUpdateService {
     virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
       bool handled = true;
       IPC_BEGIN_MESSAGE_MAP(ManifestParserBridge, message)
-        IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Succeeded,
+        IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded,
                             OnParseUpdateManifestSucceeded)
-        IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
+        IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Failed,
                             OnParseUpdateManifestFailed)
         IPC_MESSAGE_UNHANDLED(handled = false)
       IPC_END_MESSAGE_MAP()
@@ -561,7 +561,7 @@ void CrxUpdateService::ParseManifest(const std::string& xml) {
     UtilityProcessHost* host =
         new UtilityProcessHost(new ManifestParserBridge(this),
                                BrowserThread::UI);
-    host->Send(new UtilityMsg_ParseUpdateManifest(xml));
+    host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml));
   }
 }
 

@@ -131,119 +131,120 @@ IPC_STRUCT_TRAITS_END()
 // These are messages sent from the browser to the renderer process.
 
 // Tells the renderer to set its maximum cache size to the supplied value.
-IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
+IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
                      size_t /* min_dead_capacity */,
                      size_t /* max_dead_capacity */,
                      size_t /* capacity */)
 
 // Tells the renderer to clear the cache.
-IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_ClearCache)
 
 // Tells the renderer to dump as much memory as it can, perhaps because we
 // have memory pressure or the renderer is (or will be) paged out.  This
 // should only result in purging objects we can recalculate, e.g. caches or
 // JS garbage, not in purging irreplaceable objects.
-IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_PurgeMemory)
 
 // For WebUI testing, this message stores parameters to do ScriptEvalRequest at
 // a time which is late enough to not be thrown out, and early enough to be
 // before onload events are fired.
-IPC_MESSAGE_ROUTED4(ViewMsg_WebUIJavaScript,
+IPC_MESSAGE_ROUTED4(ChromeViewMsg_WebUIJavaScript,
                     string16,  /* frame_xpath */
                     string16,  /* jscript_url */
                     int,  /* ID */
                     bool  /* If true, result is sent back. */)
 
 // Tells the render view to capture a thumbnail image of the page. The
-// render view responds with a ViewHostMsg_Snapshot.
-IPC_MESSAGE_ROUTED0(ViewMsg_CaptureSnapshot)
+// render view responds with a ChromeViewHostMsg_Snapshot.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_CaptureSnapshot)
 
 // History system notification that the visited link database has been
 // replaced. It has one SharedMemoryHandle argument consisting of the table
 // handle. This handle is valid in the context of the renderer
-IPC_MESSAGE_CONTROL1(ViewMsg_VisitedLink_NewTable, base::SharedMemoryHandle)
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_NewTable,
+                     base::SharedMemoryHandle)
 
 // History system notification that a link has been added and the link
 // coloring state for the given hash must be re-calculated.
-IPC_MESSAGE_CONTROL1(ViewMsg_VisitedLink_Add, std::vector<uint64>)
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64>)
 
 // History system notification that one or more history items have been
 // deleted, which at this point means that all link coloring state must be
 // re-calculated.
-IPC_MESSAGE_CONTROL0(ViewMsg_VisitedLink_Reset)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_VisitedLink_Reset)
 
 // Set the content settings for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
 // and ignored otherwise.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetContentSettingsForLoadingURL,
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SetContentSettingsForLoadingURL,
                     GURL /* url */,
                     ContentSettings /* content_settings */)
 
 // Set the content settings for a particular url, so all render views
 // displaying this host url update their content settings to match.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentURL,
+IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetContentSettingsForCurrentURL,
                      GURL /* url */,
                      ContentSettings /* content_settings */)
 
 // Set the content settings for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
 // and ignored otherwise.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetDefaultContentSettings,
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetDefaultContentSettings,
                      ContentSettings /* content_settings */)
 
 // Tells the render view to load all blocked plugins.
-IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_LoadBlockedPlugins)
 
 // Asks the renderer to send back stats on the WebCore cache broken down by
 // resource types.
-IPC_MESSAGE_CONTROL0(ViewMsg_GetCacheResourceStats)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetCacheResourceStats)
 
 // Asks the renderer to send back Histograms.
-IPC_MESSAGE_CONTROL1(ViewMsg_GetRendererHistograms,
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_GetRendererHistograms,
                      int /* sequence number of Renderer Histograms. */)
 
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetFieldTrialGroup,
+IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* field trial name */,
                      std::string /* group name that was assigned. */)
 
 #if defined(USE_TCMALLOC)
 // Asks the renderer to send back tcmalloc stats.
-IPC_MESSAGE_CONTROL0(ViewMsg_GetRendererTcmalloc)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetRendererTcmalloc)
 // Asks the renderer to enable/disable Tcmalloc heap profiling.
 // Note: filename_prefix arg is effectively ignored since the render process
 // will be unable to write files to disk. Instead use WriteTcmallocHeapProfile
 // to write a profile file.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetTcmallocHeapProfiling,
+IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetTcmallocHeapProfiling,
                      bool /* enable profiling */,
                      std::string /* filename prefix for profiles */)
 // Asks the renderer to write the Tcmalloc heap profile to a file.
-IPC_MESSAGE_CONTROL1(ViewMsg_WriteTcmallocHeapProfile,
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_WriteTcmallocHeapProfile,
                      FilePath::StringType /* filepath */)
 #endif
 
 // Asks the renderer to send back V8 heap stats.
-IPC_MESSAGE_CONTROL0(ViewMsg_GetV8HeapStats)
+IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetV8HeapStats)
 
 // Posts a message to the renderer.
-IPC_MESSAGE_ROUTED3(ViewMsg_HandleMessageFromExternalHost,
+IPC_MESSAGE_ROUTED3(ChromeViewMsg_HandleMessageFromExternalHost,
                     std::string /* The message */,
                     std::string /* The origin */,
                     std::string /* The target*/)
 
-IPC_MESSAGE_ROUTED4(ViewMsg_SearchBoxChange,
+IPC_MESSAGE_ROUTED4(ChromeViewMsg_SearchBoxChange,
                     string16 /* value */,
                     bool /* verbatim */,
                     int /* selection_start */,
                     int /* selection_end */)
-IPC_MESSAGE_ROUTED2(ViewMsg_SearchBoxSubmit,
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxSubmit,
                     string16 /* value */,
                     bool /* verbatim */)
-IPC_MESSAGE_ROUTED0(ViewMsg_SearchBoxCancel)
-IPC_MESSAGE_ROUTED1(ViewMsg_SearchBoxResize,
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxCancel)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxResize,
                     gfx::Rect /* search_box_bounds */)
-IPC_MESSAGE_ROUTED4(ViewMsg_DetermineIfPageSupportsInstant,
+IPC_MESSAGE_ROUTED4(ChromeViewMsg_DetermineIfPageSupportsInstant,
                     string16 /* value*/,
                     bool /* verbatim */,
                     int /* selection_start */,
@@ -251,7 +252,7 @@ IPC_MESSAGE_ROUTED4(ViewMsg_DetermineIfPageSupportsInstant,
 
 // Tells the renderer to translate the page contents from one language to
 // another.
-IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
+IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
                     int /* page id */,
                     std::string, /* the script injected in the page */
                     std::string, /* BCP 47/RFC 5646 language code the page
@@ -261,30 +262,30 @@ IPC_MESSAGE_ROUTED4(ViewMsg_TranslatePage,
 
 // Tells the renderer to revert the text of translated page to its original
 // contents.
-IPC_MESSAGE_ROUTED1(ViewMsg_RevertTranslation,
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
                     int /* page id */)
 
 // Tells a renderer if it's currently being prerendered.  Must only be set
 // to true before any navigation occurs, and only set to false at most once
 // after that.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetIsPrerendering,
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetIsPrerendering,
                     bool /* whether the RenderView is prerendering */)
 
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
 
 // Sent in response to ViewHostMsg_DidBlockDisplayingInsecureContent.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowDisplayingInsecureContent,
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                     bool /* allowed */)
 
 // Sent in response to ViewHostMsg_DidBlockRunningInsecureContent.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAllowRunningInsecureContent,
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 
 // Sent when the profile changes the kSafeBrowsingEnabled preference.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetClientSidePhishingDetection,
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)
 
 //-----------------------------------------------------------------------------
@@ -292,28 +293,28 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetClientSidePhishingDetection,
 // These are messages sent from the renderer to the browser process.
 
 // Provides the contents for the given page that was loaded recently.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_PageContents,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageContents,
                     GURL         /* URL of the page */,
                     int32        /* page id */,
                     string16     /* page contents */)
 
 // Notification that the language for the tab has been determined.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_TranslateLanguageDetermined,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
                     std::string  /* page ISO639_1 language code */,
                     bool         /* whether the page can be translated */)
 
-IPC_MESSAGE_CONTROL1(ViewHostMsg_UpdatedCacheStats,
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
                      WebKit::WebCache::UsageStats /* stats */)
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,
                     ContentSettingsType, /* type of blocked content */
                     std::string /* resource identifier */)
 
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL5_1(ViewHostMsg_AllowDatabase,
+IPC_SYNC_MESSAGE_CONTROL5_1(ChromeViewHostMsg_AllowDatabase,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
@@ -323,7 +324,7 @@ IPC_SYNC_MESSAGE_CONTROL5_1(ViewHostMsg_AllowDatabase,
 
 // Sent by the renderer process to check whether access to DOM Storage is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDOMStorage,
+IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowDOMStorage,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
@@ -332,7 +333,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowDOMStorage,
 
 // Sent by the renderer process to check whether access to FileSystem is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowFileSystem,
+IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowFileSystem,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
@@ -340,7 +341,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_AllowFileSystem,
 
 // Sent by the renderer process to check whether access to Indexed DBis
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowIndexedDB,
+IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
@@ -361,20 +362,20 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_AllowIndexedDB,
 // neither blocked nor white-listed, which means that it's allowed
 // by default and can still be blocked if it's non-sandboxed.
 //
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetPluginContentSetting,
+IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_GetPluginContentSetting,
                             GURL /* policy_url */,
                             std::string  /* resource */,
                             ContentSetting /* setting */)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_Thumbnail,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_Thumbnail,
                     GURL /* url */,
                     ThumbnailScore /* score */,
                     SkBitmap /* bitmap */)
 
 // Send a snapshot of the tab contents to the render host.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_Snapshot,
                     SkBitmap /* bitmap */)
 
 // Following message is used to communicate the values received by the
@@ -382,12 +383,12 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_Snapshot,
 // An instance of browser that has an automation host listening to it can
 // have a javascript send a native value (string, number, boolean) to the
 // listener in Cpp. (DomAutomationController)
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
 
 // A message for an external host.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_ForwardMessageToExternalHost,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
                     std::string  /* message */,
                     std::string  /* origin */,
                     std::string  /* target */)
@@ -395,7 +396,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ForwardMessageToExternalHost,
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch
 // the process and return a handle to an IMC channel.
-IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_LaunchNaCl,
+IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_LaunchNaCl,
                             std::wstring /* url for the NaCl module */,
                             int /* socket count */,
                             std::vector<nacl::FileDescriptor>
@@ -405,41 +406,41 @@ IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_LaunchNaCl,
 
 // Notification that the page has an OpenSearch description document
 // associated with it.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_PageHasOSDD,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,
                     int32 /* page_id */,
                     GURL /* url of OS description document */,
                     search_provider::OSDDType)
 
 // Find out if the given url's security origin is installed as a search
 // provider.
-IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetSearchProviderInstallState,
+IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
                            GURL /* page url */,
                            GURL /* inquiry url */,
                            search_provider::InstallState /* install */)
 
 // Send back histograms as vector of pickled-histogram strings.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererHistograms,
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererHistograms,
                      int, /* sequence number of Renderer Histograms. */
                      std::vector<std::string>)
 
 #if defined USE_TCMALLOC
 // Send back tcmalloc stats output.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_RendererTcmalloc,
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_RendererTcmalloc,
                      std::string  /* tcmalloc debug output */)
 // Send back tcmalloc profile to write to a file.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_WriteTcmallocHeapProfile_ACK,
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                      FilePath::StringType  /* filepath */,
                      std::string  /* heap profile */)
 #endif
 
 // Sends back stats about the V8 heap.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_V8HeapStats,
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
                      int /* size of heap (allocated from the OS) */,
                      int /* bytes in use */)
 
 // Request for a DNS prefetch of the names in the array.
 // NameList is typedef'ed std::vector<std::string>
-IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
                      std::vector<std::string> /* hostnames */)
 
 // Requests the plugin policies.
@@ -454,28 +455,28 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DnsPrefetch,
 // BLOCK means that the plugin should not run nor be allowed to run at all.
 // ASK means that the plugin should be initially blocked and the user should
 // be asked whether he wants to run the plugin.
-IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetPluginPolicies,
+IPC_SYNC_MESSAGE_CONTROL0_2(ChromeViewHostMsg_GetPluginPolicies,
                             ContentSetting   /* outdated_policy */,
                             ContentSetting   /* authorize_policy */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
                     string16, /* name */
                     GURL      /* update_url */)
 
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ResourceTypeStats,
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
 
 
 // Notifies the browser of the language (ISO 639_1 code language, such as fr,
 // en, zh...) of the current page.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PageLanguageDetermined,
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_PageLanguageDetermined,
                     std::string /* the language */)
 
 // Notifies the browser that a page has been translated.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
+IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,
                     int,                  /* page id */
                     std::string           /* the original language */,
                     std::string           /* the translated language */,
@@ -484,38 +485,38 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_PageTranslated,
 // Message sent from the renderer to the browser to notify it of events which
 // may lead to the cancellation of a prerender. The message is sent only when
 // the renderer is prerendering.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_MaybeCancelPrerenderForHTML5Media)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media)
 
 // Message sent from the renderer to the browser to notify it of a
 // window.print() call which should cancel the prerender. The message is sent
 // only when the renderer is prerendering.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_CancelPrerenderForPrinting)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 
 // Sent by the renderer to check if a URL has permission to trigger a clipboard
 // read/write operation from the DOM.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardRead,
+IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
                            GURL /* url */,
                            bool /* allowed */)
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CanTriggerClipboardWrite,
+IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
                            GURL /* url */,
                            bool /* allowed */)
 
 // Sent when the renderer was prevented from displaying insecure content in
 // a secure page by a security policy.  The page may appear incomplete.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockDisplayingInsecureContent)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 
 // Sent when the renderer was prevented from running insecure content in
 // a secure origin by a security policy.  The page may appear incomplete.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidBlockRunningInsecureContent)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
 
 // Suggest results -----------------------------------------------------------
 
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SetSuggestions,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetSuggestions,
                     int32 /* page_id */,
                     std::vector<std::string> /* suggestions */,
                     InstantCompleteBehavior)
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int32 /* page_id */,
                     bool  /* result */)
 
@@ -523,6 +524,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
 
 // Notify the JavaScript engine in the render to change its parameters
 // while performing stress testing.
-IPC_MESSAGE_ROUTED2(ViewMsg_JavaScriptStressTestControl,
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
                     int /* cmd */,
                     int /* param */)

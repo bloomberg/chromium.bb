@@ -121,7 +121,8 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
   host->channel()->AddFilter(new TextInputClientMessageFilter(host->id()));
 #endif
 
-  host->Send(new ViewMsg_SetIsIncognitoProcess(profile->IsOffTheRecord()));
+  host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
+      profile->IsOffTheRecord()));
 }
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(

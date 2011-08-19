@@ -366,7 +366,7 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
 }
 
 void TabContentsWrapper::CaptureSnapshot() {
-  Send(new ViewMsg_CaptureSnapshot(routing_id()));
+  Send(new ChromeViewMsg_CaptureSnapshot(routing_id()));
 }
 
 // static
@@ -426,12 +426,12 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterIntentHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Snapshot, OnSnapshot)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidBlockDisplayingInsecureContent,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockDisplayingInsecureContent,
                         OnDidBlockDisplayingInsecureContent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidBlockRunningInsecureContent,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockRunningInsecureContent,
                         OnDidBlockRunningInsecureContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -724,7 +724,8 @@ void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
     safebrowsing_detection_host_.reset();
   }
   render_view_host()->Send(
-      new ViewMsg_SetClientSidePhishingDetection(routing_id(), safe_browsing));
+      new ChromeViewMsg_SetClientSidePhishingDetection(routing_id(),
+                                                       safe_browsing));
 #endif
 }
 

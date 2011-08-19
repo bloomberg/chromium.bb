@@ -564,7 +564,7 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
     NOTREACHED();
     return;
   }
-  tab_contents->render_view_host()->Send(new ViewMsg_RevertTranslation(
+  tab_contents->render_view_host()->Send(new ChromeViewMsg_RevertTranslation(
       tab_contents->render_view_host()->routing_id(), entry->page_id()));
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
@@ -616,7 +616,7 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
 
   wrapper->translate_tab_helper()->language_state().set_translation_pending(
       true);
-  tab->render_view_host()->Send(new ViewMsg_TranslatePage(
+  tab->render_view_host()->Send(new ChromeViewMsg_TranslatePage(
       tab->render_view_host()->routing_id(), entry->page_id(), translate_script,
       source_lang, target_lang));
 

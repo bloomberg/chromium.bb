@@ -104,7 +104,8 @@ class RendererResourceDelegate : public ResourceDispatcherDelegate {
   void InformHostOfCacheStats() {
     WebCache::UsageStats stats;
     WebCache::getUsageStats(&stats);
-    RenderThread::current()->Send(new ViewHostMsg_UpdatedCacheStats(stats));
+    RenderThread::current()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
+        stats));
   }
 
   ScopedRunnableMethodFactory<RendererResourceDelegate> method_factory_;
@@ -405,24 +406,27 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderProcessObserver, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIsIncognitoProcess, OnSetIsIncognitoProcess)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetDefaultContentSettings,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsIncognitoProcess,
+                        OnSetIsIncognitoProcess)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetDefaultContentSettings,
                         OnSetDefaultContentSettings)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForCurrentURL,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForCurrentURL,
                         OnSetContentSettingsForCurrentURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCacheCapacities, OnSetCacheCapacities)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_ClearCache, OnClearCache)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
 #if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc, OnGetRendererTcmalloc)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetTcmallocHeapProfiling,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetRendererTcmalloc,
+                        OnGetRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetTcmallocHeapProfiling,
                         OnSetTcmallocHeapProfiling)
-    IPC_MESSAGE_HANDLER(ViewMsg_WriteTcmallocHeapProfile,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_WriteTcmallocHeapProfile,
                         OnWriteTcmallocHeapProfile)
 #endif
-    IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats, OnGetCacheResourceStats)
-    IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetV8HeapStats, OnGetV8HeapStats)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetCacheResourceStats,
+                        OnGetCacheResourceStats)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -463,7 +467,7 @@ void ChromeRenderProcessObserver::OnClearCache() {
 void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
   WebCache::ResourceTypeStats stats;
   WebCache::getResourceTypeStats(&stats);
-  Send(new ViewHostMsg_ResourceTypeStats(stats));
+  Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
 
 #if defined(USE_TCMALLOC)
@@ -472,7 +476,7 @@ void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
   char buffer[1024 * 32];
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   result.append(buffer);
-  Send(new ViewHostMsg_RendererTcmalloc(result));
+  Send(new ChromeViewHostMsg_RendererTcmalloc(result));
 }
 
 void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
@@ -501,7 +505,7 @@ void ChromeRenderProcessObserver::OnWriteTcmallocHeapProfile(
   // a string and pass it to the handler (which runs on the browser host).
   std::string result(profile);
   delete profile;
-  Send(new ViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
+  Send(new ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
 #endif
 }
 
@@ -516,8 +520,8 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::HeapStatistics heap_stats;
   v8::V8::GetHeapStatistics(&heap_stats);
-  Send(new ViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
-                                   heap_stats.used_heap_size()));
+  Send(new ChromeViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
+                                         heap_stats.used_heap_size()));
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {

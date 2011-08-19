@@ -432,7 +432,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 
   // Allow Prerendering to cancel this print request if necessary.
   if (prerender::PrerenderHelper::IsPrerendering(render_view())) {
-    Send(new ViewHostMsg_CancelPrerenderForPrinting(routing_id()));
+    Send(new ChromeViewHostMsg_CancelPrerenderForPrinting(routing_id()));
     return;
   }
 

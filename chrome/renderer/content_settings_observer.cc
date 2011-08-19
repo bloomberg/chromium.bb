@@ -91,7 +91,7 @@ void ContentSettingsObserver::DidBlockContentType(
   // time).
   if (!content_blocked_[settings_type] || !resource_identifier.empty()) {
     content_blocked_[settings_type] = true;
-    Send(new ViewHostMsg_ContentBlocked(routing_id(), settings_type,
+    Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                         resource_identifier));
   }
 }
@@ -101,9 +101,9 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserver, message)
     // Don't swallow LoadBlockedPlugins messages, as they're sent to every
     // blocked plugin.
-    IPC_MESSAGE_HANDLER_GENERIC(ViewMsg_LoadBlockedPlugins,
+    IPC_MESSAGE_HANDLER_GENERIC(ChromeViewMsg_LoadBlockedPlugins,
                                 OnLoadBlockedPlugins(); handled = false)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingURL,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForLoadingURL,
                         OnSetContentSettingsForLoadingURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -175,7 +175,7 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
     return false; // Uninitialized document.
 
   bool result = false;
-  Send(new ViewHostMsg_AllowDatabase(
+  Send(new ChromeViewHostMsg_AllowDatabase(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()),
       name, display_name, &result));
@@ -188,7 +188,7 @@ bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
     return false; // Uninitialized document.
 
   bool result = false;
-  Send(new ViewHostMsg_AllowFileSystem(
+  Send(new ChromeViewHostMsg_AllowFileSystem(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()), &result));
   return result;
@@ -216,7 +216,7 @@ bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
     return false; // Uninitialized document.
 
   bool result = false;
-  Send(new ViewHostMsg_AllowIndexedDB(
+  Send(new ChromeViewHostMsg_AllowIndexedDB(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()),
       name, &result));
@@ -254,7 +254,7 @@ bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
   if (permissions != cached_storage_permissions_.end())
     return permissions->second;
 
-  Send(new ViewHostMsg_AllowDOMStorage(
+  Send(new ChromeViewHostMsg_AllowDOMStorage(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()),
       local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,

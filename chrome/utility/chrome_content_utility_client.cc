@@ -62,15 +62,17 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
-    IPC_MESSAGE_HANDLER(UtilityMsg_UnpackExtension, OnUnpackExtension)
-    IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
-    IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
-    IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImage, OnDecodeImage)
-    IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
-    IPC_MESSAGE_HANDLER(UtilityMsg_RenderPDFPagesToMetafile,
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackWebResource,
+                        OnUnpackWebResource)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseUpdateManifest,
+                        OnParseUpdateManifest)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImage, OnDecodeImage)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                         OnRenderPDFPagesToMetafile)
-    IPC_MESSAGE_HANDLER(UtilityMsg_ParseJSON, OnParseJSON)
-    IPC_MESSAGE_HANDLER(UtilityMsg_GetPrinterCapsAndDefaults,
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -86,10 +88,11 @@ void ChromeContentUtilityClient::OnUnpackExtension(
   ExtensionUnpacker unpacker(extension_path);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&
       unpacker.DumpMessageCatalogsToFile()) {
-    Send(new UtilityHostMsg_UnpackExtension_Succeeded(
+    Send(new ChromeUtilityHostMsg_UnpackExtension_Succeeded(
         *unpacker.parsed_manifest()));
   } else {
-    Send(new UtilityHostMsg_UnpackExtension_Failed(unpacker.error_message()));
+    Send(new ChromeUtilityHostMsg_UnpackExtension_Failed(
+        unpacker.error_message()));
   }
 
   UtilityThread::current()->ReleaseProcessIfNeeded();
@@ -102,10 +105,10 @@ void ChromeContentUtilityClient::OnUnpackWebResource(
   // the ability to download and verify images.
   WebResourceUnpacker unpacker(resource_data);
   if (unpacker.Run()) {
-    Send(new UtilityHostMsg_UnpackWebResource_Succeeded(
+    Send(new ChromeUtilityHostMsg_UnpackWebResource_Succeeded(
         *unpacker.parsed_json()));
   } else {
-    Send(new UtilityHostMsg_UnpackWebResource_Failed(
+    Send(new ChromeUtilityHostMsg_UnpackWebResource_Failed(
         unpacker.error_message()));
   }
 
@@ -115,9 +118,11 @@ void ChromeContentUtilityClient::OnUnpackWebResource(
 void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
   UpdateManifest manifest;
   if (!manifest.Parse(xml)) {
-    Send(new UtilityHostMsg_ParseUpdateManifest_Failed(manifest.errors()));
+    Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Failed(
+        manifest.errors()));
   } else {
-    Send(new UtilityHostMsg_ParseUpdateManifest_Succeeded(manifest.results()));
+    Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded(
+        manifest.results()));
   }
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }
@@ -128,9 +133,9 @@ void ChromeContentUtilityClient::OnDecodeImage(
   const SkBitmap& decoded_image = decoder.Decode(&encoded_data[0],
                                                  encoded_data.size());
   if (decoded_image.empty()) {
-    Send(new UtilityHostMsg_DecodeImage_Failed());
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
   } else {
-    Send(new UtilityHostMsg_DecodeImage_Succeeded(decoded_image));
+    Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image));
   }
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }
@@ -140,7 +145,7 @@ void ChromeContentUtilityClient::OnDecodeImageBase64(
   std::string decoded_string;
 
   if (!base::Base64Decode(encoded_string, &decoded_string)) {
-    Send(new UtilityHostMsg_DecodeImage_Failed());
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
     return;
   }
 
@@ -168,12 +173,12 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
                                      page_ranges,
                                      &highest_rendered_page_number);
   if (succeeded) {
-    Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(
+    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(
         highest_rendered_page_number));
   }
 #endif  // defined(OS_WIN)
   if (!succeeded) {
-    Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Failed());
+    Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed());
   }
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }
@@ -218,7 +223,7 @@ DWORD WINAPI UtilityProcess_GetFontDataPatch(
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
       if (UtilityThread::current()->Send(
-              new UtilityHostMsg_PreCacheFont(logfont)))
+              new ChromeUtilityHostMsg_PreCacheFont(logfont)))
         rv = GetFontData(hdc, table, offset, buffer, length);
     }
   }
@@ -325,9 +330,9 @@ void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   if (value) {
     ListValue wrapper;
     wrapper.Append(value);
-    Send(new UtilityHostMsg_ParseJSON_Succeeded(wrapper));
+    Send(new ChromeUtilityHostMsg_ParseJSON_Succeeded(wrapper));
   } else {
-    Send(new UtilityHostMsg_ParseJSON_Failed(error));
+    Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));
   }
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }
@@ -338,10 +343,11 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
       printing::PrintBackend::CreateInstance(NULL);
   printing::PrinterCapsAndDefaults printer_info;
   if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
-    Send(new UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(printer_name,
-                                                                printer_info));
+    Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(
+        printer_name, printer_info));
   } else {
-    Send(new UtilityHostMsg_GetPrinterCapsAndDefaults_Failed(printer_name));
+    Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
+        printer_name));
   }
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }

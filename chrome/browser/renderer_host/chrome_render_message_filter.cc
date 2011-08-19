@@ -101,13 +101,16 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                   bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdatedCacheStats, OnUpdatedCacheStats)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererHistograms,
+                        OnRendererHistograms)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
+                        OnResourceTypeStats)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
+                        OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FPS, OnFPS)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
@@ -120,20 +123,21 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
 #if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WriteTcmallocHeapProfile_ACK,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                         OnWriteTcmallocHeapProfile)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPolicies, OnGetPluginPolicies)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDatabase, OnAllowDatabase)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowFileSystem, OnAllowFileSystem)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginContentSetting,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginPolicies,
+                        OnGetPluginPolicies)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginContentSetting,
                         OnGetPluginContentSetting)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardRead,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -168,14 +172,14 @@ void ChromeRenderMessageFilter::OnDestruct() const {
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
-    case ViewHostMsg_ResourceTypeStats::ID:
+    case ChromeViewHostMsg_ResourceTypeStats::ID:
 #if defined(USE_TCMALLOC)
-    case ViewHostMsg_RendererTcmalloc::ID:
+    case ChromeViewHostMsg_RendererTcmalloc::ID:
 #endif
     case ExtensionHostMsg_AddListener::ID:
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_CloseChannel::ID:
-    case ViewHostMsg_UpdatedCacheStats::ID:
+    case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
     default:

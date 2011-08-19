@@ -156,9 +156,9 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP_EX(WebResourceService::UnpackerClient, message,
                              msg_is_ok)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Succeeded,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackWebResource_Succeeded,
                           OnUnpackWebResourceSucceeded)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Failed,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                           OnUnpackWebResourceFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
@@ -197,7 +197,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHost::Client {
     UtilityProcessHost* host = new UtilityProcessHost(this, thread_id);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
-    host->Send(new UtilityMsg_UnpackWebResource(json_data_));
+    host->Send(new ChromeUtilityMsg_UnpackWebResource(json_data_));
   }
 
   scoped_refptr<WebResourceService> web_resource_service_;

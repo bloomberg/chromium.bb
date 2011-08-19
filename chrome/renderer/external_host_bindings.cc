@@ -50,8 +50,9 @@ void ExternalHostBindings::postMessage(
 
   std::string origin = frame_->document().securityOrigin().toString().utf8();
 
-  result->Set(sender()->Send(new ViewHostMsg_ForwardMessageToExternalHost(
-      routing_id(), message, origin, target)));
+  result->Set(sender()->Send(
+      new ChromeViewHostMsg_ForwardMessageToExternalHost(
+          routing_id(), message, origin, target)));
 }
 
 bool ExternalHostBindings::ForwardMessageFromExternalHost(

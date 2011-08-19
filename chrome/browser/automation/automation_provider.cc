@@ -736,7 +736,7 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
     return;
   }
 
-  view->Send(new ViewMsg_JavaScriptStressTestControl(
+  view->Send(new ChromeViewMsg_JavaScriptStressTestControl(
       view->routing_id(), cmd, param));
 }
 

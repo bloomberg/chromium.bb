@@ -36,7 +36,8 @@ bool RendererHistogramSnapshots::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RendererHistogramSnapshots, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms, OnGetRendererHistograms)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetRendererHistograms,
+                        OnGetRendererHistograms)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -55,7 +56,7 @@ void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
   // Send the sequence number and list of pickled histograms over synchronous
   // IPC, so we can clear pickled_histograms_ afterwards.
   RenderThread::current()->Send(
-      new ViewHostMsg_RendererHistograms(
+      new ChromeViewHostMsg_RendererHistograms(
           sequence_number, pickled_histograms_));
 
   pickled_histograms_.clear();

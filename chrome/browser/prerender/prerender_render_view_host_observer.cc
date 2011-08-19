@@ -46,13 +46,13 @@ bool PrerenderRenderViewHostObserver::OnMessageReceived(
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrerenderRenderViewHostObserver, message)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MaybeCancelPrerenderForHTML5Media,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media,
                         OnMaybeCancelPrerenderForHTML5Media)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunJavaScriptMessage,
                         OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnRenderViewGone)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelPrerenderForPrinting,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CancelPrerenderForPrinting,
                         OnCancelPrerenderForPrinting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

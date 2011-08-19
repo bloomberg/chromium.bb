@@ -78,7 +78,9 @@ void DomAutomationController::Send(const CppArgumentList& args,
   }
 
   bool succeeded = sender_->Send(
-      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_));
+      new ChromeViewHostMsg_DomOperationResponse(routing_id_,
+                                                 json,
+                                                 automation_id_));
   result->Set(succeeded);
 
   automation_id_ = MSG_ROUTING_NONE;
@@ -110,7 +112,9 @@ void DomAutomationController::SendJSON(const CppArgumentList& args,
 
   std::string json = args[0].ToString();
   result->Set(sender_->Send(
-      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_)));
+      new ChromeViewHostMsg_DomOperationResponse(routing_id_,
+                                                 json,
+                                                 automation_id_)));
 
   automation_id_ = MSG_ROUTING_NONE;
 }

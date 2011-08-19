@@ -331,7 +331,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
   std::string resource;
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
     resource = group->identifier();
-  render_view->Send(new ViewHostMsg_GetPluginContentSetting(
+  render_view->Send(new ChromeViewHostMsg_GetPluginContentSetting(
       frame->top()->document().url(), resource, &plugin_setting));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
@@ -351,7 +351,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
   if (group->IsVulnerable() || group->RequiresAuthorization()) {
     // These policies are dynamic and can changed at runtime, so they aren't
     // cached here.
-    render_view->Send(new ViewHostMsg_GetPluginPolicies(
+    render_view->Send(new ChromeViewHostMsg_GetPluginPolicies(
         &outdated_policy, &authorize_policy));
   }
 
@@ -359,7 +359,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
     if (outdated_policy == CONTENT_SETTING_ASK ||
         outdated_policy == CONTENT_SETTING_BLOCK) {
       if (outdated_policy == CONTENT_SETTING_ASK) {
-        render_view->Send(new ViewHostMsg_BlockedOutdatedPlugin(
+        render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
             render_view->routing_id(), group->GetGroupName(),
             GURL(group->GetUpdateURL())));
       }
@@ -380,7 +380,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
       (plugin_setting == CONTENT_SETTING_ALLOW ||
        plugin_setting == CONTENT_SETTING_ASK) &&
       host_setting == CONTENT_SETTING_DEFAULT) {
-    render_view->Send(new ViewHostMsg_BlockedOutdatedPlugin(
+    render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
         render_view->routing_id(), group->GetGroupName(), GURL()));
     return CreatePluginPlaceholder(
         render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,

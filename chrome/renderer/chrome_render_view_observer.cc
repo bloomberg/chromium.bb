@@ -218,19 +218,19 @@ ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_WebUIJavaScript, OnWebUIJavaScript)
-    IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
-    IPC_MESSAGE_HANDLER(ViewMsg_HandleMessageFromExternalHost,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_CaptureSnapshot, OnCaptureSnapshot)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_HandleMessageFromExternalHost,
                         OnHandleMessageFromExternalHost)
-    IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetAllowDisplayingInsecureContent,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                         OnSetAllowDisplayingInsecureContent)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetAllowRunningInsecureContent,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
                         OnSetAllowRunningInsecureContent)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetClientSidePhishingDetection,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -238,7 +238,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   // Filter only.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIsPrerendering, OnSetIsPrerendering);
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering);
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -271,7 +271,7 @@ void ChromeRenderViewObserver::OnCaptureSnapshot() {
       "Snapshot should be empty on error, non-empty otherwise.";
 
   // Send the snapshot to the browser process.
-  Send(new ViewHostMsg_Snapshot(routing_id(), snapshot));
+  Send(new ChromeViewHostMsg_Snapshot(routing_id(), snapshot));
 }
 
 void ChromeRenderViewObserver::OnHandleMessageFromExternalHost(
@@ -391,7 +391,7 @@ bool ChromeRenderViewObserver::allowStorage(WebFrame* frame, bool local) {
 bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
                                                      bool default_value) {
   bool allowed = false;
-  Send(new ViewHostMsg_CanTriggerClipboardRead(
+  Send(new ChromeViewHostMsg_CanTriggerClipboardRead(
       routing_id(), frame->document().url(), &allowed));
   return allowed;
 }
@@ -399,7 +399,7 @@ bool ChromeRenderViewObserver::allowReadFromClipboard(WebFrame* frame,
 bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
                                                     bool default_value) {
   bool allowed = false;
-  Send(new ViewHostMsg_CanTriggerClipboardWrite(
+  Send(new ChromeViewHostMsg_CanTriggerClipboardWrite(
       routing_id(), frame->document().url(), &allowed));
   return allowed;
 }
@@ -486,7 +486,7 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
   if (allowed_per_settings || allow_displaying_insecure_content_)
     return true;
 
-  Send(new ViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
+  Send(new ChromeViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
   return false;
 }
 
@@ -589,7 +589,7 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   if (allowed_per_settings || allow_running_insecure_content_)
     return true;
 
-  Send(new ViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
+  Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
   return false;
 }
 
@@ -636,7 +636,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
   WebFrame* main_frame = render_view()->webview()->mainFrame();
   GURL osd_url = main_frame->document().openSearchDescriptionURL();
   if (!osd_url.is_empty()) {
-    Send(new ViewHostMsg_PageHasOSDD(
+    Send(new ChromeViewHostMsg_PageHasOSDD(
         routing_id(), render_view()->page_id(), osd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
@@ -746,7 +746,8 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (contents.size()) {
     // Send the text to the browser for indexing (the browser might decide not
     // to index, if the URL is HTTPS for instance) and language discovery.
-    Send(new ViewHostMsg_PageContents(routing_id(), url, load_id, contents));
+    Send(new ChromeViewHostMsg_PageContents(routing_id(), url, load_id,
+                                            contents));
   }
 
   // Generate the thumbnail here if the in-browser thumbnailing isn't
@@ -815,7 +816,7 @@ void ChromeRenderViewObserver::CaptureThumbnail() {
     return;
 
   // send the thumbnail message to the browser process
-  Send(new ViewHostMsg_Thumbnail(routing_id(), url, score, thumbnail));
+  Send(new ChromeViewHostMsg_Thumbnail(routing_id(), url, score, thumbnail));
 }
 
 bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,

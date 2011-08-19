@@ -34,9 +34,10 @@ void ImageDecoder::Start() {
 bool ImageDecoder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageDecoder, message)
-    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Succeeded,
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
                         OnDecodeImageSucceeded)
-    IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed, OnDecodeImageFailed)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Failed,
+                        OnDecodeImageFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -60,7 +61,7 @@ void ImageDecoder::DecodeImageInSandbox(
   UtilityProcessHost* utility_process_host =
       new UtilityProcessHost(this,
                              target_thread_id_);
-  utility_process_host->Send(new UtilityMsg_DecodeImage(image_data));
+  utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
 }
 
 }  // namespace chromeos

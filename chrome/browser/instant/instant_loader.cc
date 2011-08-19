@@ -130,7 +130,7 @@ void InstantLoader::FrameLoadObserver::Observe(
       // TODO: support real cursor position.
       int text_length = static_cast<int>(text_.size());
       RenderViewHost* host = tab_contents_->render_view_host();
-      host->Send(new ViewMsg_DetermineIfPageSupportsInstant(
+      host->Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(
           host->routing_id(), text_, verbatim_, text_length, text_length));
       break;
     }
@@ -508,8 +508,8 @@ bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsDelegateImpl, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -639,7 +639,7 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
       RenderViewHost* host = preview_contents_->render_view_host();
-      host->Send(new ViewMsg_SearchBoxChange(
+      host->Send(new ChromeViewMsg_SearchBoxChange(
           host->routing_id(), user_text_, verbatim, text_length, text_length));
 
       string16 complete_suggested_text_lower = base::i18n::ToLower(
@@ -708,9 +708,9 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
   if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
     RenderViewHost* host = preview_contents_->render_view_host();
     if (type == INSTANT_COMMIT_FOCUS_LOST) {
-      host->Send(new ViewMsg_SearchBoxCancel(host->routing_id()));
+      host->Send(new ChromeViewMsg_SearchBoxCancel(host->routing_id()));
     } else {
-      host->Send(new ViewMsg_SearchBoxSubmit(
+      host->Send(new ChromeViewMsg_SearchBoxSubmit(
           host->routing_id(), user_text_,
           type == INSTANT_COMMIT_PRESSED_ENTER));
     }
@@ -923,7 +923,7 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
       (force_if_waiting || !is_waiting_for_load())) {
     last_omnibox_bounds_ = omnibox_bounds_;
     RenderViewHost* host = preview_contents_->render_view_host();
-    host->Send(new ViewMsg_SearchBoxResize(
+    host->Send(new ChromeViewMsg_SearchBoxResize(
         host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
   }
 }
@@ -1030,7 +1030,7 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
   preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type);
   RenderViewHost* host = preview_contents_->render_view_host();
-  host->Send(new ViewMsg_SearchBoxChange(
+  host->Send(new ChromeViewMsg_SearchBoxChange(
       host->routing_id(), user_text, verbatim, 0, 0));
   frame_load_observer_.reset(new FrameLoadObserver(
       this, preview_contents()->tab_contents(), user_text, verbatim));

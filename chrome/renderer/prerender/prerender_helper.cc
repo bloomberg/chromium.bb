@@ -114,7 +114,7 @@ void PrerenderHelper::WillCreateMediaPlayer(
   if (is_prerendering_) {
     // Cancel prerendering in the case of HTML5 media, to avoid playing sounds
     // in the background.
-    Send(new ViewHostMsg_MaybeCancelPrerenderForHTML5Media(
+    Send(new ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media(
          render_view()->routing_id()));
   }
 }
@@ -140,7 +140,7 @@ void PrerenderHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
 bool PrerenderHelper::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrerenderHelper, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
   // Return false on ViewMsg_SetIsPrerendering so other observers can see the
   // message.

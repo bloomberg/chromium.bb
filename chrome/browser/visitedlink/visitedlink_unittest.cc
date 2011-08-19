@@ -528,12 +528,12 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
         static_cast<VisitCountingProfile*>(
             Profile::FromBrowserContext(browser_context()));
 
-    if (msg->type() == ViewMsg_VisitedLink_Add::ID) {
+    if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
       void* iter = NULL;
       std::vector<uint64> fingerprints;
       CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
       counting_profile->CountAddEvent(fingerprints.size());
-    } else if (msg->type() == ViewMsg_VisitedLink_Reset::ID) {
+    } else if (msg->type() == ChromeViewMsg_VisitedLink_Reset::ID) {
       counting_profile->CountResetEvent();
     }
 

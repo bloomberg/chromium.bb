@@ -642,7 +642,7 @@ class SafeManifestParser : public UtilityProcessHost::Client {
     if (use_utility_process) {
       UtilityProcessHost* host = new UtilityProcessHost(
           this, BrowserThread::UI);
-      host->Send(new UtilityMsg_ParseUpdateManifest(xml_));
+      host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
     } else {
       UpdateManifest manifest;
       if (manifest.Parse(xml_)) {
@@ -669,9 +669,9 @@ class SafeManifestParser : public UtilityProcessHost::Client {
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeManifestParser, message)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Succeeded,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded,
                           OnParseUpdateManifestSucceeded)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Failed,
                           OnParseUpdateManifestFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()

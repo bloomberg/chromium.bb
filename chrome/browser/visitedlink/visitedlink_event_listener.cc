@@ -47,7 +47,8 @@ class VisitedLinkUpdater {
     base::SharedMemoryHandle handle_for_process;
     table_memory->ShareToProcess(process->GetHandle(), &handle_for_process);
     if (base::SharedMemory::IsHandleValid(handle_for_process))
-      process->Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
+      process->Send(new ChromeViewMsg_VisitedLink_NewTable(
+          handle_for_process));
   }
 
   // Buffers |links| to update, but doesn't actually relay them.
@@ -83,7 +84,7 @@ class VisitedLinkUpdater {
       return;
 
     if (reset_needed_) {
-      process->Send(new ViewMsg_VisitedLink_Reset());
+      process->Send(new ChromeViewMsg_VisitedLink_Reset());
       reset_needed_ = false;
       return;
     }
@@ -91,7 +92,7 @@ class VisitedLinkUpdater {
     if (pending_.empty())
       return;
 
-    process->Send(new ViewMsg_VisitedLink_Add(pending_));
+    process->Send(new ChromeViewMsg_VisitedLink_Add(pending_));
 
     pending_.clear();
   }

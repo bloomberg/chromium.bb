@@ -32,7 +32,7 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Send(
-        new ViewMsg_SetFieldTrialGroup(field_trial_name, group_name));
+        new ChromeViewMsg_SetFieldTrialGroup(field_trial_name, group_name));
   }
 }
 

@@ -949,7 +949,7 @@ void MetricsService::StartScheduledUpload() {
   // Collect WebCore cache information to put into a histogram.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->Send(new ViewMsg_GetCacheResourceStats());
+    i.GetCurrentValue()->Send(new ChromeViewMsg_GetCacheResourceStats());
 }
 
 void MetricsService::OnMemoryDetailCollectionDone() {

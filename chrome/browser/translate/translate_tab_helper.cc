@@ -21,9 +21,9 @@ TranslateTabHelper::~TranslateTabHelper() {
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateTabHelper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TranslateLanguageDetermined,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
                         OnLanguageDetermined)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

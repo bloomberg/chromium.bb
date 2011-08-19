@@ -65,7 +65,7 @@ PluginInfoBarDelegate::~PluginInfoBarDelegate() {
 }
 
 bool PluginInfoBarDelegate::Cancel() {
-  tab_contents_->render_view_host()->Send(new ViewMsg_LoadBlockedPlugins(
+  tab_contents_->render_view_host()->Send(new ChromeViewMsg_LoadBlockedPlugins(
       tab_contents_->render_view_host()->routing_id()));
   return true;
 }
@@ -296,7 +296,7 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedOutdatedPlugin,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()

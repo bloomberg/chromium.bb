@@ -67,8 +67,8 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
 bool HistoryTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HistoryTabHelper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Thumbnail, OnThumbnail)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageContents, OnPageContents)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Thumbnail, OnThumbnail)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

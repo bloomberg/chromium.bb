@@ -313,9 +313,9 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
       // capacity lower.
       size_t max_dead_capacity = capacity;
 
-      host->Send(new ViewMsg_SetCacheCapacities(min_dead_capacity,
-                                                max_dead_capacity,
-                                                capacity));
+      host->Send(new ChromeViewMsg_SetCacheCapacities(min_dead_capacity,
+                                                      max_dead_capacity,
+                                                      capacity));
     }
     ++allocation;
   }
@@ -326,7 +326,7 @@ void WebCacheManager::ClearRendederCache(const std::set<int>& renderers) {
   for (; iter != renderers.end(); ++iter) {
     RenderProcessHost* host = RenderProcessHost::FromID(*iter);
     if (host)
-      host->Send(new ViewMsg_ClearCache());
+      host->Send(new ChromeViewMsg_ClearCache());
   }
 }
 

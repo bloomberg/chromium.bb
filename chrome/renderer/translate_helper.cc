@@ -70,7 +70,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
                                base::TimeTicks::Now() - begin_time);
   }
 
-  Send(new ViewHostMsg_TranslateLanguageDetermined(
+  Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
 }
 
@@ -235,8 +235,8 @@ bool TranslateHelper::DontDelayTasks() {
 bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
-    IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_TranslatePage, OnTranslatePage)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_RevertTranslation, OnRevertTranslation)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -336,7 +336,7 @@ void TranslateHelper::CheckTranslateStatus() {
       autofill_->FrameTranslated(render_view()->webview()->mainFrame());
 
     // Notify the browser we are done.
-    render_view()->Send(new ViewHostMsg_PageTranslated(
+    render_view()->Send(new ChromeViewHostMsg_PageTranslated(
         render_view()->routing_id(), render_view()->page_id(),
         actual_source_lang, target_lang_, TranslateErrors::NONE));
     return;
@@ -425,7 +425,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
     TranslateErrors::Type error) {
   translation_pending_ = false;
   // Notify the browser there was an error.
-  render_view()->Send(new ViewHostMsg_PageTranslated(
+  render_view()->Send(new ChromeViewHostMsg_PageTranslated(
       render_view()->routing_id(), page_id_, source_lang_, target_lang_, error));
 }
 

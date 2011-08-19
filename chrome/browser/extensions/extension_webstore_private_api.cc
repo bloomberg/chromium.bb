@@ -184,21 +184,22 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
     if (icon_data_.empty())
       icon_decode_complete_ = true;
     else
-      utility_host_->Send(new UtilityMsg_DecodeImageBase64(icon_data_));
-    utility_host_->Send(new UtilityMsg_ParseJSON(manifest_));
+      utility_host_->Send(new ChromeUtilityMsg_DecodeImageBase64(icon_data_));
+    utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
   // Implementing pieces of the UtilityProcessHost::Client interface.
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeBeginInstallHelper, message)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Succeeded,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
                           OnDecodeImageSucceeded)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Failed,
                           OnDecodeImageFailed)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Succeeded,
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
                           OnJSONParseSucceeded)
-      IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseJSON_Failed, OnJSONParseFailed)
+      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
+                          OnJSONParseFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;

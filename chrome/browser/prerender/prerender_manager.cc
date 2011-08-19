@@ -482,7 +482,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
       prerender_contents->prerender_contents()->render_view_host();
   DCHECK(render_view_host);
   render_view_host->Send(
-      new ViewMsg_SetIsPrerendering(render_view_host->routing_id(), false));
+      new ChromeViewMsg_SetIsPrerendering(render_view_host->routing_id(),
+                                          false));
 
   TabContentsWrapper* new_tab_contents =
       prerender_contents->ReleasePrerenderContents();

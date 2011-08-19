@@ -772,7 +772,7 @@ std::string AboutTcmalloc() {
   AboutTcmallocOutputs::GetInstance()->SetOutput(browser, buffer);
   RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
   while (!it.IsAtEnd()) {
-    it.GetCurrentValue()->Send(new ViewMsg_GetRendererTcmalloc);
+    it.GetCurrentValue()->Send(new ChromeViewMsg_GetRendererTcmalloc);
     it.Advance();
   }
 

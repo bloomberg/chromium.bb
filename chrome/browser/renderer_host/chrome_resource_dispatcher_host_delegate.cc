@@ -300,7 +300,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
   ResourceDispatcherHostRequestInfo* info =
       resource_dispatcher_host_->InfoForRequest(request);
-  filter->Send(new ViewMsg_SetContentSettingsForLoadingURL(
+  filter->Send(new ChromeViewMsg_SetContentSettingsForLoadingURL(
       info->route_id(), request->url(),
       map->GetContentSettings(request->url(), request->url())));
 

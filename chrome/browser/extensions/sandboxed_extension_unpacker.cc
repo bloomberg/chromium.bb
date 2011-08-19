@@ -234,9 +234,9 @@ bool SandboxedExtensionUnpacker::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedExtensionUnpacker, message)
-    IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackExtension_Succeeded,
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
                         OnUnpackExtensionSucceeded)
-    IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackExtension_Failed,
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_UnpackExtension_Failed,
                         OnUnpackExtensionFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -262,7 +262,7 @@ void SandboxedExtensionUnpacker::StartProcessOnIOThread(
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->set_exposed_dir(temp_crx_path.DirName());
-  host->Send(new UtilityMsg_UnpackExtension(temp_crx_path));
+  host->Send(new ChromeUtilityMsg_UnpackExtension(temp_crx_path));
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(

@@ -25,7 +25,7 @@ SearchBox::~SearchBox() {
 void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
                                InstantCompleteBehavior behavior) {
   // Explicitly allow empty vector to be sent to the browser.
-  render_view()->Send(new ViewHostMsg_SetSuggestions(
+  render_view()->Send(new ChromeViewHostMsg_SetSuggestions(
       render_view()->routing_id(), render_view()->page_id(), suggestions,
       behavior));
 }
@@ -33,11 +33,11 @@ void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxChange, OnChange)
-    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxSubmit, OnSubmit)
-    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxCancel, OnCancel)
-    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxResize, OnResize)
-    IPC_MESSAGE_HANDLER(ViewMsg_DetermineIfPageSupportsInstant,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxChange, OnChange)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSubmit, OnSubmit)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxCancel, OnCancel)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxResize, OnResize)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -95,7 +95,7 @@ void SearchBox::OnDetermineIfPageSupportsInstant(const string16& value,
   selection_end_ = selection_end;
   bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
       render_view()->webview()->mainFrame());
-  render_view()->Send(new ViewHostMsg_InstantSupportDetermined(
+  render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
       render_view()->routing_id(), render_view()->page_id(), result));
 }
 

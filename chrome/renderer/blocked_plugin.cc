@@ -153,8 +153,9 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
         &message, this, this, &BlockedPlugin::OnMenuItemSelected);
   } else {
     IPC_BEGIN_MESSAGE_MAP(BlockedPlugin, message)
-      IPC_MESSAGE_HANDLER(ViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
-      IPC_MESSAGE_HANDLER(ViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+      IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins,
+                          OnLoadBlockedPlugins)
+      IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
     IPC_END_MESSAGE_MAP()
   }
 

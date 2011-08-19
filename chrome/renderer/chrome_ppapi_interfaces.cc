@@ -29,7 +29,7 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
   std::vector<nacl::FileDescriptor> sockets;
   base::ProcessHandle nacl_process;
   if (!RenderThread::current()->Send(
-    new ViewHostMsg_LaunchNaCl(
+    new ChromeViewHostMsg_LaunchNaCl(
         ASCIIToWide(alleged_url),
         socket_count,
         &sockets,

@@ -142,7 +142,7 @@ void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   DCHECK_GE(new_name_count_, names.size());
   new_name_count_ -= names.size();
 
-  RenderThread::current()->Send(new ViewHostMsg_DnsPrefetch(names));
+  RenderThread::current()->Send(new ChromeViewHostMsg_DnsPrefetch(names));
 }
 
 // is_numeric_ip() checks to see if all characters in name are either numeric,

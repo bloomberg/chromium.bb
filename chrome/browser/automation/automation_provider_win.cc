@@ -424,7 +424,7 @@ void AutomationProvider::OnMessageFromExternalHost(int handle,
   if (!view_host)
     return;
 
-  view_host->Send(new ViewMsg_HandleMessageFromExternalHost(
+  view_host->Send(new ChromeViewMsg_HandleMessageFromExternalHost(
       view_host->routing_id(), message, origin, target));
 }
 

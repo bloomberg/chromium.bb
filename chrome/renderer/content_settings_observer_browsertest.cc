@@ -37,8 +37,8 @@ MockContentSettingsObserver::MockContentSettingsObserver(
 
 bool MockContentSettingsObserver::Send(IPC::Message* message) {
   IPC_BEGIN_MESSAGE_MAP(MockContentSettingsObserver, *message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllowDOMStorage,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_AllowDOMStorage,
                                     OnAllowDOMStorage)
     IPC_MESSAGE_UNHANDLED(ADD_FAILURE())
   IPC_END_MESSAGE_MAP()
@@ -131,7 +131,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
     const IPC::Message* msg = render_thread_.sink().GetMessageAt(i);
     if (msg->type() == ViewHostMsg_FrameNavigate::ID)
       navigation_index = i;
-    if (msg->type() == ViewHostMsg_ContentBlocked::ID)
+    if (msg->type() == ChromeViewHostMsg_ContentBlocked::ID)
       block_index = i;
   }
   EXPECT_NE(-1, navigation_index);
@@ -155,7 +155,7 @@ TEST_F(RenderViewTest, PluginsTemporarilyAllowed) {
             observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
 
   // Temporarily allow plugins.
-  view_->OnMessageReceived(ViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
+  view_->OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
 
