@@ -29,7 +29,7 @@
         'chrome_resources',
         'chrome_strings',
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'theme_resources',
         'theme_resources_standard',
         '../base/base.gyp:test_support_base',
@@ -470,7 +470,7 @@
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources',
         'chrome_strings',
@@ -2386,7 +2386,7 @@
       },
       'dependencies': [
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources',
         'chrome_strings',
@@ -3206,7 +3206,7 @@
         '_USE_32BIT_TIME_T',
       ],
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'common',
         'debugger',
         '../jingle/jingle.gyp:notifier_test_util',
@@ -3289,7 +3289,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources',
         'common',
@@ -3449,7 +3449,7 @@
       'target_name': 'sync_performance_tests',
       'type': 'executable',
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'test_support_common',
         '../skia/skia.gyp:skia',

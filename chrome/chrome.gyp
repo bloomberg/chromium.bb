@@ -542,18 +542,18 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'common_constants',
         'common_net',
         'sync',
         'sync_notifier',
       ],
       'export_dependent_settings': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       # This target exports a hard dependency because syncapi.h includes
-      # generated proto header files from sync_proto_cpp.
+      # generated proto header files from sync_proto.
       'hard_dependency': 1,
     },
     {
@@ -577,15 +577,15 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
-      # Even though this target depends on sync_proto_cpp, it doesn't
+      # Even though this target depends on sync_proto, it doesn't
       # need to export a hard dependency since we explicitly avoid
       # including the generated proto header files from this target's
       # header files.
@@ -744,15 +744,15 @@
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../skia/skia.gyp:skia',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
       ],
       # This target exports a hard dependency because its header files include
-      # protobuf header files from sync_proto_cpp.
+      # protobuf header files from sync_proto.
       'hard_dependency': 1,
       'conditions': [
         ['OS=="win"', {

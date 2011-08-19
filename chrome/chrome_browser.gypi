@@ -9,7 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_extra_resources',
         'chrome_resources',
         'chrome_strings',
