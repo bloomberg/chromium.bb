@@ -9,14 +9,14 @@ vars = {
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
   # After changing nacl_revision, run 'gclient runhooks' to get the new values.
-  "nacl_irt_hash_x86_32": "96f8b8602ee43b05898fb22302fb5eb2dded4d5c",
-  "nacl_irt_hash_x86_64": "9b04a640e6216aea7153654dee1ab264fb537478",
-  "nacl_revision": "6459",
+  "nacl_irt_hash_x86_32": "a5631aadc6bb814b208f7b6078f314e62953917f",
+  "nacl_irt_hash_x86_64": "71d090b7d254836495c248a655c8f6c6ef6c58bf",
+  "nacl_revision": "6490",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
   # revisions here, but it makes checkdeps confused. We should fix checkdeps.
-  "nacl_chrome_ppapi_revision": "96903", # native_client/DEPS: chrome_ppapi_rev 
+  "nacl_chrome_ppapi_revision": "97134", # native_client/DEPS: chrome_ppapi_rev 
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
