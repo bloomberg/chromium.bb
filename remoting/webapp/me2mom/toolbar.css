@@ -4,7 +4,7 @@
  */
 
 .toolbar-container {
-  position: absolute;
+  position: fixed;
   top: -45px;
   width: 640px;
   left: 50%;
