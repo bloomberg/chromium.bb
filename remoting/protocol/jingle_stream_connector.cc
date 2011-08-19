@@ -15,6 +15,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/client_socket_factory.h"
+#include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_session.h"
 
 namespace remoting {
@@ -44,12 +45,13 @@ net::SSLClientSocket* CreateSSLClientSocket(
   ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
   // SSLClientSocket takes ownership of the adapter.
-  net::HostPortPair host_and_pair(JingleSession::kChromotingContentName, 0);
+  net::HostPortPair host_and_port(
+      ContentDescription::kChromotingContentName, 0);
   net::SSLClientSocketContext context;
   context.cert_verifier = cert_verifier;
   net::SSLClientSocket* ssl_socket =
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          socket, host_and_pair, ssl_config, NULL, context);
+          socket, host_and_port, ssl_config, NULL, context);
   return ssl_socket;
 }
 

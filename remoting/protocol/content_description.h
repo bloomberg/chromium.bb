@@ -26,6 +26,8 @@ namespace protocol {
 // interface does not need to depend on libjingle.
 class ContentDescription : public cricket::ContentDescription {
  public:
+  static const char kChromotingContentName[];
+
   ContentDescription(const CandidateSessionConfig* config,
                      const std::string& auth_token,
                      const std::string& certificate);
@@ -40,7 +42,7 @@ class ContentDescription : public cricket::ContentDescription {
 
   buzz::XmlElement* ToXml() const;
 
-  static cricket::ContentDescription* ParseXml(const buzz::XmlElement* element);
+  static ContentDescription* ParseXml(const buzz::XmlElement* element);
 
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;

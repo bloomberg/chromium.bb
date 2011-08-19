@@ -17,11 +17,11 @@ using buzz::XmlElement;
 namespace remoting {
 namespace protocol {
 
+const char ContentDescription::kChromotingContentName[] = "chromoting";
+
 namespace {
 
 const char kDefaultNs[] = "";
-
-const char kChromotingContentName[] = "chromoting";
 
 // Following constants are used to format session description in XML.
 const char kDescriptionTag[] = "description";
@@ -235,7 +235,7 @@ XmlElement* ContentDescription::ToXml() const {
 }
 
 // static
-cricket::ContentDescription* ContentDescription::ParseXml(
+ContentDescription* ContentDescription::ParseXml(
     const XmlElement* element) {
   if (element->Name() == QName(kChromotingXmlNamespace, kDescriptionTag)) {
     scoped_ptr<CandidateSessionConfig> config(

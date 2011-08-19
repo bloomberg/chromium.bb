@@ -24,10 +24,7 @@
 using cricket::BaseSession;
 
 namespace remoting {
-
 namespace protocol {
-
-const char JingleSession::kChromotingContentName[] = "chromoting";
 
 namespace {
 
@@ -483,5 +480,4 @@ void JingleSession::SetState(State new_state) {
 }
 
 }  // namespace protocol
-
 }  // namespace remoting

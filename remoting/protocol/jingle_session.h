@@ -26,8 +26,6 @@ class JingleSessionManager;
 class JingleSession : public protocol::Session,
                       public sigslot::has_slots<> {
  public:
-  static const char kChromotingContentName[];
-
   // Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback) OVERRIDE;
   virtual void CreateStreamChannel(

@@ -338,7 +338,7 @@ JingleSessionManager::CreateClientSessionDescription(
     const std::string& auth_token) {
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
-      JingleSession::kChromotingContentName, kChromotingXmlNamespace,
+      ContentDescription::kChromotingContentName, kChromotingXmlNamespace,
       new ContentDescription(config, auth_token, ""));
   return desc;
 }
@@ -349,7 +349,7 @@ cricket::SessionDescription* JingleSessionManager::CreateHostSessionDescription(
     const std::string& certificate) {
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
-      JingleSession::kChromotingContentName, kChromotingXmlNamespace,
+      ContentDescription::kChromotingContentName, kChromotingXmlNamespace,
       new ContentDescription(config, "", certificate));
   return desc;
 }
