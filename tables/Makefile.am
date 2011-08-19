@@ -22,6 +22,9 @@ table_files = \
 	compress.ctb \
 	corrections.ctb \
 	countries.cti \
+	cs-chardefs.cti \
+	cs-g1.ctb \
+	cs-translation.ctb \
 	cy-cy-g1.utb \
 	cy-cy-g2.ctb \
 	Cz-Cz-g1.utb \

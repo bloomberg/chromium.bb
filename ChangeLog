@@ -1,3 +1,10 @@
+2011-08-19  Bert Frees <bertfrees@gmail.com>
+
+	* tables/cs-chardefs.cti:
+	* tables/cs-g1.ctb:
+	* tables/cs-translation.ctb: Improved translation tables for Czech
+	braille. Credit goes to Jan Halousek
+
 2011-08-08  Michel Such  <michel.such@free.fr>
 
 	* tables/fr-bfu-comp8.utb:

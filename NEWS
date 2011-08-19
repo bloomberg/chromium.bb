@@ -16,6 +16,7 @@ liblouis NEWS -- history of user-visible changes.
    - Improvements to the French comp6 and comp8 braille tables
    - Improvements to the Romanian braille table
    - Improvements to the Generic Arabic Grade 1 table
+   - Improvements to the Czech tables thanks to Jan Halousek
 
 * Noteworthy changes in release 2.3.0 (2011-05-09)
 
